@@ -233,10 +233,6 @@ function getOwnTone(kind: StackPullRequestPipKind): StackLook['tone'] {
   flex: none;
   width: 13px;
   height: 13px;
-
-  .stackMergeMembers_row_dimmed & {
-    opacity: 0.45;
-  }
 }
 
 .stackMergeMembers_icon_open,
@@ -329,5 +325,8 @@ function getOwnTone(kind: StackPullRequestPipKind): StackLook['tone'] {
   to {
     transform: rotate(360deg);
   }
+}
+.stackMergeMembers_row_dimmed .stackMergeMembers_icon {
+  color: $color-fg-3;
 }
 </style>

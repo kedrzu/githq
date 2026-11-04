@@ -19,6 +19,7 @@ import {
     sampleHistory,
     sampleWebappHistory,
 } from '@/testing/sampleCommits.js';
+import { trackTabFocus } from '@/testing/trackTabFocus.js';
 import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
 
 import CommitGraphView from './CommitGraphView.vue';
@@ -1133,6 +1134,36 @@ test('D16, CH20, CH27, CH28: P and Shift+P go to the parents, selected in the gr
     // A row clicked does the same.
     await userEvent.click(details().getByRole('button', { name: /chore: prepare the 4\.2\.1 release/ }));
     await expect.poll(() => cursor()?.textContent).toContain('chore: prepare the 4.2.1 release');
+});
+
+test('a control Tab reached in the details holds J and P, the commit staying; B, about the view, still opens the list; the graph itself holds nothing', async () => {
+    trackTabFocus();
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    const pane = document.querySelector('[data-screen-keys]');
+    const control = details().getByRole('button').first().element();
+
+    for (const target of [pane, control]) {
+        for (let tabs = 0; tabs < 40 && document.activeElement !== target; tabs++) {
+            await userEvent.tab();
+        }
+
+        expect(document.activeElement).toBe(target);
+    }
+
+    expect(pane?.hasAttribute('data-tab-focus')).toBe(false);
+    expect(control.hasAttribute('data-tab-focus')).toBe(true);
+    await userEvent.keyboard('jp{Shift>}p{/Shift}');
+    expect(cursor()?.textContent).toContain('Merge pull request #1226');
+
+    await userEvent.keyboard('{Escape}b');
+    await expect.element(filter()).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.keyboard('p');
+    await expect.poll(() => cursor()?.textContent).not.toContain('Merge pull request #1226');
 });
 
 test('CH16: P to a parent not loaded opens its details the same way, the graph not moving and not taking it; J goes on from the graph', async () => {

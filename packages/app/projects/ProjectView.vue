@@ -34,7 +34,14 @@ import ItemCard from '@/lists/ItemCard.vue';
 import ItemRow from '@/lists/ItemRow.vue';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
-import type { ListChoice, ListContextMenuProps, ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
+import type {
+  ListChoice,
+  ListContextMenuProps,
+  ListedItems,
+  ListEntry,
+  ListGroup,
+  ListMove,
+} from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
@@ -89,6 +96,8 @@ const props = withDefaults(
     /** Epoch ms the rows' ages are counted to. */
     now: number;
     openedId?: string | null;
+    /** The user has an edit of the item on its way (`ListView`). */
+    isEdited?: (id: string) => boolean;
     undone?: ReadonlyMap<string, string>;
     /** Whether the entry may be moved from one group into another (set the field). */
     canMove?: (entry: ListEntry<ProjectEntry>, from: string, to: string) => boolean;
@@ -101,6 +110,7 @@ const props = withDefaults(
     modified: false,
     roadmap: false,
     openedId: null,
+    isEdited: () => false,
     undone: () => new Map(),
     canMove: () => false,
   },
@@ -108,7 +118,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
   /** An item dropped into another column or group: set its field. */
   move: [move: ListMove];
   /** Back to the saved view's options. */
@@ -247,6 +257,11 @@ const sortSummary = computed(() => {
 
 function addDraft(title: string, group: string | null) {
   emit('addDraft', title, group);
+}
+
+/** A draft issue has its own dialog, not the item view: it is no step of an opened item. */
+function hasItemView(entry: ProjectEntry) {
+  return entry.content !== null;
 }
 </script>
 
@@ -509,8 +524,10 @@ function addDraft(title: string, group: string | null) {
         :groups="groups"
         :layout="options.layout"
         :opened-id="openedId"
+        :is-edited="isEdited"
         :get-url="entry => entry.content?.url ?? null"
         :can-move="canMove"
+        :can-open-over="hasItemView"
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
@@ -701,6 +718,7 @@ function addDraft(title: string, group: string | null) {
 }
 
 .projectView_tab_current {
+  font-weight: $font-weight-medium;
   color: $color-fg;
   background: $color-bg-3;
 }

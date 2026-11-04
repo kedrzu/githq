@@ -38,7 +38,6 @@ export const NoRuns: Story = { args: stripOf(SAMPLE_WORKFLOWS.codeql) };
 /** What a row hands the strip: failures of a break younger than a day are news. */
 function stripOf(workflow: WorkflowState) {
     return {
-        nameWithOwner: 'fitloop/webapp',
         runs: workflow.lastRuns,
         newSince: workflow.isNew ? workflow.breakStartedAt : null,
     };

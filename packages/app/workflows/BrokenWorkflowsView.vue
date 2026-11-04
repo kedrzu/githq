@@ -162,6 +162,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         v-for="group in brokenGroups"
         :key="group.key"
         :aria-label="group.label"
+        data-screen-keys
       >
         <h2 :class="css.brokenWorkflowsView_group">
           {{ group.label }}
@@ -207,7 +208,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ repository }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
-            :name-with-owner="repository"
             :runs="[]"
             :new-since="null"
           />
@@ -237,7 +237,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ entry.nameWithOwner }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
-            :name-with-owner="entry.nameWithOwner"
             :runs="[]"
             :new-since="null"
           />

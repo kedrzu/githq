@@ -162,13 +162,10 @@ githq.** (2026-11-01, owner, on the design agent's proposal; review itself is to
 **Why.** A stack has no content of its own beyond its pull requests, and the collapsed entry already says how it stands.
 This keeps working when review moves into githq.
 
-The pull request opened is the first open one not yet approved, otherwise the
-first open one. `J` and `K` in the opened item walk the list's pull requests one by one, so the last of one stack is followed
-by the first of the next, and no new key is needed.
+The pull request opened is the first open one not yet approved, otherwise the first open one. `J` and `K` move as they do
+everywhere in the list ([D26](#d26)), so a collapsed stack is passed in one step and no new key is needed.
 
-> **Checked 2026-11-01:** `J`/`K` step through `ItemList.ids`, the ids the list shows in its order
-> (`packages/app/item/ItemNavigation.ts:13`), so it only has to hand over a collapsed stack's members too. `Shift+J` and
-> `Shift+K` extend the selection in a list (`packages/app/lists/ListView.vue:251`). GitHub uses them to walk a stack
+> **Checked 2026-11-01:** `Shift+J` and `Shift+K` extend the selection in a list. GitHub uses them to walk a stack
 > ([changelog](https://github.blog/changelog/2026-10-06-stacked-pull-requests-generally-available)).
 
 **Rejected.**
@@ -390,7 +387,7 @@ requests based on the last one's branch. Dissolving says per pull request who st
 
 ## D23
 
-**`↵` on an issue serving as a stack's header opens the issue; `J` then walks into the stack. Two stacks under one issue each get a header one step
+**`↵` on an issue serving as a stack's header opens the issue; once the stack is expanded `J` goes on into it ([D26](#d26)). Two stacks under one issue each get a header one step
 in, with their rows on a rail below it.** (2026-11-01, design agent, SP21, SP22; owner accepted)
 
 **Why.** The issue is an item with content of its own, unlike a stack's entry. Two stacks are the one case [D12](#d12) leaves open: their own headers
@@ -398,10 +395,10 @@ make one more level than "no third level" suggests. It is rare.
 
 ## D24
 
-**A merged entry goes purple and leaves at the next refresh. The toolbar's position counts pull requests walked, not entries, so it can exceed the
-list's count.** (2026-11-01, design agent, SP8, SP3; owner accepted)
+**A merged entry goes purple and leaves at the next refresh. The toolbar's position counts the items `J` and `K` reach, each once, so it can exceed
+the list's count of entries.** (2026-11-01, design agent, SP8, SP3; owner accepted; what it counts changed by [D26](#d26))
 
-**Why.** `J` steps through pull requests ([D9](#d9)), and the count of entries is for the list ([D3](#d3)).
+**Why.** `J` also steps through an expanded stack's pull requests ([D26](#d26)), and the count of entries is for the list ([D3](#d3)).
 
 ## D25
 
@@ -425,3 +422,20 @@ the number's contrast; the mark keeps it, and takes no room, so nothing shifts w
 - Squares tinted, quiet or sharply outlined (SP85–SP87) — too strong, or a failing pull request stops standing out.
 - The open square with a light ring (SP91), a thicker outline (SP92), or a stronger tint and a white number (SP94) — the owner preferred the mark.
 - A one-sided accent border on the selected map row — reads as decoration; the fill alone marks it.
+
+## D26
+
+**`J`, `K` and the arrows step through what the list shows, in the same order with an item open or not. A collapsed stack is one step. An expanded
+stack's entry is a step, and so is each of its pull requests. On a board a stack's card is one step, and once expanded each of its pull requests is a
+step after the card. With an item open each step opens its item; on a stack's entry that is the pull request `↵` opens.** (2026-11-04, owner, replacing
+the walk of [D9](#d9))
+
+**Why.** The same keys walked over whole stacks with the panel closed and through a stack's pull requests with it open, so where a key went depended on
+something that had nothing to do with the row. An expanded stack is now the one way into a stack: `→`, then `↓`. It costs one key, and the stack stays
+expanded for the session ([D10](#d10)).
+
+**Rejected.**
+
+- `J` and `K` walking a collapsed stack's pull requests while an item is open (D9 as first decided) — the walk above.
+- Passing over an expanded entry's own row while an item is open — one more difference between open and closed. The step can leave the panel on the same
+  pull request, when the entry opens the first of its rows; that is accepted.

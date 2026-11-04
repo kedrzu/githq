@@ -159,6 +159,7 @@ useCommands(() => [
     section: 'view',
     key: 'ArrowRight',
     menu: false,
+    actsOnRow: true,
     when: () => selection.selectedRow?.kind === 'workflow' && props.unfolded?.key !== selection.selectedRow.key,
     run: () => {
       if (selection.selectedRow?.kind === 'workflow') {
@@ -172,6 +173,7 @@ useCommands(() => [
     section: 'view',
     key: 'ArrowLeft',
     menu: false,
+    actsOnRow: true,
     when: () => props.unfolded !== null,
     run: fold,
   },
@@ -182,6 +184,7 @@ useCommands(() => [
     section: 'view',
     key: 'Escape',
     menu: false,
+    actsOnRow: true,
     when: () => props.unfolded !== null && props.unfolded.ref === null,
     run: fold,
   },
@@ -190,6 +193,7 @@ useCommands(() => [
     title: t(l.alertSettings),
     section: 'view',
     key: 'P',
+    actsOnRow: true,
     when: () => props.list.status === 'read' && props.list.groups.length > 0,
     run: () => {
       const row = selection.selectedRow;
@@ -201,6 +205,7 @@ useCommands(() => [
     title: emptyState.value?.action?.label ?? t(l.openOnGitHub),
     section: 'view',
     key: 'O',
+    actsOnRow: true,
     when: () => emptyState.value?.action != null,
     run: () => {
       const action = emptyState.value?.action;
@@ -334,6 +339,7 @@ function describeGroup(group: RepositoryWorkflowGroup) {
         v-for="group in list.groups"
         :key="group.kind"
         :aria-label="describeGroup(group).label"
+        data-screen-keys
       >
         <h2 :class="css.repositoryWorkflowsView_group">
           {{ describeGroup(group).label }}

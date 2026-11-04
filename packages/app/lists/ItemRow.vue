@@ -253,8 +253,6 @@ const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.
   align-items: center;
   padding: 1px 7px;
   color: $color-red;
-  background: rgba($color-red, 0.1);
-  border-radius: 9px;
 }
 
 .itemRow_kind {

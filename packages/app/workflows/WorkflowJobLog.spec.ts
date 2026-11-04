@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { trackTabFocus } from '@/testing/trackTabFocus.js';
+
 import { MAX_SHOWN_CHARACTERS } from './utils/getLogLineParts.js';
 import * as stories from './WorkflowJobLog.stories.js';
 
@@ -810,7 +812,7 @@ test('W4b: the whole job is searched, folded steps included: counts on their hea
     expect(isExpanded('Set up job')).toBe('true');
     expect(cursorText()).toBe('Prepare');
     expect(inView(cursorLine())).toBe(true);
-    expect(currentMark()?.textContent).toBe('Prepare');
+    await expect.poll(() => currentMark()?.textContent).toBe('Prepare');
     expect(headOf('Set up job')?.textContent).toContain('1 match');
     expect(page.getByTestId('workflow-log-map-match').elements()).toHaveLength(1);
 });
@@ -866,7 +868,7 @@ test('W4b: what a marked line is drawn with can be found, highlighted where it s
 
     await search('Error:');
     await expect.element(position()).toHaveTextContent('1 of 1');
-    expect(currentMark()?.textContent).toBe('Error:');
+    await expect.poll(() => currentMark()?.textContent).toBe('Error:');
     expect(cursorText()).toBe('Error: Process completed with exit code 1.');
 
     // Across where the prefix meets the text, and in the text past it.
@@ -894,7 +896,7 @@ test('the query is plain text: a pattern’s characters and markup are searched 
         await settled();
         await userEvent.fill(field(), query);
         await expect.element(position()).toHaveTextContent(`1 of ${count}`);
-        expect(currentMark()?.textContent).toBe(query);
+        await expect.poll(() => currentMark()?.textContent).toBe(query);
         await userEvent.keyboard('{Escape}');
         await settled();
     }
@@ -903,7 +905,7 @@ test('the query is plain text: a pattern’s characters and markup are searched 
     await settled();
     await userEvent.fill(field(), '<b>');
     await expect.element(position()).toHaveTextContent('1 of 1');
-    expect(currentMark()?.textContent).toBe('<b>');
+    await expect.poll(() => currentMark()?.textContent).toBe('<b>');
     expect(log().querySelector('b')).toBeNull();
     expect(cursorText()).toBe('a <b>bold</b> claim');
 });
@@ -961,6 +963,42 @@ test('W4c: Tab shows only the matching lines, by step, numbers kept, gaps counte
     await expect.element(page.getByTestId('workflow-log-search-only')).toHaveAttribute('aria-pressed', 'false');
     await expect.element(position()).toHaveTextContent(/ of 6$/u);
     expect(page.getByTestId('workflow-log-gap').query()).toBeNull();
+});
+
+test('a control Tab reached outside the log holds its keys back, J as ↓; one Escape gives them back', async () => {
+    trackTabFocus();
+    await Failed.run();
+    await settled();
+
+    for (let tabs = 0; tabs < 10 && !document.activeElement?.hasAttribute('data-tab-focus'); tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(document.activeElement?.hasAttribute('data-tab-focus')).toBe(true);
+    const first = cursorNumber();
+    await userEvent.keyboard('k{ArrowUp}');
+    await settled();
+    expect(cursorNumber()).toBe(first);
+
+    await userEvent.keyboard('{Escape}k');
+    await settled();
+    expect(cursorNumber()).not.toBe(first);
+});
+
+test('Tab onto the log holds nothing back: the keys are its own', async () => {
+    trackTabFocus();
+    await Failed.run();
+    await settled();
+
+    for (let tabs = 0; tabs < 10 && document.activeElement !== log(); tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(log().hasAttribute('data-tab-focus')).toBe(false);
+    const first = cursorNumber();
+    await userEvent.keyboard('{ArrowUp}');
+    await settled();
+    expect(cursorNumber()).not.toBe(first);
 });
 
 test('W4c: Tab from the field gives the keys to the rows; J/K stop at a gap, and Space opens it in place', async () => {

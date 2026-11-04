@@ -76,7 +76,7 @@ defineExpose({
   align-items: center;
   min-width: 0;
   background: var(--search-field-background, #{$color-bg});
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: 7px;
 
   &:focus-within {

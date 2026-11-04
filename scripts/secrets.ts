@@ -31,6 +31,11 @@ export const GithqSecrets = defineService({
             store: cached(bitwarden({ project: PROJECT_ID, keychainSuffix: KEYCHAIN_SUFFIX }), { ttl: CACHE_TTL_MS }),
             secrets: {
                 GITHUB_CLIENT_SECRET: `GITHQ_GITHUB_CLIENT_SECRET_${env.toUpperCase()}`,
+                // Production only, so that `bun run dev` never holds the key that signs updates.
+                ...(env === 'prod' && {
+                    TAURI_SIGNING_PRIVATE_KEY: 'GITHQ_TAURI_SIGNING_PRIVATE_KEY_PROD',
+                    TAURI_SIGNING_PRIVATE_KEY_PASSWORD: 'GITHQ_TAURI_SIGNING_PRIVATE_KEY_PASSWORD_PROD',
+                }),
             },
         };
     },
