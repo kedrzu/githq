@@ -1,0 +1,14 @@
+pushed:
+  en: Pushed since you were here.
+lost:
+  plural: count
+  en:
+    one: '1 file changed again and lost its viewed mark: {names}.'
+    many: '{formatted} files changed again and lost their viewed mark: {names}.'
+showOnly:
+  plural: count
+  en:
+    one: Show only this one
+    many: Show only these {formatted}
+dismiss:
+  en: Dismiss

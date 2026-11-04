@@ -2,6 +2,7 @@ import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 import { GitHubApiError } from '../GitHubApiError.js';
 import type { GitHubRestRequester } from '../rest/createGitHubRestRequester.js';
+import { decodeBase64Text } from '../utils/decodeBase64Text.js';
 import { SETTINGS_REPOSITORY_NAME } from './getSettingsRepository.js';
 
 /** The path of the settings file in the settings repository (settings-sync D13). */
@@ -78,10 +79,4 @@ export async function readSettingsFile(
  */
 export function getSettingsFileUrl(owner: string) {
     return `/repos/${encodeURIComponent(owner)}/${SETTINGS_REPOSITORY_NAME}/contents/${SETTINGS_FILE_PATH}`;
-}
-
-/** UTF-8 text from base64 broken into lines, as GitHub sends a file's content. */
-function decodeBase64Text(content: string) {
-    const binary = atob(content.replaceAll(/\s/g, ''));
-    return new TextDecoder().decode(Uint8Array.from(binary, char => char.codePointAt(0) ?? 0));
 }

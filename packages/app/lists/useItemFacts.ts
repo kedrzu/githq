@@ -14,6 +14,7 @@ import {
     Hourglass,
     ListOrdered,
     Loader,
+    PencilLine,
     Timer,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -148,11 +149,30 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             return { status: null, checks: null };
         }
 
+        let standing: PullRequestStandingFacts = { status: null, checks: null };
         if (listed.merged) {
-            return { status: getMergedStatus(listed), checks: null };
+            standing = { status: getMergedStatus(listed), checks: null };
+        } else if (listed.state === 'OPEN') {
+            standing = getOpenFacts(listed);
         }
 
-        return listed.state === 'OPEN' ? getOpenFacts(listed) : { status: null, checks: null };
+        // D28: until it's sent nothing else about it moves, and a draft outlives the pull request being closed. Only a
+        // merge on its way goes first, for the moment it takes. The draft takes the words, not what can be done: `⇧M`
+        // still merges.
+        if (listed.pendingReview && !listed.merging) {
+            return {
+                checks: null,
+                status: {
+                    readyToMerge: false,
+                    ...standing.status,
+                    icon: PencilLine,
+                    tone: 'warning',
+                    text: t(l.draftReview, { count: listed.pendingReview.commentCount }),
+                },
+            };
+        }
+
+        return standing;
     });
     const status = computed(() => pullRequestFacts.value.status);
     const checks = computed(() => pullRequestFacts.value.checks);

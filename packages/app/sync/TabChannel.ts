@@ -19,6 +19,7 @@ import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import { toHex } from '@/utils/toHex.js';
 import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { SyncLoopStatus } from './SyncEngine.js';
@@ -47,7 +48,9 @@ export type TabMessage =
     /**
      * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2).
      */
-    | { readonly kind: 'pollWorkflows' };
+    | { readonly kind: 'pollWorkflows' }
+    /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
+    | { readonly kind: 'pollPendingReviews' };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;
@@ -372,7 +375,7 @@ export const TabChannel = defineService({
         function createTabId() {
             const bytes = new Uint8Array(8);
             browser.getRandomValues(bytes);
-            return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            return toHex(bytes);
         }
     },
 });

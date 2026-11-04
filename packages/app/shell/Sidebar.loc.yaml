@@ -28,3 +28,7 @@ brokenWorkflowsCount:
   en: Broken workflows, {count}
 workflowsBroken:
   en: workflows broken
+draftReviews:
+  en: Draft reviews
+draftReviewsCount:
+  en: Draft reviews, {count}

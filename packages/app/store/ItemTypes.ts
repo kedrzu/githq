@@ -115,6 +115,8 @@ export interface PullRequestStatus {
     readonly reviewRequests: readonly ItemReviewRequest[];
     /** Each reviewer's latest approval or change request. */
     readonly latestReviews: readonly ItemReview[];
+    /** The viewer's open draft review (code review D21), which only they can see; `null` with none. */
+    readonly pendingReview: PullRequestPendingReview | null;
     /** The GitHub stack it is part of; `null` outside any stack. */
     readonly stack: PullRequestStackRef | null;
     /**
@@ -130,6 +132,13 @@ export interface PullRequestStatus {
     readonly mergeQueueEntry: PullRequestQueueEntry | null;
     /** The auto-merge turned on for it, merging once the requirements are met; `null` when off. */
     readonly autoMerge: PullRequestAutoMerge | null;
+}
+
+/** A review the viewer started and has not submitted: its comments reach nobody until they do. */
+export interface PullRequestPendingReview {
+    readonly id: string;
+    readonly commentCount: number;
+    readonly createdAt: string;
 }
 
 /** A pull request's place in the merge queue, as GitHub holds it. */

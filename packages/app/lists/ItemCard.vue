@@ -64,7 +64,9 @@ const facts = useItemFacts({
   mergeRecord: () => merging?.getRecord(props.item.id) ?? null,
 });
 const shown = computed(() => new Set(props.properties));
-const status = computed(() => (shown.value.has('status') ? facts.status : null));
+/** D21: an open draft is marked whatever the board shows. */
+const hasDraft = computed(() => props.item.kind === 'pullRequest' && props.item.pendingReview !== null);
+const status = computed(() => (shown.value.has('status') || hasDraft.value ? facts.status : null));
 const checks = computed(() => (shown.value.has('status') ? facts.checks : null));
 const size = computed(() => (shown.value.has('size') ? facts.size : null));
 const projectField = computed(() => (shown.value.has('projectField') ? facts.projectField : null));

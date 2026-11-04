@@ -185,3 +185,18 @@ export const StackUnderIssueOnBoard: Story = {
         options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
     },
 };
+
+/** CR33: the viewer's draft review in the row's second line, in place of its other state. */
+export const DraftReview: Story = {
+    args: {
+        work: sampleMyWork(
+            D1_ITEMS.map(item =>
+                item.kind === 'pullRequest' && item.id === 'PR_477'
+                    ? { ...item, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+                    : item,
+            ),
+            D1_MEMBERSHIP,
+            'all',
+        ),
+    },
+};

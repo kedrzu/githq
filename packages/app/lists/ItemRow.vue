@@ -12,6 +12,7 @@ import LabelPill from '@/components/LabelPill.vue';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { formatAge } from '@/utils/formatAge.js';
 
 import type { ItemProperty } from './ItemProperty.js';
 import ItemField from './ItemField.vue';
@@ -52,6 +53,8 @@ const props = withDefaults(
     undone?: string | null;
     /** The stack this pull request is listed alone out of (`ListRow.stackMarker`), for its marker. */
     stack?: StackDescription | null;
+    /** Says how long its draft review has waited, rather than when it last changed (the draft reviews, CR34). */
+    draftAge?: boolean;
   }>(),
   {
     people: 'author',
@@ -87,6 +90,11 @@ const shown = computed(() => new Set(props.properties));
 /** The viewer may merge it: when it is ready, "Merge" follows instead of "Open on GitHub". */
 const mergeable = computed(() => merging?.canOpen(props.item.id) === true);
 const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.item.isMergeQueueEnabled);
+/** D21: an open draft is marked whatever the list shows; the rest of the status and the merge buttons follow the option. */
+const hasDraft = computed(() => props.item.kind === 'pullRequest' && props.item.pendingReview !== null);
+const waitingDraft = computed(() =>
+  props.draftAge && props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
+);
 </script>
 
 <template>
@@ -119,8 +127,10 @@ const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.
         <time
           v-if="shown.has('updated')"
           :class="css.itemRow_age"
-          :datetime="item.updatedAt"
-          >{{ facts.age }}</time
+          :datetime="waitingDraft?.createdAt ?? item.updatedAt"
+          >{{
+            waitingDraft ? t(l.draftAge, { age: formatAge(Date.parse(waitingDraft.createdAt), now) }) : facts.age
+          }}</time
         >
       </div>
       <div :class="css.itemRow_line">
@@ -143,7 +153,7 @@ const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.
           :status="facts.checks"
         />
         <ItemStatus
-          v-if="facts.status && shown.has('status')"
+          v-if="facts.status && (shown.has('status') || hasDraft)"
           :class="css.itemRow_shared"
           :status="facts.status"
         />

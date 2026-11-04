@@ -1,0 +1,13 @@
+# GitHub shows a pending review to its author alone, and they can have one per pull request: this is exactly the
+# viewer's draft (code review D21). Aliased: the detail reads `reviews` with other arguments.
+fragment PullRequestPendingReviewFields on PullRequest {
+    pendingReviews: reviews(states: [PENDING], first: 1) {
+        nodes {
+            id
+            createdAt
+            comments {
+                totalCount
+            }
+        }
+    }
+}

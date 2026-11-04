@@ -1,0 +1,9 @@
+# Asks only whether the viewer has a draft review: nothing a change poll watches moves when one begins (code review
+# D21), and rows of tracked repositories and projects have their status read no other way. 100 ids cost 1 point.
+query PullRequestPendingReviews($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on PullRequest {
+            ...PullRequestPendingReviewFields
+        }
+    }
+}

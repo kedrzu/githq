@@ -1,0 +1,34 @@
+viewed:
+  en: Viewed
+binary:
+  en: binary
+tooLarge:
+  en: too large
+loading:
+  en: Loading
+failed:
+  en: Couldn't fetch this file
+paused:
+  en: Waiting for GitHub's API allowance
+changedSince:
+  en: changed since
+lockFile:
+  en: lock file
+generated:
+  en: generated
+large:
+  en: large
+notInDiff:
+  en: not in the diff
+notListed:
+  en: not listed by GitHub
+resolvedThreads:
+  plural: count
+  en:
+    one: 1 resolved thread
+    many: '{count} resolved threads'
+openThreads:
+  plural: count
+  en:
+    one: 1 open thread
+    many: '{count} open threads'

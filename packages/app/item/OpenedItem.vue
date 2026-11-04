@@ -3,7 +3,6 @@
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { SearchX } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
@@ -23,18 +22,16 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
-import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import type { StackDescription } from '@/store/stacks/describeStack.js';
-import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
-import { getItemPagePath, getItemReference, getOpenedItemQuery } from './itemRoutes.js';
+import { getItemPagePath, getItemReference, getOpenedItemQuery, getReviewPath } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
-import type { StackNeighbours } from './StackMap.vue';
+import { useItemStack } from './useItemStack.js';
+import { useItemWalk } from './useItemWalk.js';
 import { useOpenedItem } from './useOpenedItem.js';
 
 const props = defineProps<{
@@ -46,9 +43,7 @@ const props = defineProps<{
 const TICK_MS = 30_000;
 
 const t = useTranslate();
-const logger = useLogger();
 const details = useService(ItemDetailStore);
-const items = useService(ItemStore);
 const navigation = useService(ItemNavigation);
 const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
@@ -59,6 +54,14 @@ const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
+// In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
+// the last one's cursor stale, and the modal leaves the keys to the opened item: both walk the steps — but for an item
+// that left the list under the modal, which has no step: the cursor's neighbours then are the way back in.
+const walk = useItemWalk({
+  id: () => opened.id,
+  followsCursor: listed => props.arrangement === 'panel' || (props.arrangement === 'modal' && !listed),
+});
+const stack = useItemStack(() => opened.item);
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
@@ -85,46 +88,6 @@ const waitingTitle = computed(() => {
   }
 
   return opened.failed ? t(l.unreachable) : t(l.opening, { reference: referenceText.value });
-});
-const listIndex = computed(() => {
-  const list = navigation.list;
-  return !list || opened.id === null ? -1 : list.steps.indexOf(list.stepOf.get(opened.id) ?? opened.id);
-});
-const position = computed(() => {
-  const index = listIndex.value;
-  return index === -1 ? null : { index: index + 1, count: navigation.list?.steps.length ?? 0 };
-});
-/** The steps either side of the opened item, or of the entry that stands for it. */
-const stepNeighbours = computed((): StackNeighbours => {
-  const steps = navigation.list?.steps ?? [];
-  const index = listIndex.value;
-  return index === -1
-    ? { previous: null, next: null }
-    : { previous: steps[index - 1] ?? null, next: steps[index + 1] ?? null };
-});
-// In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
-// the last one's cursor stale, and the modal leaves the keys to the opened item: both walk the steps — but for an item
-// that left the list under the modal, which has no step: the cursor's neighbours then are the way back in.
-const neighbours = computed((): StackNeighbours => {
-  const followsCursor = props.arrangement === 'panel' || (props.arrangement === 'modal' && listIndex.value === -1);
-  return (followsCursor && navigation.list?.around) || stepNeighbours.value;
-});
-// The stack an opened pull request is in, from the local copy alone — no request (D17). Its map shows only with two or
-// more of its pull requests in the copy.
-const stack = computed((): StackDescription | null => {
-  const { item } = opened;
-  if (item?.kind !== 'pullRequest' || item.stack === null) {
-    return null;
-  }
-
-  const description = describeStackInCopy({
-    stackId: item.stack.id,
-    item,
-    items: items.all,
-    viewerLogin: auth.viewer?.login ?? '',
-    getItem: id => details.getItem(id),
-  });
-  return description && description.held >= 2 ? description : null;
 });
 const closes = computed((): Item[] => {
   const { item } = opened;
@@ -232,7 +195,7 @@ function moveOnFrom(id: string, merged: readonly string[]) {
       navigation.requestMoveOn(merged);
       break;
     case 'modal':
-      step(neighbours.value.next === null ? -1 : 1);
+      step(walk.neighbours.next === null ? -1 : 1);
       break;
     case 'page':
       break;
@@ -244,7 +207,7 @@ function moveOnFrom(id: string, merged: readonly string[]) {
 function step(delta: 1 | -1) {
   const side = delta === 1 ? 'next' : 'previous';
   // The cursor's neighbour can be the opened item's own row, which a button has nothing to open on: on past it.
-  const target = neighbours.value[side] === opened.id ? stepNeighbours.value[side] : neighbours.value[side];
+  const target = walk.neighbours[side] === opened.id ? walk.stepNeighbours[side] : walk.neighbours[side];
   if (target !== null) {
     openInPlace(target);
   }
@@ -268,6 +231,11 @@ function arrange(arrangement: ItemArrangement) {
 
 function open(reference: ItemReference) {
   void router.push(locate(reference, props.arrangement));
+}
+
+/** Always the full page, whatever the arrangement (code review's D2); Back returns. */
+function openReview() {
+  void router.push(getReviewPath(props.reference));
 }
 
 function close() {
@@ -310,25 +278,6 @@ function focusModal(event: Event) {
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
-
-async function loadAllComments() {
-  const { id } = opened;
-  if (id === null) {
-    return;
-  }
-
-  try {
-    // 100 at a time, until none are left — or the detail was read again meanwhile and the cursor did not move.
-    let cursor = details.get(id)?.comments.olderCursor ?? null;
-    while (cursor !== null) {
-      await details.loadOlderComments(id);
-      const next = details.get(id)?.comments.olderCursor ?? null;
-      cursor = next === cursor ? null : next;
-    }
-  } catch (error) {
-    logger.warn('Older comments could not be read', { id, error });
-  }
-}
 </script>
 
 <template>
@@ -351,13 +300,13 @@ async function loadAllComments() {
       :item="opened.item"
       :detail="opened.detail"
       arrangement="modal"
-      :position="position"
+      :position="walk.position"
       :closes="closes"
       :now="now"
-      :load-all-comments="loadAllComments"
+      :load-all-comments="opened.loadAllComments"
       :editing="editing"
       :stack="stack"
-      :neighbours="neighbours"
+      :neighbours="walk.neighbours"
       :merge-checks="mergeOptions.options?.checks ?? null"
       :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
       @edit="edit"
@@ -369,6 +318,7 @@ async function loadAllComments() {
       @arrange="arrange"
       @open="open"
       @open-in-place="openInPlace"
+      @review="openReview"
     />
     <EmptyState
       v-else
@@ -396,13 +346,13 @@ async function loadAllComments() {
     :item="opened.item"
     :detail="opened.detail"
     :arrangement="arrangement"
-    :position="position"
+    :position="walk.position"
     :closes="closes"
     :now="now"
-    :load-all-comments="loadAllComments"
+    :load-all-comments="opened.loadAllComments"
     :editing="editing"
     :stack="stack"
-    :neighbours="neighbours"
+    :neighbours="walk.neighbours"
     :merge-checks="mergeOptions.options?.checks ?? null"
     :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
     @edit="edit"
@@ -414,6 +364,7 @@ async function loadAllComments() {
     @arrange="arrange"
     @open="open"
     @open-in-place="openInPlace"
+    @review="openReview"
   />
   <div
     v-else

@@ -1,4 +1,5 @@
 import { GitHubApiError } from '@githq/github/GitHubApiError.js';
+import { isGitHubNotFound } from '@githq/github/isGitHubNotFound.js';
 
 import type { EditFailureReason } from './EditTypes.js';
 
@@ -20,7 +21,7 @@ export function toEditFailureReason(error: unknown): EditFailureReason {
         return { kind: 'offline' };
     }
 
-    if (error.errors.some(entry => entry.type === 'NOT_FOUND')) {
+    if (isGitHubNotFound(error)) {
         return { kind: 'missing' };
     }
 

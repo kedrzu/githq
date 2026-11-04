@@ -85,4 +85,5 @@ fragment PullRequestStatusFields on PullRequest {
             state
         }
     }
+    ...PullRequestPendingReviewFields
 }

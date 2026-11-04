@@ -1,0 +1,45 @@
+hiddenLines:
+  plural: count
+  en:
+    one: 1 line
+    many: '{formatted} lines'
+binary:
+  en: Binary file, nothing to diff
+binarySized:
+  en: Binary file, nothing to diff · {size}
+binaryNew:
+  en: Binary file, nothing to diff · {size}, new
+binaryDeleted:
+  en: Binary file, nothing to diff · {size}, deleted
+tooLarge:
+  en: Too large to diff here
+tooLargeDetail:
+  en: '{size}. githq diffs files up to 1 MB.'
+empty:
+  en: The file is empty, nothing to diff
+failed:
+  en: Couldn't fetch this file
+fetchingFirst:
+  en: Fetching {path} first…
+paused:
+  en: Waiting for GitHub's API allowance
+pausedDetail:
+  plural: count
+  en:
+    zero: It resets at {time}. This file will load then, without you doing anything.
+    one: It resets at {time}. This file and 1 other will load then, without you doing anything.
+    many: It resets at {time}. This file and {formatted} others will load then, without you doing anything.
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
+showSome:
+  en: Show {count}
+showAll:
+  en: Show all
+onlyWhitespace:
+  en: Only whitespace changed in this file, and whitespace is hidden.
+showWhitespace:
+  en: Show it
+expansionReset:
+  en: Context you expanded here was reset by the push

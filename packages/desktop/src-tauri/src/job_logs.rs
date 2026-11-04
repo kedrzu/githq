@@ -930,6 +930,7 @@ mod tests {
                 "connect-src": "ipc: http://ipc.localhost https://api.github.com",
                 "font-src": "'self' data:",
                 "img-src": "'self' data: https://avatars.githubusercontent.com https://*.githubusercontent.com https://github.com",
+                "worker-src": "'self'",
             })
         );
     }

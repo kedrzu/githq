@@ -1,0 +1,316 @@
+import { GitHubApiError } from '@githq/github/GitHubApiError.js';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, fn, waitFor } from 'storybook/test';
+import { shallowRef } from 'vue';
+
+import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import type { DiffLayout } from './diff/buildDiffRows.js';
+import { computeFileDiff } from './diff/computeFileDiff.js';
+import ReviewDiffRow from './ReviewDiffRow.vue';
+import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
+import type { FileSyntax } from './syntax/createFileSyntax.js';
+import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
+
+const BEFORE = `import { db } from '../db/client'
+import { PendingStore } from './pending'
+
+const MAX_BATCH = 20
+const RETRY_DELAY_MS = 2_000
+
+${Array.from({ length: 30 }, (_, index) => `// A line nobody changed, number ${index + 1}`).join('\n')}
+
+export class SyncEngine {
+  private pending = new PendingStore(db)
+  private conflicts: Workout[] = []
+  private running = false
+}
+`;
+const AFTER = BEFORE.replace(
+    "import { PendingStore } from './pending'",
+    `import { Outbox } from './outbox'
+import { replayQueue } from './queue'`,
+)
+    .replace('MAX_BATCH = 20', 'MAX_BATCH = 50')
+    .replace(
+        'private pending = new PendingStore(db)',
+        `private outbox = new Outbox(db, { flushAfter: 200, retries: 3, backoff: 'exponential', onConflict: 'keep-both', storage: 'indexeddb', label: 'a line long enough to wrap on any screen a laptop has', badge: '<img src=x>' })`,
+    );
+const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
+
+const FILE = file('src/sync/engine.ts', 6, 3);
+const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
+/** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
+const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
+
+const meta = {
+    component: ReviewDiffRow,
+    args: {
+        row: { kind: 'end', key: 'end', collapsed: false },
+        githubUrl: FILES_URL,
+        onRetry: fn(),
+    },
+} satisfies Meta<typeof ReviewDiffRow>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+/** CR4: a file's block, split: header, changed and unchanged lines, a line that wraps, the lines left out. */
+export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') })) };
+
+/** CR5: unified. */
+export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
+
+/** Split with its tokens arrived: the colours over the tints and the window, which axe holds to AA. */
+export const SplitColoured: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split', loaded.syntax) })),
+};
+
+/** Unified with its tokens arrived. */
+export const UnifiedColoured: Story = {
+    loaders: [loadTokens],
+    render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) })),
+};
+
+/** A renamed file says where it came from. */
+export const Renamed: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('src/sync/outbox.ts', 2, 1, { changeType: 'RENAMED', previousPath: 'src/sync/pending.ts' }), {
+                kind: 'lines',
+                rows: lines('split'),
+            }),
+        ),
+};
+
+/** CR12: collapsed, each saying why: a lock file, a generated one, a large one; and one collapsed by hand. CR13: opened, it still says why. */
+export const Collapsed: Story = {
+    render: () =>
+        renderRows([
+            ...fileRows(file('bun.lock', 214, 37), { kind: 'collapsed' }, 'lockFile'),
+            ...fileRows(file('src/api/schema.gen.ts', 880, 120), { kind: 'collapsed' }, 'generated'),
+            ...fileRows(file('data/fixtures.json', 5000, 0), { kind: 'collapsed' }, 'large'),
+            ...fileRows(FILE, { kind: 'collapsed' }),
+            ...fileRows(file('yarn.lock', 6, 3), { kind: 'lines', rows: lines('split') }, 'lockFile'),
+        ]),
+};
+
+/** CR21: a viewed file: only its header, the name dimmed and the mark ticked (D13). */
+export const Viewed: Story = {
+    render: () => renderRows(fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'collapsed' })),
+};
+
+/** A viewed file opened with Space. */
+export const ViewedOpened: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'lines', rows: lines('split') }),
+        ),
+};
+
+/** CR60: on its way, quiet bars. */
+export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder' })) };
+
+/** CR61: a jump's target, fetched ahead of the rest. */
+export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
+
+/** CR62: a push reset the context expanded in the file: its first gap says so, and offers it all again. */
+export const ExpansionReset: Story = {
+    render: () =>
+        renderRows(
+            fileRows(FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }),
+            }),
+        ),
+};
+
+/** CR62: GitHub took its viewed mark off since the last visit. */
+export const ChangedSince: Story = {
+    render: () => ({
+        components: { ReviewDiffRow },
+        setup: () => ({ rows: fileRows(FILE, { kind: 'lines', rows: lines('split') }), url: FILES_URL }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="url" changed-since /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Changed since your last visit')).toBeVisible();
+    },
+};
+
+/** CR67: failed, in place: GitHub's words, without the requester's own, and a link to the very file. */
+export const Failed: Story = {
+    render: () =>
+        renderRows(
+            fileRows(FILE, {
+                kind: 'failed',
+                error: new GitHubApiError({
+                    status: 200,
+                    message: 'GitHub GraphQL error: Something went wrong',
+                    errors: [{ message: 'Something went wrong' }],
+                }),
+            }),
+        ),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Something went wrong')).toBeVisible();
+        await expect(canvas.queryByText(/GitHub GraphQL error/u)).toBeNull();
+        await waitFor(() =>
+            expect(canvas.getByText('Open on GitHub').closest('a')).toHaveAttribute(
+                'href',
+                `${FILES_URL}#diff-${ENGINE_SHA256}`,
+            ),
+        );
+    },
+};
+
+/** CR67: too large, saying how large. */
+export const TooLarge: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'tooLarge', before: 120, after: 4_200_000 })),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/^4\.2 MB\./u)).toBeVisible();
+    },
+};
+
+/** CR65: binary, its sizes before and after. */
+export const Binary: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'binary', before: 12_000, after: 14_000 })),
+};
+
+/** CR65: a new binary file. */
+export const BinaryNew: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('public/hero.png', 0, 0, { changeType: 'ADDED' }), {
+                kind: 'binary',
+                before: null,
+                after: 48_000,
+            }),
+        ),
+};
+
+/** CR65: a submodule, which has no size. */
+export const BinaryNoSize: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'binary', before: null, after: null })),
+};
+
+/** CR68: waiting for the allowance: the first of them says when and how many; the others only that they wait. */
+export const Paused: Story = {
+    render: () => {
+        const until = new Date('2026-10-30T14:32:00').getTime();
+        return renderRows(
+            buildReviewRows({
+                files: [FILE, file('src/styles/sync.css', 29, 0), file('src/sync/queue.ts', 9, 0)],
+                getContent: () => ({ kind: 'paused', until }),
+            }).filter(row => row.kind !== 'tail'),
+        );
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText(/This file and 2 others will load then/u)).toHaveTextContent('14:32');
+        await expect(canvas.getAllByText("Waiting for GitHub's API allowance")).toHaveLength(3);
+    },
+};
+
+/** CR2: a header counts its threads. */
+export const WithThreads: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: FILE,
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: false,
+                threads: { open: 1, outdated: 1, lineGone: 1, resolved: 1 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('1 open · 1 outdated · 1 outdated, line gone · 1 resolved')).toBeInTheDocument();
+    },
+};
+
+/** CR14: a file gone from the diff has a struck name and says so, with neither Viewed nor a chevron. */
+export const GoneHeader: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notInDiff' }, changeType: 'DELETED' }),
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: true,
+                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText("No longer in this pull request's diff")).toBeInTheDocument();
+        await expect(canvas.queryByRole('button', { name: /Viewed/u })).not.toBeInTheDocument();
+    },
+};
+
+/** The list stopped short: it isn't known to be gone. */
+export const GoneUncertain: Story = {
+    render: () =>
+        renderRows([
+            {
+                kind: 'header',
+                key: 'header',
+                file: file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notListed' }, changeType: 'DELETED' }),
+                collapsed: false,
+                collapseReason: null,
+                threadsUnder: true,
+                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+            },
+        ]),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Not among the files GitHub has listed')).toBeInTheDocument();
+    },
+};
+
+/** CR11: nothing but whitespace changed, and it's hidden. */
+export const OnlyWhitespace: Story = {
+    render: () => renderRows([{ kind: 'onlyWhitespace', key: 'onlyWhitespace' }]),
+};
+
+/** A new file with nothing in it. */
+export const EmptyFile: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: [] })) };
+
+function lines(layout: DiffLayout, syntax?: FileSyntax) {
+    return buildFileLineRows({ path: FILE.path, diff: DIFF, layout, syntax });
+}
+
+async function loadTokens() {
+    await loadGrammar('typescript');
+    const syntax: FileSyntax = {
+        before: shallowRef(tokenizeLines('typescript', DIFF.before)),
+        after: shallowRef(tokenizeLines('typescript', DIFF.after)),
+    };
+    return { syntax };
+}
+
+/** The rows the diff would draw for the file, without the room left under the last one. */
+function fileRows(
+    shown: ReviewFile,
+    content: ReviewFileContent,
+    collapseReason: ReviewFileCollapseReason | null = null,
+): ReviewRow[] {
+    return buildReviewRows({
+        files: [shown],
+        getContent: () => content,
+        getCollapseReason: () => collapseReason,
+    }).filter(row => row.kind !== 'tail');
+}
+
+function renderRows(rows: readonly ReviewRow[]) {
+    return {
+        components: { ReviewDiffRow },
+        setup: () => ({ rows, githubUrl: FILES_URL }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
+    };
+}
+
+function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {
+    return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED', ...more };
+}

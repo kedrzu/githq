@@ -74,6 +74,9 @@ other people's issues. At first sign-in githq offers your own repositories as tr
 handful of their own repositories the two parts mostly overlap.
 [Why not simply copy everything](DECISIONS.md#d4).
 
+Reviewing a pull request adds code to that: the contents of the files it changes stay in the browser until you sign
+out, so a pull request read once reopens at once ([code review D19](../code-review/DECISIONS.md#d19)).
+
 ## How the copy stays fresh
 
 GitHub cannot tell a web page that something changed — that would need a server to receive its webhooks — so

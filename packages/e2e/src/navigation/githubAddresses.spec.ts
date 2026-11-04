@@ -57,7 +57,7 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
         ['/acme/web/issues/12', '/acme/web/issues/12', ISSUE],
         ['/acme/web/pull/15', '/acme/web/pull/15', PULL_REQUEST],
         // A pull request's tabs and anything deeper under an item, query and fragment kept.
-        ['/acme/web/pull/15/files?x=1#c', '/acme/web/pull/15?x=1#c', PULL_REQUEST],
+        ['/acme/web/pull/15/checks?x=1#c', '/acme/web/pull/15?x=1#c', PULL_REQUEST],
         ['/acme/web/pull/15/commits', '/acme/web/pull/15', PULL_REQUEST],
         ['/acme/web/issues/12/anything/deeper', '/acme/web/issues/12', ISSUE],
         // The issue address of a pull request, and the pull-request address of an issue, as GitHub redirects them.
