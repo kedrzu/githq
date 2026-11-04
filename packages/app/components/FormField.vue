@@ -90,7 +90,7 @@ const inputAttrs = computed((): FormFieldInputAttrs => ({
     // The app is dark: the browser's own parts (a date input's calendar button) too.
     color-scheme: dark;
     background: $color-bg;
-    border: 1px solid $color-border-2;
+    border: 1px solid $color-control-border;
     border-radius: $radius-md;
     outline: none;
 

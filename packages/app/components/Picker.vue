@@ -285,7 +285,7 @@ function onFilterKeydown(event: KeyboardEvent) {
   width: 14px;
   height: 14px;
   color: $color-on-light;
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: $radius-sm;
 }
 

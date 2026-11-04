@@ -221,7 +221,7 @@ function onKeydown(event: KeyboardEvent) {
   padding: $spacing-6 $spacing-8;
   cursor: text;
   background: $color-bg;
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: $radius-md;
 
   .workflowPatternEditor_active & {

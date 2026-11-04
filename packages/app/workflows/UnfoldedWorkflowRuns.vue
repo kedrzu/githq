@@ -241,7 +241,7 @@ function pick(name: string | null) {
   font-size: $font-size-2xs;
   color: $color-fg;
   background: $color-bg;
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: 5px;
 
   &:focus-visible {
