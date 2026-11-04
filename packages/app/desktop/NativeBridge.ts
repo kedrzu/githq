@@ -43,6 +43,29 @@ export type DeviceSignInError = 'expired' | 'denied' | 'offline' | 'superseded' 
  */
 export type UpdateRestartError = 'notReady' | 'failed';
 
+/** Which job's log `read_job_log` reads, and the token to ask GitHub with; it goes to GitHub only. */
+export interface ReadJobLogParams {
+    readonly owner: string;
+    readonly name: string;
+    readonly jobId: number;
+    readonly token: string;
+}
+
+/** What `read_job_log` answers: a log (200) or a refusal (4xx, 5xx), read in full. */
+export interface JobLogAnswer {
+    readonly status: number;
+    /** GitHub's `x-ratelimit-*` and `retry-after`, those it sent; none from the blob. */
+    readonly headers: Readonly<Record<string, string>>;
+    readonly text: string;
+}
+
+/**
+ * Why `read_job_log` has no answer: `invalid` — not an owner or a name GitHub could have; `refused` — GitHub redirected
+ * elsewhere than to a blob over https, or the blob redirected in turn; `tooLarge` — past the 256 MB read at most;
+ * `offline` — GitHub or the blob could not be reached; `failed` — anything else.
+ */
+export type ReadJobLogError = 'invalid' | 'refused' | 'tooLarge' | 'offline' | 'failed';
+
 /**
  * The desktop app's native commands (`packages/desktop/src-tauri/src/lib.rs`), one method each. A command that fails
  * rejects with its error code, a bare string.
@@ -66,6 +89,8 @@ export interface NativeBridgeShape {
      * {@link DeviceSignInError}.
      */
     finishDeviceSignIn(): Promise<DeviceGrant>;
+    /** `read_job_log`: asks GitHub for a job's log and reads where it redirects; rejects with a {@link ReadJobLogError}. */
+    readJobLog(params: ReadJobLogParams): Promise<JobLogAnswer>;
     /**
      * Calls `listener` with the version each time the native side says an update is ready (the `update-ready`
      * event); resolves once it listens. Then ask {@link updateStatus}: an update readied before is not told again.
@@ -118,6 +143,8 @@ function createTauriBridge(): NativeBridgeShape {
         },
         startDeviceSignIn: () => tauri.invoke<DeviceCode>('device_start'),
         finishDeviceSignIn: () => tauri.invoke<DeviceGrant>('device_finish'),
+        readJobLog: ({ owner, name, jobId, token }) =>
+            tauri.invoke<JobLogAnswer>('read_job_log', { owner, name, jobId, token }),
         onUpdateReady: listener =>
             listen('update-ready', payload => {
                 if (isUpdateReady(payload)) {

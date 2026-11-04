@@ -51,7 +51,6 @@ const selection = useRowSelection({
   keyAttribute: 'data-tracked-key',
   open: row => emit('open', row),
 });
-const selectedRow = computed(() => rows.value.find(row => props.getKey(row) === selection.selectedKey) ?? null);
 const projects = computed(() => props.kind === 'projects');
 const addLabel = computed(() => t(projects.value ? l.addProjects : l.addRepositories));
 
@@ -64,9 +63,9 @@ useCommands(() => [
 ]);
 
 onWindowEvent('keydown', event => {
-  if (event.key === 'Backspace' && isScreenKey(event) && selectedRow.value !== null) {
+  if (event.key === 'Backspace' && isScreenKey(event) && selection.selectedRow !== null) {
     event.preventDefault();
-    emit('untrack', selectedRow.value);
+    emit('untrack', selection.selectedRow);
   }
 });
 

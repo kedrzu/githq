@@ -19,7 +19,6 @@ import {
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { getMergeEnd } from '@/merge/getMergeEnd.js';
 import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
@@ -35,6 +34,7 @@ import type {
     PullRequestQueueEntry,
 } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
@@ -113,7 +113,6 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
     const queueTexts = useMergeQueueTexts();
     const getMethodName = useMergeMethodName();
-    const projectList = new Intl.ListFormat(APP_LANGUAGE);
 
     const item = makeRef(options.item);
     const parent = makeRef(options.parent);
@@ -167,7 +166,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             value: first.status?.name ?? null,
             title: first.status
                 ? t(l.projectField, { project: first.title, value: first.status.name })
-                : projectList.format(projects.map(project => project.title)),
+                : formatList(projects.map(project => project.title)),
             more: others.length > 0 ? t(l.moreProjects, { count: others.length }) : null,
         };
     });

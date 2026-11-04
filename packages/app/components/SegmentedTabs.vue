@@ -13,8 +13,8 @@ export interface SegmentedTabsOption<T extends string> {
   disabled?: boolean;
   /** The option's key ("1"), for `aria-keyshortcuts` (and shown with `showKeys`); the caller handles the key. */
   keyshortcuts?: string;
-  /** How many it holds, dim after the label ("Repositories 15"). */
-  count?: number;
+  /** How many it holds, dim after the label ("Repositories 15"); `–` while that is not known yet. */
+  count?: number | string;
   /** An amber dot after the label: something there needs the user, read out as this ("Syncing stopped"). */
   attention?: string;
 }

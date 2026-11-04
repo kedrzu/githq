@@ -33,6 +33,7 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: '__TAURI_INTERNALS__', what: "Tauri's native side" },
     { text: 'token_load', what: "the desktop app's token vault" },
     { text: 'update_restart', what: "the desktop app's updater" },
+    { text: 'read_job_log', what: "the desktop app's log reader" },
     { text: 'UpdateSegment', what: "the desktop app's update notice" },
 ];
 

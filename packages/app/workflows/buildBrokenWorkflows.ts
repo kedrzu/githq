@@ -1,3 +1,4 @@
+import { getBrokenGroupRef } from './utils/getBrokenGroupRef.js';
 import type { TrackedRepositoryWorkflowState } from './WorkflowStore.js';
 import type { WorkflowRowRef, WorkflowState, WorkflowsUnavailable } from './WorkflowTypes.js';
 
@@ -8,9 +9,12 @@ export interface BrokenWorkflowEntry {
     /** `owner/name`. */
     readonly nameWithOwner: string;
     readonly workflow: WorkflowState;
-    /** The ref its latest failed run is on. */
+    /**
+     * Where it is broken, by its newest broken group: the default branch's name, or the pattern, with the kind of the
+     * ref its latest failed run there is on.
+     */
     readonly gitRef: WorkflowRowRef | null;
-    /** How many more refs it is broken on: none while only the default branch counts. */
+    /** How many more groups it is broken in: "+2". */
     readonly moreRefCount: number;
 }
 
@@ -64,7 +68,12 @@ export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWor
             continue;
         }
 
-        readCount += 1;
+        // Being read, what it has is shown, and the repository is not yet told healthy.
+        if (state.reading) {
+            unread.push(nameWithOwner);
+        } else {
+            readCount += 1;
+        }
 
         brokenCount += state.brokenCount;
         if (state.brokenCount > 0) {
@@ -76,13 +85,13 @@ export function buildBrokenWorkflows(repositories: readonly TrackedRepositoryWor
                 continue;
             }
 
-            const branch = workflow.latestFailedRun?.headBranch ?? state.defaultBranch;
+            const [shown, ...others] = workflow.brokenGroups;
             broken.push({
                 key: `${nameWithOwner}#${workflow.workflow.id}`,
                 nameWithOwner,
                 workflow,
-                gitRef: branch === null ? null : { name: branch, kind: 'branch' },
-                moreRefCount: 0,
+                gitRef: shown ? getBrokenGroupRef(shown) : null,
+                moreRefCount: others.length,
             });
         }
     }

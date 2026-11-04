@@ -41,9 +41,20 @@ import { escapeHtml } from '../utils/escapeHtml.js';
 import { etagOf } from '../utils/etagOf.js';
 
 import { answerRepositoryActions } from './answerRepositoryActions.js';
-import type { GitHubActionsRun, GitHubActionsWorkflow } from './answerRepositoryActions.js';
+import type {
+    GitHubActionsJob,
+    GitHubActionsLog,
+    GitHubActionsRun,
+    GitHubActionsWorkflow,
+} from './answerRepositoryActions.js';
 import { GitHubPartialAnswer } from './GitHubMock.js';
-import type { GitHubGraphQLAnswer, GitHubMock, GitHubOperationData, GitHubSearchHit } from './GitHubMock.js';
+import type {
+    GitHubGraphQLAnswer,
+    GitHubMock,
+    GitHubOperationData,
+    GitHubRestAnswer,
+    GitHubSearchHit,
+} from './GitHubMock.js';
 
 /** One of the four "my work" searches (D11), named as the app names its groups. */
 export type MyWorkSearch = 'reviewRequested' | 'authored' | 'assigned' | 'mentioned';
@@ -303,6 +314,24 @@ export interface GitHubWorldRunParams {
     readonly event?: string;
 }
 
+/** A job of a run ({@link GitHubWorld.runJobs}). */
+export interface GitHubWorldJobParams {
+    readonly name: string;
+    /** `success`, `failure`, …; `null` while it runs. */
+    readonly conclusion: string | null;
+    /** With no conclusion: `queued`, `waiting`, …; `in_progress` by default. */
+    readonly status?: string;
+    /** Its steps, numbered in order and a second apart; a job without any by default. */
+    readonly steps?: readonly GitHubWorldStepParams[];
+}
+
+/** A step of a job ({@link GitHubWorldJobParams}). */
+export interface GitHubWorldStepParams {
+    readonly name: string;
+    /** `success`, `failure`, `skipped`, …; `null` while it runs. */
+    readonly conclusion: string | null;
+}
+
 /** An organisation the viewer belongs to ({@link GitHubWorld.organization}). */
 export interface GitHubWorldOrganizationParams {
     /**
@@ -422,6 +451,12 @@ interface WorldRepository {
     commitEmails: readonly string[];
     workflows: GitHubActionsWorkflow[];
     runs: GitHubActionsRun[];
+    /** The names of the tags a run may be on, as its REST answers them. */
+    tagNames: string[];
+    jobs: Map<number, readonly GitHubActionsJob[]>;
+    logs: Map<number, GitHubActionsLog>;
+    /** What re-running a run's failed jobs answers instead of starting them ({@link GitHubWorld.refuseRerun}). */
+    rerunRefusal: GitHubRestAnswer | null;
     /** Its commits by oid; none for an empty repository. */
     commits: ReadonlyMap<string, WorldCommit>;
     branches: Readonly<Record<string, string>>;
@@ -694,6 +729,7 @@ export class GitHubWorld {
     /** Whether merges GitHub accepts stay pending ({@link holdMerges}). */
     private mergesHeld = false;
     private nextWorkflowId = 1;
+    private nextJobId = 1;
     private nextRunId = 1;
     /** The mock it answers for, once installed: a repository or project added later is answered too. */
     private github: GitHubMock | null = null;
@@ -748,16 +784,17 @@ export class GitHubWorld {
         return workflow.id;
     }
 
-    /** A run of the repository's workflow `name`, as GitHub records one between two polls. */
-    workflowRun(nameWithOwner: string, name: string, run: GitHubWorldRunParams): void {
+    /** A run of the repository's workflow `name`, as GitHub records one between two polls. Returns the run's id. */
+    workflowRun(nameWithOwner: string, name: string, run: GitHubWorldRunParams): number {
         const repository = this.getRepository(nameWithOwner);
         const workflow = repository.workflows.find(candidate => candidate.name === name);
         if (!workflow) {
             throw new Error(`No workflow ${name} in ${nameWithOwner}`);
         }
 
+        const id = this.nextRunId++;
         repository.runs.push({
-            id: this.nextRunId++,
+            id,
             workflowId: workflow.id,
             headBranch: run.branch ?? repository.defaultBranch,
             event: run.event ?? 'push',
@@ -765,6 +802,108 @@ export class GitHubWorld {
             conclusion: run.conclusion,
             createdAt: new Date(Date.now() - run.minutesAgo * 60_000).toISOString(),
         });
+        return id;
+    }
+
+    /** The run finishes, as GitHub records it between two reads. */
+    finishRun(nameWithOwner: string, runId: number, conclusion: string): void {
+        const { runs } = this.getRepository(nameWithOwner);
+        const index = runs.findIndex(candidate => candidate.id === runId);
+        const run = runs[index];
+        if (!run) {
+            throw new Error(`No run ${runId} in ${nameWithOwner}`);
+        }
+
+        runs[index] = { ...run, status: 'completed', conclusion };
+    }
+
+    /**
+     * Gives a run of the repository these jobs, in place of those it had; a run without any answers an empty list.
+     * Returns the jobs' ids, for {@link jobLog}.
+     */
+    runJobs(nameWithOwner: string, runId: number, jobs: readonly GitHubWorldJobParams[]): readonly number[] {
+        const repository = this.getRepository(nameWithOwner);
+        const run = repository.runs.find(candidate => candidate.id === runId);
+        if (!run) {
+            throw new Error(`No run ${runId} in ${nameWithOwner}`);
+        }
+
+        const started = Date.parse(run.createdAt);
+        const answered = jobs.map(job => this.toActionsJob(job, started));
+        repository.jobs.set(runId, answered);
+        return answered.map(job => job.id);
+    }
+
+    /** Re-running the repository's runs' failed jobs is refused from now on: GitHub's status and its words. */
+    refuseRerun(nameWithOwner: string, status: number, message: string): void {
+        this.getRepository(nameWithOwner).rerunRefusal = { status, json: { message } };
+    }
+
+    /** A job of the run finishes, as GitHub records it between two reads, keeping its id. */
+    finishJob(nameWithOwner: string, runId: number, jobId: number, conclusion: string): void {
+        const { jobs } = this.getRepository(nameWithOwner);
+        jobs.set(
+            runId,
+            (jobs.get(runId) ?? []).map(job =>
+                job.id === jobId ? { ...job, status: 'completed', conclusion, completedAt: job.startedAt } : job,
+            ),
+        );
+    }
+
+    /**
+     * A log with lines in the job's steps, by step number: each at the second its step started, and a step's first line
+     * the `##[group]Run` of its name for a run step, which is what tells a step from the one before it in that second.
+     */
+    jobLogBySteps(
+        nameWithOwner: string,
+        runId: number,
+        jobId: number,
+        byStep: Readonly<Record<number, readonly string[]>>,
+    ): void {
+        const job = this.getRepository(nameWithOwner)
+            .jobs.get(runId)
+            ?.find(candidate => candidate.id === jobId);
+        if (!job) {
+            throw new Error(`No job ${jobId} in run ${runId}`);
+        }
+
+        const lines = job.steps.flatMap(step => {
+            const texts = byStep[step.number] ?? [];
+            return (step.name.startsWith('Run ') ? [`##[group]${step.name}`, ...texts] : texts).map(
+                text => `${step.startedAt} ${text}`,
+            );
+        });
+        this.jobLog(nameWithOwner, jobId, lines.join('\n'));
+    }
+
+    /** What the job's log answers: its text, plain as GitHub keeps it, or an error status (410 past retention, 502). */
+    jobLog(nameWithOwner: string, jobId: number, log: GitHubActionsLog): void {
+        this.getRepository(nameWithOwner).logs.set(jobId, log);
+    }
+
+    private toActionsJob(job: GitHubWorldJobParams, started: number): GitHubActionsJob {
+        const steps = job.steps ?? [];
+        return {
+            id: this.nextJobId++,
+            name: job.name,
+            status: job.conclusion === null ? (job.status ?? 'in_progress') : 'completed',
+            conclusion: job.conclusion,
+            startedAt: toWholeSecond(started),
+            completedAt: job.conclusion === null ? null : toWholeSecond(started + steps.length * 1000),
+            steps: steps.map((step, index) => ({
+                name: step.name,
+                number: index + 1,
+                status: step.conclusion === null ? 'in_progress' : 'completed',
+                conclusion: step.conclusion,
+                startedAt: toWholeSecond(started + index * 1000),
+                completedAt: step.conclusion === null ? null : toWholeSecond(started + (index + 1) * 1000),
+            })),
+        };
+    }
+
+    /** Gives the repository a tag, so a run on a ref of that name is on the tag. */
+    tag(nameWithOwner: string, name: string): void {
+        this.getRepository(nameWithOwner).tagNames.push(name);
     }
 
     /** Gives the repository its history (git-client D9): its commits, branches and tags, replacing any before. */
@@ -1612,7 +1751,12 @@ export class GitHubWorld {
      * and its GitHub Actions ({@link answerRepositoryActions}): no workflows until a test gives it some.
      */
     private answerRepositoryPoll(github: GitHubMock, repository: WorldRepository) {
-        answerRepositoryActions(github, repository.nameWithOwner, () => repository);
+        answerRepositoryActions(
+            github,
+            repository.nameWithOwner,
+            () => ({ ...repository, tags: repository.tagNames }),
+            runId => answerRerun(repository, runId),
+        );
         github.rest('GET', `/repos/${repository.nameWithOwner}/issues`, ({ url, ifNoneMatch }) => {
             const since = url.searchParams.get('since') ?? '';
             const json = [...this.items.values()]
@@ -2530,6 +2674,10 @@ export class GitHubWorld {
                 commitEmails: [],
                 workflows: [],
                 runs: [],
+                tagNames: [],
+                jobs: new Map(),
+                logs: new Map(),
+                rerunRefusal: null,
                 commits: new Map(),
                 branches: {},
                 tags: {},
@@ -2863,6 +3011,35 @@ export class GitHubWorld {
 
         return item;
     }
+}
+
+/**
+ * Re-runs a run's failed jobs as GitHub does (`POST …/actions/runs/{id}/rerun-failed-jobs`): the run goes again as its next
+ * attempt and those jobs start, unless {@link GitHubWorld.refuseRerun} said otherwise.
+ */
+function answerRerun(repository: WorldRepository, runId: number): GitHubRestAnswer {
+    if (repository.rerunRefusal) {
+        return repository.rerunRefusal;
+    }
+
+    repository.runs = repository.runs.map(run =>
+        run.id === runId ? { ...run, status: 'in_progress', conclusion: null, attempt: (run.attempt ?? 1) + 1 } : run,
+    );
+    repository.jobs.set(
+        runId,
+        (repository.jobs.get(runId) ?? []).map(job =>
+            job.conclusion === 'failure'
+                ? {
+                      ...job,
+                      status: 'in_progress',
+                      conclusion: null,
+                      startedAt: new Date().toISOString(),
+                      completedAt: null,
+                  }
+                : job,
+        ),
+    );
+    return { status: 201, json: {} };
 }
 
 /** A ref's target as `CommitRefTargetFields` gives it. */
@@ -3367,4 +3544,9 @@ function readText(value: unknown): string | null {
 /** `acme/web` → `acme_web`, for node ids. */
 function slug(text: string) {
     return text.replace(/[^\w]/g, '_');
+}
+
+/** The moment as GitHub writes a job's and a step's times: ISO at a whole second. */
+function toWholeSecond(time: number) {
+    return new Date(time).toISOString().replace(/\.\d+Z$/, 'Z');
 }

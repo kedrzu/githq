@@ -1,0 +1,57 @@
+errorPosition:
+  en: 'Error {position} of {total}'
+noErrorMarker:
+  en: No error marker
+errorPrefix:
+  en: 'Error:'
+warningPrefix:
+  en: 'Warning:'
+moreCharacters:
+  en: '… {count} more characters'
+showWholeLine:
+  en: Show the whole line
+logEnd:
+  en: The log ends here. The job failed without an error marker, for example because its runner died.
+nextLine:
+  en: Next line
+previousLine:
+  en: Previous line
+nextStep:
+  en: Next step
+previousStep:
+  en: Previous step
+nextError:
+  en: Next error
+previousError:
+  en: Previous error
+fold:
+  en: Fold or open the step
+top:
+  en: Top of the log
+end:
+  en: End of the log
+halfPageDown:
+  en: Half a page down
+halfPageUp:
+  en: Half a page up
+copyLineLink:
+  en: Copy a link to the line
+search:
+  en: Search this job's whole log
+searchPlaceholder:
+  en: Search log
+nextMatch:
+  en: Next match
+previousMatch:
+  en: Previous match
+onlyMatches:
+  en: 'In search: only the matching lines'
+showInFullLog:
+  en: Show in the full log
+closeSearch:
+  en: Close search
+skippedLines:
+  plural: count
+  en:
+    one: '{shown} line'
+    many: '{shown} lines'

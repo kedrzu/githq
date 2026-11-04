@@ -1,0 +1,19 @@
+failed:
+  en: Failed
+passed:
+  en: Passed
+running:
+  en: Running
+tookWhen:
+  en: '{when} · took {duration}'
+startedWhen:
+  en: started {when}
+startedBroken:
+  en: 'started {when} · {workflow} is still broken'
+daysAgo:
+  plural: count
+  en:
+    one: '{when} · {count} day ago'
+    many: '{when} · {count} days ago'
+eventAttempt:
+  en: '{event} · attempt {attempt}'
