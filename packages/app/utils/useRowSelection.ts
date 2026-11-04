@@ -6,6 +6,7 @@ import type { MaybeRefOrGetter, Ref } from 'vue';
 import { followSelection } from './followSelection.js';
 import { isActivatableTarget } from './isActivatableTarget.js';
 import { isScreenKey } from './isScreenKey.js';
+import { takeFocusOffControl } from './takeFocusOffControl.js';
 
 /** What every list of rows says, however its selected row is brought into sight. */
 interface RowSelectionListOptions<T> {
@@ -127,10 +128,7 @@ export function useRowSelection<T>(options: UseRowSelectionOptions<T>): RowSelec
         }
 
         chosenKey.value = next;
-        // A button clicked keeps the focus: moved off it, Enter is the selected row's again.
-        if (isActivatableTarget(document.activeElement)) {
-            toValue(options.root)?.focus({ preventScroll: true });
-        }
+        takeFocusOffControl(toValue(options.root));
 
         if (options.reveal) {
             options.reveal(next);

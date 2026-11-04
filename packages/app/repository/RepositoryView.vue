@@ -35,7 +35,14 @@ import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import ListTitle from '@/lists/ListTitle.vue';
-import type { ListChoice, ListContextMenuProps, ListEntry, ListMove, ListViewOptions } from '@/lists/ListTypes.js';
+import type {
+  ListChoice,
+  ListContextMenuProps,
+  ListedItems,
+  ListEntry,
+  ListMove,
+  ListViewOptions,
+} from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
@@ -94,6 +101,8 @@ const props = withDefaults(
     now: number;
     /** The item opened over the list (panel or modal). */
     openedId?: string | null;
+    /** The user has an edit of the item on its way (`ListView`). */
+    isEdited?: (id: string) => boolean;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
     /** The view options differ from the defaults. */
@@ -111,6 +120,7 @@ const props = withDefaults(
     projects: () => [],
     withoutProject: 0,
     openedId: null,
+    isEdited: () => false,
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
@@ -121,7 +131,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
   /** An item dropped into another group: set its value. */
   move: [move: ListMove];
   /** The view options back to their defaults. */
@@ -491,6 +501,7 @@ function getSectionCount(value: RepositorySection) {
             :groups="list.groups"
             :layout="options.layout"
             :opened-id="openedId"
+            :is-edited="isEdited"
             :get-url="item => item.url"
             :can-move="canMove"
             @open="emit('open', $event)"
@@ -596,6 +607,7 @@ function getSectionCount(value: RepositorySection) {
           :viewer-login="viewerLogin"
           :now="now"
           :opened-id="openedId"
+          :is-edited="isEdited"
           :undone="undone"
           :headerless="inColumn"
           @open="emit('open', $event)"

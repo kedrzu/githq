@@ -29,7 +29,7 @@ export class CommandMenuHarness {
         return this.root.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name, exact: true });
     }
 
-    /** The chip in the field's line, naming what the actions act on. */
+    /** The chip in the field's line naming what the actions act on, by its text; not a line of the list. */
     chip(name: string | RegExp): Locator {
         return this.field.locator('xpath=..').getByText(name, { exact: typeof name === 'string' });
     }

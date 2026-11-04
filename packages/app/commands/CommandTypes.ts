@@ -48,6 +48,11 @@ export interface Command {
     /** `false`: run by its key and listed in the help, never offered in the menu. */
     readonly menu?: boolean;
     /**
+     * It acts on what a list's keys are on (its selected row, the commit opened from it) though its section says `view`:
+     * as the `selection` and `item` sections' actions, it doesn't run from what Tab focused outside the list.
+     */
+    readonly actsOnRow?: boolean;
+    /**
      * Whether it can run now; leaving it out means always. The screen and the item or selection are the registering
      * component's own (it registers its actions while it is shown), so it is asked nothing.
      */

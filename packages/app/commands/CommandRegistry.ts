@@ -136,7 +136,7 @@ export const CommandRegistry = defineService({
                         key !== undefined &&
                         (command.run !== undefined || command.options !== undefined) &&
                         matchesCommandKey(event, key) &&
-                        isFreeTarget(event.target, key) &&
+                        isFreeTarget(event.target, command) &&
                         isEnabled(command)
                     ) {
                         return command;
@@ -152,16 +152,26 @@ export const CommandRegistry = defineService({
 /**
  * A single key is a field's own; a `Mod` key is a field's only where the user writes. Nothing runs from inside a layer
  * that keeps the keys to itself (`data-no-commands`: the new issue's capture, over a list whose keys would act on
- * the items behind it), nor from an open menu, which would stay open over wherever the key went.
+ * the items behind it), nor from an open menu, which would stay open over wherever the key went. A single key acting
+ * on a subject doesn't run from what Tab focused outside the list (`data-tab-focus`): the keyboard isn't on the subject.
  */
-function isFreeTarget(target: EventTarget | null, key: string) {
+function isFreeTarget(target: EventTarget | null, command: Command) {
     if (target instanceof Element && target.closest('[data-no-commands], [role="menu"]') !== null) {
         return false;
     }
 
-    if (key.includes('Mod+')) {
+    if (command.key?.includes('Mod+')) {
         return !(target instanceof Element && target.closest(WRITING) !== null);
     }
 
+    if (target instanceof Element && target.closest('[data-tab-focus]') !== null && actsOnSubject(command)) {
+        return false;
+    }
+
     return !isEditableTarget(target);
+}
+
+/** On the selection, the opened item or a list's selected row; other actions of a view are about the view. */
+function actsOnSubject(command: Command) {
+    return command.section === 'selection' || command.section === 'item' || command.actsOnRow === true;
 }

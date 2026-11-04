@@ -35,6 +35,11 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name: 'Previous item' });
     }
 
+    /** "Next item" (`J`). */
+    get nextButton(): Locator {
+        return this.root.getByRole('button', { name: 'Next item' });
+    }
+
     /** The modal the item is opened in, named after it. */
     get modal(): Locator {
         return this.page.getByRole('dialog').filter({ has: this.root });

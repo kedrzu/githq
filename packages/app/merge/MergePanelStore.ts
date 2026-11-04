@@ -31,9 +31,10 @@ const READING_LOOPS: readonly SyncLoop[] = ['myWork', 'pullRequestStatuses', 're
 export interface MergePanelOpenOptions {
     /**
      * Runs once GitHub accepted a merge sent from this opening, as the panel leaves (PM32a): a list moves on to its
-     * next row. Not run when the panel was closed, or opened anew, before GitHub answered.
+     * next row. Not run when the panel was closed, or opened anew, before GitHub answered. Given the pull requests the
+     * merge took: one, or every one going of a stack's.
      */
-    readonly onSent?: () => void;
+    readonly onSent?: (merged: readonly string[]) => void;
     /**
      * Opened from a stack's entry: the panel takes the whole stack, whichever of its pull requests `itemId` names.
      * Opened on a pull request in a stack, it takes everything up to it (stacked PRs D11) — any one may open it.
@@ -129,7 +130,7 @@ export const MergePanelStore = defineService({
         const sentRef = shallowRef<ReadonlyMap<string, SentMerge>>(new Map());
         const confirmationsRef = shallowRef<readonly MergeConfirmation[]>([]);
         const revertsRef = shallowRef<readonly MergeRevert[]>([]);
-        let onSent: (() => void) | undefined;
+        let onSent: MergePanelOpenOptions['onSent'];
         let nextConfirmationId = 1;
 
         accounts.onChange(() => {
@@ -353,7 +354,7 @@ export const MergePanelStore = defineService({
                     if (openingRef.value === opening && isShown()) {
                         const sentFrom = onSent;
                         close();
-                        sentFrom?.();
+                        sentFrom?.(going ?? [item.id]);
                     }
 
                     return answer;
