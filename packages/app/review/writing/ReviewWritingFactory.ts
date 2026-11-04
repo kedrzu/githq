@@ -60,7 +60,7 @@ export interface ReviewWritingHandle {
     withoutDiscarded(threads: readonly ReviewThread[]): readonly ReviewThread[];
     /** Whether a write is on its way, which dropping the model would forget. */
     isSending(): boolean;
-    /** They signed out: nothing more goes to GitHub or the disk, and no text stays in memory. */
+    /** They signed out: no text stays in memory, nothing more goes to the disk, and to GitHub only the deletion of a draft a write under way leaves empty. */
     drop(): void;
 }
 
@@ -115,8 +115,6 @@ export const ReviewWritingFactory = defineFactory({
         let writes: Promise<void> = Promise.resolve();
         /** The threads whose state is on its way to GitHub. What shows of them may stay longer: until the threads read say so. */
         const resolvesInFlight = new Set<string>();
-        /** The failure showing is of a review sent with no draft, whose failure no draft is needed to show. */
-        let failedWithoutDraft = false;
 
         return {
             writing: {
@@ -135,6 +133,12 @@ export const ReviewWritingFactory = defineFactory({
                 get finish() {
                     return finishRef.value;
                 },
+                get canRetry() {
+                    return canRetry();
+                },
+                get canDismiss() {
+                    return canDismiss();
+                },
                 get submission() {
                     return submissionRef.value;
                 },
@@ -149,6 +153,7 @@ export const ReviewWritingFactory = defineFactory({
                 submit: choice => finishDraft({ kind: 'submit', choice }),
                 discard: () => finishDraft({ kind: 'discard' }),
                 retry,
+                dismiss,
                 setResolved,
                 getResolveFailure: id => resolveFailuresRef.value.get(id) ?? null,
             },
@@ -361,14 +366,7 @@ export const ReviewWritingFactory = defineFactory({
                 return;
             }
 
-            const stop = watch(
-                () => params.getThreads(),
-                () => {
-                    stop();
-                    done();
-                },
-                { flush: 'sync' },
-            );
+            watch(() => params.getThreads(), done, { flush: 'sync', once: true });
         }
 
         /** Rejects when GitHub doesn't take it. */
@@ -548,19 +546,62 @@ export const ReviewWritingFactory = defineFactory({
         }
 
         function finishDraft(finish: ReviewFinish) {
-            if (finishRef.value.kind !== 'sending') {
-                finishRef.value = { kind: 'sending', finish };
-                enqueue(async () => {
-                    await sendFinish(finish);
-                });
+            if (finishRef.value.kind === 'sending') {
+                return;
             }
+
+            finishRef.value = { kind: 'sending', finish };
+            const ahead =
+                finish.kind === 'submit'
+                    ? [...statusesRef.value].filter(([, { kind }]) => kind === 'sending').map(([id]) => id)
+                    : [];
+            enqueue(async () => {
+                // The reader counted those in. Without one of them it goes only once they know: Try again takes a new list.
+                if (ahead.some(id => statusesRef.value.get(id)?.kind === 'failed')) {
+                    finishRef.value = {
+                        kind: 'failed',
+                        finish,
+                        failure: { kind: 'commentRefused' },
+                        draftId: readDraft()?.id ?? null,
+                    };
+                    return;
+                }
+
+                await sendFinish(finish);
+            });
         }
 
         function retry() {
             const state = finishRef.value;
-            if (state.kind === 'failed') {
+            if (state.kind === 'failed' && canRetry()) {
                 finishDraft(state.finish);
             }
+        }
+
+        function dismiss() {
+            if (canDismiss()) {
+                finishRef.value = REVIEW_FINISH_IDLE;
+            }
+        }
+
+        function canRetry() {
+            const state = finishRef.value;
+            if (state.kind !== 'failed') {
+                return false;
+            }
+
+            const now = readDraft()?.id ?? null;
+            return now === null || now === state.draftId;
+        }
+
+        function canDismiss() {
+            const state = finishRef.value;
+            if (state.kind !== 'failed') {
+                return false;
+            }
+
+            const now = readDraft()?.id ?? null;
+            return now === null || now !== state.draftId;
         }
 
         /** Whether the threads could be read again after it. */
@@ -579,8 +620,7 @@ export const ReviewWritingFactory = defineFactory({
             }
 
             if (failure) {
-                finishRef.value = { kind: 'failed', finish, failure };
-                failedWithoutDraft = draft === null;
+                finishRef.value = { kind: 'failed', finish, failure, draftId: draft?.id ?? null };
             } else {
                 setDraft(null);
                 draftDiscardedRef.value = finish.kind === 'discard';
@@ -637,6 +677,10 @@ export const ReviewWritingFactory = defineFactory({
         function setDraft(draft: PullRequestPendingReview | null) {
             if (draft) {
                 draftDiscardedRef.value = false;
+                // The reader's own comment, so they know of this draft. One arriving by a read keeps the refusal showing.
+                if (finishRef.value.kind === 'failed' && finishRef.value.draftId !== draft.id) {
+                    finishRef.value = REVIEW_FINISH_IDLE;
+                }
             }
 
             const id = params.getPullRequestId();
@@ -660,10 +704,20 @@ export const ReviewWritingFactory = defineFactory({
                 await details.readAgain(id);
             }
 
-            // Finished elsewhere: there is nothing left for a failure to be about, and the next draft doesn't inherit it. A review
-            // refused with no draft never had one to lose.
-            if (finishRef.value.kind === 'failed' && !failedWithoutDraft && readDraft() === null) {
+            const state = finishRef.value;
+            if (state.kind !== 'failed' || readDraft() !== null) {
+                return;
+            }
+
+            // No answer, and the draft it was about is gone: it almost certainly got there.
+            const gotThere = state.failure.kind === 'notReached' && state.draftId !== null;
+            // A discard has nothing left to do, and a comment review's comment went with the draft. A review from the dialog
+            // stays: refused, it is the reader's still, and Try again sends it with no draft, carrying no comment unseen.
+            if (state.finish.kind === 'discard' || state.finish === COMMENT_REVIEW || gotThere) {
                 finishRef.value = REVIEW_FINISH_IDLE;
+                if (gotThere && state.finish !== COMMENT_REVIEW) {
+                    setSubmission(NO_REVIEW_SUBMISSION);
+                }
             }
         }
 

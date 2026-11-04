@@ -160,7 +160,7 @@ function onKeydown(event: KeyboardEvent) {
       <Button
         v-if="suggestion"
         :class="css.reviewCommentBox_suggest"
-        variant="field"
+        variant="framed"
         size="sm"
         :icon="FilePenLine"
         :kbd="REVIEW_KEYS.suggest"
@@ -228,16 +228,13 @@ function onKeydown(event: KeyboardEvent) {
   justify-content: space-between;
 }
 
-// Twice the class: the button's own look comes from a stylesheet that may load after this one.
-.reviewCommentBox_head .reviewCommentBox_suggest {
+// Three classes: the button's own framed size has two, and comes from a stylesheet that may load after this one.
+.reviewCommentBox_head .reviewCommentBox_suggest.reviewCommentBox_suggest {
   flex: none;
   gap: $spacing-6;
   padding: 3px 7px;
   font-size: $font-size-2xs;
-  color: $color-fg-2;
-  cursor: pointer;
-  background: none;
-  border-color: $color-border-2;
+  font-weight: $font-weight-normal;
 }
 
 .reviewCommentBox_where {

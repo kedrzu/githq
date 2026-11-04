@@ -3,7 +3,7 @@
 import { useTemplateRef } from 'vue';
 
 import Dialog from '@/components/Dialog.vue';
-import Kbd from '@/components/Kbd.vue';
+import DialogHead from '@/components/DialogHead.vue';
 
 const props = defineProps<{
   title: string;
@@ -52,14 +52,7 @@ function onOpenFocus(event: Event) {
       data-layer
       @keydown="emit('keydown', $event)"
     >
-      <header :class="css.reviewDialogFrame_head">
-        <span
-          :class="css.reviewDialogFrame_title"
-          aria-hidden="true"
-          >{{ title }}</span
-        >
-        <Kbd keys="Escape" />
-      </header>
+      <DialogHead :title="title" />
       <div :class="[css.reviewDialogFrame_body, bodyClass]">
         <slot />
       </div>
@@ -77,20 +70,6 @@ function onOpenFocus(event: Event) {
   min-height: 0;
 }
 
-.reviewDialogFrame_head {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px $spacing-16;
-}
-
-.reviewDialogFrame_title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
 .reviewDialogFrame_body {
   display: flex;
   flex: 1;
@@ -98,7 +77,6 @@ function onOpenFocus(event: Event) {
   min-height: 0;
   padding: $spacing-16;
   overflow-y: auto;
-  border-top: 1px solid $color-border;
 }
 
 .reviewDialogFrame_footer {

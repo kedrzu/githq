@@ -16,6 +16,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import ReviewThreadComment from '../threads/ReviewThreadComment.vue';
+import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 
 import { buildConversation } from './buildConversation.js';
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
@@ -164,7 +165,7 @@ async function showOlder(load: () => Promise<void>) {
         >{{ count }}</span
       >
       <span :class="css.reviewConversation_spacer" />
-      <Kbd keys="Alt+Mod+B" />
+      <Kbd :keys="REVIEW_KEYS.conversation" />
       <IconButton
         :icon="X"
         :label="t(l.close)"

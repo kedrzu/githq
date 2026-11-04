@@ -8,6 +8,8 @@ export const idleReviewWriting: ReviewWriting = {
     draftOpen: false,
     draftCount: 0,
     finish: REVIEW_FINISH_IDLE,
+    canRetry: false,
+    canDismiss: false,
     submission: NO_REVIEW_SUBMISSION,
     setSubmission: () => {},
     open: target => ({ ...target, id: 'box' }),
@@ -20,6 +22,7 @@ export const idleReviewWriting: ReviewWriting = {
     submit: () => {},
     discard: () => {},
     retry: () => {},
+    dismiss: () => {},
     setResolved: () => {},
     getResolveFailure: () => null,
 };

@@ -45,6 +45,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
@@ -101,6 +102,7 @@ import type { FileDiff } from './diff/computeFileDiff.js';
 import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
 import ReviewConversation from './conversation/ReviewConversation.vue';
 import { groupReviewFiles } from './groupReviewFiles.js';
+import * as allViewedLoc from './ReviewAllViewed.loc.js';
 import ReviewAllViewed from './ReviewAllViewed.vue';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import ReviewFileList from './ReviewFileList.vue';
@@ -445,7 +447,14 @@ const nextNumber = computed(() => {
   const id = nextPullRequest.value;
   return (id === null ? undefined : details.getItem(id))?.number ?? null;
 });
-const openThreadCount = computed(() => [...openThreads.value.values()].reduce((sum, count) => sum + count, 0));
+const openThreadCount = computed(() => {
+  let total = 0;
+  for (const count of openThreads.value.values()) {
+    total += count;
+  }
+
+  return total;
+});
 
 const openedAt = performance.now();
 let firstRowMeasured = false;
@@ -1484,6 +1493,16 @@ function discardReview() {
   returnKeysToDiff();
 }
 
+function retryFinish() {
+  writing.value?.retry();
+  returnKeysToDiff();
+}
+
+function dismissFinish() {
+  writing.value?.dismiss();
+  returnKeysToDiff();
+}
+
 function isPinned(row: ReviewRow) {
   return row.kind === 'header';
 }
@@ -1705,12 +1724,33 @@ function readAgain() {
               :detail="t(l.allViewedDetail)"
             >
               <template #action>
-                <Button
-                  size="sm"
-                  @click="hideViewed = false"
-                >
-                  {{ t(l.showViewed) }}
-                </Button>
+                <div :class="css.reviewView_actions">
+                  <Button
+                    size="sm"
+                    variant="light"
+                    :kbd="REVIEW_KEYS.submit"
+                    :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+                    :busy="finish.kind === 'sending'"
+                    @click="submitOpen = true"
+                  >
+                    {{ t(allViewedLoc.submit) }}
+                  </Button>
+                  <Button
+                    v-if="nextNumber !== null"
+                    size="sm"
+                    :kbd="REVIEW_KEYS.nextPullRequest"
+                    :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+                    @click="stepPullRequest(nextPullRequest, 'K')"
+                  >
+                    {{ t(allViewedLoc.next, { number: nextNumber }) }}
+                  </Button>
+                  <Button
+                    size="sm"
+                    @click="hideViewed = false"
+                  >
+                    {{ t(l.showViewed) }}
+                  </Button>
+                </div>
               </template>
             </EmptyState>
             <EmptyState
@@ -1752,12 +1792,16 @@ function readAgain() {
           </div>
         </div>
         <ReviewPendingToolbar
-          v-if="pendingReview || finish.kind === 'failed'"
+          v-if="pendingReview || finish.kind !== 'idle'"
           :comment-count="pendingReview?.commentCount ?? 0"
+          :has-draft="pendingReview !== null"
           :finish="finish"
+          :can-retry="writing?.canRetry ?? false"
+          :can-dismiss="writing?.canDismiss ?? false"
           @discard="discardOpen = true"
           @submit="submitOpen = true"
-          @retry="writing?.retry()"
+          @retry="retryFinish"
+          @dismiss="dismissFinish"
         />
       </div>
       <div
@@ -1783,7 +1827,7 @@ function readAgain() {
       v-model:open="submitOpen"
       v-model:choice="submission"
       :number="reference.number"
-      :comment-count="pendingReview?.commentCount ?? 0"
+      :comment-count="writing?.draftCount ?? 0"
       :comments="pendingComments"
       @submit="submitReview"
     />

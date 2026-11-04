@@ -5,6 +5,7 @@ import { VisuallyHidden } from 'reka-ui';
 import { computed, useId } from 'vue';
 
 import Dialog from '@/components/Dialog.vue';
+import DialogHead from '@/components/DialogHead.vue';
 import Kbd from '@/components/Kbd.vue';
 
 import type { Command, CommandKeySheet } from './CommandTypes.js';
@@ -65,14 +66,7 @@ const sections = computed(() =>
       tabindex="0"
       data-layer
     >
-      <header :class="css.keyHelp_sheetHead">
-        <span
-          :class="css.keyHelp_sheetTitle"
-          aria-hidden="true"
-          >{{ sheet.title }}</span
-        >
-        <Kbd keys="Escape" />
-      </header>
+      <DialogHead :title="sheet.title" />
       <div :class="css.keyHelp_columns">
         <section
           v-for="(column, index) in sheet.columns"
@@ -231,21 +225,6 @@ const sections = computed(() =>
   outline: none;
 }
 
-.keyHelp_sheetHead {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px $spacing-16;
-  border-bottom: 1px solid $color-border;
-}
-
-.keyHelp_sheetTitle {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-}
-
 .keyHelp_columns {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -255,16 +234,16 @@ const sections = computed(() =>
 }
 
 .keyHelp_columnTitle {
-  margin: 0 0 9px;
+  margin: 0 0 $spacing-9;
   font-size: $font-size-2xs;
-  font-weight: $font-weight-normal;
+  font-weight: $font-weight-medium;
   color: $color-fg-dim;
 }
 
 .keyHelp_rows {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: $spacing-9;
   margin: 0;
 }
 
@@ -275,12 +254,17 @@ const sections = computed(() =>
 }
 
 .keyHelp_keyRow {
+  gap: $spacing-10;
   min-height: 16px;
 }
 
 .keyHelp_label {
   font-size: $font-size-xs;
   color: $color-fg-2;
+}
+
+.keyHelp_footer .keyHelp_label {
+  color: $color-fg-dim;
 }
 
 // A term comes first in the page, for a screen reader; the sheet draws the keys first.
@@ -294,7 +278,7 @@ const sections = computed(() =>
 }
 
 .keyHelp_rowKeys {
-  width: 78px;
+  min-width: 78px;
 }
 
 .keyHelp_footer {

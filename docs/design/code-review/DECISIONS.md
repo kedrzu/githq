@@ -571,6 +571,12 @@ GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dia
 
 > **Checked live 2026-11-04:** with neither body nor threads COMMENT is refused with type UNPROCESSABLE and an empty message, so the app says so in its own words. Approving and requesting changes on your own pull request are refused with GitHub's words ("Review Can not approve your own pull request", "Review Can not request changes on your own pull request"). With no comments, Comment and Request changes need text before they can be sent; GitHub's docs also require a body for those two.
 
+**How a finish that failed behaves.** (agent, 2026-11-04) D28's "no close button" stays true for CR76: while the draft a review was sent against is open, the red toolbar has Edit review… and Try again. Refused with no draft open now, it also has Dismiss, which keeps the dialog's choice. With a different draft open it has GitHub's reason, Dismiss and Edit review…, and no Try again, because only the dialog, which lists that draft's comments, may submit a draft the reader hasn't seen. With no draft, a send shows the amber toolbar saying "Sending your review…", with no count, note or buttons. The sending row and the Dismiss states have no frame in the mockups.
+
+A failure clears on a read finding no draft only if it was a discard, or the second key's review, whose comment went with the draft, or got no answer while it had a draft: that one almost certainly got there, so the dialog's choice empties too. A review from the dialog refused against a draft since gone stays red, and Try again sends it with no draft, carrying no hidden comments. A draft of the reader's own making clears a failure sent against another; one arriving by a read doesn't, so the refusal is still seen. A submit made while comments were on their way sends nothing if one of them is refused: it says so, and Try again sends it knowingly without that comment.
+
+> **Checked live 2026-11-04:** `submitPullRequestReview` on a review already submitted is refused with type UNPROCESSABLE, "Could not comment pull request review."; nothing is posted.
+
 **Why.** The buttons say what each key does. A line explaining the default broke the layout and repeats what someone who
 chose that setting already knows (owner, 2026-11-03).
 

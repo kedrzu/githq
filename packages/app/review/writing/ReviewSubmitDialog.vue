@@ -114,11 +114,7 @@ function onKeydown(event: KeyboardEvent) {
       :options="options"
       :get-card-attrs="
         option => ({
-          class: [
-            css.reviewSubmitDialog_kind,
-            css[`reviewSubmitDialog_kind_${option.value}`],
-            choice.event === option.value && css.reviewSubmitDialog_kind_chosen,
-          ],
+          class: [css.reviewSubmitDialog_kind, css[`reviewSubmitDialog_kind_${option.value}`]],
         })
       "
       :aria-label="t(l.kind)"
@@ -160,7 +156,7 @@ function onKeydown(event: KeyboardEvent) {
 
 <style lang="scss" module="css">
 .reviewSubmitDialog_body {
-  gap: 14px;
+  gap: $spacing-14;
 }
 
 .reviewSubmitDialog_field {
@@ -177,7 +173,7 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .reviewSubmitDialog_optional {
-  font-weight: normal;
+  font-weight: $font-weight-normal;
   color: $color-fg-dim;
 }
 
@@ -202,6 +198,13 @@ function onKeydown(event: KeyboardEvent) {
   background: none;
   border: 1px solid $color-border;
   border-radius: $radius-lg;
+
+  &[data-state='checked'] {
+    font-weight: $font-weight-semibold;
+    color: $color-fg;
+    background: rgba($color-fg-2, 0.1);
+    border-color: $color-border-2;
+  }
 }
 
 .reviewSubmitDialog_kindIcon {
@@ -219,19 +222,12 @@ function onKeydown(event: KeyboardEvent) {
   color: $color-red;
 }
 
-.reviewSubmitDialog_kind_chosen {
-  font-weight: $font-weight-semibold;
-  color: $color-fg;
-  background: rgba($color-fg-2, 0.1);
-  border-color: $color-border-2;
-}
-
-.reviewSubmitDialog_kind_chosen.reviewSubmitDialog_kind_APPROVE {
+.reviewSubmitDialog_kind_APPROVE[data-state='checked'] {
   background: rgba($color-green, 0.1);
   border-color: rgba($color-green, 0.5);
 }
 
-.reviewSubmitDialog_kind_chosen.reviewSubmitDialog_kind_REQUEST_CHANGES {
+.reviewSubmitDialog_kind_REQUEST_CHANGES[data-state='checked'] {
   background: rgba($color-red, 0.1);
   border-color: rgba($color-red, 0.5);
 }

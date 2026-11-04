@@ -733,10 +733,26 @@ test("an approval refused with no draft shows GitHub's words though no draft is 
     await page.keyboard.press('Shift+S');
     await page.keyboard.press('Tab');
     await page.keyboard.press('2');
+    github.holdAnswers();
     await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(review.pendingToolbar.getByRole('status')).toHaveText('Sending your review…');
+    await expect(review.pendingToolbar.getByRole('button')).toHaveCount(0);
+    github.releaseAnswers();
 
     await expect(review.pendingToolbar).toContainText('Review Can not approve your own pull request');
     await review.pendingToolbar.getByRole('button', { name: 'Edit review…' }).click();
+    await expect(review.submitDialog.getByRole('radio', { name: 'Approve' })).toBeChecked();
+    await page.keyboard.press('Escape');
+
+    await review.pendingToolbar.getByRole('button', { name: 'Try again' }).click();
+    await expect(review.pendingToolbar).toContainText('Review Can not approve your own pull request');
+    await expect(review.diff).toBeFocused();
+
+    await review.pendingToolbar.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(review.pendingToolbar).toBeHidden();
+    await expect(review.diff).toBeFocused();
+    await page.keyboard.press('Shift+S');
     await expect(review.submitDialog.getByRole('radio', { name: 'Approve' })).toBeChecked();
 });
 
@@ -756,12 +772,13 @@ test('Esc goes back to the pull request, last of what it does: the box, the sele
     await page.keyboard.press('Escape');
     await expect(page.getByText('1 file selected')).toBeHidden();
 
+    // The pointer rests on the line number: its tooltip would take the next Escape, as any open layer does.
+    await page.mouse.move(0, 0);
     await page.keyboard.press('/');
     await page.keyboard.type('engine');
-    await page.keyboard.press('Escape');
-    await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
     await review.diff.focus();
     await page.keyboard.press('Escape');
+    await expect(review.filterField).toHaveValue('');
     await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
 
     await page.keyboard.press('Escape');

@@ -475,6 +475,146 @@ test('a review refused with no draft stays said, the draft read again or not, an
     expect(writes()).toEqual(['SendPullRequestReview', 'SendPullRequestReview']);
 });
 
+test('a dialog review refused against a draft gone elsewhere stays red, and Try again sends it with no draft', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 1 };
+    const { model, session, writes } = await open(github);
+    github.draft = null;
+    github.refused.set('SubmitPullRequestReview', 'Could not comment pull request review.');
+    const reads = session.operations().filter(name => name === 'ItemDetail').length;
+
+    model.writing.submit({ event: 'APPROVE', body: 'Reads well' });
+    await waitUntil(() => session.operations().filter(name => name === 'ItemDetail').length > reads, {
+        timeoutMs: 2000,
+    });
+    await waitUntil(() => !model.writing.draftOpen, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.writing.finish).toMatchObject({
+        kind: 'failed',
+        failure: { kind: 'refused', message: 'Could not comment pull request review.' },
+        draftId: 'DRAFT',
+    });
+
+    github.refused.clear();
+    model.writing.retry();
+    await waitUntil(() => model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['SubmitPullRequestReview', 'SendPullRequestReview']);
+    expect(session.github.requests.find(request => request.operation === 'SendPullRequestReview')?.variables).toEqual({
+        pullRequestId: PULL_REQUEST,
+        commitOID: HEAD,
+        event: 'APPROVE',
+        body: 'Reads well',
+    });
+});
+
+test('no answer to a review, and the draft gone: it got there, so nothing is red and the choice is empty', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 1 };
+    const { model, session } = await open(github);
+    const choice = { event: 'APPROVE', body: 'Good' } as const;
+    model.writing.setSubmission(choice);
+    github.draft = null;
+    session.github.holdIf = request =>
+        request.operation === 'SubmitPullRequestReview' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+
+    model.writing.submit(choice);
+    await waitUntil(() => session.operations().includes('SubmitPullRequestReview'), { timeoutMs: 2000 });
+    await waitUntil(() => model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+
+    expect(model.writing.submission).toEqual({ event: 'COMMENT', body: '' });
+});
+
+test('a comment ahead of a submit refused: nothing is sent, it says why, and Try again sends without that comment', async () => {
+    const github = createGitHub();
+    const { model, writes } = await open(github);
+    github.refused.set('AddPullRequestReview', 'Line is outside the diff');
+    const id = write(model, 'Refused');
+
+    model.writing.send(id, 'startDraft');
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(writes()).toEqual(['AddPullRequestReview']);
+    expect(model.writing.finish).toMatchObject({ failure: { kind: 'commentRefused' }, draftId: null });
+    expect(model.writing.getText(id)).toBe('Refused');
+
+    model.writing.retry();
+    await waitUntil(() => model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['AddPullRequestReview', 'SendPullRequestReview']);
+    expect(model.writing.getStatus(id).kind).toBe('failed');
+});
+
+test('Try again with a different draft open now does nothing: only the dialog submits a draft not seen', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await open(github);
+    github.refused.set('SendPullRequestReview', 'Nope');
+
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+    github.refused.clear();
+    github.draft = { id: 'ELSEWHERE', comments: 2 };
+    await session.container.resolve(ItemDetailStore).readAgain(PULL_REQUEST);
+
+    expect(model.writing.canRetry).toBe(false);
+    expect(model.writing.canDismiss).toBe(true);
+    model.writing.retry();
+    await aMoment();
+
+    expect(writes()).toEqual(['SendPullRequestReview']);
+    expect(model.writing.finish.kind).toBe('failed');
+});
+
+test('Dismiss puts the failure away and keeps the choice; with the draft still open there is nothing to dismiss', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 1 };
+    const { model, session } = await open(github);
+    github.refused.set('SubmitPullRequestReview', 'Nope');
+    const choice = { event: 'APPROVE', body: 'Good' } as const;
+    model.writing.setSubmission(choice);
+
+    model.writing.submit(choice);
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+    expect(model.writing.canDismiss).toBe(false);
+    model.writing.dismiss();
+    expect(model.writing.finish.kind).toBe('failed');
+
+    github.draft = null;
+    await session.container.resolve(ItemDetailStore).readAgain(PULL_REQUEST);
+    expect(model.writing.canDismiss).toBe(true);
+    model.writing.dismiss();
+
+    expect(model.writing.finish.kind).toBe('idle');
+    expect(model.writing.submission).toEqual(choice);
+});
+
+test("a draft of the reader's own clears a failure sent against none; joining the draft it was sent against keeps it", async () => {
+    const github = createGitHub();
+    const { model } = await open(github);
+    github.refused.set('SendPullRequestReview', 'Nope');
+
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+
+    const first = write(model, 'Starts a draft');
+    model.writing.send(first, 'startDraft');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+    expect(model.writing.finish.kind).toBe('idle');
+
+    github.refused.set('SubmitPullRequestReview', 'Nope');
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+
+    const second = write(model, 'Joins it');
+    model.writing.send(second, 'joinDraft');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+    expect(model.writing.finish).toMatchObject({ kind: 'failed', draftId: 'DRAFT' });
+    expect(github.draft?.comments).toBe(2);
+});
+
 test('GitHub refusing with an empty message leaves the reason to the app', async () => {
     const github = createGitHub();
     const { model } = await open(github);
