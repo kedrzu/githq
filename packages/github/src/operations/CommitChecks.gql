@@ -1,0 +1,16 @@
+# The checks of one commit as its details list them. Apart from `CommitDetail`, which reads once a session, for checks
+# change; and from `CommitStates`, for the rows on screen need only the rollup's state.
+query CommitChecks($id: ID!) {
+    node(id: $id) {
+        ... on Commit {
+            statusCheckRollup {
+                contextPage: contexts(first: 100) {
+                    totalCount
+                    nodes {
+                        ...PullRequestCheckFields
+                    }
+                }
+            }
+        }
+    }
+}

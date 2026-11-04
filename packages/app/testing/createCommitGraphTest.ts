@@ -1,3 +1,4 @@
+import type { PullRequestCheckFieldsFragment } from '@githq/github/generated.gen.js';
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 
@@ -29,6 +30,8 @@ export interface CommitGraphTestOptions {
     readonly defaultBranch?: string | null;
     /** The pull request and CI state GitHub answers; a commit not in it has neither. */
     readonly states?: ReadonlyMap<string, CommitState>;
+    /** The checks GitHub lists, by oid; a commit not in it has none. */
+    readonly checks?: ReadonlyMap<string, readonly PullRequestCheckFieldsFragment[]>;
     /** The full message below the first line GitHub answers, by oid; a commit not in it has none. */
     readonly bodies?: ReadonlyMap<string, string>;
     /** The first line of the commits whose headline cuts it, by oid. */
@@ -76,6 +79,10 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
         repository.states.set(oid, state);
     }
 
+    for (const [oid, checks] of options.checks ?? []) {
+        repository.checks.set(oid, checks);
+    }
+
     for (const [oid, body] of options.bodies ?? []) {
         repository.bodies.set(oid, body);
     }
@@ -86,6 +93,8 @@ export function createCommitGraphTest(options: CommitGraphTestOptions) {
 
     const github = {
         repository,
+        /** Another repository on the same GitHub. */
+        otherRepository: (nameWithOwner: string) => fake.repository(nameWithOwner),
         /** The operations asked, in order. */
         requests: [] as string[],
     };

@@ -1,4 +1,4 @@
-<!-- A repository's branches and tags, filling what holds them, left of its commit graph (git-client D15, CH3, CH10, CH15–CH17): the default branch first, then branches and tags, each newest first — the newest of each drawn and the rest counted, however many there are. Typing in its filter narrows both groups by name, the best match selected; ↑/↓ move through the matches; `Enter` or a click chooses one; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key -->
+<!-- A repository's branches and tags, filling what holds them, left of its commit graph (git-client D15, CH3, CH10, CH15–CH17): the default branch first, then branches and tags, each newest first — the newest of each drawn and the rest counted, however many there are. Typing in its filter narrows both groups by name, the best match selected; ↑/↓ move through the matches; `Enter` or a click chooses one; `Esc` clears the filter and leaves. A branch's row shows the pull request and CI of its tip, the pull request a real link, which a click on takes alone and Tab passes; a tag's only its age. The combobox is its own rather than `FilterList`: nothing is selected until the filter is used, each group has its count and its own note, and the field is `SearchField` with its key. It is ARIA's combobox with a grid popup, for an option can't hold a link: the keys stay in the filter and the selection is a row's name cell, the whole row looking selected -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,7 @@ import { computed, ref, useId, useTemplateRef, watch } from 'vue';
 import SearchField from '@/components/SearchField.vue';
 import { compareText } from '@/utils/compareText.js';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
+import type { ItemReference } from '@/item/itemRoutes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 
@@ -29,6 +30,8 @@ const emit = defineEmits<{
   choose: [ref: CommitRef];
   /** `Esc`: the user is done with the list, its filter cleared. */
   leave: [];
+  /** A plain click on a branch's pull request. */
+  openPullRequest: [reference: ItemReference];
 }>();
 
 interface RefRow {
@@ -66,8 +69,8 @@ const NEWEST_FIRST_MATCHES = 3;
 
 const store = useService(CommitGraphStore);
 const t = useTranslate();
-const listId = useId();
-const rowIdPrefix = useId();
+const gridId = useId();
+const nameIdPrefix = useId();
 
 const field = useTemplateRef<InstanceType<typeof SearchField>>('field');
 const scroller = useTemplateRef<HTMLElement>('scroller');
@@ -159,9 +162,9 @@ const selectedKey = computed(() => {
 
   return null;
 });
-const selectedRowId = computed(() => {
+const selectedNameId = computed(() => {
   const index = shownRows.value.findIndex(row => row.key === selectedKey.value);
-  return index === -1 ? undefined : `${rowIdPrefix}-${index}`;
+  return index === -1 ? undefined : `${nameIdPrefix}-${index}`;
 });
 
 watch(query, () => {
@@ -295,8 +298,8 @@ function getNote(group: RefGroupParams, more: number) {
   return group.key === 'tags' ? t(l.moreTags, { count: more }) : t(l.moreBranches, { count: more });
 }
 
-function getRowId(row: RefRow) {
-  return `${rowIdPrefix}-${shownRows.value.indexOf(row)}`;
+function getNameId(row: RefRow) {
+  return `${nameIdPrefix}-${shownRows.value.indexOf(row)}`;
 }
 </script>
 
@@ -315,70 +318,91 @@ function getRowId(row: RefRow) {
         :label="t(l.filterLabel)"
         :placeholder="t(l.filterPlaceholder)"
         kbd="B"
-        :listbox="{ id: listId, activeId: selectedRowId }"
+        :grid="{ id: gridId, activeId: selectedNameId }"
       />
     </div>
     <div
-      :id="listId"
+      :id="gridId"
       ref="scroller"
       :class="css.commitRefList_rows"
-      role="listbox"
+      role="grid"
       :aria-label="t(l.title)"
     >
       <div
         v-for="group in groups"
         :key="group.key"
-        role="group"
+        role="rowgroup"
         :aria-label="group.title ?? t(l.defaultGroup)"
       >
+        <!-- A row of its own: a group with none left under the filter still holds one, as a rowgroup must. -->
         <div
           v-if="group.title"
-          :class="css.commitRefList_head"
+          role="row"
         >
-          <span>{{ group.title }}</span>
-          <span :class="css.commitRefList_count">{{ group.count }}</span>
-          <span
-            v-if="group.newestFirst"
-            :class="css.commitRefList_order"
-            >{{ t(l.newestFirst) }}</span
+          <div
+            :class="css.commitRefList_head"
+            role="columnheader"
+            aria-colspan="3"
           >
+            <span>{{ group.title }}</span>
+            <span :class="css.commitRefList_count">{{ group.count }}</span>
+            <span
+              v-if="group.newestFirst"
+              :class="css.commitRefList_order"
+              >{{ t(l.newestFirst) }}</span
+            >
+          </div>
         </div>
         <!-- `mousedown.prevent`: a click leaves the focus where it was, so the graph's keys go on working after it. -->
         <div
           v-for="row in group.rows"
-          :id="getRowId(row)"
           :key="row.key"
           :class="[css.commitRefList_row, row.key === selectedKey && css.commitRefList_row_selected]"
-          role="option"
-          :aria-selected="row.key === selectedKey"
+          role="row"
           @mousedown.prevent
           @click="choose(row)"
         >
-          <component
-            :is="row.kind === 'tag' ? Tag : GitBranch"
-            :class="css.commitRefList_icon"
-            aria-hidden="true"
-          />
           <span
+            :class="css.commitRefList_iconCell"
+            role="gridcell"
+          >
+            <component
+              :is="row.kind === 'tag' ? Tag : GitBranch"
+              :class="css.commitRefList_icon"
+              aria-hidden="true"
+            />
+          </span>
+          <span
+            :id="getNameId(row)"
             :class="css.commitRefList_name"
             :title="row.ref.name"
+            role="gridcell"
+            :aria-selected="row.key === selectedKey"
             >{{ row.ref.name }}</span
           >
           <span
-            v-if="row.kind === 'default'"
-            :class="css.commitRefList_badge"
-            >{{ t(l.defaultBadge) }}</span
+            :class="css.commitRefList_about"
+            role="gridcell"
           >
-          <CommitStateMarks
-            v-if="row.kind !== 'tag'"
-            :state="store.getState(nameWithOwner, row.ref.oid)"
-            :with-pull-request="row.kind !== 'default'"
-          />
-          <time
-            :class="css.commitRefList_age"
-            :datetime="row.ref.committedDate"
-            >{{ formatAge(Date.parse(row.ref.committedDate), now) }}</time
-          >
+            <span
+              v-if="row.kind === 'default'"
+              :class="css.commitRefList_badge"
+              >{{ t(l.defaultBadge) }}</span
+            >
+            <CommitStateMarks
+              v-if="row.kind !== 'tag'"
+              :state="store.getState(nameWithOwner, row.ref.oid)"
+              :with-pull-request="row.kind !== 'default'"
+              linked
+              link-out-of-tab-order
+              @open-pull-request="emit('openPullRequest', $event)"
+            />
+            <time
+              :class="css.commitRefList_age"
+              :datetime="row.ref.committedDate"
+              >{{ formatAge(Date.parse(row.ref.committedDate), now) }}</time
+            >
+          </span>
         </div>
         <p
           v-if="group.note"
@@ -454,6 +478,14 @@ function getRowId(row: RefRow) {
 .commitRefList_row_selected,
 .commitRefList_row_selected:hover {
   background: $color-sel;
+}
+
+.commitRefList_iconCell,
+.commitRefList_about {
+  display: flex;
+  flex: none;
+  gap: $spacing-8;
+  align-items: center;
 }
 
 .commitRefList_icon {
