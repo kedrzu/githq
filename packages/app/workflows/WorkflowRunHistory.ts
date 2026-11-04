@@ -66,7 +66,7 @@ const UNREAD: HistoryEntry = { runs: [], status: 'idle', complete: false, nextPa
 
 /**
  * A workflow's older runs, read from GitHub on demand (actions D12) — the first page anew each time a repository's
- * Workflows tab unfolds the workflow, the next ones as it reaches the end of its runs (W3b) — on any ref or on one,
+ * Workflows section unfolds the workflow, the next ones as it reaches the end of its runs (W3b) — on any ref or on one,
  * nothing asked while the core allowance is used up. Held in memory for the signed-in user only, never kept on disk nor
  * merged into the workflows' store: the sync's runs stay what decides a workflow's state.
  */
