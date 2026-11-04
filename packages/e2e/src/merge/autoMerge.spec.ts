@@ -27,7 +27,7 @@ test('PM10, PM11: not met, ⌘↵ turns auto-merge on with the method and the te
     await selectRow(myWork, FIRST_TITLE);
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Enable auto-merge');
+    await expect(panel.primary).toHaveAccessibleName('Enable auto-merge');
     await expect(panel.method('Squash')).toBeVisible();
     await page.keyboard.press('1');
     await expect(panel.method('Squash')).toHaveAttribute('aria-pressed', 'true');
@@ -35,7 +35,7 @@ test('PM10, PM11: not met, ⌘↵ turns auto-merge on with the method and the te
     await panel.titleField.fill('Redirect once, by itself');
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    await expect(panel.primary).toHaveText('Turn off auto-merge');
+    await expect(panel.primary).toHaveAccessibleName('Turn off auto-merge');
     expect(getOperationCalls(github, 'EnablePullRequestAutoMerge')).toEqual([
         expect.objectContaining({
             pullRequestId: sample.first,
@@ -53,10 +53,10 @@ test('PM10, PM11: not met, ⌘↵ turns auto-merge on with the method and the te
     await expect(myWork.row(FIRST_TITLE)).toContainText('auto-merge on · squash');
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveText('Turn off auto-merge');
+    await expect(panel.primary).toHaveAccessibleName('Turn off auto-merge');
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    await expect(panel.primary).toHaveText('Enable auto-merge');
+    await expect(panel.primary).toHaveAccessibleName('Enable auto-merge');
     expect(getOperationCalls(github, 'DisablePullRequestAutoMerge')).toEqual([{ pullRequestId: sample.first }]);
     expect(sample.world.autoMergeOf(sample.first)).toBeNull();
     await page.keyboard.press('Escape');

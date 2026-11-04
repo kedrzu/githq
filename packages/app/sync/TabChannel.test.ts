@@ -40,6 +40,26 @@ test('a tab gone without a word — crashed, discarded — is forgotten after tw
     expect(hidden.channel.otherViews).toEqual([]);
 });
 
+test('the repositories another tab has on screen are heard, and go with it', async () => {
+    const browser = createTestTabs();
+    const login = `user-${crypto.randomUUID()}`;
+    const stays = openTab(browser, login);
+    const leaves = openTab(browser, login);
+    leaves.channel.setAnyRefRepositories(['acme/web']);
+    await advance([stays, leaves], 0);
+    expect(stays.channel.otherAnyRefRepositories).toEqual(['acme/web']);
+
+    leaves.channel.setAnyRefRepositories([]);
+    await advance([stays, leaves], 0);
+    expect(stays.channel.otherAnyRefRepositories).toEqual([]);
+
+    leaves.channel.setAnyRefRepositories(['acme/api']);
+    await advance([stays, leaves], 0);
+    leaves.session.tab.close();
+    await advance([stays], 0);
+    expect(stays.channel.otherAnyRefRepositories).toEqual([]);
+});
+
 function openTab(browser: TestTabs, login: string) {
     const session = createTestSession({ login, answer: () => undefined, tabs: browser });
     return { session, channel: session.container.resolve(TabChannel) };

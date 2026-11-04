@@ -32,6 +32,8 @@ export interface TestRestAnswer {
     readonly status: number;
     /** JSON; none for a 304. */
     readonly body?: unknown;
+    /** Plain text instead of JSON: a job's log. */
+    readonly text?: string;
     readonly etag?: string;
     /** The `Link` header, which points at the next page of a list. */
     readonly link?: string;
@@ -228,9 +230,13 @@ export function createTestSession(params: CreateTestSessionParams) {
             limits.set('link', answer.link);
         }
 
-        return answer.status === 304
-            ? new Response(null, { status: 304, headers: limits })
-            : Response.json(answer.body ?? null, { status: answer.status, headers: limits });
+        if (answer.status === 304) {
+            return new Response(null, { status: 304, headers: limits });
+        }
+
+        return answer.text === undefined
+            ? Response.json(answer.body ?? null, { status: answer.status, headers: limits })
+            : new Response(answer.text, { status: answer.status, headers: limits });
     }
 
     function rateLimitHeaders(resource: string, remaining: number) {

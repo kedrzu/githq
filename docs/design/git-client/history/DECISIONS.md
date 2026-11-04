@@ -91,3 +91,10 @@ Retired 2026-11-03 in part: the details open on the right of the graph with the 
 
 **A commit's details open only in a panel, in the place of the branch and tag list, never as a modal or a page. `Esc`
 closes and the list comes back.** (2026-11-02, design agent's proposal, owner picked the panel over the modal)
+
+Retired 2026-11-03 in part: the details no longer wait for `↵` nor open over the graph on a narrow window, see
+[D16](../DECISIONS.md#d16). Until then:
+
+**The panel opens on `↵`. Below about 1,200 px of window it opens over the graph from the right; in the tabs layout the
+list and the panel are then one at a time. On a wide window the panel is a fixed 440 px, giving up width where the graph
+would have under 240 px.** (2026-11-03, owner)

@@ -42,8 +42,10 @@ const props = withDefaults(
     modified?: boolean;
     /** The board can't be chosen (a project with nothing to make columns of, K7); the display options say why. */
     boardDisabled?: boolean;
+    /** No filters or view options, here or in the menu: what is shown is not a list of items (a repository's workflows). */
+    bare?: boolean;
   }>(),
-  { extraOptions: () => [], filters: () => [], modified: false, boardDisabled: false },
+  { extraOptions: () => [], filters: () => [], modified: false, boardDisabled: false, bare: false },
 );
 
 const emit = defineEmits<{
@@ -58,6 +60,8 @@ defineSlots<{
   title?(): unknown;
   /** After the title: tabs, the actions of a selection. */
   default?(): unknown;
+  /** At the toolbar's end, on a `bare` one only — its room is not measured: a tab's key hints. */
+  end?(): unknown;
   /** More in the display options, after the options that didn't fit the toolbar (why the board is unavailable). */
   display?(): unknown;
   /** At the top of the display options: what they are changed from (a project's saved view). */
@@ -71,56 +75,8 @@ const t = useTranslate();
 const sortChoice = computed(() => props.sorts.find(choice => choice.value === options.value.sort));
 const grouping = computed(() => props.groupings.find(choice => choice.value === options.value.grouping));
 
-/** Every option, the filters then the view options, in the toolbar's order. */
-const viewOptions = computed((): ListToolbarOption[] => [
-  ...props.filters,
-  {
-    kind: 'menu',
-    key: 'grouping',
-    label: t(l.group),
-    icon: Rows3,
-    title: t(l.groupBy, { grouping: grouping.value?.label ?? '' }),
-    choices: props.groupings,
-    value: options.value.grouping,
-    choose: value => change({ grouping: value }),
-  },
-  ...(props.sorts.length > 1
-    ? [
-        {
-          kind: 'menu',
-          key: 'sort',
-          label: t(l.order),
-          icon: ArrowDownUp,
-          title: t(l.orderBy, { order: sortChoice.value?.label ?? '' }),
-          choices: props.sorts,
-          value: options.value.sort,
-          choose: value => change({ sort: value }),
-        } satisfies ListToolbarOption,
-      ]
-    : []),
-  {
-    kind: 'chips',
-    key: 'properties',
-    label: t(l.properties),
-    icon: ListChecks,
-    choices: props.properties,
-    value: options.value.properties,
-    choose: value => change({ properties: value }),
-  },
-  ...props.extraOptions,
-  {
-    kind: 'tabs',
-    key: 'layout',
-    label: t(l.layout),
-    icon: LayoutGrid,
-    options: [
-      { value: 'list', label: t(l.list), icon: List, iconOnly: true },
-      { value: 'board', label: t(l.board), icon: Columns3, iconOnly: true, disabled: props.boardDisabled },
-    ],
-    value: options.value.layout,
-    choose: value => change({ layout: value === 'board' ? 'board' : 'list' }),
-  },
-]);
+/** Every option, the filters then the view options, in the toolbar's order; none when `bare`. */
+const viewOptions = computed((): ListToolbarOption[] => (props.bare ? [] : getViewOptions()));
 
 /**
  * Which options stay on the toolbar when there isn't room for all: the filters, then the layout, the grouping,
@@ -198,36 +154,90 @@ function rank(key: string) {
 }
 
 // E1: the view's options in the command menu too — the layout by its key.
-useCommands(
-  () =>
-    [
-      {
-        id: 'view.layout',
-        title: options.value.layout === 'list' ? t(l.showAsBoard) : t(l.showAsList),
-        section: 'view',
-        key: 'Shift+V',
-        icon: options.value.layout === 'list' ? Columns3 : List,
-        when: () => options.value.layout === 'board' || !props.boardDisabled,
-        run: () => change({ layout: options.value.layout === 'list' ? 'board' : 'list' }),
-      },
-      {
-        id: 'view.groupBy',
-        title: t(l.groupByCommand),
-        section: 'view',
-        detail: grouping.value?.label,
-        icon: Rows3,
-        options: () => ({ options: toCommandOptions(props.groupings, options.value.grouping, 'grouping') }),
-      },
-      {
-        id: 'view.orderBy',
-        title: t(l.orderByCommand),
-        section: 'view',
-        detail: sortChoice.value?.label,
-        icon: ArrowDownUp,
-        options: () => ({ options: toCommandOptions(props.sorts, options.value.sort, 'sort') }),
-      },
-    ] satisfies Command[],
+useCommands(() =>
+  props.bare
+    ? []
+    : ([
+        {
+          id: 'view.layout',
+          title: options.value.layout === 'list' ? t(l.showAsBoard) : t(l.showAsList),
+          section: 'view',
+          key: 'Shift+V',
+          icon: options.value.layout === 'list' ? Columns3 : List,
+          when: () => options.value.layout === 'board' || !props.boardDisabled,
+          run: () => change({ layout: options.value.layout === 'list' ? 'board' : 'list' }),
+        },
+        {
+          id: 'view.groupBy',
+          title: t(l.groupByCommand),
+          section: 'view',
+          detail: grouping.value?.label,
+          icon: Rows3,
+          options: () => ({ options: toCommandOptions(props.groupings, options.value.grouping, 'grouping') }),
+        },
+        {
+          id: 'view.orderBy',
+          title: t(l.orderByCommand),
+          section: 'view',
+          detail: sortChoice.value?.label,
+          icon: ArrowDownUp,
+          options: () => ({ options: toCommandOptions(props.sorts, options.value.sort, 'sort') }),
+        },
+      ] satisfies Command[]),
 );
+
+/** Every option, the filters then the view options, in the toolbar's order. */
+function getViewOptions(): ListToolbarOption[] {
+  return [
+    ...props.filters,
+    {
+      kind: 'menu',
+      key: 'grouping',
+      label: t(l.group),
+      icon: Rows3,
+      title: t(l.groupBy, { grouping: grouping.value?.label ?? '' }),
+      choices: props.groupings,
+      value: options.value.grouping,
+      choose: value => change({ grouping: value }),
+    },
+    ...(props.sorts.length > 1
+      ? [
+          {
+            kind: 'menu',
+            key: 'sort',
+            label: t(l.order),
+            icon: ArrowDownUp,
+            title: t(l.orderBy, { order: sortChoice.value?.label ?? '' }),
+            choices: props.sorts,
+            value: options.value.sort,
+            choose: value => change({ sort: value }),
+          } satisfies ListToolbarOption,
+        ]
+      : []),
+    {
+      kind: 'chips',
+      key: 'properties',
+      label: t(l.properties),
+      icon: ListChecks,
+      choices: props.properties,
+      value: options.value.properties,
+      choose: value => change({ properties: value }),
+    },
+    ...props.extraOptions,
+    {
+      kind: 'tabs',
+      key: 'layout',
+      label: t(l.layout),
+      icon: LayoutGrid,
+      options: [
+        { value: 'list', label: t(l.list), icon: List, iconOnly: true },
+        { value: 'board', label: t(l.board), icon: Columns3, iconOnly: true, disabled: props.boardDisabled },
+      ],
+      value: options.value.layout,
+      choose: value => change({ layout: value === 'board' ? 'board' : 'list' }),
+    },
+  ];
+}
 
 /** The choices as a submenu's options: picking one sets it. */
 function toCommandOptions(choices: readonly ListChoice[], current: string, option: 'grouping' | 'sort') {
@@ -265,6 +275,10 @@ function change(changes: Partial<ListViewOptions>) {
       ref="controls"
       :class="css.listToolbar_controls"
     >
+      <slot
+        v-if="bare"
+        name="end"
+      />
       <ListToolbarControl
         v-for="option in onToolbar"
         :key="option.key"
@@ -292,6 +306,7 @@ function change(changes: Partial<ListViewOptions>) {
       </div>
     </div>
     <Popover
+      v-if="!bare"
       :label="t(l.display)"
       align="end"
       flush

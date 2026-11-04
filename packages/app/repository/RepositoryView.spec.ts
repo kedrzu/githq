@@ -62,7 +62,7 @@ test('D14: Issues and Pull requests are sections on 1 and 2, each counting its o
     await expect
         .element(sections.getByRole('button', { name: 'Commits', exact: true }))
         .toHaveAttribute('aria-keyshortcuts', '3');
-    expect(sections.getByRole('button').elements()).toHaveLength(3);
+    expect(sections.getByRole('button').elements()).toHaveLength(4);
     await expect.element(page.getByText(/\d open/)).not.toBeInTheDocument();
     await expect.element(page.getByRole('navigation', { name: 'Its issues live in' })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Board' }));
@@ -100,7 +100,7 @@ test('the order and the properties sit on the toolbar while they fit; on a narro
     await expect.element(row.getByText('calendar', { exact: true })).not.toBeInTheDocument();
     await userEvent.keyboard('{Escape}');
 
-    view.host.style.width = '960px';
+    view.host.style.width = '1060px';
     await expect.element(page.getByRole('button', { name: 'Properties' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
     await userEvent.click(page.getByRole('button', { name: 'Display' }));
@@ -116,7 +116,7 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     await userEvent.click(page.getByRole('menuitemradio', { name: 'Closed', exact: true }));
     expect(view.state.value.issues).toBe('closed');
 
-    view.host.style.width = '760px';
+    view.host.style.width = '860px';
     await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Closed', exact: true })).toBeVisible();
 
@@ -163,6 +163,28 @@ test('J3, CH37: not tracked, it lists what concerns the user of the section, how
     // Never negative: GitHub counts no more open pull requests than the one listed.
     await expect.element(lines).toHaveTextContent('none of its other pull requests is open on GitHub.');
     await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
+    // Its workflows are not read: no Workflows tab.
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
+});
+
+test('Workflows comes fourth, on 4, with the broken count, a dash until known, and shows its own body under a toolbar without view options', async () => {
+    const view = mount({ workflowCount: 2 });
+    const tabs = page.getByRole('group', { name: 'Sections' }).getByRole('button');
+    await expect
+        .poll(() => tabs.elements().map(tab => tab.textContent?.trim()))
+        .toEqual(['Issues5', 'Pull requests1', 'Commits', 'Workflows2']);
+
+    await userEvent.keyboard('4');
+    expect(view.section.value).toBe('workflows');
+    await expect.element(page.getByText('The workflows body')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Display' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
+    await expect.poll(groupNames).toEqual([]);
+
+    view.workflowCount.value = 'unknown';
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent('Workflows–');
+    view.workflowCount.value = null;
+    await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent(/^Workflows$/);
 });
 
 test('CH37: not tracked, with nothing of the section concerning the user, it shows the empty group and says so of that section', async () => {
@@ -318,6 +340,17 @@ test('D14: in the column layout a long name is cut to the column, its GitHub ico
     expect(menu.element().getBoundingClientRect().right).toBeLessThanOrEqual(icon.left);
 });
 
+test('D14: in the column layout Workflows has its name over its body, the way to it on GitHub in the column', async () => {
+    mount({ layout: 'column', section: 'workflows', workflowCount: 2 });
+
+    await expect.element(page.getByText('The workflows body')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Workflows', level: 1 })).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}/actions`);
+    await expect.element(page.getByRole('button', { name: 'Display' })).not.toBeInTheDocument();
+});
+
 test('D14: the pane stays mounted as the layout changes live, what it holds kept, and on Commits the list has its place in the column', async () => {
     const layout = ref<RepositoryLayout>('tabs');
     mount({ layout, section: 'commits' });
@@ -379,6 +412,7 @@ interface MountOptions {
     /** A ref to change it while mounted. */
     readonly layout?: RepositoryLayout | Ref<RepositoryLayout>;
     readonly nameWithOwner?: string;
+    readonly workflowCount?: number | 'unknown' | null;
 }
 
 /**
@@ -392,6 +426,7 @@ function mount({
     section: firstSection = 'issues',
     layout = 'tabs',
     nameWithOwner = SAMPLE_REPOSITORY,
+    workflowCount = null,
 }: MountOptions = {}) {
     const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
@@ -399,7 +434,8 @@ function mount({
     });
     const section = ref<RepositorySection>(firstSection);
     const state = ref<Record<RepositoryItemSection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
-    const view = { options, section, state };
+    const workflowCountRef = ref(workflowCount);
+    const view = { options, section, state, workflowCount: workflowCountRef };
     const open = items.filter(item => item.state === 'OPEN');
     const openCounts = {
         issues: open.filter(item => item.kind === 'issue').length,
@@ -438,6 +474,7 @@ function mount({
                     openCounts,
                     gitHubOpenCounts,
                     layout: unref(layout),
+                    workflowCount: workflowCountRef.value,
                     projects: [
                         { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
                         {
@@ -465,6 +502,7 @@ function mount({
                     },
                 },
                 {
+                    workflows: () => h('p', 'The workflows body'),
                     commits: ({ refListInColumn }: { readonly refListInColumn: boolean }) => [
                         h('p', 'The commit graph'),
                         h('p', { tid: 'target' }, refListInColumn ? 'column' : 'beside'),

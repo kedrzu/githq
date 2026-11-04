@@ -9,6 +9,13 @@ export type FakeNativeAnswer =
     | { readonly ok: true; readonly value: unknown }
     | { readonly ok: false; readonly error: string };
 
+/** What `read_job_log` answers. */
+export interface FakeJobLogAnswer {
+    readonly status: number;
+    readonly headers: Readonly<Record<string, string>>;
+    readonly text: string;
+}
+
 /** What the fake puts in the page as `window.__TAURI_INTERNALS__`: the part of Tauri's the app uses. */
 export interface FakeTauriInternals {
     invoke(command: string, args?: Readonly<Record<string, unknown>>): Promise<unknown>;
@@ -73,10 +80,17 @@ export class FakeNativeBridge {
         expiresIn: 900,
     };
 
+    /** What `read_job_log` answers for each job id; a job not here fails as the native side does offline. */
+    readonly jobLogs = new Map<number, FakeJobLogAnswer>();
+
+    /** The code `read_job_log` fails with for each job id, before anything in {@link jobLogs}. */
+    readonly jobLogFailures = new Map<number, string>();
+
     /** The version of the update ready to run (`update_status`); set by {@link sendUpdateReady} too. */
     readyUpdate: string | null = null;
 
     private readonly openedUrls: string[] = [];
+    private readonly jobLogReads: unknown[] = [];
     private readonly listeners: FakeEventListener[] = [];
     private readonly unknownCommands: string[] = [];
     private restarts = 0;
@@ -101,6 +115,11 @@ export class FakeNativeBridge {
     /** The pages `open_external` opened in the system browser, oldest first. */
     get opened(): readonly string[] {
         return this.openedUrls;
+    }
+
+    /** The arguments of each `read_job_log`, oldest first. */
+    get jobLogRequests(): readonly unknown[] {
+        return this.jobLogReads;
     }
 
     /** How many times `update_restart` restarted into the ready update. */
@@ -154,6 +173,17 @@ export class FakeNativeBridge {
             case 'open_external':
                 this.openedUrls.push(readString(args, 'url'));
                 return { ok: true, value: null };
+            case 'read_job_log': {
+                this.jobLogReads.push(args);
+                const jobId = isPlainObject(args) && typeof args.jobId === 'number' ? args.jobId : -1;
+                const failure = this.jobLogFailures.get(jobId);
+                if (failure !== undefined) {
+                    return { ok: false, error: failure };
+                }
+
+                const log = this.jobLogs.get(jobId);
+                return log ? { ok: true, value: log } : { ok: false, error: 'offline' };
+            }
             case 'device_start':
                 // A new attempt supersedes the one under way, as the native side does.
                 this.deviceAnswer.resolve({ ok: false, error: 'superseded' });

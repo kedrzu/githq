@@ -1,8 +1,15 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import { parseSettings, readRepositoryLayout, serializeSettings } from './SettingsDocument.js';
-import type { RepositoryLayout, SettingsDocument } from './SettingsDocument.js';
+import {
+    DEFAULT_WORKFLOW_SETTINGS,
+    parseSettings,
+    readRepositoryLayout,
+    readWorkflowSettings,
+    serializeSettings,
+    writeWorkflowSettings,
+} from './SettingsDocument.js';
+import type { RepositoryLayout, SettingsDocument, SettingsRepository } from './SettingsDocument.js';
 
 const DOCUMENT: SettingsDocument = {
     version: 1,
@@ -137,6 +144,46 @@ test('fields this build does not know are read, and written back after the known
         },
     });
     expect(parsed.kind === 'ok' && serializeSettings(parsed.document)).toBe(text);
+});
+
+test('a repository’s workflows setting reads as the default while absent or not understood', () => {
+    const entry: SettingsRepository = { nameWithOwner: 'kedrzu/githq', id: 'R_1', tracking: true };
+
+    expect(DEFAULT_WORKFLOW_SETTINGS).toEqual({ defaultBranch: true, refs: [] });
+    expect(readWorkflowSettings(undefined)).toEqual(DEFAULT_WORKFLOW_SETTINGS);
+    expect(readWorkflowSettings(entry)).toEqual(DEFAULT_WORKFLOW_SETTINGS);
+    expect(readWorkflowSettings({ ...entry, workflows: { defaultBranch: 'yes', refs: [] } })).toEqual(
+        DEFAULT_WORKFLOW_SETTINGS,
+    );
+    expect(readWorkflowSettings({ ...entry, workflows: { defaultBranch: false, refs: 'v*' } })).toEqual(
+        DEFAULT_WORKFLOW_SETTINGS,
+    );
+    expect(readWorkflowSettings({ ...entry, workflows: { defaultBranch: false, refs: ['v*'], muted: [] } })).toEqual({
+        defaultBranch: false,
+        refs: ['v*'],
+    });
+});
+
+test('writing the workflows setting replaces the value whole, keeps fields a newer githq added to it, and writes nothing unchanged', () => {
+    const settings = { defaultBranch: true, refs: ['v*', 'release/*'] };
+    const written = writeWorkflowSettings({ document: DOCUMENT, nameWithOwner: 'acme/api', settings });
+
+    expect(written?.repositories).toEqual([
+        { nameWithOwner: 'kedrzu/githq', id: 'R_1', tracking: true },
+        { nameWithOwner: 'acme/api', id: 'R_2', tracking: false, workflows: settings },
+    ]);
+    expect(written && writeWorkflowSettings({ document: written, nameWithOwner: 'acme/api', settings })).toBeNull();
+    expect(writeWorkflowSettings({ document: DOCUMENT, nameWithOwner: 'acme/web', settings })).toBeNull();
+
+    const newer: SettingsDocument = {
+        ...DOCUMENT,
+        repositories: [
+            { nameWithOwner: 'kedrzu/githq', id: 'R_1', tracking: true, workflows: { muted: ['CLA'], refs: 'v*' } },
+        ],
+    };
+    expect(
+        writeWorkflowSettings({ document: newer, nameWithOwner: 'kedrzu/githq', settings })?.repositories[0]?.workflows,
+    ).toEqual({ muted: ['CLA'], defaultBranch: true, refs: ['v*', 'release/*'] });
 });
 
 test('a file without a repository layout reads as tabs, gaining no field, and writes back the same', () => {

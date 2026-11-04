@@ -1,0 +1,93 @@
+reading:
+  en: Reading…
+logSize:
+  plural: count
+  en:
+    one: '{shown} line · {kilobytes} KB'
+    many: '{shown} lines · {kilobytes} KB'
+line:
+  en: Line
+step:
+  en: Step
+error:
+  en: Error
+fold:
+  en: Fold
+stillRunning:
+  en: still running
+logDeleted:
+  en: log deleted
+notLoaded:
+  en: not loaded
+job:
+  en: Job
+gitHub:
+  en: GitHub
+allKeys:
+  en: All keys
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
+watchOnGitHub:
+  en: Watch on GitHub
+runningTitle:
+  en: '{job} is still running'
+waitingTitle:
+  en: "{job} hasn't started yet"
+runningText:
+  en: "GitHub doesn't stream a running job's log to githq. It lands here the moment the job finishes; until then, watch it live on GitHub."
+runningDetail:
+  en: 'status: {status} · {duration}'
+waitingDetail:
+  en: 'status: {status}'
+goneTitle:
+  en: This log was garbage-collected
+goneFailedAt:
+  en: 'It failed at {step}.'
+goneOld:
+  en: 'GitHub keeps logs for 90 days by default and this run is {days} days old. The next failed run brings a fresh one.'
+goneYoung:
+  en: 'GitHub has no log for this job, though it keeps logs for 90 days by default; a repository can keep them for less. The next failed run brings a fresh one.'
+goneDetail:
+  en: 'retention 90d · run age {days}d'
+failedTitle:
+  en: "The log of {job} didn't load"
+failedText:
+  en: "GitHub answered {status}, which happens to the best of servers. Other jobs' logs still open with ⌥J and ⌥K."
+failedNoAnswerText:
+  en: "GitHub didn't answer, or githq has used up its allowance for now. Other jobs' logs still open with ⌥J and ⌥K."
+failedDetail:
+  en: 'GET …/jobs/{id}/logs → {status}'
+failedNoAnswerDetail:
+  en: 'GET …/jobs/{id}/logs → no answer'
+tooLargeTitle:
+  en: 'The log of {job} is too big to open here'
+tooLargeText:
+  en: "githq reads a log of up to 256 MB and this one is bigger, so trying again wouldn't help. GitHub can still show it, and other jobs' logs still open with ⌥J and ⌥K."
+tooLargeDetail:
+  en: 'GET …/jobs/{id}/logs → over 256 MB'
+refusedText:
+  en: "githq refused this log, so this isn't GitHub's doing. It may read it if you try again, and GitHub can still show it. Other jobs' logs still open with ⌥J and ⌥K."
+refusedDetail:
+  en: 'GET …/jobs/{id}/logs → refused by githq'
+neverRanTitle:
+  en: '{job} never ran'
+neverRanText:
+  en: "It never started, so there's no log to read."
+neverRanDetail:
+  en: 'conclusion: {conclusion}'
+search:
+  en: Search
+match:
+  en: Match
+nextMatch:
+  en: Next match
+previousMatch:
+  en: Previous
+copyLineLink:
+  en: Copy link to line
+showInFullLog:
+  en: Show in the full log
+openGap:
+  en: Open gap

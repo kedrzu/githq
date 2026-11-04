@@ -19,9 +19,7 @@ export async function openTrackedWork(page: Page, github: GitHubMock, world: Git
     await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
 
     const firstSignIn = new FirstSignInHarness(page);
-    await firstSignIn.trackButton.click();
-    await expect(firstSignIn.root).toContainText('Everything is here.');
-    await firstSignIn.openMyWorkButton.click();
+    await firstSignIn.trackAndOpenMyWork();
 
     const shell = new AppShellHarness(page);
     await expect(page).toHaveURL('/');

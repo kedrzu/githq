@@ -1,0 +1,36 @@
+branches:
+  plural: count
+  en:
+    one: 1 branch
+    many: '{count} branches'
+tags:
+  plural: count
+  en:
+    one: 1 tag
+    many: '{count} tags'
+runOnIt:
+  plural: count
+  en:
+    one: '{names} runs on it'
+    many: '{names} run on it'
+runOnThem:
+  plural: count
+  en:
+    one: '{names} runs on them'
+    many: '{names} run on them'
+flagBranches:
+  plural: count
+  en:
+    one: '· {names} is a branch'
+    many: '· {names} are branches'
+flagTags:
+  plural: count
+  en:
+    one: '· {names} is a tag'
+    many: '· {names} are tags'
+nothing:
+  en: No ref githq has seen a run on matches this yet. It counts from the first run on one.
+notRead:
+  en: Matches show once githq has read the runs.
+more:
+  en: '+{count}'

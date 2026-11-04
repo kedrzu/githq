@@ -8,6 +8,8 @@ disabled:
   en: Disabled on GitHub
 broken:
   en: Broken
+brokenJustNow:
+  en: Broke just now
 brokenFor:
   en: Broken for {age}
 brokenForOrMore:
@@ -42,5 +44,22 @@ passedWhen:
   en: passed {when}
 lastRanWhen:
   en: last ran {when}
-ago:
-  en: '{age} ago'
+pullRequests:
+  en: pull requests
+pullRequestsFailed:
+  en: '{failed} of the last {count} failed'
+pullRequestsPassed:
+  plural: count
+  en:
+    one: The last run passed
+    many: None of the last {count} failed
+failingAlertsOff:
+  en: Failing, alerts are off
+failedOnTag:
+  en: Failed on {ref}, a tag without alerts
+failingOnBranch:
+  en: Failing on a branch without alerts
+failingWithoutAlerts:
+  en: Failing without alerts
+reading:
+  en: Reading…
