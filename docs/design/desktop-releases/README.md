@@ -47,11 +47,11 @@ backwards, but someone leaving is usually escaping a bug, so
 [the switch installs the older Stable at once](DECISIONS.md#d5), after asking. The local copy of your GitHub data is simply
 fetched again.
 
-Replacing means this. The release page stays one page, named Development, under one tag that moves. The number belongs to
-the build, not to the page: `0.3.0-dev.214` is written into the app and its files. It is the next stable version plus a
-count of commits on `main`, because in version ordering `0.2.0-dev.5` comes before `0.2.0`, so a build numbered from the
-current version would look older than the release it came after. Each build uploads its files, swaps the small file the
-app reads to learn the newest version, and removes the previous build's files.
+Replacing means this. The release page stays one page, named Development, under a tag that never moves. The number belongs to
+the build, not to the page: `0.3.0-dev.214` is written into the app and its files. It is the last stable version with its minor
+raised, plus a count of commits on `main`, because in version ordering `0.2.0-dev.5` comes before `0.2.0`, so a build numbered
+from the current version would look older than the release it came after. Each build prepares a complete draft, checks it,
+removes the previous release and publishes the draft, so an app never reads a half-replaced set of files.
 
 ## Signatures
 

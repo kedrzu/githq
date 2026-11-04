@@ -123,9 +123,18 @@ wrapper, so a title can't be trusted to say what reached it.
 > of the four scoped commits on `main`; the scope rule is in `.claude/skills/git-workflow/SKILL.md`, and `checkTitle` compares
 > no scope with any path (`packages/app/scripts/releasePlan.ts:56`).
 
-Proposed by the design agent; explained to the owner, who raised no objection: the version is the next stable version plus `-dev.N`, with N the commit
-count on `main`, which only ever grows; the moving tag is `development`, outside the `v*` tags the version is computed
-from; no ruleset covers tags, so an Action may move it.
+The version is the last stable version with its minor raised, plus `-dev.N`, with N the commit count on `main`:
+after `0.2.0`, `0.3.0-dev.214`; before any stable release, `0.1.0-dev.N` (owner, 2026-11-04). It reads no titles, always sorts
+above the last stable and below the next minor, and it is the same whether the next stable turns out to be a patch or a minor.
+
+A build makes a draft release, uploads to it and verifies its manifest, as a Stable release does; only then does it delete the
+previous Development release and publish the draft under the same tag, `development`. The tag never moves; the commit is
+named in the description. Accepted: for seconds a check can fail, and the updater retries at the next check. Not yet checked:
+whether GitHub allows a draft with a tag that a published release holds; if not, the draft takes a temporary tag until
+it is published.
+
+Proposed by the design agent, not yet confirmed: a newer push cancels an older build still running, so an older build can't
+overwrite a newer one, and the draft a cancelled build left is removed by the next.
 
 **Rejected.**
 
@@ -134,6 +143,12 @@ from; no ruleset covers tags, so an Action may move it.
 - A release per build: per-build history and rollback, at the cost of hundreds of prereleases to prune and a separate
   pointer release still needed for the fixed manifest URL.
 - The name "nightly": these builds don't come nightly.
+- The next stable version predicted from titles, `planRelease` plus `-dev.N` ([earlier form](history/DECISIONS.md#d4)): needs
+  title parsing and a fallback for builds with nothing user-visible.
+- Last stable with its patch raised (`0.2.1-dev.214`): works equally; the owner prefers the number to read as the next minor.
+- Replacing files inside the live release and moving the tag on each build
+  ([earlier form](history/DECISIONS.md#d4)): the manifest can mix old and new, and a moved tag troubles `git fetch --tags`
+  in existing clones.
 
 ## D5
 
@@ -144,7 +159,9 @@ installed build.** (2026-11-04, owner)
 local copy is ready for it (evidence under [D1](#d1)): an older database is dropped and fetched again, so the cost is one
 first sync. Only this switch may install an older version: the updater's normal comparison stays strictly greater.
 
-Proposed by the design agent, not yet confirmed: switching to Development waits for a build newer than the installed
+Proposed by the design agent, not yet confirmed: the rule holds no state, so it survives being offline or a failed download:
+a running `-dev` build on Stable accepts any stable version. Switching checks at once, even if an update is already waiting,
+and on macOS and Linux whatever was installed last is what runs. Switching to Development waits for a build newer than the installed
 version, so a Stable that was just released is not replaced by the same code under a lower number.
 
 **Rejected.**
@@ -227,6 +244,12 @@ evidence for both calls is under [D3](#d3).
 
 - Writing the changes into the app at build time: works offline, but edits made after the build would never arrive.
 - A release per Development build, so that the app reads one kind of source: see [D4](#d4).
+- One read for both streams, the description of the release the app is on, with Development's description written by each build
+  (rightsize, 2026-11-04): no hash and no filter in the app, but Development would list everything since the last stable, and
+  skipped stable versions would hide behind a link. The owner kept the exact ranges.
+
+Proposed by the design agent, not yet confirmed: the toast always appears after a version change, the list is fetched when it is
+opened, and a failure offers a link to GitHub. After going back to an older stable version there is no list.
 
 ## D11
 
@@ -235,3 +258,10 @@ and the command palette.** (2026-11-04, owner)
 
 **Why.** Four hours (`packages/desktop/src-tauri/src/updater.rs:21`) can't deliver "what I just merged". Fifteen minutes is a
 proposal, not a measurement. Whether GitHub limits such downloads of a release asset: not checked.
+
+Check now reports its outcome: up to date, or that it failed. Today the updater shows no errors
+(`packages/desktop/src-tauri/src/updater.rs:11`), so this is new. It is also meant to outlive this design's needs (owner).
+
+**Rejected.**
+
+- Dropping check now, since a restart also checks (rightsize, 2026-11-04): the owner wants it, now and later.

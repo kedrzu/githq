@@ -35,3 +35,7 @@ Append-only. One line per turn that settled something.
   gives a link. Proposed to accept: a platform missing from a hand-published draft; never reusing a published version. Corrected
   "about 9 minutes": measured without notarization. Risks raised: `.deb` update needs privilege in the background, updater key
   backup. Proposed order: Development, what changed, then signature and 0.1.0.
+- 2026-11-04: Owner on rightsize: keep the two sources for what changed (D10); version is the next minor of the last stable, not
+  predicted from titles (D4, old form in history); draft then replace, tag not moved (D4); keep "check now", useful later (D11).
+  Separate app not pursued. Still unconfirmed: the sweep's rules (marked in D4, D5, D10), the two accepted cases, the order, whether
+  the updater key is backed up. Not checked: a draft holding a tag a published release holds. Story folded up to here.
