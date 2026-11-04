@@ -20,3 +20,6 @@ Append-only. One line per turn that settled something.
   not a separate release channel, and whether to have three: Stable, Nightly, Development. Put to the owner: GitHub has no
   channels; keep two for now, or Nightly as a daily copy of a Development build; drop the scopes. Unanswered, as are where
   the app reads changes from and the Apple account. Raised: four-hour checks contradict "shortly after a merge".
+- 2026-11-04: Owner: keep the scopes on `feat` and `fix`, sharpen them, no `chore` (D8). Owner's reason, that `chore` might skip
+  a deploy, checked and not so; told. Agent proposed a path check on scopes. Owner asked what replacing a release means:
+  explained and folded into the story. Three channels, reading from GitHub, 15-minute checks, Apple account: unanswered.

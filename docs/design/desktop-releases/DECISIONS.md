@@ -124,7 +124,7 @@ wrapper, so a title can't be trusted to say what reached it.
 
 Proposed by the design agent, not yet confirmed: the version is the next stable version plus `-dev.N`, with N the commit
 count on `main`, which only ever grows; the moving tag is `development`, outside the `v*` tags the version is computed
-from. Development checks for updates much more often than the four hours in `updater.rs:21`, and a "check now" exists:
+from; no ruleset covers tags, so an Action may move it. Development checks for updates much more often than the four hours in `updater.rs:21`, and a "check now" exists:
 at four hours "shortly after a merge" is not true.
 
 **Rejected.**
@@ -174,3 +174,26 @@ release with the formal list, which is still correct.
 
 - A panel that opens by itself on Stable and a status bar mention on Development (design agent's proposal): the owner
   chose one toast.
+
+## D8
+
+**The `web` and `cloud` scopes stay on `feat` and `fix`, with a sharper definition: `web` is what only the website has
+(the landing page), `cloud` is the Worker, and a change to the shared app is never scoped.** (2026-11-04, owner)
+
+**Why.** A landing page's fix is still a fix and belongs under its own type. The scope only keeps it out of the desktop
+version and notes; it decides no build ([D4](#d4)).
+
+> **Checked 2026-11-04:** the title decides neither deploys nor checks. `deploy.yml` runs on every push to `main`, and
+> `pr.yml` chooses what to run from paths (`code`, from `hasNoCode`). So "`chore` might skip a deploy" is not why `chore`
+> was rejected here; the owner's preference for the true type is.
+
+Proposed by the design agent, not yet confirmed: `checkTitle` refuses a scope when the PR touches none of its paths: `web`
+needs something in `packages/app/landing/` or `packages/worker/`, `cloud` something in `packages/worker/`.
+
+> **Checked 2026-11-04:** against the four scoped PRs on `main`: #96 (only `packages/app/tracking/TrackPickerDialog.vue`) is
+> refused, #98, #88 and #81 pass. "Only those paths" would wrongly refuse #88, which also changes `nuxt.config.ts` and
+> `packages/app/app/`, so a mixed PR with a wrong scope stays possible.
+
+**Rejected.**
+
+- Removing the scopes and titling such work `chore` (design agent's proposal): the owner keeps the true type.
