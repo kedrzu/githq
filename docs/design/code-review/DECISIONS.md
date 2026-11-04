@@ -294,14 +294,15 @@ it was local).
 
 **Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
 review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
-stack has its own. GitHub accepts nothing else from the same user on that pull request while it is open (owner's
+stack has its own. While it is open, GitHub takes no other comment on a line from the same user on that pull request (owner's
 experience: "not even an agent can do it through the API").
 
-> **Checked 2026-11-02:** `AddPullRequestReviewThreadInput` takes either `pullRequestReviewId` (into a pending
-> review) or `pullRequestId`, plus `path`, `line`, `side`, `startLine`, `startSide`, `subjectType`
-> (`packages/github/src/schema.graphql`). A third-party guide claims REST `POST …/pulls/{n}/comments` still posts
-> a standalone comment ([guide](https://www.claudepluginhub.com/skills/mthalman-superpowers/skills%2Fgithub-pr-reviews));
-> the owner's experience says otherwise, and the design follows the owner. Not tried live.
+> **Checked 2026-11-04, live on kedrzu/githq-stack-sandbox#8:** with a draft open, a comment on a line through REST
+> (`POST …/pulls/{n}/comments`) and a review with an event are refused ("can only have one pending review per pull request"),
+> and through GraphQL a thread or a reply silently joins the draft: that is the owner's experience of agents. A comment on
+> the pull request itself and resolving a thread go through at once. With no draft, `addPullRequestReview` with `event:
+> COMMENT` and `threads` posts a single comment in one request, and a reply goes out at once;
+> `addPullRequestReviewThread` always makes or joins a pending review. A submitted review can't be deleted.
 
 **Rejected.**
 
