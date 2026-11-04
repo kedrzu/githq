@@ -10,6 +10,7 @@ import { REPOSITORY_SECTIONS } from '@/repository/RepositorySection.js';
 import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
+    BROKEN_WORKFLOWS_PATH,
     FIRST_DOWNLOAD_PATH,
     getGitHubUrl,
     getProjectPath,
@@ -17,9 +18,9 @@ import {
     getRepositoryPath,
     getRepositorySection,
     getRepositorySettingsPath,
+    getWorkflowRunPath,
     GITHUB_RESERVED_SEGMENTS,
 } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import routerOptions from './router.options.js';
 
@@ -52,6 +53,7 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/users/kedrzu/projects/7', 'project-user'],
     // A tracked repository's and project's settings, at GitHub's addresses of them.
     ['/acme/web/settings', 'repository-settings'],
+    ['/acme/web/actions', 'repository'],
     ['/my-org/web.js/settings', 'repository-settings'],
     ['/orgs/acme/projects/3/settings', 'project-org-settings'],
     ['/users/kedrzu/projects/7/settings', 'project-user-settings'],
@@ -85,7 +87,19 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/acme', 'github'],
     ['/acme/web/tree/main', 'github'],
     ['/acme/web.js/tree/main/src', 'github'],
-    ['/acme/web/actions', 'repository'],
+    // A run and its job, at GitHub's addresses; everything else under `actions/` is GitHub's page.
+    ['/acme/web/actions/runs/123', 'workflow-run'],
+    ['/my-org/web.js/actions/runs/123', 'workflow-run'],
+    ['/acme/web/actions/runs/123/job/456', 'workflow-run-job'],
+    ['/acme/web/actions/runs/abc', 'github'],
+    ['/acme/web/actions/runs/123/job', 'github'],
+    ['/acme/web/actions/runs/123/job/abc', 'github'],
+    ['/acme/web/actions/runs/123/attempts/2', 'github'],
+    ['/acme/web/actions/runs/123/usage', 'github'],
+    ['/acme/web/actions/runs/123/workflow', 'github'],
+    ['/acme/web/actions/runs', 'github'],
+    ['/acme/web/actions/workflows/ci.yml', 'github'],
+    ['/orgs/web/actions/runs/123', 'github-orgs'],
     // A branch's or a commit's own history is GitHub's: only the repository's whole history is a section here.
     ['/acme/web/commits/main', 'github'],
     ['/acme/web/commit/0123abc', 'github'],
@@ -105,6 +119,22 @@ test('every GitHub address opens the matching screen, or hands off to github.com
     for (const [address, name] of ADDRESSES) {
         expect(router.resolve(address).name, address).toBe(name);
     }
+});
+
+test("a run's page is one instance for its jobs, another for another run", () => {
+    const key = (address: string) => {
+        const resolved = router.resolve(address);
+        const { key: routeKey } = resolved.meta;
+        return typeof routeKey === 'function' ? routeKey({ ...resolved, name: resolved.name ?? 'unnamed' }) : routeKey;
+    };
+
+    expect(key('/acme/web/actions/runs/1/job/2')).toBe(key('/acme/web/actions/runs/1'));
+    expect(key('/acme/web/actions/runs/2')).not.toBe(key('/acme/web/actions/runs/1'));
+    expect(key('/acme/other/actions/runs/1')).not.toBe(key('/acme/web/actions/runs/1'));
+    expect(getWorkflowRunPath({ nameWithOwner: 'acme/web', runId: 1 })).toBe('/acme/web/actions/runs/1');
+    expect(getWorkflowRunPath({ nameWithOwner: 'acme/web', runId: 1, jobId: 2 })).toBe(
+        '/acme/web/actions/runs/1/job/2',
+    );
 });
 
 test("an item's sub-addresses settle on the item's own, keeping the query and the fragment", () => {
@@ -177,6 +207,7 @@ test('the repository page is one instance for the repository and its lists', () 
     expect(keyOf('/acme/web')).toBe('acme/web');
     expect(keyOf('/acme/web/issues')).toBe('acme/web');
     expect(keyOf('/acme/web/pulls')).toBe('acme/web');
+    expect(keyOf('/acme/web/actions')).toBe('acme/web');
     expect(keyOf('/acme/web/commits')).toBe('acme/web');
     expect(keyOf('/acme/api')).toBe('acme/api');
 });
@@ -186,6 +217,7 @@ test("a repository's sections are GitHub's addresses of its lists and its commit
     expect(getRepositoryPath('acme/web', 'issues')).toBe('/acme/web/issues');
     expect(getRepositoryPath('acme/web', 'pullRequests')).toBe('/acme/web/pulls');
     expect(getRepositoryPath('acme/web', 'commits')).toBe('/acme/web/commits');
+    expect(getRepositoryPath('acme/web', 'workflows')).toBe('/acme/web/actions');
     for (const section of REPOSITORY_SECTIONS) {
         const resolved = router.resolve(getRepositoryPath('acme/web', section));
         expect(getRepositorySection(resolved.params.section), section).toBe(section);
@@ -213,12 +245,14 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [getRepositoryPath('acme/web'), 'repository'],
         [getRepositoryPath('acme/web', 'issues'), 'repository'],
         [getRepositoryPath('acme/web', 'pullRequests'), 'repository'],
+        [getRepositoryPath('acme/web', 'workflows'), 'repository'],
         [getRepositoryPath('acme/web', 'commits'), 'repository'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 12 }), 'item-issue'],
         [getItemPagePath({ owner: 'acme', name: 'web', number: 15 }, 'pullRequest'), 'item-pull'],
         [getProjectPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org'],
         [getProjectPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }, 2), 'project-user'],
         [getRepositorySettingsPath('acme/web'), 'repository-settings'],
+        [getRepositorySettingsPath('acme/web', 'workflowAlerts'), 'repository-settings'],
         [getProjectSettingsPath({ owner: 'acme', ownerKind: 'org', number: 3 }), 'project-org-settings'],
         [getProjectSettingsPath({ owner: 'kedrzu', ownerKind: 'user', number: 7 }), 'project-user-settings'],
         [BROKEN_WORKFLOWS_PATH, 'workflows'],
