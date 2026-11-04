@@ -109,7 +109,7 @@ test("⌘K on a tracked repository's view groups its sections, Open on GitHub, C
         'Pull requests2',
         'Commits3',
         'Workflows4',
-        /^Open on GitHub/u,
+        `Open on GitHub${SAMPLE_REPOSITORY}`,
         'Copy link',
         'Settings',
     ]);
