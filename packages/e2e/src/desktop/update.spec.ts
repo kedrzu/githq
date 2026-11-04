@@ -1,3 +1,5 @@
+import type { GitHubMock } from '../github/GitHubMock.js';
+import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 
@@ -5,6 +7,7 @@ import { expect, test } from './desktopFixtures.js';
 import { signInOnDesktop } from './desktopSession.js';
 
 const READY = { kind: 'ready', version: '1.4.0' };
+const RELEASES_PATH = '/repos/kedrzu/githq/releases';
 
 test('an update readied while the app runs is offered in the status bar; Restart restarts into it, and so does "Restart to update"', async ({
     page,
@@ -245,6 +248,161 @@ test('Windows offers no choice of stream in Settings', async ({ page, github, na
     await expect(page.getByText('Stable version', { exact: true })).toBeVisible();
     await expect(page.getByRole('radio')).toHaveCount(0);
 });
+
+test('after an update the toast says so once and What changed leads to the Changelog; the first ever run says nothing', async ({
+    page,
+    github,
+    native,
+}) => {
+    answerChangelog(github);
+    const shell = await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+    await expect(shell.toasts).toHaveCount(0);
+
+    native.updateState = { ...native.updateState, version: '1.4.0' };
+    await page.reload();
+    const toast = shell.toasts.filter({ hasText: 'Updated to githq 1.4.0' });
+    await expect(toast).toContainText('You were on 1.3.0.');
+    const corner = await toast.boundingBox();
+    const window = page.viewportSize();
+    expect((corner?.x ?? 0) + (corner?.width ?? 0)).toBe((window?.width ?? 0) - 16);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('What changed');
+    await expect(menu.option(/^What changed/)).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await toast.getByRole('button', { name: 'What changed' }).click();
+    await expect(page).toHaveURL(/\/settings\?tab=changelog$/);
+    await expect(toast).toBeHidden();
+
+    const settings = new SettingsScreenHarness(page);
+    await expect(settings.section('Changelog')).toHaveAttribute('aria-pressed', 'true');
+    await expect(settings.section('Changelog')).toHaveAttribute('aria-keyshortcuts', '7');
+    const latest = page.getByRole('button', { name: /^githq 1\.4\.0/ });
+    await expect(latest).toHaveAttribute('aria-expanded', 'true');
+    await expect(latest).toContainText(/New\s*Running/);
+    await expect(page.getByRole('button', { name: /^githq 1\.3\.0/ })).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('heading', { name: 'Features' })).toBeVisible();
+
+    const reads = github.restCalls.filter(call => call.url.pathname.endsWith('/releases'));
+    expect(reads).toHaveLength(1);
+
+    await page.reload();
+    await expect(shell.account(SAMPLE_VIEWER.viewer.login)).toBeVisible();
+    await expect(latest).toContainText(/New\s*Running/);
+    await expect(shell.toasts).toHaveCount(0);
+});
+
+test('⌥W is What changed while the toast shows', async ({ page, github, native }) => {
+    answerChangelog(github);
+    const shell = await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+
+    native.updateState = { ...native.updateState, version: '1.4.0' };
+    await page.reload();
+    await expect(shell.toasts.filter({ hasText: 'Updated to githq 1.4.0' })).toBeVisible();
+
+    await page.keyboard.press('Alt+KeyW');
+    await expect(page).toHaveURL(/\/settings\?tab=changelog$/);
+    await expect(shell.toasts).toHaveCount(0);
+});
+
+test('going back to an older version says which runs and offers no list', async ({ page, github, native }) => {
+    native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    const shell = await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+
+    native.updateState = { ...native.updateState, version: '0.2.0', stream: 'stable' };
+    await page.reload();
+
+    const toast = shell.toasts.filter({ hasText: "You're on githq 0.2.0" });
+    await expect(toast).toBeVisible();
+    await expect(toast.getByRole('button', { name: 'What changed' })).toHaveCount(0);
+});
+
+test('a Development build lists its commits since the last Stable, and O opens them on GitHub', async ({
+    page,
+    github,
+    native,
+}) => {
+    native.updateState = { ...native.updateState, version: '1.5.0-dev.214', commit: 'abc1234', stream: 'development' };
+    answerChangelog(github);
+    await signInOnDesktop({ page, github, native });
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Settings: Changelog');
+    await page.keyboard.press('Enter');
+
+    await expect(page.getByRole('button', { name: /^Development/ })).toContainText(/since 1\.4\.0\s*Running/);
+    await expect(page.getByText("1 change you'd notice, out of 2 commits.")).toBeVisible();
+    await expect(page.getByRole('link', { name: '#7' })).toHaveAttribute(
+        'href',
+        'https://github.com/kedrzu/githq/pull/7',
+    );
+    expect(github.restCalls.find(call => call.url.pathname.endsWith('/commits'))?.url.searchParams.get('sha')).toBe(
+        'abc1234',
+    );
+
+    await page.keyboard.press('o');
+    await expect.poll(() => native.opened).toEqual(['https://github.com/kedrzu/githq/commits/abc1234']);
+});
+
+test('a refused read answers with the failure and the releases on GitHub, and opening again reads again', async ({
+    page,
+    github,
+    native,
+}) => {
+    github.rest('GET', RELEASES_PATH, () => ({ status: 403, json: { message: 'API rate limit exceeded' } }));
+    await signInOnDesktop({ page, github, native });
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Settings: Changelog');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText("Couldn't load the changelog")).toBeVisible();
+
+    answerChangelog(github);
+    const settings = new SettingsScreenHarness(page);
+    await settings.section('Updates').click();
+    await settings.section('Changelog').click();
+    await expect(page.getByRole('button', { name: /^githq 1\.4\.0/ })).toBeVisible();
+});
+
+/** GitHub's answers for the Changelog: two Stable versions, and commits back to the last of them. */
+function answerChangelog(github: GitHubMock) {
+    github.rest('GET', RELEASES_PATH, () => ({
+        status: 200,
+        json: [
+            {
+                tag_name: 'v1.3.0',
+                draft: false,
+                prerelease: false,
+                published_at: '2026-10-21T10:00:00Z',
+                body_html: '<h2>Fixes</h2><ul><li>Keep the focus</li></ul>',
+            },
+            {
+                tag_name: 'v1.4.0',
+                draft: false,
+                prerelease: false,
+                published_at: '2026-11-03T10:00:00Z',
+                body_html: '<h2>Features</h2><ul><li>Merge pull requests</li></ul>',
+            },
+            { tag_name: 'development', draft: false, prerelease: true, published_at: '2026-11-04T10:00:00Z' },
+        ],
+    }));
+    github.rest('GET', '/repos/kedrzu/githq/commits/v1.4.0', () => ({ status: 200, json: { sha: 'tagged' } }));
+    github.rest('GET', '/repos/kedrzu/githq/commits', () => ({
+        status: 200,
+        json: [
+            { sha: 'abc1234', commit: { message: 'feat: add a thing (#7)' } },
+            { sha: 'def5678', commit: { message: 'chore: tidy (#6)' } },
+            { sha: 'tagged', commit: { message: 'chore: the last Stable' } },
+        ],
+    }));
+}
 
 /** The command menu offers neither "Restart to update" nor "Update later". */
 async function expectNoUpdateCommands(menu: CommandMenuHarness) {

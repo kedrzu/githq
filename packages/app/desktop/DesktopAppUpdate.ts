@@ -2,8 +2,11 @@ import type { Logger } from '@nzyme/logging/Logger.js';
 import { computed, shallowRef } from 'vue';
 
 import type { AppUpdateShape, UpdateNotice, UpdateState } from '@/services/AppUpdate.js';
+import type { BrowserStorage } from '@/services/Browser.js';
 
 import type { NativeBridgeShape } from './NativeBridge.js';
+import { advanceVersionRecord, getUntoldChange, parseVersionRecord, VERSION_RECORD_KEY } from './VersionRecord.js';
+import type { VersionRecord } from './VersionRecord.js';
 
 /** How long an outcome with nothing left to do stays (U22). */
 const OUTCOME_MS = 5000;
@@ -12,6 +15,8 @@ const OUTCOME_MS = 5000;
 export interface CreateDesktopAppUpdateParams {
     readonly bridge: NativeBridgeShape;
     readonly logger: Logger;
+    /** Where the running version and the one before it are kept, on this device. */
+    readonly storage: BrowserStorage;
     /** How long "up to date" and "no release" stay. */
     readonly outcomeMs?: number;
 }
@@ -20,10 +25,12 @@ export interface CreateDesktopAppUpdateParams {
  * The desktop app's updates: the native side checks, downloads and installs them (`src-tauri/src/updater.rs`) and
  * sends its whole state on every change; restarting into one is the user's call alone. It listens first and then asks
  * once, so nothing that happened before the app started listening is missed. What the status bar says is derived here.
+ * The first state it gets also records the running version, at every launch, signed in or not (`VersionRecord.ts`, D7).
  */
 export function createDesktopAppUpdate({
     bridge,
     logger,
+    storage,
     outcomeMs = OUTCOME_MS,
 }: CreateDesktopAppUpdateParams): AppUpdateShape {
     const state = shallowRef<UpdateState | null>(null);
@@ -35,6 +42,7 @@ export function createDesktopAppUpdate({
     /** "Later" was pressed: until the app next starts, or the user checks again. */
     const hidden = shallowRef(false);
     const notice = computed(getNotice);
+    const versionRecord = shallowRef<VersionRecord | null>(null);
     /** The last outcome was closed or ran out; the state may still repeat it, until the user checks again. */
     let closed = false;
     let expiry: ReturnType<typeof setTimeout> | undefined;
@@ -51,6 +59,17 @@ export function createDesktopAppUpdate({
         },
         get notice() {
             return notice.value;
+        },
+        get previousVersion() {
+            return versionRecord.value?.previousVersion ?? null;
+        },
+        get untoldChange() {
+            return versionRecord.value && getUntoldChange(versionRecord.value);
+        },
+        markUpdateTold: () => {
+            if (versionRecord.value) {
+                keepVersionRecord({ ...versionRecord.value, untold: false });
+            }
         },
         check: () => {
             bridge.checkForUpdate().catch((error: unknown) => {
@@ -88,6 +107,13 @@ export function createDesktopAppUpdate({
 
     function applyState(next: UpdateState) {
         state.value = next;
+        // The version running doesn't change while it runs.
+        if (versionRecord.value === null) {
+            keepVersionRecord(
+                advanceVersionRecord(parseVersionRecord(storage.getItem(VERSION_RECORD_KEY)), next.version),
+            );
+        }
+
         const { activity, manual } = next;
         switch (activity.kind) {
             case 'idle':
@@ -118,6 +144,15 @@ export function createDesktopAppUpdate({
                 return;
             case 'failed':
                 holdOutcome(next, activity, false);
+        }
+    }
+
+    function keepVersionRecord(record: VersionRecord) {
+        versionRecord.value = record;
+        try {
+            storage.setItem(VERSION_RECORD_KEY, JSON.stringify(record));
+        } catch (error) {
+            logger.warn('Could not keep the running version', { error });
         }
     }
 

@@ -5,6 +5,7 @@ import { Logger } from '@nzyme/logging/Logger.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import type { UpdateActivity, UpdateState } from '@/services/AppUpdate.js';
+import type { BrowserStorage } from '@/services/Browser.js';
 
 import { createDesktopAppUpdate } from './DesktopAppUpdate.js';
 import type { NativeBridgeShape } from './NativeBridge.js';
@@ -238,6 +239,47 @@ test('a native side that cannot listen offers nothing and breaks nothing', async
     expect(update.notice).toBeNull();
 });
 
+test('each launch records the version and says once what changed, also after a reload', async () => {
+    const storage = createStorage();
+
+    const first = await launch(storage, '0.1.0');
+    expect(first.previousVersion).toBeNull();
+    expect(first.untoldChange).toBeNull();
+
+    const updated = await launch(storage, '0.2.0');
+    expect(updated.previousVersion).toBe('0.1.0');
+    expect(updated.untoldChange).toEqual({ version: '0.2.0', previousVersion: '0.1.0' });
+
+    // Not told yet, signed out say: it waits.
+    const again = await launch(storage, '0.2.0');
+    expect(again.untoldChange).toEqual({ version: '0.2.0', previousVersion: '0.1.0' });
+    again.markUpdateTold();
+    expect(again.untoldChange).toBeNull();
+
+    const reloaded = await launch(storage, '0.2.0');
+    expect(reloaded.untoldChange).toBeNull();
+    expect(reloaded.previousVersion).toBe('0.1.0');
+});
+
+test('a storage that refuses costs the memory, not the updates', async () => {
+    const native = createFakeNative();
+    const { container } = createTestContainer();
+    const update = createDesktopAppUpdate({
+        bridge: native.bridge,
+        logger: container.resolve(Logger),
+        storage: {
+            ...createStorage(),
+            setItem: () => {
+                throw new Error('Quota');
+            },
+        },
+    });
+    await waitUntil(() => update.state !== null, WAIT);
+
+    native.emit(READY);
+    expect(update.readyVersion).toBe('1.4.0');
+});
+
 const WAIT = { intervalMs: 1, timeoutMs: 1000 };
 const STATE: UpdateState = {
     version: '1.3.0',
@@ -251,7 +293,35 @@ const STATE: UpdateState = {
 
 function createUpdate(native: FakeNative) {
     const { container } = createTestContainer();
-    return createDesktopAppUpdate({ bridge: native.bridge, logger: container.resolve(Logger), outcomeMs: 20 });
+    return createDesktopAppUpdate({
+        bridge: native.bridge,
+        logger: container.resolve(Logger),
+        storage: createStorage(),
+        outcomeMs: 20,
+    });
+}
+
+function createStorage(): BrowserStorage {
+    const kept = new Map<string, string>();
+    return {
+        getItem: key => kept.get(key) ?? null,
+        setItem: (key, value) => {
+            kept.set(key, value);
+        },
+        removeItem: key => {
+            kept.delete(key);
+        },
+    };
+}
+
+/** The app started with `version` running, on what `storage` kept. */
+async function launch(storage: BrowserStorage, version: string) {
+    const native = createFakeNative();
+    native.status = { ...native.status, version };
+    const { container } = createTestContainer();
+    const update = createDesktopAppUpdate({ bridge: native.bridge, logger: container.resolve(Logger), storage });
+    await waitUntil(() => update.state !== null, WAIT);
+    return update;
 }
 
 /** The update service over a fake native side that has answered once. */

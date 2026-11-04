@@ -73,6 +73,9 @@ test('on the web the bar never offers an update, even one said to be ready', asy
         restart,
         later: () => {},
         dismiss: () => {},
+        previousVersion: null,
+        untoldChange: null,
+        markUpdateTold: () => {},
     });
     const host = document.createElement('div');
     document.body.append(host);

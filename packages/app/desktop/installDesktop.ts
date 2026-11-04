@@ -38,5 +38,8 @@ export async function installDesktop(container: Container) {
     container.set(Browser, withNativeJobLogs(withExternalLinks(container.resolve(Browser), external), bridge));
     interceptExternalLinks(document, external);
 
-    container.set(AppUpdate, createDesktopAppUpdate({ bridge, logger }));
+    container.set(
+        AppUpdate,
+        createDesktopAppUpdate({ bridge, logger, storage: container.resolve(Browser).localStorage }),
+    );
 }

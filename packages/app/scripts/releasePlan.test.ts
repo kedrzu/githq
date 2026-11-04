@@ -8,6 +8,7 @@ import {
     hasNoCode,
     planRelease,
     renderNotes,
+    userVisibleChanges,
 } from './releasePlan.js';
 
 function plan(subjects: string[], tags: string[]) {
@@ -179,6 +180,29 @@ describe('developmentVersion', () => {
         [['v0.2.0', 'v0.3.0-dev.9', 'nightly'], 7, '0.3.0-dev.7'],
     ])('%p at %p commits is %p', (tags, commitCount, expected) => {
         expect(developmentVersion({ tags, commitCount })).toBe(expected);
+    });
+});
+
+describe('userVisibleChanges', () => {
+    test('keeps what users notice, under the headings of the notes, in their order, with its pull request', () => {
+        expect(
+            userVisibleChanges([
+                'perf: load the list faster (#5)',
+                'chore: tidy (#8)',
+                'fix(web): the landing page (#9)',
+                'feat: add the menu',
+                'Merge branch main',
+                'refactor!: drop the old store (#2)',
+            ]),
+        ).toEqual([
+            { kind: 'breaking', changes: [{ description: 'Drop the old store', pullRequest: 2 }] },
+            { kind: 'features', changes: [{ description: 'Add the menu', pullRequest: undefined }] },
+            { kind: 'performance', changes: [{ description: 'Load the list faster', pullRequest: 5 }] },
+        ]);
+    });
+
+    test('nothing users notice is no group at all', () => {
+        expect(userVisibleChanges(['chore: tidy', 'docs: explain'])).toEqual([]);
     });
 });
 

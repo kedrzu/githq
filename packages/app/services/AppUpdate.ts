@@ -46,6 +46,12 @@ export type UpdateNotice =
     | { readonly kind: 'installing'; readonly version: string }
     | { readonly kind: 'installFailed'; readonly version: string };
 
+/** The version the app now runs and the one it replaced, the first time it runs after they changed. */
+export interface VersionChange {
+    readonly version: string;
+    readonly previousVersion: string;
+}
+
 /**
  * The app's own updates, the seam between the app and the desktop app's updater. Nothing restarts without the user's
  * word.
@@ -57,6 +63,15 @@ export interface AppUpdateShape {
     readonly readyVersion: string | null;
     /** What the status bar shows, if anything; reactive. */
     readonly notice: UpdateNotice | null;
+    /**
+     * The version the user had before this update, kept until the next one; `null` until the app has updated once, on the
+     * web and before the native side's first answer; reactive.
+     */
+    readonly previousVersion: string | null;
+    /** The update the user hasn't been told of yet; reactive. {@link markUpdateTold} ends it for good. */
+    readonly untoldChange: VersionChange | null;
+    /** Remembers the update as told, across reloads. */
+    markUpdateTold(): void;
     /** Checks now, at the user's word: its outcome is noticed. */
     check(): void;
     /**
@@ -79,6 +94,9 @@ export const AppUpdate = defineInterface<AppUpdateShape>({
         state: null,
         readyVersion: null,
         notice: null,
+        previousVersion: null,
+        untoldChange: null,
+        markUpdateTold: () => {},
         check: () => {},
         setStream: () => {},
         restart: () => {},

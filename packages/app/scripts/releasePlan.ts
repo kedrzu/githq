@@ -11,6 +11,12 @@ const PULL_REQUEST_SUFFIX = / \(#(\d+)\)$/;
 const STABLE_TAG = /^v(\d+)\.(\d+)\.(\d+)$/;
 // How many offending paths a title rejection names.
 const LISTED_PATHS = 3;
+const GROUP_TITLES: Record<ChangeGroupKind, string> = {
+    breaking: 'Breaking changes',
+    features: 'Features',
+    fixes: 'Fixes',
+    performance: 'Performance',
+};
 
 export type ReleaseMode = 'preview' | 'stable';
 
@@ -39,6 +45,23 @@ export interface RenderNotesParams {
 
 type Bump = 'patch' | 'minor' | 'major';
 
+/** Which heading of the release notes a change goes under. */
+export type ChangeGroupKind = 'breaking' | 'features' | 'fixes' | 'performance';
+
+/** A change users notice, as the release notes say it. */
+export interface UserVisibleChange {
+    /** Capitalised, without its pull request. */
+    description: string;
+    /** The number a squash merge appended, if any. */
+    pullRequest: number | undefined;
+}
+
+/** The changes of one heading of the release notes, never empty. */
+export interface UserVisibleChangeGroup {
+    kind: ChangeGroupKind;
+    changes: UserVisibleChange[];
+}
+
 interface Version {
     major: number;
     minor: number;
@@ -49,8 +72,8 @@ interface Change {
     type: string;
     breaking: boolean;
     description: string;
-    /** The ` (#N)` a squash merge appends, or empty. */
-    pullRequest: string;
+    /** The number in the ` (#N)` a squash merge appends. */
+    pullRequest: number | undefined;
 }
 
 /**
@@ -121,23 +144,39 @@ export function developmentVersion({ tags, commitCount }: DevelopmentVersionPara
     return `${major}.${minor + 1}.0-dev.${commitCount}`;
 }
 
-/** Markdown release notes: the user-visible changes grouped, then the pointer to the code signing policy. */
-export function renderNotes({ subjects, policyUrl }: RenderNotesParams): string {
+/**
+ * What users notice among commit subjects, under the headings of the release notes and in their order: the one rule of
+ * what the notes list, which the app's Changelog applies to a Development build's commits too.
+ */
+export function userVisibleChanges(subjects: string[]): UserVisibleChangeGroup[] {
     const changes = subjects.map(parseChange).filter(isUserVisible);
-    const groups = [
-        { title: 'Breaking changes', entries: changes.filter(change => change.breaking) },
-        { title: 'Features', entries: changes.filter(change => !change.breaking && change.type === 'feat') },
-        { title: 'Fixes', entries: changes.filter(change => !change.breaking && change.type === 'fix') },
-        { title: 'Performance', entries: changes.filter(change => !change.breaking && change.type === 'perf') },
+    const groups: { kind: ChangeGroupKind; entries: Change[] }[] = [
+        { kind: 'breaking', entries: changes.filter(change => change.breaking) },
+        { kind: 'features', entries: changes.filter(change => !change.breaking && change.type === 'feat') },
+        { kind: 'fixes', entries: changes.filter(change => !change.breaking && change.type === 'fix') },
+        { kind: 'performance', entries: changes.filter(change => !change.breaking && change.type === 'perf') },
     ];
 
-    const sections: string[] = [];
-    for (const { title, entries } of groups) {
-        if (entries.length > 0) {
-            const lines = entries.map(entry => `- ${capitalise(entry.description)}${entry.pullRequest}`);
-            sections.push(`## ${title}\n\n${lines.join('\n')}`);
-        }
-    }
+    return groups
+        .filter(({ entries }) => entries.length > 0)
+        .map(({ kind, entries }) => ({
+            kind,
+            changes: entries.map(({ description, pullRequest }) => ({
+                description: capitalise(description),
+                pullRequest,
+            })),
+        }));
+}
+
+/** Markdown release notes: the user-visible changes grouped, then the pointer to the code signing policy. */
+export function renderNotes({ subjects, policyUrl }: RenderNotesParams): string {
+    const sections = userVisibleChanges(subjects).map(({ kind, changes }) => {
+        const lines = changes.map(
+            ({ description, pullRequest }) =>
+                `- ${description}${pullRequest === undefined ? '' : ` (#${pullRequest})`}`,
+        );
+        return `## ${GROUP_TITLES[kind]}\n\n${lines.join('\n')}`;
+    });
     sections.push(
         `Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](${policyUrl}).`,
     );
@@ -166,7 +205,12 @@ function parseChange(subject: string): Change | undefined {
     if (type === undefined || description === undefined || scope !== undefined) {
         return undefined;
     }
-    return { type, breaking: bang !== undefined, description, pullRequest: suffix?.[0] ?? '' };
+    return {
+        type,
+        breaking: bang !== undefined,
+        description,
+        pullRequest: suffix?.[1] === undefined ? undefined : Number(suffix[1]),
+    };
 }
 
 function isUserVisible(change: Change | undefined): change is Change {

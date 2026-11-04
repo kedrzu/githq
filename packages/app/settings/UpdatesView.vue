@@ -134,7 +134,9 @@ function getStatus(): UpdatesStatus | null {
         icon: CircleArrowDown,
         tone: 'accent',
         title: t(l.ready, { version: activity.version }),
-        detail: t(leaving && isOlderVersion(activity.version, props.state.version) ? l.readyStableDetail : l.readyDetail),
+        detail: t(
+          leaving && isOlderVersion(activity.version, props.state.version) ? l.readyStableDetail : l.readyDetail,
+        ),
         action: t(l.restart),
       };
     case 'failed':

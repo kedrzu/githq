@@ -18,6 +18,8 @@ export interface GitHubRestRequest {
      * (`Cache-Control: private, max-age=60`), so a request polled for a change must say `no-store`.
      */
     cache?: RequestInit['cache'];
+    /** The media type asked for, instead of GitHub's JSON: `application/vnd.github.html+json` adds rendered HTML. */
+    accept?: string;
 }
 
 /** Sends one REST request; made by {@link createGitHubRestRequester}. */
@@ -30,13 +32,13 @@ export type GitHubRestRequester = (request: GitHubRestRequest) => Promise<GitHub
  * @__NO_SIDE_EFFECTS__
  */
 export function createGitHubRestRequester(options: GitHubRequesterOptions): GitHubRestRequester {
-    return function request({ method = 'GET', url, query, etag, body, cache }) {
+    return function request({ method = 'GET', url, query, etag, body, cache, accept = 'application/vnd.github+json' }) {
         const target = new URL(url, GITHUB_REST_URL);
         for (const [name, value] of Object.entries(query ?? {})) {
             target.searchParams.set(name, value);
         }
 
-        const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+        const headers: Record<string, string> = { Accept: accept };
         if (etag != null) {
             headers['If-None-Match'] = etag;
         }
