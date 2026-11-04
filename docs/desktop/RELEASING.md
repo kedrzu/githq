@@ -109,19 +109,35 @@ On any machine, once logged in with `bun nzyme secrets login`:
 ### Apple signing and notarization (once the Developer ID exists)
 
 Without these secrets the macOS app is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), and macOS calls it
-from an unidentified developer. With them, the `bundle` job signs and notarizes. Follow Tauri's
+from an unidentified developer. With them, the build signs and notarizes. Follow Tauri's
 [macOS code signing](https://v2.tauri.app/distribute/sign/macos/) guide:
 
-1. Join the Apple Developer Program. Create a **Developer ID Application** certificate and install it in your
-   keychain.
-2. Export it from Keychain Access as a `.p12` with a password, and base64 it: `base64 -i certificate.p12 | pbcopy`.
-3. Set the repository secrets:
-   - `APPLE_CERTIFICATE` — the base64 `.p12`;
-   - `APPLE_CERTIFICATE_PASSWORD` — its export password;
-   - `APPLE_SIGNING_IDENTITY` — the certificate's name, `Developer ID Application: Name (TEAMID)`;
-   - `APPLE_ID` — the Apple Account email;
-   - `APPLE_PASSWORD` — an app-specific password from account.apple.com, not the account password;
-   - `APPLE_TEAM_ID` — the team ID.
+1. Join the Apple Developer Program. As the Account Holder, create a **Developer ID Application** certificate from a
+   certificate signing request made in Keychain Access, and open the downloaded `.cer` to install it.
+
+2. Export it from Keychain Access (My Certificates) as a `.p12` with a password.
+
+3. Put everything in the secret store, under `GITHQ_ENV=prod`, the only place it can be read back from:
+
+   ```sh
+   base64 -i certificate.p12 | GITHQ_ENV=prod bun nzyme secrets set APPLE_CERTIFICATE --no-prompt
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_CERTIFICATE_PASSWORD --prompt="The .p12's export password"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_SIGNING_IDENTITY --prompt="Developer ID Application: Name (TEAMID)"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_ID --prompt="The Apple Account's email"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_PASSWORD --prompt="An app-specific password from account.apple.com"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_TEAM_ID --prompt="The team ID, developer.apple.com → Membership"
+   ```
+
+   `bun run build:desktop:signed` then signs and notarizes on any machine, with no certificate in its keychain.
+
+4. Set the repository secrets from the store, which is what the workflows read:
+
+   ```sh
+   GITHQ_ENV=prod bun nzyme secrets run -- sh -c '
+     for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+       printf %s "$(printenv "$name")" | gh secret set "$name"
+     done'
+   ```
 
 The workflow exports each one only when it is set: an empty `APPLE_CERTIFICATE` would fail the bundle. Then
 update the macOS line in the root README's download section and its Code signing policy.
