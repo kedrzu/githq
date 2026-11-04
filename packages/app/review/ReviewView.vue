@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -58,6 +58,7 @@ import {
   getDistanceLinesToShow,
   getGapLinesToShow,
   getReviewHeaderKey,
+  getReviewPlacePath,
   getReviewRowPath,
   getReviewThreadKey,
 } from './buildReviewRows.js';
@@ -83,6 +84,7 @@ import { countThreads } from './threads/countThreads.js';
 import { findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
+import { useReviewPosition } from './useReviewPosition.js';
 import { useReviewRows } from './useReviewRows.js';
 import type { ReviewThreadPlacements } from './useReviewRows.js';
 import { createFileFilter } from './utils/createFileFilter.js';
@@ -131,6 +133,8 @@ const selected = shallowRef<ReadonlySet<string>>(new Set());
 const focusedThread = shallowRef<string | null>(null);
 /** The left column is off its top: the stack's bar shows over the rows going by (D25). */
 const leftScrolled = shallowRef(false);
+/** Still on its way to where it opens: see {@link useReviewPosition}. */
+const landing = shallowRef(true);
 
 const hideViewed = computed({
   get: () => files.value?.hideViewed ?? false,
@@ -195,6 +199,19 @@ const groups = computed(() => {
     : matchedFiles.value;
   return groupReviewFiles([...shown, ...gone]);
 });
+// A regular expression can hang the tab: written only by what comes after it has run over the whole list, in this getter.
+watch(
+  () => {
+    void groups.value;
+    return files.value?.listComplete && typedFilter.value.kind !== 'invalid' ? filterInput.value : null;
+  },
+  evaluated => {
+    if (evaluated) {
+      files.value?.keepFilter(evaluated);
+    }
+  },
+  { immediate: true },
+);
 const ordered = computed(() => groups.value.flatMap(group => group.files));
 const filterOn = computed(() => filter.value.kind === 'on');
 // While a filter is on the list is flat, each file followed by its folder (D27).
@@ -213,6 +230,11 @@ const filterRegex = computed({
   set: regex => files.value?.setFilter({ pattern: filterInput.value.pattern, regex }),
 });
 const currentPath = computed(() => {
+  const landingOn = landing.value ? files.value?.position : null;
+  if (landingOn) {
+    return getReviewPlacePath(landingOn.place);
+  }
+
   const anchor = list.value?.anchor;
   return anchor ? getReviewRowPath(anchor.key) : (ordered.value[0]?.path ?? null);
 });
@@ -225,6 +247,7 @@ const { rows, threadPlacements } = useReviewRows({
   threadsInCollapsed,
 });
 watch(threadPlacements, next => (placements.value = next), { flush: 'sync', immediate: true });
+useReviewPosition({ files, rows, ordered, order: allPaths, list, landing });
 const githubUrl = computed(() => {
   const { owner, name, number } = props.reference;
   return `https://github.com/${owner}/${name}/pull/${number}/files`;
@@ -281,6 +304,7 @@ watch(
   () => accounts.current,
   () => {
     files.value = reviewFiles.open(props.reference);
+    landing.value = true;
   },
 );
 
@@ -334,6 +358,11 @@ watch(rows, (next, previous) => {
   if (held) {
     heldInExpanding = null;
     void nextTick(() => list.value?.jumpTo(held.key, held.offset));
+    return;
+  }
+
+  // On its way, its own place decides.
+  if (landing.value) {
     return;
   }
 
@@ -621,6 +650,7 @@ function jumpToThread(row: ReviewThreadRow) {
     files.value?.setThreadOpen(id, true);
   }
 
+  landing.value = false;
   focusedThread.value = id;
   const height = diffColumn.value?.clientHeight ?? 0;
   list.value?.jumpTo(row.key, Math.round(Math.max(height / 4, THREAD_MIN_OFFSET)));
@@ -774,6 +804,7 @@ function expandGap(gap: ReviewGapRow, count: number) {
 }
 
 function jumpToFile(path: string) {
+  landing.value = false;
   focusedThread.value = null;
   files.value?.prioritize(path);
   list.value?.jumpTo(getReviewHeaderKey(path), 0);
@@ -920,6 +951,7 @@ function readAgain() {
           :estimate-height="estimateReviewRowHeight"
           :is-pinned="isPinned"
           :label="t(l.diff)"
+          @user-scroll="landing = false"
         >
           <template #default="{ row }">
             <ReviewDiffRow

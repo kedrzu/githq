@@ -67,6 +67,11 @@ const props = withDefaults(
   { isPinned: () => false },
 );
 
+const emit = defineEmits<{
+  /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
+  userScroll: [];
+}>();
+
 const slots = defineSlots<{
   default(slotProps: AnchoredListSlotProps<T>): VNodeChild;
 }>();
@@ -165,6 +170,7 @@ function onScroll() {
   model.captureAnchor(scrollTop);
   anchor.value = model.anchor;
   showWindow(false);
+  emit('userScroll');
 }
 
 /** One observer call is the whole frame's observations of these elements, so it is one layout. */

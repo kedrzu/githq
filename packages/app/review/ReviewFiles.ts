@@ -37,10 +37,17 @@ import { getRefusalPause } from '@/sync/getRefusalPause.js';
 import { SyncPausedError } from '@/sync/SyncPausedError.js';
 import type { SyncPause } from '@/sync/SyncPausedError.js';
 
+import type { ReviewPosition } from './buildReviewRows.js';
 import { addDiffLineRange } from './diff/buildDiffRows.js';
 import type { DiffLineRange } from './diff/buildDiffRows.js';
 import { ReviewBlobStore } from './ReviewBlobStore.js';
-import type { ReviewBlob, ReviewKeptFileList, ReviewKeptResolution } from './ReviewBlobStore.js';
+import type {
+    ReviewBlob,
+    ReviewExpandedLines,
+    ReviewKeptFileList,
+    ReviewKeptResolution,
+    ReviewKeptState,
+} from './ReviewBlobStore.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
 import { readReviewThreads } from './threads/readReviewThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
@@ -180,7 +187,7 @@ export interface PullRequestFiles {
     getCollapse(path: string): ReviewFileCollapse | null;
     /** Why the file starts collapsed, which it still says once opened (CR13). */
     getCollapseReason(path: string): ReviewFileCollapseReason | null;
-    /** Collapses the file, or opens it, which fetches it next. Kept for as long as the model, whatever the head, until its viewed mark changes. */
+    /** Collapses the file, or opens it, which fetches it next. Kept on disk (D14), whatever the head, until its viewed mark changes. */
     setCollapsed(path: string, collapsed: boolean): void;
     /**
      * Sets GitHub's viewed marks, shown at once in {@link files} and sent together with whatever else is waiting. GitHub
@@ -188,15 +195,23 @@ export interface PullRequestFiles {
      * what {@link setCollapsed} chose for it is dropped, so that the mark always shows.
      */
     setViewed(paths: readonly string[], viewed: boolean): void;
-    /** Whether viewed files leave the list and the diff (D9). */
+    /** Whether viewed files leave the list and the diff (D9). Kept on disk (D14), like all that follows. */
     readonly hideViewed: boolean;
     setHideViewed(hide: boolean): void;
-    /** Whether a resolved thread shows whole rather than as one line: for as long as the model. */
+    /** Whether a resolved thread shows whole rather than as one line. */
     isThreadOpen(id: string): boolean;
     setThreadOpen(id: string, opened: boolean): void;
-    /** What the file list's filter holds (D11): for this pull request, for as long as the model. */
+    /** What the file list's filter holds (D11), for this pull request. */
     readonly filter: FileFilterInput;
     setFilter(filter: FileFilterInput): void;
+    /**
+     * The filter has run over the whole list and come back: only now is it written. A regular expression can hang the tab,
+     * which must not come back on every open. One read from disk leaves it again until it has run once more.
+     */
+    keepFilter(filter: FileFilterInput): void;
+    /** Where the reader was when last told (D7); `null` for a pull request never left. Known once `list` is `ready`. */
+    readonly position: ReviewPosition | null;
+    setPosition(position: ReviewPosition): void;
     /**
      * The lines of the file shown beyond the context (D6), the same array until they change. Only for the head blob they
      * were expanded on: the author changing the file drops them, as its lines no longer mean the same (D14).
@@ -254,6 +269,9 @@ const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
 const THREADS_READY = { kind: 'ready' } as const;
 const NO_LINES: readonly DiffLineRange[] = [];
+const NO_FILTER: FileFilterInput = { pattern: '', regex: false };
+/** Pull requests held in memory, each with all its text: a further one comes back from disk in milliseconds. */
+const MAX_MODELS_HELD = 8;
 
 /** Each side's blob: `null` for the side the file doesn't exist on. */
 interface FileSides {
@@ -332,6 +350,7 @@ interface Session {
     readonly account: Account;
     readonly requester: Requester<GitHubGraphQLCallOptions>;
     readonly rest: GitHubRestRequester;
+    /** The one opened last at the end. */
     readonly models: Map<string, Model>;
     /** By {@link ReviewBlobStore}'s key, `<repository>:<base>...<head>`, which never changes its answer. */
     readonly mergeBases: Map<string, Promise<string>>;
@@ -343,6 +362,8 @@ interface Model {
     readonly files: PullRequestFiles;
     reopen(): void;
     drop(): void;
+    /** Viewed marks are on their way to GitHub: dropping the model would lose them. */
+    isSendingMarks(): boolean;
 }
 
 type FileListPage = NonNullable<NonNullable<PullRequestReviewFilesQuery['repository']>['pullRequest']>;
@@ -388,8 +409,9 @@ export const ReviewFiles = defineService({
         return { open };
 
         /**
-         * The files of the pull request, reading them when first opened. Opened again in the session it is the same
-         * model, its list read anew behind what it shows. `null` while signed out.
+         * The files of the pull request, reading them when first opened. Opened again while held it is the same model,
+         * its list read anew behind what it shows; only the last {@link MAX_MODELS_HELD} opened are, and the one a screen
+         * shows is always the last opened. `null` while signed out.
          */
         function open(reference: ItemReference): PullRequestFiles | null {
             const current = session;
@@ -399,14 +421,24 @@ export const ReviewFiles = defineService({
 
             const key = formatItemReference(reference);
             const held = current.models.get(key);
-            if (held) {
-                held.reopen();
-                return held.files;
-            }
-
-            const model = createModel(current, reference);
+            const model = held ?? createModel(current, reference);
+            current.models.delete(key);
             current.models.set(key, model);
+            held?.reopen();
+            dropOldestModels(current);
             return model.files;
+        }
+
+        /** What is in flight for them stops; marks not yet with GitHub keep theirs held until they are. */
+        function dropOldestModels(current: Session) {
+            let excess = current.models.size - MAX_MODELS_HELD;
+            for (const [key, model] of [...current.models].slice(0, -1)) {
+                if (excess > 0 && !model.isSendingMarks()) {
+                    model.drop();
+                    current.models.delete(key);
+                    excess--;
+                }
+            }
         }
 
         function follow(account: Account | null) {
@@ -449,9 +481,10 @@ export const ReviewFiles = defineService({
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
-            const filterRef = shallowRef<FileFilterInput>({ pattern: '', regex: false });
+            const filterRef = shallowRef<FileFilterInput>(NO_FILTER);
             /** The head blob each file's lines were expanded on, and the lines. */
-            const expandedLines = new Map<string, { oid: string; lines: readonly DiffLineRange[] }>();
+            const expandedLines = new Map<string, ReviewExpandedLines>();
+            const positionRef = shallowRef<ReviewPosition | null>(null);
 
             let unsentMarks = new Map<string, boolean>();
             let markCount = 0;
@@ -467,6 +500,10 @@ export const ReviewFiles = defineService({
             let listAskedAgain = false;
             /** The files marked viewed when the list was last whole, on disk or in memory. */
             let viewedBefore: ReadonlySet<string> = new Set();
+            /** Nothing is written before: it would replace what the disk holds with nothing. */
+            let stateRead = false;
+            /** The filter that goes to disk: the last that has run. */
+            let filterToKeep = NO_FILTER;
 
             const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
@@ -545,6 +582,7 @@ export const ReviewFiles = defineService({
                     },
                     setHideViewed(hide) {
                         hideViewedRef.value = hide;
+                        keepState();
                     },
                     isThreadOpen(id) {
                         return openThreadsRef.value.has(id);
@@ -558,6 +596,7 @@ export const ReviewFiles = defineService({
                         }
 
                         openThreadsRef.value = next;
+                        keepState();
                     },
                     get filter() {
                         return filterRef.value;
@@ -565,12 +604,26 @@ export const ReviewFiles = defineService({
                     setFilter(filter) {
                         filterRef.value = filter;
                     },
+                    keepFilter(filter) {
+                        if (filter !== filterToKeep) {
+                            filterToKeep = filter;
+                            keepState();
+                        }
+                    },
+                    get position() {
+                        return positionRef.value;
+                    },
+                    setPosition(position) {
+                        positionRef.value = position;
+                        keepState();
+                    },
                     getExpandedLines,
                     isExpansionReset,
                     expandLines,
                 },
                 reopen,
                 drop,
+                isSendingMarks: () => [...viewedMarks.values()].some(mark => mark.pending),
             };
 
             function getState(path: string): ReviewFileState {
@@ -736,6 +789,7 @@ export const ReviewFiles = defineService({
                     expandedLines.set(path, { oid, lines: addDiffLineRange(getExpandedLines(path), lines) });
                     // Not through `setState`'s frame: this is a click.
                     versionRef.value++;
+                    keepState();
                 }
             }
 
@@ -743,6 +797,7 @@ export const ReviewFiles = defineService({
                 collapseChoices.set(path, !collapsed);
                 // Not through `setState`'s frame: this is a key pressed.
                 versionRef.value++;
+                keepState();
 
                 const run = runRef.value;
                 const entry = run?.entries.get(path);
@@ -837,6 +892,7 @@ export const ReviewFiles = defineService({
                 forgetLostViewed(paths);
                 publishFiles(run);
                 pump(run);
+                keepState();
                 void marksSender.execute();
             }
 
@@ -944,13 +1000,18 @@ export const ReviewFiles = defineService({
                 }
             }
 
-            /** They signed out: nothing of the private files stays reachable from a model a screen may still hold. */
+            /**
+             * They signed out, or it is {@link MAX_MODELS_HELD} opens old: nothing of the private files stays reachable from
+             * a model a screen may still hold, and nothing more is asked or written for it.
+             */
             function drop() {
                 dropped = true;
                 listAskedAgain = false;
                 unsentMarks.clear();
                 viewedMarks.clear();
                 collapseChoices.clear();
+                expandedLines.clear();
+                positionRef.value = null;
                 cancelUpdate?.();
                 cancelUpdate = null;
                 cancelResume?.();
@@ -976,7 +1037,10 @@ export const ReviewFiles = defineService({
             async function load() {
                 listRef.value = LOADING;
                 void loadThreads();
-                const kept = await readFromDisk(() => blobs.readFileList(login, listKey));
+                const [kept] = await Promise.all([
+                    readFromDisk(() => blobs.readFileList(login, listKey)),
+                    stateRead ? null : loadState(),
+                ]);
                 if (dropped) {
                     return;
                 }
@@ -988,6 +1052,72 @@ export const ReviewFiles = defineService({
                 }
 
                 await listReader.execute();
+            }
+
+            /** Done before the list is `ready`, for a reopened pull request to draw in place at once. */
+            async function loadState() {
+                const kept = await readFromDisk(() => blobs.readState(login, listKey));
+                if (dropped) {
+                    return;
+                }
+
+                if (kept) {
+                    positionRef.value = kept.position;
+                    hideViewedRef.value ||= kept.hideViewed;
+                    openThreadsRef.value = kept.openThreads;
+                    for (const [path, choice] of kept.collapseChoices) {
+                        collapseChoices.set(path, choice);
+                    }
+
+                    for (const [path, expanded] of kept.expandedLines) {
+                        expandedLines.set(path, expanded);
+                    }
+                }
+
+                stateRead = true;
+                // What the user typed meanwhile wins.
+                if (kept && filterRef.value === NO_FILTER) {
+                    await takeFilter(kept.filter);
+                }
+            }
+
+            /**
+             * Off the disk before it runs again, whatever it did before: the list it runs over may have changed, and if it
+             * hangs the tab now the next open finds nothing to run.
+             */
+            async function takeFilter(filter: FileFilterInput) {
+                if (filter.regex) {
+                    try {
+                        await blobs.writeState(login, listKey, readState());
+                    } catch (error) {
+                        logger.warn('Could not take a regular expression off the disk: it is not run', { error });
+                        return;
+                    }
+                } else {
+                    filterToKeep = filter;
+                }
+
+                if (!dropped) {
+                    filterRef.value = filter;
+                }
+            }
+
+            function readState(): ReviewKeptState {
+                return {
+                    position: positionRef.value,
+                    collapseChoices,
+                    filter: filterToKeep,
+                    hideViewed: hideViewedRef.value,
+                    expandedLines,
+                    openThreads: openThreadsRef.value,
+                };
+            }
+
+            /** A small record, on what a user does: never on what merely goes by, like every frame of a scroll. */
+            function keepState() {
+                if (stateRead) {
+                    keepOnDisk(() => blobs.writeState(login, listKey, readState()));
+                }
             }
 
             /** What the disk holds shows at once, what GitHub says follows. */
@@ -1949,6 +2079,10 @@ export const ReviewFiles = defineService({
 
             /** Every read from GitHub goes through here; what the disk holds never needs to. */
             function assertMayAsk() {
+                if (dropped) {
+                    throw new Error('Nobody is waiting for this pull request any more');
+                }
+
                 const pause = findPause();
                 if (pause) {
                     throw new SyncPausedError(pause);

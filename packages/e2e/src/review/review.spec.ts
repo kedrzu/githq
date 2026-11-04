@@ -47,14 +47,16 @@ test('D opens the review of the pull request open, at its GitHub address, in the
     await expect(review.fileRow('client.ts')).toBeVisible();
     await expect(review.code('export const client = 2;')).toBeVisible();
     await expect(review.codeToken('export const client = 2;').first()).toBeVisible();
-    await expect(review.currentFileRow).toContainText(README);
-
-    await page.keyboard.press(']');
+    // README.md, first, is viewed: opened for the first time it lands on the first file that isn't (D16).
     await expect(review.currentFileRow).toContainText('logo.png');
     await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
 
     await page.keyboard.press('[');
     await expect(review.currentFileRow).toContainText(README);
+
+    await page.keyboard.press(']');
+    await expect(review.currentFileRow).toContainText('logo.png');
+    await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
 
     await page.reload();
     await expect(review.title).toHaveText(PULL_REQUEST);
@@ -490,7 +492,9 @@ test('a lock file shows only its header, saying why, and is not fetched until Sp
     await expect(review.code('lock after')).toHaveCount(0);
     expect(askedForLock()).toEqual([]);
 
-    await review.diff.focus();
+    // Collapsed, it isn't where a first open lands (D16).
+    await expect(review.currentFileRow).toContainText('app.ts');
+    await page.keyboard.press('[');
     await expect(review.currentFileRow).toContainText('bun.lock');
     const scrolled = await review.diff.evaluate(diff => diff.scrollTop);
     await page.keyboard.press('Space');
@@ -769,10 +773,10 @@ test('⌘B hides the file list and remembers it, the toggle and the view options
     await expect(review.fileList).toBeHidden();
     await expect(review.fileListToggle).toHaveAttribute('aria-pressed', 'false');
     await page.keyboard.press(']');
-    await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
+    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
 
     await page.reload();
-    await expect(review.fileHeader(README)).toBeAttached();
+    await expect(review.fileHeader(CLIENT)).toBeAttached();
     await expect(review.fileList).toBeHidden();
 
     await review.viewOptionsButton.click();

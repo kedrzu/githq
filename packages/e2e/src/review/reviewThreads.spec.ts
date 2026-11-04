@@ -319,8 +319,11 @@ test('"Comments in collapsed files" hides them and is remembered; Expand to here
     await expect(review.thread('In a collapsed file')).toHaveCount(0);
 
     await goToThread(review, 'On a hidden line');
+    // Only with its file here: under its header alone it can't reach where a jump lands it, and goes there when the file comes.
+    const expand = review.diff.getByRole('button', { name: 'Expand to here' }).first();
+    await expect(expand).toBeVisible();
     const offset = await review.threadOffset('On a hidden line');
-    await review.diff.getByRole('button', { name: 'Expand to here' }).first().click();
+    await expand.click();
     await expect(review.diff.getByText(/further/u)).toHaveCount(0);
     await expect.poll(() => review.threadOffset('On a hidden line')).toBeCloseTo(offset, 0);
 });
@@ -332,6 +335,7 @@ test('Show all over a thread on a hidden line holds the thread where it is, as i
     const { review } = await openThreads(page, github);
     await goToThread(review, 'On a hidden line');
     // Read from above the gap, which is what would stay put with nothing held.
+    await expect(review.gapButton('Show all').first()).toBeVisible();
     await review.diff.evaluate(diff => diff.scrollBy(0, -200));
     const offset = await review.threadOffset('On a hidden line');
 
@@ -365,6 +369,8 @@ async function openThreads(
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('engine.ts')).toBeVisible();
     await expect(review.fileHeader(ENGINE)).toBeAttached();
+    // Walking goes on from what is read: from the very first file, not from where a first open lands.
+    await review.fileRow('bun.lock').click();
     return { review, answered };
 }
 

@@ -138,6 +138,12 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         syntax.dispose();
     });
 
+    // A pull request held in memory is back in place at once: no frame of placeholders where its text is at hand.
+    if (cancelTurn !== null) {
+        builtAt = Number.NEGATIVE_INFINITY;
+        computeTurn();
+    }
+
     return { rows, threadPlacements };
 
     function rebuild() {
@@ -347,13 +353,17 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         cancelTurn = null;
 
         const started = clock.now();
+        const currentPath = toValue(options.currentPath);
         let next = findNextToCompute();
+        // What's on screen doesn't wait for the rest.
+        let currentComputed = false;
         while (next !== null && clock.now() - started < COMPUTE_TURN_MS) {
+            currentComputed ||= next.path === currentPath;
             computeDiff(next);
             next = findNextToCompute();
         }
 
-        if (next === null || clock.now() - builtAt >= REBUILD_EVERY_MS) {
+        if (next === null || currentComputed || clock.now() - builtAt >= REBUILD_EVERY_MS) {
             rebuild();
         }
 

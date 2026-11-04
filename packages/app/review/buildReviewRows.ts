@@ -643,6 +643,119 @@ export function getPlaceholderHeight(file: ReviewFile): number {
     return lines * LINE_HEIGHT;
 }
 
+/**
+ * A place in a review, by identity: what a position is kept as, for a line's rows and their keys differ per layout.
+ * `row`: any row whose key every layout shares, a thread or a file's header.
+ */
+export type ReviewPlace =
+    | ({ readonly kind: 'line'; readonly path: string } & RowLine)
+    | { readonly kind: 'row'; readonly key: string };
+
+/** "Where you are" (D7), to come back to: a place, and the distance of its top from the viewport's top. */
+export interface ReviewPosition {
+    readonly place: ReviewPlace;
+    readonly offset: number;
+}
+
+/**
+ * Where a row at that distance from the top is. Inside a file not here, how far says nothing of what will replace it: its
+ * header, at the top.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewPosition(row: ReviewRow, offset: number): ReviewPosition {
+    const path = getReviewRowPath(row.key);
+    if (row.kind === 'placeholder' || row.kind === 'paused') {
+        return { place: { kind: 'row', key: getReviewHeaderKey(path) }, offset: 0 };
+    }
+
+    const line = getRowLine(row);
+    return { place: line ? { kind: 'line', path, ...line } : { kind: 'row', key: row.key }, offset };
+}
+
+/**
+ * The file a place is in.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewPlacePath(place: ReviewPlace) {
+    return place.kind === 'line' ? place.path : getReviewRowPath(place.key);
+}
+
+export interface FindReviewPositionRowParams {
+    readonly position: ReviewPosition;
+    readonly rows: readonly ReviewRow[];
+    /** Every file in the order they show, those not shown too. */
+    readonly order: readonly string[];
+}
+
+/** The row a position lands on now, and how far that is from what it asked for. */
+export interface ReviewPositionRow extends ReviewRowReplacement {
+    /**
+     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its header, until they are.
+     * `fileMissing`: the file isn't among the rows, the next one standing in.
+     */
+    readonly landing: 'arrived' | 'fileWaiting' | 'fileMissing';
+}
+
+/**
+ * Where a position kept lands in the rows there are now: the same row, or the same line of the same file whichever the
+ * layout, at the same distance from the top. A line hidden now gives way to the nearest above it (D7); a row gone or a
+ * file with no lines at or above it to its header, at the top. A file not among the rows to the next one still there, as
+ * in {@link findReplacementRow}; `null` when no file is left.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function findReviewPositionRow({
+    position,
+    rows,
+    order,
+}: FindReviewPositionRowParams): ReviewPositionRow | null {
+    const { place, offset } = position;
+    if (place.kind === 'row') {
+        const row = rows.find(other => other.key === place.key);
+        if (row) {
+            return { row, offset, landing: 'arrived' };
+        }
+    }
+
+    const path = getReviewPlacePath(place);
+    const start = rows.findIndex(row => row.key === getReviewHeaderKey(path));
+    const header = rows[start];
+    if (!header) {
+        const next = findNextFileHeader({
+            key: getReviewHeaderKey(path),
+            offset: 0,
+            previous: [],
+            next: rows,
+            order,
+        });
+        return next && { ...next, landing: 'fileMissing' };
+    }
+
+    if (isFileWaiting(rows, start)) {
+        return { row: header, offset: 0, landing: 'fileWaiting' };
+    }
+
+    const nearest = place.kind === 'line' ? findNearestLineRow(rows, start, place) : null;
+    return nearest ? { row: nearest, offset, landing: 'arrived' } : { row: header, offset: 0, landing: 'arrived' };
+}
+
+function isFileWaiting(rows: readonly ReviewRow[], header: number) {
+    for (let index = header + 1; index < rows.length; index++) {
+        const row = rows[index];
+        if (!row || row.kind === 'header') {
+            break;
+        }
+
+        if (row.kind === 'placeholder' || row.kind === 'paused') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export interface FindReplacementRowParams {
     /** The row held. */
     readonly key: string;
@@ -703,7 +816,7 @@ export function findReplacementRow({
         return { row: header, offset: 0 };
     }
 
-    const place = held ? getRowPlace(held) : null;
+    const place = held ? getRowLine(held) : null;
     const first = next[start + 1] ?? header;
     if (held?.kind === 'tail') {
         const end = next.findIndex(row => row.kind === 'end' && getReviewRowPath(row.key) === path);
@@ -714,9 +827,17 @@ export function findReplacementRow({
         return { row: first, offset };
     }
 
-    let nearest = first;
-    for (let index = start + 1; index < next.length; index++) {
-        const row = next[index];
+    return { row: findNearestLineRow(next, start, place) ?? first, offset };
+}
+
+/**
+ * The file's row at the line, or else the nearest above it (D7), a gap counting when it covers the line; `null` when the
+ * file shows none at or above it.
+ */
+function findNearestLineRow(rows: readonly ReviewRow[], header: number, place: RowLine) {
+    let nearest: ReviewRow | null = null;
+    for (let index = header + 1; index < rows.length; index++) {
+        const row = rows[index];
         if (!row || row.kind === 'header') {
             break;
         }
@@ -731,7 +852,7 @@ export function findReplacementRow({
         }
     }
 
-    return { row: nearest, offset };
+    return nearest;
 }
 
 function findNextFileHeader({
@@ -761,12 +882,13 @@ function findNextFileHeader({
     return { row, offset: held?.kind === 'header' ? Math.max(offset, 0) : 0 };
 }
 
-interface RowPlace {
+/** A line of a file on one side, which no layout changes. */
+interface RowLine {
     readonly side: 'before' | 'after';
     readonly line: number;
 }
 
-function getRowPlace(row: ReviewRow): RowPlace | null {
+function getRowLine(row: ReviewRow): RowLine | null {
     switch (row.kind) {
         case 'line': {
             const after = getLineNumber(row.line, 'after');
@@ -786,7 +908,7 @@ function getRowPlace(row: ReviewRow): RowPlace | null {
 }
 
 /** Where a row starts on a side, the lines of a gap counted from its first; `null` for a row with no line there. */
-function getRowFirstLine(row: ReviewRow, side: RowPlace['side']) {
+function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
     switch (row.kind) {
         case 'line':
             return getLineNumber(row.line, side);
@@ -797,7 +919,7 @@ function getRowFirstLine(row: ReviewRow, side: RowPlace['side']) {
     }
 }
 
-function getLineNumber(line: DiffSplitRow | DiffUnifiedRow, side: RowPlace['side']): number | null {
+function getLineNumber(line: DiffSplitRow | DiffUnifiedRow, side: RowLine['side']): number | null {
     if (line.layout === 'split') {
         return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
     }

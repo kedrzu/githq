@@ -5,12 +5,15 @@ import {
     buildReviewRows,
     estimateReviewRowHeight,
     findReplacementRow,
+    findReviewPositionRow,
     getDistanceLinesToShow,
     getGapLinesToShow,
     getReviewHeaderKey,
+    getReviewPosition,
     getReviewRowPath,
+    getReviewThreadKey,
 } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReviewRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import { placeThreads } from './threads/placeThreads.js';
@@ -451,6 +454,103 @@ test('a file collapsed under a reader deep in it shows its header at the top; on
     expect(findReplacementRow({ key: end?.key ?? '', offset: -10, previous: collapsed, next: open })).toMatchObject(
         header,
     );
+});
+
+test('a position kept on a line lands on that line in the other layout, at the same distance from the top', () => {
+    const split = lineWithAfter(rowsOf(DIFF), 21);
+    const position = getReviewPosition(split, -7);
+
+    const found = findReviewPositionRow({ position, rows: unifiedRowsOf(DIFF), order: [A.path] });
+
+    expect(found?.offset).toBe(-7);
+    expect(found?.landing).toBe('arrived');
+    const { row } = found ?? {};
+    expect(row?.kind === 'line' && row.line.layout === 'unified' && row.line.newLine).toBe(21);
+});
+
+test('a line deleted is kept by its older side, in either layout', () => {
+    const rows = unifiedRowsOf(DIFF);
+    const deleted = rows.find(row => row.kind === 'line' && row.line.layout === 'unified' && row.line.newLine === null);
+    expect(deleted).toBeDefined();
+    const position = getReviewPosition(deleted!, 0);
+    expect(position.place).toEqual({ kind: 'line', path: A.path, side: 'before', line: 20 });
+
+    const { row } = findReviewPositionRow({ position, rows: rowsOf(DIFF), order: [A.path] }) ?? {};
+
+    expect(row?.kind === 'line' && row.line.layout === 'split' && row.line.left?.line).toBe(20);
+});
+
+test('a line hidden now lands on the nearest shown above it, a gap covering it counting', () => {
+    const position: ReviewPosition = { place: { kind: 'line', path: A.path, side: 'after', line: 25 }, offset: 4 };
+    const narrow = buildReviewRows({
+        files: [A],
+        getContent: () => ({
+            kind: 'lines',
+            // Line 25 itself is left out, as whitespace hidden leaves out a line.
+            rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }).filter(
+                row => !(row.kind === 'line' && row.line.layout === 'split' && row.line.right?.line === 23),
+            ),
+        }),
+    });
+
+    const inGap = findReviewPositionRow({ position, rows: rowsOf(DIFF), order: [A.path] });
+    expect(inGap?.row.kind).toBe('gap');
+    expect(inGap?.offset).toBe(4);
+
+    const above = findReviewPositionRow({
+        position: { ...position, place: { ...position.place, kind: 'line', path: A.path, side: 'after', line: 23 } },
+        rows: narrow,
+        order: [A.path],
+    });
+    expect(above?.row).toBe(lineWithAfter(narrow, 22));
+});
+
+test('a file not arrived holds its header at the top; a thread is found by its key meanwhile, wherever it shows', () => {
+    const rows = buildReviewRows({
+        files: [A],
+        getContent: () => ({ kind: 'placeholder' }),
+        getThreads: () => placeThreads({ kind: 'collapsed', notLoaded: false }, [threadOnLine(20)]),
+    });
+    const onLine: ReviewPosition = { place: { kind: 'line', path: A.path, side: 'after', line: 21 }, offset: 120 };
+
+    expect(findReviewPositionRow({ position: onLine, rows, order: [A.path] })).toMatchObject({
+        row: { key: getReviewHeaderKey(A.path) },
+        offset: 0,
+        landing: 'fileWaiting',
+    });
+
+    const key = getReviewThreadKey(A.path, threadOnLine(20).id);
+    expect(
+        findReviewPositionRow({ position: { place: { kind: 'row', key }, offset: 90 }, rows, order: [A.path] }),
+    ).toMatchObject({ row: { key }, offset: 90, landing: 'arrived' });
+});
+
+test('a position inside a placeholder is kept as its file, for how far says nothing of what comes', () => {
+    const rows = buildReviewRows({ files: [A], getContent: () => ({ kind: 'placeholder' }) });
+    const placeholder = rows.find(row => row.kind === 'placeholder');
+
+    expect(getReviewPosition(placeholder!, -300)).toEqual({
+        place: { kind: 'row', key: getReviewHeaderKey(A.path) },
+        offset: 0,
+    });
+});
+
+test("a file not among the rows gives way to the next one still there; a thread gone to its file's top", () => {
+    const rows = buildAll([B], 'split');
+    const position: ReviewPosition = { place: { kind: 'line', path: A.path, side: 'after', line: 21 }, offset: 50 };
+
+    expect(findReviewPositionRow({ position, rows, order: [A.path, B.path] })).toMatchObject({
+        row: { key: getReviewHeaderKey(B.path) },
+        offset: 0,
+        landing: 'fileMissing',
+    });
+    expect(
+        findReviewPositionRow({
+            position: { place: { kind: 'row', key: getReviewThreadKey(B.path, 'gone') }, offset: 50 },
+            rows,
+            order: [A.path, B.path],
+        }),
+    ).toMatchObject({ row: { key: getReviewHeaderKey(B.path) }, offset: 0, landing: 'arrived' });
 });
 
 function buildAll(files: readonly ReviewFile[], layout: 'split' | 'unified'): ReviewRow[] {

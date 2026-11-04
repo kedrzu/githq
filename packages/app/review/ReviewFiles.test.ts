@@ -14,6 +14,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
+import type { ReviewPosition } from './buildReviewRows.js';
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
 import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
@@ -408,6 +409,186 @@ test("a file's expanded lines stay through a read of the same head and go when t
     model.expandLines('a.ts', { start: 0, end: 5 });
     expect(model.isExpansionReset('a.ts')).toBe(false);
     expect(model.getExpandedLines('a.ts')).toEqual([{ start: 0, end: 5 }]);
+});
+
+test('what the user did comes back with the list on a reload: the position first of all, before anything is shown', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    const first = open(login, github);
+    await settled(first.model);
+    const position: ReviewPosition = { place: { kind: 'line', path: 'a.ts', side: 'after', line: 1 }, offset: -6 };
+
+    first.model.setPosition(position);
+    first.model.setCollapsed('b.ts', true);
+    first.model.expandLines('a.ts', { start: 10, end: 30 });
+    first.model.setThreadOpen('T1', true);
+    first.model.setHideViewed(true);
+    const filter = { pattern: '*.ts', regex: false };
+    first.model.setFilter(filter);
+    first.model.keepFilter(filter);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('after'));
+    await waitUntil(async () => (await ReviewBlobStore.create().readState(login, LIST_KEY))?.hideViewed === true, {
+        timeoutMs: 2000,
+    });
+
+    const { model } = open(login, github);
+    expect(model.position).toBeNull();
+    await waitUntil(() => model.list.kind === 'ready', { timeoutMs: 2000 });
+
+    expect(model.position).toEqual(position);
+    expect(model.getCollapse('b.ts')).toBe('byHand');
+    expect(model.isThreadOpen('T1')).toBe(true);
+    expect(model.hideViewed).toBe(true);
+    expect(model.filter).toEqual(filter);
+    await settled(model);
+    expect(model.getExpandedLines('a.ts')).toEqual([{ start: 10, end: 30 }]);
+});
+
+test('expanded context kept for a blob the author has changed since is dropped on a reload too (D14)', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    github.file({ path: 'b.ts', changeType: 'MODIFIED', before: 'before', after: 'stays' });
+    const first = open(login, github);
+    await settled(first.model);
+    first.model.expandLines('a.ts', { start: 0, end: 5 });
+    first.model.expandLines('b.ts', { start: 0, end: 5 });
+    await waitUntil(async () => (await ReviewBlobStore.create().readState(login, LIST_KEY))?.expandedLines.size === 2, {
+        timeoutMs: 2000,
+    });
+
+    github.moveHead('head-2');
+    github.blobAt('head-2:a.ts', { text: 'pushed' });
+    github.blobAt('head-2:b.ts', { text: 'stays' });
+    const { model } = open(login, github);
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+    await settled(model);
+
+    expect(model.getExpandedLines('a.ts')).toEqual([]);
+    expect(model.isExpansionReset('a.ts')).toBe(true);
+    expect(model.getExpandedLines('b.ts')).toEqual([{ start: 0, end: 5 }]);
+});
+
+test('a regular expression reaches the disk only once it has run, and leaves it again before it runs after a reload', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const store = ReviewBlobStore.create();
+    const first = open(login, github);
+    await settled(first.model);
+    const position: ReviewPosition = { place: { kind: 'row', key: 'a.ts' }, offset: 0 };
+    const regex = { pattern: '(a+)+$', regex: true };
+
+    // Typed, and never come back from running: whatever else is written meanwhile leaves it out.
+    first.model.setFilter(regex);
+    first.model.setPosition(position);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.position != null, { timeoutMs: 2000 });
+    expect((await store.readState(login, LIST_KEY))?.filter.pattern).toBe('');
+    const hung = open(login, github);
+    await waitUntil(() => hung.model.list.kind === 'ready', { timeoutMs: 2000 });
+    expect(hung.model.filter.pattern).toBe('');
+
+    // It has run.
+    hung.model.setFilter(regex);
+    hung.model.keepFilter(regex);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.filter.regex === true, { timeoutMs: 2000 });
+
+    // Read back, it is shown to run again; if that hangs, the next open must not find it.
+    const reloaded = open(login, github);
+    await waitUntil(() => reloaded.model.filter.regex, { timeoutMs: 2000 });
+    expect((await store.readState(login, LIST_KEY))?.filter.pattern).toBe('');
+
+    reloaded.model.keepFilter(reloaded.model.filter);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.filter.regex === true, { timeoutMs: 2000 });
+});
+
+test('what the user did goes on sign-out, and nothing written late brings it back', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const { model, session } = open(login, github);
+    session.container.resolve(ItemStore);
+    await settled(model);
+    const position: ReviewPosition = { place: { kind: 'row', key: 'a.ts' }, offset: 0 };
+    model.setPosition(position);
+    await waitUntil(async () => (await ReviewBlobStore.create().readState(login, LIST_KEY)) !== undefined, {
+        timeoutMs: 2000,
+    });
+
+    session.signOutFromAnotherTab();
+    await waitUntil(async () => !(await databaseNames()).includes(getReviewBlobDatabaseName(login)), {
+        timeoutMs: 2000,
+    });
+    model.setPosition(position);
+    model.setHideViewed(true);
+    await session.clock.advance(0);
+    await Bun.sleep(20);
+
+    expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
+});
+
+test('only the last eight pull requests opened stay in memory: an older one is let go of, and comes back from disk without asking for its text', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'MODIFIED', before: 'before', after: 'after' });
+    const { model: oldest, files, session } = open(login, github);
+    await settled(oldest);
+    await waitUntilAllKept(login, [`${HEAD}:a.ts`], oidOf('after'));
+    const position: ReviewPosition = { place: { kind: 'row', key: 'a.ts' }, offset: 12 };
+    oldest.setPosition(position);
+    await waitUntil(async () => (await ReviewBlobStore.create().readState(login, LIST_KEY))?.position != null, {
+        timeoutMs: 2000,
+    });
+
+    const opened = Array.from({ length: 8 }, (_, index) => files.open({ ...REFERENCE, number: 100 + index }));
+    expect(oldest.files).toEqual([]);
+    expect(oldest.position).toBeNull();
+    // Not the newest, the one a screen shows, and not the others.
+    expect(files.open({ ...REFERENCE, number: 107 })).toBe(opened[7] ?? null);
+    expect(files.open({ ...REFERENCE, number: 100 })).toBe(opened[0] ?? null);
+
+    const texts = textQueries(session).length;
+    const back = files.open(REFERENCE);
+    expect(back).not.toBe(oldest);
+    await waitUntil(() => back?.position != null, { timeoutMs: 2000 });
+    expect(back?.position).toEqual(position);
+    await waitUntil(() => back?.getState('a.ts').kind === 'ready', { timeoutMs: 2000 });
+    expect(textQueries(session)).toHaveLength(texts);
+});
+
+test('a pull request let go of asks nothing more of GitHub; one with marks on their way is held until they arrive', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub({ pageSize: 2 });
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.file({ path: 'b.ts', changeType: 'ADDED', after: 'b' });
+    github.file({ path: 'c.ts', changeType: 'ADDED', after: 'c' });
+    const { model, files, session } = open(login, github, request =>
+        isLaterPage(request) ? new Promise(() => {}) : null,
+    );
+    await waitUntil(() => model.files.length === 2, { timeoutMs: 2000 });
+    const walkOn = (from: number) => {
+        for (let index = 0; index < 8; index++) {
+            files.open({ ...REFERENCE, number: from + index });
+        }
+    };
+
+    walkOn(100);
+    expect(model.list.kind).toBe('loading');
+    const asked = textQueries(session).length;
+    await session.clock.advance(50);
+    expect(textQueries(session).length).toBe(asked);
+
+    const marking = open(uniqueLogin(), github);
+    await settled(marking.model);
+    marking.session.github.holdIf = request => (request.operation === 'MarkFilesViewed' ? new Promise(() => {}) : null);
+    marking.model.setViewed(['a.ts'], true);
+    for (let index = 0; index < 8; index++) {
+        marking.files.open({ ...REFERENCE, number: 100 + index });
+    }
+
+    expect(marking.model.getCollapse('a.ts')).toBe('viewed');
 });
 
 test('many files arriving tell of it once a frame, not once a file', async () => {

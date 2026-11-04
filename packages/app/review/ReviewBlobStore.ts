@@ -6,11 +6,14 @@ import type { DBSchema } from 'idb';
 
 import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 
+import type { ReviewPosition } from './buildReviewRows.js';
+import type { DiffLineRange } from './diff/buildDiffRows.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
+import type { FileFilterInput } from './utils/createFileFilter.js';
 
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
-const REVIEW_BLOB_DATABASE_VERSION = 2;
+const REVIEW_BLOB_DATABASE_VERSION = 3;
 
 /** Every store of the database, with how it is keyed. */
 const STORES = [
@@ -19,6 +22,7 @@ const STORES = [
     ['mergeBases', {}],
     ['fileLists', {}],
     ['threads', {}],
+    ['reviewStates', {}],
 ] as const;
 
 /**
@@ -48,6 +52,26 @@ export interface ReviewKeptFileList {
     readonly files: readonly ReviewFile[];
 }
 
+/** Lines of a file shown beyond the context, and the head blob they mean those lines of (D14). */
+export interface ReviewExpandedLines {
+    readonly oid: string;
+    readonly lines: readonly DiffLineRange[];
+}
+
+/** What the user did in a pull request (D14). Nothing of it goes to GitHub or to the synced settings. */
+export interface ReviewKeptState {
+    /** `null` until it has been opened: it then lands by D16. */
+    readonly position: ReviewPosition | null;
+    /** The files the user opened (`true`) or collapsed (`false`) themselves, by path. */
+    readonly collapseChoices: ReadonlyMap<string, boolean>;
+    readonly filter: FileFilterInput;
+    readonly hideViewed: boolean;
+    /** By path. */
+    readonly expandedLines: ReadonlyMap<string, ReviewExpandedLines>;
+    /** The resolved threads opened, by id. */
+    readonly openThreads: ReadonlySet<string>;
+}
+
 /** What a review keeps on disk, by login. A `read` opens the login's database; a `write` rejects when it is not open (anymore). */
 export interface ReviewBlobStoreShape {
     /** The texts of those of `oids` it holds, by oid. */
@@ -65,6 +89,9 @@ export interface ReviewBlobStoreShape {
     readThreads(login: string, key: string): Promise<readonly ReviewThread[] | undefined>;
     writeThreads(login: string, key: string, threads: readonly ReviewThread[]): Promise<void>;
     deleteThreads(login: string, key: string): Promise<void>;
+    /** What the user did in a pull request, by the same key as its list. */
+    readState(login: string, key: string): Promise<ReviewKeptState | undefined>;
+    writeState(login: string, key: string, state: ReviewKeptState): Promise<void>;
 }
 
 interface ReviewBlobDatabase extends DBSchema {
@@ -73,12 +100,13 @@ interface ReviewBlobDatabase extends DBSchema {
     mergeBases: { key: string; value: string };
     fileLists: { key: string; value: ReviewKeptFileList };
     threads: { key: string; value: readonly ReviewThread[] };
+    reviewStates: { key: string; value: ReviewKeptState };
 }
 
 /**
  * What makes a review open without the network, on disk (D19) in a database per login: the contents of reviewed files
- * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files
- * and review threads, which do. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
+ * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files,
+ * review threads and what the user did in it, which do. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
  * worth not downloading again. Nothing cleans it up yet but signing out.
  *
  * Only the `read` functions open the database, so they must be called only for the user signed in now. A connection
@@ -104,6 +132,8 @@ export const ReviewBlobStore = defineService({
             readThreads,
             writeThreads,
             deleteThreads,
+            readState,
+            writeState,
         };
 
         async function read(login: string, oids: readonly string[]) {
@@ -185,6 +215,16 @@ export const ReviewBlobStore = defineService({
         async function deleteThreads(login: string, key: string) {
             const db = await getOpen(login);
             await db.delete('threads', key);
+        }
+
+        async function readState(login: string, key: string) {
+            const db = await connect(login);
+            return await db.get('reviewStates', key);
+        }
+
+        async function writeState(login: string, key: string, state: ReviewKeptState) {
+            const db = await getOpen(login);
+            await db.put('reviewStates', state, key);
         }
     },
 });
