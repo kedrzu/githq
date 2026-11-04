@@ -1,0 +1,111 @@
+# The checks of the full verify protocol (`.claude/skills/verify/SKILL.md`, all but the Storybook build), the desktop
+# app's Rust checks among them. One definition, called by `deploy.yml` before it ships a push to main and by `pr.yml`
+# on a pull request that is ready for review, so what guards the deploy and what guards a merge cannot drift apart.
+# It needs no secret and no environment: pull requests from forks run it too.
+name: Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  # The desktop app's native side (packages/desktop/src-tauri). Its own job: it needs neither bun nor nzyme, only
+  # Rust and the system libraries Tauri links on Linux.
+  desktop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v5
+
+      # Tauri v2's Linux prerequisites (https://v2.tauri.app/start/prerequisites/#linux).
+      - name: Install the Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev \
+            librsvg2-dev libdbus-1-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: packages/desktop/src-tauri -> target
+
+      # `tauri::generate_context!()` reads the app's build folder (`build.frontendDist`) at compile time; the
+      # checks do not need the app in it, only the folder.
+      - name: The app's desktop build folder
+        run: mkdir -p ../../app/.output-desktop/public
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Tests
+        run: cargo test
+
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Build
+        run: bash setup.build.sh
+
+      # The system libraries Chromium needs, for the component tests and e2e.
+      - name: Install Chromium dependencies
+        run: bunx playwright install-deps chromium
+
+      - name: Codegen is up to date
+        run: |
+          bun run codegen
+          git diff --exit-code
+
+      - name: TypeScript
+        run: bun nx run-many -t typecheck --exclude='@nzyme/*' --skip-nx-cache
+
+      - name: Lint
+        run: bun run lint:check
+
+      - name: Format
+        run: bun run format:check
+
+      - name: Tests
+        run: bun run tests
+
+      - name: Component tests
+        run: bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
+
+      # Both projects: `web` against the local build, `desktop` against the desktop app's SPA (no Rust).
+      - name: E2E
+        run: bun run e2e
+
+      - name: Upload e2e results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: packages/e2e/test-results/
+          if-no-files-found: ignore
+
+      # What the deploy builds and bundles: a red here would block it just like a red test. E2E builds the local app
+      # into its own directory, so this comes after it.
+      - name: Build the app
+        run: bun --cwd packages/app build
+
+      - name: Bundle the Worker
+        run: bun --cwd packages/worker bundle

@@ -1,6 +1,6 @@
-// The release rules of the desktop app, pure: PR titles and commit subjects are Conventional Commits, and the next
-// version and the release notes are computed from the subjects since the last stable tag. CI runs this with bun
-// and without `bun install`, so it imports nothing.
+// The release rules of the desktop app, pure: PR titles and commit subjects are Conventional Commits, a title's type
+// agrees with the paths the PR changes, and the next version and the release notes are computed from the subjects
+// since the last stable tag. CI runs this with bun and without `bun install`, so it imports nothing.
 
 const TYPES = ['feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'build', 'ci', 'chore'];
 // Scopes of work that never reaches the desktop app's users.
@@ -10,6 +10,8 @@ const SUBJECT = new RegExp(`^(${TYPES.join('|')})(?:\\((${HIDDEN_SCOPES.join('|'
 const PULL_REQUEST_SUFFIX = / \(#(\d+)\)$/;
 const STABLE_TAG = /^v(\d+)\.(\d+)\.(\d+)$/;
 const CANDIDATE_TAG = /^v(\d+)\.(\d+)\.(\d+)-rc\.(\d+)$/;
+// How many offending paths a title rejection names.
+const LISTED_PATHS = 3;
 
 export type ReleaseMode = 'preview' | 'candidate' | 'stable';
 
@@ -47,15 +49,36 @@ interface Change {
     pullRequest: string;
 }
 
-/** Says whether a PR title is a valid Conventional Commit for this repository and, if not, why in one line. */
-export function checkTitle(title: string): TitleCheck {
-    if (SUBJECT.test(title)) {
-        return { valid: true };
+/**
+ * Says whether a PR title is valid for this repository and, if not, why in one line: a Conventional Commit whose type
+ * tells the truth about the PR's changed paths. An empty list fires no rule on the paths.
+ */
+export function checkTitle(title: string, files: string[]): TitleCheck {
+    const match = SUBJECT.exec(title);
+    if (!match) {
+        return {
+            valid: false,
+            reason: `"${title}" is not "<type>[(web|cloud)][!]: <description>" with a type of ${TYPES.join(', ')}`,
+        };
     }
-    return {
-        valid: false,
-        reason: `"${title}" is not "<type>[(web|cloud)][!]: <description>" with a type of ${TYPES.join(', ')}`,
-    };
+
+    const [, type] = match;
+    const code = files.filter(isCodePath);
+    if (type === 'docs' && code.length > 0) {
+        return { valid: false, reason: `a docs PR cannot touch code, but this one changes ${listPaths(code)}` };
+    }
+    if ((type === 'feat' || type === 'fix' || type === 'perf') && hasNoCode(files)) {
+        return {
+            valid: false,
+            reason: `${type} promises a user-visible change and must touch code, but this PR changes only documentation`,
+        };
+    }
+    return { valid: true };
+}
+
+/** Says whether a PR changes only documentation. An empty list is a list we know nothing about, so it does not. */
+export function hasNoCode(files: string[]): boolean {
+    return files.length > 0 && !files.some(isCodePath);
 }
 
 /** The highest stable tag (exact `vX.Y.Z`, compared numerically), or undefined before the first release. */
@@ -112,6 +135,17 @@ export function renderNotes({ subjects, policyUrl }: RenderNotesParams): string 
         `Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](${policyUrl}).`,
     );
     return `${sections.join('\n\n')}\n`;
+}
+
+function isCodePath(file: string): boolean {
+    return !file.endsWith('.md') && !file.endsWith('.pen') && !file.startsWith('docs/');
+}
+
+// JSON-quoted, because a path may hold a newline and a reason is one line.
+function listPaths(files: string[]): string {
+    const named = files.slice(0, LISTED_PATHS).map(file => JSON.stringify(file));
+    const rest = files.length - named.length;
+    return rest > 0 ? `${named.join(', ')} and ${rest} more` : named.join(', ');
 }
 
 /** A subject with no valid form (a merge commit, a title from before the rules) is no change at all. */

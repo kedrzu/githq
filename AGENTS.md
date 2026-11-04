@@ -77,12 +77,19 @@ fast-forwards the local `main`, copies files that live outside git from the main
 `.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
 
 **Without asking** (standing permission): name the branch and the workspace once the task is known; at the
-end of every turn that changed files — commit, catch up with `main`, push, then open the PR (ready for review,
-not a draft) or update its description when the scope grew. Keep the branch current with `main` by merging,
+end of every turn that changed files — commit, catch up with `main`, push, then open the PR as a draft or update its
+description when the scope grew. Keep the branch current with `main` by merging,
 never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
 Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 
-**Only on the owner's word** ("mergujemy", "merge it"): the squash merge. Never push to `main` — the `git`
+**Drafts.** A PR stays a draft until its work is finished, because the checks (`.github/workflows/pr.yml`) run on every
+push to a PR that is ready. Pushing to a draft mid-work is fine, and a turn that ends with work left or a question for
+the owner leaves it a draft. Finished means the task is done, the full `verify` is green, everything is pushed and the
+description is current; `gh pr ready` is then the last step, done without asking. A follow-up on a ready PR: finished
+within one turn, push it once verified, the PR stays ready and the checks restart; longer than that, `gh pr ready --undo`
+first and `gh pr ready` again at the end.
+
+**Only on the owner's word** ("mergujemy", "merge it"): the squash merge, of a stack too. Never push to `main` — the `git`
 plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an
 explicit throwaway experiment.
 

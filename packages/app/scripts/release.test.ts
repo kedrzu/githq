@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -67,17 +67,68 @@ function plan(mode: string) {
     return { ...result, ...files };
 }
 
+function checkTitle(title: string, list: string) {
+    const files = path.join(dir, 'files');
+    const output = path.join(dir, 'output');
+    writeFileSync(files, list);
+    const result = run(['check-title', title, '--files', files], { GITHUB_OUTPUT: output });
+    return { ...result, output: existsSync(output) ? readFileSync(output, 'utf8') : undefined };
+}
+
+function expectOneError(status: number | null, stdout: string) {
+    expect(status).not.toBe(0);
+    const lines = stdout.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toStartWith('::error::');
+}
+
 describe('check-title', () => {
-    test('accepts a conventional title', () => {
-        expect(run(['check-title', 'feat: add things']).status).toBe(0);
+    test('accepts a conventional title and outputs that it touches code', () => {
+        const result = checkTitle('feat: add things', 'README.md\0src/a.ts\0');
+        expect(result.status).toBe(0);
+        expect(result.output).toBe('code=true\n');
     });
 
-    test('rejects a bad title with one ::error:: line', () => {
-        const result = run(['check-title', 'Add things; $(rm -rf /)']);
+    test('rejects a bad title with one ::error:: line and no output', () => {
+        const result = checkTitle('Add things; $(rm -rf /)', 'src/a.ts\0');
+        expectOneError(result.status, result.stdout);
+        expect(result.output).toBeUndefined();
+    });
+
+    test('reads a NUL-separated list with a non-ASCII path, naming the path whole', () => {
+        const result = checkTitle('docs: add things', 'README.md\0packages/zażółć.ts\0');
+        expectOneError(result.status, result.stdout);
+        expect(result.stdout).toContain('"packages/zażółć.ts"');
+        expect(result.stdout).not.toContain('README.md');
+    });
+
+    test('outputs no code for a list of only documentation', () => {
+        const result = checkTitle('docs: add things', 'README.md\0docs/zażółć.png\0');
+        expect(result.status).toBe(0);
+        expect(result.output).toBe('code=false\n');
+    });
+
+    test('an empty file is an empty list: nothing rejected, counted as code', () => {
+        const result = checkTitle('docs: add things', '');
+        expect(result.status).toBe(0);
+        expect(result.output).toBe('code=true\n');
+    });
+
+    test.each([
+        [['check-title', 'feat: a']],
+        [['check-title', 'feat: a', '--files']],
+        [['check-title', '--files', 'x']],
+    ])('%p fails with the usage line rather than reading as an empty list', args => {
+        const result = run(args);
+        expectOneError(result.status, result.stdout);
+        expect(result.stdout).toContain('usage:');
+    });
+
+    test('a list that cannot be read fails and outputs nothing', () => {
+        const output = path.join(dir, 'output');
+        const result = run(['check-title', 'feat: a', '--files', path.join(dir, 'missing')], { GITHUB_OUTPUT: output });
         expect(result.status).not.toBe(0);
-        const lines = result.stdout.trim().split('\n');
-        expect(lines).toHaveLength(1);
-        expect(lines[0]).toStartWith('::error::');
+        expect(existsSync(output)).toBe(false);
     });
 });
 
