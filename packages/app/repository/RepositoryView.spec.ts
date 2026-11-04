@@ -250,6 +250,48 @@ test('with a group collapsed, a page goes on reading only if it added rows on sc
     await expect.poll(() => view.readMore.mock.calls.length).toBe(2);
 });
 
+test('in the list, "Read more" shows only while a group is collapsed, and one click asks one page', async () => {
+    const view = mount({
+        tracked: false,
+        items: manyIssues(60),
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    const group = page.getByRole('button', { name: /^No milestone/ });
+    const readMore = page.getByRole('button', { name: 'Read more' });
+    await expect.element(group).toBeVisible();
+    await expect.element(readMore).not.toBeInTheDocument();
+
+    // All collapsed: the end of the list is gone, and this is the only way on.
+    await userEvent.click(group);
+    await expect.element(readMore).toBeVisible();
+    expect(view.readMore).not.toHaveBeenCalled();
+
+    await userEvent.click(readMore);
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c2', reading: true });
+    await expect.element(page.getByRole('button', { name: 'Reading more…' })).toBeVisible();
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c3' });
+
+    await userEvent.click(group);
+    await expect.element(readMore).not.toBeInTheDocument();
+});
+
+test('with one group of several collapsed the button shows, and nothing more to read takes it away', async () => {
+    const view = mount({
+        tracked: false,
+        items: [...manyIssues(60), inMilestone('I_v1', 1)],
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await userEvent.click(page.getByRole('button', { name: /^v1/ }));
+    await expect.element(page.getByRole('button', { name: 'Read more' })).toBeVisible();
+
+    view.status.value = browsedStatus({ total: 61 });
+    await expect.element(page.getByRole('button', { name: /^Read/ })).not.toBeInTheDocument();
+});
+
 test('J6: on the board nothing reads by itself, one button reads the next page, and with no more there is none', async () => {
     const view = mount({
         tracked: false,

@@ -683,7 +683,9 @@ scrolling, or the user opening an item.
 - While the section is on screen in a visible tab, the check repeats every 60 seconds, the interval of a tracked
   repository's change poll. Only the section shown is checked.
 - Pages come on scroll in List, 100 issues or 30 pull requests at a time. On the Board, whose columns scroll on their own,
-  one "Read more" button in the toolbar reads the next page.
+  one "Read more" button in the toolbar reads the next page. So does the same button in List while a group is collapsed: a
+  page landing wholly in that group leaves the list's end where it was, and reading would otherwise stop until the group is
+  expanded.
 - The toolbar says "N of M": M is GitHub's total for the section and state, N the rows listed for them. Grouping and sort
   work on what is read. A stack is shown as far as read and is never completed by reading more of it.
 

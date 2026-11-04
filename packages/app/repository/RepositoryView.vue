@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — on the board, whose columns scroll on their own, by one button beside the count; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -138,7 +138,7 @@ const emit = defineEmits<{
   reset: [];
   /** On Commits, the header's tool: to the list of branches and tags beside the graph. */
   openRefList: [];
-  /** Read on demand: the end of the list came in reach, or the board's button was pressed. */
+  /** Read on demand: the end of the list came in reach, or the toolbar's button was pressed. */
   readMore: [];
 }>();
 
@@ -254,6 +254,8 @@ const columnGitHubUrl = computed(() => {
       return githubUrl.value;
   }
 });
+/** A group of the list is collapsed (`ListView`). */
+const someCollapsed = ref(false);
 const inColumn = computed(() => props.layout === 'column');
 // A column coming mounts after the pane is updated, and the graph's list must find its place there once told to go.
 const refListInColumn = ref(inColumn.value);
@@ -283,8 +285,8 @@ useCommands(() =>
  * moves it, but with a group collapsed only one that added rows on screen: a page gone into the collapsed group leaves
  * the end where it was, in reach, and going on would read the whole repository with nothing scrolled.
  */
-function getReadPosition({ someCollapsed, rowsShown }: ListEndProps) {
-  const read = someCollapsed ? `shown:${rowsShown}` : `cursor:${props.status?.cursor ?? ''}`;
+function getReadPosition({ rowsShown }: ListEndProps) {
+  const read = someCollapsed.value ? `shown:${rowsShown}` : `cursor:${props.status?.cursor ?? ''}`;
   return `${section.value}:${state.value}:${read}`;
 }
 
@@ -496,9 +498,10 @@ function getSectionCount(value: RepositorySection) {
               :class="css.repositoryView_readCount"
               >{{ readCount }}</span
             >
-            <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. -->
+            <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. So too
+                 with a group collapsed: a page gone into it leaves the end where it was, and reading stops until expanded. -->
             <Button
-              v-if="status?.hasMore && options.layout === 'board'"
+              v-if="status?.hasMore && (options.layout === 'board' || someCollapsed)"
               variant="outline"
               size="sm"
               @click="emit('readMore')"
@@ -545,6 +548,7 @@ function getSectionCount(value: RepositorySection) {
             @open="emit('open', $event)"
             @listed="emit('listed', $event)"
             @move="emit('move', $event)"
+            @some-collapsed="someCollapsed = $event"
           >
             <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker }">
               <StackRow
