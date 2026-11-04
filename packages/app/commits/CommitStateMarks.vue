@@ -1,4 +1,4 @@
-<!-- A commit's pull request (state and number) and CI mark, in its row in the graph and on a branch in the list beside it (git-client D18, CH3, CH12). While they are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing. -->
+<!-- A commit's pull request (state and number) and CI mark, in its row in the graph and on a branch in the list beside it (git-client D18, CH3, CH12). While they are not known yet an empty bar stands in for them, never a blank; a commit with neither shows nothing. `linked`, the pull request is a link to it: a plain click asks for it to be opened, as any item opens, one with a modifier is the browser's, and no click reaches what the marks sit in. -->
 <script lang="ts" setup>
 import type { StatusState } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -6,6 +6,9 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck, CircleX, LoaderCircle } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
+
+import { getItemPagePath, parseItemUrl } from '@/item/itemRoutes.js';
+import type { ItemReference } from '@/item/itemRoutes.js';
 
 import CommitPullRequestIcon from './CommitPullRequestIcon.vue';
 import * as l from './CommitStateMarks.loc.js';
@@ -19,9 +22,16 @@ const props = withDefaults(
     state: CommitState | undefined;
     /** `false`: the CI alone, as the default branch's row in the list (CH3). */
     withPullRequest?: boolean;
+    /** The pull request is a link; not where the marks sit in a row that is itself a choice, as in the list (CH3). */
+    linked?: boolean;
   }>(),
   { withPullRequest: true },
 );
+
+const emit = defineEmits<{
+  /** A plain click on the link. */
+  openPullRequest: [reference: ItemReference];
+}>();
 
 interface CiLook {
   readonly icon: LucideIcon;
@@ -33,6 +43,22 @@ const t = useTranslate();
 
 const ci = computed(() => (props.state?.ci ? getCiLook(props.state.ci) : null));
 const pullRequest = computed(() => (props.withPullRequest ? (props.state?.pullRequest ?? null) : null));
+/** Found by its address, not its number: a fork's commit answers with its upstream's pull request. */
+const reference = computed(() => (props.linked && pullRequest.value ? parseItemUrl(pullRequest.value.url) : null));
+
+function onPullRequestClick(event: MouseEvent) {
+  if (!reference.value) {
+    return;
+  }
+
+  event.stopPropagation();
+  if (event.metaKey || event.ctrlKey || event.shiftKey) {
+    return;
+  }
+
+  event.preventDefault();
+  emit('openPullRequest', reference.value);
+}
 
 function getCiLook(state: StatusState): CiLook {
   const tone = getCiTone(state);
@@ -63,13 +89,16 @@ function getCiLook(state: StatusState): CiLook {
     v-else-if="pullRequest || ci"
     :class="css.commitStateMarks"
   >
-    <span
+    <component
+      :is="reference ? 'a' : 'span'"
       v-if="pullRequest"
-      :class="css.commitStateMarks_pullRequest"
+      :class="[css.commitStateMarks_pullRequest, reference && css.commitStateMarks_pullRequest_link]"
+      :href="reference ? getItemPagePath(reference, 'pullRequest') : undefined"
+      @click="onPullRequestClick"
     >
       <CommitPullRequestIcon :pull-request="pullRequest" />
       #{{ pullRequest.number }}
-    </span>
+    </component>
     <component
       :is="ci.icon"
       v-if="ci"
@@ -97,6 +126,17 @@ function getCiLook(state: StatusState): CiLook {
   font-size: $font-size-2xs;
   color: $color-fg-2;
   white-space: nowrap;
+}
+
+.commitStateMarks_pullRequest_link {
+  @include focus-ring;
+
+  text-decoration: none;
+
+  &:hover {
+    color: $color-fg;
+    text-decoration: underline;
+  }
 }
 
 .commitStateMarks_mark {
