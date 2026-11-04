@@ -1,6 +1,28 @@
+checking:
+  en: Checking for updates…
+upToDate:
+  en: githq {version} is the newest version
+downloading:
+  en: Downloading githq {version}
+downloadingPercent:
+  en: Downloading githq {version}, {percent}%
 ready:
   en: githq {version} is ready
+failedOffline:
+  en: "Couldn't check for updates: you're offline"
+failedUnreachable:
+  en: "Couldn't check for updates: GitHub can't be reached"
+noRelease:
+  en: No Stable version yet
+installing:
+  en: Installing githq {version}…
+installFailed:
+  en: githq {version} couldn't be installed
 restart:
   en: Restart
 later:
   en: Later
+tryAgain:
+  en: Try again
+dismiss:
+  en: Dismiss

@@ -3,6 +3,12 @@ import type { LocationQuery } from 'vue-router';
 /** Settings (D15), at GitHub's own settings address, so no owner's address (`/owner`) is ever taken for it. */
 export const SETTINGS_PATH = '/settings';
 
+/**
+ * Settings' Updates section with the confirmation of switching to Stable open (U13): the one way a Development build
+ * leaves for Stable from outside that section. The section only has to read `confirm`; only its dialog switches.
+ */
+export const CONFIRM_STABLE_PATH = `${SETTINGS_PATH}?tab=updates&confirm=stable`;
+
 /** The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. */
 export const SETTINGS_SECTIONS = ['repositories', 'projects', 'display', 'sync', 'account'] as const;
 

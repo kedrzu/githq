@@ -4,17 +4,21 @@ import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
+import type { UpdateActivity, UpdateState } from '@/services/AppUpdate.js';
+
 import { createDesktopAppUpdate } from './DesktopAppUpdate.js';
 import type { NativeBridgeShape } from './NativeBridge.js';
 
-test('an update the native side readies is offered, and nothing restarts until the user says so', async () => {
-    const native = createFakeNative();
-    const update = createUpdate(native);
-    await waitUntil(() => native.calls.includes('update_status'), WAIT);
+const READY: UpdateActivity = { kind: 'ready', version: '1.4.0' };
+const OFFLINE: UpdateActivity = { kind: 'failed', reason: 'offline' };
 
-    native.emitReady('1.4.0');
+test('an update the native side readies is offered, and nothing restarts until the user says so', async () => {
+    const { native, update } = await start();
+
+    native.emit(READY);
 
     expect(update.readyVersion).toBe('1.4.0');
+    expect(update.notice).toEqual(READY);
     // Offered, never forced: no restart while the user has not asked for one.
     await settle();
     expect(native.calls).not.toContain('update_restart');
@@ -24,37 +28,193 @@ test('an update the native side readies is offered, and nothing restarts until t
     expect(native.calls.filter(call => call === 'update_restart')).toHaveLength(1);
 });
 
-test('it listens before it asks, so an update readied before the app listened is offered too', async () => {
+test('it listens before it asks, so what happened before the app listened is known too', async () => {
     const native = createFakeNative();
-    native.status = '1.4.0';
+    native.status = { ...STATE, activity: READY };
 
     const update = createUpdate(native);
+    expect(update.state).toBeNull();
+    expect(update.notice).toBeNull();
 
     await waitUntil(() => update.readyVersion === '1.4.0', WAIT);
     expect(native.calls).toEqual(['listen', 'update_status']);
-    expect(native.calls).not.toContain('update_restart');
 });
 
-test('"Later" hides the update until the app next starts', async () => {
+test('an event that arrives before the answer is not overwritten by it', async () => {
     const native = createFakeNative();
+    native.onStatus = () => native.emit(READY);
+
     const update = createUpdate(native);
     await waitUntil(() => native.calls.includes('update_status'), WAIT);
-    native.emitReady('1.4.0');
+    await settle();
+
+    expect(update.readyVersion).toBe('1.4.0');
+});
+
+test('"Later" hides the offer until the app next starts, whatever a check nobody asked for does', async () => {
+    const { native, update } = await start();
+    native.emit(READY);
 
     update.later();
 
     expect(update.readyVersion).toBeNull();
+    expect(update.notice).toBeNull();
     // Told again in this run, it stays hidden.
-    native.emitReady('1.4.0');
+    native.emit(READY);
     expect(update.readyVersion).toBeNull();
+    native.emit({ kind: 'checking' });
+    native.emit(READY);
+    expect(update.readyVersion).toBeNull();
+    expect(update.notice).toBeNull();
     await settle();
     expect(native.calls).not.toContain('update_restart');
 
     // The next start offers it again.
     const nextStart = createFakeNative();
-    nextStart.status = '1.4.0';
+    nextStart.status = { ...STATE, activity: READY };
     const restarted = createUpdate(nextStart);
     await waitUntil(() => restarted.readyVersion === '1.4.0', WAIT);
+});
+
+test('a check the user asks for brings an offer put off by "Later" back', async () => {
+    const { native, update } = await start();
+    native.emit(READY);
+    update.later();
+
+    native.emit({ kind: 'checking' }, { manual: true });
+    expect(update.notice).toEqual({ kind: 'checking' });
+    native.emit(READY, { manual: true });
+
+    expect(update.readyVersion).toBe('1.4.0');
+    expect(update.notice).toEqual(READY);
+});
+
+test('a check nobody asked for says nothing until an update is ready', async () => {
+    const { native, update } = await start();
+
+    for (const activity of [
+        { kind: 'checking' },
+        { kind: 'upToDate' },
+        { kind: 'checking' },
+        OFFLINE,
+        { kind: 'checking' },
+        { kind: 'noRelease' },
+        { kind: 'checking' },
+        { kind: 'downloading', version: '1.4.0', percent: 38 },
+    ] satisfies UpdateActivity[]) {
+        native.emit(activity);
+        expect(update.notice).toBeNull();
+    }
+
+    native.emit(READY);
+    expect(update.notice).toEqual(READY);
+});
+
+test('a check the user asks for shows each step, the running version in "up to date"', async () => {
+    const { native, update } = await start();
+
+    native.emit({ kind: 'checking' }, { manual: true });
+    expect(update.notice).toEqual({ kind: 'checking' });
+    native.emit({ kind: 'downloading', version: '1.4.0', percent: null }, { manual: true });
+    expect(update.notice).toEqual({ kind: 'downloading', version: '1.4.0', percent: null });
+
+    native.emit({ kind: 'checking' }, { manual: true });
+    native.emit({ kind: 'upToDate' }, { manual: true });
+    expect(update.notice).toEqual({ kind: 'upToDate', version: '1.3.0' });
+});
+
+for (const [name, activity] of [
+    ['up to date', { kind: 'upToDate' }],
+    ['no release', { kind: 'noRelease' }],
+] satisfies [string, UpdateActivity][]) {
+    test(`${name} goes away by itself and comes back with the next check the user asks for`, async () => {
+        const { native, update } = await start();
+
+        native.emit({ kind: 'checking' }, { manual: true });
+        native.emit(activity, { manual: true });
+        expect(update.notice).not.toBeNull();
+
+        await waitUntil(() => update.notice === null, WAIT);
+        // The state is sent again on any change: that is no new outcome.
+        native.emit(activity, { manual: true });
+        expect(update.notice).toBeNull();
+
+        native.emit({ kind: 'checking' }, { manual: true });
+        native.emit(activity, { manual: true });
+        expect(update.notice).not.toBeNull();
+    });
+}
+
+test('a failure stays past a timed check, until Dismiss; the next check the user asks for can fail again', async () => {
+    const { native, update } = await start();
+    native.emit({ kind: 'checking' }, { manual: true });
+    native.emit(OFFLINE, { manual: true });
+
+    await settle();
+    expect(update.notice).toEqual(OFFLINE);
+
+    // A timed check replaces the state, not what the user was told.
+    native.emit({ kind: 'checking' });
+    expect(update.notice).toEqual(OFFLINE);
+    native.emit({ kind: 'upToDate' });
+    expect(update.notice).toEqual(OFFLINE);
+
+    update.dismiss();
+    expect(update.notice).toBeNull();
+    native.emit(OFFLINE, { manual: true });
+    expect(update.notice).toBeNull();
+
+    native.emit({ kind: 'checking' }, { manual: true });
+    native.emit({ kind: 'failed', reason: 'unreachable' }, { manual: true });
+    expect(update.notice).toEqual({ kind: 'failed', reason: 'unreachable' });
+});
+
+test('an update readied after a failure replaces it, and "Later" does not bring it back', async () => {
+    const { native, update } = await start();
+    native.emit({ kind: 'checking' }, { manual: true });
+    native.emit(OFFLINE, { manual: true });
+
+    native.emit(READY);
+    expect(update.notice).toEqual(READY);
+
+    update.later();
+    expect(update.notice).toBeNull();
+});
+
+test('the install says so whether or not anyone asked, and offers nothing while it runs', async () => {
+    const { native, update } = await start();
+
+    for (const manual of [false, true]) {
+        native.emit({ kind: 'installing', version: '1.4.0' }, { manual });
+        expect(update.notice).toEqual({ kind: 'installing', version: '1.4.0' });
+        expect(update.readyVersion).toBeNull();
+    }
+});
+
+test('a failed install is noticed, and "Later" hides it', async () => {
+    const { native, update } = await start();
+
+    native.emit({ kind: 'installFailed', version: '1.4.0' });
+    expect(update.notice).toEqual({ kind: 'installFailed', version: '1.4.0' });
+
+    update.later();
+    expect(update.notice).toBeNull();
+});
+
+test('checking and switching are the native commands, and a refusal breaks nothing', async () => {
+    const { native, update } = await start();
+
+    update.check();
+    update.setStream('development');
+    await waitUntil(() => native.streams.length > 0, WAIT);
+
+    expect(native.calls).toContain('update_check');
+    expect(native.streams).toEqual(['development']);
+
+    native.setStreamFails = true;
+    update.setStream('stable');
+    await settle();
+    expect(update.state?.stream).toBe('stable');
 });
 
 test('a native side that cannot listen offers nothing and breaks nothing', async () => {
@@ -64,14 +224,33 @@ test('a native side that cannot listen offers nothing and breaks nothing', async
     const update = createUpdate(native);
     await settle();
 
+    expect(update.state).toBeNull();
     expect(update.readyVersion).toBeNull();
+    expect(update.notice).toBeNull();
 });
 
 const WAIT = { intervalMs: 1, timeoutMs: 1000 };
+const STATE: UpdateState = {
+    version: '1.3.0',
+    commit: null,
+    stream: 'stable',
+    canChoose: true,
+    manual: false,
+    checkedAt: null,
+    activity: { kind: 'idle' },
+};
 
 function createUpdate(native: FakeNative) {
     const { container } = createTestContainer();
-    return createDesktopAppUpdate({ bridge: native.bridge, logger: container.resolve(Logger) });
+    return createDesktopAppUpdate({ bridge: native.bridge, logger: container.resolve(Logger), outcomeMs: 20 });
+}
+
+/** The update service over a fake native side that has answered once. */
+async function start() {
+    const native = createFakeNative();
+    const update = createUpdate(native);
+    await waitUntil(() => update.state !== null, WAIT);
+    return { native, update };
 }
 
 /** Lets pending promises run. */
@@ -81,21 +260,27 @@ function settle() {
     });
 }
 
-/** The native side's updater, faked: it readies updates when told to. */
+/** The native side's updater, faked: its state changes when told to. */
 interface FakeNative {
     readonly bridge: NativeBridgeShape;
     /** The commands run (and `listen`), in order. */
     readonly calls: string[];
+    /** The streams `update_set_stream` was told, in order. */
+    readonly streams: string[];
     /** What `update_status` answers. */
-    status: string | null;
+    status: UpdateState;
+    /** Runs as `update_status` is asked, before it answers. */
+    onStatus?: () => void;
     /** `listen` fails. */
     listenFails: boolean;
-    /** Emits `update-ready` to whoever listens. */
-    emitReady(version: string): void;
+    /** `update_set_stream` refuses. */
+    setStreamFails: boolean;
+    /** Emits `update-state` to whoever listens. */
+    emit(activity: UpdateActivity, state?: Partial<UpdateState>): void;
 }
 
 function createFakeNative(): FakeNative {
-    const listeners: ((version: string) => void)[] = [];
+    const listeners: ((state: UpdateState) => void)[] = [];
     const notExpected = () => Promise.reject(new Error('Not expected'));
     const native: FakeNative = {
         bridge: {
@@ -105,7 +290,8 @@ function createFakeNative(): FakeNative {
             openExternal: notExpected,
             startDeviceSignIn: notExpected,
             finishDeviceSignIn: notExpected,
-            onUpdateReady: listener => {
+            readJobLog: notExpected,
+            onUpdateState: listener => {
                 native.calls.push('listen');
                 if (native.listenFails) {
                     return Promise.reject(new Error('No event plugin'));
@@ -116,20 +302,34 @@ function createFakeNative(): FakeNative {
             },
             updateStatus: () => {
                 native.calls.push('update_status');
+                native.onStatus?.();
                 return Promise.resolve(native.status);
             },
-            readJobLog: () => Promise.reject(new Error('Not expected')),
+            checkForUpdate: () => {
+                native.calls.push('update_check');
+                return Promise.resolve();
+            },
+            setUpdateStream: stream => {
+                if (native.setStreamFails) {
+                    return Promise.reject(new Error('notAvailable'));
+                }
+
+                native.streams.push(stream);
+                return Promise.resolve();
+            },
             restartToUpdate: () => {
                 native.calls.push('update_restart');
                 return Promise.resolve();
             },
         },
         calls: [],
-        status: null,
+        streams: [],
+        status: STATE,
         listenFails: false,
-        emitReady: version => {
+        setStreamFails: false,
+        emit: (activity, state) => {
             for (const listener of listeners) {
-                listener(version);
+                listener({ ...STATE, ...state, activity });
             }
         },
     };
