@@ -785,15 +785,18 @@ test("the state is a command on both item sections, showing the toolbar's value 
     expect(view.state.value).toEqual({ issues: 'closed', pullRequests: 'all' });
 });
 
-test('Commits, Workflows and an untracked repository offer no state command', () => {
+test('the state is a command wherever the toolbar shows it: an untracked repository too, not Commits, Workflows or one GitHub does not show', () => {
+    const untracked = mount({ tracked: false, status: browsedStatus({ total: 3 }) });
+    expect(viewCommands(untracked.container).map(command => command.id)).toContain('view.state');
+
     const commits = mount({ section: 'commits' });
     expect(viewCommands(commits.container).map(command => command.id)).toEqual([]);
 
     const workflows = mount({ section: 'workflows', workflowCount: 2 });
     expect(viewCommands(workflows.container).map(command => command.id)).toEqual([]);
 
-    const untracked = mount({ tracked: false });
-    expect(viewCommands(untracked.container).map(command => command.id)).toEqual([]);
+    const notShown = mount({ tracked: false, status: browsedStatus({ notShown: true }) });
+    expect(viewCommands(notShown.container).map(command => command.id)).toEqual([]);
 });
 
 test('the properties are one command that toggles each one and keeps the rest, the menu staying open', async () => {
