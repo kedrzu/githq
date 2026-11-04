@@ -74,6 +74,29 @@ test("PM8: ⌘↵ pressed before the repository's merge settings arrive is not l
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
 });
 
+test("PM8: closing the panel takes back a ⌘↵ still waiting for the repository's merge settings: nothing is sent", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST_TITLE);
+
+    github.holdAnswers();
+    await page.keyboard.press('Shift+M');
+    await expect(panel.root).toBeVisible();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    await page.keyboard.press('Escape');
+    await expect(panel.root).toBeHidden();
+    github.releaseAnswers();
+
+    await expect.poll(() => github.graphqlCalls.some(call => call.name === 'RepositoryMetadata')).toBe(true);
+    await page.keyboard.press('Shift+M');
+    await expect(panel.method('Merge commit')).toHaveAttribute('aria-pressed', 'true');
+    expect(getMergeRequests(github)).toEqual([]);
+});
+
 test('⇧M on the opened pull request sends the title edited with E, and its standing waits for GitHub', async ({
     page,
     github,
