@@ -58,3 +58,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner rejected all three surfaces for what changed: a Changelog section in Settings, every version in its own fold, no ranges (D17). Asked: one fold for Development, or one per build (U43).
 - 2026-11-04: Owner: the commands for updating, restarting and so on belong in the command menu (D18).
 - 2026-11-04: Owner accepted one fold for Development (U43, D17).
+- 2026-11-04: Goes to `/dev:deliver`: the order of work (D13) replaced by the agreed overview and removed. Tried with temporary releases: a draft may hold a published tag, `latest/download` skips prereleases, and a replaced asset's URL stays stale for about 100 seconds, so manifest URLs carry `?v=` (D4). Owner: "New" stays (D17), all toasts in the corner (D7). The Development fold reads from the build's own commit (D17).
