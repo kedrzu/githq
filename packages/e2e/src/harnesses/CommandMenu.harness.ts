@@ -24,6 +24,11 @@ export class CommandMenuHarness {
         return this.root.getByRole('option', { name });
     }
 
+    /** The chip at the left of the field naming what the actions act on, by its text; not a line of the list. */
+    chip(label: string): Locator {
+        return this.root.getByText(label, { exact: true }).locator('xpath=self::*[not(ancestor::*[@role="listbox"])]');
+    }
+
     /** Opens it with ⌘K (Ctrl+K) — again until it shows: a key pressed while the screen still loads is lost. */
     async open(): Promise<void> {
         await expect(async () => {

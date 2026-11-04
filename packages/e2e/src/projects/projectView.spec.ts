@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import type { AppShellHarness } from '../harnesses/AppShell.harness.js';
+import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { ProjectScreenHarness } from '../harnesses/ProjectScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import type { SampleTrackedWork } from '../tracking/sampleTrackedWork.js';
@@ -226,6 +227,38 @@ test('a draft written in a column shows there at once, and stays once GitHub too
         { title: 'Try a denser layout', status: 'In Progress' },
     ]);
     expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddDraftIssue', 'SetProjectFieldValue']);
+});
+
+test('a draft is no step of an opened item: the position leaves it out and the button goes past it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.issue({
+        repository: 'acme/web',
+        number: 15,
+        title: 'Listed after the draft',
+        author: 'monalisa',
+        projects: [{ project: sample.project, status: 'Todo' }],
+        minutesAgo: 1000,
+    });
+    const { project } = await openProject(page, github, sample);
+    const item = new ItemViewHarness(page);
+    await expect(project.root.getByRole('listitem')).toHaveText([
+        /Document the setup/,
+        /Collapse the sidebar on narrow screens/,
+        /Remember the sidebar width/,
+        /Sketch the settings page/,
+        /Listed after the draft/,
+    ]);
+
+    await project.row('Remember the sidebar width').click();
+    await expect(item.position).toHaveText('3 / 4');
+    await item.nextButton.click();
+    await expect(item.title).toHaveText('Listed after the draft');
+    await expect(item.position).toHaveText('4 / 4');
+    await item.previousButton.click();
+    await expect(item.title).toHaveText('Remember the sidebar width');
 });
 
 /** Tracks the sample on the first sign-in, and opens its project from the sidebar. */

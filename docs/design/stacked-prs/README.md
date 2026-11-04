@@ -37,8 +37,8 @@ a column is an ordinary row marked as part of a stack. So nothing needs to decid
 
 A stack's entry starts collapsed, so [the list stays short](DECISIONS.md#d10). `Enter` [opens a pull request, with a map of the
 whole stack next to it](DECISIONS.md#d9), and there is no screen for a stack as such. `O` takes that pull request to
-github.com, where review still happens for now. Back in githq, the keys that already walk a list go through the stack's pull
-requests one by one and carry on into the next stack.
+github.com, where review still happens for now. Back in githq, the keys that already walk a list [pass a collapsed stack in
+one step and go through an expanded one's pull requests](DECISIONS.md#d26).
 
 ## Reading order
 

@@ -76,6 +76,9 @@ test('⇧X closes an issue as not planned', async ({ page, github }) => {
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
     await expect(item.statePill('Open')).toBeVisible();
+    // On its page it stays in view: a panel moves on with the list once it leaves.
+    await item.arrangement('Full page').click();
+    await expect(page).toHaveURL('/acme/web/issues/12');
 
     await page.keyboard.press('Shift+X');
     await page.getByRole('menuitem', { name: 'Close as not planned' }).click();

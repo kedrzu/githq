@@ -10,7 +10,7 @@ import Button from '@/components/Button.vue';
 import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
-import type { ListContextMenuProps, ListGroup, ListRow } from '@/lists/ListTypes.js';
+import type { ListContextMenuProps, ListedItems, ListGroup, ListRow } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import StackRow from '@/lists/StackRow.vue';
 import type { Item } from '@/store/ItemTypes.js';
@@ -37,6 +37,8 @@ const props = withDefaults(
     now: number;
     /** The item opened over the list (panel or modal). */
     openedId?: string | null;
+    /** The user has an edit of the item on its way (`ListView`). */
+    isEdited?: (id: string) => boolean;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
     /** Without its header: the caller's screen holds the name, the chip and the way to GitHub. */
@@ -45,13 +47,14 @@ const props = withDefaults(
   {
     meta: '',
     openedId: null,
+    isEdited: () => false,
     undone: () => new Map(),
   },
 );
 
 const emit = defineEmits<{
   open: [id: string];
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
 }>();
 
 /** The selected item's id. */
@@ -115,6 +118,7 @@ const groups = computed((): ListGroup<Item>[] => [
         :groups="groups"
         layout="list"
         :opened-id="openedId"
+        :is-edited="isEdited"
         :get-url="item => item.url"
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"

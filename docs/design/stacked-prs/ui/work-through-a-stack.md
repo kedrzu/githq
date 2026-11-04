@@ -20,8 +20,8 @@ and land it when it's ready." They never read the first pull request of one stac
 3. **An opened pull request in a stack.** `Enter` on the entry opens the first open pull request not yet approved, otherwise the first
    open one. There is no screen for a stack as such. Next to the pull request's content is a map of the whole stack, in all three
    ways an item opens: panel, modal, full page. It answers: *where am I in this stack, and how does the rest stand?*
-4. **Moving on.** `J` and `K` in an opened item already go through the list; they now go through a stack's pull requests one by one,
-   collapsed or not, and carry on into the next entry. `O` opens the current one on github.com, where code is read and reviewed for now.
+4. **Moving on.** `J` and `K` in an opened item go through the list as they do with nothing open: a collapsed stack is one step, and an
+   expanded one's pull requests are steps ([D26](../DECISIONS.md#d26)). `O` opens the current one on github.com, where code is read and reviewed for now.
 5. **The merge panel for a stack,** with `⇧M`, then `⌘Enter`.
 6. **Managing:** linking pull requests into a stack, adding one on top, dissolving. Commands in the palette and menus, with what they
    need to show.

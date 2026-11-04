@@ -20,7 +20,8 @@ import { getItemComparator } from '@/lists/getItemComparator.js';
 import { foldStacks } from '@/lists/foldStacks.js';
 import { NO_VALUE } from '@/lists/groupEntries.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
-import type { ListChoice, ListEntry, ListMove } from '@/lists/ListTypes.js';
+import { filterListedItems } from '@/lists/filterListedItems.js';
+import type { ListChoice, ListedItems, ListEntry, ListMove } from '@/lists/ListTypes.js';
 import { ListViewOptionsStore } from '@/lists/ListViewOptionsStore.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
@@ -524,9 +525,11 @@ function open(id: string) {
   list.open(id);
 }
 
-function setListed(ids: readonly string[]) {
-  // Draft issues are not opened through the item view: stepping through the list skips them.
-  list.setListed(ids.filter(id => findEntry(id)?.content));
+function setListed(listed: ListedItems) {
+  // Draft issues are not opened through the item view: stepping through the list skips them. Comes on every move of the
+  // cursor, so looked up once. Only the drafts: a stack's pull request shown past the filter (D3) is an item of the list.
+  const drafts = new Set(selected.value?.filter(entry => !entry.content).map(getProjectEntryId));
+  list.setListed(filterListedItems(listed, id => !drafts.has(id)));
 }
 
 function setRowField(fieldId: string | null) {
@@ -556,6 +559,7 @@ function setRowField(fieldId: string | null) {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
     @update:options="options.set($event)"
@@ -613,6 +617,7 @@ function setRowField(fieldId: string | null) {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     @open="list.open"
     @listed="list.setListed"

@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { trackTabFocus } from '@/testing/trackTabFocus.js';
+
 import * as stories from './RepositoryWorkflowsView.stories.js';
 
 const {
@@ -144,6 +146,40 @@ test('after a click, J/K take the keys back: Enter acts on the selected row, not
     expect(unfold.mock.calls.length + openRun.mock.calls.length).toBe(1);
 });
 
+test("a control Tab reached above the rows holds the keys and the commands on the rows; Enter presses it, one Escape gives them back; a row's own button holds nothing", async () => {
+    trackTabFocus();
+    const openRun = vi.fn();
+    const unfold = vi.fn();
+    const settings = vi.fn();
+    await Default.run({ args: { ...Default.args, onOpenRun: openRun, onUnfold: unfold, onSettings: settings } });
+    const control = bar()
+        .getByRole('button', { name: /Alert settings/ })
+        .element();
+
+    await tabTo(control);
+    expect(control.hasAttribute('data-tab-focus')).toBe(true);
+
+    await userEvent.keyboard('j{ArrowDown}k');
+    expect(selected()).toBe('Deploy');
+    await userEvent.keyboard('{ArrowRight}p');
+    expect(unfold).not.toHaveBeenCalled();
+    expect(settings).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Enter}');
+    expect(settings).toHaveBeenCalledTimes(1);
+    expect(openRun).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{ArrowRight}');
+    expect(unfold).toHaveBeenLastCalledWith('1');
+
+    const rowButton = page.getByRole('button', { name: 'Deploy', exact: true }).element();
+    await tabTo(rowButton);
+    expect(rowButton.hasAttribute('data-tab-focus')).toBe(false);
+    await userEvent.keyboard('j');
+    expect(selected()).not.toBe('Deploy');
+});
+
 test('W3b: an unfolded workflow lists its runs under its row — kept ones, then older ones read — and J/K walk into them and back out', async () => {
     const openRun = vi.fn();
     const unfold = vi.fn();
@@ -270,3 +306,11 @@ test('W3e: Actions off says so and leads to its settings on GitHub; refused name
     await expect.element(group('Broken')).toHaveTextContent(like('Deploy'));
     await expect.element(bar()).not.toBeInTheDocument();
 });
+
+async function tabTo(element: Element) {
+    for (let tabs = 0; tabs < 40 && document.activeElement !== element; tabs++) {
+        await userEvent.tab();
+    }
+
+    expect(document.activeElement).toBe(element);
+}
