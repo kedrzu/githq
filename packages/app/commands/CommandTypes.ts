@@ -2,13 +2,14 @@ import type { LucideIcon } from 'lucide-vue-next';
 
 /**
  * Where an action belongs: its heading in the command menu and the help sheet, and — when two actions take the
- * same key — which one runs: `selection` before `item` before `view` before `app` (the items edited together win
- * over the item opened beside them, as their toolbar always did).
+ * same key — which one runs: `selection` before `item` before `view` before `repository` before `app` (the items
+ * edited together win over the item opened beside them, as their toolbar always did). `repository` holds the actions
+ * of the repository the screen belongs to; the menu offers them only while it has that repository as its context.
  */
-export type CommandSection = 'selection' | 'item' | 'view' | 'app';
+export type CommandSection = 'selection' | 'item' | 'view' | 'repository' | 'app';
 
 /** The sections from the one whose key wins to the one whose key yields. */
-export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'app'];
+export const COMMAND_SECTIONS: readonly CommandSection[] = ['selection', 'item', 'view', 'repository', 'app'];
 
 /**
  * What the actions act on, as the command menu's chip names it: the items selected together, or the item opened

@@ -615,6 +615,23 @@ of its checks.
 **Rejected.** "Ready to merge" alone: says nothing of the checks of a pull request waiting for review. "Checks passed" alone:
 leaves one with no checks saying nothing, and offers no "Merge".
 
+### D32
+
+**The screen's repository is a context of the command menu** (owner, 2026-11-04). When no opened item or selection takes
+the chip, a chip names the repository; ⌫ steps out from the item or selection to the repository, and again to none. A group
+headed by its name sits above "Go to": its sections (Workflows only while it is tracked), Open on GitHub, Copy link and
+Repository settings (only while tracked). On its view the sections keep their keys `1`–`4` and act as its tabs.
+
+**Rejected,** by the owner: any tracked repository's sections from elsewhere by typing; the existing repository line stays
+the way there.
+
+**Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
+already starts in the screen's repository.
+
+**"Settings" stays the app's** (owner, 2026-11-04): a repository is in context nearly always, so the repository's line is
+"Repository settings", and "settings" + Enter opens the app's Settings there too. Rejected: "Settings" in the group, which
+took that Enter and made the app's screen harder to reach.
+
 ## Open questions
 
 ### D26
