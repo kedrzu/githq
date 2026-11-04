@@ -1374,18 +1374,8 @@ function measureCharacterWidth() {
 .workflowJobLog_scroller {
   height: 100%;
   overflow: auto;
+  // The cursor's row shows where the keyboard is; a ring around the whole log only shouts.
   outline: none;
-}
-
-// The focus ring of the scroller, over it: Chromium paints its own outline under the sticky rows and heads, and clips
-// one outside it here. A click on a line, which focuses it too, is not `:focus-visible`.
-.workflowJobLog_main:has(> .workflowJobLog_scroller:focus-visible)::after {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  content: '';
-  box-shadow: inset 0 0 0 2px $color-focus;
 }
 
 .workflowJobLog_list {

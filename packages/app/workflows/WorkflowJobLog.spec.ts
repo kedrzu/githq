@@ -666,7 +666,7 @@ test('bidi and invisible characters show as what they are, change nothing around
     expect(zero?.querySelector('[data-control]')?.getAttribute('data-control')).toBe('U+200B');
 });
 
-test('keyboard focus on the log shows a ring inside it; a click on a line draws none', async () => {
+test('keyboard focus on the log draws no ring around it: the cursor’s row shows where the keyboard is', async () => {
     await Failed.run();
     await settled();
 
@@ -674,23 +674,11 @@ test('keyboard focus on the log shows a ring inside it; a click on a line draws 
         await userEvent.tab();
     }
 
-    expect(document.activeElement).toBe(log());
     expect(log().matches(':focus-visible')).toBe(true);
-    // Over the log, its sticky rows included: an outline of its own would be painted under them.
     const holder = log().parentElement ?? log();
-    expect(getComputedStyle(holder, '::after').boxShadow).toContain('inset');
-    expect(getComputedStyle(holder, '::after').zIndex).toBe('2');
-
-    log().blur();
-    const line = lines().find(row => row.textContent?.includes('exited with code 1'));
-    if (!line) {
-        throw new Error('The line should be in view');
-    }
-
-    await userEvent.click(line, { position: IN_THE_TEST_FRAME });
-    expect(document.activeElement).toBe(log());
-    expect(log().matches(':focus-visible')).toBe(false);
     expect(getComputedStyle(holder, '::after').boxShadow).toBe('none');
+    expect(getComputedStyle(log()).outlineStyle).toBe('none');
+    expect(log().querySelector('[aria-current]')).not.toBeNull();
 });
 
 test('moving onto a line taller than the view starts at its top, not its far end', async () => {
