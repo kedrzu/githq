@@ -16,6 +16,10 @@ All your repositories in one place, no separate tracker: a fast, keyboard-first 
 - **Faithful to GitHub.** Map onto GitHub concepts rather than inventing parallel ones, so changes made here and on github.com stay consistent in both directions.
 - **Respect API limits.** GraphQL for fetching and writing whenever it can do the job, REST where it can't, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
 
+## Architecture
+
+How the repo is built and why: `ARCHITECTURE.md`. Read it before changing the layout, tooling or a package's role.
+
 ## Status
 
 Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`.
@@ -48,7 +52,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   (`bun --cwd packages/github schema` refreshes GitHub's schema).
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
   against a mocked GitHub.
-- `bun run lint`, `bun run format`.
+- `bun run lint`, `bun run format` (both also format Markdown, through ESLint); `bun run format:md` for Markdown alone.
+- `bun run index` — the gitignored code map (`INDEX.md`, `UTILS.md`), also run by setup.
 - `bun run lighthouse [url]` — Lighthouse with PageSpeed Insights' settings (mobile and desktop, medians of 3 runs);
   by default against `bun run preview` on 8787, or e.g. `https://githq.dev/`.
 
@@ -90,6 +95,6 @@ The commands for every step are in the `git-workflow` skill (`.claude/skills/git
 
 ## Agent skills
 
-Plugins come from the `kedrzu-skills` marketplace (https://github.com/kedrzu/skills) and are enabled in `.claude/settings.json`: `dev`, `git`, `playwright`, `web-search`, `naming`, `guardrails`, `secrets`, `skill-improve`, plus `skill-creator` and `claude-md-management` from `claude-plugins-official`. Run `claude plugin install <plugin>@<marketplace>` once per plugin on a new machine. Change skills in the kedrzu/skills repo, not here.
+Plugins come from the `kedrzu-skills` marketplace (https://github.com/kedrzu/skills) and are enabled in `.claude/settings.json`: `dev`, `git`, `playwright`, `web-search`, `guardrails`, `handoff`, `retro`, `skill-improve`, plus `skill-creator` and `claude-md-management` from `claude-plugins-official`. Run `claude plugin install <plugin>@<marketplace>` once per plugin on a new machine. Change skills in the kedrzu/skills repo, not here.
 
-nzyme's skills load from the submodule through the symlink `.claude/skills/nzyme` → `../../nzyme/plugins/nzyme`, so they always match the pinned nzyme commit (don't also install `nzyme@nzyme` from its marketplace — it would shadow them). Every implementation task reads `nzyme:code-conventions` plus the skill for the nzyme package it touches. Work inside `nzyme/` follows `nzyme/AGENTS.md` (Conventional Commits, PR to `kedrzu/nzyme`).
+nzyme's skills load from the submodule through the symlink `.claude/skills/nzyme` → `../../nzyme/plugins/nzyme`, so they always match the pinned nzyme commit (don't also install `nzyme@nzyme` from its marketplace — it would shadow them). Every implementation task reads `nzyme:code-conventions` plus the skill for the nzyme package it touches. Work inside `nzyme/` follows `nzyme/CLAUDE.md` (Conventional Commits, PR to `kedrzu/nzyme`).

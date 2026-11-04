@@ -257,5 +257,6 @@ bypass this ruleset):
   Each one is a comment someone is waiting on: act on it or bring it to the owner, rather than resolving
   it to clear the way.
 
-Landing deploys: the push to `main` runs `.github/workflows/deploy.yml`, whose checks a PR does not go
-through first. One that goes red there blocks every later deploy until someone fixes `main`.
+Landing deploys: the push to `main` runs `.github/workflows/deploy.yml`. A PR goes through `build.yml`
+first (typecheck, lint, format, bun tests), but not through the deploy's component tests, e2e or Rust
+checks. One that goes red there blocks every later deploy until someone fixes `main`.
