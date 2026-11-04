@@ -23,3 +23,17 @@ test('↓ moves the highlight past a disabled row, and nothing matching says so'
     await userEvent.keyboard('zzz');
     await expect.element(page.getByText('Nothing matches')).toBeVisible();
 });
+
+test('↑ on the first row lands on the last, ↓ on the last on the first, skipping a disabled last row', async () => {
+    await Filtered.run();
+
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(page.getByRole('option', { name: /Cherry/u })).toHaveAttribute('data-highlighted');
+    await expect.element(page.getByRole('textbox', { name: 'Filter fruit…' })).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: apple');
+
+    await userEvent.keyboard('{ArrowUp}{Enter}');
+    await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: cherry');
+});
