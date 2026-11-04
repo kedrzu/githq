@@ -57,3 +57,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: U19 settled by the owner: a fresh Development build starts on Development (D15 rewritten; the first form rejected in it).
 - 2026-11-04: Owner rejected all three surfaces for what changed: a Changelog section in Settings, every version in its own fold, no ranges (D17). Asked: one fold for Development, or one per build (U43).
 - 2026-11-04: Owner: the commands for updating, restarting and so on belong in the command menu (D18).
+- 2026-11-04: Owner accepted one fold for Development (U43, D17).

@@ -330,13 +330,16 @@ read when needed, and the toast of [D7](#d7) still comes, with its action leadin
 
 **Why.** A version saying its own changes needs no range to work out, and the section stays reachable after the toast is gone.
 
+On Development there is one fold for everything since the last Stable, then the Stable versions, because builds have no descriptions and
+most are one commit (proposed by the design agent, accepted by the owner, screen U43). Those commits are read from `main` rather than
+compared, so the 250 limit of [D3](#d3) doesn't apply.
+
 Proposed by the design agent, not yet confirmed: "New" on versions the user didn't have before this update, so a skipped version isn't
-lost behind its fold. On Development, one fold for everything since the last Stable, because builds have no descriptions and most are
-one commit (screen U43, a question for the owner). Those commits are read from `main` rather than compared, so the 250 limit of
-[D3](#d3) doesn't apply.
+lost behind its fold.
 
 **Rejected.**
 
+- A fold per Development build: a long list of folds holding one line or nothing.
 - A dialog, the side panel or a page opening from the toast with the range since the old version (U26–U37, recommended by the design
   agent: the dialog): the owner chose a permanent section.
 

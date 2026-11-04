@@ -3,8 +3,7 @@
 Read `README.md` in this folder first.
 
 **Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Updates"
-(U1 chosen, U2 an alternative not chosen, U3–U48 the update streams and the changelog; U26–U37 are gone). Waiting for the
-owner: U43.
+(U1 chosen, U2 an alternative not chosen, U3–U48 the update streams and the changelog; U26–U37 are gone).
 
 ## Purpose
 
@@ -102,7 +101,7 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
   versions: a version says its own changes.
   - Stable (U41): a plain-language summary, then the list under Breaking changes, Features, Fixes and Performance. A release
     can have no summary (U42). "New" marks versions the user didn't have before this update, "Running" what is installed.
-  - Development (U43, a question for the owner): one fold for everything since the last Stable, filtered as release notes
+  - Development (U43): one fold for everything since the last Stable, filtered as release notes
     are, then the Stable versions. It can be empty, "Nothing you'd notice" (U44).
   - No versions yet (U45), loading (U46), offline, where the list waits for the connection (U47), and failure, with a link to
     the same changes on GitHub (U48).
