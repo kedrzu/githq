@@ -1,7 +1,7 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, ref, shallowRef, Teleport, unref } from 'vue';
 import type { Ref } from 'vue';
@@ -11,9 +11,11 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
-import type { ListViewOptions } from '@/lists/ListTypes.js';
+import type { ListEntry, ListViewOptions } from '@/lists/ListTypes.js';
+import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { sampleIssue } from '@/testing/sampleItems.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -129,43 +131,215 @@ test('the state stays on the toolbar longest; when even it does not fit, it is c
     expect(view.state.value.issues).toBe('all');
 });
 
-test('J3, CH37: not tracked, it lists what concerns the user of the section, how many others are open on GitHub, and points to Settings, with no offer to track', async () => {
-    const view = mount({ tracked: false, gitHubOpenCounts: { issues: 897, pullRequests: 1 } });
-    const lines = page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` });
+test('J5: not tracked, the same toolbar and list as tracked, with the chip and how much is read, no counts on the tabs and no offer to track', async () => {
+    const view = mount({ tracked: false, status: browsedStatus({ total: 3412, hasMore: true, cursor: 'c2' }) });
 
-    await expect
-        .element(lines)
-        .toHaveTextContent(`githq only has what concerns you in ${SAMPLE_REPOSITORY}: 5 issues.`);
-    // GitHub's 897 open issues less the 5 listed.
-    await expect
-        .element(lines)
-        .toHaveTextContent(
-            `githq has only the issues and pull requests of ${SAMPLE_REPOSITORY} that concern you; its other 892 open issues are on GitHub. Track it in Settings to have them all here.`,
-        );
-    // D20: the explanation is about the items; Commits needs no tracking.
-    await expect.element(lines).toHaveTextContent("Its commits don't need tracking: 3 opens them in full.");
-    await expect
-        .element(lines.getByRole('link', { name: 'Settings' }))
-        .toHaveAttribute('href', `/settings?q=${encodeURIComponent(SAMPLE_REPOSITORY)}`);
-    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
-    // The same tabs, without counts.
+    await expect.poll(groupNames).toEqual(['v4.2 — November', 'v4.3 — December', 'No milestone']);
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('5 of 3412', { exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Display' })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Open', exact: true }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Closed', exact: true }));
+    expect(view.state.value.issues).toBe('closed');
+
     const sections = page.getByRole('group', { name: 'Sections' });
     await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
-
-    await userEvent.click(sections.getByRole('button', { name: 'Pull requests', exact: true }));
-    expect(view.section.value).toBe('pullRequests');
-    await expect.element(page.getByRole('listitem').filter({ hasText: '#1203' })).toBeVisible();
-    await expect
-        .element(page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' }))
-        .not.toBeInTheDocument();
-    await expect
-        .element(lines)
-        .toHaveTextContent(`githq only has what concerns you in ${SAMPLE_REPOSITORY}: 1 pull request.`);
-    // Never negative: GitHub counts no more open pull requests than the one listed.
-    await expect.element(lines).toHaveTextContent('none of its other pull requests is open on GitHub.');
-    await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
     // Its workflows are not read: no Workflows section.
     await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
+});
+
+test('the count never says fewer exist than are listed, and says nothing before GitHub has answered', async () => {
+    const view = mount({ tracked: false, status: browsedStatus({ total: 3 }) });
+    await expect.element(page.getByText('5 of 5', { exact: true })).toBeVisible();
+
+    view.status.value = browsedStatus({ reading: true });
+    await expect.element(page.getByText(/^\d+ of \d+$/)).not.toBeInTheDocument();
+});
+
+test('tracked, nothing says how much is read', async () => {
+    mount();
+
+    await expect.element(page.getByRole('button', { name: 'Issues 5' })).toBeVisible();
+    await expect.element(page.getByText('not tracked', { exact: true })).not.toBeInTheDocument();
+    await expect.element(page.getByText(/^\d+ of \d+$/)).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Read more' })).not.toBeInTheDocument();
+});
+
+test("a short list asks for the next page, again only as its position moves, and ends with GitHub's last page", async () => {
+    const view = mount({ tracked: false, status: browsedStatus({ total: 50, hasMore: true, cursor: 'c2' }) });
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(1);
+
+    // A read that moved nothing (refused, or on its way) does not ask again, however long the end stays in view.
+    view.status.value = browsedStatus({ total: 50, hasMore: true, cursor: 'c2', reading: true });
+    await expect.element(page.getByText('Reading more…', { exact: true })).toBeVisible();
+    view.status.value = browsedStatus({ total: 50, hasMore: true, cursor: 'c2' });
+    await expect.element(page.getByText('Reading more…', { exact: true })).not.toBeInTheDocument();
+    await settle();
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    // A page read and the end still in reach: on.
+    view.status.value = browsedStatus({ total: 50, hasMore: true, cursor: 'c3' });
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(2);
+
+    view.status.value = browsedStatus({ total: 50 });
+    await settle();
+    expect(view.readMore).toHaveBeenCalledTimes(2);
+});
+
+test('a long list reads on only as its end comes in reach, by scrolling or walking it with j', async () => {
+    const view = mount({
+        tracked: false,
+        items: manyIssues(60),
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await expect.element(page.getByText('60 of 500', { exact: true })).toBeVisible();
+    await settle();
+    expect(view.readMore).not.toHaveBeenCalled();
+
+    for (const _row of manyIssues(60)) {
+        await userEvent.keyboard('j');
+    }
+
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(1);
+});
+
+test('reading stops while every group is collapsed: with no rows to scroll past, the end of the list says nothing', async () => {
+    const view = mount({
+        tracked: false,
+        items: manyIssues(60),
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await expect.element(page.getByRole('button', { name: /^No milestone/ })).toBeVisible();
+    await settle();
+
+    await userEvent.click(page.getByRole('button', { name: /^No milestone/ }));
+
+    await settle();
+    expect(view.readMore).not.toHaveBeenCalled();
+});
+
+test('with a group collapsed, a page goes on reading only if it added rows on screen: a short list does not read the repository whole', async () => {
+    const items = shallowRef<readonly Item[]>([...manyIssues(60), inMilestone('I_v1', 1)]);
+    const view = mount({
+        tracked: false,
+        items,
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await expect.element(page.getByRole('button', { name: /^No milestone/ })).toBeVisible();
+    await settle();
+    expect(view.readMore).not.toHaveBeenCalled();
+
+    // Collapsed, the list is short: its end comes in reach.
+    await userEvent.click(page.getByRole('button', { name: /^No milestone/ }));
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(1);
+
+    // A page gone wholly into the collapsed group: the end stays where it was, and nothing more is read.
+    items.value = [...items.value, ...manyIssues(30, 60)];
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c3' });
+    await settle();
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    // A page adding a row on screen, with the end still in reach: on.
+    items.value = [...items.value, inMilestone('I_v2', 2)];
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c4' });
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(2);
+});
+
+test('in the list, "Read more" shows only while a group is collapsed, and one click asks one page', async () => {
+    const view = mount({
+        tracked: false,
+        items: manyIssues(60),
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    const group = page.getByRole('button', { name: /^No milestone/ });
+    const readMore = page.getByRole('button', { name: 'Read more' });
+    await expect.element(group).toBeVisible();
+    await expect.element(readMore).not.toBeInTheDocument();
+
+    // All collapsed: the end of the list is gone, and this is the only way on.
+    await userEvent.click(group);
+    await expect.element(readMore).toBeVisible();
+    expect(view.readMore).not.toHaveBeenCalled();
+
+    await userEvent.click(readMore);
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c2', reading: true });
+    await expect.element(page.getByRole('button', { name: 'Reading more…' })).toBeVisible();
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c3' });
+
+    await userEvent.click(group);
+    await expect.element(readMore).not.toBeInTheDocument();
+});
+
+test('with one group of several collapsed the button shows, and nothing more to read takes it away', async () => {
+    const view = mount({
+        tracked: false,
+        items: [...manyIssues(60), inMilestone('I_v1', 1)],
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await userEvent.click(page.getByRole('button', { name: /^v1/ }));
+    await expect.element(page.getByRole('button', { name: 'Read more' })).toBeVisible();
+
+    view.status.value = browsedStatus({ total: 61 });
+    await expect.element(page.getByRole('button', { name: /^Read/ })).not.toBeInTheDocument();
+});
+
+test('J6: on the board nothing reads by itself, one button reads the next page, and with no more there is none', async () => {
+    const view = mount({
+        tracked: false,
+        status: browsedStatus({ total: 3412, hasMore: true, cursor: 'c2' }),
+        canMove: () => true,
+    });
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    // What the list asked before it was a board is not the board's.
+    await settle();
+    view.readMore.mockClear();
+    await settle();
+    expect(view.readMore).not.toHaveBeenCalled();
+    // A row of a repository only browsed moves as a tracked one does.
+    await expect
+        .element(page.getByRole('listitem').filter({ hasText: 'Calendar shows wrong timezone' }))
+        .toHaveAttribute('draggable', 'true');
+
+    await userEvent.click(page.getByRole('button', { name: 'Read more' }));
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    view.status.value = browsedStatus({ total: 3412, hasMore: true, cursor: 'c2', reading: true });
+    await expect.element(page.getByRole('button', { name: 'Reading more…' })).toBeVisible();
+
+    view.status.value = browsedStatus({ total: 5 });
+    await expect.element(page.getByRole('button', { name: /^Read/ })).not.toBeInTheDocument();
+});
+
+test('the first page on its way shows the list arriving, not that there is nothing', async () => {
+    mount({ tracked: false, items: [], arriving: true, status: browsedStatus({ reading: true }) });
+
+    await expect.element(page.getByText(/Still arriving/)).toBeVisible();
+    await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
+});
+
+test('J7: GitHub does not show it: the name, the chip and the way to GitHub, none of the list or its tools', async () => {
+    mount({ tracked: false, items: [], status: browsedStatus({ notShown: true }) });
+
+    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect
+        .element(page.getByText('It may be private or gone, or this name may be wrong.', { exact: true }))
+        .toBeVisible();
+    await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', `https://github.com/${SAMPLE_REPOSITORY}`);
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('group', { name: 'Sections' })).not.toBeInTheDocument();
 });
 
 test('Workflows comes fourth, on 4, with the broken count, a dash until known, and shows its own body under a toolbar without view options', async () => {
@@ -186,38 +360,6 @@ test('Workflows comes fourth, on 4, with the broken count, a dash until known, a
     await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent('Workflows–');
     view.workflowCount.value = null;
     await expect.element(page.getByRole('button', { name: /^Workflows/ })).toHaveTextContent(/^Workflows$/);
-});
-
-test('CH37: not tracked, with nothing of the section concerning the user, it shows the empty group and says so of that section', async () => {
-    mount({
-        tracked: false,
-        items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.kind === 'pullRequest'),
-        gitHubOpenCounts: { issues: 892, pullRequests: 40 },
-    });
-    const lines = page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` });
-
-    await expect.element(page.getByRole('button', { name: 'Concerns you 0' })).toBeVisible();
-    await expect.element(page.getByText('Nothing here.')).not.toBeInTheDocument();
-    await expect.element(lines).toHaveTextContent(`No issue in ${SAMPLE_REPOSITORY} concerns you.`);
-    await expect.element(lines).toHaveTextContent('its other 892 open issues are on GitHub.');
-});
-
-test('not tracked, while GitHub has not told how many items are open, the lines say it without a number', async () => {
-    mount({ tracked: false });
-    const lines = page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` });
-
-    await expect
-        .element(lines)
-        .toHaveTextContent(
-            `githq has only the issues and pull requests of ${SAMPLE_REPOSITORY} that concern you; its other open issues are on GitHub. Track it in Settings to have them all here.`,
-        );
-});
-
-test("tracked, GitHub's counts of open items are not shown", async () => {
-    mount({ gitHubOpenCounts: { issues: 897, pullRequests: 1 } });
-
-    await expect.element(page.getByRole('button', { name: 'Issues 5' })).toBeVisible();
-    await expect.element(page.getByText(/897|892/)).not.toBeInTheDocument();
 });
 
 test('D10, D11, CH3: Commits on 3 has none of the list tools, only the way to its history on GitHub, over the graph the page puts in', async () => {
@@ -245,15 +387,12 @@ test('D10, D11, CH3: Commits on 3 has none of the list tools, only the way to it
     await expect.element(page.getByText('The commit graph')).not.toBeInTheDocument();
 });
 
-test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the explanation about items', async () => {
+test('D11, D20: not tracked, Commits shows in full, with the "not tracked" chip and none of the reading of items', async () => {
     mount({ tracked: false, section: 'commits' });
 
     await expect.element(page.getByText('The commit graph')).toBeVisible();
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
-    await expect
-        .element(page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` }))
-        .not.toBeInTheDocument();
-    await expect.element(page.getByText('Concerns you')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Read/ })).not.toBeInTheDocument();
 });
 
 test("D14, CH4: in the column layout the sections and the projects are in the column, and the pane holds the section's name and its tools", async () => {
@@ -310,20 +449,30 @@ test('D14, CH6: in the column layout Commits has the plain header over the graph
     expect(document.querySelector(`#${COMMIT_REF_LIST_TARGET_ID}`)).not.toBeNull();
 });
 
-test("D14, D20: not tracked, in the column layout the chip is in the column, and the pane has the section's name over what concerns the user", async () => {
-    const view = mount({ layout: 'column', tracked: false });
+test("D14, D20: not tracked, in the column layout the chip is in the column, and the pane has the section's name, its tools and the count", async () => {
+    const view = mount({ layout: 'column', tracked: false, status: browsedStatus({ total: 3412 }) });
     const sections = page.getByRole('group', { name: 'Sections' });
 
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    expect(page.getByText('not tracked', { exact: true }).elements()).toHaveLength(1);
     await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('region', { name: `You're not tracking ${SAMPLE_REPOSITORY}` })).toBeVisible();
-    await expect.element(page.getByRole('navigation')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Group: Milestone' })).toBeVisible();
+    await expect.element(page.getByText('5 of 3412', { exact: true })).toBeVisible();
 
     await userEvent.keyboard('3');
     expect(view.section.value).toBe('commits');
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+});
+
+test('J7 in the column layout: the name of the section over what GitHub does not show, the sections staying in the column', async () => {
+    mount({ layout: 'column', tracked: false, items: [], status: browsedStatus({ notShown: true }) });
+
+    await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
 });
 
 test('D14: in the column layout a long name is cut to the column, its GitHub icon still in it', async () => {
@@ -405,10 +554,31 @@ test('D14: in the tabs layout the slot is told the list stays beside the graph, 
     await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
 });
 
+test("the sections are the command menu's repository group, each once on its key 1–4 with an icon", () => {
+    const { container } = mount();
+    const commands = container
+        .resolve(CommandRegistry)
+        .commands.filter(command => command.id.startsWith('repository.section.'));
+
+    expect(commands.map(command => [command.id, command.section, command.key, command.menu])).toEqual([
+        ['repository.section.issues', 'repository', '1', undefined],
+        ['repository.section.pullRequests', 'repository', '2', undefined],
+        ['repository.section.commits', 'repository', '3', undefined],
+        ['repository.section.workflows', 'repository', '4', undefined],
+    ]);
+    expect(commands.every(command => command.icon !== undefined)).toBe(true);
+});
+
 interface MountOptions {
     readonly tracked?: boolean;
-    readonly items?: readonly Item[];
-    readonly gitHubOpenCounts?: Readonly<Record<RepositoryItemSection, number>> | null;
+    /** A ref to change them while mounted. */
+    readonly items?: readonly Item[] | Ref<readonly Item[]>;
+    /** As the page tells it; `view.status` changes it while mounted. */
+    readonly status?: BrowsedStatus | null;
+    /** The list is told GitHub has not answered yet, as the page tells it. */
+    readonly arriving?: boolean;
+    readonly canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
+    readonly hostHeight?: string;
     readonly section?: RepositorySection;
     /** A ref to change it while mounted. */
     readonly layout?: RepositoryLayout | Ref<RepositoryLayout>;
@@ -425,7 +595,10 @@ interface MountOptions {
 function mount({
     tracked = true,
     items = SAMPLE_REPOSITORY_ITEMS,
-    gitHubOpenCounts = null,
+    status = null,
+    arriving = false,
+    canMove,
+    hostHeight = '100vh',
     section: firstSection = 'issues',
     layout = 'tabs',
     nameWithOwner = SAMPLE_REPOSITORY,
@@ -439,8 +612,10 @@ function mount({
     const section = ref<RepositorySection>(firstSection);
     const state = ref<Record<RepositoryItemSection, RepositoryState>>({ issues: 'open', pullRequests: 'open' });
     const workflowCountRef = ref(workflowCount);
-    const view = { options, section, state, workflowCount: workflowCountRef };
-    const open = items.filter(item => item.state === 'OPEN');
+    const statusRef = shallowRef(status);
+    const readMore = vi.fn();
+    const view = { options, section, state, workflowCount: workflowCountRef, status: statusRef, readMore };
+    const open = unref(items).filter(item => item.state === 'OPEN');
     const openCounts = {
         issues: open.filter(item => item.kind === 'issue').length,
         pullRequests: open.filter(item => item.kind === 'pullRequest').length,
@@ -449,7 +624,7 @@ function mount({
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     const host = document.createElement('div');
-    host.style.height = '100vh';
+    host.style.height = hostHeight;
     host.style.display = 'flex';
     host.style.width = '1400px';
     document.body.append(host);
@@ -467,16 +642,19 @@ function mount({
                     tracked,
                     list: listed
                         ? buildRepositoryList({
-                              items,
+                              items: unref(items),
                               state: 'open',
                               kind: getSectionItemKind(listed),
-                              grouping: tracked ? options.value[listed].grouping : 'none',
+                              grouping: options.value[listed].grouping,
                               sort: options.value[listed].sort,
                               texts: TEXTS,
+                              arriving,
                           })
                         : null,
                     openCounts,
-                    gitHubOpenCounts,
+                    status: statusRef.value,
+                    onReadMore: readMore,
+                    canMove,
                     layout: unref(layout),
                     modified,
                     workflowCount: workflowCountRef.value,
@@ -528,7 +706,7 @@ function mount({
         },
     });
     app.use(IocPlugin, { container });
-    // The Settings link of an untracked repository is a `RouterLink`.
+    // The way to a tracked project is a `RouterLink`.
     app.use(
         createRouter({
             history: createMemoryHistory(),
@@ -544,20 +722,28 @@ function mount({
     return Object.assign(view, { host, container });
 }
 
-test("the sections are the command menu's repository group, each once on its key 1–4 with an icon", () => {
-    const { container } = mount();
-    const commands = container
-        .resolve(CommandRegistry)
-        .commands.filter(command => command.id.startsWith('repository.section.'));
+function browsedStatus(status: Partial<BrowsedStatus>): BrowsedStatus {
+    return { reading: false, total: null, hasMore: false, cursor: null, notShown: false, settledName: null, ...status };
+}
 
-    expect(commands.map(command => [command.id, command.section, command.key, command.menu])).toEqual([
-        ['repository.section.issues', 'repository', '1', undefined],
-        ['repository.section.pullRequests', 'repository', '2', undefined],
-        ['repository.section.commits', 'repository', '3', undefined],
-        ['repository.section.workflows', 'repository', '4', undefined],
-    ]);
-    expect(commands.every(command => command.icon !== undefined)).toBe(true);
-});
+/** More issues than fit the window, whichever of the list's order. */
+function manyIssues(count: number, first = 0): readonly Item[] {
+    return Array.from({ length: count }, (_, index) => ({
+        ...sampleIssue(`I_${first + index}`),
+        number: 2000 + first + index,
+    }));
+}
+
+function inMilestone(id: string, number: number): Item {
+    return { ...sampleIssue(id), number, milestone: { title: 'v1', dueOn: null } };
+}
+
+/** Long enough for an observer that was going to speak to have spoken. */
+async function settle() {
+    await new Promise(resolve => {
+        setTimeout(resolve, 150);
+    });
+}
 
 /** The view's commands as the command menu would list them, by id. */
 function viewCommands(container: ReturnType<typeof createContainer>) {

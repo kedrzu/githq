@@ -53,7 +53,7 @@ export interface TrackingSyncContext {
  * How many pull requests one page of the first download reads: 100 with their status summary time out on big
  * repositories (measured on vitejs/vite).
  */
-const PULL_REQUEST_PAGE_SIZE = 30;
+export const PULL_REQUEST_PAGE_SIZE = 30;
 /** How many items one page of a project's download or full re-read asks for (`ProjectFull` reads 100 too). */
 const PROJECT_PAGE_SIZE = 100;
 /**
@@ -62,13 +62,13 @@ const PROJECT_PAGE_SIZE = 100;
  */
 const CHANGED_PAGE_SIZE = 20;
 /** How many node ids one `ItemsByIds` asks for. */
-const NODES_BATCH_SIZE = 50;
+export const NODES_BATCH_SIZE = 50;
 /**
  * How far back of a poll's start the next change list asks from: a change GitHub stamps a little before the
  * browser's clock says (clock skew, a write still landing) is not missed. A wider window costs nothing while
  * nothing changes: the list's ETag is a hash of its body.
  */
-const SINCE_SLACK_MS = 10 * 60_000;
+export const SINCE_SLACK_MS = 10 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
 /** How long a change check GitHub refused (a lasting 4xx) waits before it is asked again. */
 const REFUSED_RETRY_MS = 60 * 60_000;

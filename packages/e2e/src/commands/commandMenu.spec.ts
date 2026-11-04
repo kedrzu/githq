@@ -171,7 +171,7 @@ test("⌘K on an untracked repository's view has neither Workflows nor Settings 
 }) => {
     await openTrackedWork(page, github, createSampleTrackedWork().world);
     await page.goto('/acme/web');
-    await expect(new RepositoryScreenHarness(page).notTracked('acme/web')).toBeVisible();
+    await expect(new RepositoryScreenHarness(page).notTrackedChip).toBeVisible();
     const menu = new CommandMenuHarness(page);
 
     await menu.open();

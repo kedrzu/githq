@@ -72,7 +72,8 @@ search, stays small, and is what the dashboard shows. The second is **what you t
 projects you add yourself, copied in full, so you can browse and triage everything in them, including
 other people's issues. At first sign-in githq offers your own repositories as tracked, so for someone with a
 handful of their own repositories the two parts mostly overlap.
-[Why not simply copy everything](DECISIONS.md#d4).
+[Why not simply copy everything](DECISIONS.md#d4). Any other repository can still be browsed: read on demand while
+its screen is open, never in the background, and let go soon after ([D34](DECISIONS.md#d34)).
 
 Reviewing a pull request adds code to that: the contents of the files it changes stay in the browser until you sign
 out, so a pull request read once reopens at once ([code review D19](../code-review/DECISIONS.md#d19)).

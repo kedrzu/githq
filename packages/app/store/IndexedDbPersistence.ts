@@ -13,7 +13,7 @@ import type {
 } from '@/projects/ProjectPersistence.js';
 import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/RepositoryPersistence.js';
-import type { RepositoryMetadata, RepositoryOpenCounts, ViewerProjects } from '@/repos/RepositoryTypes.js';
+import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
 import { getReviewBlobDatabaseName } from '@/review/ReviewBlobStore.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
@@ -33,10 +33,10 @@ import type { Item } from './ItemTypes.js';
  * The layout of the database and of what it holds. Raise it whenever either changes (the `Item`, `ItemDetail`,
  * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking, `RepositoryWorkflows`, `KeptCommit` or `KeptCommitRefs` types too): a database of another version is dropped
  * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over (`TabChannel`) and the lock of
- * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` changes, so tabs of two githq versions do not
+ * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` or what a tab says of itself changes, so tabs of two githq versions do not
  * hear each other, and a tab of one is not left waiting for a tab of another.
  */
-export const LOCAL_DATABASE_VERSION = 14;
+export const LOCAL_DATABASE_VERSION = 15;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -76,7 +76,6 @@ interface LocalDatabase extends DBSchema {
         indexes: { version: [string, number] };
     };
     repositories: { key: string; value: RepositoryMetadata };
-    openCounts: { key: string; value: RepositoryOpenCounts };
     projects: { key: string; value: PersistedProject };
     projectItems: { key: string; value: ProjectItem; indexes: { projectId: string } };
     trackedSync: { key: string; value: SyncStateRecord };
@@ -88,7 +87,7 @@ interface LocalDatabase extends DBSchema {
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
  * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
- * (by `owner/name`), `openCounts` (an untracked repository's open issues and pull requests, by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
+ * (by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
  * repository's and project's sync state), `workflows` (each tracked repository's, by `owner/name`), `commits` (by
  * `[repository, oid]`, kept for good) and `commitRefs` (each repository's branches and tags, by `owner/name`). One object for the interfaces it is set as: they share the
  * connection.
@@ -122,7 +121,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         loadRepositories,
         saveRepository,
         saveViewerProjects,
-        saveOpenCounts,
         loadTracking,
         saveSyncState,
         deleteSyncState,
@@ -231,17 +229,15 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
 
     async function loadRepositories(login: string): Promise<PersistedRepositories> {
         const db = await getOpen(login);
-        const tx = db.transaction(['repositories', 'meta', 'openCounts']);
-        const [repositories, viewerProjects, openCounts] = await Promise.all([
+        const tx = db.transaction(['repositories', 'meta']);
+        const [repositories, viewerProjects] = await Promise.all([
             tx.objectStore('repositories').getAll(),
             tx.objectStore('meta').get('viewerProjects'),
-            tx.objectStore('openCounts').getAll(),
         ]);
 
         return {
             repositories,
             viewerProjects: viewerProjects?.key === 'viewerProjects' ? viewerProjects.value : null,
-            openCounts,
         };
     }
 
@@ -253,11 +249,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function saveViewerProjects(login: string, projects: ViewerProjects) {
         const db = await getOpen(login);
         await db.put('meta', { key: 'viewerProjects', value: projects });
-    }
-
-    async function saveOpenCounts(login: string, counts: RepositoryOpenCounts) {
-        const db = await getOpen(login);
-        await db.put('openCounts', counts);
     }
 
     async function loadTracking(login: string): Promise<PersistedTracking> {
@@ -382,7 +373,6 @@ function openDatabase(name: string) {
             db.createObjectStore('meta', { keyPath: 'key' });
             db.createObjectStore('details', { keyPath: 'id' }).createIndex('version', ['item.updatedAt', 'fetchedAt']);
             db.createObjectStore('repositories', { keyPath: 'nameWithOwner' });
-            db.createObjectStore('openCounts', { keyPath: 'nameWithOwner' });
             db.createObjectStore('projects', { keyPath: 'project.id' });
             db.createObjectStore('projectItems', { keyPath: 'itemId' }).createIndex('projectId', 'projectId');
             db.createObjectStore('trackedSync', { keyPath: 'key' });

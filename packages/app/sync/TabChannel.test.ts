@@ -60,6 +60,28 @@ test('the repositories another tab has on screen are heard, and go with it', asy
     expect(stays.channel.otherAnyRefRepositories).toEqual([]);
 });
 
+test('the repositories another tab holds are heard when nothing else of it changed, and go with it', async () => {
+    const browser = createTestTabs();
+    const login = `user-${crypto.randomUUID()}`;
+    const stays = openTab(browser, login);
+    const leaves = openTab(browser, login);
+    await advance([stays, leaves], 0);
+
+    leaves.channel.setHeldRepositories(['acme/web']);
+    await advance([stays, leaves], 0);
+    expect(stays.channel.otherHeldRepositories).toEqual(['acme/web']);
+
+    leaves.channel.setHeldRepositories([]);
+    await advance([stays, leaves], 0);
+    expect(stays.channel.otherHeldRepositories).toEqual([]);
+
+    leaves.channel.setHeldRepositories(['acme/api']);
+    await advance([stays, leaves], 0);
+    leaves.session.tab.close();
+    await advance([stays], 0);
+    expect(stays.channel.otherHeldRepositories).toEqual([]);
+});
+
 function openTab(browser: TestTabs, login: string) {
     const session = createTestSession({ login, answer: () => undefined, tabs: browser });
     return { session, channel: session.container.resolve(TabChannel) };
