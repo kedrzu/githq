@@ -28,3 +28,7 @@ orderByCommand:
   en: Order by…
 group:
   en: Group
+showPropertiesCommand:
+  en: Show properties…
+resetCommand:
+  en: Reset view options

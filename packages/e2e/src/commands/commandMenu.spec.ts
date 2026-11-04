@@ -120,6 +120,33 @@ test("⌘K on a tracked repository's view groups its sections, Open on GitHub, C
     await expect(new RepositoryScreenHarness(page).section('Pull requests')).toHaveAttribute('aria-pressed', 'true');
 });
 
+test("⌘K filters a repository's pull requests by state, in the submenu or by typing the state, and its issues keep their own", async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    const repository = new RepositoryScreenHarness(page);
+    const menu = new CommandMenuHarness(page);
+    await repository.section('Pull requests').click();
+    await expect(repository.row('Fix the crash on start')).toBeVisible();
+
+    await menu.run('filter by state');
+    await expect(menu.option(/^Open and closed/)).toBeVisible();
+    await menu.field.pressSequentially('closed');
+    await menu.option(/^Closed/).click();
+    await expect(menu.root).toBeHidden();
+    await expect(repository.row('Fix the crash on start')).toBeHidden();
+
+    await menu.run('open and closed');
+    await expect(menu.root).toBeHidden();
+    await expect(repository.row('Fix the crash on start')).toBeVisible();
+
+    await repository.section('Issues').click();
+    await expect(repository.row('Crash on start')).toBeVisible();
+    await expect(repository.row('Old crash')).toBeHidden();
+});
+
 test('⌘K in a repository: "settings" and Enter opens the app\'s Settings, the repository\'s is its own line', async ({
     page,
     github,

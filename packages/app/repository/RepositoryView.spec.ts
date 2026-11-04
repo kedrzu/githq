@@ -584,6 +584,8 @@ interface MountOptions {
     readonly layout?: RepositoryLayout | Ref<RepositoryLayout>;
     readonly nameWithOwner?: string;
     readonly workflowCount?: number | 'unknown' | null;
+    /** The options differ from the defaults. */
+    readonly modified?: boolean;
 }
 
 /**
@@ -601,6 +603,7 @@ function mount({
     layout = 'tabs',
     nameWithOwner = SAMPLE_REPOSITORY,
     workflowCount = null,
+    modified = false,
 }: MountOptions = {}) {
     const options = shallowRef<Record<RepositoryItemSection, Options>>({
         issues: REPOSITORY_VIEW_DEFAULTS,
@@ -653,6 +656,7 @@ function mount({
                     onReadMore: readMore,
                     canMove,
                     layout: unref(layout),
+                    modified,
                     workflowCount: workflowCountRef.value,
                     projects: [
                         { id: 'PVT_q4', title: 'Platform Q4', count: 1, to: '/orgs/acme/projects/1', external: false },
@@ -740,6 +744,105 @@ async function settle() {
         setTimeout(resolve, 150);
     });
 }
+
+/** The view's commands as the command menu would list them, by id. */
+function viewCommands(container: ReturnType<typeof createContainer>) {
+    return container
+        .resolve(CommandRegistry)
+        .commands.filter(command => command.id.startsWith('view.'))
+        .filter(command => command.when?.() ?? true);
+}
+
+test("the state is a command on both item sections, showing the toolbar's value and changing only the shown section", async () => {
+    const view = mount();
+    const { container } = view;
+    const command = () => viewCommands(container).find(candidate => candidate.id === 'view.state');
+    expect(command()?.detail).toBe('Open');
+
+    const closed = command()
+        ?.options?.()
+        .options.find(option => option.value === 'closed');
+    closed?.pick();
+    expect(view.state.value).toEqual({ issues: 'closed', pullRequests: 'open' });
+    await expect.element(page.getByRole('button', { name: 'Closed' })).toBeVisible();
+    await expect.poll(() => command()?.detail).toBe('Closed');
+    expect(
+        command()
+            ?.options?.()
+            .options.map(option => [option.value, option.chosen]),
+    ).toEqual([
+        ['open', false],
+        ['closed', true],
+        ['all', false],
+    ]);
+
+    view.section.value = 'pullRequests';
+    await expect.poll(() => command()?.detail).toBe('Open');
+    command()
+        ?.options?.()
+        .options.find(option => option.value === 'all')
+        ?.pick();
+    expect(view.state.value).toEqual({ issues: 'closed', pullRequests: 'all' });
+});
+
+test('the state is a command wherever the toolbar shows it: an untracked repository too, not Commits, Workflows or one GitHub does not show', () => {
+    const untracked = mount({ tracked: false, status: browsedStatus({ total: 3 }) });
+    expect(viewCommands(untracked.container).map(command => command.id)).toContain('view.state');
+
+    const commits = mount({ section: 'commits' });
+    expect(viewCommands(commits.container).map(command => command.id)).toEqual([]);
+
+    const workflows = mount({ section: 'workflows', workflowCount: 2 });
+    expect(viewCommands(workflows.container).map(command => command.id)).toEqual([]);
+
+    const notShown = mount({ tracked: false, status: browsedStatus({ notShown: true }) });
+    expect(viewCommands(notShown.container).map(command => command.id)).toEqual([]);
+});
+
+test('the properties are one command that toggles each one and keeps the rest, the menu staying open', async () => {
+    const view = mount();
+    const command = () => viewCommands(view.container).find(candidate => candidate.id === 'view.properties');
+    const submenu = () => command()?.options?.();
+    expect(submenu()?.several).toBe(true);
+    const before = view.options.value.issues.properties;
+
+    submenu()
+        ?.options.find(option => option.value === 'size')
+        ?.pick();
+    expect(view.options.value.issues.properties).toEqual(before.filter(property => property !== 'size'));
+    await expect.poll(() => submenu()?.options.find(option => option.value === 'size')?.chosen).toBe(false);
+    expect(submenu()?.options.find(option => option.value === 'labels')?.chosen).toBe(true);
+
+    submenu()
+        ?.options.find(option => option.value === 'size')
+        ?.pick();
+    expect([...view.options.value.issues.properties].toSorted()).toEqual([...before].toSorted());
+    expect(view.options.value.pullRequests.properties).toEqual(before);
+});
+
+test('Reset view options is offered only while the options differ from the defaults', () => {
+    const pristine = mount();
+    expect(viewCommands(pristine.container).map(command => command.id)).not.toContain('view.reset');
+
+    const changed = mount({ modified: true });
+    expect(viewCommands(changed.container).map(command => command.id)).toContain('view.reset');
+});
+
+test('Group by… and Order by… still set the grouping and the order', () => {
+    const view = mount();
+    const commands = viewCommands(view.container);
+    commands
+        .find(command => command.id === 'view.groupBy')
+        ?.options?.()
+        .options.find(option => option.value === 'issueType')
+        ?.pick();
+    expect(view.options.value.issues.grouping).toBe('issueType');
+
+    const orderBy = commands.find(command => command.id === 'view.orderBy')?.options?.();
+    const other = orderBy?.options.find(option => !option.chosen);
+    other?.pick();
+    expect(view.options.value.issues.sort).toBe(other?.value);
+});
 
 /** The groups shown, top to bottom or left to right. */
 function groupNames() {
