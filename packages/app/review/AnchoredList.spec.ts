@@ -187,6 +187,14 @@ test('the keys scroll the focused list natively, and the anchor follows: the fir
 
     await userEvent.keyboard('{PageDown}');
     await expect.poll(() => list.scrollTop).toBeGreaterThan(300);
+    // The browser may animate the key's scroll: read the anchor once it has come to rest.
+    await expect
+        .poll(async () => {
+            const before = list.scrollTop;
+            await frames(5);
+            return list.scrollTop === before;
+        })
+        .toBe(true);
     await frames(2);
 
     const [key, offset] = (page.getByTestId('anchor').element().textContent ?? '').split(' ');
