@@ -5,8 +5,12 @@
     "": {
       "name": "githq",
       "devDependencies": {
+        "@nzyme/bitwarden": "workspace:*",
         "@nzyme/cli": "workspace:*",
+        "@nzyme/cli-core": "workspace:*",
         "@nzyme/eslint": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/secrets": "workspace:*",
         "@nzyme/tsconfig": "workspace:*",
         "@types/bun": "1.4.4",
         "@types/node": "^26.6.6",

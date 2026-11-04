@@ -69,7 +69,7 @@ never offered it. Delete the prerelease and its tag once the real version is out
 ## Local development
 
 - `bun run dev:desktop` — the app in a desktop window, against `nuxt dev` (http://localhost:8787, hot reload).
-  Sign-in needs `GITHUB_CLIENT_ID` in the root `.env`: the client ID of the OAuth App "githq (dev)", with Device
+  Sign-in needs `GITHUB_CLIENT_ID` from the secret store (`.claude/skills/secrets/SKILL.md`) or the root `.env`: the client ID of the OAuth App "githq (dev)", with Device
   Flow enabled (below). The updater is off in dev.
 - `bun run build:desktop` — a local installer for this machine, under
   `packages/desktop/src-tauri/target/release/bundle/`. It needs no signing key: the signed updater bundles are

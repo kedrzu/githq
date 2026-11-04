@@ -34,16 +34,16 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 
 - `bun run setup` — install, build nzyme's CLI, generate tsconfigs and translations, build, prepare Nuxt.
 - `bun run dev` — the app on http://localhost:8787 (`nuxt dev`) with the Worker on 8788 behind `/api/**`.
-  Real "Sign in with GitHub" needs the repo root `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` of
-  the OAuth App "githq (dev)", callback `http://localhost:8787/auth/callback`; template `.env.example`). It lives
-  in the main checkout `~/Dev/githq/.env` and `setup.sh` copies it into every worktree;
-  without it, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
+  Real "Sign in with GitHub" needs `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` of the OAuth App "githq (dev)"
+  (callback `http://localhost:8787/auth/callback`), from Bitwarden after `bun nzyme secrets login` (`secrets` skill)
+  or from a root `.env`, which wins while it exists and which `setup.sh` copies from the main checkout;
+  without either, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
 - `bun run preview` — the production shape: the built SPA and the Worker in one `wrangler dev` on 8787.
 - `bun run deploy` — build the SPA and deploy both Workers by hand: `githq` on https://githq.dev and
   `githq-www` redirecting www (Cloudflare account of kedrzu@gmail.com; the OAuth App "githq" credentials are
   Worker secrets). Every push to `main` deploys by itself once the checks pass (`.github/workflows/deploy.yml`).
 - `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D23) against `nuxt dev`; sign-in uses the
-  Device Flow with `.env`'s `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
+  Device Flow with that same `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
 - Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|candidate|stable`)
   works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.

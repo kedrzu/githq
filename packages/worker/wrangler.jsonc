@@ -7,7 +7,8 @@
 // from the repo root, which builds the SPA first.
 //
 // Secrets: the OAuth App's `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, set once with
-// `bunx wrangler secret put <name>`; `wrangler dev` reads them from the repo root `.env` (`--env-file`, template `.env.example`).
+// `bunx wrangler secret put <name>`. `wrangler dev` takes them from its environment (`scripts/withSecrets.sh`) or the
+// repo root `.env`.
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
     // The Cloudflare account of kedrzu@gmail.com; deploys from CI (`.github/workflows/deploy.yml`) need it named.
@@ -17,6 +18,11 @@
     // Wrangler bundles `main` with esbuild; minified, the bundle is smaller and the Worker starts faster.
     "minify": true,
     "compatibility_date": "2026-10-15",
+    // Names only. `wrangler dev` binds these from its environment and nothing else from it; `wrangler deploy` refuses
+    // to go ahead if the Worker lacks one.
+    "secrets": {
+        "required": ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
+    },
     "assets": {
         "directory": "../app/.output/public",
         // A path with no file behind it (a deep link) gets `index.html` with a 200.

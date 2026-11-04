@@ -1,7 +1,7 @@
 /**
  * The Worker's environment. The two OAuth values are the githq OAuth App's credentials (D3): set with
- * `wrangler secret put` in production and in the repo root `.env` for `wrangler dev` (`.env.example`). Optional in
- * the type because a checkout without `.env` runs without them — the auth endpoints then answer 500
+ * `wrangler secret put` in production and from the secret store or the repo root `.env` for `wrangler dev`. Optional
+ * in the type because a checkout with neither runs without them — the auth endpoints then answer 500
  * `not_configured` instead of sending a half-built request to GitHub.
  */
 export interface WorkerEnv {

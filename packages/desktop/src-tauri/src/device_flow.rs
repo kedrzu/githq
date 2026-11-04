@@ -18,8 +18,8 @@ use tokio::sync::{oneshot, Mutex};
 /// web app's sign-in asks for; keep the two in step.
 const SCOPES: &str = "repo project read:org";
 
-/// The client ID of githq's OAuth App, compiled in from the environment (`.env`, exported by the root `dev:desktop`
-/// and `build:desktop` scripts). A build without it cannot sign in with the device flow.
+/// The client ID of githq's OAuth App, compiled in from the environment (the secret store or `.env`, through the root
+/// `dev:desktop` and `build:desktop` scripts). A build without it cannot sign in with the device flow.
 const CLIENT_ID: Option<&str> = option_env!("GITHQ_GITHUB_CLIENT_ID");
 
 /// Where GitHub's OAuth endpoints live.

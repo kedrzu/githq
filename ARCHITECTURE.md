@@ -33,8 +33,9 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 ## Integrations
 
 - **GitHub:** `packages/github` holds the client. Users' tokens come from the sign-in and stay on their device.
-- **GitHub OAuth Apps:** `githq` in production, whose credentials are Worker secrets, and `githq (dev)` in development, whose credentials are in the root `.env` (gitignored), which `setup.sh` copies into every worktree.
+- **GitHub OAuth Apps:** `githq` in production, whose credentials are Worker secrets, and `githq (dev)` in development, whose credentials are in the secret store.
 - **Cloudflare:** Workers and static assets; `packages/worker/wrangler.jsonc`.
+- **Bitwarden Secrets Manager:** development credentials, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
 
 ## Tooling and workflow
 
@@ -51,5 +52,7 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **There is no separate UI package.** One app uses the components, so they live in `packages/app`.
 - **Pull requests do not run component tests or e2e.** They are the slow part of the checks, and they run before each deploy.
 - **Stories are checked against WCAG 2.1 AA; target size is deferred.** Adding `wcag22aa` fails 35 tests, and larger targets affect the dense lists, so it needs a design decision first: [#119](https://github.com/kedrzu/githq/issues/119).
-- **Development credentials stay in `.env` for now.** Moving them to Bitwarden and removing the files are planned: [#117](https://github.com/kedrzu/githq/issues/117), [#118](https://github.com/kedrzu/githq/issues/118).
+- **Development credentials live in Bitwarden Secrets Manager, in one project shared with the owner's other repos, each key prefixed `GITHQ_`.** It is the one store `@nzyme/secrets` implements, and a machine-account token cannot reach vault items. A worktree reads it through the keychain, so no credentials are copied between checkouts. `.env` still wins where it exists, until [#118](https://github.com/kedrzu/githq/issues/118) removes it.
+- **`bun run dev` works without access to the store.** The repo is open to contributors who have no Bitwarden account, so `scripts/withSecrets.sh` warns and goes on; the development token form signs them in.
+- **`wrangler.jsonc` declares the Worker's secrets under `secrets.required`.** It is what lets `wrangler dev` read them from its environment without binding the whole shell, and it makes a deploy fail when production lacks one.
 - **Prerendering is hybrid, not `ssr: true` everywhere.** Only the landing page is public and needs search engines to see it.
