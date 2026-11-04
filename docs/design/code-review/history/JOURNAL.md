@@ -63,3 +63,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
 - 2026-11-03 — Owner at milestone 1's checkpoint: public privacy statements say githq reads the code pull requests change and keeps it until sign-out; `NOT_FOUND` hides kept code → D19; the diff stays on the main thread, a worker is measured with highlighting → D20; keys confirmed → D32; no ligatures in a diff → D36.
 - 2026-11-03 — Owner at milestone 2's checkpoint: the syntax palette stays → D37; square brackets stay literal in the filter → D11.
 - 2026-11-04 — Owner simplified the gone file: it says only that it's no longer in the diff, no commits named → D30.
+- 2026-11-04 — Owner: a gone file says only that, no commits → D30. A file simply deleted keeps its diff, as on GitHub; only one created and deleted again is an entry of threads alone → D12. A file with only resolved threads shows their count in grey → D27, CR46 and CR14 updated in the design file.

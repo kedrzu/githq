@@ -153,6 +153,18 @@ const openThreads = computed(() => {
 
   return counts;
 });
+// A past discussion stays findable: a file whose threads are all resolved shows how many, in grey (D27).
+const resolvedThreads = computed(() => {
+  const counts = new Map<string, number>();
+  for (const [path, placed] of placements.value.byFile) {
+    const { open, outdated, lineGone, resolved } = countThreads(placed);
+    if (resolved > 0 && open + outdated + lineGone === 0) {
+      counts.set(path, resolved);
+    }
+  }
+
+  return counts;
+});
 const reviewThreads = computed(() => getReviewOwnThreads(placements.value));
 const groups = computed(() => {
   const current = filter.value;
@@ -791,6 +803,7 @@ function readAgain() {
           :selected="selected"
           :lost-viewed="lostViewed"
           :open-threads="openThreads"
+          :resolved-threads="resolvedThreads"
           @select="selectFile"
           @select-threads="jumpToFileThreads"
           @select-range="selectRange"

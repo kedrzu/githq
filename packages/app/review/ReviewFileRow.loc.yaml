@@ -22,6 +22,11 @@ notInDiff:
   en: not in the diff
 notListed:
   en: not listed by GitHub
+resolvedThreads:
+  plural: count
+  en:
+    one: 1 resolved thread
+    many: '{count} resolved threads'
 openThreads:
   plural: count
   en:

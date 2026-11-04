@@ -45,6 +45,8 @@ const props = defineProps<{
   lostViewed?: ReadonlySet<string>;
   /** How many of a file's threads are unresolved, by its path. */
   openThreads?: ReadonlyMap<string, number>;
+  /** How many threads a file has when all of them are resolved, by its path. */
+  resolvedThreads?: ReadonlyMap<string, number>;
 }>();
 
 const emit = defineEmits<{
@@ -231,6 +233,7 @@ function onFilterKeydown(event: KeyboardEvent) {
                 :show-folder="flat"
                 :changed-since="lostViewed?.has(file.path)"
                 :open-threads="openThreads?.get(file.path)"
+                :resolved-threads="resolvedThreads?.get(file.path)"
                 @select="onRowClick(file.path, $event)"
                 @select-threads="emit('selectThreads', file.path)"
               />

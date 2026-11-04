@@ -79,7 +79,7 @@ is.
 A thread on code that has changed since is still shown in its file. GitHub sends each comment with the few lines of
 code it was written on, so githq looks for the commented line in the file as it is now; found exactly once, the
 thread sits there, otherwise at the top of its file with the old code beside it. Either way it is marked outdated. A
-thread on a file that is gone from the diff — deleted, or created and deleted again within the pull request — gets
+thread on a file that is gone from the diff — created and deleted again within the pull request — gets
 an entry of its own in the file list, until it is resolved. [Outdated threads](DECISIONS.md#d12).
 
 A thread on a line you cannot see — inside collapsed context, on a whitespace change you hid, in a collapsed file —

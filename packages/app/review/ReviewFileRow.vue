@@ -31,6 +31,8 @@ defineProps<{
   changedSince?: boolean;
   /** How many of its threads are unresolved. */
   openThreads?: number;
+  /** How many threads it has when all of them are resolved: in grey, so a past discussion can be found (D27). */
+  resolvedThreads?: number;
 }>();
 
 const emit = defineEmits<{
@@ -127,6 +129,19 @@ function onClick(event: MouseEvent) {
         :class="css.reviewFileRow_threadsIcon"
         aria-hidden="true"
       />{{ openThreads }}
+    </span>
+    <span
+      v-else-if="resolvedThreads"
+      :class="[css.reviewFileRow_threads, css.reviewFileRow_threads_resolved]"
+      :title="t(l.resolvedThreads, { count: resolvedThreads })"
+      :aria-label="t(l.resolvedThreads, { count: resolvedThreads })"
+      role="img"
+      data-threads
+    >
+      <MessageSquare
+        :class="css.reviewFileRow_threadsIcon"
+        aria-hidden="true"
+      />{{ resolvedThreads }}
     </span>
     <FileX
       v-if="file.gone"
@@ -263,6 +278,10 @@ function onClick(event: MouseEvent) {
   font-family: $font-family-mono;
   font-size: 10.5px;
   color: $color-amber;
+}
+
+.reviewFileRow_threads_resolved {
+  color: $color-fg-dim;
 }
 
 .reviewFileRow_threadsIcon {

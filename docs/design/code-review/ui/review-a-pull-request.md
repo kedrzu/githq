@@ -73,7 +73,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
   size in lines added and removed.
 - Whether the user has marked it viewed. The mark is GitHub's own, and GitHub removes it when the author changes the
   file again, so a second round of review shows only the files changed since.
-- Whether it has comments, and whether any thread on it is unresolved.
+- Whether it has comments, and whether any thread on it is unresolved: open threads in amber, or the count in grey when all are resolved.
 - Whether it starts collapsed because it is generated (lock files, generated code) or very large.
 - **A filter.** It is a path pattern with wildcards, as in VS Code's file filters: `.png` means the extension,
   `docs/**/*.png` a folder and an extension. A toggle button with an icon, as in VS Code, switches the pattern to a
@@ -85,8 +85,8 @@ What github.com gets wrong for this user, and what these screens must visibly ge
   a file and `{` / `}` extend the selection. One action, first of all "mark viewed", applies to all of them. Users
   often tick ten uninteresting files at once.
 - **Entries for gone files.** A file that is no longer in the diff but still has threads gets an entry of its own.
-  That covers a file deleted in the pull request, and one created and deleted again within it, so the diff shows
-  nothing. The entry holds only its threads and disappears once they are resolved.
+  That covers one created and deleted again within the pull request, so the diff shows nothing. The entry holds only
+  its threads and disappears once they are resolved. A file simply deleted is an ordinary file with its diff in red.
 
 **The diff**, by importance:
 

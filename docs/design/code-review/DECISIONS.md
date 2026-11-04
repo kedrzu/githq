@@ -192,11 +192,11 @@ finds route files of Nuxt and Next. (2026-11-03, owner, on the agent's recommend
 **Every thread is shown with the code it belongs to, outdated ones included. An outdated thread is placed by looking
 for the commented line — the last line of its `diffHunk` — in the current file: found exactly once, the thread sits
 there; otherwise at the top of its file, showing the code it was written on. Either way it is marked outdated. A
-thread on a file that is no longer in the diff — deleted, or created and deleted again within the pull request so
-that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
-such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
+thread on a file created and deleted again within the pull request, so that the diff shows nothing, gets an entry of its
+own in the file list and the diff, holding only its threads. Once such a thread is resolved, the entry is gone. A file
+simply deleted in the pull request is an ordinary file, its whole diff in red as on GitHub, its threads on their lines.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
 me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
-pass) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
+pass; a file simply deleted, owner, 2026-11-04) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
 
 **Why.** File comments belong with the files, consistently, rather than in the pull request's own conversation
 (owner). An approximate place is enough (owner), and the search needs nothing beyond what GitHub sends with the
@@ -459,10 +459,10 @@ bars, both remembered (D14), both also in the View options.** (2026-11-02, agent
 **The file list is GitHub's tree order: folders are quiet labels, and a file sits indented under its folder (compact
 folders, as VS Code); files at the root are not indented. While a filter is on, only the matching files show, each
 followed by its folder. A row has no checkbox: change letter (M, A, D, R), name, a tag for collapsed files ("lock
-file", "generated", "binary"), open threads in amber, size, and at the right end a status icon only when there is one
+file", "generated", "binary"), open threads in amber, or their count in grey when all are resolved, size, and at the right end a status icon only when there is one
 (loading, failed, waiting for the API allowance, gone). A viewed file has a small eye right after its name, the name
 slightly dimmed. Files are ticked on their header (Viewed V) or with V.** (2026-11-02, owner: checkboxes in the list
-read like the folder icons; CR46)
+read like the folder icons; the grey count, owner, 2026-11-04: a past discussion stays findable; CR46)
 
 **Rejected.**
 

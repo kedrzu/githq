@@ -271,6 +271,7 @@ test('a pull request with only resolved threads still has them to walk, each lan
     ];
     const { review } = await openThreads(page, github, threads);
 
+    await expect(review.fileRow('engine.ts').getByRole('img', { name: '2 resolved threads' })).toBeVisible();
     await page.keyboard.press('n');
     await expect(review.focusedThread).toContainText('First settled');
     await expect(review.focusedThread).toContainText('Quite');

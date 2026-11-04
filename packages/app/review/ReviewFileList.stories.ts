@@ -81,12 +81,14 @@ export const Threads: Story = {
             ['docs/sync.md', 2],
             ['src/sync/retry-policy.ts', 1],
         ]),
+        resolvedThreads: new Map([['docs/architecture.md', 3]]),
         onSelectThreads: fn(),
     },
     play: async ({ args, canvas }) => {
         await expect(canvas.getByText('not in the diff')).toBeInTheDocument();
         await userEvent.click(canvas.getByRole('img', { name: '2 open threads' }));
         await expect(args.onSelectThreads).toHaveBeenCalledWith('docs/sync.md');
+        await expect(canvas.getByRole('img', { name: '3 resolved threads' })).toBeInTheDocument();
     },
 };
 

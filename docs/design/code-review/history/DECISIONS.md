@@ -92,3 +92,16 @@ file's first change, with the old code and the commit it was written on, closed 
 gone from the diff is a block with a file-x icon, a struck-through name and the reason ("added in 3f0c2aa, deleted
 again in 9b7e411"), holding only its threads; its row in the list says "not in the diff".** (2026-11-02, agent,
 CR2, CR10, CR14)
+
+## D12, the file deleted
+
+Retired 2026-11-04, replaced by the current [D12](../DECISIONS.md#d12): a file simply deleted keeps its diff, and only a file created and deleted again is an entry of threads alone.
+
+**Every thread is shown with the code it belongs to, outdated ones included. An outdated thread is placed by looking
+for the commented line — the last line of its `diffHunk` — in the current file: found exactly once, the thread sits
+there; otherwise at the top of its file, showing the code it was written on. Either way it is marked outdated. A
+thread on a file that is no longer in the diff — deleted, or created and deleted again within the pull request so
+that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
+such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
+me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
+pass) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
