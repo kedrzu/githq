@@ -9,7 +9,13 @@ test('asks GitHub to re-run the failed jobs of the run', async () => {
     await rerunFailedJobs(
         request => {
             requests.push(request);
-            return Promise.resolve({ status: 201, payload: {}, headers: new Headers(), retryAfter: undefined });
+            return Promise.resolve({
+                status: 201,
+                payload: {},
+                text: '',
+                headers: new Headers(),
+                retryAfter: undefined,
+            });
         },
         { owner: 'acme', name: 'web', runId: 42 },
     );

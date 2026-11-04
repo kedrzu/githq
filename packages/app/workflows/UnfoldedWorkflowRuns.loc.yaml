@@ -1,0 +1,22 @@
+label:
+  en: Runs of {name}
+ref:
+  en: Ref
+allRefs:
+  en: All refs
+typeRef:
+  en: Branch or tag
+filterRef:
+  en: Filter by ref
+clearRef:
+  en: Show every ref
+readingOlder:
+  en: Reading older runs…
+readFailed:
+  en: Couldn't read older runs from GitHub
+retry:
+  en: Retry
+noRuns:
+  en: No runs
+noRunsOn:
+  en: No runs on {ref}

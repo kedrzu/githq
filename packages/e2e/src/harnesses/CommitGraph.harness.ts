@@ -95,6 +95,36 @@ export class CommitGraphHarness {
         await this.page.mouse.up();
     }
 
+    /** The handle on the details' left edge, beside the graph. */
+    get detailsHandle(): Locator {
+        return this.details.getByRole('separator', { name: 'Resize the commit details' });
+    }
+
+    /** Drags the details' left edge by `by` pixels with the mouse. */
+    async dragDetailsHandle(by: number): Promise<void> {
+        const box = await this.detailsHandle.boundingBox();
+        if (!box) {
+            throw new Error("The details' handle is not on screen");
+        }
+
+        const x = box.x + box.width / 2;
+        const y = box.y + 200;
+        await this.page.mouse.move(x, y);
+        await this.page.mouse.down();
+        await this.page.mouse.move(x + by, y, { steps: 5 });
+        await this.page.mouse.up();
+    }
+
+    /** The details' width as drawn, in pixels. */
+    async detailsWidth(): Promise<number> {
+        const box = await this.details.boundingBox();
+        if (!box) {
+            throw new Error('The details are not on screen');
+        }
+
+        return Math.round(box.width);
+    }
+
     /** The list's filter. */
     get refFilter(): Locator {
         return this.refList.getByRole('combobox', { name: 'Filter branches and tags' });

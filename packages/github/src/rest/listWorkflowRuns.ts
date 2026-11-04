@@ -62,6 +62,8 @@ export async function listWorkflowRuns(
         url: pageUrl ?? `${getRepositoryRestPath(nameWithOwner)}/actions/workflows/${workflowId}/runs`,
         query,
         etag,
+        // Read anew each time a workflow unfolds: GitHub marks the answer cacheable for a minute.
+        cache: 'no-store',
     });
     if (answer.status === 304) {
         return { status: 304 };

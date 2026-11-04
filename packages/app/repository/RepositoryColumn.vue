@@ -10,6 +10,7 @@ import {
   Github,
   Lock,
   SquareKanban,
+  Workflow,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -60,6 +61,7 @@ const SECTION_ICONS: Readonly<Record<RepositorySection, LucideIcon>> = {
   issues: CircleDot,
   pullRequests: GitPullRequest,
   commits: GitCommitHorizontal,
+  workflows: Workflow,
 };
 
 const meta = useRepositoryMeta(() => props.isPrivate);

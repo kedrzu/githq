@@ -19,6 +19,7 @@ import type {
 } from '@/store/stacks/describeStack.js';
 import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import type { ListStack } from './ListTypes.js';
 import * as l from './useStackFacts.loc.js';
@@ -82,7 +83,7 @@ export interface StackFactsViewModel {
     readonly age: string;
     readonly state: StackStateFact;
     /** Their lines added and removed, summed. */
-    readonly size: string;
+    readonly size: { readonly additions: number; readonly deletions: number };
     /** The labels all of them carry, and "+N" for the others any of them does (D15); `null` when there are none. */
     readonly labels: { readonly shared: readonly ItemLabel[]; readonly more: string | null };
     /** The milestone all share, "2 milestones" when they differ, `null` when some have none. */
@@ -115,8 +116,6 @@ const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
 export function useStackFacts(options: UseStackFactsOptions): StackFactsViewModel {
     const t = useTranslate();
     const queueTexts = useMergeQueueTexts();
-    const numbers = new Intl.NumberFormat(APP_LANGUAGE);
-    const fieldList = new Intl.ListFormat(APP_LANGUAGE);
 
     const entry = makeRef(options.stack);
     const now = makeRef(options.now);
@@ -160,7 +159,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
             deletions += pr.deletions;
         }
 
-        return t(l.size, { additions: numbers.format(additions), deletions: numbers.format(deletions) });
+        return { additions, deletions };
     });
     // D15: the labels every pull request carries, then how many others any of them does.
     const labels = computed(() => {
@@ -209,7 +208,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
             return { value, title, more: null };
         }
 
-        return { value: null, title: fieldList.format(values.keys()), more: t(l.more, { count: values.size }) };
+        return { value: null, title: formatList(values.keys()), more: t(l.more, { count: values.size }) };
     });
     const members = computed(() => {
         const kinds = new Map<string, StackPullRequestPipKind>();

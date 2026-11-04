@@ -118,6 +118,7 @@ function createFakeNative(): FakeNative {
                 native.calls.push('update_status');
                 return Promise.resolve(native.status);
             },
+            readJobLog: () => Promise.reject(new Error('Not expected')),
             restartToUpdate: () => {
                 native.calls.push('update_restart');
                 return Promise.resolve();

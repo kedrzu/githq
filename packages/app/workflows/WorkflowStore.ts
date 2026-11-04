@@ -6,6 +6,7 @@ import { computed, shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { Clock } from '@/services/Clock.js';
+import { readWorkflowSettings } from '@/settings/sync/SettingsDocument.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createTabInbox } from '@/sync/createTabInbox.js';
 import type { TabInbox } from '@/sync/createTabInbox.js';
@@ -14,8 +15,14 @@ import type { TabMessage } from '@/sync/TabChannel.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { getRepositoryWorkflowState } from './utils/getRepositoryWorkflowState.js';
+import { getWorkflowReadProgress } from './utils/getWorkflowReadProgress.js';
 import { WorkflowPersistence } from './WorkflowPersistence.js';
-import type { RepositoryWorkflowState, RepositoryWorkflows, WorkflowRefSettings } from './WorkflowTypes.js';
+import type {
+    RepositoryWorkflowState,
+    RepositoryWorkflows,
+    WorkflowReadProgress,
+    WorkflowRefSettings,
+} from './WorkflowTypes.js';
 
 /** A tracked repository's workflows' state, for the cross-repository screen and the sidebar's markers. */
 export interface TrackedRepositoryWorkflowState {
@@ -34,8 +41,6 @@ export interface WorkflowTotals {
     readonly hasUnread: boolean;
 }
 
-/** The refs that count while a repository's settings say nothing else (actions D5). */
-const DEFAULT_REF_SETTINGS: WorkflowRefSettings = { countDefaultBranch: true, patterns: [] };
 /** How often "broken for less than a day" is told again: a quarter of an hour late is little against a day. */
 const NOW_TICK_MS = 15 * 60_000;
 
@@ -49,7 +54,7 @@ interface Session {
 }
 
 /**
- * The tracked repositories' GitHub Actions workflows and their latest counted runs (actions D2, D4), as the sync last
+ * The tracked repositories' GitHub Actions workflows, their latest runs and tags (actions D2, D4), as the sync last
  * read them, and how each repository's workflows stand — worked out on read from them and from the refs that count
  * ({@link getRefSettings}), so a changed pattern needs no new read. Only tracked repositories are kept: one the user
  * stops tracking has its workflows dropped, here and on disk.
@@ -91,7 +96,7 @@ export const WorkflowStore = defineService({
             for (const { state } of repositories.value) {
                 brokenCount += state.brokenCount;
                 hasNewBreak ||= state.hasNewBreak;
-                hasUnread ||= state.status === 'unread';
+                hasUnread ||= state.status === 'unread' || state.reading;
             }
 
             return { brokenCount, hasNewBreak, hasUnread };
@@ -124,6 +129,7 @@ export const WorkflowStore = defineService({
             get,
             getState,
             getRefSettings,
+            getReadProgress,
             set,
             remove,
         };
@@ -149,11 +155,20 @@ export const WorkflowStore = defineService({
         }
 
         /**
-         * Which refs light the repository's counters (actions D5): its default branch for now, for every repository.
-         * The one place they are decided — the repository's settings (D14) are read here once they exist.
+         * Which refs light the repository's counters (actions D5, D14): its settings entry's `workflows`, the default
+         * while it has none or one not understood. The one place they are decided; reactive, so a change recomputes
+         * every state at once.
          */
-        function getRefSettings(_nameWithOwner: string): WorkflowRefSettings {
-            return DEFAULT_REF_SETTINGS;
+        function getRefSettings(nameWithOwner: string): WorkflowRefSettings {
+            return readWorkflowSettings(
+                tracking.document.repositories.find(entry => entry.nameWithOwner === nameWithOwner),
+            );
+        }
+
+        /** How far the read of the repository's workflows' runs is; `null` when none is under way. Reactive. */
+        function getReadProgress(nameWithOwner: string): WorkflowReadProgress | null {
+            const stored = storedRef.value.get(nameWithOwner);
+            return stored ? getWorkflowReadProgress(stored) : null;
         }
 
         /** Keeps what the sync read of a tracked repository; ignored while signed out or once it is no longer tracked. */

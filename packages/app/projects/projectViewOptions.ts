@@ -27,7 +27,7 @@ export interface ProjectSortLevel {
 export type ProjectSort = string;
 
 /** What a row or card of a project shows: GitHub's own properties, or a field's value (`field:<id>`). */
-export type ProjectProperty = Exclude<ItemProperty, 'projectField' | 'size'> | `field:${string}`;
+export type ProjectProperty = Exclude<ItemProperty, 'projectField'> | `field:${string}`;
 
 /** A project view's options as githq shows them (D13). */
 export type ProjectViewOptions = ListViewOptions<ProjectGrouping>;
@@ -40,7 +40,14 @@ export interface ProjectViewDefaults {
 }
 
 /** GitHub's own properties a row of a project may show, in the order the display options list them. */
-const ITEM_PROPERTIES = ['status', 'labels', 'milestone', 'people', 'updated'] as const satisfies ProjectProperty[];
+const ITEM_PROPERTIES = [
+    'status',
+    'size',
+    'labels',
+    'milestone',
+    'people',
+    'updated',
+] as const satisfies ProjectProperty[];
 
 /** The order of a project when its view sets none: GitHub's own (manual) order of the items. */
 export const MANUAL_SORT = 'manual';
@@ -64,7 +71,7 @@ export function getProjectViewDefaults(project: Project, view: ProjectView): Pro
         })
         .map(level => `${level.key}:${level.direction}`)
         .join(',');
-    const properties = new Set<ProjectProperty>(['status']);
+    const properties = new Set<ProjectProperty>(['status', 'size']);
     for (const field of view.fields) {
         const property = toProperty(project, field);
         if (property) {

@@ -17,6 +17,12 @@ if (!LONE) {
     throw new Error('The sample stack needs pull requests.');
 }
 
+const ISSUE = D1_ITEMS.find(item => item.kind === 'issue');
+const SIZED = D1_ITEMS.find(item => item.kind === 'pullRequest' && item.id === 'PR_1203');
+if (!ISSUE || !SIZED) {
+    throw new Error('The sample items need an issue and a pull request.');
+}
+
 /** Approved and ready to merge: what a merge refused or unanswered reads over. */
 const READY = D1_ITEMS.find(item => item.id === 'PR_477');
 if (READY?.kind !== 'pullRequest') {
@@ -75,6 +81,31 @@ export const LoneCard: Story = {
         const canvas = within(canvasElement);
         await expect(canvas.getByLabelText('In a stack')).toBeVisible();
         await expect(canvas.getByText('1 of 3')).toBeVisible();
+    },
+};
+
+/** A pull request shows its size, nested under an issue too; "Size" off in Display hides it. */
+export const Size: Story = {
+    args: { item: SIZED, parent: ISSUE },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText('+1,092')).toBeVisible();
+        await expect(canvas.getByText('−640')).toBeVisible();
+    },
+};
+
+export const SizeOff: Story = {
+    args: { item: SIZED, properties: ITEM_PROPERTIES.filter(property => property !== 'size') },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).queryByText('+1,092')).toBeNull();
+    },
+};
+
+/** An issue has no lines to count. */
+export const IssueHasNoSize: Story = {
+    args: { item: ISSUE },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).queryByText(/^−\d/)).toBeNull();
     },
 };
 

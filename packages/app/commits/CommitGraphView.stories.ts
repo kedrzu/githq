@@ -157,14 +157,14 @@ export const ListOverTheGraph: Story = {
     render: () => renderOver(sampleWebappHistory()),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('chore: bump vite to 6.2');
+        await findInGraph(canvas, 'chore: bump vite to 6.2');
         await userEvent.keyboard('b');
         await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toHaveFocus();
         await expect(canvas.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
     },
 };
 
-/** A plain commit's details right of the graph: no pull request and no checks to tell of. */
+/** A plain commit's details, open from the start right of the graph: no pull request and no checks to tell of. */
 export const DetailsPlain: Story = {
     render: () =>
         renderOver({
@@ -173,8 +173,7 @@ export const DetailsPlain: Story = {
         }),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('Commit c2');
-        await userEvent.keyboard('{Enter}');
+        await findInGraph(canvas, 'Commit c2');
         const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
         await expect(await panel.findByText(/What changed, and why/)).toBeVisible();
     },
@@ -185,8 +184,8 @@ export const DetailsFailing: Story = {
     render: () => renderOver({ ...sampleWebappHistory(), bodies: new Map([['a1', 'Stored in the wrong timezone.']]) }),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('chore: bump vite to 6.2');
-        await userEvent.keyboard('j{Enter}');
+        await findInGraph(canvas, 'chore: bump vite to 6.2');
+        await userEvent.keyboard('k');
         const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
         await expect(await panel.findByText('Failing')).toBeVisible();
     },
@@ -201,8 +200,7 @@ export const DetailsOfAMerge: Story = {
         }),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('Commit merge');
-        await userEvent.keyboard('{Enter}');
+        await findInGraph(canvas, 'Commit merge');
         const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
         await expect(await panel.findByRole('heading', { name: 'Parents' })).toBeVisible();
     },
@@ -220,7 +218,7 @@ export const DetailsNotLoaded: Story = {
         }),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('Commit c1');
+        await findInGraph(canvas, 'Commit c1');
         await userEvent.keyboard('b');
         await userEvent.keyboard('v0.1{Enter}');
         const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
@@ -262,8 +260,7 @@ export const DetailsBodyFailed: Story = {
         }),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await canvas.findByText('Commit c2');
-        await userEvent.keyboard('{Enter}');
+        await findInGraph(canvas, 'Commit c2');
         const panel = within(await canvas.findByRole('region', { name: 'Commit details' }));
         const notice = "GitHub can't be asked for the rest of this message right now.";
         await expect(await panel.findByText(notice)).toBeVisible();
@@ -314,6 +311,7 @@ export const DetailsGone: Story = {
                                       chosenRef: null,
                                       url: 'https://github.com/acme/web/commit/old',
                                       now: SAMPLE_COMMITS_NOW,
+                                      docked: 'side',
                                   }),
                               ]
                             : [],
@@ -334,6 +332,11 @@ export const DetailsGone: Story = {
     },
 };
 
+/** A commit's text in the graph, which comes before the details in the page and holds the same text. */
+async function findInGraph(canvas: ReturnType<typeof within>, text: string) {
+    return (await canvas.findAllByText(text))[0];
+}
+
 /** A tag whose commit is on GitHub and not loaded. */
 function notLoadedTag(options: Pick<CommitGraphTestOptions, 'failIf' | 'holdIf'>): CommitGraphTestOptions {
     const history = [sampleCommit('c1', 10, ['old'])];
@@ -353,7 +356,7 @@ function holdDetailAndHistory(operation: string) {
 /** Chooses the tag of {@link notLoadedTag}, and answers with the panel opened on its commit. */
 async function openNotLoadedTag(canvasElement: HTMLElement) {
     const canvas = within(canvasElement);
-    await canvas.findByText('Commit c1');
+    await findInGraph(canvas, 'Commit c1');
     await userEvent.keyboard('b');
     await userEvent.keyboard('v0.1{Enter}');
     return within(await canvas.findByRole('region', { name: 'Commit details' }));

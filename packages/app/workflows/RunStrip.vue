@@ -1,17 +1,22 @@
-<!-- A workflow's last five runs as ticks (actions W0), oldest to newest, the newest always in the rightmost slot so every row's latest run sits in one column. Height carries the verdict, so it reads without colour: failed tall (bright red while the break is news, quiet red otherwise), passed short and grey, no verdict (cancelled, skipped) a dash, running a hollow amber tick, a slot with no run known a hairline. Hovering a tick names the run; clicking it opens the run on GitHub. Screen readers hear the runs in words instead. -->
+<!-- A workflow's last five runs as ticks (actions W0), oldest to newest, the newest always in the rightmost slot so every row's latest run sits in one column. Height carries the verdict, so it reads without colour: failed tall (bright red while the break is news, quiet red otherwise), passed short and grey, no verdict (cancelled, skipped) a dash, running a hollow amber tick, a slot with no run known a hairline. Hovering a tick names the run; clicking it opens the run's page, an ordinary link, so a modifier-click opens a tab. Screen readers hear the runs in words instead. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
+import { getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import * as l from './RunStrip.loc.js';
+import { RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 
 const props = defineProps<{
+  /** `owner/name`, whose runs they are. */
+  nameWithOwner: string;
   /** The latest runs, oldest first; the strip shows the last five. */
   runs: readonly GitHubWorkflowRun[];
   /**
@@ -29,16 +34,14 @@ interface Tick {
   readonly run: GitHubWorkflowRun | null;
 }
 
-/** How many runs the strip shows. */
-const SLOTS = 5;
 const LIST = new Intl.ListFormat(APP_LANGUAGE, { style: 'long', type: 'unit' });
 
 const t = useTranslate();
 
-const runs = computed(() => props.runs.slice(-SLOTS));
+const runs = computed(() => props.runs.slice(-RUN_STRIP_SLOTS));
 // Slots with no run known first, so the latest run is always in the last one.
 const ticks = computed((): Tick[] => [
-  ...Array.from({ length: SLOTS - runs.value.length }, (_, index): Tick => ({
+  ...Array.from({ length: RUN_STRIP_SLOTS - runs.value.length }, (_, index): Tick => ({
     key: `none-${index}`,
     kind: 'unknown',
     run: null,
@@ -106,13 +109,11 @@ function getRunTitle(run: GitHubWorkflowRun) {
         v-for="tick in ticks"
         :key="tick.key"
       >
-        <a
+        <RouterLink
           v-if="tick.run"
           :class="css.runStrip_tick"
-          :href="tick.run.htmlUrl"
+          :to="getWorkflowRunPath({ nameWithOwner, runId: tick.run.id })"
           :title="getRunTitle(tick.run)"
-          target="_blank"
-          rel="noopener"
           tabindex="-1"
         >
           <span
@@ -120,7 +121,7 @@ function getRunTitle(run: GitHubWorkflowRun) {
             tid="run-bar"
             :data-kind="tick.kind"
           />
-        </a>
+        </RouterLink>
         <span
           v-else
           :class="css.runStrip_tick"
