@@ -81,8 +81,8 @@ In doubt, ask: "would someone using the desktop app want this line in the releas
 `fix` or `perf`, unscoped. The description is what the notes will say, so write it for a user.
 
 The web deploys on every push to `main` whatever the title; the title only decides the desktop release.
-Releasing is `gh workflow run release.yml -f mode=<preview|candidate|stable>`. `preview` is harmless;
-`candidate` and `stable` only on the owner's word, like Land. Details: `docs/desktop/RELEASING.md`.
+Releasing is `gh workflow run release.yml -f mode=<preview|stable>`. `preview` is harmless;
+`stable` only on the owner's word, like Land. Details: `docs/desktop/RELEASING.md`.
 
 ## Start
 

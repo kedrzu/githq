@@ -2,18 +2,28 @@ import { execFileSync } from 'node:child_process';
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 
 import type { ReleaseMode } from './releasePlan.js';
-import { checkTitle, findLastStableTag, hasNoCode, planRelease, renderNotes } from './releasePlan.js';
+import {
+    checkTitle,
+    developmentVersion,
+    findLastStableTag,
+    hasNoCode,
+    planRelease,
+    renderNotes,
+} from './releasePlan.js';
 
 // The release CLI that CI runs with plain bun, without `bun install`:
 //   release.ts check-title <title> --files <file>
 //     <file> is the PR's changed paths, the output of `git diff -z --name-only --no-renames`. Outputs `code=true|false`.
-//   release.ts plan --mode <preview|candidate|stable> --notes <file>
+//   release.ts plan --mode <preview|stable> --notes <file>
+//   release.ts development-plan --files <file>
+//     <file> is as for check-title. Outputs `version=<version>` of the Development build, and `build=true|false`, false
+//     only when the changed paths are all documentation.
 // It reads local git, its arguments and the file it is given only. Git is spawned with an argument array, never through
 // a shell, so a title or a commit subject stays data.
 
-const MODES: string[] = ['preview', 'candidate', 'stable'];
+const MODES: string[] = ['preview', 'stable'];
 const USAGE =
-    'usage: release.ts check-title <title> --files <file> | plan --mode <preview|candidate|stable> --notes <file>';
+    'usage: release.ts check-title <title> --files <file> | plan --mode <preview|stable> --notes <file> | development-plan --files <file>';
 
 function git(...args: string[]): string[] {
     const output = execFileSync('git', args, { encoding: 'utf8' });
@@ -53,14 +63,12 @@ function plan(args: string[]) {
         fail('--notes <file> is required');
     }
 
-    // The version grows from the last stable tag HEAD contains; candidate numbers count across every tag.
-    const allTags = git('tag', '-l', 'v*');
+    // The version grows from the last stable tag HEAD contains.
     const mergedTags = git('tag', '-l', 'v*', '--merged', 'HEAD');
     const lastStable = findLastStableTag(mergedTags);
     const subjects = git('log', '--format=%s', lastStable ? `${lastStable}..HEAD` : 'HEAD');
-    const tags = [...mergedTags, ...allTags.filter(tag => tag.includes('-'))];
 
-    const result = planRelease({ subjects, tags, mode });
+    const result = planRelease({ subjects, tags: mergedTags });
     if (result.kind === 'nothing') {
         const reason = 'Nothing to release: no feature, fix, performance or breaking change since the last stable tag.';
         if (mode === 'preview') {
@@ -87,21 +95,41 @@ function main(args: string[]) {
         checkTitleCommand(rest);
     } else if (command === 'plan') {
         plan(rest);
+    } else if (command === 'development-plan') {
+        developmentPlan(rest);
     } else {
         fail(USAGE);
     }
 }
 
-function checkTitleCommand([title, ...options]: string[]) {
-    const listFile = option(options, '--files');
+function readFiles(args: string[]): string[] {
+    const listFile = option(args, '--files');
     // A list that was lost must not read as an empty one, which passes.
     if (!listFile) {
         fail(USAGE);
     }
-
-    const files = readFileSync(listFile, 'utf8')
+    return readFileSync(listFile, 'utf8')
         .split('\0')
         .filter(file => file !== '');
+}
+
+function developmentPlan(args: string[]) {
+    const files = readFiles(args);
+    const tags = git('tag', '-l', 'v*', '--merged', 'HEAD');
+    const [count] = git('rev-list', '--count', 'HEAD');
+    const version = developmentVersion({ tags, commitCount: Number(count) });
+    const build = !hasNoCode(files);
+
+    report(
+        build ? `Development build ${version}` : `No Development build: only documentation changed since ${version}.`,
+    );
+    if (process.env.GITHUB_OUTPUT) {
+        appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nbuild=${build}\n`);
+    }
+}
+
+function checkTitleCommand([title, ...options]: string[]) {
+    const files = readFiles(options);
     const check = checkTitle(title ?? '', files);
     if (!check.valid) {
         fail(check.reason);

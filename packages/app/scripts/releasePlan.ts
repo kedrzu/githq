@@ -9,11 +9,10 @@ const HIDDEN_SCOPES = ['web', 'cloud'];
 const SUBJECT = new RegExp(`^(${TYPES.join('|')})(?:\\((${HIDDEN_SCOPES.join('|')})\\))?(!)?: (\\S.*)$`);
 const PULL_REQUEST_SUFFIX = / \(#(\d+)\)$/;
 const STABLE_TAG = /^v(\d+)\.(\d+)\.(\d+)$/;
-const CANDIDATE_TAG = /^v(\d+)\.(\d+)\.(\d+)-rc\.(\d+)$/;
 // How many offending paths a title rejection names.
 const LISTED_PATHS = 3;
 
-export type ReleaseMode = 'preview' | 'candidate' | 'stable';
+export type ReleaseMode = 'preview' | 'stable';
 
 export type TitleCheck = { valid: true } | { valid: false; reason: string };
 
@@ -22,10 +21,15 @@ export type ReleasePlan = { kind: 'nothing' } | { kind: 'release'; tag: string }
 export interface PlanReleaseParams {
     /** Commit subjects since the last stable tag. */
     subjects: string[];
-    /** Every tag name of the repository. */
+    /** The `v*` tags merged into HEAD. */
     tags: string[];
-    /** `preview` plans the stable release without making a candidate of it. */
-    mode: ReleaseMode;
+}
+
+export interface DevelopmentVersionParams {
+    /** The `v*` tags merged into HEAD. */
+    tags: string[];
+    /** The number of commits reachable from HEAD. */
+    commitCount: number;
 }
 
 export interface RenderNotesParams {
@@ -93,11 +97,8 @@ export function findLastStableTag(tags: string[]): string | undefined {
     return last?.tag;
 }
 
-/**
- * The tag the next release gets. A candidate is the stable version the same subjects would give, plus `-rc.N`;
- * candidates never move that version, so they are not read for it.
- */
-export function planRelease({ subjects, tags, mode }: PlanReleaseParams): ReleasePlan {
+/** The tag the next stable release gets, from the subjects since the last stable tag. */
+export function planRelease({ subjects, tags }: PlanReleaseParams): ReleasePlan {
     const bump = highestBump(subjects.map(parseChange));
     if (!bump) {
         return { kind: 'nothing' };
@@ -106,12 +107,18 @@ export function planRelease({ subjects, tags, mode }: PlanReleaseParams): Releas
     const lastStable = findLastStableTag(tags);
     const last = lastStable ? parseStableTag(lastStable) : undefined;
     const version = last ? applyBump(last, bump) : { major: 0, minor: 1, patch: 0 };
-    const stableTag = formatTag(version);
+    return { kind: 'release', tag: formatTag(version) };
+}
 
-    if (mode !== 'candidate') {
-        return { kind: 'release', tag: stableTag };
-    }
-    return { kind: 'release', tag: `${stableTag}-rc.${nextCandidate(tags, version)}` };
+/**
+ * The version of a Development build, without the `v`: the next minor after the last stable tag, plus `-dev.N` with N
+ * the commit count of HEAD. It sorts above the last stable and below the next minor, and reads no commit title.
+ */
+export function developmentVersion({ tags, commitCount }: DevelopmentVersionParams): string {
+    const lastStable = findLastStableTag(tags);
+    const last = lastStable ? parseStableTag(lastStable) : undefined;
+    const { major, minor } = last ?? { major: 0, minor: 0 };
+    return `${major}.${minor + 1}.0-dev.${commitCount}`;
 }
 
 /** Markdown release notes: the user-visible changes grouped, then the pointer to the code signing policy. */
@@ -193,22 +200,6 @@ function applyBump(version: Version, bump: Bump): Version {
         return { major, minor: minor + 1, patch: 0 };
     }
     return { major, minor, patch: patch + 1 };
-}
-
-function nextCandidate(tags: string[], version: Version): number {
-    let highest = 0;
-    for (const tag of tags) {
-        const match = CANDIDATE_TAG.exec(tag);
-        if (!match) {
-            continue;
-        }
-        const [, major, minor, patch, candidate] = match.map(Number);
-        const same = major === version.major && minor === version.minor && patch === version.patch;
-        if (same && candidate !== undefined && candidate > highest) {
-            highest = candidate;
-        }
-    }
-    return highest + 1;
 }
 
 function parseStableTag(tag: string): Version | undefined {

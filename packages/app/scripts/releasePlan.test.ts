@@ -1,11 +1,17 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 
-import { checkTitle, findLastStableTag, hasNoCode, planRelease, renderNotes } from './releasePlan.js';
-import type { ReleaseMode } from './releasePlan.js';
+import {
+    checkTitle,
+    developmentVersion,
+    findLastStableTag,
+    hasNoCode,
+    planRelease,
+    renderNotes,
+} from './releasePlan.js';
 
-function plan(subjects: string[], tags: string[], mode: ReleaseMode = 'stable') {
-    const result = planRelease({ subjects, tags, mode });
+function plan(subjects: string[], tags: string[]) {
+    const result = planRelease({ subjects, tags });
     return result.kind === 'release' ? result.tag : 'nothing';
 }
 
@@ -87,7 +93,7 @@ describe('hasNoCode', () => {
 });
 
 describe('findLastStableTag', () => {
-    test('compares numerically, ignores candidates and unknown tags', () => {
+    test('compares numerically, ignores prereleases and unknown tags', () => {
         const tags = ['v0.9.0', 'v0.10.0', 'v0.11.0-rc.1', 'v1.0', 'latest', 'v0.10.0-beta', 'xv0.12.0'];
         expect(findLastStableTag(tags)).toBe('v0.10.0');
     });
@@ -143,9 +149,7 @@ describe('planRelease exclusions', () => {
         ['revert: x'],
         [''],
     ])('%p counts for nothing', subject => {
-        for (const mode of ['preview', 'candidate', 'stable'] as const) {
-            expect(plan([subject], ['v0.3.1'], mode)).toBe('nothing');
-        }
+        expect(plan([subject], ['v0.3.1'])).toBe('nothing');
         expect(plan([subject], [])).toBe('nothing');
     });
 
@@ -161,33 +165,20 @@ describe('planRelease exclusions', () => {
 describe('planRelease first release', () => {
     test.each([['fix: a'], ['feat: a'], ['feat!: a'], ['chore!: a']])('%p gives v0.1.0', subject => {
         expect(plan([subject], [])).toBe('v0.1.0');
-        expect(plan([subject], ['v0.1.0-rc.1', 'nightly'])).toBe('v0.1.0');
+        expect(plan([subject], ['v0.1.0-dev.4', 'nightly'])).toBe('v0.1.0');
     });
 });
 
-describe('planRelease modes', () => {
-    test('preview is the stable tag, and nothing when nothing counts', () => {
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.2'], 'preview')).toBe('v0.4.0');
-        expect(plan(['chore: a'], ['v0.3.1'], 'preview')).toBe('nothing');
-    });
-
-    test('a candidate numbers from rc.1 and one past the highest, numerically', () => {
-        expect(plan(['feat: a'], ['v0.3.1'], 'candidate')).toBe('v0.4.0-rc.1');
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.1', 'v0.4.0-rc.9'], 'candidate')).toBe('v0.4.0-rc.10');
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.9', 'v0.4.0-rc.10'], 'candidate')).toBe('v0.4.0-rc.11');
-    });
-
-    test('candidates of other versions do not count for numbering', () => {
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.5.0-rc.4'], 'candidate')).toBe('v0.4.0-rc.1');
-    });
-
-    test('candidates never move the stable base', () => {
-        expect(plan(['fix: a'], ['v0.1.0', 'v0.2.0-rc.1'], 'candidate')).toBe('v0.1.1-rc.1');
-        expect(plan(['fix: a'], ['v0.1.0', 'v0.2.0-rc.1'], 'stable')).toBe('v0.1.1');
-    });
-
-    test('a first candidate is a v0.1.0 candidate', () => {
-        expect(plan(['fix: a'], [], 'candidate')).toBe('v0.1.0-rc.1');
+describe('developmentVersion', () => {
+    test.each([
+        [['v0.2.0'], 214, '0.3.0-dev.214'],
+        [['v0.2.0', 'v0.2.3', 'v0.2.1'], 214, '0.3.0-dev.214'],
+        [['v0.9.0', 'v0.10.0'], 5, '0.11.0-dev.5'],
+        [['v1.4.0'], 9, '1.5.0-dev.9'],
+        [[], 3, '0.1.0-dev.3'],
+        [['v0.2.0', 'v0.3.0-dev.9', 'nightly'], 7, '0.3.0-dev.7'],
+    ])('%p at %p commits is %p', (tags, commitCount, expected) => {
+        expect(developmentVersion({ tags, commitCount })).toBe(expected);
     });
 });
 
