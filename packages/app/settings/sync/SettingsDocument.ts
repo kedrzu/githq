@@ -1,6 +1,9 @@
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
+import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import * as z from 'zod/mini';
 
 import type { TrackedProject, TrackedRepository } from '@/tracking/TrackingTypes.js';
+import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
 /**
  * The user's settings in the shape of the settings repository's `settings.json` (D13): every repository and project
@@ -48,6 +51,11 @@ export type ParsedSettings =
     | { readonly kind: 'unreadable' }
     /** Written by a newer githq, which raised `version` for a change this build cannot carry (D13). */
     | { readonly kind: 'newer'; readonly version: number };
+
+/** A repository's `workflows` while its entry has none, or one this build does not understand (actions D5, D14). */
+export const DEFAULT_WORKFLOW_SETTINGS: WorkflowRefSettings = { defaultBranch: true, refs: [] };
+
+const WorkflowSettingsSchema = z.object({ defaultBranch: z.boolean(), refs: z.array(z.string()) });
 
 const VersionSchema = z.looseObject({ version: z.int() });
 
@@ -171,6 +179,48 @@ export function readSettingsDocument(stored: unknown): SettingsDocument | null {
     }
 
     return { ...parsed.data, repositories, projects };
+}
+
+/**
+ * The repository's `workflows` setting (actions D14): {@link DEFAULT_WORKFLOW_SETTINGS} for no entry, an entry without
+ * it, or a value not understood — which stays in the file as it is until the user changes the setting.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readWorkflowSettings(repository: SettingsRepository | undefined): WorkflowRefSettings {
+    const parsed = WorkflowSettingsSchema.safeParse(repository?.workflows);
+    return parsed.success ? parsed.data : DEFAULT_WORKFLOW_SETTINGS;
+}
+
+/** What {@link writeWorkflowSettings} writes where. */
+export interface WriteWorkflowSettingsParams {
+    readonly document: SettingsDocument;
+    /** The repository whose entry takes it. */
+    readonly nameWithOwner: string;
+    readonly settings: WorkflowRefSettings;
+}
+
+/**
+ * The document with the repository's `workflows` set to `settings` — over the fields a newer githq may have added to
+ * the object, which stay (D13); `null` when it has no entry of the repository or holds that value already.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function writeWorkflowSettings(params: WriteWorkflowSettingsParams): SettingsDocument | null {
+    const { document, nameWithOwner, settings } = params;
+    const repository = document.repositories.find(entry => entry.nameWithOwner === nameWithOwner);
+    if (!repository) {
+        return null;
+    }
+
+    const previous = isPlainObject(repository.workflows) ? repository.workflows : {};
+    const workflows = { ...previous, defaultBranch: settings.defaultBranch, refs: [...settings.refs] };
+    if (deepEquals(workflows, repository.workflows)) {
+        return null;
+    }
+
+    return {
+        ...document,
+        repositories: document.repositories.map(entry => (entry === repository ? { ...entry, workflows } : entry)),
+    };
 }
 
 /**

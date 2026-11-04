@@ -47,6 +47,8 @@ export interface GitHubRestAnswer {
     readonly status: number;
     /** The body; none for a `304`. */
     readonly json?: unknown;
+    /** A plain text body instead of JSON: a job's log. */
+    readonly text?: string;
     /** The `ETag` header, which the app sends back as `If-None-Match`. */
     readonly etag?: string;
 }
@@ -215,6 +217,11 @@ export class GitHubMock {
         string,
         (request: GitHubRestRequest) => GitHubRestAnswer | Promise<GitHubRestAnswer>
     >();
+    private readonly restPatterns: {
+        method: string;
+        pattern: RegExp;
+        handler: (request: GitHubRestRequest, match: RegExpExecArray) => GitHubRestAnswer;
+    }[] = [];
     private tokenExchangeAnswer: GitHubTokenExchange | GitHubHttpError | null = null;
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
@@ -257,6 +264,18 @@ export class GitHubMock {
         handler: (request: GitHubRestRequest) => GitHubRestAnswer | Promise<GitHubRestAnswer>,
     ): void {
         this.restHandlers.set(`${method} ${path}`, handler);
+    }
+
+    /**
+     * Answers the REST calls `method <any path matching pattern>` with `handler`, as {@link rest} does; a path it has an
+     * exact answer for takes that. For paths with an id in them, whose every id must be answered, known or not.
+     */
+    restMatching(
+        method: string,
+        pattern: RegExp,
+        handler: (request: GitHubRestRequest, match: RegExpExecArray) => GitHubRestAnswer,
+    ): void {
+        this.restPatterns.push({ method, pattern, handler });
     }
 
     /** The GraphQL operations answered so far, oldest first — to check what the app asked GitHub, and what not. */
@@ -396,6 +415,7 @@ export class GitHubMock {
         const rest =
             url.hostname === API_HOST
                 ? (this.restHandlers.get(`${method} ${url.pathname}`) ??
+                  this.findRestPattern(method, url.pathname) ??
                   (method === 'GET' && SETTINGS_REPOSITORY_PATH.test(url.pathname) ? answerNoRepository : undefined))
                 : undefined;
         if (rest) {
@@ -404,9 +424,10 @@ export class GitHubMock {
             const body = parseJson(request.postData());
             const answer = await rest({ url, ifNoneMatch, body });
             this.answeredRest.push({ method, url, ifNoneMatch, body, status: answer.status });
-            const fulfilled = this.apiAnswer(answer.status, answer.json, 'core', this.rateLimit);
+            const { json, ...fulfilled } = this.apiAnswer(answer.status, answer.json, 'core', this.rateLimit);
             await route.fulfill({
                 ...fulfilled,
+                ...(answer.text === undefined ? { json } : { body: answer.text, contentType: 'text/plain' }),
                 headers: { ...fulfilled.headers, ...(answer.etag === undefined ? {} : { etag: answer.etag }) },
             });
             return;
@@ -425,6 +446,18 @@ export class GitHubMock {
         }
 
         await this.reject(route, `${method} ${url.href}`);
+    }
+
+    /** What {@link restMatching} answers `method path` with. */
+    private findRestPattern(method: string, path: string) {
+        for (const { method: patternMethod, pattern, handler } of this.restPatterns) {
+            const match = patternMethod === method ? pattern.exec(path) : null;
+            if (match) {
+                return (request: GitHubRestRequest) => handler(request, match);
+            }
+        }
+
+        return undefined;
     }
 
     private async handleGraphQL(route: Route) {

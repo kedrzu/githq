@@ -31,4 +31,24 @@ export class TrackedSettingsScreenHarness {
     get untrackButton(): Locator {
         return this.root.getByRole('button', { name: 'Untrack', exact: true });
     }
+
+    /** A repository's Workflow alerts section (actions T16, `WorkflowAlertsBlock.vue`). */
+    get workflowAlerts(): Locator {
+        return this.root.getByRole('region', { name: 'Workflow alerts', exact: true });
+    }
+
+    /** Workflow alerts' switch of the default branch. */
+    get defaultBranchSwitch(): Locator {
+        return this.workflowAlerts.getByRole('switch', { name: 'Default branch' });
+    }
+
+    /** Workflow alerts' add field, which turns into the editor. */
+    get addPatternField(): Locator {
+        return this.workflowAlerts.locator('#workflow-alerts-add');
+    }
+
+    /** A pattern's row in Workflow alerts. */
+    pattern(pattern: string): Locator {
+        return this.workflowAlerts.locator(`[data-alert-key="pattern:${pattern}"]`);
+    }
 }

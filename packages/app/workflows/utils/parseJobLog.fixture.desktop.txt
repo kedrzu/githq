@@ -1,0 +1,52 @@
+﻿2026-11-02T19:12:54.8452636Z Current runner version: '2.338.2'
+2026-11-02T19:12:56.0315005Z Complete job name: desktop
+2026-11-02T19:12:56.0878865Z ##[group]Run actions/checkout@v5
+2026-11-02T19:12:56.0879292Z with:
+2026-11-02T19:12:56.0879535Z   repository: kedrzu/githq
+2026-11-02T19:12:57.4324957Z [command]/usr/bin/git log -1 --format=%H
+2026-11-02T19:12:57.4357380Z af427d1b0fb8f9fc00e6ee5d05578fbc19f1e2c0
+2026-11-02T19:12:57.4635569Z ##[group]Run sudo apt-get update
+2026-11-02T19:12:57.4636567Z [36;1msudo apt-get update[0m
+2026-11-02T19:12:57.4638200Z [36;1msudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev \[0m
+2026-11-02T19:13:21.3438305Z 
+2026-11-02T19:13:21.3438417Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-02T19:13:22.0765355Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-11-02T19:13:22.0765525Z with:
+2026-11-02T19:13:22.0765645Z   components: rustfmt, clippy
+2026-11-02T19:13:22.0765777Z   toolchain: stable
+2026-11-02T19:13:22.0765899Z ##[endgroup]
+2026-11-02T19:13:22.0816641Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-11-02T19:13:22.0846222Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-11-02T19:13:22.0846423Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-11-02T19:13:22.0846705Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-11-02T19:13:22.7113591Z LLVM version: 23.1.1
+2026-11-02T19:13:22.7130377Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=15]
+2026-11-02T19:13:22.7197337Z ##[group]Run swatinem/rust-cache@v2
+2026-11-02T19:13:22.7197487Z with:
+2026-11-02T19:13:22.7197628Z   workspaces: packages/desktop/src-tauri -> target
+2026-11-02T19:13:44.4284207Z Cache restored successfully
+2026-11-02T19:13:44.4718895Z Restored from cache key "v0-rust-desktop-Linux-x64-01b81e85-988f3720" full match: true.
+2026-11-02T19:13:44.6130274Z ##[group]Run mkdir -p ../../app/.output-desktop/public
+2026-11-02T19:13:44.6130548Z [36;1mmkdir -p ../../app/.output-desktop/public[0m
+2026-11-02T19:13:44.6148345Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:13:44.6149228Z ##[endgroup]
+2026-11-02T19:13:44.8813601Z ##[group]Run cargo fmt --check
+2026-11-02T19:13:44.8813807Z [36;1mcargo fmt --check[0m
+2026-11-02T19:13:44.8831208Z ##[endgroup]
+2026-11-02T19:13:45.1392281Z ##[group]Run cargo clippy --all-targets -- -D warnings
+2026-11-02T19:13:45.1392638Z [36;1mcargo clippy --all-targets -- -D warnings[0m
+2026-11-02T19:13:45.1409731Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:13:48.7082570Z [1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 3.53s
+2026-11-02T19:13:48.7461148Z ##[group]Run cargo test
+2026-11-02T19:13:48.7461314Z [36;1mcargo test[0m
+2026-11-02T19:13:48.7477670Z shell: /usr/bin/bash -e {0}
+2026-11-02T19:13:54.0093562Z 
+2026-11-02T19:13:54.0093800Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-02T19:13:54.0094088Z 
+2026-11-02T19:13:54.0337788Z Post job cleanup.
+2026-11-02T19:13:54.1183439Z Cache up-to-date.
+2026-11-02T19:13:54.1334689Z Post job cleanup.
+2026-11-02T19:13:54.1945332Z [command]/usr/bin/git version
+2026-11-02T19:13:54.2703234Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T19:13:54.2752079Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T19:13:54.3074944Z Cleaning up orphan processes

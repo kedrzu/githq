@@ -34,7 +34,7 @@ import type { Item } from './ItemTypes.js';
  * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` changes, so tabs of two githq versions do not
  * hear each other, and a tab of one is not left waiting for a tab of another.
  */
-export const LOCAL_DATABASE_VERSION = 9;
+export const LOCAL_DATABASE_VERSION = 10;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {

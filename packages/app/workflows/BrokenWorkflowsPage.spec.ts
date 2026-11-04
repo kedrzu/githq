@@ -5,6 +5,7 @@ import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
@@ -25,8 +26,8 @@ test('opening the screen polls the workflows at once', async () => {
     expect(poll).toHaveBeenCalledTimes(1);
 });
 
-test("Enter opens the selected workflow's latest failed run on GitHub, in a new tab", async () => {
-    const { store, openInNewTab } = await open();
+test("Enter opens the selected workflow's latest failed run on its page in githq", async () => {
+    const { store, router } = await open();
     const stored = sampleStoredWorkflows({
         nameWithOwner: WEB,
         workflows: [{ id: 7, name: 'Deploy', runs: [{ conclusion: 'failure', ago: '3h' }] }],
@@ -36,15 +37,14 @@ test("Enter opens the selected workflow's latest failed run on GitHub, in a new 
     await expect.element(page.getByRole('button', { name: 'Deploy' })).toBeVisible();
     await userEvent.keyboard('{Enter}');
 
-    expect(openInNewTab).toHaveBeenCalledWith(`https://github.com/${WEB}/actions/runs/7001`);
+    await expect.poll(() => router.currentRoute.value.path).toBe(`/${WEB}/actions/runs/7001`);
 });
 
 /** The screen, tracking one repository, signed in, with GitHub answering nothing. */
 async function open() {
-    const openInNewTab = vi.fn<(url: string) => void>();
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(Browser, { ...createSignedInBrowser(), openInNewTab });
+    container.set(Browser, createSignedInBrowser());
     setIndexedDbPersistence(container);
     const tracking = container.resolve(TrackingStore);
     await tracking.ready();
@@ -56,12 +56,17 @@ async function open() {
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({ setup: () => () => h(BrokenWorkflowsPage) });
+    const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:path(.*)*', component: { render: () => null } }],
+    });
     app.use(IocPlugin, { container });
+    app.use(router);
     app.mount(host);
     onTestFinished(() => {
         app.unmount();
         host.remove();
     });
 
-    return { store, poll, openInNewTab };
+    return { store, poll, router };
 }

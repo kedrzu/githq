@@ -115,3 +115,57 @@ test('a search the GitHub world does not know is unrouted, naming its query', as
 
     await context.close();
 });
+
+test('the GitHub world answers a run, its jobs and a job’s log; an id it does not know is 404, and a log can fail', async ({
+    browser,
+}) => {
+    const context = await browser.newContext({ baseURL: E2E_BASE_URL });
+    const github = new GitHubMock();
+    await github.install(context);
+    const world = new GitHubWorld('octocat');
+    world.repository('acme/web.js');
+    world.workflow({ repository: 'acme/web.js', name: 'Deploy' });
+    const runId = world.workflowRun('acme/web.js', 'Deploy', { conclusion: 'failure', minutesAgo: 5 });
+    const [jobId = 0, otherJobId = 0] = world.runJobs('acme/web.js', runId, [
+        { name: 'test', conclusion: 'failure', steps: [{ name: 'Set up job', conclusion: 'success' }] },
+        { name: 'deploy', conclusion: 'skipped' },
+    ]);
+    world.jobLog('acme/web.js', jobId, '\uFEFF2026-11-02T19:14:19.6484923Z ##[error]exit code 1\n');
+    world.jobLog('acme/web.js', otherJobId, 410);
+    world.install(github);
+    const page = await context.newPage();
+    await page.goto('/');
+
+    const base = 'https://api.github.com/repos/acme/web.js/actions';
+    const read = (path: string) =>
+        page.evaluate(async url => {
+            const response = await fetch(url);
+            return { status: response.status, type: response.headers.get('content-type'), text: await response.text() };
+        }, `${base}${path}`);
+
+    const run = await read(`/runs/${runId}`);
+    expect(run.status).toBe(200);
+    expect(JSON.parse(run.text)).toMatchObject({ id: runId, name: 'Deploy', conclusion: 'failure' });
+
+    const jobs = await read(`/runs/${runId}/jobs`);
+    expect(JSON.parse(jobs.text)).toMatchObject({
+        total_count: 2,
+        jobs: [
+            { id: jobId, name: 'test', steps: [{ name: 'Set up job', number: 1, conclusion: 'success' }] },
+            { id: otherJobId, name: 'deploy', steps: [] },
+        ],
+    });
+
+    expect(await read(`/jobs/${jobId}/logs`)).toMatchObject({
+        status: 200,
+        type: 'text/plain',
+        text: '2026-11-02T19:14:19.6484923Z ##[error]exit code 1\n',
+    });
+    expect((await read(`/jobs/${otherJobId}/logs`)).status).toBe(410);
+    for (const unknown of ['/runs/999', '/runs/999/jobs', '/jobs/999/logs']) {
+        expect((await read(unknown)).status).toBe(404);
+    }
+
+    github.assertAllRouted();
+    await context.close();
+});

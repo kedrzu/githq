@@ -12,6 +12,7 @@
         "allow-device-start",
         "allow-device-finish",
         "allow-open-external",
+        "allow-read-job-log",
         "allow-update-status",
         "allow-update-restart"
     ]

@@ -68,8 +68,7 @@ import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
-import { REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
+import { BROKEN_WORKFLOWS_PATH, REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
@@ -559,14 +558,7 @@ function getProjectMark(title: string) {
 
 // The entry's marker (actions W1): bright red with a break under a day old, quiet red with older ones only.
 .sidebar_brokenDot {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.sidebar_brokenDot_new {
-  background: $color-red;
+  @include workflow-broken-marker;
 }
 
 .sidebar_brokenDot_settled {

@@ -115,3 +115,18 @@ test('what another tab changes reaches this one, a cleared storage bringing back
     expect(preferences.sidebarCollapsed.value).toBe(false);
     expect(width.value).toBeNull();
 });
+
+test('how a job’s log shows starts plain, is kept as it changes, and is shared with another tab', async () => {
+    const session = createTestSession({ login: 'octocat', answer: () => undefined });
+    const storage = session.container.resolve(Browser).localStorage;
+    const preferences = session.container.resolve(LocalPreferences);
+    expect(preferences.logWrap.value).toBe(false);
+    expect(preferences.logTimes.value).toBe(false);
+
+    preferences.logWrap.value = true;
+    await nextTick();
+    expect(storage.getItem('githq.logWrap')).toBe('true');
+
+    session.fromAnotherTab({ 'githq.logTimes': 'true' });
+    expect(preferences.logTimes.value).toBe(true);
+});

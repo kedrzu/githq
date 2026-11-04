@@ -31,6 +31,20 @@ test('hovering "Up to date" tells how long ago it was checked, and the time move
     await expect.element(tooltip('Checked 1m ago')).toBeVisible();
 });
 
+test('W4j: while a job runs it says when GitHub was last asked, and the time moves on', async () => {
+    const clock = mount({ kind: 'statusChecked', checkedAt: NOW - 20_000 });
+
+    await expect.element(page.getByText('Status checked 20s ago')).toBeVisible();
+    clock.advance(3000);
+    await expect.element(page.getByText('Status checked 23s ago')).toBeVisible();
+});
+
+test('W4i: a log that failed to read says so, whichever job', async () => {
+    mount({ kind: 'logFailed', job: 'build' });
+
+    await expect.element(page.getByText("The log of build didn't load")).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

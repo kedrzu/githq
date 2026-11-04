@@ -1,0 +1,59 @@
+title:
+  en: '{workflow} #{number}'
+runTitle:
+  en: 'Run #{number}'
+unknownTitle:
+  en: Run {id}
+openOnGitHub:
+  en: Open on GitHub
+back:
+  en: Back
+nextJob:
+  en: Next job
+previousJob:
+  en: Previous job
+tryAgain:
+  en: Try again
+seeError:
+  en: See the error on GitHub
+invalidTitle:
+  en: Failed before the first job
+invalidText:
+  en: "GitHub couldn't parse {file}, so the run never got a runner: no jobs, no log. YAML strikes again."
+invalidFile:
+  en: the workflow file
+invalidDetail:
+  en: '{file} · invalid workflow file'
+invalidDetailNoFile:
+  en: invalid workflow file
+goneTitle:
+  en: GitHub shows no such run
+goneText:
+  en: "Run {id} of {name} doesn't exist, or GitHub won't show it to you. GitHub answers both the same way."
+runFailedTitle:
+  en: "This run didn't load"
+jobsFailedTitle:
+  en: "This run's jobs didn't load"
+failedText:
+  en: GitHub answered {status}, which happens to the best of servers.
+failedNoAnswerText:
+  en: "GitHub didn't answer, or githq has used up its allowance for now."
+failedDetail:
+  en: 'GET …/{path} → {status}'
+failedNoAnswerDetail:
+  en: 'GET …/{path} → no answer'
+noJobsWaitingTitle:
+  en: No job has started yet
+noJobsWaitingText:
+  en: The run is waiting for a runner. Its jobs land here as they start; until then, watch it on GitHub.
+noJobsTitle:
+  en: This run has no jobs
+noJobsText:
+  en: It finished without running any, so there's nothing to read here.
+rerunFailedJobs:
+  en: Re-run failed jobs
+rerunDetail:
+  plural: count
+  en:
+    one: '1 job: {jobs}'
+    many: '{count} jobs: {jobs}'
