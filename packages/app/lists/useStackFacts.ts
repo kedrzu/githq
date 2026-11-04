@@ -19,6 +19,7 @@ import type {
 } from '@/store/stacks/describeStack.js';
 import type { StackShareState } from '@/store/stacks/describeStackShare.js';
 import { formatAge } from '@/utils/formatAge.js';
+import { formatList } from '@/utils/formatList.js';
 
 import type { ListStack } from './ListTypes.js';
 import * as l from './useStackFacts.loc.js';
@@ -115,7 +116,6 @@ const HELD_TEXTS: Readonly<Record<HeldReason, Translation<HeldTextParams>>> = {
 export function useStackFacts(options: UseStackFactsOptions): StackFactsViewModel {
     const t = useTranslate();
     const queueTexts = useMergeQueueTexts();
-    const fieldList = new Intl.ListFormat(APP_LANGUAGE);
 
     const entry = makeRef(options.stack);
     const now = makeRef(options.now);
@@ -208,7 +208,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
             return { value, title, more: null };
         }
 
-        return { value: null, title: fieldList.format(values.keys()), more: t(l.more, { count: values.size }) };
+        return { value: null, title: formatList(values.keys()), more: t(l.more, { count: values.size }) };
     });
     const members = computed(() => {
         const kinds = new Map<string, StackPullRequestPipKind>();
