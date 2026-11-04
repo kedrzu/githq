@@ -33,6 +33,12 @@ const preview: Preview = {
             test: 'error',
             options: {
                 runOnly: ACCESSIBILITY_TAGS,
+                // These judge a whole page, and a story is a piece of one. The e2e tests check them on real screens.
+                rules: {
+                    region: { enabled: false },
+                    'landmark-one-main': { enabled: false },
+                    'page-has-heading-one': { enabled: false },
+                },
             },
         },
         // The app is dark only; stories sit on its background.

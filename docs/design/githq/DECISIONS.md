@@ -548,6 +548,29 @@ pull request would look different on a board. Keeping `Table row` for projects: 
 one list that differs, and of a design the code doesn't follow. Showing assignees everywhere: my work would lose who asked
 for a review.
 
+### D29
+
+**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays.
+Text already passed everywhere it was measured, except in the two states below; what fell short was the graphics. Fields
+and checkboxes get an outline of 3:1 (`control-border`, the value of `fg-3`), commit graph lines too (`graph-line`,
+`#646B75`, the default branch's line staying brighter), and `red-quiet` moves to `#AC4D52`. Dim rows lose their opacity
+and use `fg-dim` and `fg-3` instead: stack members below the line and rows not matching a filter. The undone chip loses its
+tint. A current project tab gets weight 500, and the current item of the collapsed sidebar an accent edge, because a fill
+of 1.13:1 alone doesn't tell them apart. `border-2` stays for what doesn't need it: cards, label pills, keys.
+
+**Why.** Measured across every story and the e2e screens, rendered and composited (`packages/e2e/src/audit/`,
+`packages/app/scripts/tokenContrast.ts`). Outlines read 1.27–1.50:1, graph lines 1.99–2.35:1, opacity on dim rows down to
+1.84:1, against 3:1 for graphics and 4.5:1 for text.
+
+**Known cost.** Fields are visibly brighter, the largest change to the calm of the UI. The read-only checkbox stays the
+design's grey box, rather than the code's half-opaque accent.
+
+**Rejected.** Checkboxes only: text fields would still miss 3:1 and need a recorded exception. A brighter `border-2`:
+every card, pill and key would pay for what only controls need.
+
+Labels stay: their colour is a dot beside a name in `fg-2`, so it carries nothing the name doesn't say. A disabled control
+is exempt in WCAG. Target sizes aren't decided yet.
+
 ## Open questions
 
 ### D26
