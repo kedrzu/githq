@@ -28,6 +28,8 @@ the owner's machines can write. Production's Worker reads its own Worker secret,
 the store; e2e uses the dummy `packages/e2e/worker.vars`; CI reads nothing from the store. Client IDs are public and
 not secrets: `packages/github/src/oauthClientIds.json`.
 
+The updater's signing key and its password are mapped with `GITHQ_ENV=prod` only, so no development command holds them. `bun run build:desktop:signed` reads them from the store; the Release action signs with repository secrets set from it (`docs/desktop/RELEASING.md`).
+
 ## Commands
 
 - `bun nzyme secrets login` — once per machine, by the person holding the token.
