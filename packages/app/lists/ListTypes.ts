@@ -172,8 +172,8 @@ export interface ListChoice<T extends string = string> {
 
 /** How the rows above the list's end stand: with a group collapsed, what is added to it does not push the end away. */
 export interface ListEndProps {
-  /** At least one group is collapsed. */
-  readonly someCollapsed: boolean;
-  /** How many rows are on screen: a collapsed group's and a collapsed stack's are not. */
-  readonly rowsShown: number;
+    /** At least one group is collapsed. */
+    readonly someCollapsed: boolean;
+    /** How many rows are on screen: a collapsed group's and a collapsed stack's are not. */
+    readonly rowsShown: number;
 }

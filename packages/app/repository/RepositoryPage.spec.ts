@@ -98,10 +98,9 @@ test('not tracked, a hidden tab asks GitHub nothing about it, its permission inc
     expect(github.operations().filter(isAboutRepository)).toEqual([]);
 
     setVisible(true);
-    await expect.poll(() => github.operations().filter(isAboutRepository).toSorted()).toEqual([
-        'RepositoryIssues',
-        'RepositoryMetadata',
-    ]);
+    await expect
+        .poll(() => github.operations().filter(isAboutRepository).toSorted())
+        .toEqual(['RepositoryIssues', 'RepositoryMetadata']);
 });
 
 test('tracked, a hidden tab reads its permission as ever', async () => {
