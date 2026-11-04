@@ -636,7 +636,7 @@ took that Enter and made the app's screen harder to reach.
 
 **The desktop app's update screens are drawn in `githq.pen`, frame "Desktop · Updates" (U1–U40), following
 [desktop releases](../desktop-releases/DECISIONS.md).** (design agent, 2026-11-04, for the owner to overrule.) Where what
-changed opens is the owner's pick, with the dialog recommended (U26–U37), and U19 is a question for them.
+changed opens is the owner's pick, with the dialog recommended (U26–U37).
 
 - **The outcome of a check started from the palette appears at the right end of the status bar, not in a toast.** That's where
   U1 already speaks and the palette has just closed. Up to date goes away by itself; a failure stays until Try again or

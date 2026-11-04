@@ -4,7 +4,7 @@ Read `README.md` in this folder first.
 
 **Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Updates"
 (U1 chosen, U2 an alternative not chosen, U3–U40 the update streams and what changed). Waiting for the owner: where what
-changed opens (U26–U37), and U19.
+changed opens (U26–U37).
 
 ## Purpose
 
@@ -79,8 +79,8 @@ A section only the desktop app has, after Account, with the key 7.
 - **To Development (U18).** No confirmation and no install. It waits for a build newer than the installed version, so
   right after a Stable release it says nothing is newer yet.
 - **From a Stable version following Development, back to Stable.** Nothing older can install, so no confirmation.
-- **A fresh install always starts on Stable,** including a build downloaded from the Development release. U19 is a
-  question for the owner: by the rules as they stand, that build takes the older Stable at its first check.
+- **A fresh install follows what it is (U19).** A Development build starts on Development, any other build on Stable,
+  and nothing is asked.
 
 ## Check for updates from the command palette
 

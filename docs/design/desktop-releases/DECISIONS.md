@@ -302,12 +302,16 @@ never holds it.
 
 ## D15
 
-**A fresh install always starts on Stable, including a build downloaded from the Development release.** (2026-11-04, owner)
+**A fresh install follows what it is: a Development build starts on Development, any other build on Stable.** (2026-11-04, owner)
 
-**Why.** Not recorded by the owner when deciding; the safe stream is the default wherever the user hasn't chosen.
+**Why.** Whoever downloaded a Development build wanted one. With no choice stored, the stream is read from the running version
+(`-dev` or not), so it holds no extra state; once the user chooses, the choice counts. Windows has no Development builds
+([D2](#d2)), so it always starts on Stable. Screen: U19 in `githq.pen`.
 
-Open, from drawing it (screen U19 in `githq.pen`): with [D5](#d5)'s rule that a running `-dev` build on Stable accepts any
-Stable, such a build takes the older Stable at its first check, at launch. The owner decides whether that stands.
+**Rejected.**
+
+- Every fresh install on Stable, the owner's first form (2026-11-04): with [D5](#d5)'s rule that a running `-dev` build on Stable
+  accepts any Stable, a build just downloaded from the Development release would take the older Stable at its first check, at launch.
 
 ## D16
 
