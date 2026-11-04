@@ -55,7 +55,7 @@ getting in my way."
 
 ## Updates in Settings
 
-A section only the desktop app has, after Account, with the key 7.
+A section only the desktop app has, after Account, with the key 6.
 
 - **What is running (U3, U4).** The version in the monospace font (`0.2.0`, `0.3.0-dev.214`), and under it what kind of
   build that is and which stream it follows, since after a switch the two can differ. A Development build also names
@@ -96,7 +96,7 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
   dismissed. No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
   while the toast shows), which goes to the changelog. After going back to an older Stable (U25) it says which version is
   running and offers nothing.
-- **Changelog.** A section of Settings, after Updates, with the key 8, on the desktop app only. Every version has its own
+- **Changelog.** A section of Settings, after Updates, with the key 7, on the desktop app only. Every version has its own
   fold, newest first, the first open and the rest collapsed, and each opens on its own. There are no ranges between
   versions: a version says its own changes.
   - Stable (U41): a plain-language summary, then the list under Breaking changes, Features, Fixes and Performance. A release

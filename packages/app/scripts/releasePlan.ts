@@ -9,6 +9,11 @@ const HIDDEN_SCOPES = ['web', 'cloud'];
 const SUBJECT = new RegExp(`^(${TYPES.join('|')})(?:\\((${HIDDEN_SCOPES.join('|')})\\))?(!)?: (\\S.*)$`);
 const PULL_REQUEST_SUFFIX = / \(#(\d+)\)$/;
 const STABLE_TAG = /^v(\d+)\.(\d+)\.(\d+)$/;
+// What a scope's PR has to touch: a scope says the work never reaches the desktop app, so it must at least be that work.
+const SCOPE_PATHS: Record<string, string[]> = {
+    web: ['packages/app/landing/', 'packages/worker/'],
+    cloud: ['packages/worker/'],
+};
 // How many offending paths a title rejection names.
 const LISTED_PATHS = 3;
 const GROUP_TITLES: Record<ChangeGroupKind, string> = {
@@ -89,7 +94,15 @@ export function checkTitle(title: string, files: string[]): TitleCheck {
         };
     }
 
-    const [, type] = match;
+    const [, type, scope] = match;
+    const scopePaths = scope === undefined ? undefined : SCOPE_PATHS[scope];
+    if (scopePaths && files.length > 0 && !files.some(file => scopePaths.some(path => file.startsWith(path)))) {
+        return {
+            valid: false,
+            reason: `the scope ${scope} says this never reaches the desktop app, but this PR touches nothing under ${scopePaths.join(' or ')}`,
+        };
+    }
+
     const code = files.filter(isCodePath);
     if (type === 'docs' && code.length > 0) {
         return { valid: false, reason: `a docs PR cannot touch code, but this one changes ${listPaths(code)}` };

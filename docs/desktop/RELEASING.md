@@ -50,7 +50,9 @@ to its users.
      and `linux-x86_64`;
    - if you can, install it on your Mac and launch it.
 
-5. Edit the release notes if you want to: they are generated from the PR titles, and editable until you publish.
+5. Add the plain-language summary with the `release` skill (`/release`), which an agent runs on the draft before you publish.
+   The list under it is generated from the PR titles. A forgotten summary leaves the list, which is still correct. Descriptions
+   stay editable after publishing, and the app reads them when opened, so a correction reaches everyone.
    Then **publish** the draft. Published and not a prerelease, it becomes GitHub's "latest". Installed apps read
    `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
 

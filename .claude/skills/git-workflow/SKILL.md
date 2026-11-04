@@ -68,8 +68,9 @@ removes a defect).
 **Scopes** are only `web` and `cloud`; any other fails the check. A scope means "does not reach the desktop
 app": such a commit does not count for the desktop version and is not in its notes.
 
-- `web`: what only the website has and the desktop app does not, such as the landing page.
-- `cloud`: the Cloudflare side, the Worker and its OAuth exchange.
+- `web`: what only the website has and the desktop app does not, such as the landing page. The check wants a change under
+  `packages/app/landing/` or `packages/worker/`.
+- `cloud`: the Cloudflare side, the Worker and its OAuth exchange. The check wants a change under `packages/worker/`.
 - No scope is the default, because the desktop app bundles the same SPA. A change to shared app code is
   unscoped even if it was noticed on the web, and so is a desktop-only change.
 
@@ -80,7 +81,8 @@ description does nothing. A breaking change bumps the minor version while 0.x an
 In doubt, ask: "would someone using the desktop app want this line in the release notes?" Yes → `feat`,
 `fix` or `perf`, unscoped. The description is what the notes will say, so write it for a user.
 
-The web deploys on every push to `main` whatever the title; the title only decides the desktop release.
+The web deploys and the Development stream builds on every push to `main` whatever the title (`development.yml`); the title
+only decides the Stable release.
 Releasing is `gh workflow run release.yml -f mode=<preview|stable>`. `preview` is harmless;
 `stable` only on the owner's word, like Land. Details: `docs/desktop/RELEASING.md`.
 

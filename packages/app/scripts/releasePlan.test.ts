@@ -17,6 +17,19 @@ function plan(subjects: string[], tags: string[]) {
 }
 
 describe('checkTitle', () => {
+    test('a scope needs a change under its paths', () => {
+        expect(checkTitle('fix(web): grow the pickers', ['packages/app/tracking/TrackPickerDialog.vue']).valid).toBe(
+            false,
+        );
+        expect(checkTitle('fix(web): fix the hero', ['packages/app/landing/Hero.vue']).valid).toBe(true);
+        expect(checkTitle('fix(web): fix a redirect', ['packages/worker/src/index.ts']).valid).toBe(true);
+        expect(checkTitle('fix(cloud): fix the shell', ['packages/app/landing/Hero.vue']).valid).toBe(false);
+        expect(checkTitle('fix(cloud): rate-limit', ['packages/worker/src/index.ts', 'nuxt.config.ts']).valid).toBe(
+            true,
+        );
+        expect(checkTitle('fix(web): lost list', []).valid).toBe(true);
+    });
+
     test.each([
         'feat: add the context menu',
         'fix(web): keep the focus',
