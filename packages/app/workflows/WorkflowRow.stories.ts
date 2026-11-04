@@ -113,7 +113,7 @@ export const FailingOnNoRef: Story = {
     },
 };
 
-/** In a repository's Workflows tab. */
+/** In a repository's Workflows section. */
 export const RepositoryTab: Story = {
     render: () => ({
         setup: () => () =>

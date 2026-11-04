@@ -208,7 +208,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ repository }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
-            :name-with-owner="repository"
             :runs="[]"
             :new-since="null"
           />
@@ -238,7 +237,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           <span :class="css.brokenWorkflowsView_rowRepository">{{ entry.nameWithOwner }}</span>
           <span :class="css.brokenWorkflowsView_rowRef" />
           <RunStrip
-            :name-with-owner="entry.nameWithOwner"
             :runs="[]"
             :new-since="null"
           />

@@ -63,13 +63,13 @@ const approvalUrl = getApprovalUrl(browser.origin);
     :class="css.hiddenOrganizationNotice_panel"
     :aria-label="t(l.title, { organization })"
   >
-    <h3 :class="css.hiddenOrganizationNotice_title">
+    <h2 :class="css.hiddenOrganizationNotice_title">
       <Lock
         :class="css.hiddenOrganizationNotice_icon"
         aria-hidden="true"
       />
       {{ t(l.title, { organization }) }}
-    </h3>
+    </h2>
     <p :class="css.hiddenOrganizationNotice_detail">{{ t(l.detail, { organization }) }}</p>
     <ol
       :class="css.hiddenOrganizationNotice_steps"

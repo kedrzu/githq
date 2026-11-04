@@ -1,7 +1,7 @@
 title:
   en: Workflow alerts
 description:
-  en: 'A workflow that fails on one of these branches or tags marks {name} broken: a red marker in the sidebar and one more in the total. Runs started by a pull request never do. The Workflows tab shows every workflow and run either way.'
+  en: 'A workflow that fails on one of these branches or tags marks {name} broken: a red marker in the sidebar and one more in the total. Runs started by a pull request never do. The Workflows section shows every workflow and run either way.'
 defaultBranch:
   en: Default branch
 asGitHubReports:
@@ -35,7 +35,7 @@ removePattern:
 nothingTitle:
   en: No alerts from {name}
 nothingText:
-  en: No failure here marks it broken in the sidebar or adds to the total. Its workflows and their runs all stay in the Workflows tab, failing or not.
+  en: No failure here marks it broken in the sidebar or adds to the total. Its workflows and their runs all stay in the Workflows section, failing or not.
 otherHeading:
   en: Other branches and tags with recent runs, no alerts
 otherFailed:

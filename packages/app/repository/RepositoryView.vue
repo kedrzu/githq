@@ -109,7 +109,7 @@ const props = withDefaults(
     modified?: boolean;
     /** Whether the user may move the item from one group into another (set that milestone, label…). */
     canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
-    /** The Workflows tab's count: its broken workflows; `unknown` shows a dash, `null` none. */
+    /** The Workflows section's count: its broken workflows; `unknown` shows a dash, `null` none. */
     workflowCount?: number | 'unknown' | null;
     /** The sections as tabs beside the title, or in a column of the repository's own (git-client D14). */
     layout?: RepositoryLayout;
@@ -158,9 +158,9 @@ defineSlots<{
   selection?(props: { ids: readonly string[]; span: SelectionSpan }): unknown;
   /** The entries of a row's context menu (`ListView`'s `contextMenu`). */
   contextMenu?(props: ListContextMenuProps): unknown;
-  /** The Workflows tab's body, under the toolbar. */
+  /** The Workflows section's body, under the toolbar. */
   workflows?(): unknown;
-  /** The Workflows tab's key hints, at the toolbar's end. */
+  /** The Workflows section's key hints, at the toolbar's end. */
   workflowsHints?(): unknown;
   /**
    * The Commits section's body, the commit graph; `refListInColumn` says its branches and tags render in the column,

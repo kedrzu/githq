@@ -70,12 +70,18 @@ const { Checkbox, field } = useCheckbox();
   color: $color-on-light;
   cursor: inherit;
   background: none;
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: $radius-sm;
 
-  &:disabled,
-  &[aria-readonly='true'] {
+  &:disabled {
     opacity: 0.5;
+  }
+
+  // Held still, not disabled: a grey box the eye can still read, ticked or not (D30).
+  &[aria-readonly='true'] {
+    color: $color-fg-3;
+    background: $color-bg-3;
+    border-color: $color-control-border;
   }
 }
 

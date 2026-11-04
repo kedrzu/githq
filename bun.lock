@@ -5,8 +5,12 @@
     "": {
       "name": "githq",
       "devDependencies": {
+        "@nzyme/bitwarden": "workspace:*",
         "@nzyme/cli": "workspace:*",
+        "@nzyme/cli-core": "workspace:*",
         "@nzyme/eslint": "workspace:*",
+        "@nzyme/ioc": "workspace:*",
+        "@nzyme/secrets": "workspace:*",
         "@nzyme/tsconfig": "workspace:*",
         "@types/bun": "1.4.4",
         "@types/node": "^26.6.6",
@@ -957,13 +961,16 @@
     "packages/e2e": {
       "name": "@githq/e2e",
       "dependencies": {
+        "@githq/app": "workspace:*",
         "@githq/github": "workspace:*",
         "@nzyme/utils": "workspace:*",
         "@playwright/test": "1.64.0",
       },
       "devDependencies": {
+        "@axe-core/playwright": "4.14.0",
         "@nzyme/tsconfig": "workspace:*",
         "@typescript/native-preview": "^7.0.0-dev.20260707.2",
+        "axe-core": "4.14.0",
       },
     },
     "packages/github": {
@@ -1085,6 +1092,8 @@
     "@aws-sdk/xml-builder": ["@aws-sdk/xml-builder@3.972.42", "", { "dependencies": { "@smithy/types": "^4.19.0", "tslib": "^2.6.2" } }, "sha512-smX8/gNP8Kjq+CWTBMZQLQ912vOQjiWExzwzvMO+eujPB5RY8IbtF0AGdUUXHKN7KoDWK9dIcuW0WG269kiP6w=="],
 
     "@aws/lambda-invoke-store": ["@aws/lambda-invoke-store@0.3.0", "", {}, "sha512-sl4Bm6yiMNYrZKkqqDFWN0UfnWhlS8ivKxrYl+6t0gCLrqr8y3B2IqZZbFRkfaVVp7C/baApyh71P+LeE1A2sQ=="],
+
+    "@axe-core/playwright": ["@axe-core/playwright@4.14.0", "", { "dependencies": { "axe-core": "~4.14.0" }, "peerDependencies": { "playwright-core": ">= 1.0.0" } }, "sha512-SGUhG5PIHd2eMdpgBF2PyQLOhX+qyDR2PT4cmoS4Qk2ak+jX/rrSvst9l0PGv5WTHolKpUMvVmoHpr4cZgf1RQ=="],
 
     "@babel/code-frame": ["@babel/code-frame@8.0.6", "", { "dependencies": { "@babel/helper-validator-identifier": "^8.0.6", "js-tokens": "^10.0.0" } }, "sha512-uMHhvmDmwFiLuiozaoRYTZHqMFuu3fem/X9JY78lohAuLoh8LSGGC8JqUzo2cVuBsBxkjMZNk56CE7ock8Xxkw=="],
 

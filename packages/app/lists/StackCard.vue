@@ -278,7 +278,7 @@ const nameWithOwner = computed(() => {
   align-items: center;
   width: 100%;
   min-width: 0;
-  padding: $spacing-2 $spacing-4;
+  padding: $spacing-4;
   font: inherit;
   color: $color-fg-2;
   text-align: left;
@@ -304,8 +304,8 @@ const nameWithOwner = computed(() => {
   }
 }
 
-.stackCard_member_unmatched {
-  opacity: 0.4;
+.stackCard_member.stackCard_member_unmatched {
+  @include dimmed-content;
 }
 
 .stackCard_memberTitle {

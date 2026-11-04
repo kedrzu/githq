@@ -1,3 +1,4 @@
+import { getOAuthClientId } from '@githq/github/oauth.js';
 import { simplifyAliasesModule } from '@nzyme/nuxt-tools';
 import Beasties from 'beasties';
 import { defineNuxtConfig } from 'nuxt/config';
@@ -143,7 +144,9 @@ export default defineNuxtConfig({
             // `shims.d.ts`: a literal in the built code, so the production build drops what it guards.
             __LOCAL_BUILD__: JSON.stringify(LOCAL_BUILD),
             __DESKTOP__: JSON.stringify(DESKTOP),
-            __GITHUB_CLIENT_ID__: JSON.stringify((DESKTOP && process.env.GITHQ_GITHUB_CLIENT_ID) || null),
+            __GITHUB_CLIENT_ID__: JSON.stringify(
+                DESKTOP ? (getOAuthClientId(process.env.GITHQ_ENV ?? 'dev') ?? null) : null,
+            ),
         },
     },
 });

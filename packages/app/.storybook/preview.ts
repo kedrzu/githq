@@ -8,6 +8,7 @@ import { defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { ACCESSIBILITY_TAGS } from '@/testing/accessibilityTags.js';
 
 import '@/styles/main.scss';
 
@@ -31,12 +32,24 @@ const preview: Preview = {
             // An accessibility violation fails the story's test.
             test: 'error',
             options: {
-                runOnly: ['wcag2a', 'wcag21a', 'wcag2aa', 'wcag21aa'],
+                runOnly: ACCESSIBILITY_TAGS,
+                // These judge a whole page, and a story is a piece of one. The e2e tests check them on real screens.
+                rules: {
+                    region: { enabled: false },
+                    'landmark-one-main': { enabled: false },
+                    'page-has-heading-one': { enabled: false },
+                },
             },
         },
         // The app is dark only; stories sit on its background.
         backgrounds: { disable: true },
         layout: 'fullscreen',
+    },
+    // Runs before the addon's check. A screen's toolbar fits its options to the width it measures, so on its first frames
+    // its tools still sit over the tabs: axe should judge what the user gets to click.
+    afterEach: async () => {
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
     },
     decorators: [
         story => {

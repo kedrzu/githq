@@ -16,7 +16,7 @@ In one paragraph: a broken workflow lights a red marker on its repository in the
 default only failures on the repository's default branch do that, so the failures on the branches someone is working
 on do not distract them. Runs started by a pull request never count. Screen 5 is where a repository adds other
 branches and tags with wildcards (`v*`, `release/*`, in the syntax of GitHub's own workflow files), or switches the
-default branch off. It only decides what lights the counters: the Workflows tab keeps showing every workflow and run.
+default branch off. It only decides what lights the counters: the Workflows section keeps showing every workflow and run.
 
 What to draw:
 
@@ -25,10 +25,10 @@ What to draw:
    and a repository not read yet.
 2. **Adding and editing a pattern**, by keyboard, including what the user sees while typing: what the pattern
    matches, updated as they type.
-3. **The way in from the Workflows tab** (`W` screens). Also show where a workflow row tells the user that its
+3. **The way in from the Workflows section** (`W` screens). Also show where a workflow row tells the user that its
    failures do not count here, if it needs to, so the reason a red row lights nothing is never a mystery.
 4. **Where it lives.** githq now has a Settings screen listing tracked repositories (the `T` screens). Decide whether
-   per-repository settings belong there, opened from the Workflows tab, or in the tab itself. If you are unsure, draw
+   per-repository settings belong there, opened from the Workflows section, or in the tab itself. If you are unsure, draw
    both as variants in an amber `Variants · …` frame and recommend one.
 
 Constraints that are facts, not taste:

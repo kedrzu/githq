@@ -36,8 +36,7 @@ to its users.
 3. The run (`.github/workflows/release.yml`) has these jobs:
    - `prepare` works out the version and the notes, creates the tag at the commit the run started on, and a draft
      release `githq v0.2.0` with the generated notes, marked as a prerelease when the tag has a `-`;
-   - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with the repository
-     variable `GITHQ_GITHUB_CLIENT_ID`), and fails if the variable is missing;
+   - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with `GITHQ_ENV=prod`);
    - `bundle` builds on GitHub-hosted runners: macOS Apple Silicon and Intel (`.dmg`, `.app.tar.gz`), Windows x64
      (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
      (`.sig`) and adds itself to the release's `latest.json`;
@@ -69,8 +68,7 @@ never offered it. Delete the prerelease and its tag once the real version is out
 ## Local development
 
 - `bun run dev:desktop` — the app in a desktop window, against `nuxt dev` (http://localhost:8787, hot reload).
-  Sign-in needs `GITHUB_CLIENT_ID` in the root `.env`: the client ID of the OAuth App "githq (dev)", with Device
-  Flow enabled (below). The updater is off in dev.
+  Sign-in uses the OAuth App "githq (dev)" (`GITHQ_ENV` defaults to `dev`), with Device Flow enabled (below). The updater is off in dev.
 - `bun run build:desktop` — a local installer for this machine, under
   `packages/desktop/src-tauri/target/release/bundle/`. It needs no signing key: the signed updater bundles are
   switched on only in CI.
@@ -85,11 +83,6 @@ Both need Rust (`rustup`) and, on Linux, Tauri's
 On GitHub → Settings → Developer settings → OAuth Apps, open **githq** and **githq (dev)** and tick **Enable
 Device Flow**. Without it, sign-in fails (GitHub answers `device_flow_disabled`). The desktop app uses the same
 OAuth Apps as the web, but needs only their public client ID and never the secret.
-
-### Repository variable
-
-`GITHQ_GITHUB_CLIENT_ID`: the client ID of the production OAuth App "githq" (Settings → Secrets and variables →
-Actions → Variables). Already set.
 
 ### Updater key
 

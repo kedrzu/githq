@@ -1,4 +1,4 @@
-<!-- A workflow's last five runs as ticks (actions W0), oldest to newest, the newest always in the rightmost slot so every row's latest run sits in one column. Height carries the verdict, so it reads without colour: failed tall (bright red while the break is news, quiet red otherwise), passed short and grey, no verdict (cancelled, skipped) a dash, running a hollow amber tick, a slot with no run known a hairline. Hovering a tick names the run; clicking it opens the run's page, an ordinary link, so a modifier-click opens a tab. Screen readers hear the runs in words instead. -->
+<!-- A workflow's last five runs as ticks (actions W0), oldest to newest, the newest always in the rightmost slot so every row's latest run sits in one column. Height carries the verdict, so it reads without colour: failed tall (bright red while the break is news, quiet red otherwise), passed short and grey, no verdict (cancelled, skipped) a dash, running a hollow amber tick, a slot with no run known a hairline. Hovering a tick names the run. A tick, a new one every 10 px, is too small to aim at (D30), so a click goes to the row. Screen readers hear the runs in words instead. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -7,7 +7,6 @@ import { RouterLink } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
-import { getWorkflowRunPath } from '@/tracking/trackingRoutes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import * as l from './RunStrip.loc.js';
@@ -15,8 +14,6 @@ import { RUN_STRIP_SLOTS } from './utils/getRepositoryWorkflowState.js';
 import { getRunVerdict } from './utils/getRunVerdict.js';
 
 const props = defineProps<{
-  /** `owner/name`, whose runs they are. */
-  nameWithOwner: string;
   /** The latest runs, oldest first; the strip shows the last five. */
   runs: readonly GitHubWorkflowRun[];
   /**
@@ -100,7 +97,7 @@ function getRunTitle(run: GitHubWorkflowRun) {
     tid="run-strip"
   >
     <span :class="css.runStrip_summary">{{ summary }}</span>
-    <!-- Said in words above; the ticks are for the eye and the mouse, the row's keys open a run. -->
+    <!-- Said in words above; the ticks are for the eye, and a click on them is the row's. -->
     <span
       :class="css.runStrip_ticks"
       aria-hidden="true"
@@ -109,19 +106,17 @@ function getRunTitle(run: GitHubWorkflowRun) {
         v-for="tick in ticks"
         :key="tick.key"
       >
-        <RouterLink
+        <span
           v-if="tick.run"
           :class="css.runStrip_tick"
-          :to="getWorkflowRunPath({ nameWithOwner, runId: tick.run.id })"
           :title="getRunTitle(tick.run)"
-          tabindex="-1"
         >
           <span
             :class="[css.runStrip_bar, css[`runStrip_bar_${tick.kind}`]]"
             tid="run-bar"
             :data-kind="tick.kind"
           />
-        </RouterLink>
+        </span>
         <span
           v-else
           :class="css.runStrip_tick"

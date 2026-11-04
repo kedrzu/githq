@@ -324,7 +324,7 @@ test('on the rail the strip reaches across it, for all of the top to move the wi
 });
 
 const RED = 'rgb(240, 84, 92)';
-const RED_QUIET = 'rgb(166, 71, 76)';
+const RED_QUIET = 'rgb(172, 77, 82)';
 
 const brokenWorkflows = () => page.getByRole('link', { name: /^Broken workflows/u });
 /** The marker on a repository's icon: `new`, `settled`, `unread`; `null` with none. */

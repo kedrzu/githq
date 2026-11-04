@@ -706,6 +706,8 @@ test('moving onto a line taller than the view starts at its top, not its far end
 const field = () => page.getByTestId('workflow-log-search-field');
 const position = () => page.getByTestId('workflow-log-search-position');
 const marks = () => [...log().querySelectorAll('mark')];
+/** Longer than the log's wait after the last key of a query. */
+const QUERY_APPLIED_MS = 150;
 const currentMark = () => log().querySelector('[data-current-match]');
 const gaps = () => page.getByTestId('workflow-log-gap').elements();
 const cursorGap = () => log().querySelector('[tid="workflow-log-gap"][aria-current="true"]');
@@ -715,6 +717,10 @@ async function search(text: string) {
     await settled();
     await userEvent.keyboard(text);
     await expect.poll(() => page.getByTestId('workflow-log-search-position').query()).not.toBeNull();
+    // The query applies a moment after the last key: on a slow machine what shows until then is the query's first letters'.
+    await new Promise(resolve => {
+        setTimeout(resolve, QUERY_APPLIED_MS);
+    });
     await settled();
 }
 

@@ -6,3 +6,5 @@ resizeSidebar:
   en: Resize sidebar
 resizePanel:
   en: Resize item panel
+openedItem:
+  en: Opened item

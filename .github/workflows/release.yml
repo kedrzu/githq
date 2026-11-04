@@ -13,8 +13,7 @@
 # public half is `plugins.updater.pubkey` in `tauri.conf.json`). The Apple ones (`APPLE_CERTIFICATE`,
 # `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`) are
 # optional: without them the macOS app is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), which macOS opens
-# as from an "unidentified developer". Variable: `GITHQ_GITHUB_CLIENT_ID`, the public client ID of the
-# production OAuth App the desktop sign-in (Device Flow) uses.
+# as from an "unidentified developer".
 name: Release
 
 on:
@@ -115,16 +114,11 @@ jobs:
       - name: Build
         run: bash setup.build.sh
 
-      # Without it the app builds, but its sign-in cannot work.
       - name: Build the desktop app's SPA
-        run: |
-          if [ -z "$GITHQ_GITHUB_CLIENT_ID" ]; then
-            echo "::error::The repository variable GITHQ_GITHUB_CLIENT_ID is not set"
-            exit 1
-          fi
-          bun --cwd packages/app build:desktop
+        run: bun --cwd packages/app build:desktop
         env:
-          GITHQ_GITHUB_CLIENT_ID: ${{ vars.GITHQ_GITHUB_CLIENT_ID }}
+          # The production OAuth App the desktop sign-in (Device Flow) uses.
+          GITHQ_ENV: prod
 
       - uses: actions/upload-artifact@v4
         with:
@@ -229,8 +223,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Compiled into the app (`device_flow.rs`), as it is into the SPA.
-          GITHQ_GITHUB_CLIENT_ID: ${{ vars.GITHQ_GITHUB_CLIENT_ID }}
+          # Picks the client ID compiled into the app (`build.rs`), as it does for the SPA.
+          GITHQ_ENV: prod
           # aws-lc-sys (rustls, through reqwest) assembles with NASM on x86_64 Windows, which the runner lacks;
           # this uses its prebuilt objects instead. Ignored on every other target.
           AWS_LC_SYS_PREBUILT_NASM: 1

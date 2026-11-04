@@ -280,7 +280,7 @@ export const SAMPLE_WORKFLOWS = {
 } satisfies Record<string, WorkflowState>;
 
 /**
- * A repository's workflows as its Workflows tab shows them in the design's W13, one of each kind of row, counting the
+ * A repository's workflows as its Workflows section shows them in the design's W13, one of each kind of row, counting the
  * default branch `main`: Deploy broken, CLA run only by pull requests, Release failed on a tag and Nightly e2e on a
  * branch without alerts, Probe and Dependabot passing, Nightly backup disabled.
  */
