@@ -24,7 +24,7 @@ below them the formal list of changes.
 The owner merges a pull request and goes back to work. Shortly after, the status bar on their Mac offers a restart,
 and the app they run is what they just merged. After the restart a short list says what came in, with no summary,
 because these builds come too often to be worth one. Those builds may have bugs, and the app says so where you choose
-them: in Settings, you pick stable or the builds from `main`, and from then on updates come from that stream.
+them: in Settings, you pick Stable or Development, and from then on updates come from that stream.
 
 ## What already exists
 
@@ -35,17 +35,30 @@ signature, downloads them in the background and offers a restart. [How to run it
 
 Missing: the Apple signature, the builds from `main`, the choice in Settings, and showing what changed.
 
+## Two streams of updates
+
+Stable is what the owner releases by hand when a release is worth it. Development is everything else: every push to
+`main` that passes the checks and reaches the desktop app builds it, about nine minutes later it is there, and each build
+replaces the last in a single prerelease on GitHub. That keeps the Releases page readable, and it means
+[yesterday's build is gone](DECISIONS.md#d4): a broken one is fixed by the next, or left by switching to Stable.
+
+Leaving Development is immediate. Stable is often older than the build you are on, and the updater normally refuses to go
+backwards, but someone leaving is usually escaping a bug, so
+[the switch installs the older Stable at once](DECISIONS.md#d5), after asking. The local copy of your GitHub data is simply
+fetched again.
+
+## Signatures
+
+macOS needs a paid Apple Developer account, which the owner is creating; the app is then signed and notarized, and opens
+without a warning. Linux asks for no signature at all. Windows is the awkward one: the free route for open source signs
+only what has already been released unsigned, and approves each release by hand. So
+[Windows ships unsigned in Stable, with a plain warning, and has no Development builds](DECISIONS.md#d2). When the
+signature arrives, those installs keep updating, because updates are verified with a separate key of our own.
+
 ## Still open
 
-This is the start of the conversation, so very little below is settled.
-
-- **Windows.** The plan is to ship Windows once it can be signed, but the free signing route only signs software that
-  has already been released unsigned, and it asks for a manual approval of every release.
-- **What a build from `main` is:** how often one is made, where it lives on GitHub, and what it is called.
-- **Leaving the builds from `main`:** whether switching back to stable installs the older stable version at once, or
-  waits for stable to catch up.
 - **What changed:** where the app reads it from, who writes the plain-language summary and when, and what someone sees
   after skipping several versions.
-- **Apple:** whose name goes on the signature.
+- **Apple:** whether the account is personal or a company's.
 
-[What is decided so far, with the evidence](DECISIONS.md).
+[Every decision, with the evidence](DECISIONS.md).

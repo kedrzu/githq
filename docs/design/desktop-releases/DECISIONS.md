@@ -10,7 +10,7 @@ knowing it was rejected is not.
 
 ## D1
 
-**One app with two update streams, stable and builds from `main`; the user picks one in Settings.** (2026-11-04, owner)
+**One app with two update streams, Stable and Development (builds from `main`); the user picks one in Settings.** (2026-11-04, owner)
 
 **Why.** Explicit releases are the official version; builds from `main` may have bugs and let the owner test merged
 work in the installed app. Consequence accepted by choosing a setting rather than a second app: the two can't be
@@ -47,12 +47,18 @@ installed side by side on one machine.
 
 ## D2
 
-**macOS and Linux first; Windows once it can be signed.** (2026-11-04, owner) Open: this clashes with the first check
-below, and has not been resolved with the owner.
+**macOS is signed and notarized, on an Apple Developer account the owner is creating; Linux needs no signature. Windows
+ships in Stable releases only, as an unsigned download with an explicit warning, until a signature exists, and gets no
+Development builds.** (2026-11-04, owner) Open: whether the Apple account is personal or a company's.
 
-**Why.** The owner gave the order, not the reason. Inferred by the design agent, unconfirmed: the unsigned Windows
-experience is the obstacle (SmartScreen warnings; Smart App Control blocks unsigned apps outright, per the root
-`README.md`).
+**Why.** Windows can't wait for the signature, because the free route signs only what was already released unsigned.
+Stable is what SignPath would approve by hand; Development builds come too often for that. The updater's own key is
+separate from any code-signing certificate, so an unsigned install keeps updating once signing starts.
+
+**Rejected.**
+
+- Holding Windows back until it is signed ([earlier form](history/DECISIONS.md#d2)): SignPath would have nothing released
+  to sign. It would win through Azure Artifact Signing, which needs an organization.
 
 > **Checked 2026-11-04:** SignPath Foundation requires the project to "already be released in the form that should be
 > signed", wants "a certain verifiable reputation", and "Every release needs manual approval for signing" —
@@ -84,8 +90,54 @@ experience is the obstacle (SmartScreen warnings; Smart App Control blocks unsig
 ## D3
 
 **After an update the app shows what changed. The formal list comes from Conventional Commits; the big releases also get
-a plain-language summary of the most important changes, written by an agent; builds from `main` get the list only.**
+a plain-language summary of the most important changes, written by an agent; Development builds get the list only.**
 (2026-11-04, owner)
 
 **Why.** The formal list costs nothing, because the titles already carry it: `packages/app/scripts/releasePlan.ts:118`
 renders the notes from them today. A summary is worth writing only for what comes rarely.
+
+> **Checked 2026-11-04:** both sources the app could read are reachable. Listing releases: "Information about published
+> releases are available to everyone. Only users with push access will receive listings for draft releases" — prereleases
+> and sort order are not stated — [REST docs](https://docs.github.com/en/rest/releases/releases#list-releases); anonymous
+> calls answer with `x-ratelimit-limit: 60` (`curl -I`). Comparing two commits: "the returned list is limited to 250
+> commits" without paging — [REST docs](https://docs.github.com/en/rest/commits/commits#compare-two-commits); tried with
+> `gh api repos/kedrzu/githq/compare/1e38779...632d28b`, which listed all 69 commits. `api.github.com` is already allowed by
+> the desktop app's CSP (`packages/desktop/src-tauri/tauri.conf.json:24`).
+
+## D4
+
+**A Development build is made on every push to `main` that passes the checks, for macOS and Linux, and lives in one
+moving prerelease on GitHub that each build replaces. The `candidate` release mode goes away.** (2026-11-04, owner)
+
+**Why.** The owner wants to test what was just merged, so the clock is the wrong trigger, and a full build is about 9
+minutes and free (evidence under [D1](#d1)). One moving release keeps the Releases page readable and gives the updater a
+fixed manifest URL. Development does what the release candidate was for. Accepted: yesterday's build is gone, so a broken
+build is fixed by the next one or left by switching to Stable.
+
+Proposed by the design agent, not yet confirmed: the version is the next stable version plus `-dev.N`, with N the commit
+count on `main`, which only ever grows; a push is skipped when it reaches no desktop user (`docs`, or the `web` and `cloud`
+scopes); the moving tag is `development`, outside the `v*` tags the version is computed from.
+
+**Rejected.**
+
+- A build once a night: a merge would wait until the next day to be tried, and the name would have to be earned by a
+  schedule nobody needs.
+- A release per build: per-build history and rollback, at the cost of hundreds of prereleases to prune and a separate
+  pointer release still needed for the fixed manifest URL.
+- The name "nightly": these builds don't come nightly.
+
+## D5
+
+**Switching to Stable installs the newest stable version at once, after a confirmation, even when it is older than the
+installed build.** (2026-11-04, owner)
+
+**Why.** Someone leaves Development mostly to escape a bug, and waiting for the next release would leave them in it. The
+local copy is ready for it (evidence under [D1](#d1)): an older database is dropped and fetched again, so the cost is one
+first sync. Only this switch may install an older version: the updater's normal comparison stays strictly greater.
+
+Proposed by the design agent, not yet confirmed: switching to Development waits for a build newer than the installed
+version, so a Stable that was just released is not replaced by the same code under a lower number.
+
+**Rejected.**
+
+- Waiting until Stable catches up: no code, but a bug stays until the next release.
