@@ -3,8 +3,8 @@
 Read `README.md` in this folder first.
 
 **Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Updates"
-(U1 chosen, U2 an alternative not chosen, U3–U40 the update streams and what changed). Waiting for the owner: where what
-changed opens (U26–U37).
+(U1 chosen, U2 an alternative not chosen, U3–U48 the update streams and the changelog; U26–U37 are gone). Waiting for the
+owner: U43.
 
 ## Purpose
 
@@ -92,16 +92,17 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
 
 - **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, until
   dismissed. No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
-  while the toast shows). After going back to an older Stable (U25) it says which version is running and offers nothing.
-- **What changed.** Where it opens is the owner's pick: a dialog (U26, recommended), the side panel (U36) or a full page
-  (U37). In every state, drawn for the dialog:
-  - Stable: every release between the old version and the new one, newest first, each with its summary and its list
-    under Breaking changes, Features, Fixes and Performance (one release U26, a jump over three U27 and U28). A release
-    can have no summary (U29).
-  - Development: the commits between the two builds, filtered as release notes are, with no summary (U30). It can be
-    empty, "Nothing you'd notice" (U31). Past GitHub's 250 commits a note says the list can't cover them all (U32).
-  - Loading (U33), offline, where the list waits for the connection (U34), and failure, with a link to the same changes on
-    GitHub (U35).
+  while the toast shows), which goes to the changelog. After going back to an older Stable (U25) it says which version is
+  running and offers nothing.
+- **Changelog.** A section of Settings, after Updates, with the key 8, on the desktop app only. Every version has its own
+  fold, newest first, the first open and the rest collapsed, and each opens on its own. There are no ranges between
+  versions: a version says its own changes.
+  - Stable (U41): a plain-language summary, then the list under Breaking changes, Features, Fixes and Performance. A release
+    can have no summary (U42). "New" marks versions the user didn't have before this update, "Running" what is installed.
+  - Development (U43, a question for the owner): one fold for everything since the last Stable, filtered as release notes
+    are, then the Stable versions. It can be empty, "Nothing you'd notice" (U44).
+  - No versions yet (U45), loading (U46), offline, where the list waits for the connection (U47), and failure, with a link to
+    the same changes on GitHub (U48).
 
 ## A refused install on Linux
 

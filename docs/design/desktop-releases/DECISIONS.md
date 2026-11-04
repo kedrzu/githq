@@ -321,3 +321,21 @@ moment. It can be refused.** (2026-11-04, owner)
 **Why.** It settles the question in the README of whether a `.deb` asks for a password out of nowhere while installing in the
 background: it asks when the user has just asked for the update. Consequence: on Linux a user who quits without
 restarting stays on the old version, and the offer comes back at the next launch. Screens: U38–U40 in `githq.pen`.
+
+## D17
+
+**What changed is a section of Settings, Changelog, and it lists every version with its own changes, each in a fold: the first open,
+the rest collapsed. There are no ranges between versions.** (2026-11-04, owner) This replaces the ranges of [D10](#d10); GitHub is still
+read when needed, and the toast of [D7](#d7) still comes, with its action leading here.
+
+**Why.** A version saying its own changes needs no range to work out, and the section stays reachable after the toast is gone.
+
+Proposed by the design agent, not yet confirmed: "New" on versions the user didn't have before this update, so a skipped version isn't
+lost behind its fold. On Development, one fold for everything since the last Stable, because builds have no descriptions and most are
+one commit (screen U43, a question for the owner). Those commits are read from `main` rather than compared, so the 250 limit of
+[D3](#d3) doesn't apply.
+
+**Rejected.**
+
+- A dialog, the side panel or a page opening from the toast with the range since the old version (U26–U37, recommended by the design
+  agent: the dialog): the owner chose a permanent section.
