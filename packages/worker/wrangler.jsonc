@@ -6,9 +6,9 @@
 // stateless: no storage, no task data. Deploy with `bun run deploy`
 // from the repo root, which builds the SPA first.
 //
-// Secrets: the OAuth App's `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, set once with
-// `bunx wrangler secret put <name>`. `wrangler dev` takes them from its environment (`scripts/withSecrets.sh`) or the
-// repo root `.env`.
+// Secret: the OAuth App's `GITHUB_CLIENT_SECRET`. Production's is kept in the secret store and set with
+// `bun --cwd packages/worker secrets:put:prod`. `wrangler dev` takes the development one from its environment
+// (`scripts/withSecrets.sh`) or the repo root `.env`.
 {
     "$schema": "./node_modules/wrangler/config-schema.json",
     // The Cloudflare account of kedrzu@gmail.com; deploys from CI (`.github/workflows/deploy.yml`) need it named.
@@ -21,7 +21,12 @@
     // Names only. `wrangler dev` binds these from its environment and nothing else from it; `wrangler deploy` refuses
     // to go ahead if the Worker lacks one.
     "secrets": {
-        "required": ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"],
+        "required": ["GITHUB_CLIENT_SECRET"],
+    },
+    // Which OAuth App this is (`packages/github/src/oauthClientIds.json`). `wrangler dev` lets its environment or an
+    // `--env-file` replace it: the Worker's `dev` and `preview` run as `dev`, e2e as `e2e`.
+    "vars": {
+        "GITHQ_ENV": "prod",
     },
     "assets": {
         "directory": "../app/.output/public",

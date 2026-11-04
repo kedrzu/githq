@@ -1,7 +1,7 @@
 ---
 name: secrets
 description: >-
-    githq's development credentials in Bitwarden Secrets Manager, read through @nzyme/secrets: the
+    githq's OAuth client secrets in Bitwarden Secrets Manager, read through @nzyme/secrets: the
     provider, the `bun nzyme secrets` commands, what runs with them and what happens on a machine without
     store access. Use when a task needs a credential, when `bun run dev` warns about the secret store, when
     sign-in in development answers `not_configured`, or when adding or changing a secret.
@@ -22,10 +22,11 @@ all how a value stays out of the transcript. API: `nzyme/packages/secrets/README
 ## Store
 
 One Bitwarden Secrets Manager project shared with the owner's other repos, with one environment: development. A
-variable's key carries the prefix `GITHQ_` (`GITHUB_CLIENT_ID` is `GITHQ_GITHUB_CLIENT_ID`). The token is kept under
+key is the variable's name with the prefix `GITHQ_` and the environment as a suffix (`GITHQ_GITHUB_CLIENT_SECRET_DEV`, `_PROD`). `GITHQ_ENV` selects it: `dev` by default, `GITHQ_ENV=prod bun nzyme secrets …` for production. The token is kept under
 the keychain suffix `githq`, so logging in from another repo does not replace it. Each machine has its own machine account;
-the owner's machines can write. Production's credentials are Worker secrets on Cloudflare (`bunx wrangler secret
-put`), not here; e2e uses the dummy `packages/e2e/worker.vars`; CI reads nothing from the store.
+the owner's machines can write. Production's Worker reads its own Worker secret, which `bun --cwd packages/worker secrets:put:prod` sets from
+the store; e2e uses the dummy `packages/e2e/worker.vars`; CI reads nothing from the store. Client IDs are public and
+not secrets: `packages/github/src/oauthClientIds.json`.
 
 ## Commands
 
@@ -36,8 +37,7 @@ put`), not here; e2e uses the dummy `packages/e2e/worker.vars`; CI reads nothing
 
 ## What runs with them
 
-`scripts/withSecrets.sh` wraps the Worker's `dev` and `preview`, and the root `dev:desktop` and `build:desktop`.
-It uses `secrets run`, or warns and runs the command without the store when the store cannot be read, so a
+`scripts/withSecrets.sh` wraps the Worker's `dev` and `preview`; the desktop app needs no secret. It uses `secrets run`, or warns and runs the command without the store when the store cannot be read, so a
 machine with no access still works: the token form signs in on the web, and the Worker's auth endpoints answer
 500 `not_configured`.
 

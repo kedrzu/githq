@@ -2,6 +2,16 @@
 // callback route, what `state` may be and the scopes asked for. Both sides import it from here, so the two
 // halves of the flow cannot drift apart. The flow itself is described in `packages/worker/src/githubOAuth.ts`.
 
+import oauthClientIds from './oauthClientIds.json' with { type: 'json' };
+
+/**
+ * The public client ID of the OAuth App of an environment (`GITHQ_ENV`), or `undefined` for an unknown one. The IDs
+ * live in `oauthClientIds.json`, which the desktop app's `build.rs` reads too.
+ */
+export function getOAuthClientId(env: string | undefined): string | undefined {
+    return Object.entries(oauthClientIds).find(([name]) => name === env)?.[1];
+}
+
 /** The Worker's endpoint that redirects the browser to GitHub's consent screen: `GET …?state=…`. */
 export const OAUTH_AUTHORIZE_PATH = '/api/auth/authorize';
 

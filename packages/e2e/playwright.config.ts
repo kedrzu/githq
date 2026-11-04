@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-import { DESKTOP_PROJECT, E2E_BASE_URL, E2E_CLIENT_ID, E2E_DESKTOP_BASE_URL, E2E_PORT } from './src/localApp.js';
+import { DESKTOP_PROJECT, E2E_BASE_URL, E2E_DESKTOP_BASE_URL, E2E_PORT } from './src/localApp.js';
 
 // End-to-end tests: the built app in the local Workers runtime, so what would break on Cloudflare breaks here.
 // GitHub is never reached: every request to it is answered by the `github` fixture (`src/github/GitHubMock.ts`),
@@ -54,7 +54,7 @@ export default defineConfig({
             command: [
                 buildApp('build:local'),
                 [
-                    'env -u GITHUB_CLIENT_ID -u GITHUB_CLIENT_SECRET bun --cwd ../worker wrangler dev',
+                    'env -u GITHQ_ENV -u GITHUB_CLIENT_SECRET bun --cwd ../worker wrangler dev',
                     `--port ${E2E_PORT}`,
                     `--host localhost:${E2E_PORT}`,
                     '--assets ../app/.output-local/public',
@@ -71,10 +71,7 @@ export default defineConfig({
         {
             // The desktop app's build (fresh, or cached as the local one), with the dummy OAuth App's client ID, then a
             // static server — as the desktop app's window loads it, without a Worker.
-            command: [
-                `GITHQ_GITHUB_CLIENT_ID=${E2E_CLIENT_ID} ${buildApp('build:desktop')}`,
-                'bun src/desktop/serveDesktopApp.ts',
-            ].join(' && '),
+            command: [`GITHQ_ENV=e2e ${buildApp('build:desktop')}`, 'bun src/desktop/serveDesktopApp.ts'].join(' && '),
             url: E2E_DESKTOP_BASE_URL,
             reuseExistingServer: false,
             timeout: 180_000,

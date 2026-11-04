@@ -81,7 +81,7 @@ Rules:
 (`bun --cwd packages/app build:local` → `packages/app/.output-local`, which includes the dev token sign-in) and
 serves it with the Worker in one `wrangler dev`, with a dummy OAuth App from
 `packages/e2e/worker.vars` (never the real `.env`). `desktop` (`src/desktop/`) builds the desktop app's SPA
-(`GITHQ_GITHUB_CLIENT_ID=e2e-client bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
+(`GITHQ_ENV=e2e bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
 and serves it with a static server falling back to `index.html`
 (`src/desktop/serveDesktopApp.ts`, no Worker); its native side is faked in the page
 (`src/desktop/FakeNativeBridge.ts`), and a request to githq.dev or `/api/*` fails the test. Both servers

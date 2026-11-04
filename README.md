@@ -85,7 +85,7 @@ bun run setup   # install, generate, build
 bun run dev     # the app on http://localhost:8787
 ```
 
-Without the OAuth App's credentials, from the secret store or `.env` (template: `.env.example`), the sign-in screen
+Without the OAuth App's client secret, from the secret store or `.env` (template: `.env.example`), the sign-in screen
 of a development build takes a personal token — `gh auth token` works. The rest of the commands, the checks and how we work are in
 [`AGENTS.md`](AGENTS.md).
 

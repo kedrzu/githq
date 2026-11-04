@@ -24,7 +24,7 @@ const CODE = 'c0de4f1e2d3c4b5a6978';
 const TOKEN = 'gho_TheAccessToken0123456789';
 const ENV: WorkerEnv = {
     ASSETS: { fetch: () => Promise.resolve(new Response('asset')) },
-    GITHUB_CLIENT_ID: 'Iv1.client-id',
+    GITHQ_ENV: 'e2e',
     GITHUB_CLIENT_SECRET: 'the-client-secret-value',
 };
 
@@ -87,7 +87,7 @@ describe('GET /api/auth/authorize', () => {
         const location = new URL(response.headers.get('location') ?? '');
         expect(location.origin + location.pathname).toBe('https://github.com/login/oauth/authorize');
         expect(Object.fromEntries(location.searchParams)).toEqual({
-            client_id: 'Iv1.client-id',
+            client_id: 'e2e-client',
             redirect_uri: CALLBACK,
             scope: OAUTH_SCOPES.join(' '),
             state: STATE,
@@ -109,7 +109,7 @@ test('GET /api/auth/approval redirects to GitHub’s page of the OAuth App, wher
     const response = await call(new Request(`${ORIGIN}${OAUTH_APPROVAL_PATH}`));
 
     expect(response.status).toBe(302);
-    expect(response.headers.get('location')).toBe('https://github.com/settings/connections/applications/Iv1.client-id');
+    expect(response.headers.get('location')).toBe('https://github.com/settings/connections/applications/e2e-client');
     expect((await call(new Request(`${ORIGIN}${OAUTH_APPROVAL_PATH}`), { ASSETS: ENV.ASSETS })).status).toBe(500);
     expect(github).not.toHaveBeenCalled();
 });
@@ -134,7 +134,7 @@ describe('POST /api/auth/token', () => {
         expect(new Headers(init?.headers).get('accept')).toBe('application/json');
         const body = init?.body;
         expect(Object.fromEntries(body instanceof URLSearchParams ? body : [])).toEqual({
-            client_id: 'Iv1.client-id',
+            client_id: 'e2e-client',
             client_secret: 'the-client-secret-value',
             code: CODE,
             redirect_uri: CALLBACK,
@@ -223,8 +223,8 @@ describe('POST /api/auth/token', () => {
 test('without the OAuth App’s credentials both endpoints answer 500 not_configured', async () => {
     for (const env of [
         { ASSETS: ENV.ASSETS },
-        { ASSETS: ENV.ASSETS, GITHUB_CLIENT_ID: 'Iv1.client-id' },
-        { ASSETS: ENV.ASSETS, GITHUB_CLIENT_SECRET: 'x', GITHUB_CLIENT_ID: '' },
+        { ASSETS: ENV.ASSETS, GITHQ_ENV: 'e2e' },
+        { ASSETS: ENV.ASSETS, GITHUB_CLIENT_SECRET: 'x', GITHQ_ENV: 'unknown' },
     ]) {
         for (const request of [
             new Request(`${ORIGIN}${OAUTH_AUTHORIZE_PATH}?state=${STATE}`),

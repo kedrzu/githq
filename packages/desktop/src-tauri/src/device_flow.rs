@@ -18,8 +18,7 @@ use tokio::sync::{oneshot, Mutex};
 /// web app's sign-in asks for; keep the two in step.
 const SCOPES: &str = "repo project read:org";
 
-/// The client ID of githq's OAuth App, compiled in from the environment (the secret store or `.env`, through the root
-/// `dev:desktop` and `build:desktop` scripts). A build without it cannot sign in with the device flow.
+/// The client ID of githq's OAuth App, compiled in by `build.rs`, which picks it by `GITHQ_ENV`. A build without it cannot sign in with the device flow.
 const CLIENT_ID: Option<&str> = option_env!("GITHQ_GITHUB_CLIENT_ID");
 
 /// Where GitHub's OAuth endpoints live.
@@ -210,12 +209,9 @@ struct GitHub {
 
 impl GitHub {
     fn client_id(&self) -> Result<&str, SignInError> {
-        self.client_id.as_deref().ok_or_else(|| {
-            SignInError::Failed(
-                "this build has no GitHub client ID (GITHQ_GITHUB_CLIENT_ID was not set)"
-                    .to_owned(),
-            )
-        })
+        self.client_id
+            .as_deref()
+            .ok_or_else(|| SignInError::Failed("this build has no GitHub client ID".to_owned()))
     }
 
     /// `POST`s a form to one of GitHub's OAuth endpoints and reads its JSON answer.
