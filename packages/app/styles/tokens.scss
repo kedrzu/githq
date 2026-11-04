@@ -37,7 +37,7 @@ $color-fg-2: #9aa0a9;
 // Dim icons and decoration only (a chevron, the "+" of a section). On the window's background it reads 3.5:1, under
 // WCAG AA for text: dim text is `$color-fg-dim`.
 $color-fg-3: #646b75;
-// The outline of what the user fills in or ticks: a field, a checkbox, a radio. Reaches 3:1 on every surface (D29), where
+// The outline of what the user fills in or ticks: a field, a checkbox, a radio. Reaches 3:1 on every surface (D30), where
 // `$color-border-2` wouldn't.
 $color-control-border: $color-fg-3;
 // Dim text: counts, section headers, the status bar, footers, details. The closest step up from
@@ -348,7 +348,7 @@ $landing-reveal-stagger: 80ms;
     background: $color-bg-3;
 }
 
-// What doesn't match, still readable, still in place (D29): instead of opacity, which would take text under AA.
+// What doesn't match, still readable, still in place (D30): instead of opacity, which would take text under AA.
 @mixin dimmed-content {
     &,
     & * {

@@ -77,7 +77,7 @@ const { Checkbox, field } = useCheckbox();
     opacity: 0.5;
   }
 
-  // Held still, not disabled: a grey box the eye can still read, ticked or not (D29).
+  // Held still, not disabled: a grey box the eye can still read, ticked or not (D30).
   &[aria-readonly='true'] {
     color: $color-fg-3;
     background: $color-bg-3;

@@ -686,7 +686,7 @@ function getProjectMark(title: string) {
 .sidebar_railLink_active {
   color: $color-fg;
   background: $color-bg-3;
-  // A fill alone is too faint to tell which it is (D29): the accent's edge, as a selected row has.
+  // A fill alone is too faint to tell which it is (D30): the accent's edge, as a selected row has.
   box-shadow: inset 2px 0 0 $color-accent;
 }
 

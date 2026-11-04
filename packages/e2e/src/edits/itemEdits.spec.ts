@@ -83,8 +83,27 @@ test('⇧X closes an issue as not planned', async ({ page, github }) => {
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
         .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
-    await expectConfirmed(shell);
+    await expectClosedWithUndo(shell);
     await expect(item.statePill('Not planned')).toBeVisible();
+});
+
+test('⇧X closes a pull request at once, and Undo reopens it on GitHub', async ({ page, github }) => {
+    const sample = createSampleEditableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row('Redirect once after sign-in').click();
+    await expect(item.statePill('Open')).toBeVisible();
+
+    await page.keyboard.press('Shift+X');
+
+    await expect.poll(() => sample.world.stateOf(sample.pullRequest)).toMatchObject({ state: 'CLOSED' });
+    await expect(shell.toasts).toContainText('Closed acme/web#15');
+
+    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
+
+    await expect.poll(() => sample.world.stateOf(sample.pullRequest)).toMatchObject({ state: 'OPEN' });
+    await expect(item.statePill('Open')).toBeVisible();
+    await expectConfirmed(shell);
 });
 
 test('⇧R asks for reviews of a pull request', async ({ page, github }) => {
@@ -146,6 +165,14 @@ test('the item menu works in the modal: its reference opens it over the dialog a
     await expectConfirmed(shell);
 });
 
+/** GitHub took the close: nothing is on its way, nothing failed, and the only toast is the one offering Undo. */
+async function expectClosedWithUndo(shell: AppShellHarness) {
+    await expect(shell.statusBar).not.toContainText('Sending');
+    await expect(shell.failedEdits).toHaveCount(0);
+    await expect(shell.toasts).toHaveCount(1);
+    await expect(shell.toasts.getByRole('button', { name: 'Undo' })).toBeVisible();
+}
+
 /** GitHub answered the user's edits and took them: nothing is on its way, nothing failed. */
 async function expectConfirmed(shell: AppShellHarness) {
     await expect(shell.statusBar).not.toContainText('Sending');
@@ -169,5 +196,5 @@ test('right-clicking a row opens its context menu: the issue is closed as not pl
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
         .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
-    await expectConfirmed(shell);
+    await expectClosedWithUndo(shell);
 });

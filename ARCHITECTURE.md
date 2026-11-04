@@ -33,13 +33,14 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 ## Integrations
 
 - **GitHub:** `packages/github` holds the client. Users' tokens come from the sign-in and stay on their device.
-- **GitHub OAuth Apps:** `githq` in production, whose credentials are Worker secrets, and `githq (dev)` in development, whose credentials are in the root `.env` (gitignored), which `setup.sh` copies into every worktree.
+- **GitHub OAuth Apps:** `githq` in production and `githq (dev)` in development. `GITHQ_ENV` (`prod`, `dev`, or `e2e` for the tests' dummy) picks one. Client IDs are public, in `packages/github/src/oauthClientIds.json`; the Worker, the desktop build and its native side all read that file. Client secrets are in the secret store, and production's is also a Worker secret.
 - **Cloudflare:** Workers and static assets; `packages/worker/wrangler.jsonc`.
+- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
 
 ## Tooling and workflow
 
 - **Setup:** `zsh setup.sh` catches a worktree up with `main`, copies local files, checks out the pinned submodule, builds and generates the code map. `setup.build.sh` is the build half, which CI runs too.
-- **Checks:** `typecheck`, `lint:check`, `format:check` and `tests` run on every pull request (`.github/workflows/build.yml`). Each push to `main` runs those plus component tests, e2e and the desktop app's Rust checks before it deploys (`deploy.yml`). The `verify` skill is the protocol.
+- **Checks:** `.github/workflows/checks.yml` holds them: typecheck, lint, format, tests, component tests, e2e, the production build and the desktop app's Rust checks. They run on a pull request that is ready for review (`pr.yml`, nothing on a draft, only lint and format when no code changed) and on each push to `main` before it deploys (`deploy.yml`). The `verify` skill is the protocol.
 - **Build cache:** `scripts/nxInputs.test.ts` fails when a cached task stops being invalidated by its own sources or by the nzyme packages it uses.
 - **Git:** one task, one worktree, one branch, one squash-merged pull request with a Conventional Commits title (`git-workflow` skill). A commit moving the gitlink moves the nzyme pin.
 - **Agents:** `AGENTS.md`, the skills under `.claude/skills/`, and the shared settings in `.claude/settings.json`.
@@ -50,6 +51,8 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **Markdown is formatted by ESLint.** `lint` and `lint:check` cover it through the `markdown()` preset; `format:md` runs only that part, and `format` includes it.
 - **There is no separate UI package.** One app uses the components, so they live in `packages/app`.
 - **Pull requests do not run component tests or e2e.** They are the slow part of the checks, and they run before each deploy.
-- **Stories and the e2e screens are checked with axe, as errors:** WCAG 2.2 AA and axe's best practices (`packages/app/testing/accessibilityTags.ts`). Stories leave out the three rules that judge a whole page; `packages/e2e/src/accessibility/` checks those on real screens, in the layers a story can't reach, and walks Tab through them. `packages/app/styles/tokens.test.ts` holds the contrast of what axe doesn't measure: icons, outlines, graph lines. Decision: `docs/design/githq/DECISIONS.md` D29.
-- **Development credentials stay in `.env` for now.** Moving them to Bitwarden and removing the files are planned: [#117](https://github.com/kedrzu/githq/issues/117), [#118](https://github.com/kedrzu/githq/issues/118).
+- **Stories and the e2e screens are checked with axe, as errors:** WCAG 2.2 AA and axe's best practices (`packages/app/testing/accessibilityTags.ts`). Stories leave out the three rules that judge a whole page; `packages/e2e/src/accessibility/` checks those on real screens, in the layers a story can't reach, and walks Tab through them. `packages/app/styles/tokens.test.ts` holds the contrast of what axe doesn't measure: icons, outlines, graph lines. Decision: `docs/design/githq/DECISIONS.md` D30.
+- **Client secrets live in Bitwarden Secrets Manager, in one project shared with the owner's other repos, each key prefixed `GITHQ_` and suffixed with its environment (`_DEV`, `_PROD`).** It is the one store `@nzyme/secrets` implements, and a machine-account token cannot reach vault items. A worktree reads it through the keychain, so no credentials are copied between checkouts. Cloudflare cannot give a secret back, so the store is the only readable copy of production's, which `secrets:put:prod` pushes to the Worker. `.env` still wins where it exists, until [#118](https://github.com/kedrzu/githq/issues/118) removes it.
+- **`bun run dev` works without access to the store.** The repo is open to contributors who have no Bitwarden account, so `scripts/withSecrets.sh` warns and goes on; the development token form signs them in.
+- **`wrangler.jsonc` declares the Worker's secrets under `secrets.required`.** It is what lets `wrangler dev` read them from its environment without binding the whole shell, and it makes a deploy fail when production lacks one.
 - **Prerendering is hybrid, not `ssr: true` everywhere.** Only the landing page is public and needs search engines to see it.

@@ -37,7 +37,7 @@ a green codebase.
 |E2E|`bun run e2e <spec files, relative to packages/e2e>`; one test by title: `bun run e2e -g "<title>"`|a screen or flow an e2e spec drives changed, or the harness or the GitHub mock|
 |Desktop (Rust)|`mkdir -p packages/app/.output-desktop/public`, then in `packages/desktop/src-tauri`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`|anything under `packages/desktop`|
 |Desktop build|`bun --cwd packages/app build:desktop` (runs `scripts/checkDesktopBuild.ts`); the whole app: `bun run build:desktop` (no signing key needed — the release workflow turns the signed updater bundles on)|`nuxt.config.ts`, the desktop code of the app, or `tauri.conf.json` changed|
-|Worker|`bun --cwd packages/app build`, then `bun --cwd packages/worker dev` and `curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8788/api/auth/authorize?state=abcdefghijklmnop0123'` → `302` (with the OAuth App in the root `.env`; `500` without), `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/some/deep/link` → `200`, `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/api/unknown` → `404`; stop it after (by PID)|`packages/worker/**` or `nuxt.config.ts` changed|
+|Worker|`bun --cwd packages/app build`, then `bun --cwd packages/worker dev` and `curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8788/api/auth/authorize?state=abcdefghijklmnop0123'` → `302` (with the OAuth App from the secret store or the root `.env`; `500` without), `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/some/deep/link` → `200`, `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/api/unknown` → `404`; stop it after (by PID)|`packages/worker/**` or `nuxt.config.ts` changed|
 
 `*.test.ts` = `bun test`; `*.spec.ts` under `packages/app` = browser component specs run by Vitest
 through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts` are tests too
@@ -47,9 +47,10 @@ through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts`
 
 Once, when all work is believed complete. Every step, in order, nothing skipped; zero errors each.
 
-A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` files
-and `githq.pen`, nothing can break but the format, so `bunx eslint --fix .` (Markdown is formatted by ESLint) alone is
-the full protocol. It still counts: unformatted design docs reaching `main` fail the deploy's Lint step and block every
+A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` and `.pen` files
+and files under `docs/` (`hasNoCode` in `packages/app/scripts/releasePlan.ts`), nothing can break but the format, so
+`bun run lint` and `bun run format` (Markdown is formatted by ESLint) alone are the full protocol, as in CI's `format`
+job. It still counts: unformatted design docs reaching `main` fail the deploy's Lint step and block every
 deploy after them.
 
 |#|Step|Command|Must|
@@ -75,13 +76,20 @@ Rules:
 - Changes inside `nzyme/` additionally need `bun run lint:nzyme` and nzyme's own tests
   (`bun run --cwd nzyme test`).
 
+## Where the checks run
+
+Locally, this protocol, before a change is called done. In CI, on Linux, the same set but for the Storybook build
+(`.github/workflows/checks.yml`): on every push to a PR that is ready for review, never on a draft, and again on `main`
+before the deploy. CI does not replace the local run: it starts only once the PR is marked ready, which is the last step
+after this protocol has passed (`git-workflow` → Publish). It catches what only shows off a Mac.
+
 ## E2E
 
 `bun run e2e` (Playwright, `packages/e2e`) runs two projects. `web` builds the local app
 (`bun --cwd packages/app build:local` → `packages/app/.output-local`, which includes the dev token sign-in) and
 serves it with the Worker in one `wrangler dev`, with a dummy OAuth App from
 `packages/e2e/worker.vars` (never the real `.env`). `desktop` (`src/desktop/`) builds the desktop app's SPA
-(`GITHQ_GITHUB_CLIENT_ID=e2e-client bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
+(`GITHQ_ENV=e2e bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
 and serves it with a static server falling back to `index.html`
 (`src/desktop/serveDesktopApp.ts`, no Worker); its native side is faked in the page
 (`src/desktop/FakeNativeBridge.ts`), and a request to githq.dev or `/api/*` fails the test. Both servers

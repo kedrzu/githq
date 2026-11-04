@@ -8,7 +8,7 @@ const GRAPHICS = 3;
 const SURFACES = ['bg', 'bg-2', 'bg-3', 'sel'];
 const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 
-/** Every token against the surfaces it sits on (D29). Axe checks text, not icons, outlines and lines. */
+/** Every token against the surfaces it sits on (D30). Axe checks text, not icons, outlines and lines. */
 const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
     ['fg', SURFACES, TEXT],
     ['fg-2', SURFACES, TEXT],
