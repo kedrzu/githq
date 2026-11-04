@@ -10,16 +10,13 @@ on:
     workflows: [Deploy]
     types: [completed]
     branches: [main]
-  # TEMPORARY: lets the stream be tried before this file reaches main. Removed before landing.
-  push:
-    branches: [feat/141-desktop-releases]
 
 # A newer build cancels an older one, so an older build can't overwrite a newer one. It loses nothing: every run that gets this
 # far builds everything since the published build, documentation commits included. A failed Deploy starts a run that does
 # nothing, which cancels nothing. The draft a cancelled build left goes in `prepare`.
 concurrency:
   group: development
-  cancel-in-progress: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+  cancel-in-progress: ${{ github.event.workflow_run.conclusion == 'success' }}
 
 permissions:
   contents: read
@@ -33,7 +30,7 @@ env:
 
 jobs:
   prepare:
-    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -49,7 +46,7 @@ jobs:
         id: commit
         run: echo "sha=$SHA" >> "$GITHUB_OUTPUT"
         env:
-          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
 
       # The version counts the whole history and reads the tags.
       - uses: actions/checkout@v5
@@ -131,7 +128,6 @@ jobs:
         [
           {"runner": "macos-latest", "target": "aarch64-apple-darwin", "args": "--target aarch64-apple-darwin"},
           {"runner": "macos-latest", "target": "x86_64-apple-darwin", "args": "--target x86_64-apple-darwin"},
-          {"runner": "windows-latest", "target": "x86_64-pc-windows-msvc", "args": "--bundles nsis"},
           {"runner": "ubuntu-22.04", "target": "x86_64-unknown-linux-gnu", "args": "--bundles deb,appimage"}
         ]
 

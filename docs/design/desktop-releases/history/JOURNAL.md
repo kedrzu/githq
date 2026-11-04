@@ -59,3 +59,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner: the commands for updating, restarting and so on belong in the command menu (D18).
 - 2026-11-04: Owner accepted one fold for Development (U43, D17).
 - 2026-11-04: Goes to `/dev:deliver`: the order of work (D13) replaced by the agreed overview and removed. Tried with temporary releases: a draft may hold a published tag, `latest/download` skips prereleases, and a replaced asset's URL stays stale for about 100 seconds, so manifest URLs carry `?v=` (D4). Owner: "New" stays (D17), all toasts in the corner (D7). The Development fold reads from the build's own commit (D17).
+- 2026-11-04: Owner, building: finish alone, land, and have 0.1.0 released by morning. One pull request rather than a chain, since nobody reads it first. Sections' keys are 6 and 7 (tabs, five sections before them), one wording for a failed install (D16), GraphQL rather than the REST of D3 for what changed.

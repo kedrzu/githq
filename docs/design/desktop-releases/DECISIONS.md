@@ -140,6 +140,17 @@ The manifest's download URLs carry `?v=<version>`, because the bundles keep thei
 > **Checked 2026-11-04:** after a release was replaced, `releases/download/<tag>/<file>` kept serving the old file for about 100 seconds,
 > with `x-cache: HIT`; the same URL with a query served the new one at once. A new manifest with an old bundle fails its signature check.
 
+For the same reason the app asks for the manifest with `?t=<seconds>`, so a replaced manifest is read fresh.
+
+A build is skipped when only documentation changed since the published build, not since the commit's parent: a commit whose Deploy
+failed or was superseded had no build, and a documentation commit after it must not hide it. A run never publishes a commit older
+than the published one.
+
+> **Checked 2026-11-04:** a whole build with notarization took 9 to 16 minutes in four runs, of which macOS 2 to 3 and Linux 3 to 15; the first
+> notarization of the account took 41 minutes, later ones under a minute. In one run GitHub had no macOS runner for 15 minutes and failed
+> the job ("The job was not acquired by Runner"). A `.dmg` is not itself notarized: only the app in it is, stapled. Real updates, `dev.142` to
+> `dev.151` to `dev.152` from the Development release, took about 10 seconds.
+
 Proposed by the design agent, accepted by the owner: a newer push cancels an older build still running, so an older build can't
 overwrite a newer one, and the draft a cancelled build left is removed by the next.
 
@@ -323,6 +334,11 @@ moment. It can be refused.** (2026-11-04, owner)
 **Why.** It settles the question in the README of whether a `.deb` asks for a password out of nowhere while installing in the
 background: it asks when the user has just asked for the update. Consequence: on Linux a user who quits without
 restarting stays on the old version, and the offer comes back at the next launch. Screens: U38–U40 in `githq.pen`.
+
+Built with one wording for a refused password and any other failure, U40's, because the plugin can't tell them apart.
+
+> **Checked 2026-11-04:** in tauri-plugin-updater 2.14.1, `try_install_with_privileges` drops `AuthenticationFailed` and falls through to
+> `sudo`, so a refused prompt answers `PackageInstallFailed`, like a failing `dpkg`.
 
 ## D17
 
