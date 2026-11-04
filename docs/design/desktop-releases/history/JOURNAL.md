@@ -15,3 +15,8 @@ Append-only. One line per turn that settled something.
   rewritten, old form in history); Development on every passing push in one moving prerelease, `candidate` dropped, names
   Stable and Development (D4); switching to Stable installs it at once (D5). Owner will create the Apple Developer account;
   personal or company not answered. Agent's unconfirmed details sit in D4 and D5. Story folded up to here. Next: what changed.
+- 2026-11-04: Owner: summary by a local agent through a repo skill like `release` (D6); a toast in a corner after an update
+  (D7); builds are not decided by title scopes, the app is one SPA (D4 sharpened, evidence #96 mislabelled). Owner asked why
+  not a separate release channel, and whether to have three: Stable, Nightly, Development. Put to the owner: GitHub has no
+  channels; keep two for now, or Nightly as a daily copy of a Development build; drop the scopes. Unanswered, as are where
+  the app reads changes from and the Apple account. Raised: four-hour checks contradict "shortly after a merge".

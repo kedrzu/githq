@@ -114,9 +114,18 @@ minutes and free (evidence under [D1](#d1)). One moving release keeps the Releas
 fixed manifest URL. Development does what the release candidate was for. Accepted: yesterday's build is gone, so a broken
 build is fixed by the next one or left by switching to Stable.
 
+A push is skipped only when it changes documentation alone, read from its paths (`hasNoCode`,
+`packages/app/scripts/releasePlan.ts:80`), never from its title (owner, 2026-11-04): the app is the same SPA in a Tauri
+wrapper, so a title can't be trusted to say what reached it.
+
+> **Checked 2026-11-04:** titles do mislabel this. `fix(web): grow the track pickers with the window's height` (#96) is one
+> of the four scoped commits on `main`; the scope rule is in `.claude/skills/git-workflow/SKILL.md`, and `checkTitle` compares
+> no scope with any path (`packages/app/scripts/releasePlan.ts:56`).
+
 Proposed by the design agent, not yet confirmed: the version is the next stable version plus `-dev.N`, with N the commit
-count on `main`, which only ever grows; a push is skipped when it reaches no desktop user (`docs`, or the `web` and `cloud`
-scopes); the moving tag is `development`, outside the `v*` tags the version is computed from.
+count on `main`, which only ever grows; the moving tag is `development`, outside the `v*` tags the version is computed
+from. Development checks for updates much more often than the four hours in `updater.rs:21`, and a "check now" exists:
+at four hours "shortly after a merge" is not true.
 
 **Rejected.**
 
@@ -141,3 +150,27 @@ version, so a Stable that was just released is not replaced by the same code und
 **Rejected.**
 
 - Waiting until Stable catches up: no code, but a bug stays until the next release.
+
+## D6
+
+**The plain-language summary is written by an agent the owner runs locally on the draft release, through a repo skill
+named along the lines of `release`, before publishing.** (2026-11-04, owner)
+
+**Why.** Publishing is already a hand step, and this needs no API key in the repository. A forgotten summary leaves a
+release with the formal list, which is still correct.
+
+**Rejected.**
+
+- An agent in CI with a secret: would win if someone else cut releases, or if they became frequent.
+
+## D7
+
+**After an update the app says so with a toast in a corner; what changed opens from it.** (2026-11-04, owner)
+
+**Why.** A window opening by itself would get in the way, above all on a stream that updates often. Toasts already exist
+(`packages/app/settings/SyncStoppedToast.vue`). Consequence: a summary is read only by someone who clicks.
+
+**Rejected.**
+
+- A panel that opens by itself on Stable and a status bar mention on Development (design agent's proposal): the owner
+  chose one toast.
