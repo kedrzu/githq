@@ -120,7 +120,9 @@ interface HarnessReread {
  * a merge at once (`answer`: accepted closes it, refused keeps it with the reason, which the panel tells apart by what
  * the read finds again — `reread`, the pull request and its options as they are now), and with `readLater` the panel's
  * read is on its way until the hidden `arrive` button is clicked. A step is on its way until the hidden `stepped`
- * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it.
+ * button is clicked: GitHub answered and the read came back with the pull request as `stepped` holds it. With
+ * `settingsLater` the repository's settings are on their way until the hidden `settingsArrive` button is clicked, or
+ * `settingsLost`: their read ended with none.
  */
 const Harness = defineComponent({
     props: {
@@ -128,6 +130,7 @@ const Harness = defineComponent({
         settings: { type: Object as PropType<MergeSettings | null>, default: () => ALL_METHODS },
         options: { type: Object as PropType<MergeOptions | null>, default: () => OPTIONS },
         readLater: { type: Boolean, default: false },
+        settingsLater: { type: Boolean, default: false },
         /** What the session knows of its last merge as the panel opens. */
         record: { type: Object as PropType<MergeRecord | null>, default: null },
         /** The method and text its last merge was sent with; the record's when not given. */
@@ -146,6 +149,8 @@ const Harness = defineComponent({
     setup(props) {
         const open = ref(true);
         const arrived = ref(!props.readLater);
+        const settingsIn = ref(!props.settingsLater);
+        const settingsReading = ref(props.settingsLater);
         const sent = ref('Nothing sent');
         const record = shallowRef<MergeRecord | null>(props.record);
         const alreadyMerged = ref(false);
@@ -161,6 +166,29 @@ const Harness = defineComponent({
                     'button',
                     { type: 'button', tid: 'arrive', hidden: true, onClick: () => (arrived.value = true) },
                     "The panel's read arrives",
+                ),
+                h(
+                    'button',
+                    {
+                        type: 'button',
+                        tid: 'settingsArrive',
+                        hidden: true,
+                        onClick: () => {
+                            settingsIn.value = true;
+                            settingsReading.value = false;
+                        },
+                    },
+                    "The repository's settings arrive",
+                ),
+                h(
+                    'button',
+                    {
+                        type: 'button',
+                        tid: 'settingsLost',
+                        hidden: true,
+                        onClick: () => (settingsReading.value = false),
+                    },
+                    "The repository's settings could not be read",
                 ),
                 h(
                     'button',
@@ -192,7 +220,8 @@ const Harness = defineComponent({
                     open: open.value,
                     'onUpdate:open': (value: boolean) => (open.value = value),
                     pr: sending.value ? { ...current.value, merging: 'SQUASH' } : current.value,
-                    settings: props.settings,
+                    settings: settingsIn.value ? props.settings : null,
+                    settingsReading: settingsReading.value,
                     options: arrived.value ? options.value : null,
                     reading: !arrived.value,
                     allowed: props.allowed,
@@ -310,6 +339,9 @@ export const Rebase: Story = { args: { settings: { ...ALL_METHODS, viewerDefault
  * proposal is in, then its message opens below.
  */
 export const BeingRead: Story = { args: { readLater: true } };
+
+/** PM8: the repository's settings still on their way: no method yet, and a `⌘↵` pressed now waits for one. */
+export const SettingsBeingRead: Story = { args: { settingsLater: true, readLater: true } };
 
 /** PM8: being read, GitHub's status saying only checks not required are in the way: it would merge it now (owner, 2026-11-03). */
 export const BeingReadOptionalFailed: Story = {

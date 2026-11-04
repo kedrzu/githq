@@ -1,4 +1,4 @@
-<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, turning auto-merge on or off, jumping the queue (`ItemEditor`) — and its ordinary commands, the same path as every screen's (`PullRequestCommands`) — updating its branch, leaving the queue (a stack leaves whole, through its first one, its later ones then read again) and, merged, deleting or restoring its branch — read the pull request again once done; reverting leaves for the toast leading to the new one. Each opening is a fresh panel. -->
+<!-- The merge panel as the app shows it, mounted once over every screen (merging D7): open for the pull request `MergePanelStore` names — or its stack, from the local copy alone (stacked PRs D7, D11): the stack's first open pull request is the panel's, its rulesets and proposal read, and the line `↑`/`↓` move starts on the whole stack from an entry, on everything up to the pull request it was opened on, held before one that can't land (D19); a merge of two or more goes to the top of the range, and refused, the stack is read again; with two or more going `C` shows the checks of the one holding the rest, else the first open one's, another member's read only while they are looked at — fed by the stores — the pull request as the local copy holds it, its row or the detail of one opened from outside the lists, the repository's merge settings, the viewer's permission — and the read it starts on opening (`useMergeOptions`), telling the panel while the settings are on their way with none in memory, and merging through the store — a merge past the rules, of the first open pull request alone (stacked PRs D11, SP55) — , which keeps what the session knows of a merge that did not end merged; its steps towards the merge — GitHub's conflict editor, marking it ready, turning auto-merge on or off, jumping the queue (`ItemEditor`) — and its ordinary commands, the same path as every screen's (`PullRequestCommands`) — updating its branch, leaving the queue (a stack leaves whole, through its first one, its later ones then read again) and, merged, deleting or restoring its branch — read the pull request again once done; reverting leaves for the toast leading to the new one. Each opening is a fresh panel. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -151,6 +151,8 @@ const stackChecks = computed(() => {
 });
 const repository = computed(() => pr.value?.repository.nameWithOwner ?? null);
 const settings = computed(() => (repository.value === null ? null : (repositories.get(repository.value) ?? null)));
+/** The repository's merge settings are on their way, with none in memory: a `⌘↵` pressed meanwhile waits for them. */
+const settingsReading = shallowRef(false);
 const sending = shallowRef(false);
 const advancing = shallowRef<MergeAdvancing | null>(null);
 /** GitHub said at once the merge sent merged: it was merged already (PM30). */
@@ -177,9 +179,13 @@ watch(
     checksOpen.value = false;
   },
 );
-watch(repository, name => {
+watch(repository, async name => {
+  settingsReading.value = name !== null && settings.value === null;
   if (name !== null) {
-    void repositories.ensure(name);
+    await repositories.ensure(name);
+    if (repository.value === name) {
+      settingsReading.value = false;
+    }
   }
 });
 
@@ -332,6 +338,7 @@ function moveLine(direction: 'earlier' | 'later') {
     v-model:checks-open="checksOpen"
     :pr="pr"
     :settings="settings"
+    :settings-reading="settingsReading"
     :options="read.options"
     :reading="read.reading"
     :allowed="editor.getPermissions(pr).mergePanel"
