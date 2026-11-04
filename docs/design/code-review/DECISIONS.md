@@ -510,9 +510,13 @@ agent, CR11–CR13)
 **An outdated thread carries an amber "Outdated" head that says how it was placed: "placed by finding its line
 again, so the place is approximate", or, when the line is gone, the thread moves into a box of its own above the
 file's first change, with the old code and the commit it was written on, closed off before the diff begins. A file
-gone from the diff is a block with a file-x icon, a struck-through name and the reason ("added in 3f0c2aa, deleted
-again in 9b7e411"), holding only its threads; its row in the list says "not in the diff".** (2026-11-02, agent,
-CR2, CR10, CR14)
+gone from the diff is a block with a file-x icon, a struck-through name and that it's no longer in the diff, holding
+only its threads; its row in the list says "not in the diff".** (2026-11-04, owner; CR2, CR10, CR14)
+
+**Rejected.**
+
+- Naming the commits that added and deleted it — about 150 lines and one more query for a sentence
+  ([history](history/DECISIONS.md#d30)).
 
 ## D31
 

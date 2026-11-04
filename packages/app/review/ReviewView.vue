@@ -132,23 +132,15 @@ const placements = shallowRef<ReviewThreadPlacements>({ byFile: new Map(), goneE
 // Apart: nothing downstream of `goneFiles` is to be rebuilt by what doesn't change them.
 const listEnd = computed(() => files.value?.listEnd ?? 'growing');
 const goneFiles = computed(() =>
-  placements.value.goneEntries.map((path): ReviewFile => {
-    const history = files.value?.goneHistory.get(path);
-    return {
-      path,
-      previousPath: null,
-      changeType: 'DELETED',
-      additions: 0,
-      deletions: 0,
-      viewed: 'UNVIEWED',
-      gone:
-        listEnd.value !== 'certain'
-          ? { kind: 'notListed' }
-          : history
-            ? { kind: 'deletedAgain', ...history }
-            : { kind: 'notInDiff' },
-    };
-  }),
+  placements.value.goneEntries.map((path): ReviewFile => ({
+    path,
+    previousPath: null,
+    changeType: 'DELETED',
+    additions: 0,
+    deletions: 0,
+    viewed: 'UNVIEWED',
+    gone: { kind: listEnd.value === 'certain' ? 'notInDiff' : 'notListed' },
+  })),
 );
 const openThreads = computed(() => {
   const counts = new Map<string, number>();

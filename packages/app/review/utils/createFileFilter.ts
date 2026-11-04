@@ -1,4 +1,5 @@
-import { assertNever } from '@nzyme/utils/assertNever.js';
+import { createGlobMatcher } from './createGlobMatcher.js';
+import type { GlobToken } from './createGlobMatcher.js';
 
 /** What the user typed in the file list's filter (D11). */
 export interface FileFilterInput {
@@ -14,17 +15,6 @@ export type FileFilter =
     | { readonly kind: 'off' }
     | { readonly kind: 'on'; readonly matches: (path: string) => boolean }
     | { readonly kind: 'invalid' };
-
-type GlobToken =
-    | { readonly kind: 'char'; readonly char: string }
-    /** `?`: one character within a folder or name. */
-    | { readonly kind: 'one' }
-    /** `*`: any run within a folder or name. */
-    | { readonly kind: 'name' }
-    /** `**`: any run, across folders. */
-    | { readonly kind: 'anything' }
-    /** `**` + `/`: any number of whole folders, none too. */
-    | { readonly kind: 'folders' };
 
 /** A glob is in effect typed from any folder, as in VS Code, unless it starts at the root with one of these. */
 const ROOTED = /^\.?\//u;
@@ -42,8 +32,7 @@ const MAX_ALTERNATIVES = 64;
  * anywhere in a path unless it starts at the root, all whatever the case. With `regex` the whole pattern is one regular
  * expression, which is only ever run on paths.
  *
- * Globs run as a state machine, in time proportional to the path times the pattern whatever is typed: they are not
- * compiled to regular expressions, whose backtracking `*a*a*a*a*b` could hang the tab with.
+ * Globs run on {@link createGlobMatcher}, so nothing typed can hang the tab.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -108,8 +97,7 @@ function expandAlternatives(part: string) {
 
 function createPartTest(part: string): (path: string) => boolean {
     if (WILDCARD.test(part)) {
-        const tokens = parseGlob(part);
-        return path => matchesGlob(tokens, path);
+        return createGlobMatcher(parseGlob(part));
     }
 
     const rooted = ROOTED.exec(part);
@@ -161,98 +149,4 @@ function parseGlob(part: string): GlobToken[] {
     }
 
     return tokens;
-}
-
-/** Walks every token a prefix of the path can have reached: state `n` has matched the first `n` tokens. */
-function matchesGlob(tokens: readonly GlobToken[], path: string) {
-    let current = new Uint8Array(tokens.length + 1);
-    let next = new Uint8Array(tokens.length + 1);
-    current[0] = 1;
-    spreadOverEmpty(tokens, current, true);
-
-    for (const char of path) {
-        next.fill(0);
-        let alive = false;
-        for (const [state, token] of tokens.entries()) {
-            if (current[state] === 1 && step(token, char, state, next)) {
-                alive = true;
-            }
-        }
-
-        if (!alive) {
-            return false;
-        }
-
-        spreadOverEmpty(tokens, next, char === '/');
-        [current, next] = [next, current];
-    }
-
-    return current[tokens.length] === 1;
-}
-
-/** Takes `char` from a state on `token`, marking where it leads; whether it led anywhere. */
-function step(token: GlobToken, char: string, state: number, next: Uint8Array) {
-    const slash = char === '/';
-    switch (token.kind) {
-        case 'char':
-            if (token.char !== char) {
-                return false;
-            }
-
-            next[state + 1] = 1;
-            return true;
-        case 'one':
-            if (slash) {
-                return false;
-            }
-
-            next[state + 1] = 1;
-            return true;
-        case 'name':
-            if (slash) {
-                return false;
-            }
-
-            next[state] = 1;
-            return true;
-        case 'anything':
-            next[state] = 1;
-            return true;
-        case 'folders':
-            next[state] = 1;
-            if (slash) {
-                next[state + 1] = 1;
-            }
-
-            return true;
-        default:
-            return assertNever(token);
-    }
-}
-
-/**
- * The tokens that can match nothing let a state through to the one after: they only ever lead forward. Whole folders can
- * only be none at the start of a name, `atNameStart`, or `docs/*` would match `mydocs/a`.
- */
-function spreadOverEmpty(tokens: readonly GlobToken[], states: Uint8Array, atNameStart: boolean) {
-    for (const [state, token] of tokens.entries()) {
-        if (states[state] === 1 && canBeEmpty(token, atNameStart)) {
-            states[state + 1] = 1;
-        }
-    }
-}
-
-function canBeEmpty({ kind }: GlobToken, atNameStart: boolean) {
-    switch (kind) {
-        case 'name':
-        case 'anything':
-            return true;
-        case 'folders':
-            return atNameStart;
-        case 'char':
-        case 'one':
-            return false;
-        default:
-            return assertNever(kind);
-    }
 }

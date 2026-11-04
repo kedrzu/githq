@@ -58,3 +58,29 @@ export const LabelsPicker: Story = {
             },
         }),
 };
+
+/** The trigger says what's on, the panel what it is. */
+export const TriggerSaysOtherwise: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                return () => (
+                    <StoryPage>
+                        <Popover label="View options">
+                            {{
+                                trigger: () => (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                    >
+                                        Split
+                                    </Button>
+                                ),
+                                default: () => <Checkbox label="Hide whitespace" />,
+                            }}
+                        </Popover>
+                    </StoryPage>
+                );
+            },
+        }),
+};

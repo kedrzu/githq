@@ -52,18 +52,6 @@ const threadsText = computed(() => {
   return said.filter(Boolean).join(' · ');
 });
 
-const goneText = computed(() => {
-  const { gone } = props.file;
-  switch (gone?.kind) {
-    case 'deletedAgain':
-      return t(l.deletedAgain, { added: gone.added, deleted: gone.deleted });
-    case 'notListed':
-      return t(l.notListed);
-    default:
-      return t(l.notInDiff);
-  }
-});
-
 function onClick(event: MouseEvent) {
   // The buttons say for themselves.
   if (!props.file.gone && !(event.target instanceof Element && event.target.closest('button'))) {
@@ -115,7 +103,7 @@ function onClick(event: MouseEvent) {
     <span
       v-if="file.gone"
       :class="css.diffFileHeader_from"
-      >{{ goneText }}</span
+      >{{ t(file.gone.kind === 'notListed' ? l.notListed : l.notInDiff) }}</span
     >
     <span
       v-if="file.previousPath !== null"

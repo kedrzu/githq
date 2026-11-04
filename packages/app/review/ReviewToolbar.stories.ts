@@ -43,7 +43,7 @@ export const Unified: Story = { args: { layout: 'unified', hideWhitespace: true 
 export const ViewOptionsOpen: Story = {
     play: async ({ canvas, canvasElement }) => {
         await userEvent.click(canvas.getByRole('button', { name: 'Split' }));
-        const panel = await within(canvasElement.ownerDocument.body).findByRole('dialog');
+        const panel = await within(canvasElement.ownerDocument.body).findByRole('dialog', { name: 'View options' });
         await expect(within(panel).getByRole('switch', { name: 'Hide whitespace changes' })).toBeVisible();
         await expect(within(panel).getByRole('switch', { name: 'File list' })).toBeChecked();
         await expect(within(panel).getByRole('switch', { name: 'Conversation' })).not.toBeChecked();

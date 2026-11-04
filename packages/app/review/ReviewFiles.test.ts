@@ -772,91 +772,15 @@ test('a pause says nothing of a list that came whole; one still short of its ren
     expect(held.model.listEnd).toBe('uncertain');
 });
 
-test('how a file gone from the diff came and went is read once, once the list is certain, and only for a file with an unresolved thread on it', async () => {
+test('a pull request with more files than GitHub lists never has a certain list', async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
-    github.setThreads([
-        threadOn('gone.ts', 'T1'),
-        threadOn('a.ts', 'T2'),
-        { ...threadOn('settled.ts', 'T3'), isResolved: true },
-    ]);
-    github.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
-    const { model, session, files } = open(uniqueLogin(), github);
+    github.setChangedFiles(4812);
+    const { model } = open(uniqueLogin(), github);
 
     await settled(model);
-    await waitUntil(() => model.goneHistory.size > 0, { timeoutMs: 2000 });
 
-    expect(model.goneHistory).toEqual(new Map([['gone.ts', { added: '3f0c2aa', deleted: '9b7e411' }]]));
-    const queries = () => session.github.requests.filter(request => request.operation === 'ReviewGoneFileHistory');
-    expect(queries().map(request => request.variables.p0)).toEqual(['gone.ts']);
-    expect(queries()[0]?.variables.p1).toBeUndefined();
-
-    files.open(REFERENCE);
-    await settled(model);
-    await Bun.sleep(10);
-    expect(queries()).toHaveLength(1);
-});
-
-test('how a file gone from the diff came and went waits out a pause, whether it was refused or never asked, and is read at the reset', async () => {
-    const refused = createGitHub({ pageSize: 10 });
-    refused.setThreads([threadOn('gone.ts', 'T1')]);
-    refused.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
-    refused.rateLimit('ReviewGoneFileHistory');
-    const first = open(uniqueLogin(), refused);
-    await waitUntil(() => first.model.pausedUntil !== null, { timeoutMs: 2000 });
-    refused.rateLimit(null);
-    await first.session.clock.advance((first.model.pausedUntil ?? 0) - first.session.clock.now());
-    await waitUntil(() => first.model.goneHistory.size > 0, { timeoutMs: 2000 });
-
-    // The answer to the threads, the last read, leaves only what's kept for edits: nothing else would show a pause.
-    const unasked = createGitHub({ pageSize: 10 });
-    unasked.setThreads([threadOn('gone.ts', 'T1')]);
-    unasked.setGoneHistory('gone.ts', { added: '3f0c2aa', deleted: '9b7e411' });
-    let release = () => {};
-    const heldThreads = new Promise<void>(resolve => {
-        release = resolve;
-    });
-    const second = open(uniqueLogin(), unasked, request =>
-        request.operation === 'PullRequestReviewThreads' ? heldThreads : null,
-    );
-    await waitUntil(() => second.model.listComplete, { timeoutMs: 2000 });
-    second.session.github.graphqlRemaining = EDIT_RESERVE;
-    second.session.github.holdIf = null;
-    release();
-    await waitUntil(() => second.model.pausedUntil !== null, { timeoutMs: 2000 });
-    expect(second.session.operations()).not.toContain('ReviewGoneFileHistory');
-
-    second.session.github.graphqlRemaining = 5000;
-    await second.session.clock.advance((second.model.pausedUntil ?? 0) - second.session.clock.now());
-    await waitUntil(() => second.model.goneHistory.size > 0, { timeoutMs: 2000 });
-});
-
-test('nothing is asked of a pull request with no file gone, nor of one whose list is capped, and a failure only leaves the reason out', async () => {
-    const quiet = createGitHub({ pageSize: 10 });
-    quiet.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
-    quiet.setThreads([threadOn('a.ts', 'T1')]);
-    const none = open(uniqueLogin(), quiet);
-    await settled(none.model);
-    expect(none.session.operations()).not.toContain('ReviewGoneFileHistory');
-
-    const capped = createGitHub({ pageSize: 10 });
-    capped.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
-    capped.setThreads([threadOn('gone.ts', 'T1')]);
-    capped.setChangedFiles(4812);
-    const tooMany = open(uniqueLogin(), capped);
-    await settled(tooMany.model);
-    expect(tooMany.model.listEnd).toBe('uncertain');
-    expect(tooMany.session.operations()).not.toContain('ReviewGoneFileHistory');
-
-    const failing = createGitHub({ pageSize: 10 });
-    failing.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
-    failing.setThreads([threadOn('gone.ts', 'T1')]);
-    failing.failNext('ReviewGoneFileHistory');
-    const failed = open(uniqueLogin(), failing);
-    await settled(failed.model);
-    await waitUntil(() => failed.session.operations().includes('ReviewGoneFileHistory'), { timeoutMs: 2000 });
-    expect(failed.model.goneHistory).toEqual(new Map());
-    expect(failed.model.listEnd).toBe('certain');
+    expect(model.listEnd).toBe('uncertain');
 });
 
 test('a pull request read before draws its list and code from the disk with GitHub silent, where renames came from included', async () => {
@@ -1492,6 +1416,21 @@ test('a .gitattributes with too many rules collapses nothing, and says so in the
     expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
 });
 
+test('a .gitattributes GitHub cut off gives no rules, says so in the log, and asks nothing over REST', async () => {
+    const github = createGitHub({ pageSize: 10 });
+    const text = '*.gen.ts linguist-generated\n';
+    github.blobAt(`${HEAD}:.gitattributes`, { text });
+    github.truncate(text, '*.gen.ts');
+    github.file({ path: 'a.gen.ts', changeType: 'ADDED', after: 'generated' });
+    const { model, session } = open(uniqueLogin(), github);
+
+    await settled(model);
+
+    expect(model.getCollapse('a.gen.ts')).toBeNull();
+    expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
+    expect(session.operations()).not.toContain(`GET /repos/acme/web/git/blobs/${oidOf(text)}`);
+});
+
 test('a file collapsed by hand before its turn is not fetched, one collapsed once read opens again at once, and either keeps the reason it has', async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'read.ts', changeType: 'ADDED', after: 'read' });
@@ -1824,12 +1763,10 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
     let base = BASE_TIP;
     let mergeBase = MERGE_BASE;
     let threads: readonly TestThread[] = [];
-    const goneHistory = new Map<string, { added: string; deleted: string }>();
     let changedFiles: number | null = null;
 
     return {
         file,
-        setGoneHistory: (path: string, history: { added: string; deleted: string }) => goneHistory.set(path, history),
         setChangedFiles: (count: number) => {
             changedFiles = count;
         },
@@ -1913,32 +1850,9 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                 return { data: answerThreads(request) };
             case 'ReviewThreadComments':
                 return { data: answerThreadComments(request) };
-            case 'ReviewGoneFileHistory':
-                return { data: answerGoneHistory(request) };
             default:
                 return undefined;
         }
-    }
-
-    function answerGoneHistory(request: TestGraphQLRequest) {
-        const object: Record<string, unknown> = {};
-        for (const [name, path] of variablesOf(request, 'p')) {
-            const history = goneHistory.get(path);
-            object[`h${name}`] = {
-                nodes: history
-                    ? [
-                          {
-                              abbreviatedOid: history.deleted,
-                              file: null,
-                              parents: { nodes: [{ file: { oid: 'x' } }] },
-                          },
-                          { abbreviatedOid: history.added, file: { oid: 'x' }, parents: { nodes: [{ file: null }] } },
-                      ]
-                    : [],
-            };
-        }
-
-        return { repository: { object } };
     }
 
     /** Pages of one thread, each thread's first page holding one comment. */

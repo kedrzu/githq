@@ -180,7 +180,6 @@ function createFiles(
         threadsState: { kind: 'ready' },
         listComplete: list.kind === 'ready',
         listEnd: list.kind === 'ready' ? 'certain' : 'growing',
-        goneHistory: new Map(),
         id: 'PR_1202',
         headRefOid: 'head',
         changedFiles: files.length,

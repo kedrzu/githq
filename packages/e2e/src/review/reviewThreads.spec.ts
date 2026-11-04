@@ -6,7 +6,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 import { answerReview } from './answerReview.js';
-import type { AnsweredReview, AnswerReviewParams, SampleReviewFile, SampleReviewThread } from './answerReview.js';
+import type { AnsweredReview, SampleReviewFile, SampleReviewThread } from './answerReview.js';
 
 const REVIEW_ADDRESS = '/acme/web/pull/15/files';
 
@@ -148,16 +148,6 @@ test('every thread shows where it belongs, hidden lines and collapsed files with
     await expect(review.focusedThread).toContainText('On a file gone');
     await expect(review.diff).toContainText("No longer in this pull request's diff");
     await expect(review.diff).toContainText('Line 2, as it was when commented at a91d03b');
-});
-
-test('a file gone from the diff says what its commits say of it', async ({ page, github }) => {
-    const { review } = await openThreads(page, github, THREADS, {
-        [GONE]: { added: '3f0c2aa', deleted: '9b7e411' },
-    });
-
-    await review.openThreadsMark('removed.ts', 1).click();
-    await expect(review.diff).toContainText('Not in the diff: added in 3f0c2aa, deleted again in 9b7e411');
-    await expect(review.fileRow('removed.ts')).toContainText('not in the diff');
 });
 
 test('N lands exactly on a thread and stays there as a comment above it grows late', async ({ page, github }) => {
@@ -367,10 +357,9 @@ async function openThreads(
     page: Page,
     github: Parameters<typeof openMyWork>[1],
     threads: readonly SampleReviewThread[] = THREADS,
-    goneHistory?: AnswerReviewParams['goneHistory'],
 ): Promise<{ review: ReviewScreenHarness; answered: AnsweredReview }> {
     await openMyWork(page, github, createSampleMyWork().world);
-    const answered = answerReview(github, { repository: 'acme/web', number: 15, files: FILES, threads, goneHistory });
+    const answered = answerReview(github, { repository: 'acme/web', number: 15, files: FILES, threads });
     const review = new ReviewScreenHarness(page);
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('engine.ts')).toBeVisible();

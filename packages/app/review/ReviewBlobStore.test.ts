@@ -102,7 +102,7 @@ test('file lists, threads, resolutions and merge bases are per login, go with th
     const resolution: ReviewKeptResolution = { kind: 'blob', oid: 'o1', byteSize: 3, isBinary: false };
     const answers = new Map<string, ReviewKeptResolution>([
         ['acme/web:c1:secret.ts', resolution],
-        ['acme/web:c1:gone.ts', { kind: 'missing' }],
+        ['acme/web:c1:gone.ts', { kind: 'noBlob' }],
     ]);
     await tab.writeResolutions(alice, answers);
     await tab.writeMergeBase(alice, 'acme/web:b...h', 'fork');

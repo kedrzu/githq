@@ -1,20 +1,12 @@
+import { createGlobMatcher } from './createGlobMatcher.js';
+import type { GlobBudget, GlobToken } from './createGlobMatcher.js';
+
 /** One line of a `.gitattributes` saying something of `linguist-generated`. */
 interface GeneratedRule {
-    /** The pattern's path segments, `**` one of them. */
-    readonly segments: readonly (readonly PatternToken[])[];
-    /** It has no slash but a last one: it goes by name, at any depth. Any other is anchored at the root. */
-    readonly anywhere: boolean;
+    readonly matches: (path: string, budget: GlobBudget) => boolean;
+    /** It has no slash at all: it goes by the file's name, which spares it walking the folders. */
+    readonly byName: boolean;
     readonly generated: boolean;
-}
-
-/** One token of a pattern's segment: `*`, or one character (a literal, `?` or a `[…]`). */
-type PatternToken =
-    | { readonly star: true }
-    | { readonly star: false; matches(character: string, work: MatchingWork): boolean };
-
-/** What matching has cost so far, one count for all the paths of a file. */
-interface MatchingWork {
-    spent: number;
 }
 
 /** The macros of a file: what each is defined as, and what that was worked out to say of the attribute. */
@@ -25,6 +17,10 @@ interface Macros {
 
 const ATTRIBUTE = 'linguist-generated';
 const ANY_SEGMENTS = '**';
+const SLASH: GlobToken = { kind: 'char', char: '/' };
+const ANYTHING: GlobToken = { kind: 'anything' };
+/** What follows a directory's name: everything under it. Stricter git matches nothing there, but that is what's meant. */
+const UNDER_FOLDER: readonly GlobToken[] = [SLASH, ANYTHING];
 /** A line this long says nothing, as for git: `ATTR_MAX_LINE_LENGTH` in its `attr.h`, checked with `>=` in `attr.c`. */
 const MAX_LINE_BYTES = 2048;
 /**
@@ -33,9 +29,9 @@ const MAX_LINE_BYTES = 2048;
  */
 const MAX_RULES_BYTES = 16 * 1024;
 /**
- * How much matching a file's rules may cost: rules times path segments for each path, plus every step of a wildcard match
- * (see {@link matchWithStars}), which is where the time goes. About 0.8 s at worst, and 16 KB of ordinary rules on 3,000
- * files eight folders deep stays under it; past it, even in the middle of a match, paths aren't marked generated.
+ * How much matching a file's rules may cost, in the steps {@link createGlobMatcher} charges. About 0.8 s at worst, and 16 KB of
+ * ordinary rules on 3,000 files eight folders deep stays under it; past it, even in the middle of a match, paths aren't
+ * marked generated.
  */
 const MAX_MATCHING_WORK = 100_000_000;
 const UTF8 = new TextEncoder();
@@ -75,16 +71,23 @@ export function parseLinguistGenerated(text: string, onGaveUp?: () => void): (pa
             return () => false;
         }
 
-        rules.push({ ...parsePattern(parts.pattern), generated: parts.generated });
+        rules.push({
+            matches: createGlobMatcher(parsePattern(parts.pattern)),
+            byName: !parts.pattern.includes('/'),
+            generated: parts.generated,
+        });
     }
 
-    const work: MatchingWork = { spent: 0 };
+    const budget: GlobBudget = { spent: 0, limit: MAX_MATCHING_WORK };
     let gaveUp = false;
     return path => {
-        const segments = path.split('/');
-        work.spent += rules.length * segments.length;
-        const rule = work.spent > MAX_MATCHING_WORK ? undefined : rules.findLast(r => matchesRule(r, segments, work));
-        if (work.spent <= MAX_MATCHING_WORK) {
+        budget.spent += rules.length * path.split('/').length;
+        const name = path.slice(path.lastIndexOf('/') + 1);
+        const rule =
+            budget.spent > MAX_MATCHING_WORK
+                ? undefined
+                : rules.findLast(({ matches, byName }) => matches(byName ? name : path, budget));
+        if (budget.spent <= MAX_MATCHING_WORK) {
             return rule?.generated ?? false;
         }
 
@@ -173,33 +176,50 @@ function readMacro(name: string, macros: Macros) {
     return generated;
 }
 
-function parsePattern(pattern: string): Pick<GeneratedRule, 'anywhere' | 'segments'> {
+/**
+ * A pattern with no slash goes by the file's name. With only a last one, `dist/`, it goes by that of any folder above the
+ * file. Any other is anchored at the root, its whole `**` segments crossing folders; a `**` within a segment is two stars.
+ */
+function parsePattern(pattern: string): GlobToken[] {
     const directory = pattern.endsWith('/');
     const trimmed = directory ? pattern.slice(0, -1) : pattern;
-    const anchored = trimmed.includes('/');
-    const names = (trimmed.startsWith('/') ? trimmed.slice(1) : trimmed).split('/');
-    return {
-        anywhere: !anchored,
-        segments: (directory ? [...names, ANY_SEGMENTS] : names).map(parseSegment),
-    };
+    if (!trimmed.includes('/')) {
+        return directory ? [{ kind: 'folders' }, ...parseSegment(trimmed), ...UNDER_FOLDER] : parseSegment(trimmed);
+    }
+
+    const segments = (trimmed.startsWith('/') ? trimmed.slice(1) : trimmed).split('/');
+    const tokens: GlobToken[] = [];
+    for (const [index, segment] of segments.entries()) {
+        const last = index === segments.length - 1;
+        if (segment !== ANY_SEGMENTS) {
+            tokens.push(...parseSegment(segment), ...(last ? [] : [SLASH]));
+        } else if (last) {
+            tokens.push(ANYTHING);
+        } else {
+            tokens.push({ kind: 'folders' });
+        }
+    }
+
+    return directory ? [...tokens, ...(tokens.at(-1) === ANYTHING ? [] : UNDER_FOLDER)] : tokens;
 }
 
-function parseSegment(segment: string): readonly PatternToken[] {
-    const tokens: PatternToken[] = [];
+function parseSegment(segment: string): GlobToken[] {
+    const characters = Array.from(segment);
+    const tokens: GlobToken[] = [];
     let index = 0;
-    while (index < segment.length) {
-        const character = segment.charAt(index);
-        const classEnd = character === '[' ? segment.indexOf(']', index + 2) : -1;
+    while (index < characters.length) {
+        const character = characters[index];
+        const classEnd = character === '[' ? characters.indexOf(']', index + 2) : -1;
         if (character === '*') {
-            tokens.push({ star: true });
+            tokens.push({ kind: 'name' });
         } else if (character === '?') {
-            tokens.push({ star: false, matches: () => true });
+            tokens.push({ kind: 'one' });
         } else if (classEnd > 0) {
-            tokens.push({ star: false, matches: parseClass(segment.slice(index + 1, classEnd)) });
+            tokens.push(parseClass(characters.slice(index + 1, classEnd)));
             index = classEnd;
         } else {
-            const literal = character === '\\' ? segment.charAt(++index) : character;
-            tokens.push({ star: false, matches: other => other === literal });
+            const literal = character === '\\' ? characters[++index] : character;
+            tokens.push({ kind: 'char', char: literal ?? '' });
         }
 
         index++;
@@ -208,101 +228,7 @@ function parseSegment(segment: string): readonly PatternToken[] {
     return tokens;
 }
 
-function parseClass(body: string) {
-    const negated = body.startsWith('!') || body.startsWith('^');
-    const members = negated ? body.slice(1) : body;
-    return (character: string, work: MatchingWork) => {
-        work.spent += members.length;
-        return isInClass(members, character) !== negated;
-    };
-}
-
-function isInClass(members: string, character: string) {
-    for (let index = 0; index < members.length; index++) {
-        const from = members.charAt(index);
-        if (members[index + 1] === '-' && index + 2 < members.length) {
-            if (from <= character && character <= members.charAt(index + 2)) {
-                return true;
-            }
-
-            index += 2;
-        } else if (from === character) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function matchesRule({ anywhere, segments }: GeneratedRule, path: readonly string[], work: MatchingWork) {
-    const [first] = segments;
-    if (!anywhere || first === undefined) {
-        return matchesSegments(segments, path, work);
-    }
-
-    // By name: the file's or, for `dist/`, that of any folder above it, as a pattern with no other slash goes by name.
-    const names = segments.length === 1 ? path.slice(-1) : path.slice(0, -1);
-    return names.some(name => matchesSegment(first, name, work));
-}
-
-function matchesSegments(segments: readonly (readonly PatternToken[])[], path: readonly string[], work: MatchingWork) {
-    return matchWithStars({
-        pattern: segments,
-        length: path.length,
-        work,
-        isStar: segment => segment.length === 2 && segment.every(token => token.star),
-        matchesAt: (segment, index) => matchesSegment(segment, path[index] ?? '', work),
-    });
-}
-
-function matchesSegment(tokens: readonly PatternToken[], name: string, work: MatchingWork) {
-    return matchWithStars({
-        pattern: tokens,
-        length: name.length,
-        work,
-        isStar: token => token.star,
-        matchesAt: (token, index) => !token.star && token.matches(name.charAt(index), work),
-    });
-}
-
-interface MatchWithStarsParams<T> {
-    readonly pattern: readonly T[];
-    /** How long the sequence matched is. */
-    readonly length: number;
-    readonly work: MatchingWork;
-    readonly isStar: (item: T) => boolean;
-    readonly matchesAt: (item: T, index: number) => boolean;
-}
-
-/**
- * Wildcard matching: on a miss only the last star takes one more, which is all a greedy match ever has to go back to. Each
- * step is charged to `work`, and past {@link MAX_MATCHING_WORK} no match is found.
- */
-function matchWithStars<T>({ pattern, length, work, isStar, matchesAt }: MatchWithStarsParams<T>) {
-    let at = 0;
-    let item = 0;
-    let lastStar = -1;
-    let lastStarAt = 0;
-    while (at < length) {
-        if (++work.spent > MAX_MATCHING_WORK) {
-            return false;
-        }
-
-        const current = pattern[item];
-        if (current !== undefined && isStar(current)) {
-            lastStar = item++;
-            lastStarAt = at;
-        } else if (current !== undefined && matchesAt(current, at)) {
-            item++;
-            at++;
-        } else if (lastStar >= 0) {
-            item = lastStar + 1;
-            at = ++lastStarAt;
-        } else {
-            return false;
-        }
-    }
-
-    work.spent += pattern.length - item;
-    return pattern.slice(item).every(isStar);
+function parseClass(body: readonly string[]): GlobToken {
+    const negated = body[0] === '!' || body[0] === '^';
+    return { kind: 'class', members: negated ? body.slice(1) : body, negated };
 }

@@ -20,10 +20,8 @@ export type ReviewBlobOidAnswer =
           /** `true` only when GitHub is sure: `Blob.isBinary` is `null` when it can't tell. */
           readonly isBinary: boolean;
       }
-    /** Nothing GitHub will name at that path: there is nothing there, or a submodule, which it answers the same for. */
-    | { readonly kind: 'missing' }
-    /** Something else at that path: a directory. */
-    | { readonly kind: 'notBlob' }
+    /** No file to read at that path: nothing there, a directory or a submodule. */
+    | { readonly kind: 'noBlob' }
     /** GitHub could not answer this one; the rest of the answer stands. */
     | { readonly kind: 'failed'; readonly error: GitHubApiError };
 
@@ -102,8 +100,9 @@ function readOidAnswer({ node, error }: AliasedObject): ReviewBlobOidAnswer {
         return { kind: 'failed', error };
     }
 
+    // A submodule answers `null`, like a path with nothing.
     if (node === null) {
-        return { kind: 'missing' };
+        return { kind: 'noBlob' };
     }
 
     if (!isPlainObject(node)) {
@@ -112,7 +111,7 @@ function readOidAnswer({ node, error }: AliasedObject): ReviewBlobOidAnswer {
 
     // Any other kind of object matches no fragment and answers `{}`.
     if (node.oid === undefined) {
-        return { kind: 'notBlob' };
+        return { kind: 'noBlob' };
     }
 
     if (typeof node.oid !== 'string' || typeof node.byteSize !== 'number') {

@@ -187,7 +187,6 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
             get listEnd() {
                 return listEnd.value;
             },
-            goneHistory: new Map(),
             id: 'PR_7',
             headRefOid: 'head',
             changedFiles: listed.length,

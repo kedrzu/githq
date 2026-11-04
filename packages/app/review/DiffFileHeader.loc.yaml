@@ -16,8 +16,6 @@ large:
   en: large
 notInDiff:
   en: No longer in this pull request's diff
-deletedAgain:
-  en: 'Not in the diff: added in {added}, deleted again in {deleted}'
 notListed:
   en: Not among the files GitHub has listed
 threadsOpen:

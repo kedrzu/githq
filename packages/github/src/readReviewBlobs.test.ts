@@ -44,9 +44,9 @@ test('oids: a blob, nothing, a directory and a failed one are told apart; a subm
 
     const expected: Partial<Record<string, ReviewBlobOidAnswer>> = {
         'h:a': { kind: 'blob', oid: 'abc', byteSize: 3, isBinary: false },
-        'h:b': { kind: 'missing' },
-        'h:c': { kind: 'notBlob' },
-        'h:e': { kind: 'missing' },
+        'h:b': { kind: 'noBlob' },
+        'h:c': { kind: 'noBlob' },
+        'h:e': { kind: 'noBlob' },
     };
     for (const [expression, answer] of Object.entries(expected)) {
         expect(answers.get(expression)).toEqual(answer);

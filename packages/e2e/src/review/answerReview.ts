@@ -43,8 +43,6 @@ export interface AnswerReviewParams {
     readonly number: number;
     readonly files: readonly SampleReviewFile[];
     readonly threads?: readonly SampleReviewThread[];
-    /** The commits that added and deleted a file gone from the diff, by its path. */
-    readonly goneHistory?: Readonly<Record<string, { readonly added: string; readonly deleted: string }>>;
 }
 
 /** What a test can do to the review answered. */
@@ -160,32 +158,6 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         }
 
         return { data: { repository } };
-    });
-    github.graphqlDocument('ReviewGoneFileHistory', ({ variables }) => {
-        const object: Record<string, unknown> = {};
-        for (const [name, path] of Object.entries(variables)) {
-            if (/^p\d+$/u.test(name) && typeof path === 'string') {
-                const history = params.goneHistory?.[path];
-                object[`h${name.slice(1)}`] = {
-                    nodes: history
-                        ? [
-                              {
-                                  abbreviatedOid: history.deleted,
-                                  file: null,
-                                  parents: { nodes: [{ file: { oid: 'x' } }] },
-                              },
-                              {
-                                  abbreviatedOid: history.added,
-                                  file: { oid: 'x' },
-                                  parents: { nodes: [{ file: null }] },
-                              },
-                          ]
-                        : [],
-                };
-            }
-        }
-
-        return { data: { repository: { object } } };
     });
     github.graphqlDocument('ReviewBlobTexts', async ({ variables }) => {
         const repository: Record<string, unknown> = {};

@@ -250,30 +250,6 @@ export const GoneHeader: Story = {
     },
 };
 
-/** CR14: gone, with what its commits say of it. */
-export const GoneWithReason: Story = {
-    render: () =>
-        renderRows([
-            {
-                kind: 'header',
-                key: 'header',
-                file: file('src/sync/retry-policy.ts', 0, 0, {
-                    gone: { kind: 'deletedAgain', added: '3f0c2aa', deleted: '9b7e411' },
-                    changeType: 'DELETED',
-                }),
-                collapsed: false,
-                collapseReason: null,
-                threadsUnder: true,
-                threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
-            },
-        ]),
-    play: async ({ canvas }) => {
-        await expect(
-            canvas.getByText('Not in the diff: added in 3f0c2aa, deleted again in 9b7e411'),
-        ).toBeInTheDocument();
-    },
-};
-
 /** The list stopped short: it isn't known to be gone. */
 export const GoneUncertain: Story = {
     render: () =>
