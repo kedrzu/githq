@@ -2,6 +2,7 @@ import type {
     IssueFieldsFragment,
     ItemProjectItemFieldsFragment,
     PullRequestFieldsFragment,
+    PullRequestPendingReviewFieldsFragment,
     PullRequestStatusFieldsFragment,
 } from '@githq/github/generated.gen.js';
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
@@ -20,6 +21,7 @@ import type {
     ItemReviewRequest,
     ItemUser,
     PullRequestItem,
+    PullRequestPendingReview,
     PullRequestStatus,
 } from './ItemTypes.js';
 
@@ -63,13 +65,31 @@ export function toItem(
 }
 
 /**
+ * The viewer's draft review of a pull request, as `PullRequestStatusFields` or `PullRequestPendingReviews` read it:
+ * none in the `{}` GitHub answers for a node that is no pull request.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function toPendingReview(
+    node: Partial<PullRequestPendingReviewFieldsFragment>,
+): PullRequestPendingReview | null {
+    const pendingReview = node.pendingReviews?.nodes?.[0];
+    return pendingReview
+        ? {
+              id: pendingReview.id,
+              commentCount: pendingReview.comments.totalCount,
+              createdAt: pendingReview.createdAt,
+          }
+        : null;
+}
+
+/**
  * The status summary of a pull request, from `PullRequestFields` or from `PullRequestStatuses` re-reading it on
  * its own.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): PullRequestStatus {
-    const pendingReview = node.pendingReviews?.nodes?.[0];
     return {
         state: node.state,
         isDraft: node.isDraft,
@@ -87,13 +107,7 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
             node.latestOpinionatedReviews?.nodes ?? [],
             (review): ItemReview | null => review && { author: review.author?.login ?? null, state: review.state },
         ),
-        pendingReview: pendingReview
-            ? {
-                  id: pendingReview.id,
-                  commentCount: pendingReview.comments.totalCount,
-                  createdAt: pendingReview.createdAt,
-              }
-            : null,
+        pendingReview: toPendingReview(node),
         stack:
             node.stack && node.stackEntry
                 ? {

@@ -48,7 +48,9 @@ export type TabMessage =
     /**
      * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2).
      */
-    | { readonly kind: 'pollWorkflows' };
+    | { readonly kind: 'pollWorkflows' }
+    /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
+    | { readonly kind: 'pollPendingReviews' };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;

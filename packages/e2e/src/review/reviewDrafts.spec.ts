@@ -4,8 +4,11 @@ import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
+import { openTrackedWork } from '../tracking/openTrackedWork.js';
+import { createSampleTrackedWork } from '../tracking/sampleTrackedWork.js';
 
 import { answerReview } from './answerReview.js';
 
@@ -76,6 +79,48 @@ test('a draft begun on github.com shows on the next read of the statuses, in its
 
     await expect(shell.draftReviews).toBeHidden();
     await expect(page.getByText('No draft reviews')).toBeVisible();
+});
+
+test('a pull request only a tracked repository holds: a draft begun on github.com shows within five minutes, and goes with the next read of the statuses', async ({
+    page,
+    github,
+}) => {
+    await page.clock.install();
+    const { world, fixPullRequest } = createSampleTrackedWork();
+    const shell = await openTrackedWork(page, github, world);
+    await expect(shell.statusBar).toContainText('Up to date');
+    await expect(shell.draftReviews).toBeHidden();
+
+    world.setPendingReview(fixPullRequest, { comments: 2, minutesAgo: 1 });
+    await page.clock.fastForward('05:01');
+    await expect(shell.draftReviews).toContainText('1');
+
+    world.setPendingReview(fixPullRequest, null);
+    await nextStatusRead(page);
+    await expect(shell.draftReviews).toBeHidden();
+});
+
+test('the window regaining focus in a tab that does not sync has the syncing tab look for drafts, a minute after its last look', async ({
+    context,
+    page,
+    github,
+}) => {
+    await context.clock.install();
+    const { world, fixPullRequest } = createSampleTrackedWork();
+    const shell = await openTrackedWork(page, github, world);
+    await expect(shell.statusBar).toContainText('Up to date');
+    const other = await context.newPage();
+    await other.goto('/');
+    const otherShell = new AppShellHarness(other);
+    await expect(otherShell.statusBar).toContainText('Up to date');
+
+    world.setPendingReview(fixPullRequest, { comments: 2, minutesAgo: 1 });
+    await context.clock.fastForward('01:01');
+    await other.evaluate(() => window.dispatchEvent(new Event('focus')));
+
+    await expect(otherShell.draftReviews).toContainText('1');
+    expect(github.apiRequestsOf(page)).toContain('PullRequestPendingReviews');
+    expect(github.apiRequestsOf(other)).not.toContain('PullRequestPendingReviews');
 });
 
 test('the list of drafts: the one waiting longest first, J and K move, Enter opens its review, walked from there as any list', async ({

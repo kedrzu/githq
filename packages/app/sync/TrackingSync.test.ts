@@ -677,7 +677,12 @@ function downloads(requests: readonly TestGraphQLRequest[]) {
 function graphql(requests: readonly TestGraphQLRequest[]) {
     const read: string[] = [];
     for (const { operation, variables } of requests) {
-        if (operation.startsWith('GET ') || operation === 'Viewer' || operation === 'PullRequestStatuses') {
+        if (
+            operation.startsWith('GET ') ||
+            operation === 'Viewer' ||
+            operation === 'PullRequestStatuses' ||
+            operation === 'PullRequestPendingReviews'
+        ) {
             continue;
         }
 

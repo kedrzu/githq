@@ -25,7 +25,7 @@ import { MY_WORK_GROUPS, SYNC_LOOPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup, SyncLoop } from '@/store/ItemStoreTypes.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
-import { toPullRequestStatus } from '@/store/toItem.js';
+import { toPendingReview, toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
@@ -65,6 +65,8 @@ const INTERVALS: Readonly<Record<SyncLoop, { readonly visible: number; readonly 
     download: { visible: 60_000, hidden: 300_000 },
     // An active repository's runs change with every run's status; failures are what matters, not seconds (actions D2).
     workflows: { visible: 180_000, hidden: 600_000 },
+    // Nothing tells of a draft begun on GitHub but asking (code review D21); 1 point per 100 pull requests.
+    pendingReviews: { visible: 300_000, hidden: 900_000 },
 };
 
 /** The "my work" searches (D11), one per group. */
@@ -83,6 +85,10 @@ const NODES_BATCH_SIZE = 50;
 const MY_WORK_BATCH_SIZE = 20;
 /** How many of those are read at once (D27). */
 const MY_WORK_READS = 3;
+/** How many pull requests one `PullRequestPendingReviews` asks about: GitHub's limit, it reads next to nothing of each. */
+const PENDING_REVIEWS_BATCH_SIZE = 100;
+/** The window regaining focus looks for draft reviews no more often than this. */
+const PENDING_REVIEWS_FOCUS_MS = 60_000;
 
 /** The signed-in user the loops poll for, captured when they started. */
 interface Session {
@@ -117,6 +123,7 @@ const IDLE_LOOPS: Readonly<Record<SyncLoop, SyncLoopStatus>> = {
     projects: IDLE,
     download: IDLE,
     workflows: IDLE,
+    pendingReviews: IDLE,
 };
 /** The buckets each loop draws on: the one that ran out is the one it waits for. */
 const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
@@ -126,11 +133,12 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
     projects: ['core', 'graphql'],
     download: ['graphql'],
     workflows: ['core'],
+    pendingReviews: ['graphql'],
 };
 
 /**
  * Keeps the signed-in user's local copy (`ItemStore`, `ProjectStore`, `WorkflowStore`) in step with GitHub by
- * polling (D4, D7), in six loops:
+ * polling (D4, D7), in seven loops:
  *
  * - `myWork`: the four "my work" searches (REST, `search` bucket — no ETag, so no free 304s), then a re-read
  *   of only the items whose `updated_at` moved (`ItemsByIds`), and each group's members;
@@ -144,7 +152,10 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
  *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
  *   and at once when a screen showing them opens ({@link pollWorkflowsNow}). What a screen has on screen of a
- *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef}).
+ *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef});
+ * - `pendingReviews`: whether the viewer has a draft review on the open pull requests only a tracked repository or
+ *   project holds (`PullRequestPendingReviews`, code review D21), as a draft moves nothing the polls watch: every 5
+ *   minutes, and when the window regains focus, at most once a minute. Once found, `pullRequestStatuses` follows it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
@@ -299,6 +310,13 @@ export const SyncEngine = defineService({
 
         watch(() => tabs.anyVisible, followVisibility);
         browser.onOnlineChange(followConnection);
+        browser.onFocus(() => {
+            if (session) {
+                pollPendingReviewsOnFocus(session);
+            } else if (followed) {
+                tabs.publish({ kind: 'pollPendingReviews' });
+            }
+        });
         tabs.onMessage(receive);
         tabs.onTabJoined(() => {
             // What only this tab's memory holds, for the tab that just opened.
@@ -496,6 +514,12 @@ export const SyncEngine = defineService({
                     }
 
                     break;
+                case 'pollPendingReviews':
+                    if (session) {
+                        pollPendingReviewsOnFocus(session);
+                    }
+
+                    break;
                 default:
                     break;
             }
@@ -518,6 +542,7 @@ export const SyncEngine = defineService({
                     projects: createLoopRun(),
                     download: createLoopRun(),
                     workflows: createLoopRun(),
+                    pendingReviews: createLoopRun(),
                 },
             };
             session = current;
@@ -727,6 +752,9 @@ export const SyncEngine = defineService({
                 case 'workflows':
                     await workflowSync.poll(toContext(current), getAnyRefRepositories);
                     return { incomplete: false };
+                case 'pendingReviews':
+                    await pollPendingReviews(current);
+                    return { incomplete: false };
                 case 'download': {
                     // "My work" first: it is what the user waits for, and small (G6).
                     if (items.getSyncState('myWork').lastSuccessAt === null) {
@@ -864,7 +892,8 @@ export const SyncEngine = defineService({
             };
         }
 
-        async function pollPullRequestStatuses(current: Session) {
+        /** The pull requests whose status is re-read: those of "my work", of stacks, and with a draft known. */
+        function getPullRequestStatusIds() {
             const open = new Set<string>();
             for (const group of MY_WORK_GROUPS) {
                 for (const id of items.membership[group] ?? []) {
@@ -882,6 +911,12 @@ export const SyncEngine = defineService({
                     open.add(item.id);
                 }
             }
+
+            return open;
+        }
+
+        async function pollPullRequestStatuses(current: Session) {
+            const open = getPullRequestStatusIds();
 
             // Those copied for their stack only whose `updatedAt` moved: nothing else re-reads the rest of their row. And
             // those with a draft found gone.
@@ -945,6 +980,55 @@ export const SyncEngine = defineService({
             trackedItems.evict(draftGone);
 
             await readIncompleteStacks(current);
+        }
+
+        /**
+         * Looks for a draft review on the open pull requests the status re-read leaves out, and writes only that on the
+         * row: its `updatedAt` stays, so no list reorders. A draft found joins that re-read, which clears it once gone.
+         * One gone or hidden is left to its repository's or project's poll.
+         */
+        async function pollPendingReviews(current: Session) {
+            const covered = getPullRequestStatusIds();
+            const ids: string[] = [];
+            for (const item of items.all) {
+                if (
+                    item.kind === 'pullRequest' &&
+                    isOpenPullRequest(item) &&
+                    !covered.has(item.id) &&
+                    trackedItems.keepsForItself(item)
+                ) {
+                    ids.push(item.id);
+                }
+            }
+
+            for (const batch of splitIntoChunks(ids, PENDING_REVIEWS_BATCH_SIZE)) {
+                checkAllowance('graphql');
+                const errors: GitHubGraphQLErrorEntry[] = [];
+                const { nodes } = await current.account.sdk.PullRequestPendingReviews(
+                    { ids: batch },
+                    { onPartialErrors: found => errors.push(...found) },
+                );
+                if (!isCurrent(current)) {
+                    return;
+                }
+
+                if (errors.length > 0) {
+                    logger.warn('Pull requests looked at for draft reviews in part', { errors });
+                }
+
+                const updated: PullRequestItem[] = [];
+                for (const [index, id] of batch.entries()) {
+                    // As stored: a change of the user's still on its way must not become part of it.
+                    const item = items.getStored(id);
+                    const node = nodes[index] ?? null;
+                    const pendingReview = node ? toPendingReview(node) : null;
+                    if (item?.kind === 'pullRequest' && pendingReview && !item.pendingReview) {
+                        updated.push({ ...item, pendingReview });
+                    }
+                }
+
+                items.upsertMany(updated);
+            }
         }
 
         /**
@@ -1016,6 +1100,14 @@ export const SyncEngine = defineService({
                 limits: LOOP_BUCKETS[loop].map(bucket => rateLimits.get(bucket)),
                 now: clock.now(),
             });
+        }
+
+        /** The window regained focus: a draft may just have been begun on GitHub, unless it was looked for a moment ago. */
+        function pollPendingReviewsOnFocus(current: Session) {
+            const { lastAttemptAt } = items.getSyncState('pendingReviews');
+            if (lastAttemptAt === null || clock.now() - lastAttemptAt >= PENDING_REVIEWS_FOCUS_MS) {
+                void run(current, 'pendingReviews');
+            }
         }
 
         function followVisibility() {

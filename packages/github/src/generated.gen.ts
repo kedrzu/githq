@@ -2887,6 +2887,22 @@ export type PullRequestMergeOptionsQuery = {
         | null;
 };
 
+export type PullRequestPendingReviewsQueryVariables = Exact<{
+    ids: Array<string> | string;
+}>;
+
+export type PullRequestPendingReviewsQuery = {
+    nodes: Array<
+        | {
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
+          }
+        | Record<PropertyKey, never>
+        | null
+    >;
+};
+
 export type PullRequestReviewFilesQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -5497,6 +5513,12 @@ export type PullRequestFieldsFragment = {
     } | null;
 };
 
+export type PullRequestPendingReviewFieldsFragment = {
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
+};
+
 export type PullRequestStateResultFieldsFragment = {
     id: string;
     updatedAt: string;
@@ -7708,6 +7730,22 @@ fragment ProjectItemFieldValueFields on ProjectV2ItemFieldValue {
 }`,
     { fragmentName: 'ProjectItemFieldResultFields' },
 );
+export const PullRequestPendingReviewFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+    `,
+    { fragmentName: 'PullRequestPendingReviewFields' },
+);
 export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment PullRequestStatusFields on PullRequest {
@@ -7792,6 +7830,9 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
       state
     }
   }
+  ...PullRequestPendingReviewFields
+}
+    fragment PullRequestPendingReviewFields on PullRequest {
   pendingReviews: reviews(states: [PENDING], first: 1) {
     nodes {
       id
@@ -7801,8 +7842,7 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
       }
     }
   }
-}
-    `,
+}`,
     { fragmentName: 'PullRequestStatusFields' },
 );
 export const PullRequestFieldsFragmentDoc = new TypedDocumentString(
@@ -7880,6 +7920,17 @@ fragment ItemRepositoryFields on Repository {
   viewerPermission
   owner {
     login
+  }
+}
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
   }
 }
 fragment PullRequestStatusFields on PullRequest {
@@ -7964,15 +8015,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'PullRequestFields' },
 );
@@ -8223,6 +8266,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -8305,15 +8359,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'ProjectItemRowFields' },
 );
@@ -8551,6 +8597,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -8633,15 +8690,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'ProjectItemPageFields' },
 );
@@ -9038,6 +9087,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -9120,15 +9180,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
@@ -9795,6 +9847,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -9877,15 +9940,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
@@ -10307,6 +10362,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -10389,15 +10455,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
@@ -10560,6 +10618,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -10642,15 +10711,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const MoreCommentsDocument = new TypedDocumentString(`
     query MoreComments($id: ID!, $before: String!) {
@@ -11132,6 +11193,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11214,15 +11286,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const ProjectItemsDocument = new TypedDocumentString(`
     query ProjectItems($id: ID!, $query: String!, $first: Int!, $after: String) {
@@ -11466,6 +11530,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11548,15 +11623,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const ProjectSchemaDocument = new TypedDocumentString(`
     query ProjectSchema($id: ID!) {
@@ -11771,6 +11838,17 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
     createdAt
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11853,6 +11931,17 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
+}`);
+export const PullRequestPendingReviewsDocument = new TypedDocumentString(`
+    query PullRequestPendingReviews($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ... on PullRequest {
+      ...PullRequestPendingReviewFields
+    }
+  }
+}
+    fragment PullRequestPendingReviewFields on PullRequest {
   pendingReviews: reviews(states: [PENDING], first: 1) {
     nodes {
       id
@@ -12034,6 +12123,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -12116,15 +12216,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const PullRequestStatusesDocument = new TypedDocumentString(`
     query PullRequestStatuses($ids: [ID!]!) {
@@ -12134,7 +12226,18 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -12216,15 +12319,7 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
     query RepositoryAssignableUsers($owner: String!, $name: String!, $after: String!) {
@@ -12693,6 +12788,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -12775,15 +12881,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const RepositorySearchDocument = new TypedDocumentString(`
     query RepositorySearch($query: String!) {
@@ -13306,6 +13404,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -13388,15 +13497,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const AddLabelsDocument = new TypedDocumentString(`
     mutation AddLabels($labelableId: ID!, $labelIds: [ID!]!) {
@@ -13798,7 +13899,18 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -13880,15 +13992,7 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
@@ -13900,7 +14004,18 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -13982,15 +14097,7 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
       state
     }
   }
-  pendingReviews: reviews(states: [PENDING], first: 1) {
-    nodes {
-      id
-      createdAt
-      comments {
-        totalCount
-      }
-    }
-  }
+  ...PullRequestPendingReviewFields
 }`);
 export const EnqueuePullRequestDocument = new TypedDocumentString(`
     mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!) {
@@ -14421,6 +14528,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<PullRequestMergeOptionsQuery>;
+        },
+        PullRequestPendingReviews(
+            variables: PullRequestPendingReviewsQueryVariables,
+            options?: C,
+        ): Promise<PullRequestPendingReviewsQuery> {
+            return requester<PullRequestPendingReviewsQuery, PullRequestPendingReviewsQueryVariables>(
+                PullRequestPendingReviewsDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestPendingReviewsQuery>;
         },
         PullRequestReviewFiles(
             variables: PullRequestReviewFilesQueryVariables,

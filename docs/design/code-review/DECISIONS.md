@@ -388,7 +388,8 @@ diffing and highlighting it; one GitHub client keeps the token, rate-limit handl
 **An open draft review is impossible to miss. The review screen says so prominently while one is open on the pull
 request — how many comments wait and the actions to submit or discard it. Lists mark a pull request that has your
 open draft. The sidebar of the app gains an entry listing the pull requests with your open drafts, shown only while
-there is at least one.** (2026-11-02, owner)
+there is at least one.** (2026-11-02, owner) **A separate light query looks for drafts on the open pull requests of
+tracked repositories and projects, every 5 minutes and when the window regains focus.** (2026-11-04, owner)
 
 **Why.** The owner reviews agents' pull requests. A draft started without noticing keeps the comments unsent: the
 agent does not see them, and cannot post its own replies or comments while the draft stays open (owner).
@@ -403,6 +404,11 @@ agent does not see them, and cannot post its own replies or comments while the d
 > `updated_at`, nor the issue's ETag, so nothing that watches for a change notices one: only reading the review itself
 > does. `reviews(states: [PENDING])` gives its `createdAt` and `comments.totalCount`, and `reviewThreads` returns its
 > threads, their comments with `state: PENDING`.
+
+> **Measured 2026-11-04, on kedrzu/githq:** `PullRequestPendingReviews` costs 1 point (`rateLimit { cost }`) for its 6
+> open pull requests, and also for 50 and 100 of its pull requests (`nodeCount` 200, about 3 KB), where
+> `PullRequestStatusFields` costs 3 and about 139 KB: at most 12 points an hour per 100 open pull requests, against
+> the 5,000 an hour allowed.
 
 ## D22
 

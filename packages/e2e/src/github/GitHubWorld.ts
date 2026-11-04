@@ -716,7 +716,7 @@ const PROJECT_FIRST_PAGE = 100;
  * A small GitHub for the e2e tests: repositories with issues and pull requests, some found by the four "my work"
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
- * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
+ * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestPendingReviews`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
  * out, no rules on a base branch); `ItemByNumber`;
  * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
@@ -1534,6 +1534,22 @@ export class GitHubWorld {
                         }
 
                         // GitHub answers an empty object for a node of another type than the fragment's.
+                        return node.__typename === 'PullRequest' ? node : {};
+                    }),
+                },
+                notFoundErrors(ids, id => this.readItem(id) !== undefined),
+            );
+        });
+        github.graphql('PullRequestPendingReviews', ({ variables }) => {
+            const ids = readIds(variables);
+            return new GitHubPartialAnswer<'PullRequestPendingReviews'>(
+                {
+                    nodes: ids.map(id => {
+                        const node = this.readNode(id);
+                        if (!node) {
+                            return null;
+                        }
+
                         return node.__typename === 'PullRequest' ? node : {};
                     }),
                 },

@@ -8,6 +8,8 @@ import type {
 } from '@githq/github/generated.gen.js';
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
+import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
+import { assert } from '@nzyme/utils/assert.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
 import { AuthStore, VIEWER_KEY } from '@/auth/AuthStore.js';
@@ -24,7 +26,9 @@ import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
+import { toItem } from '@/store/toItem.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
+import type { RepositorySyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
 import type { Freshness } from './Freshness.js';
@@ -37,11 +41,32 @@ const MONDAY = '2026-10-26T10:00:00Z';
 const TUESDAY = '2026-10-27T10:00:00Z';
 const WEDNESDAY = '2026-10-28T10:00:00Z';
 
+const DRAFT = { id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } };
+
 const REPOSITORY: IssueFieldsFragment['repository'] = {
     nameWithOwner: 'acme/web',
     isPrivate: false,
     viewerPermission: 'WRITE',
     owner: { login: 'acme' },
+};
+
+const TRACKING: Tracking = {
+    chosen: true,
+    repositories: [{ nameWithOwner: 'acme/web', id: 'R_1' }],
+    projects: [],
+};
+
+const TRACKED_SYNC_STATE: RepositorySyncState = {
+    kind: 'repository',
+    nameWithOwner: 'acme/web',
+    phase: 'done',
+    cursor: null,
+    counts: {},
+    since: MONDAY,
+    etag: null,
+    hidden: false,
+    refused: null,
+    lastSuccessAt: null,
 };
 
 const QUERIES: Record<MyWorkGroup, string> = {
@@ -581,6 +606,147 @@ test('freshness: up to date after a poll, still up to date while the next one ru
     expect(sync.myWorkFreshness).toEqual({ kind: 'fresh', checkedAt: START + 50_000 });
 });
 
+test('a draft begun on GitHub on a pull request only a tracked repository holds: the look finds it and marks nothing else, and the status re-read then follows it until it is gone', async () => {
+    const github = fakeGitHub();
+    const { items, clock } = await setup(github, 'alice', [
+        pullRequestNode('PR_1', MONDAY),
+        pullRequestNode('PR_2', TUESDAY),
+    ]);
+    const before = items.get('PR_1');
+    assert(before?.kind === 'pullRequest');
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1', 'PR_2']]);
+    expect(github.graphql('PullRequestStatuses')).toEqual([]);
+
+    github.drafts.set('PR_1', DRAFT);
+    await clock.advance(299_000);
+    expect(items.get('PR_1')).toEqual(before);
+
+    await clock.advance(1000);
+    expect(items.get('PR_1')).toEqual({
+        ...before,
+        pendingReview: { id: 'PRR_1', commentCount: 2, createdAt: MONDAY },
+    });
+    expect(items.get('PR_2')).toMatchObject({ pendingReview: null, updatedAt: TUESDAY });
+
+    // Known now: the status re-read follows it, the look leaves it out.
+    github.requests.length = 0;
+    github.drafts.delete('PR_1');
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_1']]);
+    expect(items.get('PR_1')).toEqual(before);
+
+    github.drafts.set('PR_2', DRAFT);
+    await clock.advance(240_000);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1', 'PR_2']]);
+    expect(items.get('PR_2')).toMatchObject({ pendingReview: { commentCount: 2 } });
+});
+
+test('the look for drafts leaves out what the status re-read covers and what is not open, and asks 100 at a time', async () => {
+    const github = fakeGitHub();
+    github.found.authored = [pullRequestNode('PR_mine', MONDAY)];
+    const open = Array.from({ length: 101 }, (_, index) => pullRequestNode(`PR_${index}`, MONDAY));
+    await setup(github, 'alice', [
+        pullRequestNode('PR_mine', MONDAY),
+        stackedNode('PR_stacked', 1, 1),
+        { ...pullRequestNode('PR_drafted', MONDAY), pendingReviews: { nodes: [DRAFT] } },
+        { ...pullRequestNode('PR_closed', MONDAY), state: 'CLOSED' },
+        { ...pullRequestNode('PR_merged', MONDAY), state: 'MERGED', merged: true },
+        issueNode('I_1', MONDAY),
+        ...open,
+    ]);
+
+    const ids = open.map(node => node.id);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([ids.slice(0, 100), ids.slice(100)]);
+});
+
+test('a pull request gone or hidden does not stop the look for drafts, and keeps its row', async () => {
+    const github = fakeGitHub();
+    const { items, sync, clock } = await setup(github, 'alice', [
+        pullRequestNode('PR_gone', MONDAY),
+        pullRequestNode('PR_hidden', MONDAY),
+        pullRequestNode('PR_1', MONDAY),
+    ]);
+
+    github.deleted.add('PR_gone');
+    github.refused.set('PR_hidden', { type: 'FORBIDDEN', message: 'Resource not accessible' });
+    github.drafts.set('PR_1', DRAFT);
+    await clock.advance(300_000);
+
+    expect(items.get('PR_1')).toMatchObject({ pendingReview: { commentCount: 2 } });
+    for (const id of ['PR_gone', 'PR_hidden']) {
+        expect(items.get(id)).toMatchObject({ pendingReview: null });
+    }
+
+    expect(items.getSyncState('pendingReviews').lastError).toBeNull();
+    expect(sync.notice).toBeNull();
+});
+
+test('the window regaining focus looks for drafts at most once a minute, however often it does', async () => {
+    const github = fakeGitHub();
+    const { clock, browser } = await setup(github, 'alice', [pullRequestNode('PR_1', MONDAY)]);
+    github.requests.length = 0;
+
+    browser.focus();
+    await clock.advance(59_000);
+    browser.focus();
+    browser.focus();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([]);
+
+    await clock.advance(1000);
+    browser.focus();
+    browser.focus();
+    await clock.advance(0);
+    browser.focus();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1']]);
+
+    await clock.advance(60_000);
+    browser.focus();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1'], ['PR_1']]);
+});
+
+test('the look for drafts asks nothing at the reserve of the allowance or offline, and less often while hidden', async () => {
+    const github = fakeGitHub();
+    const { sync, clock, browser } = await setup(github, 'alice', [pullRequestNode('PR_1', MONDAY)]);
+    expect(github.graphql('PullRequestPendingReviews')).toHaveLength(1);
+
+    github.requests.length = 0;
+    browser.goOffline();
+    await clock.advance(60_000);
+    browser.focus();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([]);
+
+    browser.goOnline();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1']]);
+
+    github.requests.length = 0;
+    browser.hide();
+    await clock.advance(899_000);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([]);
+    await clock.advance(1000);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([['PR_1']]);
+    browser.show();
+    await clock.advance(0);
+
+    // The answer tells of the reserve; asked again, it asks nothing.
+    github.graphqlAllowance = { remaining: EDIT_RESERVE, resetAt: clock.now() + 600_000 };
+    await clock.advance(60_000);
+    browser.focus();
+    await clock.advance(0);
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    browser.focus();
+    await clock.advance(0);
+    expect(github.graphql('PullRequestPendingReviews')).toEqual([]);
+    expect(sync.notice).toMatchObject({ kind: 'paused', allowance: { resource: 'graphql' } });
+});
+
+type TrackedNode = IssueFieldsFragment | PullRequestFieldsFragment;
+
 interface FakeRequest {
     readonly url: string;
     readonly token: string;
@@ -603,6 +769,10 @@ interface FakeGitHub {
     forbiddenProject: Map<string, number>;
     /** What `PullRequestStatuses` answers, over `found`. */
     statuses: Map<string, PullRequestStatusFieldsFragment>;
+    /** Every item as the node reads answer it: what a search ever found, what a test keeps. */
+    known: Map<string, TrackedNode>;
+    /** The viewer's draft on a pull request, as `PullRequestPendingReviews` and `PullRequestStatuses` read it. */
+    drafts: Map<string, typeof DRAFT>;
     /** The pull requests of each stack, by its id, as `PullRequestStacks` answers them. */
     stacks: Map<string, readonly PullRequestFieldsFragment[]>;
     requests: FakeRequest[];
@@ -630,6 +800,8 @@ function fakeGitHub(): FakeGitHub {
         refused: new Map(),
         forbiddenProject: new Map(),
         statuses: new Map(),
+        known: new Map(),
+        drafts: new Map(),
         stacks: new Map(),
         requests: [],
         searchAllowance: { remaining: 29, resetAt: START + 60_000 },
@@ -643,8 +815,6 @@ function fakeGitHub(): FakeGitHub {
             github.requests.filter(request => request.url.includes('/search/')).map(request => request.name),
         graphql: name => github.requests.filter(request => request.name === name).map(request => request.ids),
     };
-    // Every item a search ever found, as the node reads answer it — also once no search finds it.
-    const known = new Map<string, IssueFieldsFragment | PullRequestFieldsFragment>();
     return github;
 
     async function fetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
@@ -656,6 +826,12 @@ function fakeGitHub(): FakeGitHub {
             github.requests.push({ url: url.href, token, name: q, ids: [] });
             await github.holdSearch;
             return searchAnswer(q);
+        }
+
+        if (url.pathname.startsWith('/repos/')) {
+            return url.pathname.endsWith('/issues')
+                ? Response.json([])
+                : Response.json({ message: 'Not Found' }, { status: 404 });
         }
 
         const body: unknown = JSON.parse(typeof init?.body === 'string' ? init.body : '{}');
@@ -714,7 +890,12 @@ function fakeGitHub(): FakeGitHub {
                 return null;
             }
 
-            const node = known.get(id) ?? null;
+            if (name === 'PullRequestPendingReviews') {
+                const draft = github.drafts.get(id);
+                return { pendingReviews: { nodes: draft ? [draft] : [] } };
+            }
+
+            const node = github.known.get(id) ?? null;
             const forbidden = github.forbiddenProject.get(id);
             if (forbidden !== undefined && node) {
                 errors.push({
@@ -731,7 +912,9 @@ function fakeGitHub(): FakeGitHub {
                 return node ?? stacked ?? null;
             }
 
-            return github.statuses.get(id) ?? node ?? stacked ?? null;
+            const status = github.statuses.get(id) ?? node ?? stacked ?? null;
+            const draft = github.drafts.get(id);
+            return status && draft ? { ...status, pendingReviews: { nodes: [draft] } } : status;
         });
         return Response.json(errors.length > 0 ? { data: { nodes }, errors } : { data: { nodes } }, {
             headers: graphqlHeaders,
@@ -756,7 +939,7 @@ function fakeGitHub(): FakeGitHub {
 
         const nodes = group ? (github.found[group] ?? []) : [];
         for (const node of nodes) {
-            known.set(node.id, node);
+            github.known.set(node.id, node);
         }
 
         const items = nodes.map(node => ({
@@ -793,14 +976,22 @@ function rateLimitHeaders(resource: string, remaining: number, resetAt: number) 
     });
 }
 
-/** Signs `login` in, with an empty kept copy, and waits for the first poll. */
-async function setup(github: FakeGitHub, login: string) {
+/**
+ * Signs `login` in and waits for the first poll. The kept copy is empty, or holds `tracked` of the repository `acme/web`,
+ * tracked and downloaded.
+ */
+async function setup(github: FakeGitHub, login: string, tracked: readonly TrackedNode[] = []) {
+    for (const node of tracked) {
+        github.known.set(node.id, node);
+    }
+
     const local = new Map<string, string>([
         [TOKEN_KEY, `gho_${login}`],
         [VIEWER_KEY, JSON.stringify(viewerOf(login))],
     ]);
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
+    const focusListeners: (() => void)[] = [];
     const online = fakeOnline();
     let visible = true;
 
@@ -835,7 +1026,9 @@ async function setup(github: FakeGitHub, login: string) {
         onVisibilityChange: listener => {
             visibilityListeners.push(listener);
         },
-        onFocus: () => {},
+        onFocus: listener => {
+            focusListeners.push(listener);
+        },
         isOnline: online.isOnline,
         onOnlineChange: online.onOnlineChange,
         writeCookie: () => {},
@@ -848,13 +1041,23 @@ async function setup(github: FakeGitHub, login: string) {
     container.set(Browser, browser);
     container.set(Clock, clock);
     container.set(ItemPersistence, {
-        load: () => Promise.resolve<PersistedItems>({ items: [], membership: {}, sync: {} }),
+        load: () =>
+            Promise.resolve<PersistedItems>({
+                items: mapNotNull(tracked, node => toItem(node)),
+                membership: {},
+                sync: {},
+            }),
         save: async () => {},
         destroy: async () => {},
     });
-    // Nothing tracked: the loops of tracked repositories and projects have nothing to ask.
+    // Nothing tracked unless told: the loops of tracked repositories and projects have nothing to ask.
     container.set(TrackingPersistence, {
-        loadTracking: () => Promise.resolve({ tracking: null, syncStates: [] }),
+        loadTracking: () =>
+            Promise.resolve(
+                tracked.length > 0
+                    ? { tracking: TRACKING, syncStates: [TRACKED_SYNC_STATE] }
+                    : { tracking: null, syncStates: [] },
+            ),
         saveSyncState: async () => {},
         deleteSyncState: async () => {},
     });
@@ -888,6 +1091,11 @@ async function setup(github: FakeGitHub, login: string) {
             show: () => setVisible(true),
             goOffline: () => online.setOnline(false),
             goOnline: () => online.setOnline(true),
+            focus: () => {
+                for (const listener of focusListeners) {
+                    listener();
+                }
+            },
         },
         fromAnotherTab,
     };

@@ -204,6 +204,8 @@ files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything v
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
 range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
 
+Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.
+
 Still open, not settled by the screens:
 
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
