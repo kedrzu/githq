@@ -1,3 +1,6 @@
-# CI proof
+#Bad heading
+*   bad   list
 
-A throwaway file that proves the no-code path of the checks.
+
+
+A throwaway file.
