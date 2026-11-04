@@ -145,6 +145,7 @@ export const ReviewWritingFactory = defineFactory({
                 setSubmission,
                 open,
                 setRange,
+                hasCodeChanged,
                 close,
                 getText: id => textsRef.value.get(id) ?? '',
                 setText,
@@ -220,7 +221,8 @@ export const ReviewWritingFactory = defineFactory({
                 return held;
             }
 
-            const target = { ...wanted, id: crypto.randomUUID() };
+            const headRefOid = wanted.threadId === null ? (params.getHeadRefOid() ?? undefined) : undefined;
+            const target = { ...wanted, id: crypto.randomUUID(), headRefOid };
             targetsRef.value = [...targetsRef.value, target];
             return target;
         }
@@ -232,9 +234,17 @@ export const ReviewWritingFactory = defineFactory({
 
         function setRange(id: string, startLine: number | null, line: number) {
             targetsRef.value = targetsRef.value.map(target =>
-                target.id === id ? { ...target, startLine, line } : target,
+                target.id === id && (target.startLine !== startLine || target.line !== line)
+                    ? { ...target, startLine, line, headRefOid: params.getHeadRefOid() ?? target.headRefOid }
+                    : target,
             );
             keepBox(id);
+        }
+
+        function hasCodeChanged(id: string) {
+            const written = targetsRef.value.find(target => target.id === id)?.headRefOid;
+            const head = params.getHeadRefOid();
+            return written !== undefined && head !== null && written !== head;
         }
 
         function close(id: string) {

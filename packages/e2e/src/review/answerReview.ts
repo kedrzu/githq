@@ -66,6 +66,8 @@ export interface AnsweredReview {
     readonly markRequests: () => number;
     /** Runs `act` once, the next time the list is read, before its answer goes out. */
     beforeNextList(act: () => void): void;
+    /** The head moves on to `oid`, the files' contents the same: the list says so the next time it is read. */
+    push(oid: string): void;
 }
 
 const HEAD_OID = 'head0000';
@@ -85,6 +87,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     const asked: string[] = [];
     let marksRefused: string | null = null;
     let beforeNextList: (() => void) | null = null;
+    let headOid = HEAD_OID;
     const repositoryPath = `/repos/${params.repository}`;
     const blobs = new Map<string, { file: SampleReviewFile; text: string }>();
     for (const file of params.files) {
@@ -105,7 +108,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             repository: {
                 pullRequest: {
                     id: params.id ?? `PR_${params.number}`,
-                    headRefOid: HEAD_OID,
+                    headRefOid: headOid,
                     baseRefOid: BASE_OID,
                     changedFiles: params.files.length,
                     files: {
@@ -132,10 +135,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             },
         },
     }));
-    github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${HEAD_OID}`, () => ({
-        status: 200,
-        json: { merge_base_commit: { sha: MERGE_BASE_OID } },
-    }));
+    answerCompare(HEAD_OID);
     github.rest('GET', `${repositoryPath}/pulls/${params.number}/files`, () => ({
         status: 200,
         json: params.files.flatMap(file =>
@@ -210,6 +210,15 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         beforeNextList: act => {
             beforeNextList = act;
         },
+        push: oid => {
+            headOid = oid;
+            answerCompare(oid);
+            for (const file of params.files) {
+                if (file.after !== null) {
+                    blobs.set(oidOf(oid, file.path), { file, text: file.after });
+                }
+            }
+        },
         refuseMarks: message => {
             marksRefused = message;
         },
@@ -232,6 +241,13 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             };
         },
     };
+
+    function answerCompare(oid: string) {
+        github.rest('GET', `${repositoryPath}/compare/${BASE_OID}...${oid}`, () => ({
+            status: 200,
+            json: { merge_base_commit: { sha: MERGE_BASE_OID } },
+        }));
+    }
 }
 
 function toThreadNode(thread: SampleReviewThread) {

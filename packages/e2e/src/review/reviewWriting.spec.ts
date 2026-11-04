@@ -9,7 +9,7 @@ import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 
 import { answerReview } from './answerReview.js';
-import type { SampleReviewThread } from './answerReview.js';
+import type { AnsweredReview, SampleReviewThread } from './answerReview.js';
 
 const ADDRESS = '/acme/web/pull/3/files';
 const ENGINE = 'src/engine.ts';
@@ -26,6 +26,7 @@ const CHANGED_LINE = 'const changed20 = 20;';
 const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 const FIRST_KEY = 'ControlOrMeta+Enter';
 const SECOND_KEY = 'ControlOrMeta+Shift+Enter';
+const NEW_HEAD = 'head0001';
 
 /** A review of one pull request on a GitHub that takes and refuses writes as the real one does. */
 async function openWriting(
@@ -46,7 +47,7 @@ async function openWriting(
     await openMyWork(page, github, world);
 
     const threads: SampleReviewThread[] = [...(options.threads ?? [])];
-    answerReview(github, {
+    const answered = answerReview(github, {
         repository: 'acme/web',
         number: 3,
         id,
@@ -200,7 +201,7 @@ async function openWriting(
     await page.goto(ADDRESS);
     const review = new ReviewScreenHarness(page);
     await expect(review.code(CHANGED_LINE)).toBeVisible();
-    return { review, writes, threads, refused, setDraft, world, id };
+    return { review, writes, threads, refused, setDraft, world, id, answered };
 }
 
 test('a single comment is one request, shows at once, and what is read keeps its place; keys typed stay in the box', async ({
@@ -476,6 +477,59 @@ test('a range: a drag on the numbers, on one side, stopping at what hides lines;
     expect(writes[0]?.variables).toMatchObject({
         thread: { line: 22, startLine: 19, startSide: 'RIGHT', side: 'RIGHT' },
     });
+});
+
+/** Leaves the review with a box on line 20 holding `text`; GitHub's head moves on; back, the list reads it under the box. */
+async function pushUnderBox(page: Page, review: ReviewScreenHarness, answered: AnsweredReview, text: string) {
+    await review.lineNumber(20).click();
+    await page.keyboard.type(text);
+    await expect(review.commentBox().getByRole('status')).toBeEmpty();
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(review.commentBox()).toBeHidden();
+
+    answered.push(NEW_HEAD);
+    await page.keyboard.press('d');
+    await expect(review.commentBox().getByRole('status')).toContainText('The code changed since you wrote this');
+}
+
+test('a push under a box: the line says so, the text stays, and it goes once, to that line on the new head', async ({
+    page,
+    github,
+}) => {
+    const { review, writes, answered } = await openWriting(page, github);
+
+    await pushUnderBox(page, review, answered, 'Still here?');
+
+    await expect(review.commentField('Comment on line 20')).toHaveValue('Still here?');
+    await review.commentField().click();
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.thread('Still here?')).toBeVisible();
+    await expect(review.commentBox()).toBeHidden();
+    expect(writes.map(write => write.name)).toEqual(['AddPullRequestReview']);
+    expect(writes[0]?.variables).toMatchObject({
+        commitOID: NEW_HEAD,
+        thread: { path: ENGINE, line: 20, side: 'RIGHT', body: 'Still here?' },
+    });
+});
+
+test('after a push, changing the range is looking again: the line goes, and a reload does not bring it back', async ({
+    page,
+    github,
+}) => {
+    const { review, answered } = await openWriting(page, github);
+    await pushUnderBox(page, review, answered, 'These two');
+
+    await review.lineNumber(21).click({ modifiers: ['Shift'] });
+
+    const box = review.commentBox('Comment on lines 20–21');
+    await expect(box.getByRole('status')).toBeEmpty();
+    await expect(review.commentField('Comment on lines 20–21')).toHaveValue('These two');
+
+    await page.reload();
+    await expect(review.commentField('Comment on lines 20–21')).toHaveValue('These two');
+    await expect(box.getByRole('status')).toBeEmpty();
 });
 
 const OPEN_THREADS: readonly SampleReviewThread[] = [

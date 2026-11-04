@@ -81,6 +81,9 @@ export const Refused: Story = {
     },
 };
 
+/** CR87: the head moved on under it: the text, keys and place stay, and it says to look again. */
+export const CodeChanged: Story = { args: { codeChanged: true } };
+
 /** GitHub didn't answer. */
 export const NotReached: Story = { args: { failure: { kind: 'notReached' } } };
 

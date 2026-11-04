@@ -1,8 +1,8 @@
-<!-- `Review / Comment box`: where it goes, the text, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. What GitHub refused shows between the text and the buttons, the text staying. A reply says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape leaves the box with its text in it, or closes an empty one; every other key typed stays in the field. -->
+<!-- `Review / Comment box`: where it goes, the text, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. What GitHub refused shows between the text and the buttons, the text staying; so does an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus. A reply says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape leaves the box with its text in it, or closes an empty one; every other key typed stays in the field. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { FilePenLine } from 'lucide-vue-next';
+import { FilePenLine, TriangleAlert } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -24,6 +24,8 @@ const props = defineProps<{
   /** `⌘↵` starts a draft rather than sends at once, when none is open: the setting of D17. */
   draftFirst: boolean;
   failure: ReviewCommentFailure | null;
+  /** The head has moved on from the one its lines were chosen on. */
+  codeChanged?: boolean;
   /** The keys are in this box: it takes the focus when it is drawn, and when this turns on. */
   focused: boolean;
   /** Who a reply answers; `null` if that isn't known. */
@@ -182,6 +184,22 @@ function onKeydown(event: KeyboardEvent) {
       @focus="emit('focus')"
       @blur="emit('blur')"
     />
+    <!-- There before its line, or a screen reader may not announce it; taking no room, it adds no gap until then. -->
+    <div
+      :class="css.reviewCommentBox_status"
+      role="status"
+    >
+      <p
+        v-if="codeChanged"
+        :class="css.reviewCommentBox_changed"
+      >
+        <TriangleAlert
+          :class="css.reviewCommentBox_changedIcon"
+          aria-hidden="true"
+        />
+        {{ t(l.codeChanged) }}
+      </p>
+    </div>
     <ReviewFailureNote
       v-if="failureText !== null"
       :text="failureText"
@@ -241,6 +259,27 @@ function onKeydown(event: KeyboardEvent) {
   margin: 0;
   font-size: $font-size-xs;
   color: $color-fg-dim;
+}
+
+// Out of the flow while empty: no gap, and still there for a screen reader to be listening to.
+.reviewCommentBox_status:empty {
+  position: absolute;
+}
+
+.reviewCommentBox_changed {
+  display: flex;
+  gap: $spacing-6;
+  align-items: baseline;
+  margin: 0;
+  font-size: $font-size-xs;
+  color: $color-amber;
+}
+
+.reviewCommentBox_changedIcon {
+  flex: none;
+  align-self: center;
+  width: 13px;
+  height: 13px;
 }
 
 .reviewCommentBox_footer {

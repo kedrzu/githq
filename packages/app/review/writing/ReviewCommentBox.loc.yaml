@@ -27,6 +27,8 @@ submitDraft:
   en:
     one: Submit draft (1 comment)
     many: Submit draft ({count} comments)
+codeChanged:
+  en: The code changed since you wrote this, so check it's still the line you mean.
 refused:
   en: 'GitHub refused it: "{reason}". Your text is kept.'
 refusedNoReason:

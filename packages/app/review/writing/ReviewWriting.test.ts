@@ -42,6 +42,8 @@ const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 function createGitHub() {
     let threadsRead = 0;
     const github = {
+        /** What the list says the head is; a push moves it. */
+        head: HEAD,
         draft: null as { id: string; comments: number } | null,
         /** Threads as read. */
         threads: [] as ReviewThread[],
@@ -64,7 +66,7 @@ function createGitHub() {
                             repository: {
                                 pullRequest: {
                                     id: PULL_REQUEST,
-                                    headRefOid: HEAD,
+                                    headRefOid: github.head,
                                     baseRefOid: 'base',
                                     changedFiles: 0,
                                     files: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] },
@@ -296,7 +298,7 @@ test('what is typed is back after a reload, and what was sent is not', async () 
     const reloaded = await open(github, first.login);
 
     await waitUntil(() => reloaded.model.writing.targets.length > 0, { timeoutMs: 2000 });
-    expect(reloaded.model.writing.targets).toEqual([{ ...LINE, id: kept }]);
+    expect(reloaded.model.writing.targets).toEqual([{ ...LINE, id: kept, headRefOid: HEAD }]);
     expect(reloaded.model.writing.getText(kept)).toBe('Not sent yet');
 });
 
@@ -793,6 +795,120 @@ test('signed out while a reply starts its draft: the reply does not go, and the 
 
     expect(writes()).toEqual(['StartPullRequestReview', 'DeletePullRequestReview']);
 });
+
+test('a push: the box says so, text and place kept, sends once on the new head; with the head the same it never says so', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await open(github);
+    const id = write(model, 'Why?');
+    expect(model.writing.hasCodeChanged(id)).toBe(false);
+
+    await push(github, session, model);
+
+    expect(model.writing.hasCodeChanged(id)).toBe(true);
+    expect(model.writing.getText(id)).toBe('Why?');
+    expect(model.writing.targets[0]?.line).toBe(LINE.line);
+
+    model.writing.send(id, 'single');
+    model.writing.send(id, 'single');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['AddPullRequestReview']);
+    expect(session.github.requests.find(request => request.operation === 'AddPullRequestReview')?.variables).toEqual({
+        pullRequestId: PULL_REQUEST,
+        commitOID: 'head-2',
+        event: 'COMMENT',
+        thread: { path: 'a.ts', line: 3, side: 'RIGHT', body: 'Why?' },
+    });
+});
+
+test('a box kept on disk says so on a newer head, and typing there does not make the old head the new one', async () => {
+    const github = createGitHub();
+    const { model, login } = await open(github);
+    const id = write(model, 'Half a');
+    // Written to disk behind the key press.
+    await Bun.sleep(50);
+    github.head = 'head-2';
+
+    const { model: again } = await open(github, login);
+    await waitUntil(() => again.writing.targets.length > 0 && again.headRefOid === 'head-2', { timeoutMs: 2000 });
+
+    expect(again.writing.getText(id)).toBe('Half a');
+    expect(again.writing.hasCodeChanged(id)).toBe(true);
+
+    again.writing.setText(id, 'Half a thought');
+    await Bun.sleep(50);
+    const { model: third } = await open(github, login);
+    await waitUntil(() => third.writing.targets.length > 0 && third.headRefOid === 'head-2', { timeoutMs: 2000 });
+
+    expect(third.writing.getText(id)).toBe('Half a thought');
+    expect(third.writing.hasCodeChanged(id)).toBe(true);
+});
+
+test('changing the range takes the head of now, on disk too; the same range is no new look', async () => {
+    const github = createGitHub();
+    const { model, session, login } = await open(github);
+    const id = write(model, 'Why?');
+    await push(github, session, model);
+
+    model.writing.setRange(id, LINE.startLine, LINE.line);
+    expect(model.writing.hasCodeChanged(id)).toBe(true);
+
+    model.writing.setRange(id, 2, LINE.line);
+    expect(model.writing.hasCodeChanged(id)).toBe(false);
+    expect(model.writing.getText(id)).toBe('Why?');
+
+    await Bun.sleep(50);
+    const { model: again } = await open(github, login);
+    await waitUntil(() => again.writing.targets.length > 0, { timeoutMs: 2000 });
+    expect(again.writing.hasCodeChanged(id)).toBe(false);
+});
+
+test('a head not known yet says nothing, and a range changed meanwhile keeps the head remembered', async () => {
+    const github = createGitHub();
+    const { model, login } = await open(github);
+    const id = write(model, 'Why?');
+    await Bun.sleep(50);
+    github.head = 'head-2';
+
+    const session = createTestSession({ login, answer: request => github.answer(request) });
+    setIndexedDbPersistence(session.container);
+    const blobs = session.container.resolve(ReviewBlobStore);
+    await blobs.readCommentBoxes(login, 'acme/web/7');
+    await blobs.deleteFileList(login, 'acme/web/7');
+    const release = holdOperation(session, 'PullRequestReviewFiles');
+    const again = session.container.resolve(ReviewFiles).open(REFERENCE);
+    if (!again) {
+        throw new Error('Signed in, so it opens');
+    }
+
+    await waitUntil(() => again.writing.targets.length > 0, { timeoutMs: 2000 });
+    expect(again.headRefOid).toBeNull();
+    expect(again.writing.hasCodeChanged(id)).toBe(false);
+
+    again.writing.setRange(id, 2, LINE.line);
+    expect(again.writing.hasCodeChanged(id)).toBe(false);
+
+    release();
+    await waitUntil(() => again.headRefOid === 'head-2', { timeoutMs: 2000 });
+    expect(again.writing.hasCodeChanged(id)).toBe(true);
+});
+
+test('a reply through a push says nothing: it follows its thread', async () => {
+    const github = createGitHub();
+    const { model, session } = await open(github);
+    const id = reply(model, 'Agreed');
+
+    await push(github, session, model);
+
+    expect(model.writing.hasCodeChanged(id)).toBe(false);
+});
+
+/** GitHub's head moves on and the pull request, opened again, reads it. */
+async function push(github: TestGitHub, session: ReturnType<typeof createTestSession>, model: PullRequestFiles) {
+    github.head = 'head-2';
+    session.container.resolve(ReviewFiles).open(REFERENCE);
+    await waitUntil(() => model.headRefOid === 'head-2', { timeoutMs: 2000 });
+}
 
 function holdOperation(session: ReturnType<typeof createTestSession>, operation: string) {
     let release = () => {};

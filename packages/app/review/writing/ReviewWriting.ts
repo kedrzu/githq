@@ -13,6 +13,8 @@ export interface ReviewCommentTarget {
     readonly startLine: number | null;
     /** The thread it replies in, whose lines these are; `null` for a comment of its own. */
     readonly threadId: string | null;
+    /** The head its lines were chosen on (D33). None on a reply, which follows its thread, or if no head was known then. */
+    readonly headRefOid?: string;
 }
 
 /**
@@ -98,8 +100,10 @@ export interface ReviewWriting {
     setSubmission(choice: ReviewSubmissionChoice): void;
     /** A box on the line: the one being written there, or a new one. */
     open(target: Omit<ReviewCommentTarget, 'id'>): ReviewCommentTarget;
-    /** The box now covers those lines, keeping its text. */
+    /** The box now covers those lines, keeping its text. Chosen anew, they are on the head of now. */
     setRange(id: string, startLine: number | null, line: number): void;
+    /** Whether the head has moved on from the one the box's lines were chosen on (D33, CR87); not while no head is known. */
+    hasCodeChanged(id: string): boolean;
     /** Closes a box, its text gone with it. */
     close(id: string): void;
     getText(id: string): string;

@@ -14,6 +14,7 @@ export const idleReviewWriting: ReviewWriting = {
     setSubmission: () => {},
     open: target => ({ ...target, id: 'box' }),
     setRange: () => {},
+    hasCodeChanged: () => false,
     close: () => {},
     getText: () => '',
     setText: () => {},

@@ -1685,6 +1685,7 @@ function readAgain() {
                     :author="auth.viewer ?? null"
                     :reply-to="getReplyTo(commentRow.target)"
                     :suggestion="getSuggestion(commentRow.target)"
+                    :code-changed="writing?.hasCodeChanged(commentRow.target.id)"
                     @extend="extendBox(commentRow.target)"
                     @update:text="writing?.setText(commentRow.target.id, $event)"
                     @send="way => sendComment(commentRow.target.id, way)"

@@ -21,6 +21,7 @@ defineProps<{
   focused: boolean;
   replyTo?: string | null;
   suggestion?: string | null;
+  codeChanged?: boolean;
   /** Who it shows as written by once sent. */
   author: ItemUser | null;
 }>();
@@ -72,6 +73,7 @@ const sentAt = new Date().toISOString();
       :focused="focused"
       :reply-to="replyTo"
       :suggestion="suggestion"
+      :code-changed="codeChanged"
       @send="emit('send', $event)"
       @extend="emit('extend')"
       @leave="emit('leave')"
