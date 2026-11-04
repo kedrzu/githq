@@ -73,17 +73,18 @@ const repository = computed(() => {
 });
 
 /**
- * The repository (`owner/name`) the screen belongs to, whose actions the menu offers: a repository's view, else the
- * opened item's, else any screen whose address names one (a workflow's run, its settings); `null` elsewhere.
+ * The repository (`owner/name`) the screen belongs to, whose actions the menu offers: the one its address names (a
+ * repository's view, an item's page, a workflow's run, its settings), else the one of the item opened over the screen;
+ * `null` elsewhere.
  */
 const contextRepository = computed(() => {
-  const opened = route.name === 'repository' ? null : getOpenedItemRoute(route);
-  if (opened) {
-    return `${opened.reference.owner}/${opened.reference.name}`;
+  const { owner, name } = route.params;
+  if (typeof owner === 'string' && typeof name === 'string') {
+    return `${owner}/${name}`;
   }
 
-  const { owner, name } = route.params;
-  return typeof owner === 'string' && typeof name === 'string' ? `${owner}/${name}` : null;
+  const opened = getOpenedItemRoute(route);
+  return opened ? `${opened.reference.owner}/${opened.reference.name}` : null;
 });
 
 const navigationData = computed((): NavigationData => ({

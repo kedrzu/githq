@@ -11,7 +11,7 @@ import type { AppUpdateShape } from '@/services/AppUpdate.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
-import { REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
+import { PROJECT_PATHS, REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { Browser } from '@/services/Browser.js';
 
@@ -76,15 +76,37 @@ test('"Restart to update" restarts into the update', async () => {
     expect(update.restart).toHaveBeenCalledOnce();
 });
 
-test('on a screen with no repository the menu has no chip and no group of one', async () => {
-    mount();
+for (const path of ['/', '/settings', '/orgs/acme/projects/1']) {
+    test(`at ${path}, with no repository, the menu has no chip and no group of one`, async () => {
+        const router = mount();
+        await router.push(path);
 
+        await openMenu();
+        const menu = page.getByRole('listbox', { name: 'Command menu' });
+        await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Open on GitHub/ })).not.toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Copy link/ })).not.toBeInTheDocument();
+        await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
+    });
+}
+
+test("an item opened over a list elsewhere names the item's repository, over a repository's screen that screen's", async () => {
+    const router = mount();
+    const pane = '?pane=issue&issue=acme%7Capi%7C1';
+
+    await router.push(`/orgs/acme/projects/1${pane}`);
     await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
-    await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
-    await expect.element(menu.getByRole('option', { name: /^Open on GitHub/ })).not.toBeInTheDocument();
-    await expect.element(menu.getByRole('option', { name: /^Copy link/ })).not.toBeInTheDocument();
-    await expect.element(menu.getByRole('group', { name: 'acme/web' })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('group', { name: 'acme/api' })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    for (const screen of ['/acme/web/issues', '/acme/web/actions/runs/7']) {
+        await router.push(`${screen}${pane}`);
+        await openMenu();
+        await expect.element(menu.getByRole('group', { name: 'acme/web' })).toBeInTheDocument();
+        await expect.element(menu.getByRole('group', { name: 'acme/api' })).not.toBeInTheDocument();
+        await userEvent.keyboard('{Escape}');
+    }
 });
 
 test("off its view the repository's group has its sections, page, link and settings, none of them on a key", async () => {
@@ -188,6 +210,7 @@ function render(container: ReturnType<typeof createContainer>) {
         routes: [
             { path: REPOSITORY_PATH, name: 'repository', component: defineComponent({ render: () => null }) },
             { path: WORKFLOW_RUN_PATH, component: defineComponent({ render: () => null }) },
+            ...PROJECT_PATHS.map(path => ({ path, component: defineComponent({ render: () => null }) })),
             { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
         ],
     });
