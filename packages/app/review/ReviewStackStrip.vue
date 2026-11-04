@@ -44,7 +44,8 @@ const squares = computed(() =>
 onMounted(() => {
   const square = places.value?.querySelector<HTMLElement>('[aria-current="true"]');
   if (places.value && square) {
-    places.value.scrollLeft = square.offsetLeft - (places.value.clientWidth - square.offsetWidth) / 2;
+    const left = square.offsetLeft - places.value.offsetLeft;
+    places.value.scrollLeft = left - (places.value.clientWidth - square.offsetWidth) / 2;
   }
 });
 </script>

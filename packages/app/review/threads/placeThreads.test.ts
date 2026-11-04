@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 
-import { createSeededRandom } from '@/testing/createSeededRandom.js';
+import { rngMulberry32 } from '@nzyme/crypto';
 
 import { CONTEXT_LINES } from '../buildReviewRows.js';
 import { addDiffLineRange, buildDiffRows } from '../diff/buildDiffRows.js';
@@ -230,7 +230,7 @@ test('a file gone keeps its entry until all of its threads are resolved', () => 
 });
 
 test('over random files and threads every thread lands exactly once, each where it says', () => {
-    const random = createSeededRandom(12);
+    const random = rngMulberry32(12);
     const pick = (count: number) => Math.floor(random() * count);
     for (let round = 0; round < 300; round++) {
         const before = Array.from({ length: pick(60) }, () => (random() < 0.2 ? 'same' : `line ${pick(1000)}`));

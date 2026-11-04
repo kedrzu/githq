@@ -1,12 +1,12 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import { createSeededRandom } from '@/testing/createSeededRandom.js';
+import { rngMulberry32 } from '@nzyme/crypto';
 
 import { createHeightTree } from './createHeightTree.js';
 
 test('matches a plain array through random fractional changes, for tops and for positions, without drifting', () => {
-    const random = createSeededRandom(11);
+    const random = rngMulberry32(11);
     for (const count of [1, 2, 3, 7, 8, 9, 1000]) {
         const plain = Array.from({ length: count }, () => randomHeight(random));
         const tree = createHeightTree(Float64Array.from(plain));

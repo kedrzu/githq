@@ -103,7 +103,8 @@ export function useReviewPosition(options: UseReviewPositionOptions): void {
                 files.prioritize(path);
                 return false;
             default:
-                return files.listEnd !== 'growing';
+                // Only a list known whole says the file is gone: a paused or failing one may yet bring it.
+                return files.listEnd === 'certain';
         }
     }
 

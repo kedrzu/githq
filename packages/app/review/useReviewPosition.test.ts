@@ -163,6 +163,22 @@ test('a first open does not settle while a later page may put an unread file abo
     scrolled.stop();
 });
 
+test('a remembered file a paused or failing list has not brought yet keeps the place: nothing is saved over it, and it lands when it comes', async () => {
+    const view = open({ position: LINE, files: [A, C], listEnd: 'uncertain' });
+    view.setRows({ 'a.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    expect(view.landing.value).toBe(true);
+    expect(view.jumps).toEqual([]);
+
+    view.setFiles([A, B, C]);
+    view.setRows({ 'a.ts': lines(), 'b.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    const [key, offset] = view.jumps.at(-1) ?? [];
+    expect(key).toContain('b.ts');
+    expect(offset).toBe(-5);
+    expect(view.landing.value).toBe(false);
+});
+
 test('it says why it opened where it did: the first file not viewed, the place left, or nothing for only the top', async () => {
     const first = open({ position: null, files: [A, B], collapses: {} });
     first.setRows({ 'a.ts': lines(), 'b.ts': lines() });

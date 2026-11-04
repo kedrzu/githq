@@ -682,3 +682,20 @@ test('a file filtered away gives way to the next left in the whole order, one th
 
     expect(replacement?.row.key).toBe(getReviewHeaderKey(c.path));
 });
+
+test('a place inside a resolved thread lands at its top: it comes back as one line, and the distance was measured on an open one', () => {
+    const rows = rowsWithThreads([threadOnLine(41)]).map(row =>
+        row.kind === 'thread'
+            ? { ...row, placement: { ...row.placement, thread: { ...row.placement.thread, isResolved: true } } }
+            : row,
+    );
+    const thread = rows.find(row => row.kind === 'thread');
+    const found = findReviewPositionRow({
+        position: { place: { kind: 'row', key: thread?.key ?? '' }, offset: -300 },
+        rows,
+        order: [A.path],
+    });
+
+    expect(found?.row.kind).toBe('thread');
+    expect(found?.offset).toBe(0);
+});

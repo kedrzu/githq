@@ -715,7 +715,9 @@ export function findReviewPositionRow({
     if (place.kind === 'row') {
         const row = rows.find(other => other.key === place.key);
         if (row) {
-            return { row, offset, landing: 'arrived' };
+            // A resolved thread comes back as one line, whatever height the distance was measured against: its top.
+            const folded = row.kind === 'thread' && row.placement.thread.isResolved;
+            return { row, offset: folded ? Math.max(offset, 0) : offset, landing: 'arrived' };
         }
     }
 

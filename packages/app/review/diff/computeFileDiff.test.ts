@@ -2,7 +2,7 @@
 import { expect, test } from 'bun:test';
 import { diff as diffAllLines } from 'fast-myers-diff';
 
-import { createSeededRandom } from '@/testing/createSeededRandom.js';
+import { rngMulberry32 } from '@nzyme/crypto';
 
 import { computeFileDiff } from './computeFileDiff.js';
 
@@ -96,7 +96,7 @@ test('line endings converted to LF are a change of every line, unless whitespace
 });
 
 test('on random files, the lines between the blocks correspond, and the blocks never touch', () => {
-    const random = createSeededRandom(1);
+    const random = rngMulberry32(1);
     for (let round = 0; round < 500; round++) {
         const options = { ignoreWhitespace: round % 2 === 0 };
         const before = randomLines(random, ONLY_BEFORE);
@@ -121,7 +121,7 @@ test('on random files, the lines between the blocks correspond, and the blocks n
 });
 
 test('on random files, leaving out the lines only one side has changes as few lines as diffing them all', () => {
-    const random = createSeededRandom(2);
+    const random = rngMulberry32(2);
     for (let round = 0; round < 500; round++) {
         const { before, after, blocks } = computeFileDiff({
             before: randomLines(random, ONLY_BEFORE).join('\n'),

@@ -2,7 +2,7 @@ import type { PullRequestState } from '@githq/github/generated.gen.js';
 
 import type { CommitPullRequest, CommitRef, CommitState, KeptCommit } from '@/commits/CommitTypes.js';
 
-import { createSeededRandom } from './createSeededRandom.js';
+import { rngMulberry32 } from '@nzyme/crypto';
 
 const EPOCH = Date.parse('2026-10-01T00:00:00Z');
 
@@ -33,7 +33,7 @@ export interface SampleHistoryOptions {
  * aren't loaded. Listed oldest first.
  */
 export function sampleHistory(options: SampleHistoryOptions): KeptCommit[] {
-    const random = createSeededRandom(options.seed);
+    const random = rngMulberry32(options.seed);
     const commits: KeptCommit[] = [];
 
     for (let i = 0; i < options.count; i++) {

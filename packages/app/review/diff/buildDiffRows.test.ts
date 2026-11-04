@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 
-import { createSeededRandom } from '@/testing/createSeededRandom.js';
+import { rngMulberry32 } from '@nzyme/crypto';
 
 import { addDiffLineRange, buildDiffRows } from './buildDiffRows.js';
 import type { DiffCell, DiffLayout, DiffRow } from './buildDiffRows.js';
@@ -22,7 +22,7 @@ function file(lines: readonly string[]): string {
 
 describe.each(layouts)('every line once, in %s', layout => {
     test('on random files, with whitespace shown and hidden, at any context', () => {
-        const random = createSeededRandom(7);
+        const random = rngMulberry32(7);
         for (let round = 0; round < 500; round++) {
             const before = randomLines(random);
             const after = randomLines(random);

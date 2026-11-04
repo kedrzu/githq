@@ -1,5 +1,6 @@
 import { createGlobMatcher } from './createGlobMatcher.js';
 import type { GlobBudget, GlobToken } from './createGlobMatcher.js';
+import { getFileName } from './getFileName.js';
 
 /** One line of a `.gitattributes` saying something of `linguist-generated`. */
 interface GeneratedRule {
@@ -82,7 +83,7 @@ export function parseLinguistGenerated(text: string, onGaveUp?: () => void): (pa
     let gaveUp = false;
     return path => {
         budget.spent += rules.length * path.split('/').length;
-        const name = path.slice(path.lastIndexOf('/') + 1);
+        const name = getFileName(path);
         const rule =
             budget.spent > MAX_MATCHING_WORK
                 ? undefined
