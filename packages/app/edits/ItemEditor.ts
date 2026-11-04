@@ -1,6 +1,7 @@
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import { shallowRef, watch } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
@@ -49,8 +50,32 @@ export const ItemEditor = defineService({
     setup({ auth, details, items, projects, repositories, queue, overlay, drafts, clock }) {
         let nextDraft = 1;
         let nextIssue = 1;
+        let nextClose = 1;
+        const closesRef = shallowRef<readonly UndoableClose[]>([]);
 
-        return { getPermissions, getPlaces, edit, addDraftIssue, setDraftField, createIssue };
+        // What was closed with another account's token is not this account's to take back.
+        watch(
+            () => auth.token,
+            () => {
+                closesRef.value = [];
+            },
+            { flush: 'sync' },
+        );
+
+        return {
+            /** What was closed with Undo still on offer, oldest first; reactive. */
+            get closes() {
+                return closesRef.value;
+            },
+            getPermissions,
+            getPlaces,
+            edit,
+            undoClose,
+            forgetClose,
+            addDraftIssue,
+            setDraftField,
+            createIssue,
+        };
 
         /** What the user may edit of the item, by their role in its repository; reactive. */
         function getPermissions(item: Item): EditPermissions {
@@ -121,7 +146,12 @@ export const ItemEditor = defineService({
                 }
             }
 
+            const closeId = request.kind === 'close' ? offerUndo(edits) : null;
             const outcome = await queue.submit({ edits, account, itemCount });
+            if (closeId !== null) {
+                withdrawUndo(closeId, outcome.failed);
+            }
+
             // Something it named is gone from GitHub: the pickers are read again, not to offer it any more.
             const stale = new Set<string>();
             for (const { edit: failed, reason } of outcome.failed) {
@@ -140,6 +170,55 @@ export const ItemEditor = defineService({
             }
 
             return outcome;
+        }
+
+        /**
+         * Reopens what was closed: GitHub has no undo of its own, so this is the same reopen as any other, sent after
+         * the close when that is still on its way. Resolves with what failed.
+         */
+        async function undoClose(id: number): Promise<EditOutcome> {
+            const close = closesRef.value.find(candidate => candidate.id === id);
+            if (!close) {
+                return { failed: [] };
+            }
+
+            forgetClose(id);
+            return await edit(
+                close.targets.map(target => target.itemId),
+                { kind: 'reopen' },
+            );
+        }
+
+        /** Stops offering Undo of it: its toast went. */
+        function forgetClose(id: number) {
+            closesRef.value = closesRef.value.filter(close => close.id !== id);
+        }
+
+        /** Offers Undo of the closes being sent; what is refused before it is sent has nothing to undo. */
+        function offerUndo(edits: readonly Edit[]) {
+            const targets = edits
+                .filter(made => made.send && !made.failure)
+                .map(({ itemId, reference }) => ({ itemId, reference }));
+            if (targets.length === 0) {
+                return null;
+            }
+
+            const id = nextClose++;
+            closesRef.value = [...closesRef.value, { id, targets }];
+            return id;
+        }
+
+        /** The closes GitHub did not take are open again: nothing to undo, and their failure says so. */
+        function withdrawUndo(id: number, failed: readonly FailedEdit[]) {
+            const failedIds = new Set(failed.map(entry => entry.edit.itemId));
+            closesRef.value = closesRef.value.flatMap(close => {
+                if (close.id !== id) {
+                    return [close];
+                }
+
+                const targets = close.targets.filter(target => !failedIds.has(target.itemId));
+                return targets.length > 0 ? [{ ...close, targets }] : [];
+            });
         }
 
         /**
@@ -370,6 +449,19 @@ export const ItemEditor = defineService({
         }
     },
 });
+
+/** Items the user closed in one action, while Undo is on offer. */
+export interface UndoableClose {
+    readonly id: number;
+    readonly targets: readonly UndoableCloseTarget[];
+}
+
+/** An item of an {@link UndoableClose}. */
+export interface UndoableCloseTarget {
+    readonly itemId: string;
+    /** `owner/name#number`, as the toast names it. */
+    readonly reference: string;
+}
 
 /** An issue the user creates. */
 export interface CreateIssueRequest {
