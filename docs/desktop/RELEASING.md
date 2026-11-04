@@ -70,7 +70,7 @@ The version is the last stable version with its minor raised plus the commit cou
 before any stable release. Apps on the stream read `releases/download/development/latest.json`. Windows has no Development builds.
 
 A failed build leaves the last published one in place, and the next run builds everything since it. A newer build cancels an older one,
-and the draft it left is removed by the next run that builds. A run never publishes a commit older than the published build.
+and the draft it left is removed by the next run. A run never publishes a commit older than the published build.
 
 ## Local development
 

@@ -1,5 +1,5 @@
 # Builds the desktop app's Development stream (docs/design/desktop-releases, D4): after every push to main whose checks and
-# deploy passed, unless it changes only documentation, a build for macOS and Linux replaces the one prerelease under the
+# deploy passed, unless only documentation changed since the published build, a build for macOS and Linux replaces the one prerelease under the
 # tag `development`. Apps on the stream read `releases/download/development/latest.json`. Windows gets no Development builds
 # (D2). A build makes a complete draft and checks it before touching the published release, so an app never reads a
 # half-replaced set of files.
@@ -13,6 +13,13 @@ on:
   # TEMPORARY: lets the stream be tried before this file reaches main. Removed before landing.
   push:
     branches: [feat/141-desktop-releases]
+
+# A newer build cancels an older one, so an older build can't overwrite a newer one. It loses nothing: every run that gets this
+# far builds everything since the published build, documentation commits included. A failed Deploy starts a run that does
+# nothing, which cancels nothing. The draft a cancelled build left goes in `prepare`.
+concurrency:
+  group: development
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
 
 permissions:
   contents: read
@@ -80,7 +87,6 @@ jobs:
         run: bun packages/app/scripts/release.ts development-plan --files "$RUNNER_TEMP/files"
 
       - name: Remove what a cancelled build left
-        if: steps.plan.outputs.build == 'true'
         run: |
           gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
             --jq ".[] | select(.draft and .tag_name == \"$TAG\") | .id" |
@@ -109,14 +115,9 @@ jobs:
           COMMIT: ${{ steps.commit.outputs.sha }}
           VERSION: ${{ steps.plan.outputs.version }}
 
-  # A newer build cancels an older one. Only here, so a run that builds nothing cancels nothing: the older build goes on
-  # and publishes. The draft a cancelled build left goes in the next building run's `prepare`.
   build:
     needs: prepare
     if: needs.prepare.outputs.build == 'true'
-    concurrency:
-      group: development-build
-      cancel-in-progress: true
     permissions:
       contents: write
     uses: ./.github/workflows/desktop-build.yml
@@ -137,10 +138,6 @@ jobs:
     needs: [prepare, build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Never cancelled: between deleting the published release and publishing the draft there is no release at all.
-    concurrency:
-      group: development-publish
-      cancel-in-progress: false
     permissions:
       contents: write
     env:
@@ -205,7 +202,7 @@ jobs:
       - name: Replace the published release
         run: |
           gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
-            --jq ".[] | select(.tag_name == \"$TAG\" and (.draft | not)) | .id" |
+            --jq ".[] | select(.tag_name == \"$TAG\" and (.draft | not) and .id != $RELEASE_ID) | .id" |
             while read -r id; do
               gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
             done

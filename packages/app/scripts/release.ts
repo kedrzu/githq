@@ -121,7 +121,9 @@ function developmentPlan(args: string[]) {
     const build = !hasNoCode(files);
 
     report(
-        build ? `Development build ${version}` : `No Development build: only documentation changed since ${version}.`,
+        build
+            ? `Development build ${version}`
+            : `No Development build: only documentation changed since the published build.`,
     );
     if (process.env.GITHUB_OUTPUT) {
         appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nbuild=${build}\n`);
