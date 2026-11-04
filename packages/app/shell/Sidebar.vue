@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -46,6 +46,7 @@ import {
   Lock,
   PanelLeftClose,
   PanelLeftOpen,
+  PencilLine,
   Search,
   Settings,
   SquareKanban,
@@ -64,7 +65,7 @@ import Sygnet from '@/components/Sygnet.vue';
 import Wordmark from '@/components/Wordmark.vue';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
-import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
@@ -90,6 +91,8 @@ const props = defineProps<{
   settingsSyncStopped?: boolean;
   /** The entry "Broken workflows" (actions W1); not drawn when `null` or not given. */
   brokenWorkflows?: SidebarBrokenWorkflows | null;
+  /** How many pull requests have the user's draft review (code review D28): the entry shows only with any. */
+  draftReviews?: number;
 }>();
 
 const emit = defineEmits<{
@@ -181,6 +184,20 @@ function getProjectMark(title: string) {
 
       <div :class="css.sidebar_scroll">
         <ul :class="css.sidebar_list">
+          <li v-if="draftReviews">
+            <RouterLink
+              :to="DRAFT_REVIEWS_PATH"
+              :class="[css.sidebar_item, css.sidebar_item_draft]"
+              :active-class="css.sidebar_item_active"
+            >
+              <PencilLine
+                :class="css.sidebar_itemIcon"
+                aria-hidden="true"
+              />
+              <span :class="css.sidebar_itemLabel">{{ t(l.draftReviews) }}</span>
+              <span :class="[css.sidebar_count, css.sidebar_count_draft]">{{ draftReviews }}</span>
+            </RouterLink>
+          </li>
           <li>
             <RouterLink
               to="/"
@@ -365,6 +382,20 @@ function getProjectMark(title: string) {
       />
       <div :class="[css.sidebar_scroll, css.sidebar_scroll_rail]">
         <hr :class="css.sidebar_divider" />
+        <RouterLink
+          v-if="draftReviews"
+          :to="DRAFT_REVIEWS_PATH"
+          :class="[css.sidebar_railLink, css.sidebar_railLink_draft]"
+          :active-class="css.sidebar_railLink_active"
+          :aria-label="t(l.draftReviewsCount, { count: draftReviews })"
+        >
+          <PencilLine aria-hidden="true" />
+          <span
+            :class="[css.sidebar_badge, css.sidebar_badge_draft]"
+            aria-hidden="true"
+            >{{ draftReviews }}</span
+          >
+        </RouterLink>
         <RouterLink
           to="/"
           :class="css.sidebar_railLink"
@@ -551,6 +582,18 @@ function getProjectMark(title: string) {
   @include nav-row-current;
 }
 
+// Amber all the time: it's the one thing here that blocks someone else (code review D28).
+.sidebar_item_draft,
+.sidebar_item_draft:hover,
+.sidebar_railLink_draft,
+.sidebar_railLink_draft:hover {
+  color: $color-amber;
+}
+
+.sidebar_count_draft {
+  color: $color-amber;
+}
+
 .sidebar_count_new {
   color: $color-red;
 }
@@ -712,6 +755,11 @@ function getProjectMark(title: string) {
 .sidebar_badge_new {
   color: $color-on-light;
   background: $color-red;
+}
+
+.sidebar_badge_draft {
+  color: $color-on-light;
+  background: $color-amber;
 }
 
 .sidebar_badge_settled {

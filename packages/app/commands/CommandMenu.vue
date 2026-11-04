@@ -16,6 +16,7 @@ import {
   Inbox,
   Layers,
   PanelsTopLeft,
+  PencilLine,
   Settings,
   SquareKanban,
   Workflow,
@@ -82,6 +83,7 @@ interface Row extends FilterListRow {
 }
 
 const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
+  draftReviews: PencilLine,
   myWork: Inbox,
   workflows: Workflow,
   project: SquareKanban,

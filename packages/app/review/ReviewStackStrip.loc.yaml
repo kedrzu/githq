@@ -2,3 +2,5 @@ places:
   en: Places in the stack
 pullRequest:
   en: '{position}: #{number} {title}'
+pullRequestWithDraft:
+  en: '{position}: #{number} {title}, your draft review'

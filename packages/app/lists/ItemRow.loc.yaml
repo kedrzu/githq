@@ -8,3 +8,5 @@ addToQueue:
   en: Add to queue
 backToMerge:
   en: Back to the merge
+draftAge:
+  en: draft {age}

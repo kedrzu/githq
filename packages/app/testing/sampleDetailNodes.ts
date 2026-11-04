@@ -73,6 +73,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         statusCheckRollup: null,
         reviewRequests: { nodes: [] },
         latestOpinionatedReviews: { nodes: [] },
+        pendingReviews: { nodes: [] },
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',

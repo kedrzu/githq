@@ -76,6 +76,11 @@ export class ReviewScreenHarness {
         return this.stackStrip.getByRole('link', { name: title });
     }
 
+    /** The toolbar at the foot of the diff while the viewer has a draft review (D28). */
+    get pendingToolbar(): Locator {
+        return this.page.getByRole('region', { name: 'Your draft review' });
+    }
+
     /** The row of the file named `name` in the list. */
     fileRow(name: string): Locator {
         return this.fileList.getByRole('button', { name: new RegExp(`\\b${escapeRegExp(name)}\\b`) });

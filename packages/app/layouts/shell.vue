@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
@@ -25,6 +25,7 @@ import { MergePanelStore } from '@/merge/MergePanelStore.js';
 import MergeToasts from '@/merge/MergeToasts.vue';
 import { PullRequestCommands } from '@/merge/PullRequestCommands.js';
 import { buildMyWork } from '@/myWork/buildMyWork.js';
+import { getDraftReviews } from '@/myWork/getDraftReviews.js';
 import ProjectContextMenu from '@/projects/ProjectContextMenu.vue';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
@@ -165,6 +166,8 @@ const tracked = computed((): SidebarTracked => ({
 
 // The entry "Broken workflows" (actions W1): only while something is known broken, or on its own screen.
 const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.totals, route.name === 'workflows'));
+
+const draftReviews = computed(() => getDraftReviews(items.all).length);
 
 // How fresh the screen is (D15): a review how far its files are (code review D35); a repository's commit graph its refs as last read, tracked or not (git-client D9); a
 // tracked repository's or project's own poll — a saved view GitHub answers says so (K6); the broken workflows and a
@@ -325,6 +328,7 @@ function showLastFailure() {
     :item-edits="opened?.onPage ? null : itemEdits"
     :settings-sync-stopped="settingsSync.state.state === 'stopped'"
     :broken-workflows="brokenWorkflows"
+    :draft-reviews="draftReviews"
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"

@@ -22,6 +22,18 @@ test('a user scroll anchors the first row whose bottom is below the viewport top
     expect(model.anchor).toEqual({ key: 'r9', offset: -24.5 });
 });
 
+test('the first row showing is under the pinned one that covers the top, and the next pinned one where it pushes that away', () => {
+    // Rows of 25; a pinned one every 10.
+    const model = createModel(rows(40).map((row, index) => ({ ...row, pinned: index % 10 === 0 })));
+
+    expect(model.firstVisibleRow(0)?.key).toBe('r1');
+    // At 300 r12 is at the top, all of it behind r10's pin; a pixel on, r13 is still the first left showing.
+    expect(model.firstVisibleRow(300)?.key).toBe('r13');
+    expect(model.firstVisibleRow(301)?.key).toBe('r13');
+    // r20 is 10 from the top, and has pushed r10's pin up to end there.
+    expect(model.firstVisibleRow(490)?.key).toBe('r20');
+});
+
 test('heights changing above the anchor move the scroll position by exactly their sum, those below not at all', () => {
     const model = createModel(rows(100));
     model.captureAnchor(255);

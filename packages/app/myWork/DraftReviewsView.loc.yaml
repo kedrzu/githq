@@ -1,0 +1,10 @@
+title:
+  en: Draft reviews
+explainer:
+  en: Only you can see these comments. Until you submit, the authors don't get them and can't reply on these pull requests.
+openReview:
+  en: Open the review
+empty:
+  en: No draft reviews
+emptyDetail:
+  en: A review you start and don't submit shows up here until you do.

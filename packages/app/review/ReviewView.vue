@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait (D28), and until writing comes (D23) sends them to GitHub to finish it. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -60,6 +60,7 @@ import {
   getGapLinesToShow,
   getReviewHeaderKey,
   getReviewPlacePath,
+  getReviewPosition,
   getReviewRowPath,
   getReviewThreadKey,
 } from './buildReviewRows.js';
@@ -76,6 +77,7 @@ import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import ReviewFileList from './ReviewFileList.vue';
 import ReviewLostViewedBar from './ReviewLostViewedBar.vue';
+import ReviewPendingToolbar from './ReviewPendingToolbar.vue';
 import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewScreenFreshness } from './ReviewScreenFreshness.js';
 import ReviewStack from './ReviewStack.vue';
@@ -265,6 +267,7 @@ const currentFile = computed(() => {
 });
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
 const detail = computed(() => (opened.detail?.kind === 'pullRequest' ? opened.detail : null));
+const pendingReview = computed(() => branches.value?.pendingReview ?? null);
 const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
 /** The threads N and ⇧N walk (CR15). */
 const walkedThreads = computed(() => listWalkedThreads(rows.value));
@@ -361,7 +364,7 @@ onScopeDispose(
       ? getReviewPlaceFreshness(
           freshness,
           getLandingFreshness({
-            arrival: arrival.value,
+            arrival: getShownArrival(arrival.value),
             number: props.reference.number,
             files: allFiles.value,
             changedFiles: files.value?.changedFiles ?? null,
@@ -639,6 +642,16 @@ function stepPullRequest(id: string | null, backKey: 'J' | 'K') {
     });
     goToPullRequest(item);
   }
+}
+
+/**
+ * Back where it was left, the status bar names the first row showing under the pinned header: the position kept is the
+ * row at the very top of the screen, hidden under that header (CR26).
+ */
+function getShownArrival(shown: ReviewArrival): ReviewArrival {
+  const key = list.value?.firstVisibleKey;
+  const row = shown.kind === 'left' ? rows.value.find(other => other.key === key) : null;
+  return row ? { kind: 'left', place: getReviewPosition(row, 0).place } : shown;
 }
 
 /** The reader moved: where it opened is no longer the news. */
@@ -972,134 +985,75 @@ function readAgain() {
           @leave-filter="list?.focus()"
         />
       </div>
-      <div
-        ref="diffColumn"
-        :class="css.reviewView_diff"
-      >
-        <AnchoredList
-          v-if="files?.list.kind === 'ready' && (ordered.length > 0 || filterOn)"
-          ref="list"
-          :rows="rows"
-          :estimate-height="estimateReviewRowHeight"
-          :is-pinned="isPinned"
-          :label="t(l.diff)"
-          @user-scroll="stopLanding"
-        >
-          <template #default="{ row }">
-            <ReviewDiffRow
-              :row="row"
-              :github-url="githubUrl"
-              :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
-              :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"
-              :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
-              @expand="expandGap"
-              @expand-to-thread="expandToThread"
-              @expand-to-file-end="expandToFileEnd"
-              @show-whitespace="hideWhitespace = false"
-              @toggle-thread="toggleThread"
-              @retry="path => files?.retry(path)"
-              @toggle-collapsed="toggleCollapsed"
-              @toggle-viewed="toggleViewed"
-            />
-          </template>
-        </AnchoredList>
-        <!-- Over the list, not instead of it: a pattern passing through no match keeps the place being read (D7). -->
+      <div :class="css.reviewView_diffColumn">
         <div
-          v-if="ordered.length === 0 || files?.list.kind !== 'ready'"
-          :class="css.reviewView_state"
+          ref="diffColumn"
+          :class="css.reviewView_diff"
         >
-          <EmptyState
-            v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
-            :icon="CircleAlert"
-            :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
-            :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
+          <AnchoredList
+            v-if="files?.list.kind === 'ready' && (ordered.length > 0 || filterOn)"
+            ref="list"
+            :rows="rows"
+            :estimate-height="estimateReviewRowHeight"
+            :is-pinned="isPinned"
+            :label="t(l.diff)"
+            @user-scroll="stopLanding"
           >
-            <template #action>
-              <div :class="css.reviewView_actions">
-                <Button
-                  size="sm"
-                  @click="readAgain"
-                >
-                  {{ t(l.tryAgain) }}
-                </Button>
-                <Button
-                  size="sm"
-                  :link="githubUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ t(l.openOnGitHub) }}
-                </Button>
-              </div>
+            <template #default="{ row }">
+              <ReviewDiffRow
+                :row="row"
+                :github-url="githubUrl"
+                :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
+                :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"
+                :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
+                @expand="expandGap"
+                @expand-to-thread="expandToThread"
+                @expand-to-file-end="expandToFileEnd"
+                @show-whitespace="hideWhitespace = false"
+                @toggle-thread="toggleThread"
+                @retry="path => files?.retry(path)"
+                @toggle-collapsed="toggleCollapsed"
+                @toggle-viewed="toggleViewed"
+              />
             </template>
-          </EmptyState>
-          <EmptyState
-            v-else-if="files?.list.kind === 'paused'"
-            :icon="Pause"
-            :title="t(l.paused)"
-            :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+          </AnchoredList>
+          <!-- Over the list, not instead of it: a pattern passing through no match keeps the place being read (D7). -->
+          <div
+            v-if="ordered.length === 0 || files?.list.kind !== 'ready'"
+            :class="css.reviewView_state"
           >
-            <template #action>
-              <Button
-                size="sm"
-                :link="githubUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ t(l.openOnGitHub) }}
-              </Button>
-            </template>
-          </EmptyState>
-          <EmptyState
-            v-else-if="files?.list.kind === 'ready' && filterOn"
-            :icon="FileSearch"
-            :title="t(l.noMatch)"
-            :detail="hideViewed && matchedFiles.length > 0 ? t(l.noMatchViewedHidden) : undefined"
-          >
-            <template #action>
-              <Button
-                size="sm"
-                @click="filterPattern = ''"
-              >
-                {{ t(l.clearFilter) }}
-              </Button>
-            </template>
-          </EmptyState>
-          <EmptyState
-            v-else-if="files?.list.kind === 'ready' && allFiles.length > 0"
-            :icon="CircleCheck"
-            :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
-            :detail="t(l.allViewedDetail)"
-          >
-            <template #action>
-              <Button
-                size="sm"
-                @click="hideViewed = false"
-              >
-                {{ t(l.showViewed) }}
-              </Button>
-            </template>
-          </EmptyState>
-          <EmptyState
-            v-else-if="files?.list.kind === 'ready'"
-            :icon="Equal"
-            :title="t(l.noChanges)"
-            :detail="
-              branches
-                ? t(l.noChangesDetail, { head: branches.headRefName, base: branches.baseRefName })
-                : t(l.noChangesPlain)
-            "
-          >
-            <template #action>
-              <div :class="css.reviewView_actions">
-                <Button
-                  v-if="!conversationShown"
-                  size="sm"
-                  @click="conversationShown = true"
-                >
-                  {{ t(l.conversation) }}
-                  <Kbd keys="Alt+Mod+B" />
-                </Button>
+            <EmptyState
+              v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
+              :icon="CircleAlert"
+              :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
+              :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
+            >
+              <template #action>
+                <div :class="css.reviewView_actions">
+                  <Button
+                    size="sm"
+                    @click="readAgain"
+                  >
+                    {{ t(l.tryAgain) }}
+                  </Button>
+                  <Button
+                    size="sm"
+                    :link="githubUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ t(l.openOnGitHub) }}
+                  </Button>
+                </div>
+              </template>
+            </EmptyState>
+            <EmptyState
+              v-else-if="files?.list.kind === 'paused'"
+              :icon="Pause"
+              :title="t(l.paused)"
+              :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+            >
+              <template #action>
                 <Button
                   size="sm"
                   :link="githubUrl"
@@ -1108,15 +1062,81 @@ function readAgain() {
                 >
                   {{ t(l.openOnGitHub) }}
                 </Button>
-              </div>
-            </template>
-          </EmptyState>
-          <EmptyState
-            v-else
-            :icon="FileSearch"
-            :title="t(l.reading, { reference: formatItemReference(reference) })"
-          />
+              </template>
+            </EmptyState>
+            <EmptyState
+              v-else-if="files?.list.kind === 'ready' && filterOn"
+              :icon="FileSearch"
+              :title="t(l.noMatch)"
+              :detail="hideViewed && matchedFiles.length > 0 ? t(l.noMatchViewedHidden) : undefined"
+            >
+              <template #action>
+                <Button
+                  size="sm"
+                  @click="filterPattern = ''"
+                >
+                  {{ t(l.clearFilter) }}
+                </Button>
+              </template>
+            </EmptyState>
+            <EmptyState
+              v-else-if="files?.list.kind === 'ready' && allFiles.length > 0"
+              :icon="CircleCheck"
+              :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
+              :detail="t(l.allViewedDetail)"
+            >
+              <template #action>
+                <Button
+                  size="sm"
+                  @click="hideViewed = false"
+                >
+                  {{ t(l.showViewed) }}
+                </Button>
+              </template>
+            </EmptyState>
+            <EmptyState
+              v-else-if="files?.list.kind === 'ready'"
+              :icon="Equal"
+              :title="t(l.noChanges)"
+              :detail="
+                branches
+                  ? t(l.noChangesDetail, { head: branches.headRefName, base: branches.baseRefName })
+                  : t(l.noChangesPlain)
+              "
+            >
+              <template #action>
+                <div :class="css.reviewView_actions">
+                  <Button
+                    v-if="!conversationShown"
+                    size="sm"
+                    @click="conversationShown = true"
+                  >
+                    {{ t(l.conversation) }}
+                    <Kbd keys="Alt+Mod+B" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    :link="githubUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ t(l.openOnGitHub) }}
+                  </Button>
+                </div>
+              </template>
+            </EmptyState>
+            <EmptyState
+              v-else
+              :icon="FileSearch"
+              :title="t(l.reading, { reference: formatItemReference(reference) })"
+            />
+          </div>
         </div>
+        <ReviewPendingToolbar
+          v-if="pendingReview"
+          :comment-count="pendingReview.commentCount"
+          :github-url="githubUrl"
+        />
       </div>
       <div
         v-if="conversationShown"
@@ -1172,10 +1192,17 @@ function readAgain() {
   visibility: hidden;
 }
 
+.reviewView_diffColumn {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
 .reviewView_diff {
   position: relative;
   flex: 1;
-  min-width: 0;
   min-height: 0;
 }
 

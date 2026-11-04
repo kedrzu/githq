@@ -1127,6 +1127,9 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null;
@@ -1656,6 +1659,9 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null
@@ -1829,6 +1835,9 @@ export type ItemsByIdsQuery = {
                           | { login: string }
                           | null;
                   } | null> | null;
+              } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
               } | null;
           }
         | Record<PropertyKey, never>
@@ -2282,6 +2291,13 @@ export type ProjectFullQuery = {
                                             | null;
                                     } | null> | null;
                                 } | null;
+                                pendingReviews: {
+                                    nodes: Array<{
+                                        id: string;
+                                        createdAt: string;
+                                        comments: { totalCount: number };
+                                    } | null> | null;
+                                } | null;
                             }
                           | null;
                       fieldValues: {
@@ -2544,6 +2560,13 @@ export type ProjectItemsQuery = {
                                             | { login: string }
                                             | { login: string }
                                             | null;
+                                    } | null> | null;
+                                } | null;
+                                pendingReviews: {
+                                    nodes: Array<{
+                                        id: string;
+                                        createdAt: string;
+                                        comments: { totalCount: number };
                                     } | null> | null;
                                 } | null;
                             }
@@ -2856,6 +2879,9 @@ export type PullRequestMergeOptionsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null;
@@ -3069,6 +3095,13 @@ export type PullRequestStacksQuery = {
                                       | null;
                               } | null> | null;
                           } | null;
+                          pendingReviews: {
+                              nodes: Array<{
+                                  id: string;
+                                  createdAt: string;
+                                  comments: { totalCount: number };
+                              } | null> | null;
+                          } | null;
                       } | null;
                   } | null> | null;
               };
@@ -3154,6 +3187,9 @@ export type PullRequestStatusesQuery = {
                           | { login: string }
                           | null;
                   } | null> | null;
+              } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
               } | null;
           }
         | Record<PropertyKey, never>
@@ -3554,6 +3590,9 @@ export type RepositoryPullRequestsQuery = {
                             | { login: string }
                             | null;
                     } | null> | null;
+                } | null;
+                pendingReviews: {
+                    nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
                 } | null;
             } | null> | null;
         };
@@ -4644,6 +4683,9 @@ export type ProjectItemPageFieldsFragment = {
                               | null;
                       } | null> | null;
                   } | null;
+                  pendingReviews: {
+                      nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+                  } | null;
               }
             | null;
         fieldValues: {
@@ -4879,6 +4921,9 @@ export type ProjectItemRowFieldsFragment = {
                           | { login: string }
                           | null;
                   } | null> | null;
+              } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
               } | null;
           }
         | null;
@@ -5340,6 +5385,9 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
 };
 
 export type PullRequestFieldsFragment = {
@@ -5444,6 +5492,9 @@ export type PullRequestFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
 };
 
 export type PullRequestStateResultFieldsFragment = {
@@ -5515,6 +5566,9 @@ export type PullRequestStatusFieldsFragment = {
                 | { login: string }
                 | null;
         } | null> | null;
+    } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
     } | null;
 };
 
@@ -5853,6 +5907,13 @@ export type AddDraftIssueMutation = {
                                   | { login: string }
                                   | { login: string }
                                   | null;
+                          } | null> | null;
+                      } | null;
+                      pendingReviews: {
+                          nodes: Array<{
+                              id: string;
+                              createdAt: string;
+                              comments: { totalCount: number };
                           } | null> | null;
                       } | null;
                   }
@@ -6321,6 +6382,9 @@ export type DisablePullRequestAutoMergeMutation = {
                         | null;
                 } | null> | null;
             } | null;
+            pendingReviews: {
+                nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+            } | null;
         } | null;
     } | null;
 };
@@ -6405,6 +6469,9 @@ export type EnablePullRequestAutoMergeMutation = {
                         | { login: string }
                         | null;
                 } | null> | null;
+            } | null;
+            pendingReviews: {
+                nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
             } | null;
         } | null;
     } | null;
@@ -7725,6 +7792,15 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }
     `,
     { fragmentName: 'PullRequestStatusFields' },
@@ -7886,6 +7962,15 @@ fragment PullRequestStatusFields on PullRequest {
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`,
@@ -8220,6 +8305,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`,
     { fragmentName: 'ProjectItemRowFields' },
 );
@@ -8537,6 +8631,15 @@ fragment PullRequestStatusFields on PullRequest {
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`,
@@ -9015,6 +9118,15 @@ fragment PullRequestStatusFields on PullRequest {
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }
@@ -9765,6 +9877,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
@@ -10268,6 +10389,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
@@ -10510,6 +10640,15 @@ fragment PullRequestStatusFields on PullRequest {
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`);
@@ -11075,6 +11214,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const ProjectItemsDocument = new TypedDocumentString(`
     query ProjectItems($id: ID!, $query: String!, $first: Int!, $after: String) {
@@ -11400,6 +11548,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const ProjectSchemaDocument = new TypedDocumentString(`
     query ProjectSchema($id: ID!) {
@@ -11696,6 +11853,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const PullRequestReviewFilesDocument = new TypedDocumentString(`
     query PullRequestReviewFiles($owner: String!, $name: String!, $number: Int!, $after: String) {
@@ -11950,6 +12116,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const PullRequestStatusesDocument = new TypedDocumentString(`
     query PullRequestStatuses($ids: [ID!]!) {
@@ -12039,6 +12214,15 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`);
@@ -12589,6 +12773,15 @@ fragment PullRequestStatusFields on PullRequest {
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`);
@@ -13195,6 +13388,15 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const AddLabelsDocument = new TypedDocumentString(`
     mutation AddLabels($labelableId: ID!, $labelIds: [ID!]!) {
@@ -13678,6 +13880,15 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
       state
     }
   }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
@@ -13769,6 +13980,15 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
         login
       }
       state
+    }
+  }
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }`);

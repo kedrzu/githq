@@ -24,3 +24,5 @@ settingsSection:
   en: 'Settings: {section}'
 brokenWorkflows:
   en: Broken workflows
+draftReviews:
+  en: Draft reviews

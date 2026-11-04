@@ -33,6 +33,11 @@ yourReviewRequested:
   en: your review requested
 draft:
   en: draft
+draftReview:
+  plural: count
+  en:
+    one: Your draft review · {count} comment unsent
+    many: Your draft review · {count} comments unsent
 waitingForReview:
   en: waiting for review
 projectField:

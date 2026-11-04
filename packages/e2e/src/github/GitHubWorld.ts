@@ -163,6 +163,12 @@ export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
 /** The issue types of every repository of the world. */
 export type GitHubWorldIssueType = 'Bug' | 'Feature' | 'Task';
 
+/** A review the viewer started and hasn't submitted. */
+export interface GitHubWorldPendingReview {
+    readonly comments: number;
+    readonly minutesAgo: number;
+}
+
 /** An open pull request of the world, and where it stands. */
 export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
     /** Node ids of the issues it closes. */
@@ -532,6 +538,7 @@ interface WorldPullRequest {
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly reviews: GitHubWorldReviewParams[];
+    pendingReview: GitHubWorldPendingReview | null;
     readonly closes: readonly string[];
     behindBase: boolean;
     readonly mergeabilityUnknown: boolean;
@@ -1024,6 +1031,17 @@ export class GitHubWorld {
     /** Adds a submitted review to a pull request, its newest: call them oldest first. */
     review(id: string, params: GitHubWorldReviewParams): void {
         this.get(id).pullRequest?.reviews.push(params);
+    }
+
+    /**
+     * Starts the viewer's draft review on github.com, or with `null` submits or discards it. Whether that moves
+     * `updated_at` on GitHub isn't known (code review D21), so here it doesn't: only the statuses' read can find out.
+     */
+    setPendingReview(id: string, review: GitHubWorldPendingReview | null): void {
+        const { pullRequest } = this.get(id);
+        if (pullRequest) {
+            pullRequest.pendingReview = review;
+        }
     }
 
     /** Adds a stack of open pull requests; returns their node ids, bottom first. */
@@ -2621,6 +2639,7 @@ export class GitHubWorld {
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
             reviews: [],
+            pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             mergeabilityUnknown: params.mergeabilityUnknown ?? false,
@@ -2863,6 +2882,19 @@ export class GitHubWorld {
                 nodes: pullRequest.reviewRequests.map(login => ({ requestedReviewer: { login } })),
             },
             latestOpinionatedReviews: { nodes: [] },
+            pendingReviews: {
+                nodes: pullRequest.pendingReview
+                    ? [
+                          {
+                              id: `PRR_${item.id}`,
+                              createdAt: new Date(
+                                  Date.now() - pullRequest.pendingReview.minutesAgo * 60_000,
+                              ).toISOString(),
+                              comments: { totalCount: pullRequest.pendingReview.comments },
+                          },
+                      ]
+                    : [],
+            },
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),

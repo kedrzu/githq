@@ -167,6 +167,23 @@ test('the status bar says why a review opens where it does, until the first move
     await expect(statusBar).toContainText(/Back\sin\s#202\swhere\syou\sleft\sit:\sengine\.ts,\sline\s\d+/);
 });
 
+test('coming back, the status bar names the first line showing under the pinned header, not the one kept hidden under it', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openReview(page, github);
+    await readLine(review, READ, TOP_LINE_TOP);
+
+    await page.keyboard.press('j');
+    await expect(review.title).toHaveText(THIRD);
+    await page.keyboard.press('k');
+    await expect(review.title).toHaveText(SECOND);
+
+    await expect.poll(() => lineOffset(review, READ)).toBeCloseTo(TOP_LINE_TOP, 0);
+    // `engine47` is line 48, kept at -6. Rows of 20 px under a header of 38: 48 and 49 are behind it, 50 reaches below.
+    await expect(new AppShellHarness(page).statusBar).toContainText(/left\sit:\sengine\.ts,\sline\s50/);
+});
+
 test('a layout switched while away comes back on the same line by identity, not by pixels', async ({
     page,
     github,

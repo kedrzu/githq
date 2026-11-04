@@ -162,6 +162,28 @@ test('the open pull requests of my work get their status re-read, without the re
     expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', reviewDecision: 'APPROVED', updatedAt: MONDAY });
 });
 
+test('a closed pull request with a draft review is re-read until the draft is gone, or its mark would outlive it', async () => {
+    const github = fakeGitHub();
+    const closed: PullRequestFieldsFragment = {
+        ...pullRequestNode('PR_1', MONDAY),
+        state: 'CLOSED',
+        pendingReviews: { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] },
+    };
+    github.found.authored = [closed];
+    const { items, clock } = await setup(github, 'alice');
+    github.requests.length = 0;
+
+    github.statuses.set('PR_1', { ...closed, pendingReviews: { nodes: [] } });
+    await clock.advance(60_000);
+
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_1']]);
+    expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', pendingReview: null });
+
+    github.requests.length = 0;
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStatuses')).toEqual([]);
+});
+
 test('a pull request of a stack brings the rest of the stack, merged ones too, read once; a stack held whole costs nothing more', async () => {
     const github = fakeGitHub();
     const mine = stackedNode('PR_2', 2, 3);
@@ -968,6 +990,7 @@ function pullRequestNode(id: string, updatedAt: string): PullRequestFieldsFragme
         statusCheckRollup: null,
         reviewRequests: { nodes: [] },
         latestOpinionatedReviews: { nodes: [] },
+        pendingReviews: { nodes: [] },
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',

@@ -49,6 +49,8 @@ const props = defineProps<{
   settingsSyncStopped?: boolean;
   /** The sidebar's entry "Broken workflows" (actions W1); not drawn when `null`. */
   brokenWorkflows?: SidebarBrokenWorkflows | null;
+  /** How many pull requests have the user's draft review, for the sidebar's entry. */
+  draftReviews?: number;
   /** The screen wants the rail (a code review): shown as long as this is on, the remembered `collapsed` left as it is. */
   railForced?: boolean;
 }>();
@@ -192,6 +194,7 @@ function onLayout(sizes: number[]) {
           :tracked="tracked"
           :settings-sync-stopped="settingsSyncStopped"
           :broken-workflows="brokenWorkflows"
+          :draft-reviews="draftReviews"
           @toggle="toggle"
           @search="emit('search')"
           @sign-out="emit('signOut')"

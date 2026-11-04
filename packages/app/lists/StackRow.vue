@@ -14,6 +14,7 @@ import type { Item } from '@/store/ItemTypes.js';
 
 import ItemField from './ItemField.vue';
 import type { ItemProperty } from './ItemProperty.js';
+import ItemStatus from './ItemStatus.vue';
 import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
 import PullRequestSize from './PullRequestSize.vue';
@@ -154,6 +155,11 @@ const nameWithOwner = computed(() => {
           :filled="stackFacts.filled"
           :current="openedId"
           :state="stackFacts.state"
+        />
+        <ItemStatus
+          v-if="stackFacts.draft"
+          :class="css.stackRow_field"
+          :status="stackFacts.draft"
         />
         <!-- Merging it is not opening the row. -->
         <Button

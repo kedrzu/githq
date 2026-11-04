@@ -283,3 +283,9 @@ function repository(nameWithOwner: string, status: SidebarTrackedStatus, isPriva
         isPrivate,
     };
 }
+
+/** CR33: "Draft reviews" at the very top, above My work, while there is any. */
+export const DraftReviews: Story = { args: { draftReviews: 2 } };
+
+/** CR36: on the rail, an amber pencil with a badge. */
+export const CollapsedDraftReviews: Story = { args: { draftReviews: 2, collapsed: true } };

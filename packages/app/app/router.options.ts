@@ -7,7 +7,7 @@ import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import HomePage from '@/home/HomePage.vue';
 import { ITEM_PAGE_PATHS, REVIEW_PAGE_ALIAS, REVIEW_PAGE_PATH } from '@/item/itemRoutes.js';
-import { MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
+import { DRAFT_REVIEWS_PATH, MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
@@ -68,6 +68,12 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group },
         };
     }
+    yield {
+        path: DRAFT_REVIEWS_PATH,
+        name: 'draft-reviews',
+        component: () => import('@/myWork/DraftReviewsPage.vue'),
+        meta: { auth: 'signedIn', layout: 'shell' },
+    };
     // A pull request's review, at GitHub's address of its changed files: before the addresses that settle on the item.
     yield {
         path: REVIEW_PAGE_PATH,

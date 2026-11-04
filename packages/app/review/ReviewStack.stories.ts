@@ -26,3 +26,17 @@ export const OfTwo: Story = {
 export const OfTen: Story = {
     args: { stack: sampleStackDescription(SYNC_ENGINE_STACK), currentId: SYNC_ENGINE_STACK[5]!.id },
 };
+
+/** CR35: an amber dot on the row of the pull request with the viewer's draft review. */
+export const WithDraft: Story = {
+    args: {
+        stack: sampleStackDescription(
+            GLYPHS_STACK.map((pr, index) =>
+                index === 1
+                    ? { ...pr, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+                    : pr,
+            ),
+        ),
+        currentId: GLYPHS_STACK[1]!.id,
+    },
+};

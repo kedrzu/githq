@@ -134,8 +134,9 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *
  * - `myWork`: the four "my work" searches (REST, `search` bucket — no ETag, so no free 304s), then a re-read
  *   of only the items whose `updated_at` moved (`ItemsByIds`), and each group's members;
- * - `pullRequestStatuses`: checks, reviews, mergeability and stack of the open pull requests in "my work" and in
- *   the stacks the copy holds (`PullRequestStatuses`), which change without moving `updated_at`; then the
+ * - `pullRequestStatuses`: checks, reviews, the viewer's draft review, mergeability and stack of the open pull requests
+ *   in "my work" and in the stacks the copy holds, and of any with a draft known (`PullRequestStatuses`), which change
+ *   without moving `updated_at`; then the
  *   stacks the copy holds only some pull requests of are read whole (`PullRequestStacks`, stacked PRs D7);
  * - `repositories`, `projects`, `download`: the tracked repositories' and projects' change polls (free 304s)
  *   and their first download ({@link TrackingSync}), which starts once "my work" has arrived and runs again
@@ -872,9 +873,10 @@ export const SyncEngine = defineService({
                 }
             }
 
-            // Those copied for their stack only: nothing else re-reads them.
+            // Those copied for their stack only: nothing else re-reads them. Nor the draft of one outside "my work", or
+            // closed since: its mark would stay after the draft is gone (code review D21).
             for (const item of items.all) {
-                if (item.kind === 'pullRequest' && isOpenPullRequest(item) && item.stack) {
+                if (item.kind === 'pullRequest' && ((isOpenPullRequest(item) && item.stack) || item.pendingReview)) {
                     open.add(item.id);
                 }
             }

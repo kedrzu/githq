@@ -20,6 +20,8 @@ export interface AnchoredListExposed {
   getRowOffset(key: string): number | null;
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
+  /** The key of the first row showing under the pinned one, reactive: `anchor` is usually hidden behind that. */
+  readonly firstVisibleKey: string | null;
 }
 
 /** How far the rendered rows reach beyond the viewport, each way: about a screen. */
@@ -85,6 +87,7 @@ const model = createAnchoredListModel<T>({
 model.setRows(props.rows);
 
 const anchor = shallowRef(model.anchor);
+const firstVisibleKey = shallowRef<string | null>(null);
 const focusedQuietly = shallowRef(false);
 const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
 const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
@@ -127,7 +130,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, getRowOffset, anchor });
+defineExpose({ jumpTo, focus, getRowOffset, anchor, firstVisibleKey });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -249,6 +252,8 @@ function showWindow(layoutChanged: boolean) {
   if (layoutChanged || pinned?.index !== pinnedRow.value?.index || pinned?.pushUp !== pinnedRow.value?.pushUp) {
     pinnedRow.value = pinned;
   }
+
+  firstVisibleKey.value = model.firstVisibleRow(knownScrollTop)?.key ?? null;
 }
 </script>
 

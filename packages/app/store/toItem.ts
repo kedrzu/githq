@@ -69,6 +69,7 @@ export function toItem(
  * @__NO_SIDE_EFFECTS__
  */
 export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): PullRequestStatus {
+    const pendingReview = node.pendingReviews?.nodes?.[0];
     return {
         state: node.state,
         isDraft: node.isDraft,
@@ -86,6 +87,13 @@ export function toPullRequestStatus(node: PullRequestStatusFieldsFragment): Pull
             node.latestOpinionatedReviews?.nodes ?? [],
             (review): ItemReview | null => review && { author: review.author?.login ?? null, state: review.state },
         ),
+        pendingReview: pendingReview
+            ? {
+                  id: pendingReview.id,
+                  commentCount: pendingReview.comments.totalCount,
+                  createdAt: pendingReview.createdAt,
+              }
+            : null,
         stack:
             node.stack && node.stackEntry
                 ? {

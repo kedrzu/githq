@@ -1,4 +1,4 @@
-<!-- The stack at the top of the review's left column (D25, `Review / Stack`): a head with its name and "2 of 4", then one row per pull request the copy holds, first to last — state icon, number, title — the open one highlighted. A row is a link to that pull request's review, replacing the address (D2), so a middle click opens a tab. Every row, however long the stack: they scroll away with the column and take nothing from the diff. -->
+<!-- The stack at the top of the review's left column (D25, `Review / Stack`): a head with its name and "2 of 4", then one row per pull request the copy holds, first to last — state icon, number, title, an amber dot on one with the viewer's draft review — the open one highlighted. A row is a link to that pull request's review, replacing the address (D2), so a middle click opens a tab. Every row, however long the stack: they scroll away with the column and take nothing from the diff. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Layers } from 'lucide-vue-next';
@@ -6,6 +6,7 @@ import { computed } from 'vue';
 
 import { getItemReference, getReviewPath } from '@/item/itemRoutes.js';
 import { place as placeText } from '@/item/StackMap.loc.js';
+import DraftDot from '@/lists/DraftDot.vue';
 import StackTone from '@/lists/StackTone.vue';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
 import { getStackMemberKind } from '@/lists/utils/getStackMemberKind.js';
@@ -68,6 +69,7 @@ const place = computed(() => getStackPlace(members.value, props.currentId));
           />
           <span :class="css.reviewStack_number">#{{ row.pullRequest.number }}</span>
           <span :class="css.reviewStack_title">{{ row.pullRequest.title }}</span>
+          <DraftDot v-if="row.pullRequest.pendingReview" />
         </RouterLink>
       </li>
     </ol>

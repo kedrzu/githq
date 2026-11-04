@@ -14,6 +14,7 @@ import {
     Hourglass,
     ListOrdered,
     Loader,
+    PencilLine,
     Timer,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -136,10 +137,21 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         getItemPeople({ item: item.value, shown: peopleShown.value, viewerLogin: viewerLogin.value }),
     );
     const age = computed(() => formatAge(Date.parse(item.value.updatedAt), now.value));
-    const status = computed(() => {
+    const status = computed((): ItemStatusFact | null => {
         const listed = item.value;
         if (listed.kind !== 'pullRequest') {
             return null;
+        }
+
+        // D28: until it's sent nothing else about it moves, and a draft outlives the pull request being closed. Only a
+        // merge on its way goes first, for the moment it takes.
+        if (listed.pendingReview && !listed.merging) {
+            return {
+                icon: PencilLine,
+                tone: 'warning',
+                text: t(l.draftReview, { count: listed.pendingReview.commentCount }),
+                readyToMerge: false,
+            };
         }
 
         if (listed.merged) {

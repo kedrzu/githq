@@ -1,4 +1,4 @@
-<!-- The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (D25, `Review / Stack strip`, CR48), taking no height of its own: the stack's name and one square per pull request, soft in its state, the open one outlined with a mark under it. A square is a link to that pull request's review, replacing the address (D2), so one click per pull request stays; a place the copy doesn't hold yet is a hollow square going nowhere. Too long for the column, the squares scroll sideways, the open one in view. -->
+<!-- The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (D25, `Review / Stack strip`, CR48), taking no height of its own: the stack's name and one square per pull request, soft in its state, the open one outlined with a mark under it, one with the viewer's draft review with an amber dot on its corner. A square is a link to that pull request's review, replacing the address (D2), so one click per pull request stays; a place the copy doesn't hold yet is a hollow square going nowhere. Too long for the column, the squares scroll sideways, the open one in view. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Layers } from 'lucide-vue-next';
@@ -32,7 +32,12 @@ const squares = computed(() =>
       position,
       link: {
         path: getReviewPath(getItemReference(pullRequest)),
-        label: t(l.pullRequest, { position, number: pullRequest.number, title: pullRequest.title }),
+        label: t(pullRequest.pendingReview ? l.pullRequestWithDraft : l.pullRequest, {
+          position,
+          number: pullRequest.number,
+          title: pullRequest.title,
+        }),
+        draft: pullRequest.pendingReview !== null,
         tone: getPullRequestLook(getStackMemberKind(pip)).tone,
         current: pullRequest.id === props.currentId,
       },
@@ -77,6 +82,10 @@ onMounted(() => {
             :title="square.link.label"
           >
             {{ square.position }}
+            <span
+              v-if="square.link.draft"
+              :class="css.reviewStackStrip_draft"
+            />
           </RouterLink>
           <span
             v-else
@@ -135,7 +144,8 @@ onMounted(() => {
   align-items: center;
   align-self: stretch;
   min-width: 0;
-  padding: 0;
+  // The last square's draft dot reaches this far past it, which would make the row scroll.
+  padding: 0 3px 0 0;
   margin: 0;
   overflow: auto hidden;
   list-style: none;
@@ -160,6 +170,18 @@ onMounted(() => {
   border-radius: $radius-sm;
 
   @include focus-ring;
+}
+
+// `Stack bar / Place · soft, draft`: on the square's corner, ringed apart from it.
+.reviewStackStrip_draft {
+  position: absolute;
+  top: -3px;
+  left: 13px;
+  width: 8px;
+  height: 8px;
+  background: $color-amber;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px $color-bg;
 }
 
 .reviewStackStrip_place_accent {

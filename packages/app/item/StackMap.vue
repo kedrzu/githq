@@ -15,6 +15,7 @@ import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import DraftDot from '@/lists/DraftDot.vue';
 import StackPips from '@/lists/StackPips.vue';
 import StackTone from '@/lists/StackTone.vue';
 import type { StackLook, StackStateFact } from '@/lists/useStackFacts.js';
@@ -325,6 +326,7 @@ function openRow(row: StackMapRow) {
             />
             <span :class="css.stackMap_number">#{{ line.pullRequest.number }}</span>
             <span :class="css.stackMap_title">{{ line.pullRequest.title }}</span>
+            <DraftDot v-if="line.pullRequest.pendingReview" />
             <StackTone
               v-if="line.text"
               :look="line"

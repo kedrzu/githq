@@ -38,3 +38,13 @@ export const WithMissingPlace: Story = {
         currentId: GLYPHS_STACK[0]!.id,
     },
 };
+
+const WITH_DRAFT = GLYPHS_STACK.map(pr => ({
+    ...pr,
+    pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' },
+}));
+
+/** `Stack bar / Place · soft, draft` and `· soft, current, draft`: an amber dot on the square's corner, the last one's fitting too. */
+export const WithDrafts: Story = {
+    args: { stack: sampleStackDescription(WITH_DRAFT), currentId: WITH_DRAFT[1]!.id },
+};

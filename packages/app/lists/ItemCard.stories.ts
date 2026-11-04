@@ -170,3 +170,8 @@ export const AutoMergeOn: Story = {
         },
     },
 };
+
+/** CR33 on a board: the viewer's draft review in place of its other state. */
+export const DraftReview: Story = {
+    args: { item: { ...READY, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } } },
+};
