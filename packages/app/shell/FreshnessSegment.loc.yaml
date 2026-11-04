@@ -65,3 +65,11 @@ threadsPaused:
   en: API allowance used up · review threads wait until {time}
 threadPosition:
   en: Thread {position} of {total}, {open} open · N next · ⇧N previous
+landedFirstFile:
+  en: "First visit: starting at the first file you haven't viewed · {viewed} of {total} viewed"
+landedFirstFileWalked:
+  en: "#{number}, first visit: starting at the first file you haven't viewed · {key} back to #{back}"
+landedLeftLine:
+  en: 'Back in #{number} where you left it: {file}, line {line}'
+landedLeft:
+  en: 'Back in #{number} where you left it: {file}'

@@ -832,10 +832,12 @@ export function findReplacementRow({
 
 /**
  * The file's row at the line, or else the nearest above it (D7), a gap counting when it covers the line; `null` when the
- * file shows none at or above it.
+ * file shows none at or above it. To the file's end, as a thread's code from further down shows before its gap; of rows
+ * starting at the same line, the last.
  */
 function findNearestLineRow(rows: readonly ReviewRow[], header: number, place: RowLine) {
     let nearest: ReviewRow | null = null;
+    let nearestLine = 0;
     for (let index = header + 1; index < rows.length; index++) {
         const row = rows[index];
         if (!row || row.kind === 'header') {
@@ -843,12 +845,9 @@ function findNearestLineRow(rows: readonly ReviewRow[], header: number, place: R
         }
 
         const line = getRowFirstLine(row, place.side);
-        if (line !== null && line > place.line) {
-            break;
-        }
-
-        if (line !== null) {
+        if (line !== null && line <= place.line && line >= nearestLine) {
             nearest = row;
+            nearestLine = line;
         }
     }
 

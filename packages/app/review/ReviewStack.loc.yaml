@@ -2,5 +2,3 @@ label:
   en: The stack
 pullRequests:
   en: Pull requests of the stack
-place:
-  en: '{position} of {size}'

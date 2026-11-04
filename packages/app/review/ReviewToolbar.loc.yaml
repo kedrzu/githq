@@ -38,5 +38,3 @@ previousPullRequest:
   en: Previous pull request
 nextPullRequest:
   en: Next pull request
-position:
-  en: '{index} / {count}'

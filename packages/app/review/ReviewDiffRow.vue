@@ -178,6 +178,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       <div
         v-else-if="row.kind === 'gap'"
         :class="css.reviewDiffRow_gap"
+        tid="review-gap"
       >
         <UnfoldVertical
           :class="css.reviewDiffRow_gapIcon"

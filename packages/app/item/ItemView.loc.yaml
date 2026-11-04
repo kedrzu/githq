@@ -4,8 +4,6 @@ previous:
   en: Previous item
 next:
   en: Next item
-position:
-  en: '{index} / {count}'
 arrangement:
   en: Arrangement
 panel:

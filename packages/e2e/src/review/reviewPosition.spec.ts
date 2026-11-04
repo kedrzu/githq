@@ -4,6 +4,7 @@ import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
@@ -98,18 +99,6 @@ async function lineOffset(review: ReviewScreenHarness, text: string) {
     }, text);
 }
 
-/** How far the row of the gap nearest `top` is from it. */
-async function gapDistance(review: ReviewScreenHarness, top: number) {
-    return await review.diff.evaluate((diff, at) => {
-        const diffTop = diff.getBoundingClientRect().top;
-        const distances = [...diff.querySelectorAll('button')]
-            .filter(button => button.textContent?.includes('Show all'))
-            .map(button => button.closest('[class*="anchoredList_row"]')?.getBoundingClientRect().top ?? Infinity)
-            .map(gapTop => Math.abs(gapTop - diffTop - at));
-        return Math.min(...distances);
-    }, top);
-}
-
 /** Takes the texts off the disk, for a reload to have to ask GitHub for them. */
 async function forgetKeptTexts(page: Page) {
     await page.evaluate(
@@ -159,6 +148,25 @@ test('J then K comes back to the very line, at the same distance from the top, a
     await expect(review.currentFileRow).toContainText('engine.ts');
 });
 
+test('the status bar says why a review opens where it does, until the first move', async ({ page, github }) => {
+    const { review } = await openReview(page, github);
+    const { statusBar } = new AppShellHarness(page);
+    await expect(statusBar).toContainText("First visit: starting at the first file you haven't viewed · 1 of 3 viewed");
+
+    await readLine(review, READ, READ_TOP);
+    await expect(statusBar).not.toContainText('First visit');
+
+    await page.keyboard.press('j');
+    await expect(review.title).toHaveText(THIRD);
+    await expect(statusBar).toContainText(
+        "#203, first visit: starting at the first file you haven't viewed · K back to #202",
+    );
+
+    await page.keyboard.press('k');
+    await expect(review.title).toHaveText(SECOND);
+    await expect(statusBar).toContainText(/Back\sin\s#202\swhere\syou\sleft\sit:\sengine\.ts,\sline\s\d+/);
+});
+
 test('a layout switched while away comes back on the same line by identity, not by pixels', async ({
     page,
     github,
@@ -204,7 +212,7 @@ test('a line hidden by the whitespace setting while away lands on the nearest sh
     // The gap covering it stands where the line stood.
     await expect(review.viewOptionsButton).toHaveText(/whitespace hidden/);
     await expect(review.code('const value50 = 50;')).toHaveCount(0);
-    await expect.poll(() => gapDistance(review, TOP_LINE_TOP)).toBeLessThan(0.5);
+    await expect.poll(() => review.gapDistance(TOP_LINE_TOP)).toBeLessThan(0.5);
 });
 
 test('opened for the first time it lands on the first file neither viewed nor collapsed; with all viewed, the top', async ({

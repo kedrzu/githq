@@ -12,7 +12,7 @@ import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReview
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile, ReviewFileCollapse, ReviewFileListEnd } from './ReviewFiles.js';
 import { useReviewPosition } from './useReviewPosition.js';
-import type { ReviewPositionFiles } from './useReviewPosition.js';
+import type { ReviewArrival, ReviewPositionFiles } from './useReviewPosition.js';
 
 const A = sampleFile('a.ts');
 const B = sampleFile('b.ts');
@@ -131,6 +131,65 @@ test('every file viewed, it lands at the top, once the list is known to hold no 
     view.stop();
 });
 
+test('a first open does not settle while a later page may put an unread file above it, and a scroll meanwhile stays', async () => {
+    const view = open({ position: null, files: [B, C], listEnd: 'growing' });
+    view.setRows({ 'b.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    expect(view.jumps.at(-1)).toEqual([getReviewHeaderKey('b.ts'), 0]);
+    expect(view.landing.value).toBe(true);
+
+    view.setFiles([A, B, C]);
+    view.setRows({ 'a.ts': lines(), 'b.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    expect(view.jumps.at(-1)).toEqual([getReviewHeaderKey('a.ts'), 0]);
+    expect(view.landing.value).toBe(true);
+
+    // The last page brought no rows.
+    view.setListEnd('certain');
+    await nextTick();
+    expect(view.jumps.at(-1)).toEqual([getReviewHeaderKey('a.ts'), 0]);
+    expect(view.landing.value).toBe(false);
+    view.stop();
+
+    const scrolled = open({ position: null, files: [B, C], listEnd: 'growing' });
+    scrolled.setRows({ 'b.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    const jumps = scrolled.jumps.length;
+    scrolled.landing.value = false;
+    scrolled.setFiles([A, B, C]);
+    scrolled.setRows({ 'a.ts': lines(), 'b.ts': lines(), 'c.ts': lines() });
+    await nextTick();
+    expect(scrolled.jumps).toHaveLength(jumps);
+    scrolled.stop();
+});
+
+test('it says why it opened where it did: the first file not viewed, the place left, or nothing for only the top', async () => {
+    const first = open({ position: null, files: [A, B], collapses: {} });
+    first.setRows({ 'a.ts': lines(), 'b.ts': lines() });
+    await nextTick();
+    expect(first.arrival.value).toEqual({ kind: 'firstFile' });
+    first.stop();
+
+    const back = open({ position: LINE });
+    back.setRows({ 'b.ts': lines() });
+    await nextTick();
+    expect(back.landing.value).toBe(false);
+    expect(back.arrival.value).toEqual({ kind: 'left', place: LINE.place });
+    back.stop();
+
+    const viewed = open({ position: null, files: [{ ...A, viewed: 'VIEWED' }], collapses: { 'a.ts': 'viewed' } });
+    viewed.setRows({ 'a.ts': { kind: 'collapsed' } });
+    await nextTick();
+    expect(viewed.arrival.value).toBeNull();
+    viewed.stop();
+
+    const gone = open({ position: LINE, files: [A] });
+    gone.setRows({ 'a.ts': lines() });
+    await nextTick();
+    expect(gone.arrival.value).toBeNull();
+    gone.stop();
+});
+
 interface OpenOptions {
     position: ReviewPosition | null;
     files?: readonly ReviewFile[];
@@ -141,13 +200,15 @@ interface OpenOptions {
 function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain' }: OpenOptions) {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const landing = shallowRef(true);
+    const arrival = shallowRef<ReviewArrival | null>(null);
     const rows = shallowRef<readonly ReviewRow[]>([]);
+    const ordered = shallowRef(files);
     const anchor = shallowRef<{ key: string; offset: number } | null>(null);
     const jumps: [string, number][] = [];
     const saved: ReviewPosition[] = [];
     const prioritized: string[] = [];
     let currentCollapses = collapses;
-    let currentListEnd = listEnd;
+    const currentListEnd = shallowRef(listEnd);
     const setPosition = mock((next: ReviewPosition) => {
         saved.push(next);
     });
@@ -159,7 +220,7 @@ function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain'
         },
         getCollapse: path => currentCollapses[path] ?? null,
         get listEnd() {
-            return currentListEnd;
+            return currentListEnd.value;
         },
     };
     const list = {
@@ -181,16 +242,18 @@ function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain'
             useReviewPosition({
                 files: model,
                 rows,
-                ordered: files,
-                order: files.map(file => file.path),
+                ordered,
+                order: () => ordered.value.map(file => file.path),
                 list,
                 landing,
+                arrival,
             }),
         ),
     );
 
     return {
         landing,
+        arrival,
         rows,
         jumps,
         saved,
@@ -200,14 +263,20 @@ function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain'
         setAnchor(next: { key: string; offset: number }) {
             anchor.value = next;
         },
+        setFiles(next: readonly ReviewFile[]) {
+            ordered.value = next;
+        },
         setCollapses(next: Record<string, ReviewFileCollapse | null>) {
             currentCollapses = next;
         },
         setListEnd(next: ReviewFileListEnd) {
-            currentListEnd = next;
+            currentListEnd.value = next;
         },
         setRows(contents: Record<string, ReviewFileContent>) {
-            rows.value = buildReviewRows({ files, getContent: file => contents[file.path] ?? { kind: 'placeholder' } });
+            rows.value = buildReviewRows({
+                files: ordered.value,
+                getContent: file => contents[file.path] ?? { kind: 'placeholder' },
+            });
         },
     };
 }

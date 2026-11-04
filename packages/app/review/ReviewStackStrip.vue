@@ -70,11 +70,7 @@ onMounted(() => {
             v-if="square.link"
             :to="square.link.path"
             replace
-            :class="[
-              css.reviewStackStrip_place,
-              css[`reviewStackStrip_place_${square.link.tone}`],
-              square.link.current && css.reviewStackStrip_place_current,
-            ]"
+            :class="[css.reviewStackStrip_place, css[`reviewStackStrip_place_${square.link.tone}`]]"
             :aria-label="square.link.label"
             :aria-current="square.link.current ? 'true' : undefined"
             :title="square.link.label"
@@ -198,7 +194,7 @@ onMounted(() => {
   border-color: $color-border-2;
 }
 
-.reviewStackStrip_place_current {
+.reviewStackStrip_place[aria-current='true'] {
   font-weight: 700;
   border-color: var(--place-color);
 

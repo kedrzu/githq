@@ -14,6 +14,16 @@ export interface ItemList {
     readonly ids: readonly string[];
 }
 
+/** A step of `K`/`J` from one pull request's review to another's. */
+export interface ReviewWalk {
+    /** Where to, as `formatItemReference` writes it. */
+    readonly to: string;
+    /** The number of the pull request left. */
+    readonly from: number;
+    /** The key that goes back. */
+    readonly back: 'J' | 'K';
+}
+
 /** Items a list is asked to select alone — the failed ones of a change of several (K2). */
 export interface ItemSelectionRequest {
     readonly ids: readonly string[];
@@ -23,8 +33,8 @@ export interface ItemSelectionRequest {
  * What opening items carries from one moment to the next, shared by the lists and the item view: the
  * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
  * independent switches) — the list they are opened from, the item opened last, which the list selects
- * when it comes back, the items a toast asks the list to select, and the item whose comment box takes the cursor
- * once it opens ("Comment" in a list's context menu).
+ * when it comes back, the items a toast asks the list to select, the item whose comment box takes the cursor
+ * once it opens ("Comment" in a list's context menu), and the step a review is being walked by, for the next to say.
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
 export const ItemNavigation = defineService({
@@ -37,6 +47,7 @@ export const ItemNavigation = defineService({
         const lastOpenedRef = shallowRef<string | null>(null);
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
         const commentRequestRef = shallowRef<string | null>(null);
+        let reviewWalk: ReviewWalk | null = null;
 
         return {
             /** The arrangement an item opens in; reactive. */
@@ -71,6 +82,8 @@ export const ItemNavigation = defineService({
             setLastOpened,
             requestSelection,
             requestComment,
+            noteReviewWalk,
+            takeReviewWalk,
         };
 
         function setArrangement(arrangement: ItemArrangement) {
@@ -92,6 +105,17 @@ export const ItemNavigation = defineService({
         /** `null` once the item opened took it. */
         function requestComment(id: string | null) {
             commentRequestRef.value = id;
+        }
+
+        function noteReviewWalk(walk: ReviewWalk) {
+            reviewWalk = walk;
+        }
+
+        /** The step that brought a review here, once: on a next open it came some other way. */
+        function takeReviewWalk(to: string) {
+            const walk = reviewWalk?.to === to ? reviewWalk : null;
+            reviewWalk = null;
+            return walk;
         }
     },
 });

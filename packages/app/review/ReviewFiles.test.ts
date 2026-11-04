@@ -439,11 +439,45 @@ test('what the user did comes back with the list on a reload: the position first
 
     expect(model.position).toEqual(position);
     expect(model.getCollapse('b.ts')).toBe('byHand');
-    expect(model.isThreadOpen('T1')).toBe(true);
+    expect(model.isThreadOpen('T1')).toBe(false);
     expect(model.hideViewed).toBe(true);
     expect(model.filter).toEqual(filter);
     await settled(model);
     expect(model.getExpandedLines('a.ts')).toEqual([{ start: 10, end: 30 }]);
+});
+
+test("two tabs on one pull request don't overwrite what the other did, and leaving without moving keeps the other's place", async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    const store = ReviewBlobStore.create();
+    const atFirst: ReviewPosition = { place: { kind: 'row', key: 'first' }, offset: 0 };
+    const opener = open(login, github);
+    await settled(opener.model);
+    opener.model.setPosition(atFirst);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.position != null, { timeoutMs: 2000 });
+
+    const [one, other] = [open(login, github), open(login, github)];
+    await settled(one.model);
+    await settled(other.model);
+    expect(other.model.position).toEqual(atFirst);
+
+    one.model.setHideViewed(true);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.hideViewed === true, { timeoutMs: 2000 });
+    const moved: ReviewPosition = { place: { kind: 'row', key: 'moved' }, offset: 3 };
+    one.model.setPosition(moved);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.position?.offset === 3, { timeoutMs: 2000 });
+
+    other.model.setPosition(atFirst);
+    other.model.setCollapsed('a.ts', true);
+    await waitUntil(async () => (await store.readState(login, LIST_KEY))?.collapseChoices.size === 1, {
+        timeoutMs: 2000,
+    });
+
+    const kept = await store.readState(login, LIST_KEY);
+    expect(kept?.position).toEqual(moved);
+    expect(kept?.hideViewed).toBe(true);
+    expect(kept?.collapseChoices.get('a.ts')).toBe(false);
 });
 
 test('expanded context kept for a blob the author has changed since is dropped on a reload too (D14)', async () => {
@@ -786,6 +820,43 @@ test('a viewed mark GitHub dropped since the last visit is named, from what the 
     expect(model.lostViewed.size).toBe(0);
     await waitUntil(() => github.markedViewed.length === 1, { timeoutMs: 2000 });
     expect(session.operations()).toContain('MarkFilesViewed');
+});
+
+test('a viewed mark changed by anything but this tab drops what was chosen for the file, on a push too, both ways (D9)', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub({ pageSize: 10 });
+    github.file({ path: 'lost.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.file({ path: 'gained.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.file({ path: 'same.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.setViewed('lost.ts', 'VIEWED');
+    const { model, files } = open(login, github);
+    await settled(model);
+    model.setCollapsed('lost.ts', true);
+    model.setCollapsed('gained.ts', false);
+    model.setCollapsed('same.ts', true);
+    expect(model.getCollapse('lost.ts')).toBe('byHand');
+
+    github.moveHead('head-2');
+    github.setViewed('lost.ts', 'DISMISSED');
+    github.setViewed('gained.ts', 'VIEWED');
+    for (const path of ['lost.ts', 'gained.ts', 'same.ts']) {
+        github.blobAt(`head-2:${path}`, { text: 'pushed' });
+    }
+
+    files.open(REFERENCE);
+    await waitUntil(() => model.headRefOid === 'head-2' && model.listComplete, { timeoutMs: 2000 });
+
+    expect(model.getCollapse('lost.ts')).toBeNull();
+    expect(model.getCollapse('gained.ts')).toBe('viewed');
+    expect(model.getCollapse('same.ts')).toBe('byHand');
+    await waitUntil(
+        async () => (await ReviewBlobStore.create().readState(login, LIST_KEY))?.collapseChoices.size === 1,
+        {
+            timeoutMs: 2000,
+        },
+    );
+    const kept = await ReviewBlobStore.create().readState(login, LIST_KEY);
+    expect([...(kept?.collapseChoices ?? [])]).toEqual([['same.ts', false]]);
 });
 
 test('a push seen by opening the same model again names the marks it dropped too', async () => {

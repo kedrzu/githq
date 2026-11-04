@@ -101,7 +101,7 @@ export class ReviewScreenHarness {
 
     /** A coloured token of a line of code. */
     codeToken(text: string): Locator {
-        return this.code(text).locator('[class*="diffCode_keyword"]');
+        return this.code(text).getByTestId('code-keyword');
     }
 
     /** How far below the top of the diff the file's header row is: 0 when it landed exactly. */
@@ -190,6 +190,19 @@ export class ReviewScreenHarness {
     /** A gap's button of that name, in the diff. */
     gapButton(name: 'Show 20' | 'Show all'): Locator {
         return this.diff.getByRole('button', { name, exact: true });
+    }
+
+    /** How far the gap nearest `top` below the top of the diff is from there. */
+    async gapDistance(top: number): Promise<number> {
+        const diff = await this.diff.boundingBox();
+        if (!diff) {
+            throw new Error('The diff is not on screen');
+        }
+
+        const tops = await this.diff
+            .getByTestId('review-gap')
+            .evaluateAll(gaps => gaps.map(gap => gap.getBoundingClientRect().top));
+        return Math.min(...tops.map(gapTop => Math.abs(gapTop - diff.y - top)));
     }
 
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */

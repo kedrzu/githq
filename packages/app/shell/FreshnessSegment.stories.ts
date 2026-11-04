@@ -40,6 +40,30 @@ export const ThreadPosition: Story = {
     args: { freshness: { kind: 'threadPosition', position: 2, total: 7, open: 5 } },
 };
 
+/** A review opened for the first time, on its first file not viewed (CR20). */
+export const LandedFirstFile: Story = {
+    args: { freshness: { kind: 'landing', at: 'firstFile', number: 1202, viewed: 9, total: 42, backTo: null } },
+};
+
+/** The same, walked to with `J` (CR25). */
+export const LandedFirstFileWalked: Story = {
+    args: {
+        freshness: {
+            kind: 'landing',
+            at: 'firstFile',
+            number: 1203,
+            viewed: 0,
+            total: 42,
+            backTo: { key: 'K', number: 1202 },
+        },
+    },
+};
+
+/** Come back to where it was left (CR26). */
+export const LandedLeft: Story = {
+    args: { freshness: { kind: 'landing', at: 'left', number: 1202, file: 'engine.ts', line: 47 } },
+};
+
 /** GitHub didn't give a review's threads: the files stay usable, and it says so. */
 export const ThreadsUnread: Story = { args: { freshness: { kind: 'threadsUnread' } } };
 

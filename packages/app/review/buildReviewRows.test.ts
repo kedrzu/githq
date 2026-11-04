@@ -505,6 +505,33 @@ test('a line hidden now lands on the nearest shown above it, a gap covering it c
     expect(above?.row).toBe(lineWithAfter(narrow, 22));
 });
 
+test("a position on a gap lands on the gap, though a thread's code from further down shows before it", () => {
+    const diff = computeFileDiff({
+        before: BEFORE,
+        after: BEFORE.replace('line 5\n', 'line 5 changed\n').replace('line 35\n', 'line 35 changed\n'),
+        ...NO_IGNORE,
+    });
+    const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(15)]);
+    const rows = withHeader(buildFileLineRows({ path: A.path, diff, layout: 'split', threads }));
+    const gap = rows.find(row => row.kind === 'gap' && rows.indexOf(row) > rows.indexOf(lineWithAfter(rows, 15)));
+    if (gap?.kind !== 'gap') {
+        throw new Error("The thread's code shows before the gap");
+    }
+
+    expect(gap.firstLine).toBeLessThan(15);
+    const at = (line: number) =>
+        findReviewPositionRow({
+            position: { place: { kind: 'line', path: A.path, side: 'after', line }, offset: 0 },
+            rows,
+            order: [A.path],
+        })?.row;
+
+    expect(at(gap.firstLine)).toBe(gap);
+    expect(at(15)).toBe(lineWithAfter(rows, 15));
+    // Past the thread's code and hidden, nothing shown is nearer than that code.
+    expect(at(20)).toBe(lineWithAfter(rows, 15));
+});
+
 test('a file not arrived holds its header at the top; a thread is found by its key meanwhile, wherever it shows', () => {
     const rows = buildReviewRows({
         files: [A],

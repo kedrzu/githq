@@ -37,7 +37,6 @@ import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
 import Avatar from '@/components/Avatar.vue';
 import IconButton from '@/components/IconButton.vue';
-import Kbd from '@/components/Kbd.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
@@ -78,6 +77,7 @@ import ItemProperties from './ItemProperties.vue';
 import { formatShortReference, ITEM_ARRANGEMENTS } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import * as l from './ItemView.loc.js';
+import ItemWalkStepper from './ItemWalkStepper.vue';
 import LinkedItems from './LinkedItems.vue';
 import PullRequestChecks from './PullRequestChecks.vue';
 import PullRequestMerge from './PullRequestMerge.vue';
@@ -602,33 +602,14 @@ function getProjectOptions(): CommandOption[] {
         </MenuLabel>
       </Menu>
       <span :class="css.itemView_spacer" />
-      <template v-if="position">
-        <IconButton
-          :label="t(l.previous)"
-          kbd="K"
-          aria-keyshortcuts="K"
-          :disabled="position.index <= 1"
-          @click="emit('previous')"
-        >
-          <Kbd keys="K" />
-        </IconButton>
-        <IconButton
-          :label="t(l.next)"
-          kbd="J"
-          aria-keyshortcuts="J"
-          :disabled="position.index >= position.count"
-          @click="emit('next')"
-        >
-          <Kbd keys="J" />
-        </IconButton>
-        <span :class="css.itemView_position">{{
-          t(l.position, { index: position.index, count: position.count })
-        }}</span>
-        <span
-          :class="css.itemView_divider"
-          aria-hidden="true"
-        />
-      </template>
+      <ItemWalkStepper
+        v-if="position"
+        :position="position"
+        :previous-label="t(l.previous)"
+        :next-label="t(l.next)"
+        @previous="emit('previous')"
+        @next="emit('next')"
+      />
       <SegmentedTabs
         v-model="arrangementModel"
         variant="boxed"
@@ -963,21 +944,6 @@ function getProjectOptions(): CommandOption[] {
 
 .itemView_spacer {
   flex: 1;
-}
-
-.itemView_position {
-  flex: none;
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  white-space: nowrap;
-}
-
-.itemView_divider {
-  flex: none;
-  width: 1px;
-  height: 16px;
-  background: $color-border-2;
 }
 
 .itemView_body {

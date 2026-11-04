@@ -68,9 +68,16 @@ export interface ReviewKeptState {
     readonly hideViewed: boolean;
     /** By path. */
     readonly expandedLines: ReadonlyMap<string, ReviewExpandedLines>;
-    /** The resolved threads opened, by id. */
-    readonly openThreads: ReadonlySet<string>;
 }
+
+/** What a pull request keeps until something is done in it. */
+const NOTHING_DONE: ReviewKeptState = {
+    position: null,
+    collapseChoices: new Map(),
+    filter: { pattern: '', regex: false },
+    hideViewed: false,
+    expandedLines: new Map(),
+};
 
 /** What a review keeps on disk, by login. A `read` opens the login's database; a `write` rejects when it is not open (anymore). */
 export interface ReviewBlobStoreShape {
@@ -91,7 +98,8 @@ export interface ReviewBlobStoreShape {
     deleteThreads(login: string, key: string): Promise<void>;
     /** What the user did in a pull request, by the same key as its list. */
     readState(login: string, key: string): Promise<ReviewKeptState | undefined>;
-    writeState(login: string, key: string, state: ReviewKeptState): Promise<void>;
+    /** Over what is kept, in one transaction: the rest may be what another tab on the pull request did. */
+    writeState(login: string, key: string, changes: Partial<ReviewKeptState>): Promise<void>;
 }
 
 interface ReviewBlobDatabase extends DBSchema {
@@ -222,9 +230,11 @@ export const ReviewBlobStore = defineService({
             return await db.get('reviewStates', key);
         }
 
-        async function writeState(login: string, key: string, state: ReviewKeptState) {
+        async function writeState(login: string, key: string, changes: Partial<ReviewKeptState>) {
             const db = await getOpen(login);
-            await db.put('reviewStates', state, key);
+            const tx = db.transaction('reviewStates', 'readwrite');
+            const kept = await tx.store.get(key);
+            await Promise.all([tx.store.put({ ...NOTHING_DONE, ...kept, ...changes }, key), tx.done]);
         }
     },
 });

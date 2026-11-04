@@ -21,6 +21,7 @@ import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import Switch from '@/components/Switch.vue';
 import type { ItemReference } from '@/item/itemRoutes.js';
+import ItemWalkStepper from '@/item/ItemWalkStepper.vue';
 import type { ItemWalkPosition } from '@/item/useItemWalk.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
@@ -92,35 +93,14 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
     <h1 :class="css.reviewToolbar_title">{{ item?.title }}</h1>
     <span :class="css.reviewToolbar_where">{{ t(l.review) }}</span>
     <span :class="css.reviewToolbar_spacer" />
-    <template v-if="position">
-      <div :class="css.reviewToolbar_stepper">
-        <IconButton
-          :label="t(l.previousPullRequest)"
-          kbd="K"
-          aria-keyshortcuts="K"
-          :disabled="position.index <= 1"
-          @click="emit('previous')"
-        >
-          <Kbd keys="K" />
-        </IconButton>
-        <IconButton
-          :label="t(l.nextPullRequest)"
-          kbd="J"
-          aria-keyshortcuts="J"
-          :disabled="position.index >= position.count"
-          @click="emit('next')"
-        >
-          <Kbd keys="J" />
-        </IconButton>
-        <span :class="css.reviewToolbar_position">{{
-          t(l.position, { index: position.index, count: position.count })
-        }}</span>
-      </div>
-      <span
-        :class="css.reviewToolbar_divider"
-        aria-hidden="true"
-      />
-    </template>
+    <ItemWalkStepper
+      v-if="position"
+      :position="position"
+      :previous-label="t(l.previousPullRequest)"
+      :next-label="t(l.nextPullRequest)"
+      @previous="emit('previous')"
+      @next="emit('next')"
+    />
     <Popover
       :label="t(l.viewOptions)"
       align="end"
@@ -284,27 +264,6 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
 
 .reviewToolbar_spacer {
   flex: 1;
-}
-
-.reviewToolbar_stepper {
-  display: flex;
-  flex: none;
-  gap: $spacing-4;
-  align-items: center;
-}
-
-.reviewToolbar_position {
-  font-family: $font-family-mono;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  white-space: nowrap;
-}
-
-.reviewToolbar_divider {
-  flex: none;
-  width: 1px;
-  height: 16px;
-  background: $color-border-2;
 }
 
 .reviewToolbar_whitespace {

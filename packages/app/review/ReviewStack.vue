@@ -5,10 +5,13 @@ import { Layers } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { getItemReference, getReviewPath } from '@/item/itemRoutes.js';
+import { place as placeText } from '@/item/StackMap.loc.js';
 import StackTone from '@/lists/StackTone.vue';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
 import { getStackMemberKind } from '@/lists/utils/getStackMemberKind.js';
-import type { StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
+import { getStackMembers } from '@/store/stacks/getStackMembers.js';
+import { getStackPlace } from '@/store/stacks/getStackPlace.js';
 
 import * as l from './ReviewStack.loc.js';
 
@@ -20,20 +23,16 @@ const props = defineProps<{
 
 const t = useTranslate();
 
+const members = computed(() => getStackMembers(props.stack.pips));
 const rows = computed(() =>
-  props.stack.pips
-    .filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing')
-    .map(pip => ({
-      pullRequest: pip.pullRequest,
-      look: getPullRequestLook(getStackMemberKind(pip)),
-      path: getReviewPath(getItemReference(pip.pullRequest)),
-      current: pip.pullRequest.id === props.currentId,
-    })),
+  members.value.map(pip => ({
+    pullRequest: pip.pullRequest,
+    look: getPullRequestLook(getStackMemberKind(pip)),
+    path: getReviewPath(getItemReference(pip.pullRequest)),
+    current: pip.pullRequest.id === props.currentId,
+  })),
 );
-const place = computed(() => {
-  const current = rows.value.find(row => row.current);
-  return current?.pullRequest.stack?.position ?? 1;
-});
+const place = computed(() => getStackPlace(members.value, props.currentId));
 </script>
 
 <template>
@@ -47,7 +46,7 @@ const place = computed(() => {
         aria-hidden="true"
       />
       <span :class="css.reviewStack_name">{{ stack.name.title }}</span>
-      <span :class="css.reviewStack_place">{{ t(l.place, { position: place, size: stack.size }) }}</span>
+      <span :class="css.reviewStack_place">{{ t(placeText, { position: place, size: stack.size }) }}</span>
     </div>
     <ol
       :class="css.reviewStack_rows"
@@ -60,7 +59,7 @@ const place = computed(() => {
         <RouterLink
           :to="row.path"
           replace
-          :class="[css.reviewStack_row, row.current && css.reviewStack_row_current]"
+          :class="css.reviewStack_row"
           :aria-current="row.current ? 'true' : undefined"
         >
           <StackTone
@@ -142,8 +141,8 @@ const place = computed(() => {
   }
 }
 
-.reviewStack_row_current,
-.reviewStack_row_current:hover {
+.reviewStack_row[aria-current='true'],
+.reviewStack_row[aria-current='true']:hover {
   color: $color-fg;
   background: $color-sel;
 }

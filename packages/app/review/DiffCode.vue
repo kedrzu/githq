@@ -21,6 +21,7 @@ const spans = computed(() => getLineSpans(props.text, props.tokens, props.line))
       v-for="(span, index) in spans"
       :key="index"
       :class="span.kind && css[`diffCode_${span.kind}`]"
+      :tid="span.kind ? `code-${span.kind}` : undefined"
       >{{ span.text }}</span
     ></code
   >

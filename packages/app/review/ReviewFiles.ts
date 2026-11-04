@@ -22,6 +22,7 @@ import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { createSingleRunner } from '@nzyme/utils/createSingleRunner.js';
 import type { SingleRunnerState } from '@nzyme/utils/createSingleRunner.js';
+import { deepEquals } from '@nzyme/utils/deepEquals.js';
 import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
@@ -195,10 +196,10 @@ export interface PullRequestFiles {
      * what {@link setCollapsed} chose for it is dropped, so that the mark always shows.
      */
     setViewed(paths: readonly string[], viewed: boolean): void;
-    /** Whether viewed files leave the list and the diff (D9). Kept on disk (D14), like all that follows. */
+    /** Whether viewed files leave the list and the diff (D9). Kept on disk (D14), like all that follows but open threads. */
     readonly hideViewed: boolean;
     setHideViewed(hide: boolean): void;
-    /** Whether a resolved thread shows whole rather than as one line. */
+    /** Whether a resolved thread shows whole rather than as one line. In memory only: `N` walking through them opens them. */
     isThreadOpen(id: string): boolean;
     setThreadOpen(id: string, opened: boolean): void;
     /** What the file list's filter holds (D11), for this pull request. */
@@ -498,8 +499,8 @@ export const ReviewFiles = defineService({
             let threadsHeld = false;
             /** A read under way has to be followed by one more: its pages were asked before what happened since. */
             let listAskedAgain = false;
-            /** The files marked viewed when the list was last whole, on disk or in memory. */
-            let viewedBefore: ReadonlySet<string> = new Set();
+            /** The viewed marks when the list was last whole, on disk or in memory. */
+            let viewedBefore: ReadonlyMap<string, FileViewedState> = new Map();
             /** Nothing is written before: it would replace what the disk holds with nothing. */
             let stateRead = false;
             /** The filter that goes to disk: the last that has run. */
@@ -582,7 +583,7 @@ export const ReviewFiles = defineService({
                     },
                     setHideViewed(hide) {
                         hideViewedRef.value = hide;
-                        keepState();
+                        keepState({ hideViewed: hide });
                     },
                     isThreadOpen(id) {
                         return openThreadsRef.value.has(id);
@@ -596,7 +597,6 @@ export const ReviewFiles = defineService({
                         }
 
                         openThreadsRef.value = next;
-                        keepState();
                     },
                     get filter() {
                         return filterRef.value;
@@ -607,15 +607,18 @@ export const ReviewFiles = defineService({
                     keepFilter(filter) {
                         if (filter !== filterToKeep) {
                             filterToKeep = filter;
-                            keepState();
+                            keepState({ filter });
                         }
                     },
                     get position() {
                         return positionRef.value;
                     },
                     setPosition(position) {
-                        positionRef.value = position;
-                        keepState();
+                        // A tab left where it opened has nothing to say over what another did since.
+                        if (!deepEquals(positionRef.value, position)) {
+                            positionRef.value = position;
+                            keepState({ position });
+                        }
                     },
                     getExpandedLines,
                     isExpansionReset,
@@ -789,7 +792,7 @@ export const ReviewFiles = defineService({
                     expandedLines.set(path, { oid, lines: addDiffLineRange(getExpandedLines(path), lines) });
                     // Not through `setState`'s frame: this is a click.
                     versionRef.value++;
-                    keepState();
+                    keepState({ expandedLines });
                 }
             }
 
@@ -797,7 +800,7 @@ export const ReviewFiles = defineService({
                 collapseChoices.set(path, !collapsed);
                 // Not through `setState`'s frame: this is a key pressed.
                 versionRef.value++;
-                keepState();
+                keepState({ collapseChoices });
 
                 const run = runRef.value;
                 const entry = run?.entries.get(path);
@@ -892,7 +895,7 @@ export const ReviewFiles = defineService({
                 forgetLostViewed(paths);
                 publishFiles(run);
                 pump(run);
-                keepState();
+                keepState({ collapseChoices });
                 void marksSender.execute();
             }
 
@@ -978,7 +981,11 @@ export const ReviewFiles = defineService({
             /** What a page of the list says of a file, unless the user set its mark since it was asked for or is still setting it. */
             function withFresherMark(file: ReviewFile, askedAt: number): ReviewFile {
                 const mark = viewedMarks.get(file.path);
-                return mark && (mark.pending || mark.changedAt > askedAt) ? { ...file, viewed: mark.viewed } : file;
+                return mark && isFresherMark(mark, askedAt) ? { ...file, viewed: mark.viewed } : file;
+            }
+
+            function isFresherMark(mark: ViewedMark, askedAt: number) {
+                return mark.pending || mark.changedAt > askedAt;
             }
 
             function reopen() {
@@ -1018,7 +1025,7 @@ export const ReviewFiles = defineService({
                 cancelResume = null;
                 pausedRef.value = null;
                 lostViewedRef.value = new Set();
-                viewedBefore = new Set();
+                viewedBefore = new Map();
                 runRef.value = null;
                 filesRef.value = [];
                 listCompleteRef.value = false;
@@ -1064,7 +1071,6 @@ export const ReviewFiles = defineService({
                 if (kept) {
                     positionRef.value = kept.position;
                     hideViewedRef.value ||= kept.hideViewed;
-                    openThreadsRef.value = kept.openThreads;
                     for (const [path, choice] of kept.collapseChoices) {
                         collapseChoices.set(path, choice);
                     }
@@ -1088,7 +1094,7 @@ export const ReviewFiles = defineService({
             async function takeFilter(filter: FileFilterInput) {
                 if (filter.regex) {
                     try {
-                        await blobs.writeState(login, listKey, readState());
+                        await blobs.writeState(login, listKey, { filter: filterToKeep });
                     } catch (error) {
                         logger.warn('Could not take a regular expression off the disk: it is not run', { error });
                         return;
@@ -1102,21 +1108,13 @@ export const ReviewFiles = defineService({
                 }
             }
 
-            function readState(): ReviewKeptState {
-                return {
-                    position: positionRef.value,
-                    collapseChoices,
-                    filter: filterToKeep,
-                    hideViewed: hideViewedRef.value,
-                    expandedLines,
-                    openThreads: openThreadsRef.value,
-                };
-            }
-
-            /** A small record, on what a user does: never on what merely goes by, like every frame of a scroll. */
-            function keepState() {
+            /**
+             * A small record, on what a user does: never on what merely goes by, like every frame of a scroll. Only what
+             * changed: another tab on the pull request keeps the rest.
+             */
+            function keepState(changes: Partial<ReviewKeptState>) {
                 if (stateRead) {
-                    keepOnDisk(() => blobs.writeState(login, listKey, readState()));
+                    keepOnDisk(() => blobs.writeState(login, listKey, changes));
                 }
             }
 
@@ -1190,9 +1188,7 @@ export const ReviewFiles = defineService({
             /** Reads the list from GitHub into what is shown; with something to show, failing only leaves that as it is. */
             async function readList() {
                 if (listCompleteRef.value) {
-                    viewedBefore = new Set(
-                        filesRef.value.filter(file => file.viewed === 'VIEWED').map(file => file.path),
-                    );
+                    viewedBefore = new Map(filesRef.value.map(file => [file.path, file.viewed]));
                 }
 
                 try {
@@ -1300,7 +1296,27 @@ export const ReviewFiles = defineService({
                 }
 
                 noteLostViewed(files);
+                forgetChoicesOfChangedMarks(run, files, askedAt);
                 addFiles(run, files);
+            }
+
+            /**
+             * A mark changed outside {@link setViewed}: a push, another tab, github.com. With a push the file is new to its
+             * run, so it is what the list last said that tells. Before the files go in: a choice decides if they are fetched.
+             */
+            function forgetChoicesOfChangedMarks(run: FileRun, files: readonly ReviewFile[], askedAt: number) {
+                let changed = false;
+                for (const { path, viewed } of files) {
+                    const mark = viewedMarks.get(path);
+                    const before = run.entries.get(path)?.file.viewed ?? viewedBefore.get(path);
+                    if (before !== undefined && before !== viewed && !(mark && isFresherMark(mark, askedAt))) {
+                        changed = collapseChoices.delete(path) || changed;
+                    }
+                }
+
+                if (changed) {
+                    keepState({ collapseChoices });
+                }
             }
 
             /** Page by page, so that what GitHub took off is named even if a later page never comes. */
@@ -1310,7 +1326,7 @@ export const ReviewFiles = defineService({
                 for (const file of files) {
                     if (file.viewed !== 'DISMISSED') {
                         changed = lost.delete(file.path) || changed;
-                    } else if (viewedBefore.has(file.path) && !lost.has(file.path)) {
+                    } else if (viewedBefore.get(file.path) === 'VIEWED' && !lost.has(file.path)) {
                         lost.add(file.path);
                         lostViewedNoticeRef.value = true;
                         changed = true;

@@ -7,7 +7,7 @@ import { Clock } from '@/services/Clock.js';
 
 import type { AnchoredListExposed } from './AnchoredList.vue';
 import { findReviewPositionRow, getReviewHeaderKey, getReviewPlacePath, getReviewPosition } from './buildReviewRows.js';
-import type { ReviewPosition, ReviewRow } from './buildReviewRows.js';
+import type { ReviewPlace, ReviewPosition, ReviewRow } from './buildReviewRows.js';
 import type { PullRequestFiles, ReviewFile } from './ReviewFiles.js';
 
 /** What {@link useReviewPosition} needs of a pull request's files. */
@@ -15,6 +15,9 @@ export type ReviewPositionFiles = Pick<
     PullRequestFiles,
     'position' | 'setPosition' | 'prioritize' | 'getCollapse' | 'listEnd'
 >;
+
+/** Why the review opened where it did: on the first file not viewed (CR20), or where it was left (CR26). */
+export type ReviewArrival = { readonly kind: 'firstFile' } | { readonly kind: 'left'; readonly place: ReviewPlace };
 
 /** Options of {@link useReviewPosition}. */
 export interface UseReviewPositionOptions {
@@ -30,6 +33,8 @@ export interface UseReviewPositionOptions {
      * overwritten. Anything that moves the view, a scroll first of all, sets this to `false`.
      */
     landing: ShallowRef<boolean>;
+    /** What it is landing on, for the status bar to say; `null` when that's only the top, or a file standing in. */
+    arrival: ShallowRef<ReviewArrival | null>;
 }
 
 /** The position isn't written more often than this while it moves; it is on leaving. */
@@ -42,11 +47,14 @@ const SAVE_EVERY_MS = 500;
  */
 export function useReviewPosition(options: UseReviewPositionOptions): void {
     const clock = useService(Clock);
-    const { landing } = options;
+    const { landing, arrival } = options;
 
     let cancelSave: (() => void) | null = null;
 
-    watch([() => toValue(options.list), () => toValue(options.rows)], land, { flush: 'post' });
+    // The list's end too: its last page may bring no rows, and it is what a first open is waiting for.
+    watch([() => toValue(options.list), () => toValue(options.rows), () => toValue(options.files)?.listEnd], land, {
+        flush: 'post',
+    });
     // A frame of a scroll costs this and no more: finding the row and writing wait for the timer.
     watch(
         () => toValue(options.list)?.anchor,
@@ -86,6 +94,7 @@ export function useReviewPosition(options: UseReviewPositionOptions): void {
             jumpTo(found.row.key, found.offset);
         }
 
+        arrival.value = found && found.landing !== 'fileMissing' ? { kind: 'left', place: position.place } : null;
         switch (found?.landing) {
             case 'arrived':
                 // It may yet open, which would bring the line.
@@ -104,10 +113,12 @@ export function useReviewPosition(options: UseReviewPositionOptions): void {
             const collapse = files.getCollapse(file.path);
             if (!file.gone && file.viewed !== 'VIEWED' && (collapse === null || collapse === 'undecided')) {
                 jumpTo(getReviewHeaderKey(file.path), 0);
-                return collapse === null;
+                arrival.value = { kind: 'firstFile' };
+                return collapse === null && files.listEnd !== 'growing';
             }
         }
 
+        arrival.value = null;
         const [top] = toValue(options.rows);
         if (top) {
             jumpTo(top.key, 0);

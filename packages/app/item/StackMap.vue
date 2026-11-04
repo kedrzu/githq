@@ -33,6 +33,8 @@ import type {
   StackPullRequestPipKind,
   StackState,
 } from '@/store/stacks/describeStack.js';
+import { getStackMembers } from '@/store/stacks/getStackMembers.js';
+import { getStackPlace } from '@/store/stacks/getStackPlace.js';
 
 import { getStackMapWindow } from './getStackMapWindow.js';
 import type { ItemArrangement } from './itemRoutes.js';
@@ -82,7 +84,7 @@ const t = useTranslate();
 const queueTexts = useMergeQueueTexts();
 const unitList = new Intl.ListFormat(APP_LANGUAGE, { type: 'unit', style: 'short' });
 
-const members = computed(() => props.stack.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'));
+const members = computed(() => getStackMembers(props.stack.pips));
 const rows = computed(() => members.value.map(pip => getRow(pip)));
 const currentIndex = computed(() =>
   Math.max(
@@ -90,10 +92,9 @@ const currentIndex = computed(() =>
     0,
   ),
 );
-const place = computed(() => {
-  const position = members.value[currentIndex.value]?.pullRequest.stack?.position ?? currentIndex.value + 1;
-  return t(l.place, { position, size: props.stack.size });
-});
+const place = computed(() =>
+  t(l.place, { position: getStackPlace(members.value, props.currentId), size: props.stack.size }),
+);
 // D17: a panel's window of at most six lines; a modal and a page show every row.
 const lines = computed((): readonly (StackMapFold | StackMapRow)[] => {
   const all = rows.value;
