@@ -472,6 +472,37 @@ test("SC1: from a stack's panel opened on a later one, the first open one sent a
     expect(sent).toEqual(['next']);
 });
 
+test('accepted: the opener is told what the merge took, every one going of a stack’s', async () => {
+    const { panel, items, session, answers } = await setup();
+    items.upsertMany(STACK);
+    answers.put = PENDING;
+    const told: (readonly string[])[] = [];
+
+    panel.open('PR_1', { wholeStack: true, onSent: merged => told.push(merged) });
+    const accepted = panel.merge({
+        item: STACK_TOP,
+        submission: { request: { method: 'SQUASH' }, edited: null },
+        stack: { id: 'S_1', size: 2, going: STACK },
+    });
+    await session.clock.advance(0);
+    await accepted;
+
+    expect(told).toEqual([['PR_0', 'PR_1']]);
+});
+
+test('accepted: the opener is told the one pull request a merge took', async () => {
+    const { panel, session, answers } = await setup();
+    answers.put = PENDING;
+    const told: (readonly string[])[] = [];
+
+    panel.open('PR_1', { onSent: merged => told.push(merged) });
+    const accepted = panel.merge({ item: samplePullRequest('PR_1'), submission: EDITED });
+    await session.clock.advance(0);
+    await accepted;
+
+    expect(told).toEqual([['PR_1']]);
+});
+
 test("SS4: a stack's merge confirmed after the panel left says how many landed, and where", async () => {
     const { panel, items, session, answers } = await setup();
     items.upsertMany(STACK);

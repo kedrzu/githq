@@ -9,7 +9,6 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId,
 import { useRoute } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
-import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import { useCommands } from '@/commands/useCommands.js';
 import EmptyState from '@/components/EmptyState.vue';
 import { getOpenedItemRoute, parseItemUrl } from '@/item/itemRoutes.js';
@@ -328,7 +327,15 @@ watch(
 useCommands(() => [
   { id: 'commits.next', title: t(l.next), section: 'view', key: 'J', otherKeys: ['ArrowDown'], menu: false },
   { id: 'commits.previous', title: t(l.previous), section: 'view', key: 'K', otherKeys: ['ArrowUp'], menu: false },
-  { id: 'commits.refList', title: t(l.findRef), section: 'view', key: 'B', menu: false },
+  {
+    id: 'commits.refList',
+    title: t(l.findRef),
+    section: 'view',
+    key: 'B',
+    menu: false,
+    when: () => !itemOpened.value && !isScreenCovered(),
+    run: () => void openRefList(),
+  },
   { id: 'commits.details', title: t(l.openDetails), section: 'view', key: 'Enter', menu: false },
   {
     id: 'commits.firstParent',
@@ -336,6 +343,7 @@ useCommands(() => [
     section: 'view',
     key: COMMIT_DETAILS_KEYS.firstParent,
     menu: false,
+    actsOnRow: true,
     when: detailsHaveKeys,
     run: () => goToParent(0),
   },
@@ -345,6 +353,7 @@ useCommands(() => [
     section: 'view',
     key: COMMIT_DETAILS_KEYS.secondParent,
     menu: false,
+    actsOnRow: true,
     when: detailsHaveKeys,
     run: () => goToParent(1),
   },
@@ -354,6 +363,7 @@ useCommands(() => [
     section: 'view',
     key: COMMIT_DETAILS_KEYS.pullRequest,
     menu: false,
+    actsOnRow: true,
     when: detailsHaveKeys,
     run: openPullRequest,
   },
@@ -363,6 +373,7 @@ useCommands(() => [
     section: 'view',
     key: COMMIT_DETAILS_KEYS.openOnGitHub,
     menu: false,
+    actsOnRow: true,
     when: detailsHaveKeys,
     run: () => browser.openInNewTab(openedUrl.value),
   },
@@ -399,13 +410,6 @@ onWindowEvent('keydown', event => {
       event.preventDefault();
       closeDetails();
     }
-
-    return;
-  }
-
-  if (matchesCommandKey(event, 'B')) {
-    event.preventDefault();
-    void openRefList();
   }
 });
 
@@ -710,6 +714,7 @@ function resetShare() {
           ref="scroller"
           :class="css.commitGraphView_pane"
           tabindex="0"
+          data-screen-keys
           :aria-label="t(l.commitsOf, { name: nameWithOwner })"
           role="region"
           @scroll.passive="onScroll"

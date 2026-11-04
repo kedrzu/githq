@@ -162,6 +162,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         v-for="group in brokenGroups"
         :key="group.key"
         :aria-label="group.label"
+        data-screen-keys
       >
         <h2 :class="css.brokenWorkflowsView_group">
           {{ group.label }}

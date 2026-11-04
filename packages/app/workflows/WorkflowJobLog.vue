@@ -347,6 +347,7 @@ useCommands(() => [
     id: 'workflowLog.nextLine',
     title: t(l.nextLine),
     section: 'view',
+    actsOnRow: true,
     key: 'J',
     otherKeys: ['ArrowDown'],
     menu: false,
@@ -356,6 +357,7 @@ useCommands(() => [
     id: 'workflowLog.previousLine',
     title: t(l.previousLine),
     section: 'view',
+    actsOnRow: true,
     key: 'K',
     otherKeys: ['ArrowUp'],
     menu: false,
@@ -365,6 +367,7 @@ useCommands(() => [
     id: 'workflowLog.nextStep',
     title: t(l.nextStep),
     section: 'view',
+    actsOnRow: true,
     key: 'Shift+J',
     menu: false,
     run: () => moveByStep(1),
@@ -373,6 +376,7 @@ useCommands(() => [
     id: 'workflowLog.previousStep',
     title: t(l.previousStep),
     section: 'view',
+    actsOnRow: true,
     key: 'Shift+K',
     menu: false,
     run: () => moveByStep(-1),
@@ -381,6 +385,7 @@ useCommands(() => [
     id: 'workflowLog.nextError',
     title: t(l.nextError),
     section: 'view',
+    actsOnRow: true,
     key: 'E',
     menu: false,
     run: () => moveByError(1),
@@ -389,6 +394,7 @@ useCommands(() => [
     id: 'workflowLog.previousError',
     title: t(l.previousError),
     section: 'view',
+    actsOnRow: true,
     key: 'Shift+E',
     menu: false,
     run: () => moveByError(-1),
@@ -398,6 +404,7 @@ useCommands(() => [
     id: 'workflowLog.fold',
     title: t(l.fold),
     section: 'view',
+    actsOnRow: true,
     key: 'Space',
     menu: false,
     when: () => !isActivatableTarget(window.document.activeElement),
@@ -407,6 +414,7 @@ useCommands(() => [
     id: 'workflowLog.top',
     title: t(l.top),
     section: 'view',
+    actsOnRow: true,
     key: 'G',
     menu: false,
     run: () => {
@@ -418,6 +426,7 @@ useCommands(() => [
     id: 'workflowLog.end',
     title: t(l.end),
     section: 'view',
+    actsOnRow: true,
     key: 'Shift+G',
     menu: false,
     run: () => {
@@ -433,6 +442,7 @@ useCommands(() => [
     id: 'workflowLog.halfPageDown',
     title: t(l.halfPageDown),
     section: 'view',
+    actsOnRow: true,
     key: 'D',
     menu: false,
     run: () => moveByHalfPage(1),
@@ -441,6 +451,7 @@ useCommands(() => [
     id: 'workflowLog.halfPageUp',
     title: t(l.halfPageUp),
     section: 'view',
+    actsOnRow: true,
     key: 'U',
     menu: false,
     run: () => moveByHalfPage(-1),
@@ -450,6 +461,7 @@ useCommands(() => [
     id: 'workflowLog.wholeLine',
     title: t(l.showWholeLine),
     section: 'view',
+    actsOnRow: true,
     key: 'Enter',
     menu: false,
     when: () => cursorLineCut.value && matchTotal.value === 0 && !isActivatableTarget(window.document.activeElement),
@@ -463,6 +475,7 @@ useCommands(() => [
     id: 'workflowLog.copyLineLink',
     title: t(l.copyLineLink),
     section: 'view',
+    actsOnRow: true,
     key: 'Y',
     when: () => cursor.value !== null,
     run: copyLineLink,
@@ -1161,6 +1174,7 @@ function measureCharacterWidth() {
           ref="scroller"
           :class="css.workflowJobLog_scroller"
           tabindex="0"
+          data-screen-keys
           tid="workflow-job-log"
           @scroll.passive="view.onScroll()"
         >

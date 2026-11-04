@@ -81,6 +81,9 @@ test('⇧M on the opened pull request sends the title edited with E, and its sta
             commit_title: 'Redirect once, keeping the return address',
         },
     ]);
+    // Sent, the panel moves on at once (PM32a); back on it, it says it waits for GitHub.
+    await expect(item.title).toHaveText(SECOND_TITLE);
+    await page.keyboard.press('k');
     await expect(item.title).toHaveText(FIRST_TITLE);
     await expect(item.root).toContainText('Being merged');
     await expect(item.root).toContainText('Waiting for GitHub');
