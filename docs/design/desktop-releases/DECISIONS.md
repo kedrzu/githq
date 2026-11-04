@@ -40,7 +40,8 @@ installed side by side on one machine.
 > **Checked 2026-11-04:** a build costs nothing and takes minutes. "Use of the standard GitHub-hosted runners is free and
 > unlimited on public repositories" — [GitHub docs](https://docs.github.com/en/actions/reference/runners/github-hosted-runners);
 > the repository is public. The last full release run (41327591915, `v0.1.0-rc.1`, all four platforms) took 16:41:13 to
-> 16:50:18, about 9 minutes. Windows was one of the parallel builds and among the slowest, finishing with Linux at 16:50:11.
+> 16:50:18, about 9 minutes. Windows was one of the parallel builds and among the slowest, finishing with Linux at 16:50:11. That run had no `APPLE_*` secrets, so it
+> excludes signing and notarization, whose time is unmeasured; "about 9 minutes" is a lower bound for a signed build.
 
 > **Checked 2026-11-04:** nothing is published: the repository has 0 releases and 0 tags
 > (`gh api repos/kedrzu/githq/releases`, `…/tags`).

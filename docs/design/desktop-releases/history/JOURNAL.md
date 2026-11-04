@@ -26,3 +26,12 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner accepted: path check on scopes (D8), two streams with no Nightly (D9), reading what changed from GitHub
   (D10), 15-minute and 4-hour checks with "check now" (D11), personal Apple account (D2). Story folded up to here. Next:
   failure sweep and rightsize before proposing to close.
+- 2026-11-04: Failure sweep and three rightsize passes back, nothing applied yet. Dropped as already chosen by the owner with the
+  simpler version in view: waiting instead of downgrading (D5), link to the browser instead of an in-app list (D3), definition
+  only for scopes (D8), a skill for the summary (D6), Windows on Development (D2). Put to the owner: one release read for the list
+  on both streams; last stable patch + 1 as the version base; publish a draft and replace instead of swapping files, tag not moved;
+  no "check now"; second app kept out. From the sweep, proposed: a newer push cancels an older build; a running `-dev` build on
+  Stable accepts any stable version (no one-off state) and switching checks at once; the list is fetched on click, a failure
+  gives a link. Proposed to accept: a platform missing from a hand-published draft; never reusing a published version. Corrected
+  "about 9 minutes": measured without notarization. Risks raised: `.deb` update needs privilege in the background, updater key
+  backup. Proposed order: Development, what changed, then signature and 0.1.0.

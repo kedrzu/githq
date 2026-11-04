@@ -38,7 +38,7 @@ Missing: the Apple signature, the builds from `main`, the choice in Settings, an
 ## Two streams of updates
 
 Stable is what the owner releases by hand when a release is worth it. Development is everything else: every push to
-`main` that passes the checks and changes more than documentation builds it, about nine minutes later it is there, and each build
+`main` that passes the checks and changes more than documentation builds it, minutes later it is there, and each build
 replaces the last in a single prerelease on GitHub. That keeps the Releases page readable, and it means
 [yesterday's build is gone](DECISIONS.md#d4): a broken one is fixed by the next, or left by switching to Stable.
 
