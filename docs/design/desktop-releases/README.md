@@ -79,3 +79,13 @@ correction should still arrive. Offline, the list waits for the connection.
 First the Development stream and its choice in Settings, which need nothing from Apple, so updates can be tried on a real
 install at once. Then the list of what changed and its toast. Last the Apple signature and the first Stable release, 0.1.0.
 [Why in that order](DECISIONS.md#d13).
+
+## What to check while building
+
+Four things could not be settled from documentation and need trying:
+
+- whether GitHub allows a draft with a tag a published release already holds; if not, the draft takes a temporary tag until it
+  is published;
+- whether `releases/latest/download/` really skips prereleases, which keeps Stable apart from Development;
+- whether updating a `.deb` asks for an administrator password out of nowhere, since the app installs in the background;
+- how long a build takes with Apple's notarization, which the nine-minute measurement did not include.

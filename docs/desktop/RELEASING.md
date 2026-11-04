@@ -91,9 +91,11 @@ The updater bundles are signed with a minisign key. Its public half is `plugins.
 `~/.githq-secrets/` (`updater.key`, `updater.key.password`) on the owner's Mac and set as the repository secrets
 `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
 
-**Back both files up to a password manager.** GitHub secrets can't be read back. If the key is lost, installed
-apps can never update again: they accept only updates signed by this key, so every user would have to reinstall
-by hand from a build with a new key.
+**Both are backed up in Bitwarden**, in githq's Secrets Manager project, as `GITHQ_TAURI_SIGNING_PRIVATE_KEY_PROD` and
+`GITHQ_TAURI_SIGNING_PRIVATE_KEY_PASSWORD_PROD`. They are deliberately not mapped in `scripts/secrets.ts`, so that
+`bun run dev` does not load a signing key; restore them from the web vault. GitHub secrets can't be read back. If the
+key is lost, installed apps can never update again: they accept only updates signed by this key, so every user would
+have to reinstall by hand from a build with a new key.
 
 ### Apple signing and notarization (once the Developer ID exists)
 

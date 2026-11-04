@@ -41,3 +41,6 @@ Append-only. One line per turn that settled something.
   the updater key is backed up. Not checked: a draft holding a tag a published release holds. Story folded up to here.
 - 2026-11-04: Owner accepted the sweep's three rules (D4, D5, D10), the two cases without code (D12), the order (D13). Owner asked
   what the updater key is: explained. Backup still to be settled. Story folded.
+- 2026-11-04: Updater key and password stored in Bitwarden through a temporary mapping, compared with the files without showing
+  them; not mapped in the repo so development doesn't load them (`docs/desktop/RELEASING.md`). Owner closed the design. Goes to
+  `/dev:deliver`.
