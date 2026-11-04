@@ -1,5 +1,5 @@
-# One check of a pull request's head commit as the opened item lists it, shared by `PullRequestDetailFields` and
-# `PullRequestMergeOptions` so both map it the same way.
+# One check of a commit as the opened item or commit lists it, shared by `PullRequestDetailFields`,
+# `PullRequestMergeOptions` and `CommitChecks` so they all map it the same way.
 fragment PullRequestCheckFields on StatusCheckRollupContext {
     ... on CheckRun {
         __typename

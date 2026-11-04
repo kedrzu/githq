@@ -1,0 +1,15 @@
+passedCount:
+  en: '{count} passed'
+skippedCount:
+  en: '{count} skipped'
+log:
+  en: Log
+showPassed:
+  en: Show the checks that passed
+hidePassed:
+  en: Hide the checks that passed
+more:
+  plural: count
+  en:
+    one: '{count} more on GitHub'
+    many: '{count} more on GitHub'

@@ -2,16 +2,35 @@ import { createPromise } from '@nzyme/utils/createPromise.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test } from 'vitest';
 import { page } from 'vitest/browser';
-import { createApp, h } from 'vue';
+import { createApp, defineComponent, h } from 'vue';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
-import { SAMPLE_COMMITS_NOW, sampleCommit, sampleCommitRef, sampleWebappHistory } from '@/testing/sampleCommits.js';
+import {
+    SAMPLE_COMMITS_NOW,
+    sampleCheckRun,
+    sampleCommit,
+    sampleCommitRef,
+    sampleWebappHistory,
+} from '@/testing/sampleCommits.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import CommitDetails from './CommitDetails.vue';
 import type { CommitRowRef } from './CommitRow.vue';
 
 const REPOSITORY = 'acme/web';
+const CHECKS_ON_GITHUB = 'The checks are listed on GitHub';
+
+/** How {@link mount} shows the panel. */
+interface MountOptions {
+    readonly refs?: readonly CommitRowRef[];
+    /** `acme/web` is tracked. */
+    readonly tracked?: boolean;
+    /** The width kept for the panel. */
+    readonly width?: number;
+}
 
 test('a hostile message is text, never markup, its line breaks kept', async () => {
     const hostile = '<img src=x onerror="window.hacked = true">\n<script>window.hacked = true</script>';
@@ -29,7 +48,9 @@ test('a hostile message is text, never markup, its line breaks kept', async () =
 });
 
 test('CH18: what it says of a commit: author, when, sha, parent, refs, pull request and CI, with no count of failing checks', async () => {
-    const { panel } = await mount(sampleWebappHistory(), 'a2', [{ name: 'fix/booking-tz', kind: 'branch' }]);
+    const { panel, store } = await mount(sampleWebappHistory(), 'a2', {
+        refs: [{ name: 'fix/booking-tz', kind: 'branch' }],
+    });
 
     await expect
         .element(panel.getByRole('heading', { name: "fix: booking time uses the studio's timezone" }))
@@ -46,7 +67,10 @@ test('CH18: what it says of a commit: author, when, sha, parent, refs, pull requ
     await expect.element(panel.getByRole('img', { name: 'Open pull request' })).toBeVisible();
     await expect.element(panel.getByRole('img', { name: 'Checks failing' })).toBeVisible();
     await expect.element(panel.getByText('Failing')).toBeVisible();
-    await expect.element(panel).toHaveTextContent('the checks are listed on GitHub');
+    // GitHub listed none of them: the rollup stays, and nothing was failed to read.
+    await expect.poll(() => store.getChecks(REPOSITORY, 'a2')?.kind).toBe('read');
+    await expect.element(panel.getByText('Failing')).toBeVisible();
+    await expect.element(panel.getByRole('link', { name: CHECKS_ON_GITHUB })).not.toBeInTheDocument();
     await expect
         .element(panel.getByRole('link', { name: 'Open on GitHub' }))
         .toHaveAttribute('href', 'https://github.com/acme/web/commit/a2');
@@ -98,23 +122,165 @@ test('CH34: the pull request and CI not known yet: their titles over an empty ba
     await expect.poll(() => bars.elements().length).toBe(0);
 });
 
-test('passing or running, nothing says where the checks are listed: only a failure sends you to read them', async () => {
+test('the rollup shows at once, with no note, while the checks are read; the list then takes its place, in order, what passed folded', async () => {
+    const answered = createPromise();
+    const { panel } = await mount(
+        {
+            commits: [sampleCommit('c1', 10)],
+            states: new Map([['c1', { pullRequest: null, ci: 'FAILURE' }]]),
+            checks: new Map([
+                [
+                    'c1',
+                    [
+                        sampleCheckRun('lint', 'SUCCESS'),
+                        sampleCheckRun('deploy', 'SKIPPED'),
+                        sampleCheckRun('e2e', null),
+                        sampleCheckRun('build', 'FAILURE'),
+                    ],
+                ],
+            ]),
+            holdIf: operation => (operation === 'CommitChecks' ? answered.promise : null),
+        },
+        'c1',
+    );
+
+    await expect.element(panel.getByText('Failing')).toBeVisible();
+    await expect.element(panel.getByRole('link', { name: CHECKS_ON_GITHUB })).not.toBeInTheDocument();
+
+    answered.resolve();
+    await expect.element(panel.getByText('CI / build')).toBeVisible();
+    await expect.element(panel.getByText('Failing')).not.toBeInTheDocument();
+    expect(getRowStarts(panel.element())).toEqual(['CI / build', 'CI / e2e', '1 passed · 1 skipped']);
+
+    await panel.getByRole('button', { name: 'Show the checks that passed' }).click();
+    expect(getRowStarts(panel.element())).toEqual([
+        'CI / build',
+        'CI / e2e',
+        '1 passed · 1 skipped',
+        'CI / lint',
+        'CI / deploy',
+    ]);
+});
+
+test('an Actions job opens in the app in a tracked repository, and on GitHub in a new tab in any other', async () => {
+    const options: CommitGraphTestOptions = {
+        commits: [sampleCommit('c1', 10)],
+        states: new Map([['c1', { pullRequest: null, ci: 'FAILURE' }]]),
+        checks: new Map([['c1', [sampleCheckRun('build', 'FAILURE')]]]),
+    };
+    const log = 'Log · CI / build';
+
+    const tracked = await mount(options, 'c1', { tracked: true });
+    const inApp = tracked.panel.getByRole('link', { name: log });
+    await expect.element(inApp).toHaveAttribute('href', '/acme/web/actions/runs/123/job/456');
+    await expect.element(inApp).not.toHaveAttribute('target');
+    expect(inApp.element().querySelector('svg')).toBeNull();
+    tracked.unmount();
+
+    const untracked = await mount(options, 'c1');
+    const onGitHub = untracked.panel.getByRole('link', { name: log });
+    await expect.element(onGitHub).toHaveAttribute('href', 'https://github.com/acme/web/actions/runs/123/job/456');
+    await expect.element(onGitHub).toHaveAttribute('target', '_blank');
+    expect(onGitHub.element().querySelector('svg')).not.toBeNull();
+});
+
+test("in a tracked repository another check's address opens in a new tab, and a check with no address has no link", async () => {
+    const { panel } = await mount(
+        {
+            commits: [sampleCommit('c1', 10)],
+            states: new Map([['c1', { pullRequest: null, ci: 'FAILURE' }]]),
+            checks: new Map([
+                [
+                    'c1',
+                    [
+                        {
+                            __typename: 'StatusContext',
+                            id: 'S_ci',
+                            context: 'ci/external',
+                            state: 'FAILURE',
+                            targetUrl: 'https://ci.example.com/build/1',
+                            createdAt: '2026-10-01T00:00:00Z',
+                        },
+                        { ...sampleCheckRun('build', 'FAILURE'), detailsUrl: null },
+                    ],
+                ],
+            ]),
+        },
+        'c1',
+        { tracked: true },
+    );
+
+    const external = panel.getByRole('link', { name: 'Log · ci/external' });
+    await expect.element(external).toHaveAttribute('href', 'https://ci.example.com/build/1');
+    await expect.element(external).toHaveAttribute('target', '_blank');
+    await expect.element(panel.getByText('CI / build')).toBeVisible();
+    await expect.element(panel.getByRole('link', { name: 'Log · CI / build' })).not.toBeInTheDocument();
+});
+
+test('a failed read keeps the rollup and links to the checks on GitHub, whatever the rollup; a commit with no checks still has no CI', async () => {
     for (const [ci, word] of [
         ['SUCCESS', 'Passing'],
-        ['PENDING', 'Running'],
+        ['FAILURE', 'Failing'],
     ] as const) {
         const { panel, unmount } = await mount(
             {
                 commits: [sampleCommit('c1', 10)],
                 states: new Map([['c1', { pullRequest: null, ci }]]),
+                failIf: operation => operation === 'CommitChecks',
             },
             'c1',
         );
 
         await expect.element(panel.getByText(word)).toBeVisible();
-        await expect.element(panel).not.toHaveTextContent('the checks are listed on GitHub');
+        const link = panel.getByRole('link', { name: CHECKS_ON_GITHUB });
+        await expect.element(link).toHaveAttribute('href', 'https://github.com/acme/web/commit/c1/checks');
+        await expect.element(link).toHaveAttribute('target', '_blank');
         unmount();
     }
+
+    const none = await mount({ commits: [sampleCommit('c1', 10)], failIf: name => name === 'CommitChecks' }, 'c1');
+    await expect.poll(() => none.store.getChecks(REPOSITORY, 'c1')?.kind).toBe('failed');
+    await expect.element(none.panel.getByRole('heading', { name: 'CI on this commit' })).not.toBeInTheDocument();
+    await expect.element(none.panel.getByRole('link', { name: CHECKS_ON_GITHUB })).not.toBeInTheDocument();
+});
+
+test('more checks than a read holds: a link to all of them on GitHub', async () => {
+    const { panel } = await mount(
+        {
+            commits: [sampleCommit('c1', 10)],
+            states: new Map([['c1', { pullRequest: null, ci: 'SUCCESS' }]]),
+            checks: new Map([['c1', Array.from({ length: 101 }, (_, i) => sampleCheckRun(`job-${i}`, 'SUCCESS'))]]),
+        },
+        'c1',
+    );
+
+    const more = panel.getByRole('link', { name: '1 more on GitHub' });
+    await expect.element(more).toHaveAttribute('href', 'https://github.com/acme/web/commit/c1/checks');
+    await expect.element(more).toHaveAttribute('target', '_blank');
+});
+
+test("in the narrowest panel a check's name gives way and how long it ran stays; the folded row's names cut before its chevron", async () => {
+    const long = 'integration-tests-against-the-whole-of-the-staging-environment';
+    const { panel } = await mount(
+        {
+            commits: [sampleCommit('c1', 10)],
+            states: new Map([['c1', { pullRequest: null, ci: 'FAILURE' }]]),
+            checks: new Map([['c1', [sampleCheckRun(long, 'FAILURE'), sampleCheckRun(`${long}-passing`, 'SUCCESS')]]]),
+        },
+        'c1',
+        { width: 320 },
+    );
+
+    const ran = panel.getByText('failed after 2m 14s');
+    await expect.element(ran).toBeVisible();
+    expect(ran.element().scrollWidth).toBeLessThanOrEqual(ran.element().clientWidth);
+    const name = panel.getByText(`CI / ${long}`).element();
+    expect(name.scrollWidth).toBeGreaterThan(name.clientWidth);
+
+    const names = panel.getByText(`${long}-passing`).element();
+    expect(names.scrollWidth).toBeGreaterThan(names.clientWidth);
+    const chevron = panel.getByRole('button', { name: 'Show the checks that passed' }).element();
+    expect(chevron.getBoundingClientRect().right).toBeLessThanOrEqual(panel.element().getBoundingClientRect().right);
 });
 
 test('no refs, no pull request, no checks: "None." and nothing more', async () => {
@@ -159,14 +325,35 @@ test('CH40: a read that fails says so quietly: a commit not loaded has the rest 
     await expect.element(loaded.panel.getByRole('heading', { name: 'Commit c1' })).toBeVisible();
 });
 
-/** The panel on the commit `oid`, its graph opened and its details and state asked for, as the view does. */
-async function mount(options: CommitGraphTestOptions, oid: string, refs: readonly CommitRowRef[] = []) {
+/** The first text of each row of the list of checks: a check's name, or the folded row's counts. */
+function getRowStarts(panel: Element) {
+    return [...panel.querySelectorAll('li')].map(row => row.querySelector('span')?.textContent);
+}
+
+/** The panel on the commit `oid`, its graph opened and its details, state and checks asked for, as the view does. */
+async function mount(options: CommitGraphTestOptions, oid: string, panel: MountOptions = {}) {
     const { container, store, ready } = createCommitGraphTest(options);
     await ready;
-    await store.open(REPOSITORY);
-    store.ensureDetail(REPOSITORY, { oid, id: `C_${oid}` });
-    store.ensureStates(REPOSITORY, [{ oid, id: `C_${oid}` }]);
+    if (panel.tracked) {
+        const tracking = container.resolve(TrackingStore);
+        await tracking.ready();
+        tracking.choose({ repositories: [{ nameWithOwner: REPOSITORY, id: 'R_web' }], projects: [] });
+    }
 
+    if (panel.width !== undefined) {
+        container.resolve(LocalPreferences).getPanelWidth('commitDetails').value = panel.width;
+    }
+
+    await store.open(REPOSITORY);
+    const commit = { oid, id: `C_${oid}` };
+    store.ensureDetail(REPOSITORY, commit);
+    store.ensureStates(REPOSITORY, [commit]);
+    store.ensureChecks(REPOSITORY, commit);
+
+    const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+    });
     const host = document.createElement('div');
     host.style.display = 'flex';
     host.style.height = '600px';
@@ -176,7 +363,7 @@ async function mount(options: CommitGraphTestOptions, oid: string, refs: readonl
             h(CommitDetails, {
                 nameWithOwner: REPOSITORY,
                 oid,
-                refs,
+                refs: panel.refs ?? [],
                 chosenRef: null,
                 url: `https://github.com/${REPOSITORY}/commit/${oid}`,
                 now: SAMPLE_COMMITS_NOW,
@@ -184,6 +371,8 @@ async function mount(options: CommitGraphTestOptions, oid: string, refs: readonl
             }),
     });
     app.use(IocPlugin, { container });
+    app.use(router);
+    await router.isReady();
     app.mount(host);
     let mounted = true;
     onTestFinished(unmount);

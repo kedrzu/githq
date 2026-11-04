@@ -168,6 +168,31 @@ export function getWorkflowRunPath(params: GetWorkflowRunPathParams) {
     return jobId === undefined ? path : `${path}/job/${jobId}`;
 }
 
+/** A run or job at its github.com address, as GitHub writes it. */
+const GITHUB_RUN_URL_PATTERN =
+    /^https:\/\/github\.com\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)\/actions\/runs\/(\d+)(?:\/job\/(\d+))?\/?(?:[?#].*)?$/;
+
+/**
+ * The app's path of a workflow run or job at a github.com address (a check's `url`, which is untrusted), or `null`
+ * for anything else: another host or scheme, another page under `actions/` (`runs/1/attempts/2`, `runs/1/usage`),
+ * a malformed address. The path names the repository of the address. Query and fragment are ignored.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getWorkflowRunPathOfUrl(url: string) {
+    const match = GITHUB_RUN_URL_PATTERN.exec(url);
+    if (match === null) {
+        return null;
+    }
+
+    const [, owner, name, run, job] = match;
+    return getWorkflowRunPath({
+        nameWithOwner: `${owner}/${name}`,
+        runId: Number(run),
+        jobId: job === undefined ? undefined : Number(job),
+    });
+}
+
 /**
  * The address of a tracked repository's settings (T16), as on GitHub (`/owner/name/settings`), or of one of its
  * sections (`/owner/name/settings#workflow-alerts`), which the page brings into view.

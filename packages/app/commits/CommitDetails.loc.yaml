@@ -51,7 +51,7 @@ ciFailing:
 ciRunning:
   en: Running
 checksOnGitHub:
-  en: · the checks are listed on GitHub
+  en: The checks are listed on GitHub
 keyCommit:
   en: Commit
 keyParent:
