@@ -1,4 +1,6 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
+import { CircleDot, GitCommitHorizontal, GitPullRequest, Workflow } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
 
 import type { Item } from '@/store/ItemTypes.js';
 
@@ -14,6 +16,14 @@ export type RepositoryItemSection = 'issues' | 'pullRequests';
 
 /** The sections in the order the tabs show them; the first is on `1`, the next on `2`, and so on. */
 export const REPOSITORY_SECTIONS: readonly RepositorySection[] = ['issues', 'pullRequests', 'commits', 'workflows'];
+
+/** Each section's icon, in the command menu. */
+export const REPOSITORY_SECTION_ICONS: Readonly<Record<RepositorySection, LucideIcon>> = {
+    issues: CircleDot,
+    pullRequests: GitPullRequest,
+    commits: GitCommitHorizontal,
+    workflows: Workflow,
+};
 
 /**
  * Whether the section lists items, so the item list's code paths run for it.

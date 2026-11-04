@@ -393,13 +393,7 @@ function isMergeable(pr: PullRequestItem, now: PullRequestStanding, counts: Merg
         return counts.requiredFailing + counts.requiredPending === 0 && mergesWithinRules(pr.mergeStateStatus);
     }
 
-    const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
-    return (
-        pr.state === 'OPEN' &&
-        (now.readyToMerge ||
-            (clean && !pr.isDraft && pr.reviewDecision === null && !now.needsAuthor) ||
-            onlyOptionalHold(pr, now, counts))
-    );
+    return pr.state === 'OPEN' && (now.readyToMerge || now.mergesWithoutReview || onlyOptionalHold(pr, now, counts));
 }
 
 /**
