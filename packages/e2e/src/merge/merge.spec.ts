@@ -53,6 +53,27 @@ test("⇧M on the selected row merges with the default method and GitHub's text:
     await expect(shell.toasts).toHaveCount(0);
 });
 
+test("PM8: ⌘↵ pressed before the repository's merge settings arrive is not lost: it merges with the default method once they do", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMergeableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const panel = new MergePanelHarness(page);
+    await selectRow(myWork, FIRST_TITLE);
+    sample.world.holdMerges();
+
+    github.holdAnswers();
+    await page.keyboard.press('Shift+M');
+    await expect(panel.root).toBeVisible();
+    await page.keyboard.press('ControlOrMeta+Enter');
+    github.releaseAnswers();
+
+    await expect(panel.root).toBeHidden();
+    expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: sample.world.headOf(sample.first) }]);
+    await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
+});
+
 test('⇧M on the opened pull request sends the title edited with E, and its standing waits for GitHub', async ({
     page,
     github,
