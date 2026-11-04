@@ -111,13 +111,31 @@ test("⌘K on a tracked repository's view groups its sections, Open on GitHub, C
         'Workflows4',
         `Open on GitHub${SAMPLE_REPOSITORY}`,
         'Copy link',
-        'Settings',
+        'Repository settings',
     ]);
 
     await menu.option(/^Pull requests/u).click();
     await expect(menu.root).toBeHidden();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
     await expect(new RepositoryScreenHarness(page).section('Pull requests')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('⌘K in a repository: "settings" and Enter opens the app\'s Settings, the repository\'s is its own line', async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
+    const menu = new CommandMenuHarness(page);
+
+    await menu.run('settings');
+    await expect(page).toHaveURL('/settings');
+
+    await page.goBack();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
+    await menu.run('repository settings');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings`);
 });
 
 test("⌘K on an untracked repository's view has neither Workflows nor Settings in its group", async ({
@@ -134,7 +152,7 @@ test("⌘K on an untracked repository's view has neither Workflows nor Settings 
     await expect(group.getByRole('option', { name: /^Issues/u })).toBeVisible();
     await expect(group.getByRole('option', { name: /^Open on GitHub/u })).toBeVisible();
     await expect(group.getByRole('option', { name: /^Workflows/u })).toHaveCount(0);
-    await expect(group.getByRole('option', { name: /^Settings/u })).toHaveCount(0);
+    await expect(group.getByRole('option', { name: /^Repository settings/u })).toHaveCount(0);
 });
 
 test('⌘K with an item opened over a repository’s list runs a section without closing the item', async ({

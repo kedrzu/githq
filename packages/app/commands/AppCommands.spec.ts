@@ -115,7 +115,7 @@ test("off its view the repository's group has its sections, page, link and setti
 
     await openMenu();
     const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
-    for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows', 'Settings', 'Copy link']) {
+    for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows', 'Repository settings', 'Copy link']) {
         await expect.element(group.getByRole('option', { name: title, exact: true })).toBeInTheDocument();
     }
     await expect.element(group.getByRole('option', { name: /^Open on GitHub\s*acme\/web$/ })).toBeInTheDocument();
@@ -134,13 +134,13 @@ test("on a repository's view the group has only its page, link and settings: its
     await openMenu();
     const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
     await expect.element(group.getByRole('option', { name: /^Open on GitHub\s*acme\/web$/ })).toBeInTheDocument();
-    await expect.element(group.getByRole('option', { name: 'Settings', exact: true })).toBeInTheDocument();
+    await expect.element(group.getByRole('option', { name: 'Repository settings', exact: true })).toBeInTheDocument();
     for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows']) {
         await expect.element(group.getByRole('option', { name: title })).not.toBeInTheDocument();
     }
 });
 
-test('a repository that is not tracked is offered Commits but neither Workflows nor Settings', async () => {
+test('a repository that is not tracked is offered Commits but neither Workflows nor its settings', async () => {
     const router = await mount({});
     await router.push('/acme/web/actions/runs/7');
 
@@ -148,7 +148,9 @@ test('a repository that is not tracked is offered Commits but neither Workflows 
     const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
     await expect.element(group.getByRole('option', { name: 'Commits', exact: true })).toBeInTheDocument();
     await expect.element(group.getByRole('option', { name: 'Workflows' })).not.toBeInTheDocument();
-    await expect.element(group.getByRole('option', { name: 'Settings', exact: true })).not.toBeInTheDocument();
+    await expect
+        .element(group.getByRole('option', { name: 'Repository settings', exact: true }))
+        .not.toBeInTheDocument();
 });
 
 async function openMenu() {
