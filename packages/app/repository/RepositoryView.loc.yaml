@@ -108,3 +108,5 @@ branchesAndTags:
   en: Branches and tags
 workflows:
   en: Workflows
+filterByStateCommand:
+  en: Filter by state…

@@ -1,4 +1,4 @@
-<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. -->
+<!-- The toolbar of every list (D9, D4, J1, J2): the title (a button opening the menu of the repository or project it names, where there is one: R1, R2), then what the list puts beside it (tabs, the actions of the items selected together), and on the right its filters (a repository's state) and the view options, each a control with its own icon — the grouping ("Group: Milestone"), the order, the properties rows show, what the list adds (a project's row field) and the List / Board toggle (Board can be unavailable, K7). As many as fit stay on the toolbar, the filters longest; the rest move into the display options — each a section with its icon and its choices right there, no menu within the menu — which also say that the options are kept on this device only and can reset them. The options are commands of the command menu too (E1): the layout by its key; the grouping and the order, the properties (several, each toggled with the menu staying open), the menu options that have a `commandTitle` (a repository's state, a project's row field) as submenus; and, while the options differ from the defaults, one to reset them. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -173,7 +173,9 @@ useCommands(() =>
           section: 'view',
           detail: grouping.value?.label,
           icon: Rows3,
-          options: () => ({ options: toCommandOptions(props.groupings, options.value.grouping, 'grouping') }),
+          options: () => ({
+            options: toCommandOptions(props.groupings, options.value.grouping, value => change({ grouping: value })),
+          }),
         },
         {
           id: 'view.orderBy',
@@ -181,10 +183,65 @@ useCommands(() =>
           section: 'view',
           detail: sortChoice.value?.label,
           icon: ArrowDownUp,
-          options: () => ({ options: toCommandOptions(props.sorts, options.value.sort, 'sort') }),
+          options: () => ({
+            options: toCommandOptions(props.sorts, options.value.sort, value => change({ sort: value })),
+          }),
+        },
+        ...getOptionCommands(),
+        {
+          id: 'view.properties',
+          title: t(l.showPropertiesCommand),
+          section: 'view',
+          icon: ListChecks,
+          options: () => ({
+            several: true,
+            options: props.properties.map((choice): CommandOption => {
+              const chosen = options.value.properties.includes(choice.value);
+              return {
+                value: choice.value,
+                label: choice.label,
+                detail: choice.detail,
+                chosen,
+                pick: () =>
+                  change({
+                    properties: chosen
+                      ? options.value.properties.filter(property => property !== choice.value)
+                      : [...options.value.properties, choice.value],
+                  }),
+              };
+            }),
+          }),
+        },
+        {
+          id: 'view.reset',
+          title: t(l.resetCommand),
+          section: 'view',
+          icon: RotateCcw,
+          when: () => props.modified,
+          run: () => emit('reset'),
         },
       ] satisfies Command[]),
 );
+
+/** The filters' and the list's own menu options that name a command: a submenu of their choices. */
+function getOptionCommands(): Command[] {
+  return [...props.filters, ...props.extraOptions].flatMap((option): Command[] => {
+    if (option.kind !== 'menu' || !option.commandTitle) {
+      return [];
+    }
+
+    return [
+      {
+        id: `view.${option.key}`,
+        title: option.commandTitle,
+        section: 'view',
+        detail: option.choices.find(choice => choice.value === option.value)?.label,
+        icon: option.icon,
+        options: () => ({ options: toCommandOptions(option.choices, option.value, option.choose) }),
+      },
+    ];
+  });
+}
 
 /** Every option, the filters then the view options, in the toolbar's order. */
 function getViewOptions(): ListToolbarOption[] {
@@ -240,14 +297,14 @@ function getViewOptions(): ListToolbarOption[] {
 }
 
 /** The choices as a submenu's options: picking one sets it. */
-function toCommandOptions(choices: readonly ListChoice[], current: string, option: 'grouping' | 'sort') {
+function toCommandOptions(choices: readonly ListChoice[], current: string, choose: (value: string) => void) {
   return choices.map((choice): CommandOption => ({
     value: choice.value,
     label: choice.label,
     detail: choice.detail,
     group: choice.section,
     chosen: choice.value === current,
-    pick: () => change(option === 'grouping' ? { grouping: choice.value } : { sort: choice.value }),
+    pick: () => choose(choice.value),
   }));
 }
 

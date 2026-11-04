@@ -21,6 +21,8 @@ export type ListToolbarOption =
       readonly value: string;
       /** Dim text under it in the display options. */
       readonly detail?: string;
+      /** Also a command of the command menu (id `view.<key>`), with this title: its submenu is the choices. */
+      readonly commandTitle?: string;
       readonly choose: (value: string) => void;
     }
   /** One choice out of a few, side by side (the layout). */
