@@ -40,6 +40,20 @@ allViewedDetail:
   en: Hidden files stay viewed on GitHub. Show them to read them again.
 showViewed:
   en: Show viewed files
+hideViewedFiles:
+  en: Hide viewed files
+showUnifiedDiff:
+  en: Show unified diff
+showSplitDiff:
+  en: Show split diff
+hideWhitespaceChanges:
+  en: Hide whitespace changes
+showWhitespaceChanges:
+  en: Show whitespace changes
+showCommentsInCollapsed:
+  en: Show comments in collapsed files
+hideCommentsInCollapsed:
+  en: Hide comments in collapsed files
 noMatch:
   en: No files match this filter
 noMatchViewedHidden:
