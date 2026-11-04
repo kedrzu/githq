@@ -94606,13 +94606,11 @@
             {
               "type": "frame",
               "id": "rpcUQ",
-              "name": "Slot · U43 · Question · Development",
-              "fill": "#D6A23A1A",
+              "name": "Slot · U43 · Development",
+              "fill": "#00000000",
               "stroke": "#D6A23A",
-              "strokeWidth": 2,
               "layout": "vertical",
               "gap": 14,
-              "padding": 24,
               "children": [
                 {
                   "type": "frame",
@@ -94627,7 +94625,7 @@
                       "id": "Q1Bj1",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U43 · Question · Development",
+                      "content": "U43 · Development",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -94639,7 +94637,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Development builds have no description, and most are one commit, so a fold per build would be a long list of folds holding one line or nothing. So this draws one fold for everything since the last Stable, filtered as release notes are, then the Stable versions. Commits are read from main, so GitHub's limit of 250 on a comparison doesn't apply. Is one fold right, or does the owner want a fold per build anyway?",
+                      "content": "Development builds have no description and most are one commit, so there is one fold for everything since the last Stable, filtered as release notes are, then the Stable versions. Commits are read from main, so GitHub's limit of 250 on a comparison doesn't apply.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -94650,7 +94648,7 @@
                 {
                   "type": "frame",
                   "id": "ksgH6",
-                  "name": "U43 · Settings · Changelog · Question · Development",
+                  "name": "U43 · Settings · Changelog · Development",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
