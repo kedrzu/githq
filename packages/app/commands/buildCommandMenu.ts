@@ -27,8 +27,8 @@ export type CommandMenuEntry =
       }
     | { readonly kind: 'navigation'; readonly id: string; readonly result: NavigationResult };
 
-/** The menu's headings: the subject's actions, the screen's, the places, the app's. */
-export type CommandMenuGroupKey = 'subject' | 'view' | NavigationGroup | 'app';
+/** The menu's headings: the subject's actions, the screen's, the repository's, the places, the app's. */
+export type CommandMenuGroupKey = 'subject' | 'view' | 'repository' | NavigationGroup | 'app';
 
 /** Entries under one heading. */
 export interface CommandMenuGroup {
@@ -43,6 +43,11 @@ export interface BuildCommandMenuParams {
     readonly commands: readonly Command[];
     /** What the actions act on; `null` when there is none, or the user took it out of the menu (⌫). */
     readonly subject: CommandSubject | null;
+    /**
+     * The repository (`owner/name`) the screen belongs to, whose actions are offered; `null` when there is none, or
+     * the user took it out of the menu (⌫).
+     */
+    readonly repository: string | null;
     readonly navigation: NavigationData;
 }
 
@@ -50,6 +55,7 @@ export interface BuildCommandMenuParams {
 const GROUP_ORDER: readonly CommandMenuGroupKey[] = [
     'subject',
     'view',
+    'repository',
     'goTo',
     'projects',
     'repositories',
@@ -65,7 +71,8 @@ const OPTION_MIN_SCORE = 50;
 
 /**
  * The command menu's top level (E1, E3, E4): the subject's actions — the selection's, else the opened item's,
- * none once the user took the subject out — then the screen's, the places to go and the app's. Typed text finds
+ * none once the user took the subject out — then the screen's, the repository's (none once it is taken out or
+ * when the screen has none), the places to go and the app's. Typed text finds
  * actions by title and keywords, places and items in the local copy (`searchNavigation`), and — from two letters —
  * the options of the actions' submenus directly (E4: "in prog" finds "Set Status → In progress"); the heading with
  * the best match comes first, and the best matches first under it. Typed after `>`, it finds the actions only;
@@ -74,7 +81,7 @@ const OPTION_MIN_SCORE = 50;
  * @__NO_SIDE_EFFECTS__
  */
 export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGroup[] {
-    const { query, subject } = params;
+    const { query, subject, repository } = params;
     // E1: `>` first asks for the actions only, no places or items.
     const commandsOnly = query.trimStart().startsWith('>');
     const typed = (commandsOnly ? query.trimStart().slice(1) : query).trim();
@@ -82,7 +89,9 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
 
     const offered = isOnlyItemNumber(typed)
         ? []
-        : params.commands.filter(command => command.menu !== false && isOffered(command, subject));
+        : params.commands
+              .filter(command => command.menu !== false && isOffered(command, subject, repository))
+              .toSorted((a, b) => getRepositoryRank(a) - getRepositoryRank(b));
     const foundCommands = new Map(findMenuRows(typed, offered).map(found => [found.row, found]));
     for (const command of offered) {
         const group = getGroup(command.section);
@@ -121,13 +130,28 @@ export function buildCommandMenu(params: BuildCommandMenuParams): CommandMenuGro
     }
 }
 
-/** The menu offers the subject's actions only for its subject: the selection's, or the opened item's. */
-function isOffered(command: Command, subject: CommandSubject | null) {
+/**
+ * The menu offers the subject's actions only for its subject — the selection's, or the opened item's — and the
+ * repository's only while it has a repository.
+ */
+function isOffered(command: Command, subject: CommandSubject | null, repository: string | null) {
+    if (command.section === 'repository' && repository === null) {
+        return false;
+    }
+
     if ((command.section === 'item' || command.section === 'selection') && subject?.kind !== command.section) {
         return false;
     }
 
     return command.when?.() ?? true;
+}
+
+/**
+ * The repository's sections on its view are on keys, and the view registers them after the app's other lines of it:
+ * they lead their group all the same, as they do off the view, where they are registered first.
+ */
+function getRepositoryRank(command: Command) {
+    return command.section === 'repository' && command.key === undefined ? 1 : 0;
 }
 
 function getGroup(section: CommandSection): CommandMenuGroupKey {
@@ -137,6 +161,8 @@ function getGroup(section: CommandSection): CommandMenuGroupKey {
             return 'subject';
         case 'view':
             return 'view';
+        case 'repository':
+            return 'repository';
         case 'app':
             return 'app';
         default:

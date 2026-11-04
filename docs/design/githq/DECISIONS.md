@@ -68,7 +68,7 @@ Rejected: mirror everything the user can see — expensive first sync and clutte
 and still misses contributions to repos the user isn't a member of.
 
 A third kind of local data, "browsed", joined these two on 2026-11-04: a repository the user only looks at, read on
-demand and never in the background. See [D32](#d32).
+demand and never in the background. See [D33](#d33).
 
 ### D5
 
@@ -620,6 +620,23 @@ leaves one with no checks saying nothing, and offers no "Merge".
 
 ### D32
 
+**The screen's repository is a context of the command menu** (owner, 2026-11-04). When no opened item or selection takes
+the chip, a chip names the repository; ⌫ steps out from the item or selection to the repository, and again to none. A group
+headed by its name sits above "Go to": its sections (Workflows only while it is tracked), Open on GitHub, Copy link and
+Repository settings (only while tracked). On its view the sections keep their keys `1`–`4` and act as its tabs.
+
+**Rejected,** by the owner: any tracked repository's sections from elsewhere by typing; the existing repository line stays
+the way there.
+
+**Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
+already starts in the screen's repository.
+
+**"Settings" stays the app's** (owner, 2026-11-04): a repository is in context nearly always, so the repository's line is
+"Repository settings", and "settings" + Enter opens the app's Settings there too. Rejected: "Settings" in the group, which
+took that Enter and made the app's screen harder to reach.
+
+### D33
+
 **Any repository GitHub shows the user can be found from the command menu, browsed as if tracked, and tracked from there**
 (owner, 2026-11-04). In the owner's words: "to search GitHub for any repository, enter it and browse it as if it were our
 repository... it is not tracked, so we don't fetch in the background, only on demand... never in the background". A
@@ -650,9 +667,10 @@ scrolling, or the user opening an item.
 - The toolbar says "N of M": M is GitHub's total for the section and state, N the rows listed for them. Grouping and sort
   work on what is read. A stack is shown as far as read and is never completed by reading more of it.
 
-**Tracking also starts from the command menu:** "Track repository" on an untracked repository's screen. Until now Settings
-was the only place ([settings-sync D15](../settings-sync/DECISIONS.md#d15)), and Settings keeps its picker. "Search
-repositories…" is a command in the menu, and only its submenu asks GitHub, from two typed characters once typing pauses.
+**Tracking also starts from the command menu:** "Track repository" on an untracked repository's screen, the last line of the
+repository's group ([D32](#d32)), so that a plain Enter cannot start it. "Stop tracking" stays out of the menu by D32, in the
+title's and the sidebar's menus. Until now Settings was the only place
+([settings-sync D15](../settings-sync/DECISIONS.md#d15)), and Settings keeps its picker. "Search repositories…" is a command in the menu, and only its submenu asks GitHub, from two typed characters once typing pauses.
 Nothing else outside the menu: no button for search or tracking on the screen. Screens E6 to E10.
 
 **Why.** Looking through someone else's repository meant either tracking it, which mirrors it in full and polls it for good,

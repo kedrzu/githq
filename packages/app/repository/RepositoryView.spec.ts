@@ -7,6 +7,7 @@ import { createApp, defineComponent, h, ref, shallowRef, Teleport, unref } from 
 import type { Ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
@@ -483,6 +484,21 @@ test('D14: in the tabs layout the slot is told the list stays beside the graph, 
     await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
 });
 
+test("the sections are the command menu's repository group, each once on its key 1–4 with an icon", () => {
+    const { container } = mount();
+    const commands = container
+        .resolve(CommandRegistry)
+        .commands.filter(command => command.id.startsWith('repository.section.'));
+
+    expect(commands.map(command => [command.id, command.section, command.key, command.menu])).toEqual([
+        ['repository.section.issues', 'repository', '1', undefined],
+        ['repository.section.pullRequests', 'repository', '2', undefined],
+        ['repository.section.commits', 'repository', '3', undefined],
+        ['repository.section.workflows', 'repository', '4', undefined],
+    ]);
+    expect(commands.every(command => command.icon !== undefined)).toBe(true);
+});
+
 interface MountOptions {
     readonly tracked?: boolean;
     readonly items?: readonly Item[];
@@ -628,7 +644,7 @@ function mount({
         host.remove();
     });
 
-    return Object.assign(view, { host });
+    return Object.assign(view, { host, container });
 }
 
 function browsedStatus(status: Partial<BrowsedStatus>): BrowsedStatus {

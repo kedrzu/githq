@@ -7,7 +7,7 @@ type RepositoryStateName = 'Closed' | 'Open' | 'Open and closed';
  * Playwright harness for a repository's view (`RepositoryView.vue`, on its sections `/owner/name/issues`,
  * `/owner/name/pulls` and `/owner/name/actions`, and `/owner/name` opening one): the title opening its menu, the section
  * tabs, the workflows and the Alerts bar, the toolbar's grouping and layout, its groups — named regions, or a board's
- * columns — and their rows; untracked, read on demand (D32), "not tracked", how much is read and "Read more", or that
+ * columns — and their rows; untracked, read on demand (D33), "not tracked", how much is read and "Read more", or that
  * GitHub does not show it. In the column layout the same sections and title are in the column.
  */
 export class RepositoryScreenHarness {

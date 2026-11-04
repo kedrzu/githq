@@ -33,7 +33,7 @@ const MIN_LENGTH = 2;
 const SEARCH_DELAY_MS = 300;
 
 /**
- * "Search repositories…" (D32, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
+ * "Search repositories…" (D33, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
  * its qualifiers work, once typing pauses; picking a repository goes to its screen. Latest wins: a change cancels the
  * wait, and what was asked before it, or for an account no longer signed in, is dropped when it answers.
  */

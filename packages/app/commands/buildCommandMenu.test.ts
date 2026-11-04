@@ -26,15 +26,15 @@ const KEYS_ONLY: Command = { id: 'app.commandMenu', title: 'Open the command men
 test("the subject's actions are offered for their subject only, none once it is taken out", () => {
     const commands = [STATUS, SELECTION_ASSIGN, SIDEBAR, KEYS_ONLY];
 
-    expect(ids(buildCommandMenu({ query: '', commands, subject: ITEM, navigation: NOTHING }))).toEqual([
-        'item.status',
-        'app.sidebar',
-    ]);
-    expect(ids(buildCommandMenu({ query: '', commands, subject: SELECTION, navigation: NOTHING }))).toEqual([
-        'selection.assignees',
-        'app.sidebar',
-    ]);
-    expect(ids(buildCommandMenu({ query: '', commands, subject: null, navigation: NOTHING }))).toEqual(['app.sidebar']);
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: ITEM, repository: null, navigation: NOTHING })),
+    ).toEqual(['item.status', 'app.sidebar']);
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: SELECTION, repository: null, navigation: NOTHING })),
+    ).toEqual(['selection.assignees', 'app.sidebar']);
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: null, repository: null, navigation: NOTHING })),
+    ).toEqual(['app.sidebar']);
 });
 
 test('E4: a value of a submenu typed is offered directly, above its action; scattered letters are not', () => {
@@ -42,11 +42,22 @@ test('E4: a value of a submenu typed is offered directly, above its action; scat
         query: 'in prog',
         commands: [STATUS, SIDEBAR],
         subject: ITEM,
+        repository: null,
         navigation: NOTHING,
     });
 
     expect(ids(menu)).toEqual(['item.status:In progress']);
-    expect(ids(buildCommandMenu({ query: 'ipg', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual([]);
+    expect(
+        ids(
+            buildCommandMenu({
+                query: 'ipg',
+                commands: [STATUS],
+                subject: ITEM,
+                repository: null,
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual([]);
 });
 
 test('a search is offered as an action, but its answers are not looked through or asked for from the top level', () => {
@@ -63,7 +74,7 @@ test('a search is offered as an action, but its answers are not looked through o
     };
 
     const found = (query: string) =>
-        ids(buildCommandMenu({ query, commands: [searching], subject: null, navigation: NOTHING }));
+        ids(buildCommandMenu({ query, commands: [searching], subject: null, repository: null, navigation: NOTHING }));
 
     expect(found('vitejs')).toEqual([]);
     expect(found('search rep')).toEqual(['app.searchRepositories']);
@@ -83,24 +94,50 @@ test('E4: options are found from two letters on, at most 3 per action, the best 
         }),
     };
 
-    expect(ids(buildCommandMenu({ query: 'i', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual([]);
-    expect(ids(buildCommandMenu({ query: 'in', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual([
-        'item.status:In progress',
-    ]);
-    expect(ids(buildCommandMenu({ query: 'review', commands: [many], subject: ITEM, navigation: NOTHING }))).toEqual([
-        'item.status:Review',
-        'item.status:Review later',
-        'item.status:Review soon',
-    ]);
+    expect(
+        ids(buildCommandMenu({ query: 'i', commands: [STATUS], subject: ITEM, repository: null, navigation: NOTHING })),
+    ).toEqual([]);
+    expect(
+        ids(
+            buildCommandMenu({ query: 'in', commands: [STATUS], subject: ITEM, repository: null, navigation: NOTHING }),
+        ),
+    ).toEqual(['item.status:In progress']);
+    expect(
+        ids(
+            buildCommandMenu({
+                query: 'review',
+                commands: [many],
+                subject: ITEM,
+                repository: null,
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual(['item.status:Review', 'item.status:Review later', 'item.status:Review soon']);
 });
 
 test('E4: an option is found directly with a typo at a word start, not elsewhere in a word', () => {
-    expect(ids(buildCommandMenu({ query: 'progrss', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual(
-        ['item.status:In progress'],
-    );
-    expect(ids(buildCommandMenu({ query: 'rogrss', commands: [STATUS], subject: ITEM, navigation: NOTHING }))).toEqual(
-        [],
-    );
+    expect(
+        ids(
+            buildCommandMenu({
+                query: 'progrss',
+                commands: [STATUS],
+                subject: ITEM,
+                repository: null,
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual(['item.status:In progress']);
+    expect(
+        ids(
+            buildCommandMenu({
+                query: 'rogrss',
+                commands: [STATUS],
+                subject: ITEM,
+                repository: null,
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual([]);
 });
 
 test('entries carry what the menu marks: a title, a hidden word, an option, a place, an item', () => {
@@ -115,7 +152,7 @@ test('entries carry what the menu marks: a title, a hidden word, an option, a pl
     expect(find('creat', [newIssue])).toEqual({ field: 'hidden', text: 'create', ranges: [0, 5] });
     expect(find('in prog', [STATUS])).toEqual({ field: 'title', text: 'In progress', ranges: [0, 2, 3, 7] });
     expect(
-        buildCommandMenu({ query: 'account', commands: [], subject: null, navigation })
+        buildCommandMenu({ query: 'account', commands: [], subject: null, repository: null, navigation })
             .flatMap(group => group.entries)
             .map(entry =>
                 entry.kind === 'navigation' && entry.result.kind !== 'repository' ? entry.result.match : null,
@@ -126,7 +163,8 @@ test('entries carry what the menu marks: a title, a hidden word, an option, a pl
     ]);
 
     function find(query: string, commands: readonly Command[]) {
-        const entry = buildCommandMenu({ query, commands, subject: ITEM, navigation: NOTHING })[0]?.entries[0];
+        const entry = buildCommandMenu({ query, commands, subject: ITEM, repository: null, navigation: NOTHING })[0]
+            ?.entries[0];
         return entry?.kind === 'command' || entry?.kind === 'option' ? entry.match : null;
     }
 });
@@ -136,6 +174,7 @@ test('a scattered action ranks below a heading holding the words themselves', ()
         query: 'cls',
         commands: [SIDEBAR],
         subject: ITEM,
+        repository: null,
         navigation: {
             ...NOTHING,
             places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'cls', path: '/' }],
@@ -160,6 +199,7 @@ test('`#123` finds items only: no action, option or place holding the digits, ev
         query: '#1187',
         commands: [sprint],
         subject: ITEM,
+        repository: null,
         navigation: { ...navigation, items: [{ ...sampleIssue('i'), number: 1187 }] },
     });
     const [first] = menu[0]?.entries ?? [];
@@ -168,10 +208,12 @@ test('`#123` finds items only: no action, option or place holding the digits, ev
     expect(first?.kind === 'navigation' && first.result.kind === 'item' ? first.result.match.field : null).toBe(
         'reference',
     );
-    expect(buildCommandMenu({ query: '#1187', commands: [sprint], subject: ITEM, navigation })).toEqual([]);
-    expect(ids(buildCommandMenu({ query: '1187', commands: [sprint], subject: ITEM, navigation }))).toEqual(
-        expect.arrayContaining(['item.iteration', 'item.iteration:x', 'place:x']),
-    );
+    expect(
+        buildCommandMenu({ query: '#1187', commands: [sprint], subject: ITEM, repository: null, navigation }),
+    ).toEqual([]);
+    expect(
+        ids(buildCommandMenu({ query: '1187', commands: [sprint], subject: ITEM, repository: null, navigation })),
+    ).toEqual(expect.arrayContaining(['item.iteration', 'item.iteration:x', 'place:x']));
 });
 
 test('E4: a long list of options finds its first hits only', () => {
@@ -182,11 +224,17 @@ test('E4: a long list of options finds its first hits only', () => {
     }));
     const long: Command = { id: 'view.add', title: 'Add items', section: 'view', options: () => ({ options }) };
 
-    expect(ids(buildCommandMenu({ query: 'hydrate', commands: [long], subject: null, navigation: NOTHING }))).toEqual([
-        'view.add:0',
-        'view.add:1',
-        'view.add:2',
-    ]);
+    expect(
+        ids(
+            buildCommandMenu({
+                query: 'hydrate',
+                commands: [long],
+                subject: null,
+                repository: null,
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual(['view.add:0', 'view.add:1', 'view.add:2']);
 });
 
 test('nothing typed lists every action and place in the fixed order, unmarked', () => {
@@ -194,6 +242,7 @@ test('nothing typed lists every action and place in the fixed order, unmarked', 
         query: '',
         commands: [SIDEBAR, STATUS],
         subject: ITEM,
+        repository: null,
         navigation: {
             ...NOTHING,
             places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'My work', path: '/' }],
@@ -214,6 +263,7 @@ test('typed text puts the heading with the best match first', () => {
         query: 'collapse',
         commands: [STATUS, SIDEBAR],
         subject: ITEM,
+        repository: null,
         navigation: {
             ...NOTHING,
             places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'My collapse list', path: '/' }],
@@ -226,7 +276,26 @@ test('typed text puts the heading with the best match first', () => {
 test('an action whose `when` says no is not offered', () => {
     const hidden: Command = { ...SIDEBAR, when: () => false };
 
-    expect(ids(buildCommandMenu({ query: '', commands: [hidden], subject: ITEM, navigation: NOTHING }))).toEqual([]);
+    expect(
+        ids(buildCommandMenu({ query: '', commands: [hidden], subject: ITEM, repository: null, navigation: NOTHING })),
+    ).toEqual([]);
+});
+
+test("the repository's sections lead its group on its view, though the view registers them after its other lines", () => {
+    const link: Command = { id: 'repository.copyLink', title: 'Copy link', section: 'repository' };
+    const section: Command = { id: 'repository.section.issues', title: 'Issues', section: 'repository', key: '1' };
+
+    expect(
+        ids(
+            buildCommandMenu({
+                query: '',
+                commands: [link, section],
+                subject: null,
+                repository: 'acme/web',
+                navigation: NOTHING,
+            }),
+        ),
+    ).toEqual(['repository.section.issues', 'repository.copyLink']);
 });
 
 function ids(groups: readonly CommandMenuGroup[]) {
@@ -241,11 +310,52 @@ test('E1: typed after `>`, only actions are found — no places or items', () =>
     };
     const commands = [SIDEBAR];
 
-    expect(ids(buildCommandMenu({ query: 'collapse', commands, subject: ITEM, navigation }))).toEqual(
+    expect(ids(buildCommandMenu({ query: 'collapse', commands, subject: ITEM, repository: null, navigation }))).toEqual(
         expect.arrayContaining(['app.sidebar', 'place:my']),
     );
-    expect(ids(buildCommandMenu({ query: '> collapse', commands, subject: ITEM, navigation }))).toEqual([
+    expect(
+        ids(buildCommandMenu({ query: '> collapse', commands, subject: ITEM, repository: null, navigation })),
+    ).toEqual(['app.sidebar']);
+    expect(ids(buildCommandMenu({ query: '>', commands, subject: ITEM, repository: null, navigation }))).toEqual([
         'app.sidebar',
     ]);
-    expect(ids(buildCommandMenu({ query: '>', commands, subject: ITEM, navigation }))).toEqual(['app.sidebar']);
+});
+
+const REPOSITORY_PULLS: Command = {
+    id: 'repository.pullRequests',
+    title: 'Pull requests',
+    section: 'repository',
+    key: 'G',
+};
+
+test('a repository action is offered only with a repository, under its own group before "Go to"', () => {
+    const commands = [REPOSITORY_PULLS, SIDEBAR];
+    const menu = buildCommandMenu({
+        query: '',
+        commands,
+        subject: null,
+        repository: 'acme/web',
+        navigation: { ...NOTHING, places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'My work', path: '/' }] },
+    });
+
+    expect(menu.map(group => group.key)).toEqual(['repository', 'goTo', 'app']);
+    expect(ids(menu)).toEqual(['repository.pullRequests', 'place:x', 'app.sidebar']);
+    expect(
+        ids(buildCommandMenu({ query: '', commands, subject: ITEM, repository: null, navigation: NOTHING })),
+    ).toEqual(['app.sidebar']);
+});
+
+test('typing "pull" ranks the repository group above a tied "Go to" place of the same name', () => {
+    const menu = buildCommandMenu({
+        query: 'pull',
+        commands: [REPOSITORY_PULLS],
+        subject: null,
+        repository: 'acme/web',
+        navigation: {
+            ...NOTHING,
+            places: [{ id: 'x', group: 'goTo', kind: 'myWork', title: 'Pull requests', path: '/' }],
+        },
+    });
+
+    expect(menu.map(group => group.key)).toEqual(['repository', 'goTo']);
 });

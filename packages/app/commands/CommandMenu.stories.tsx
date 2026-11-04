@@ -144,6 +144,7 @@ const Harness = defineComponent({
         startOpen: { type: Boolean, default: true },
         /** "Search repositories…" as the app has it, with GitHub answering this; left out it is not offered. */
         github: { type: Function as PropType<() => Promise<RepositoryBrowseSearchQuery>>, default: undefined },
+        repository: { type: String as PropType<string | null>, default: null },
     },
     setup(props) {
         if (props.github) {
@@ -175,6 +176,18 @@ const Harness = defineComponent({
                 },
             },
         ]);
+        if (props.repository !== null) {
+            useCommands(() => [
+                {
+                    id: 'repository.pullRequests',
+                    title: 'Pull requests',
+                    section: 'repository',
+                    run: () => {
+                        went.value = `/${props.repository}/pulls`;
+                    },
+                },
+            ]);
+        }
         if (props.subject === 'selection') {
             useCommands(
                 () =>
@@ -246,6 +259,7 @@ const Harness = defineComponent({
                     onUpdate:open={(open: boolean) => (open ? registry.openMenu() : registry.closeMenu())}
                     commands={registry.commands}
                     subject={registry.subject}
+                    repository={props.repository}
                     navigation={NAVIGATION}
                     startCommandId={registry.menu?.commandId ?? null}
                     onNavigate={navigate}
@@ -355,6 +369,12 @@ export const SearchFailed: Story = {
         await within(document.body).findByText('GitHub did not answer. Change the search to try again.');
     },
 };
+
+/** The repository of the screen: a chip after the item's, its actions under its name, taken out with a second ⌫. */
+export const OnOpenItemInRepository: Story = { args: { repository: 'skyline-labs/portal' } };
+
+/** No item opened: the repository's chip stands alone and its actions lead the menu. */
+export const InRepository: Story = { args: { subject: 'none', repository: 'skyline-labs/portal' } };
 
 /** Closed: the keys open it (⌘K), or an action's submenu where nothing else runs it. */
 export const Closed: Story = { args: { subject: 'selection', startOpen: false } };

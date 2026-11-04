@@ -163,19 +163,16 @@ test('"Track repository" adds it to the sidebar, starts its first download and l
     await expect.poll(() => pages(github, 'RepositoryIssues')).toContainEqual({ states: ['CLOSED'], after: null });
     await expect(repository.row('Issue 001')).toBeVisible();
     await expect(repository.notTrackedChip).toHaveCount(0);
-    // Tracked, the title's menu stops tracking too.
-    await expect(
-        (await repository.openTitleMenu(BROWSED)).getByRole('menuitem', { name: /^Stop tracking/u }),
-    ).toBeVisible();
-    await page.keyboard.press('Escape');
 
     await menu.open();
     await menu.field.pressSequentially('Track repository');
     await expect(menu.option(/^Track repository/u)).toHaveCount(0);
     await menu.field.clear();
     await menu.field.pressSequentially('Stop tracking');
-    await expect(menu.option(/^Stop tracking/u)).toBeVisible();
-    await page.keyboard.press('Enter');
+    await expect(menu.option(/^Stop tracking/u)).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    await (await repository.openTitleMenu(BROWSED)).getByRole('menuitem', { name: /^Stop tracking/u }).click();
 
     await expect(shell.tracked(BROWSED)).toHaveCount(0);
     await expect(repository.notTrackedChip).toBeVisible();

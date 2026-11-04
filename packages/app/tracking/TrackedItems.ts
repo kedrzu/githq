@@ -24,7 +24,7 @@ export interface ProjectContents {
  * Which items the local copy keeps, and what each tracked repository and project holds: an item stays while
  * "my work" has it, its repository is tracked, or a tracked project holds it (D4) — and a pull request while
  * another of its stack stays for one of those (stacked PRs, D7); those the sync loops read again ({@link isSynced}). A
- * row of a repository a tab holds (`RepositoryHolds`, D32) stays too, and nothing reads it in the background. When the
+ * row of a repository a tab holds (`RepositoryHolds`, D33) stays too, and nothing reads it in the background. When the
  * user stops tracking a repository or project, its items go — those nothing else keeps.
  */
 export type TrackedItems = Resolved<typeof TrackedItems>;

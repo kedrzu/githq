@@ -20,3 +20,5 @@ untrack:
   en: Stop tracking
 workflows:
   en: Workflows
+commits:
+  en: Commits
