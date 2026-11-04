@@ -14,6 +14,8 @@
         "allow-open-external",
         "allow-read-job-log",
         "allow-update-status",
+        "allow-update-check",
+        "allow-update-set-stream",
         "allow-update-restart"
     ]
 }

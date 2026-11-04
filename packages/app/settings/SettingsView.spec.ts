@@ -2,6 +2,7 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
+import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
 import * as stories from './SettingsView.stories.js';
 
 const { Repositories, SyncStopped } = composeStories(stories);
@@ -36,6 +37,17 @@ test('`1` to `5` and the tabs choose the section', async () => {
 
     await userEvent.click(page.getByRole('button', { name: 'Account' }));
     expect(onUpdateSection).toHaveBeenLastCalledWith('account');
+});
+
+test('on the web Updates is not a section: its `?tab=` falls back as an unknown one does, and `6` does nothing', async () => {
+    expect(readSettingsSection('updates')).toBe('repositories');
+    expect(getSettingsPath(readSettingsSection('updates'))).toBe('/settings');
+
+    const onUpdateSection = vi.fn();
+    await Repositories.run({ args: { ...Repositories.args, 'onUpdate:section': onUpdateSection } });
+
+    await userEvent.keyboard('6');
+    expect(onUpdateSection).not.toHaveBeenCalled();
 });
 
 test('syncing stopped, Sync settings carries a dot that says so', async () => {

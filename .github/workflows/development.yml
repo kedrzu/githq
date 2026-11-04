@@ -1,0 +1,210 @@
+# Builds the desktop app's Development stream (docs/design/desktop-releases, D4): after every push to main whose checks and
+# deploy passed, unless only documentation changed since the published build, a build for macOS and Linux replaces the one prerelease under the
+# tag `development`. Apps on the stream read `releases/download/development/latest.json`. Windows gets no Development builds
+# (D2). A build makes a complete draft and checks it before touching the published release, so an app never reads a
+# half-replaced set of files.
+name: Development build
+
+on:
+  workflow_run:
+    workflows: [Deploy]
+    types: [completed]
+    branches: [main]
+
+# A newer build cancels an older one, so an older build can't overwrite a newer one. It loses nothing: every run that gets this
+# far builds everything since the published build, documentation commits included. A failed Deploy starts a run that does
+# nothing, which cancels nothing. The draft a cancelled build left goes in `prepare`.
+concurrency:
+  group: development
+  cancel-in-progress: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TAG: development
+
+jobs:
+  prepare:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      build: ${{ steps.plan.outputs.build }}
+      commit: ${{ steps.commit.outputs.sha }}
+      version: ${{ steps.plan.outputs.version }}
+      release-id: ${{ steps.release.outputs.id }}
+    steps:
+      # After `workflow_run` the event's own commit is main's tip at that moment, which may be a newer push.
+      - name: Name the commit
+        id: commit
+        run: echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+
+      # The version counts the whole history and reads the tags.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.commit.outputs.sha }}
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      # What changed since the published build, not since the parent: a commit whose Deploy failed or was superseded
+      # had no build, and a documentation commit after it must not hide it. No published build, or one on a commit this
+      # history doesn't hold, leaves the list empty, which builds.
+      - name: List what changed since the published build
+        id: changes
+        run: |
+          published=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\" and (.draft | not)) | .body" | grep -oE '[0-9a-f]{40}' | head -n 1 || true)
+          : > "$RUNNER_TEMP/files"
+          if [ -n "$published" ] && git cat-file -e "$published^{commit}" 2>/dev/null; then
+            if git merge-base --is-ancestor HEAD "$published"; then
+              echo "The published build $published already holds this commit"
+              echo "older=true" >> "$GITHUB_OUTPUT"
+            else
+              git diff -z --name-only --no-renames "$published" HEAD > "$RUNNER_TEMP/files"
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Plan the build
+        id: plan
+        if: steps.changes.outputs.older != 'true'
+        run: bun packages/app/scripts/release.ts development-plan --files "$RUNNER_TEMP/files"
+
+      - name: Remove what a cancelled build left
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.draft and .tag_name == \"$TAG\") | .id" |
+            while read -r id; do
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            done
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create the draft release
+        id: release
+        if: steps.plan.outputs.build == 'true'
+        run: |
+          release_id=$(gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
+            -f tag_name="$TAG" \
+            -f target_commitish="$COMMIT" \
+            -f name="Development" \
+            -f body="Build $VERSION of $COMMIT. Builds from main may have bugs: each one replaces the last here, and a broken one is fixed by the next." \
+            -F draft=true \
+            -F prerelease=true \
+            -f make_latest=false \
+            --jq .id)
+          echo "id=$release_id" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT: ${{ steps.commit.outputs.sha }}
+          VERSION: ${{ steps.plan.outputs.version }}
+
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.build == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/desktop-build.yml
+    secrets: inherit
+    with:
+      ref: ${{ needs.prepare.outputs.commit }}
+      tag: development
+      version: ${{ needs.prepare.outputs.version }}
+      release-id: ${{ needs.prepare.outputs.release-id }}
+      platforms: >-
+        [
+          {"runner": "macos-latest", "target": "aarch64-apple-darwin", "args": "--target aarch64-apple-darwin"},
+          {"runner": "macos-latest", "target": "x86_64-apple-darwin", "args": "--target x86_64-apple-darwin"},
+          {"runner": "ubuntu-22.04", "target": "x86_64-unknown-linux-gnu", "args": "--bundles deb,appimage"}
+        ]
+
+  publish:
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      COMMIT: ${{ needs.prepare.outputs.commit }}
+      RELEASE_ID: ${{ needs.prepare.outputs.release-id }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      # Here and not in `prepare`, because "Re-run failed jobs" of an old run starts from here.
+      - name: Refuse a build older than the published one
+        run: |
+          published=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\" and (.draft | not)) | .body" | grep -oE '[0-9a-f]{40}' | head -n 1 || true)
+          if [ -n "$published" ] && [ "$(gh api "repos/$GITHUB_REPOSITORY/compare/$published...$COMMIT" --jq .status 2>/dev/null || true)" = "behind" ]; then
+            echo "::error::$COMMIT is older than the published build $published"
+            exit 1
+          fi
+
+      # Nothing published is touched until this passes: every platform is there, at this build's version, and every bundle
+      # the manifest names was uploaded.
+      - name: Check the draft's latest.json
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate > assets.json
+          asset_id=$(jq -r '.[] | select(.name == "latest.json") | .id' assets.json)
+          if [ -z "$asset_id" ]; then
+            echo "::error::The draft has no latest.json"
+            exit 1
+          fi
+          echo "ASSET_ID=$asset_id" >> "$GITHUB_ENV"
+          gh api -H 'Accept: application/octet-stream' "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id" > latest.json
+          jq '{version, platforms: (.platforms | keys)}' latest.json
+          if [ "$(jq -r .version latest.json)" != "$VERSION" ]; then
+            echo "::error::latest.json is not version $VERSION"
+            exit 1
+          fi
+          for platform in darwin-aarch64 darwin-x86_64 linux-x86_64; do
+            if ! jq -e --arg platform "$platform" '.platforms | has($platform)' latest.json > /dev/null; then
+              echo "::error::latest.json has no $platform"
+              exit 1
+            fi
+          done
+          jq -r '.platforms[].url | split("/") | last | split("?") | first' latest.json | sort -u | while read -r name; do
+            if ! jq -e --arg name "$name" 'any(.[]; .name == $name)' assets.json > /dev/null; then
+              echo "::error::The draft has no $name"
+              exit 1
+            fi
+          done
+
+      # The tag's URLs, with the version in a query: a macOS bundle keeps its name from build to build, and for a while
+      # after a replacement GitHub still serves the old file at the plain URL, which would fail the new signature (D4).
+      - name: Point latest.json at the published files
+        run: |
+          jq --arg base "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/" --arg version "$VERSION" \
+            '.platforms |= map_values(.url |= $base + (split("/") | last | split("?") | first) + "?v=" + $version)' \
+            latest.json > rewritten.json
+          gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$ASSET_ID"
+          gh api --method POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=latest.json" \
+            -H 'Content-Type: application/json' --input rewritten.json --jq .name
+
+      # For seconds there is no release: a check then fails and the updater retries at the next one (D4). Publishing is
+      # tried three times, since a failure here would leave no release until the next build.
+      - name: Replace the published release
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.tag_name == \"$TAG\" and (.draft | not) and .id != $RELEASE_ID) | .id" |
+            while read -r id; do
+              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+            done
+          for attempt in 1 2 3; do
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" -F draft=false -f make_latest=false --jq .html_url && exit 0
+            sleep 10
+          done
+          exit 1

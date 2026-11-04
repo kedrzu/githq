@@ -664,6 +664,27 @@ export type CommitStatesQuery = {
     >;
 };
 
+export type CommitSubjectsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    from: string;
+    after?: string | null | undefined;
+}>;
+
+export type CommitSubjectsQuery = {
+    repository: {
+        object:
+            | {
+                  history: {
+                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                      nodes: Array<{ oid: string; message: string } | null> | null;
+                  };
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
 export type ItemByNumberQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -3689,6 +3710,28 @@ export type RepositoryPullRequestsQuery = {
                 pendingReviews: {
                     nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
                 } | null;
+            } | null> | null;
+        };
+    } | null;
+};
+
+export type RepositoryReleasesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    after?: string | null | undefined;
+}>;
+
+export type RepositoryReleasesQuery = {
+    repository: {
+        releases: {
+            pageInfo: { hasNextPage: boolean; endCursor: string | null };
+            nodes: Array<{
+                tagName: string;
+                isDraft: boolean;
+                isPrerelease: boolean;
+                publishedAt: string | null;
+                descriptionHTML: string | null;
+                tagCommit: { oid: string } | null;
             } | null> | null;
         };
     } | null;
@@ -9647,6 +9690,26 @@ export const CommitStatesDocument = new TypedDocumentString(`
   }
 }
     `);
+export const CommitSubjectsDocument = new TypedDocumentString(`
+    query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    object(expression: $from) {
+      ... on Commit {
+        history(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            oid
+            message
+          }
+        }
+      }
+    }
+  }
+}
+    `);
 export const ItemByNumberDocument = new TypedDocumentString(`
     query ItemByNumber($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -13099,6 +13162,28 @@ fragment PullRequestStatusFields on PullRequest {
   }
   ...PullRequestPendingReviewFields
 }`);
+export const RepositoryReleasesDocument = new TypedDocumentString(`
+    query RepositoryReleases($owner: String!, $name: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    releases(first: 100, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        tagName
+        isDraft
+        isPrerelease
+        publishedAt
+        descriptionHTML
+        tagCommit {
+          oid
+        }
+      }
+    }
+  }
+}
+    `);
 export const RepositorySearchDocument = new TypedDocumentString(`
     query RepositorySearch($query: String!) {
   search(query: $query, type: REPOSITORY, first: 10) {
@@ -14746,6 +14831,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CommitStatesQuery>;
         },
+        CommitSubjects(variables: CommitSubjectsQueryVariables, options?: C): Promise<CommitSubjectsQuery> {
+            return requester<CommitSubjectsQuery, CommitSubjectsQueryVariables>(
+                CommitSubjectsDocument,
+                variables,
+                options,
+            ) as Promise<CommitSubjectsQuery>;
+        },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(
                 ItemByNumberDocument,
@@ -14987,6 +15079,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositoryPullRequestsQuery>;
+        },
+        RepositoryReleases(variables: RepositoryReleasesQueryVariables, options?: C): Promise<RepositoryReleasesQuery> {
+            return requester<RepositoryReleasesQuery, RepositoryReleasesQueryVariables>(
+                RepositoryReleasesDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryReleasesQuery>;
         },
         RepositorySearch(variables: RepositorySearchQueryVariables, options?: C): Promise<RepositorySearchQuery> {
             return requester<RepositorySearchQuery, RepositorySearchQueryVariables>(

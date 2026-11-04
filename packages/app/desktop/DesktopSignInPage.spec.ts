@@ -106,7 +106,9 @@ function mount() {
             finishes.push(finish);
             return finish.promise;
         },
-        onUpdateReady: () => Promise.reject(new Error('Not expected')),
+        onUpdateState: () => Promise.reject(new Error('Not expected')),
+        checkForUpdate: () => Promise.reject(new Error('Not expected')),
+        setUpdateStream: () => Promise.reject(new Error('Not expected')),
         updateStatus: () => Promise.reject(new Error('Not expected')),
         restartToUpdate: () => Promise.reject(new Error('Not expected')),
         readJobLog: () => Promise.reject(new Error('Not expected')),

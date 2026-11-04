@@ -3,11 +3,28 @@ import type { LocationQuery } from 'vue-router';
 /** Settings (D15), at GitHub's own settings address, so no owner's address (`/owner`) is ever taken for it. */
 export const SETTINGS_PATH = '/settings';
 
-/** The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. */
-export const SETTINGS_SECTIONS = ['repositories', 'projects', 'display', 'sync', 'account'] as const;
+/**
+ * Settings' Updates section with the confirmation of switching to Stable open (U13): the one way a Development build
+ * leaves for Stable from outside that section. The section only has to read `confirm`; only its dialog switches.
+ */
+export const CONFIRM_STABLE_PATH = `${SETTINGS_PATH}?tab=updates&confirm=stable`;
 
 /** A section of Settings. */
-export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+export type SettingsSection = 'account' | 'display' | 'projects' | 'repositories' | 'sync' | 'updates' | 'changelog';
+
+/**
+ * The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. Updates and
+ * Changelog are the desktop app's (`__DESKTOP__`): on the web they aren't, so nothing offers them and their `?tab=` is
+ * not known.
+ */
+export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
+    'repositories',
+    'projects',
+    'display',
+    'sync',
+    'account',
+    ...(__DESKTOP__ ? (['updates', 'changelog'] as const) : []),
+];
 
 /**
  * The section an address's `?tab=` names; none, or one not known (an old address's `tracking` or `saving` among

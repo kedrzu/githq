@@ -1,0 +1,20 @@
+# A page of the commits behind a commit or branch, for a Development build's Changelog (desktop-releases D17). `message`
+# rather than `messageHeadline`, which GitHub cuts at about 70 characters with "…", taking a title's `(#123)` with it.
+query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
+    repository(owner: $owner, name: $name) {
+        object(expression: $from) {
+            ... on Commit {
+                history(first: 100, after: $after) {
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                    nodes {
+                        oid
+                        message
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,4 +1,7 @@
 import { defineInterface } from '@nzyme/ioc/Interface.js';
+import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
+
+import type { UpdateActivity, UpdateState, UpdateStream } from '@/services/AppUpdate.js';
 
 /** The token `token_load` found from an earlier sign-in, and whether the OS credential store works. */
 export interface StoredToken {
@@ -37,11 +40,8 @@ export interface DeviceGrant {
  */
 export type DeviceSignInError = 'expired' | 'denied' | 'offline' | 'superseded' | 'failed';
 
-/**
- * Why `update_restart` did not restart: `notReady` — no update is ready; `failed` — the installer could not be started
- * (Windows).
- */
-export type UpdateRestartError = 'notReady' | 'failed';
+/** Why `update_set_stream` refused: `notAvailable` — this platform has no choice of stream (Windows). */
+export type SetUpdateStreamError = 'notAvailable';
 
 /** Which job's log `read_job_log` reads, and the token to ask GitHub with; it goes to GitHub only. */
 export interface ReadJobLogParams {
@@ -92,15 +92,19 @@ export interface NativeBridgeShape {
     /** `read_job_log`: asks GitHub for a job's log and reads where it redirects; rejects with a {@link ReadJobLogError}. */
     readJobLog(params: ReadJobLogParams): Promise<JobLogAnswer>;
     /**
-     * Calls `listener` with the version each time the native side says an update is ready (the `update-ready`
-     * event); resolves once it listens. Then ask {@link updateStatus}: an update readied before is not told again.
+     * Calls `listener` with the whole state each time it changes (the `update-state` event; a payload that isn't one is
+     * ignored); resolves once it listens. Then ask {@link updateStatus}: what changed before is not told again.
      */
-    onUpdateReady(listener: (version: string) => void): Promise<void>;
-    /** `update_status`: the version of the update ready to run, if any; never rejects. */
-    updateStatus(): Promise<string | null>;
+    onUpdateState(listener: (state: UpdateState) => void): Promise<void>;
+    /** `update_status`: the updater's state now; never rejects. */
+    updateStatus(): Promise<UpdateState>;
+    /** `update_check`: asks for a check at the user's word; if one is under way, it runs after that. */
+    checkForUpdate(): Promise<void>;
+    /** `update_set_stream`: follows `stream` and checks it; rejects with a {@link SetUpdateStreamError}. */
+    setUpdateStream(stream: UpdateStream): Promise<void>;
     /**
-     * `update_restart`: restarts into the ready update — on Windows the installer quits the app, so it never resolves
-     * there; rejects with an {@link UpdateRestartError}.
+     * `update_restart`: restarts into the ready update, installing it first on Linux and Windows, where the state
+     * reports how that goes. Does nothing while checking, downloading or installing.
      */
     restartToUpdate(): Promise<void>;
 }
@@ -145,13 +149,19 @@ function createTauriBridge(): NativeBridgeShape {
         finishDeviceSignIn: () => tauri.invoke<DeviceGrant>('device_finish'),
         readJobLog: ({ owner, name, jobId, token }) =>
             tauri.invoke<JobLogAnswer>('read_job_log', { owner, name, jobId, token }),
-        onUpdateReady: listener =>
-            listen('update-ready', payload => {
-                if (isUpdateReady(payload)) {
-                    listener(payload.version);
+        onUpdateState: listener =>
+            listen('update-state', payload => {
+                if (isUpdateState(payload)) {
+                    listener(payload);
                 }
             }),
-        updateStatus: () => tauri.invoke<string | null>('update_status'),
+        updateStatus: () => tauri.invoke<UpdateState>('update_status'),
+        checkForUpdate: async () => {
+            await tauri.invoke<null>('update_check');
+        },
+        setUpdateStream: async stream => {
+            await tauri.invoke<null>('update_set_stream', { stream });
+        },
         restartToUpdate: async () => {
             await tauri.invoke<null>('update_restart');
         },
@@ -198,8 +208,42 @@ function isEventMessage(value: unknown): value is TauriEventMessage {
     );
 }
 
-function isUpdateReady(payload: unknown): payload is { version: string } {
+function isUpdateState(payload: unknown): payload is UpdateState {
     return (
-        typeof payload === 'object' && payload !== null && 'version' in payload && typeof payload.version === 'string'
+        isPlainObject(payload) &&
+        typeof payload.version === 'string' &&
+        (payload.commit === null || typeof payload.commit === 'string') &&
+        (payload.stream === 'stable' || payload.stream === 'development') &&
+        typeof payload.canChoose === 'boolean' &&
+        typeof payload.manual === 'boolean' &&
+        (payload.checkedAt === null || typeof payload.checkedAt === 'number') &&
+        isUpdateActivity(payload.activity)
     );
+}
+
+function isUpdateActivity(activity: unknown): activity is UpdateActivity {
+    if (!isPlainObject(activity)) {
+        return false;
+    }
+
+    switch (activity.kind) {
+        case 'idle':
+        case 'checking':
+        case 'upToDate':
+        case 'noRelease':
+            return true;
+        case 'ready':
+        case 'installing':
+        case 'installFailed':
+            return typeof activity.version === 'string';
+        case 'downloading':
+            return (
+                typeof activity.version === 'string' &&
+                (activity.percent === null || typeof activity.percent === 'number')
+            );
+        case 'failed':
+            return activity.reason === 'offline' || activity.reason === 'unreachable';
+        default:
+            return false;
+    }
 }
