@@ -20,7 +20,6 @@ import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { Item } from '@/store/ItemTypes.js';
 import { toItem } from '@/store/toItem.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { FRESH_SLACK_MS, getFreshness } from '@/sync/Freshness.js';
@@ -90,6 +89,8 @@ interface BrowsedSectionState {
     checkedAt: number | null;
     /** When it was last asked at a refresh: the timer counts from it, as scrolling for more pages must not delay it. */
     askedAt: number | null;
+    /** The last check stopped before reading all that moved, the tab hidden: it is asked again as soon as it can be. */
+    checkCutShort: boolean;
     pages: Record<RepositoryState, StatePages>;
     notShown: boolean;
     /** Requests on their way. */
@@ -132,6 +133,7 @@ export const BrowsedRepositories = defineService({
         /** The repositories whose fresh start waits for the kept copy, which alone says what else keeps a row. */
         const waitingFreshStart = new Set<string>();
         const onlineRef = shallowRef(browser.isOnline());
+        const visibleRef = shallowRef(browser.isVisible());
         // Freshness changes with time alone; this moves when it may have (`touch`).
         const nowRef = shallowRef(clock.now());
         const copyLoaded = computed(() => items.loaded && tracking.loaded && projects.loaded);
@@ -145,7 +147,7 @@ export const BrowsedRepositories = defineService({
         browser.onOnlineChange(followPresence);
         watch(copyLoaded, followPresence, { flush: 'sync' });
 
-        return { hold, show, loadMore, getStatus, getFreshness: getSectionFreshness };
+        return { hold, show, loadMore, getStatus, getFreshness: getSectionFreshness, isTabVisible };
 
         /**
          * Holds the repository for a screen's whole life; returns the release. With no tab holding it yet, what is kept
@@ -232,6 +234,11 @@ export const BrowsedRepositories = defineService({
             });
         }
 
+        /** Whether this tab is visible, which alone lets anything be asked about a browsed repository; reactive. */
+        function isTabVisible() {
+            return visibleRef.value;
+        }
+
         function enter(view: BrowsedSectionView) {
             if (!accounts.current) {
                 return;
@@ -282,7 +289,7 @@ export const BrowsedRepositories = defineService({
                 for (const state of missing) {
                     void readPage(section, state);
                 }
-            } else if (now - (section.checkedAt ?? 0) >= minAgeMs) {
+            } else if (section.checkCutShort || now - (section.checkedAt ?? 0) >= minAgeMs) {
                 section.askedAt = now;
                 void check(section);
             }
@@ -332,7 +339,7 @@ export const BrowsedRepositories = defineService({
                         return;
                     }
 
-                    settleName(section, read.items);
+                    settleName(section, read.nameWithOwner);
                     items.upsertMany(read.items);
                     const { hasNextPage, endCursor } = read.pageInfo;
                     page.cursor = hasNextPage && endCursor != null ? endCursor : null;
@@ -367,9 +374,12 @@ export const BrowsedRepositories = defineService({
                         { owner, name, states: [...ISSUE_STATES[state]], after },
                         call,
                     );
-                    const found = repository?.issues;
-                    return found
-                        ? { ...found, items: filterNotNull((found.nodes ?? []).map(node => toItem(node))) }
+                    return repository
+                        ? {
+                              ...repository.issues,
+                              nameWithOwner: repository.nameWithOwner,
+                              items: filterNotNull((repository.issues.nodes ?? []).map(node => toItem(node))),
+                          }
                         : null;
                 }
                 case 'pullRequests': {
@@ -383,9 +393,12 @@ export const BrowsedRepositories = defineService({
                         },
                         call,
                     );
-                    const found = repository?.pullRequests;
-                    return found
-                        ? { ...found, items: filterNotNull((found.nodes ?? []).map(node => toItem(node))) }
+                    return repository
+                        ? {
+                              ...repository.pullRequests,
+                              nameWithOwner: repository.nameWithOwner,
+                              items: filterNotNull((repository.pullRequests.nodes ?? []).map(node => toItem(node))),
+                          }
                         : null;
                 }
                 default:
@@ -395,13 +408,15 @@ export const BrowsedRepositories = defineService({
 
         /**
          * Asks GitHub what changed since the last check (a 304 is free) and reads again those of the section's kind whose
-         * `updated_at` moved.
+         * `updated_at` moved. The tab hidden on the way, it asks no more: what it has not read moved all the same, so
+         * neither `since` nor the ETag advance, and the check is done again once the tab is shown.
          */
         async function check(section: BrowsedSectionState) {
             if (section.running > 0) {
                 return;
             }
 
+            section.checkCutShort = false;
             await attempt(section, async account => {
                 checkAllowance('core');
                 const startedAt = clock.now();
@@ -443,13 +458,17 @@ export const BrowsedRepositories = defineService({
                 }
 
                 for (const ids of splitIntoChunks(changed, NODES_BATCH_SIZE)) {
+                    if (!canAsk()) {
+                        section.checkCutShort = true;
+                        return;
+                    }
+
                     checkAllowance('graphql');
                     const { read, gone } = await readItemsByIds({ sdk: account.sdk, ids, logger });
                     if (!isWanted(section, account)) {
                         return;
                     }
 
-                    settleName(section, read);
                     items.upsertMany(read);
                     items.remove(gone);
                 }
@@ -564,16 +583,12 @@ export const BrowsedRepositories = defineService({
         }
 
         /**
-         * Rows read under another name than the section's (a case difference, a rename): the hold on GitHub's name is
-         * taken and the repository's sections moved to it before any status says so, so the screen remounting under that
-         * address goes on with nothing lost. The hold is released when the screen that asked is gone.
+         * GitHub's own name, as a page of the section answers it, an empty one too. When it is another than the section's
+         * (a case difference, a rename) the hold on it is taken and the repository's sections moved to it before any status
+         * says so, so the screen remounting under that address goes on with nothing lost. The hold is released when the
+         * screen that asked is gone. Never from a row, which an issue transferred elsewhere would misname.
          */
-        function settleName(section: BrowsedSectionState, read: readonly Item[]) {
-            const actual = read[0]?.repository.nameWithOwner;
-            if (actual === undefined) {
-                return;
-            }
-
+        function settleName(section: BrowsedSectionState, actual: string) {
             settledNames.set(actual.toLowerCase(), actual);
             const asked = section.nameWithOwner;
             if (actual === asked) {
@@ -636,6 +651,7 @@ export const BrowsedRepositories = defineService({
         /** The tab was shown or hidden, the connection came or went, or the kept copy arrived. */
         function followPresence() {
             onlineRef.value = browser.isOnline();
+            visibleRef.value = browser.isVisible();
             startFresh();
             for (const section of getShownSections()) {
                 if (section.notShown) {
@@ -733,6 +749,7 @@ export const BrowsedRepositories = defineService({
                 etag: undefined,
                 checkedAt: null,
                 askedAt: null,
+                checkCutShort: false,
                 pages: createPages(),
                 notShown: false,
                 running: 0,

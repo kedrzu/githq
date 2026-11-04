@@ -222,6 +222,34 @@ test('reading stops while every group is collapsed: with no rows to scroll past,
     expect(view.readMore).not.toHaveBeenCalled();
 });
 
+test('with a group collapsed, a page goes on reading only if it added rows on screen: a short list does not read the repository whole', async () => {
+    const items = shallowRef<readonly Item[]>([...manyIssues(60), inMilestone('I_v1', 1)]);
+    const view = mount({
+        tracked: false,
+        items,
+        hostHeight: '400px',
+        status: browsedStatus({ total: 500, hasMore: true, cursor: 'c2' }),
+    });
+    await expect.element(page.getByRole('button', { name: /^No milestone/ })).toBeVisible();
+    await settle();
+    expect(view.readMore).not.toHaveBeenCalled();
+
+    // Collapsed, the list is short: its end comes in reach.
+    await userEvent.click(page.getByRole('button', { name: /^No milestone/ }));
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(1);
+
+    // A page gone wholly into the collapsed group: the end stays where it was, and nothing more is read.
+    items.value = [...items.value, ...manyIssues(30, 60)];
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c3' });
+    await settle();
+    expect(view.readMore).toHaveBeenCalledTimes(1);
+
+    // A page adding a row on screen, with the end still in reach: on.
+    items.value = [...items.value, inMilestone('I_v2', 2)];
+    view.status.value = browsedStatus({ total: 500, hasMore: true, cursor: 'c4' });
+    await expect.poll(() => view.readMore.mock.calls.length).toBe(2);
+});
+
 test('J6: on the board nothing reads by itself, one button reads the next page, and with no more there is none', async () => {
     const view = mount({
         tracked: false,
@@ -501,7 +529,8 @@ test("the sections are the command menu's repository group, each once on its key
 
 interface MountOptions {
     readonly tracked?: boolean;
-    readonly items?: readonly Item[];
+    /** A ref to change them while mounted. */
+    readonly items?: readonly Item[] | Ref<readonly Item[]>;
     /** As the page tells it; `view.status` changes it while mounted. */
     readonly status?: BrowsedStatus | null;
     /** The list is told GitHub has not answered yet, as the page tells it. */
@@ -541,7 +570,7 @@ function mount({
     const statusRef = shallowRef(status);
     const readMore = vi.fn();
     const view = { options, section, state, workflowCount: workflowCountRef, status: statusRef, readMore };
-    const open = items.filter(item => item.state === 'OPEN');
+    const open = unref(items).filter(item => item.state === 'OPEN');
     const openCounts = {
         issues: open.filter(item => item.kind === 'issue').length,
         pullRequests: open.filter(item => item.kind === 'pullRequest').length,
@@ -568,7 +597,7 @@ function mount({
                     tracked,
                     list: listed
                         ? buildRepositoryList({
-                              items,
+                              items: unref(items),
                               state: 'open',
                               kind: getSectionItemKind(listed),
                               grouping: options.value[listed].grouping,
@@ -652,8 +681,15 @@ function browsedStatus(status: Partial<BrowsedStatus>): BrowsedStatus {
 }
 
 /** More issues than fit the window, whichever of the list's order. */
-function manyIssues(count: number): readonly Item[] {
-    return Array.from({ length: count }, (_, index) => ({ ...sampleIssue(`I_${index}`), number: 2000 + index }));
+function manyIssues(count: number, first = 0): readonly Item[] {
+    return Array.from({ length: count }, (_, index) => ({
+        ...sampleIssue(`I_${first + index}`),
+        number: 2000 + first + index,
+    }));
+}
+
+function inMilestone(id: string, number: number): Item {
+    return { ...sampleIssue(id), number, milestone: { title: 'v1', dueOn: null } };
 }
 
 /** Long enough for an observer that was going to speak to have spoken. */

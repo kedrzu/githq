@@ -698,7 +698,8 @@ or leaving for github.com. Reading only what the user scrolls to keeps a reposit
 keeps coming back to it instant without any request in the background.
 
 **Known cost.** Counts per group and a board's columns describe what is read, not the repository. Paging positions don't
-survive a reload: the section reads from its first page again.
+survive a reload: the section reads from its first page again. While a group is collapsed the list reads on only as a page
+adds rows on screen, so that a short list doesn't read the whole repository into that group.
 
 **Rejected.** A separate in-memory store with read-only rows: simpler to keep out of the sync loops, but the owner picked full
 edits in the shared store (2026-11-04), so a browsed row behaves like any other. Reading a whole section at once: a large

@@ -128,8 +128,12 @@ export function createTrackingWorld(): TrackingWorld {
                 const connection = toPage(matching, after);
                 return {
                     data: {
-                        repository:
-                            operation === 'RepositoryIssues' ? { issues: connection } : { pullRequests: connection },
+                        repository: {
+                            nameWithOwner,
+                            ...(operation === 'RepositoryIssues'
+                                ? { issues: connection }
+                                : { pullRequests: connection }),
+                        },
                     },
                 };
             }

@@ -1721,35 +1721,43 @@ export class GitHubWorld {
         });
 
         github.graphql('RepositoryIssues', ({ variables }) => {
+            const repository = this.findRepository(variables);
+            if (!repository) {
+                return new GitHubPartialAnswer<'RepositoryIssues'>({ repository: null }, [repositoryNotFound()]);
+            }
+
             const states = readStrings(variables.states);
-            const items = this.readRepositoryItems(variables)?.filter(
+            const items = this.readRepositoryItems(repository.nameWithOwner).filter(
                 item => !item.pullRequest && states.includes(item.state),
             );
-            return items
-                ? {
-                      repository: {
-                          issues: toItemPage(items, ISSUE_PAGE, variables.after, item => this.toIssueNode(item)),
-                      },
-                  }
-                : new GitHubPartialAnswer<'RepositoryIssues'>({ repository: null }, [repositoryNotFound()]);
+            return {
+                repository: {
+                    nameWithOwner: repository.nameWithOwner,
+                    issues: toItemPage(items, ISSUE_PAGE, variables.after, item => this.toIssueNode(item)),
+                },
+            };
         });
         github.graphql('RepositoryPullRequests', ({ variables }) => {
+            const repository = this.findRepository(variables);
+            if (!repository) {
+                return new GitHubPartialAnswer<'RepositoryPullRequests'>({ repository: null }, [repositoryNotFound()]);
+            }
+
             const states = readStrings(variables.states);
-            const pullRequests = this.readRepositoryItems(variables)?.flatMap(item =>
+            const pullRequests = this.readRepositoryItems(repository.nameWithOwner).flatMap(item =>
                 item.pullRequest && states.includes(item.state) ? [{ item, pullRequest: item.pullRequest }] : [],
             );
-            return pullRequests
-                ? {
-                      repository: {
-                          pullRequests: toItemPage(
-                              pullRequests,
-                              Number(variables.first),
-                              variables.after,
-                              ({ item, pullRequest }) => this.toPullRequestNode(item, pullRequest),
-                          ),
-                      },
-                  }
-                : new GitHubPartialAnswer<'RepositoryPullRequests'>({ repository: null }, [repositoryNotFound()]);
+            return {
+                repository: {
+                    nameWithOwner: repository.nameWithOwner,
+                    pullRequests: toItemPage(
+                        pullRequests,
+                        Number(variables.first),
+                        variables.after,
+                        ({ item, pullRequest }) => this.toPullRequestNode(item, pullRequest),
+                    ),
+                },
+            };
         });
 
         github.graphql('ProjectFull', ({ variables }) => {
@@ -1855,14 +1863,9 @@ export class GitHubWorld {
     }
 
     /** The items of the repository the variables name (`owner`, `name`); `undefined` for one GitHub does not have. */
-    private readRepositoryItems(variables: Readonly<Record<string, unknown>>) {
-        const repository = this.findRepository(variables);
-        if (!repository) {
-            return undefined;
-        }
-
+    private readRepositoryItems(nameWithOwner: string) {
         return [...this.items.values()]
-            .filter(item => !item.deleted && item.repository === repository.nameWithOwner)
+            .filter(item => !item.deleted && item.repository === nameWithOwner)
             .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     }
 

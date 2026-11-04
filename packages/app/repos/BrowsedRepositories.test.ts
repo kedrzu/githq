@@ -14,6 +14,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { toItem } from '@/store/toItem.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { NODES_BATCH_SIZE } from '@/sync/TrackingSync.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
@@ -124,6 +125,55 @@ test('a section entered in a hidden tab asks nothing, nor does asking for more, 
     tab.session.setVisible(true);
     await tab.session.clock.advance(0);
     expect(tab.asked()).toEqual(['RepositoryIssues OPEN']);
+});
+
+test('hidden in the middle of a check, it asks nothing more and moves nothing on; shown again, the check is done anew and reads the rest', async () => {
+    const tab = await openTab();
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);
+    const leave = tab.browsed.show(VIEW);
+    await tab.session.clock.advance(0);
+    leave();
+    await tab.session.clock.advance(BROWSE_FRESH_MS);
+
+    const moved = Array.from({ length: NODES_BATCH_SIZE + 1 }, (_, index) => `I_moved${index}`);
+    const lastMoved = moved.at(-1);
+    for (const [index, id] of moved.entries()) {
+        tab.world.nodes.set(id, issue(id, 100 + index, LATER));
+    }
+    tab.world.check = () => ({
+        status: 200,
+        etag: '"after"',
+        body: moved.map((id, index) => ({ node_id: id, number: 100 + index, updated_at: LATER })),
+    });
+    const held = createPromise();
+    tab.session.github.holdIf = request => (request.operation === 'ItemsByIds' ? held.promise : null);
+    tab.clear();
+
+    tab.browsed.show(VIEW);
+    await tab.session.clock.advance(0);
+    tab.session.setVisible(false);
+    held.resolve();
+    await tab.session.clock.advance(0);
+    expect(tab.asked()).toEqual([`GET /repos/${WEB}/issues`, `ItemsByIds ${moved.slice(0, -1).join(',')}`]);
+    const firstCheck = tab.checks()[0]?.variables;
+
+    await tab.session.clock.advance(20_000);
+    expect(tab.asked()).toHaveLength(2);
+    tab.clear();
+
+    // Shown within the interval of the last check that finished: only having been cut short brings it back now.
+    tab.session.setVisible(true);
+    await tab.session.clock.advance(0);
+    expect(tab.asked()).toEqual([`GET /repos/${WEB}/issues`, `ItemsByIds ${lastMoved}`]);
+    expect(tab.checks()[0]?.variables.since).toBe(firstCheck?.since);
+    expect(tab.checks()[0]?.variables.ifNoneMatch).toBeNull();
+    expect(tab.items.getStored(lastMoved ?? '')?.updatedAt).toBe(LATER);
+    tab.clear();
+
+    // Finished, it goes on as ever: from the ETag, a minute after it was asked.
+    tab.world.check = () => ({ status: 304 });
+    await tab.session.clock.advance(BROWSE_POLL_MS);
+    expect(tab.checks().at(-1)?.variables.ifNoneMatch).toBe('"after"');
 });
 
 test('switching section or leaving stops its checks: only the section shown is asked about', async () => {
@@ -601,10 +651,41 @@ test('a case different from GitHub settles the name: the state stays, the screen
     expect(tab.items.get('I_1')?.number).toBe(1);
 });
 
+test('a section with no rows settles the name all the same', async () => {
+    const tab = await openTab({ holding: false });
+    tab.world.addPage('RepositoryIssues OPEN', [], { owner: 'Acme/Web' });
+    const holds = tab.session.container.resolve(RepositoryHolds);
+
+    tab.browsed.hold('acme/WEB');
+    tab.browsed.show({ ...VIEW, nameWithOwner: 'acme/WEB' });
+    await tab.session.clock.advance(0);
+
+    expect(tab.browsed.getStatus('acme/WEB', 'issues', 'open').settledName).toBe('Acme/Web');
+    expect(tab.browsed.getStatus('Acme/Web', 'issues', 'open')).toMatchObject({ settledName: null, total: 0 });
+    expect(holds.isHeld('Acme/Web')).toBe(true);
+});
+
+test('a row never settles the name: an issue transferred elsewhere, re-read by a check, leaves the address alone', async () => {
+    const tab = await openTab();
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);
+    tab.world.nodes.set('I_1', issue('I_1', 1, LATER, 'acme/elsewhere'));
+    tab.world.check = () => ({
+        status: 200,
+        etag: '"after"',
+        body: [{ node_id: 'I_1', number: 1, updated_at: LATER }],
+    });
+
+    tab.browsed.show(VIEW);
+    await tab.session.clock.advance(BROWSE_POLL_MS);
+
+    expect(tab.asked()).toEqual(['RepositoryIssues OPEN', `GET /repos/${WEB}/issues`, 'ItemsByIds I_1']);
+    expect(tab.browsed.getStatus(WEB, 'issues', 'open')).toMatchObject({ settledName: null, total: 1 });
+});
+
 test('a renamed repository moves to GitHub`s name with its hold, and the hold taken for it ends with the rest', async () => {
     const tab = await openTab({ holding: false });
-    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1, EARLIER, 'acme/renamed')]);
-    tab.world.addPage('RepositoryPullRequests OPEN', [pullRequest('PR_1', 2, 'acme/renamed')]);
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)], { owner: 'acme/renamed' });
+    tab.world.addPage('RepositoryPullRequests OPEN', [pullRequest('PR_1', 2)], { owner: 'acme/renamed' });
     const holds = tab.session.container.resolve(RepositoryHolds);
 
     const release = tab.browsed.hold('acme/old');
@@ -667,12 +748,14 @@ interface FakePage {
     readonly nodes: readonly (IssueFieldsFragment | PullRequestFieldsFragment)[];
     readonly next: string | null;
     readonly total: number;
+    /** GitHub's name of the repository, when it is not the one asked by. */
+    readonly owner: string | undefined;
 }
 
 interface AddPageOptions {
     readonly next?: string;
     readonly total?: number;
-    /** The repository's name as GitHub has it: the rows are made anew with it. */
+    /** The repository's name as GitHub has it: its answer says so, and the rows are made anew with it. */
     readonly owner?: string;
 }
 
@@ -695,6 +778,7 @@ function createWorld() {
                     : nodes,
                 next: options.next ?? null,
                 total: options.total ?? nodes.length,
+                owner,
             });
         },
         answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
@@ -711,14 +795,15 @@ function createWorld() {
                     };
                 }
 
-                const page = pages.get(describe(request)) ?? { nodes: [], next: null, total: 0 };
+                const page = pages.get(describe(request)) ?? { nodes: [], next: null, total: 0, owner: undefined };
                 const connection = {
                     totalCount: page.total,
                     pageInfo: { hasNextPage: page.next !== null, endCursor: page.next },
                     nodes: page.nodes,
                 };
                 const field = operation === 'RepositoryIssues' ? 'issues' : 'pullRequests';
-                return { data: { repository: { [field]: connection } } };
+                const nameWithOwner = page.owner ?? `${String(variables.owner)}/${String(variables.name)}`;
+                return { data: { repository: { nameWithOwner, [field]: connection } } };
             }
 
             if (operation === 'ItemsByIds' && Array.isArray(variables.ids)) {
@@ -830,8 +915,8 @@ function issue(id: string, number: number, updatedAt = EARLIER, repository = WEB
     return sampleIssueNode(id, { repository, number, updatedAt });
 }
 
-function pullRequest(id: string, number: number, repository = WEB) {
-    return samplePullRequestNode(id, { repository, number, updatedAt: EARLIER });
+function pullRequest(id: string, number: number) {
+    return samplePullRequestNode(id, { repository: WEB, number, updatedAt: EARLIER });
 }
 
 function row(node: IssueFieldsFragment) {

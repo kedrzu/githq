@@ -1,11 +1,12 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { computed, onUnmounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { AccountSession } from '@/auth/AccountSession.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import CommitGraphView from '@/commits/CommitGraphView.vue';
 import type { EditRequest } from '@/edits/EditTypes.js';
@@ -47,6 +48,7 @@ import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryView
 import { LastRepositoryTab } from './LastRepositoryTab.js';
 
 const auth = useService(AuthStore);
+const accounts = useService(AccountSession);
 const items = useService(ItemStore);
 const projects = useService(ProjectStore);
 const tracking = useService(TrackingStore);
@@ -233,15 +235,27 @@ watch(
 );
 
 // Tracked too, so that untracking it from here leaves its rows on screen. Before the section is shown: a first hold
-// starts it afresh.
-onUnmounted(browsed.hold(repositoryName));
+// starts it afresh. An account's holds end with it, and the page stays through a switch: the next account takes its own.
+watch(
+  () => accounts.current,
+  (account, _previous, onCleanup) => {
+    if (account) {
+      onCleanup(browsed.hold(repositoryName));
+    }
+  },
+  { immediate: true },
+);
 
 // What the user may set here (labels, milestones, people) is read with the repository's permission. Not on Commits,
-// which asks GitHub only through its graph's store.
+// which asks GitHub only through its graph's store, and for a repository only browsed, not from a hidden tab nor once
+// GitHub has said it does not show it (D34).
 watch(
-  itemsShown,
-  listed => {
-    if (listed && nameWithOwner.value === repositoryName) {
+  () =>
+    itemsShown.value &&
+    nameWithOwner.value === repositoryName &&
+    ((browsed.isTabVisible() && status.value?.notShown !== true) || (tracking.loaded && tracked.value)),
+  asks => {
+    if (asks) {
       void repositories.ensure(repositoryName);
     }
   },

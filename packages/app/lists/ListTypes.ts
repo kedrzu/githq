@@ -169,3 +169,11 @@ export interface ListChoice<T extends string = string> {
     /** The heading it sits under in the grouping menu ("From GitHub"); choices of one heading follow each other. */
     readonly section?: string;
 }
+
+/** How the rows above the list's end stand: with a group collapsed, what is added to it does not push the end away. */
+export interface ListEndProps {
+  /** At least one group is collapsed. */
+  readonly someCollapsed: boolean;
+  /** How many rows are on screen: a collapsed group's and a collapsed stack's are not. */
+  readonly rowsShown: number;
+}

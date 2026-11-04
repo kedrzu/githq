@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-router';
 
+import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { Browser } from '@/services/Browser.js';
@@ -89,19 +90,64 @@ test('the page holds the repository, tracked or not, and leaving it stops the re
     ]);
 });
 
+test('not tracked, a hidden tab asks GitHub nothing about it, its permission included, until it is shown', async () => {
+    const { github, setVisible } = await open({ path: `/${WEB}/issues`, hidden: true });
+
+    await expect.element(page.getByRole('heading', { name: WEB, level: 1 })).toBeInTheDocument();
+    await settle();
+    expect(github.operations().filter(isAboutRepository)).toEqual([]);
+
+    setVisible(true);
+    await expect.poll(() => github.operations().filter(isAboutRepository).toSorted()).toEqual([
+        'RepositoryIssues',
+        'RepositoryMetadata',
+    ]);
+});
+
+test('tracked, a hidden tab reads its permission as ever', async () => {
+    const { github } = await open({ path: `/${WEB}/issues`, tracked: true, hidden: true });
+
+    await expect.poll(() => github.operations()).toContain('RepositoryMetadata');
+});
+
+test('another account signed in where the page stands holds the repository for itself and reads under that hold', async () => {
+    const { auth, github, holds } = await open({ path: `/${WEB}/issues` });
+    await expect.element(rowOf('Issue I_open')).toBeVisible();
+    const asked = github.issuePages().length;
+
+    const another = `user-${crypto.randomUUID()}`;
+    github.signsIn = another;
+    await auth.signInWithToken('gho_another');
+
+    await expect.poll(() => auth.viewer?.login).toBe(another);
+    await expect.poll(() => holds.isHeld(WEB)).toBe(true);
+    await expect.poll(() => github.issuePages().length).toBe(asked + 1);
+    expect(holds.isHeld(WEB)).toBe(true);
+});
+
 interface OpenOptions {
     readonly path: string;
+    /** The tab is hidden when the page opens. */
+    readonly hidden?: boolean;
     readonly tracked?: boolean;
     /** GitHub's name of `acme/web`, when asked by another. */
     readonly actualName?: string;
 }
 
 /** The page at an address as the app's router has it: remounted by repository, signed in, with GitHub faked. */
-async function open({ path, tracked = false, actualName = WEB }: OpenOptions) {
+async function open({ path, tracked = false, actualName = WEB, hidden = false }: OpenOptions) {
     const github = createFakeGitHub(actualName);
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(Browser, createSignedInBrowser(github.fetch));
+    let visible = !hidden;
+    const visibilityListeners: (() => void)[] = [];
+    container.set(Browser, {
+        ...createSignedInBrowser(github.fetch),
+        isVisible: () => visible,
+        onVisibilityChange: listener => {
+            visibilityListeners.push(listener);
+        },
+    });
     setIndexedDbPersistence(container);
     const tracking = container.resolve(TrackingStore);
     await tracking.ready();
@@ -135,14 +181,28 @@ async function open({ path, tracked = false, actualName = WEB }: OpenOptions) {
         host.remove();
     });
 
-    return { github, tracking, router, holds: container.resolve(RepositoryHolds) };
+    return {
+        github,
+        tracking,
+        router,
+        holds: container.resolve(RepositoryHolds),
+        auth: container.resolve(AuthStore),
+        setVisible: (value: boolean) => {
+            visible = value;
+            for (const listener of visibilityListeners) {
+                listener();
+            }
+        },
+    };
 }
 
 /** GitHub with `acme/web` of one open and one closed issue listed and more behind them; any other repository hidden. */
 function createFakeGitHub(actualName: string) {
     const requests: { readonly operation: string; readonly variables: Record<string, unknown> }[] = [];
 
-    return {
+    const github = {
+        /** Whom GitHub says a token belongs to; until set, it does not answer that. */
+        signsIn: null as string | null,
         operations: () => requests.map(request => request.operation),
         issuePages: () =>
             requests
@@ -160,6 +220,8 @@ function createFakeGitHub(actualName: string) {
         },
     };
 
+    return github;
+
     function answer(operation: string, variables: Record<string, unknown>) {
         const known = String(variables.name).toLowerCase() === 'web';
         switch (operation) {
@@ -167,6 +229,10 @@ function createFakeGitHub(actualName: string) {
                 return issuesPage(known, variables);
             case 'RepositoryMetadata':
                 return { repository: null };
+            case 'Viewer':
+                return github.signsIn === null
+                    ? null
+                    : { viewer: { login: github.signsIn, name: null, avatarUrl: 'https://avatars.test/another' } };
             default:
                 return null;
         }
@@ -183,6 +249,7 @@ function createFakeGitHub(actualName: string) {
             : sampleIssueNode('I_open', { repository: actualName, number: 1, updatedAt: UPDATED_AT });
         return {
             repository: {
+                nameWithOwner: actualName,
                 issues: {
                     totalCount: 7,
                     pageInfo: { hasNextPage: false, endCursor: null },
@@ -199,6 +266,11 @@ function isGraphQLBody(body: unknown): body is { query: string; variables: Recor
 
 function isItemRead(operation: string) {
     return operation === 'RepositoryIssues' || operation === 'RepositoryPullRequests';
+}
+
+/** What the screen itself may ask about the repository it shows. */
+function isAboutRepository(operation: string) {
+    return isItemRead(operation) || operation === 'RepositoryMetadata';
 }
 
 function rowOf(title: string) {

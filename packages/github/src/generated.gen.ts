@@ -3157,6 +3157,7 @@ export type RepositoryIssuesQueryVariables = Exact<{
 
 export type RepositoryIssuesQuery = {
     repository: {
+        nameWithOwner: string;
         issues: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -3290,6 +3291,7 @@ export type RepositoryPullRequestsQueryVariables = Exact<{
 
 export type RepositoryPullRequestsQuery = {
     repository: {
+        nameWithOwner: string;
         pullRequests: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -11812,6 +11814,7 @@ export const RepositoryIssueTemplatesDocument = new TypedDocumentString(`
 export const RepositoryIssuesDocument = new TypedDocumentString(`
     query RepositoryIssues($owner: String!, $name: String!, $states: [IssueState!]!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     issues(
       first: 100
       after: $after
@@ -12008,6 +12011,7 @@ fragment RepositoryUserFields on User {
 export const RepositoryPullRequestsDocument = new TypedDocumentString(`
     query RepositoryPullRequests($owner: String!, $name: String!, $states: [PullRequestState!]!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     pullRequests(
       first: $first
       after: $after
