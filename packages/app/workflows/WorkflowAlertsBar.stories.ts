@@ -11,7 +11,7 @@ const meta = {
         alertsOff: false,
         onSettings: fn(),
     },
-    // As wide as the Workflows tab.
+    // As wide as the Workflows section.
     decorators: [
         story => {
             const Story = story();

@@ -90,7 +90,7 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     await expect(repository.notTracked('my/assigned')).toContainText('its other open issues are on GitHub.');
     await expect(page).toHaveURL('/my/assigned');
 
-    // Only a tracked repository has a Workflows tab (actions D4): an untracked one's is GitHub's page.
+    // Only a tracked repository has a Workflows section (actions D4): an untracked one's is GitHub's page.
     const actions = answerGitHubPage(github, '/acme/web/actions');
     await page.goto('/acme/web/actions');
     expect((await actions).href).toBe('https://github.com/acme/web/actions');
