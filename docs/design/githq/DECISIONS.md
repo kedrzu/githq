@@ -569,7 +569,10 @@ design's grey box, rather than the code's half-opaque accent.
 every card, pill and key would pay for what only controls need.
 
 Labels stay: their colour is a dot beside a name in `fg-2`, so it carries nothing the name doesn't say. A disabled control
-is exempt in WCAG. Target sizes aren't decided yet.
+is exempt in WCAG.
+
+The rows of a stack map and the members of a stack's card are **24 px tall** (owner, 2026-11-04): 23 and 20 before, under
+WCAG 2.5.8's minimum, and every other row was already over it. The ticks of a workflow's run strip aren't decided yet.
 
 ## Open questions
 
