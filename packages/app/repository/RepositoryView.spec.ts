@@ -332,7 +332,7 @@ test('D14: in the column layout a long name is cut to the column, its GitHub ico
     const menu = page.getByRole('heading', { name, level: 2 });
 
     await expect.element(github).toBeVisible();
-    const column = menu.element().closest('header')?.parentElement?.getBoundingClientRect();
+    const column = menu.element().closest('[class*="repositoryColumn_head"]')?.parentElement?.getBoundingClientRect();
     const icon = github.element().getBoundingClientRect();
     // The default 280 px, less the panel's border.
     expect(column?.width).toBe(279);

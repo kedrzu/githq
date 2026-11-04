@@ -45,6 +45,12 @@ const preview: Preview = {
         backgrounds: { disable: true },
         layout: 'fullscreen',
     },
+    // Runs before the addon's check. A screen's toolbar fits its options to the width it measures, so on its first frames
+    // its tools still sit over the tabs: axe should judge what the user gets to click.
+    afterEach: async () => {
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+    },
     decorators: [
         story => {
             const Story = story();

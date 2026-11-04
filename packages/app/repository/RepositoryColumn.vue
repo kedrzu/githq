@@ -72,7 +72,7 @@ const sectionsWithIcons = computed(() =>
 
 <template>
   <div :class="css.repositoryColumn">
-    <header
+    <div
       :class="css.repositoryColumn_head"
       v-bind="WINDOW_DRAG_REGION"
     >
@@ -103,7 +103,7 @@ const sectionsWithIcons = computed(() =>
         :link="githubUrl"
         target="_blank"
       />
-    </header>
+    </div>
     <div
       v-if="!tracked"
       :class="css.repositoryColumn_notTracked"

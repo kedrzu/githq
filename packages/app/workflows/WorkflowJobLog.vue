@@ -113,7 +113,7 @@ interface LogPlace {
 
 const LINE_HEIGHT = 18;
 const STEP_HEIGHT = 26;
-const GAP_HEIGHT = 22;
+const GAP_HEIGHT = 24;
 /** How long the typing stops for before a search runs: a pass over 100,000 lines is too much for every key. */
 const SEARCH_DELAY_MS = 100;
 const END_HEIGHT = 42;
@@ -1524,7 +1524,7 @@ function measureCharacterWidth() {
 .workflowJobLog_gap {
   position: sticky;
   left: 0;
-  height: 22px;
+  height: 24px;
 }
 
 .workflowJobLog_gapButton {

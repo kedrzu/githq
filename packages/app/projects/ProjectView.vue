@@ -701,6 +701,7 @@ function addDraft(title: string, group: string | null) {
 }
 
 .projectView_tab_current {
+  font-weight: $font-weight-medium;
   color: $color-fg;
   background: $color-bg-3;
 }

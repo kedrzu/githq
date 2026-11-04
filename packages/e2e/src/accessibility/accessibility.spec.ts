@@ -66,7 +66,7 @@ test('my work, with the command menu, the new issue dialog and the account menu 
 
     await shell.account(SAMPLE_VIEWER.viewer.login).click();
     await expect(page.getByRole('menu')).toBeVisible();
-    await expectAccessible(page, 'the account menu');
+    await expectAccessible(page, 'the account menu', '[role="menu"]');
     await page.keyboard.press('Escape');
 
     await myWork.row(ISSUE).click();
@@ -77,7 +77,7 @@ test('my work, with the command menu, the new issue dialog and the account menu 
     await page.keyboard.press('s');
     const status = new PickerHarness(page, 'Status');
     await expect(status.option('In Progress')).toBeVisible();
-    await expectAccessible(page, 'a picker');
+    await expectAccessible(page, 'a picker', '[role="dialog"]');
 });
 
 test('a toast', async ({ page, github }) => {
@@ -117,7 +117,7 @@ test('a repository, a project as a list and a board, and the sidebar’s context
     await expectAccessible(page, 'a repository');
 
     await shell.openTrackedMenu(SAMPLE_REPOSITORY);
-    await expectAccessible(page, 'the sidebar’s context menu');
+    await expectAccessible(page, 'the sidebar’s context menu', '[role="menu"]');
     await page.keyboard.press('Escape');
 
     await shell.tracked(SAMPLE_PROJECT).click();

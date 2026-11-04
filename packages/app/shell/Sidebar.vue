@@ -686,6 +686,8 @@ function getProjectMark(title: string) {
 .sidebar_railLink_active {
   color: $color-fg;
   background: $color-bg-3;
+  // A fill alone is too faint to tell which it is (D29): the accent's edge, as a selected row has.
+  box-shadow: inset 2px 0 0 $color-accent;
 }
 
 // The rail's count of broken workflows (actions W1), on the icon's corner: filled red with a break under a day

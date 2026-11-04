@@ -559,7 +559,7 @@ tint. A current project or repository section tab gets weight 500, and the curre
 of 1.13:1 alone doesn't tell them apart. `border-2` stays for what doesn't need it: cards, label pills, keys.
 
 **Why.** Measured across every story and the e2e screens, rendered and composited (`packages/e2e/src/audit/`,
-`packages/app/scripts/tokenContrast.ts`). Outlines read 1.27–1.50:1, graph lines 1.99–2.35:1, opacity on dim rows down to
+`packages/app/styles/tokens.test.ts`). Outlines read 1.27–1.50:1, graph lines 1.99–2.35:1, opacity on dim rows down to
 1.84:1, against 3:1 for graphics and 4.5:1 for text.
 
 **Known cost.** Fields are visibly brighter, the largest change to the calm of the UI. The read-only checkbox stays the
