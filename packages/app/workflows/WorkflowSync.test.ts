@@ -417,7 +417,7 @@ test('a repository on screen before the sync starts has its runs on any ref read
     first.tracking.choose(TRACK_BOTH);
     await first.session.clock.advance(0);
 
-    // A reload at the address of the Workflows tab: the screen is there before the kept copy is read.
+    // A reload at the address of the Workflows section: the screen is there before the kept copy is read.
     const second = await setup(world, {
         login,
         persistence: first.persistence,
@@ -714,7 +714,7 @@ test('a fresh run on the default branch read in the same poll does not stop the 
     expect(release?.brokenGroups.map(group => group.latestFailedRun?.id)).toEqual([61]);
 });
 
-test('the Workflows tab’s freshness: the first read’s progress, then the workflows’ own poll', async () => {
+test('the Workflows section’s freshness: the first read’s progress, then the workflows’ own poll', async () => {
     const world = sampleWorld();
     const { session, tracking, sync } = await setup(world);
     const heldCi = createPromise();
@@ -730,7 +730,7 @@ test('the Workflows tab’s freshness: the first read’s progress, then the wor
     expect(sync.getRepositoryWorkflowsFreshness('acme/web').kind).toBe('fresh');
 });
 
-test('the Workflows tab’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
+test('the Workflows section’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
     const world = sampleWorld();
     world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
     const { session, tracking, sync } = await setup(world);
@@ -744,7 +744,7 @@ test('the Workflows tab’s freshness: GitHub failing during the first read says
     expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
 });
 
-test('the Workflows tab’s freshness: Actions refused with rows last read is stale, whatever the issues’ poll and the loop say; refused during the first read is no reading; with no rows the loop’s', async () => {
+test('the Workflows section’s freshness: Actions refused with rows last read is stale, whatever the issues’ poll and the loop say; refused during the first read is no reading; with no rows the loop’s', async () => {
     const world = sampleWorld();
     const { session, tracking, sync } = await setup(world);
     tracking.choose(TRACK_BOTH);

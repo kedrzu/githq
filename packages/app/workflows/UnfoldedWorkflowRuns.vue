@@ -1,4 +1,4 @@
-<!-- A workflow unfolded in place in its repository's Workflows tab (actions W3b), under its row: a ref filter — every ref, or one seen in its runs; F types one, Enter takes it (the first seen ref holding what was typed, or the ref typed), Esc leaves the field; Esc on the screen shows every ref again —, then its runs, one line each (`WorkflowRunLine`), the newest first: the ones kept at once, older ones read on demand below them as the end comes into view ("Reading older runs…"). A read GitHub fails is said under the runs, as a line the tab's keys select: Enter or a click asks again. The tab's keys select the lines; the caller says which one is. -->
+<!-- A workflow unfolded in place in its repository's Workflows section (actions W3b), under its row: a ref filter — every ref, or one seen in its runs; F types one, Enter takes it (the first seen ref holding what was typed, or the ref typed), Esc leaves the field; Esc on the screen shows every ref again —, then its runs, one line each (`WorkflowRunLine`), the newest first: the ones kept at once, older ones read on demand below them as the end comes into view ("Reading older runs…"). A read GitHub fails is said under the runs, as a line the tab's keys select: Enter or a click asks again. The tab's keys select the lines; the caller says which one is. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
@@ -241,7 +241,7 @@ function pick(name: string | null) {
   font-size: $font-size-2xs;
   color: $color-fg;
   background: $color-bg;
-  border: 1px solid $color-border-2;
+  border: 1px solid $color-control-border;
   border-radius: 5px;
 
   &:focus-visible {

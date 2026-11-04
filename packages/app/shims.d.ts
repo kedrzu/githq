@@ -22,8 +22,7 @@ declare const __LOCAL_BUILD__: boolean;
 declare const __DESKTOP__: boolean;
 
 /**
- * The client ID of the OAuth App the desktop app signs in with (`GITHQ_GITHUB_CLIENT_ID` at build time, the one its
- * native side uses too) — in the desktop build only; `null` in the web builds, which link through the Worker, and in a
- * desktop build made without it.
+ * The client ID of the OAuth App the desktop app signs in with (chosen by `GITHQ_ENV` at build time, as its native
+ * side's is) — in the desktop build only; `null` in the web builds, which link through the Worker.
  */
 declare const __GITHUB_CLIENT_ID__: string | null;

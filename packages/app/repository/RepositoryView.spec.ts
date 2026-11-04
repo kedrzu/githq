@@ -163,7 +163,7 @@ test('J3, CH37: not tracked, it lists what concerns the user of the section, how
     // Never negative: GitHub counts no more open pull requests than the one listed.
     await expect.element(lines).toHaveTextContent('none of its other pull requests is open on GitHub.');
     await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
-    // Its workflows are not read: no Workflows tab.
+    // Its workflows are not read: no Workflows section.
     await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
 });
 
@@ -332,7 +332,7 @@ test('D14: in the column layout a long name is cut to the column, its GitHub ico
     const menu = page.getByRole('heading', { name, level: 2 });
 
     await expect.element(github).toBeVisible();
-    const column = menu.element().closest('header')?.parentElement?.getBoundingClientRect();
+    const column = menu.element().closest('[class*="repositoryColumn_head"]')?.parentElement?.getBoundingClientRect();
     const icon = github.element().getBoundingClientRect();
     // The default 280 px, less the panel's border.
     expect(column?.width).toBe(279);

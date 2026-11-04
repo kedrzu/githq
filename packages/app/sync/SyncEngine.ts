@@ -367,7 +367,7 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * How fresh a tracked repository's Workflows tab is (actions W3c, W3e): `reading` during the first read of its
+         * How fresh a tracked repository's Workflows section is (actions W3c, W3e): `reading` during the first read of its
          * runs, unless GitHub stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read
          * are on screen — there is no telling since when, as the loop goes on without it —; else as its poll goes.
          * Reactive.

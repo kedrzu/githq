@@ -1,0 +1,27 @@
+---
+name: app
+description: >-
+    The Nuxt app in packages/app: where screens, routes, stories, specs and build targets live in
+    githq. Use when creating, changing or reviewing a screen, a route, a Vue component or a Nuxt setting.
+---
+
+# App
+
+Read `nzyme/plugins/nzyme/skills/ui/SKILL.md` before building a component; it holds the practice.
+
+## Paths
+
+- Screens and their components: `packages/app/<feature>/`; shared ones in `packages/app/components/`.
+- Routes: `packages/app/app/router.options.ts`, nowhere else.
+- Container: `packages/app/plugins/iocPlugin.ts`; the Storybook preview (`.storybook/preview.ts`) registers the same interfaces.
+- Tokens and global CSS: `packages/app/styles/`, compiled through `viteShared.ts`.
+- Stories and specs: beside the component. Screen harnesses: `packages/e2e/src/harnesses/`.
+
+## Requirements
+
+- A story fails its test on a WCAG violation (`a11y.test: 'error'`, `bun run test:stories`).
+- A build target is checked after it builds: `packages/app/scripts/check*Build.ts`.
+
+## Decisions
+
+- Targets, the landing page and the UI package: `ARCHITECTURE.md`, "App and UI" and "Decisions".

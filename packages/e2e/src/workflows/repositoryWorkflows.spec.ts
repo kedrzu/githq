@@ -5,7 +5,7 @@ import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-test("a repository's Workflows tab lists every workflow — runs on any ref read as it opens —, counts the broken one, and Enter opens its failed run", async ({
+test("a repository's Workflows section lists every workflow — runs on any ref read as it opens —, counts the broken one, and Enter opens its failed run", async ({
     page,
     github,
 }) => {

@@ -127,8 +127,7 @@ const t = useTranslate();
   [role='checkbox'] {
     color: $color-fg-3;
     background: $color-bg-3;
-    border-color: $color-border-2;
-    opacity: 1;
+    border-color: $color-control-border;
   }
 
   .candidateProjectRow_title {

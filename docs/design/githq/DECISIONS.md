@@ -548,6 +548,55 @@ pull request would look different on a board. Keeping `Table row` for projects: 
 one list that differs, and of a design the code doesn't follow. Showing assignees everywhere: my work would lose who asked
 for a review.
 
+### D29
+
+**Closing acts at once, with Undo** (owner, 2026-11-04). A pull request has no reason to close for, so "Close pull
+request" is one action, not a submenu holding a second "Close pull request", and `Shift+X` closes it there and then;
+reopening is one action too. With no step left to catch a slip, every close offers Undo: a toast names what closed, with
+Undo (⌘Z) for 10 seconds, as untracking does (D25). An issue's close keeps its submenu, for the reason, and gets the same
+toast, and so does closing several items.
+
+**Undo reopens.** The close goes to GitHub at once, like every other edit (D8), and Undo sends a plain reopen, so it is
+visible on github.com as closed and reopened, and it can fail like any edit (a failed edit's toast says so). A close GitHub
+refused offers no Undo.
+
+**Rejected.** Holding the close back until the toast goes, which would leave no trace on GitHub: the item would look closed
+here while it is open everywhere else, and closing the tab would have to send it or lose it. A confirmation step: slower on
+every close, to guard against a rare slip that Undo already covers.
+
+### D30
+
+**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays.
+Text already passed everywhere it was measured, except in the two states below; what fell short was the graphics. Fields
+and checkboxes get an outline of 3:1 (`control-border`, the value of `fg-3`), commit graph lines too (`graph-line`,
+`#646B75`, the default branch's line staying brighter), and `red-quiet` moves to `#AC4D52`. Dim rows lose their opacity
+and use `fg-dim` and `fg-3` instead: stack members below the line and rows not matching a filter. The undone chip loses its
+tint. A current project or repository section tab gets weight 500, and the current item of the collapsed sidebar an accent edge, because a fill
+of 1.13:1 alone doesn't tell them apart. `border-2` stays for what doesn't need it: cards, label pills, keys.
+
+**Why.** Measured across every story and the e2e screens, rendered and composited (`packages/e2e/src/audit/`,
+`packages/app/styles/tokens.test.ts`). Outlines read 1.27–1.50:1, graph lines 1.99–2.35:1, opacity on dim rows down to
+1.84:1, against 3:1 for graphics and 4.5:1 for text.
+
+**Known cost.** Fields are visibly brighter, the largest change to the calm of the UI. The read-only checkbox stays the
+design's grey box, rather than the code's half-opaque accent.
+
+**Rejected.** Checkboxes only: text fields would still miss 3:1 and need a recorded exception. A brighter `border-2`:
+every card, pill and key would pay for what only controls need.
+
+Labels stay: their colour is a dot beside a name in `fg-2`, so it carries nothing the name doesn't say. A disabled control
+is exempt in WCAG.
+
+The rows of a stack map and the members of a stack's card are **24 px tall** (owner, 2026-11-04): 23 and 20 before, under
+WCAG 2.5.8's minimum, and every other row was already over it. The ticks of a workflow's run strip
+**stop being links** (owner, 2026-11-04): a new one starts every 10 px, under the same minimum. Hovering one still names its
+run, and a click on the strip is a click on the row: the latest failed run on the cross-repository screen, and in a
+repository's tab what the row does there. An older run takes two clicks and a tick can't be modifier-clicked into a new tab;
+widening the strip past 100 px in every row was rejected, and so was recording an exception.
+
+**Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
+only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
+
 ## Open questions
 
 ### D26
