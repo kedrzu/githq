@@ -1,4 +1,4 @@
-<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more; "pull requests" for one only pull requests ran), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m", "Failed on v0.1.0-rc.3, a tag without alerts", "1 of the last 5 failed") and its last result ("failed 14m ago"). A repository's Workflows tab gives the standing its state alone does not tell, and the runs to show. Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
+<!-- One workflow on one line (actions W2, W3a): its state icon, its name — "by GitHub" when GitHub generates it —, its repository on the cross-repository screen, the ref or pattern it is read on (a branch or a tag, "+2" when it is broken on more; "pull requests" for one only pull requests ran), its last runs (`RunStrip`, in the same column on every row), how it stands ("Broken for 3h", "Passing · #88 running 1m", "Failed on v0.1.0-rc.3, a tag without alerts", "1 of the last 5 failed") and its last result ("failed 14m ago"). A repository's Workflows section gives the standing its state alone does not tell, and the runs to show. Bright red while a break is younger than a day, quiet red after. The name is the row's button: it reaches the row by Tab and clicking anywhere on the row presses it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -31,7 +31,7 @@ const props = withDefaults(
     /** `owner/name`, on the cross-repository screen; a repository's own tab names none. */
     repository?: string | null;
     selected?: boolean;
-    /** Where a repository's Workflows tab places it beyond its state; `null`: as its state says. */
+    /** Where a repository's Workflows section places it beyond its state; `null`: as its state says. */
     standing?: WorkflowRowStanding | null;
     /** The runs its strip shows, oldest first; `null`: those on the refs with alerts. */
     runs?: readonly GitHubWorkflowRun[] | null;

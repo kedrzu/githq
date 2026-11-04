@@ -24,7 +24,7 @@ in one feed, and the pages are slow.
 - **Counted refs**: by default the repository's default branch, whichever GitHub reports. Runs started by a pull
   request never count, and there is no setting for that. The repository's settings can add patterns with wildcards,
   such as `release/*` or `v*`, and switch the default branch off. They affect only what lights the red marker and the
-  total; every workflow and run stays visible in the Workflows tab.
+  total; every workflow and run stays visible in the Workflows section.
 
 ## Screens, in order
 
@@ -45,7 +45,7 @@ The question: what is broken right now? Each broken workflow: its name and repos
 last few runs, how long ago it failed. Enter on one opens screen 4. Long-broken workflows sit here indefinitely, so
 it should be possible to tell a fresh failure from an old one.
 
-### 3. The Workflows tab of a repository
+### 3. The Workflows section of a repository
 
 A fourth tab of the repository view, next to All, Issues and Pull requests, at `/owner/name/actions`. It does not
 change what the All tab shows: workflows never appear among issues.
@@ -109,8 +109,8 @@ Cases to draw:
 - a repository githq has not read yet, so no matches are known.
 
 Where it lives is open. Since this brief was first written, githq gained a Settings screen that lists tracked
-repositories; per-repository settings may belong there, opened from the Workflows tab, or the tab may hold it itself.
-Either way, the way there starts at the Workflows tab, and the pattern list is reachable by keyboard.
+repositories; per-repository settings may belong there, opened from the Workflows section, or the tab may hold it itself.
+Either way, the way there starts at the Workflows section, and the pattern list is reachable by keyboard.
 
 These settings follow the user between computers when saving settings to GitHub is on, and stay in this browser
 otherwise. Nothing on this screen needs to say which.

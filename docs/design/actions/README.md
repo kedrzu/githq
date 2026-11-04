@@ -42,7 +42,7 @@ computers.
 
 Only repositories you already track are covered. [The owner's call](DECISIONS.md#d4).
 
-A repository's page gets a Workflows tab next to issues and pull requests. It lists all the workflows, passing
+A repository's page gets a Workflows section next to issues and pull requests. It lists all the workflows, passing
 ones too, one per row with their recent runs, unlike GitHub's single feed where every workflow's runs are mixed
 together.
 

@@ -163,7 +163,7 @@ export interface RepositoryWorkflowState {
 }
 
 /**
- * Where a repository's Workflows tab places a workflow its state alone does not (actions W3a, W13, W14): one whose
+ * Where a repository's Workflows section places a workflow its state alone does not (actions W3a, W13, W14): one whose
  * runs were all started by pull requests, one failing only on refs without alerts, one passing there, one with no
  * verdict yet — `reading` while its runs were never read.
  */
