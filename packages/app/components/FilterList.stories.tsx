@@ -26,6 +26,7 @@ const FRUIT: readonly FruitRow[] = [
     { value: 'apricot', label: 'Apricot' },
     { value: 'banana', label: 'Banana', disabled: true },
     { value: 'cherry', label: 'Cherry' },
+    { value: 'date', label: 'Date', disabled: true },
 ];
 
 /** Type to narrow, ↑/↓ and Enter: Enter picks the best match; a disabled row is shown, not picked. */
