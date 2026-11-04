@@ -1,4 +1,4 @@
-import { OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTERN } from '@githq/github/oauth.js';
+import { getOAuthClientId, OAUTH_CALLBACK_PATH, OAUTH_SCOPES, OAUTH_STATE_PATTERN } from '@githq/github/oauth.js';
 import type { OAuthErrorBody, OAuthTokenExchangeResult } from '@githq/github/oauth.js';
 import { parseJson } from '@githq/github/utils/parseJson.js';
 
@@ -37,7 +37,7 @@ export function authorize(request: Request, env: WorkerEnv): Response {
         return methodNotAllowed('GET');
     }
 
-    const clientId = env.GITHUB_CLIENT_ID;
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
     if (!clientId || !env.GITHUB_CLIENT_SECRET) {
         return notConfigured();
     }
@@ -65,14 +65,14 @@ export function authorize(request: Request, env: WorkerEnv): Response {
 /**
  * `GET /api/auth/approval`: redirects the browser to GitHub's page of githq's OAuth App, where the user asks an
  * organisation that hides its private data from third-party apps to approve githq (G5, D14). The client ID is
- * public, but only the Worker knows it, so the app links here.
+ * public, but only the Worker knows which environment it runs in, so the app links here.
  */
 export function openApproval(request: Request, env: WorkerEnv): Response {
     if (request.method !== 'GET') {
         return methodNotAllowed('GET');
     }
 
-    const clientId = env.GITHUB_CLIENT_ID;
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
     if (!clientId) {
         return notConfigured();
     }
@@ -95,7 +95,7 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
         return methodNotAllowed('POST');
     }
 
-    const clientId = env.GITHUB_CLIENT_ID;
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
     const clientSecret = env.GITHUB_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
         return notConfigured();
@@ -207,7 +207,7 @@ function callbackUrl(request: Request): string {
 function notConfigured(): Response {
     return authError(500, {
         error: 'not_configured',
-        description: 'GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are not set (see .env.example)',
+        description: 'GITHUB_CLIENT_SECRET is not set, or GITHQ_ENV names no OAuth App (see the secrets skill)',
     });
 }
 

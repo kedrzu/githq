@@ -66,7 +66,7 @@ export type EditCommandKind =
     | ProjectFieldRole
     | 'state';
 
-/** An entry of the close / reopen submenu. */
+/** A way to close or reopen: an entry of the submenu, or the action itself when it is the only one. */
 export interface StateOption {
     readonly key: string;
     readonly text: string;
@@ -381,15 +381,25 @@ export function useEditCommands(): (params: EditCommandsParams) => Command[] {
 
     function stateCommand(params: EditCommandsParams): Command | null {
         const { stateOptions } = params;
-        if (stateOptions.length === 0) {
+        const [first] = stateOptions;
+        if (!first) {
             return null;
         }
 
-        return {
+        const command = {
             id: `${params.section}.state`,
             title: params.stateTitle,
             section: params.section,
             key: EDIT_KEYS.state,
+        };
+
+        // Nothing to choose between (a pull request has no reason to close for, reopening is one thing): it just runs.
+        if (stateOptions.length === 1) {
+            return { ...command, icon: first.icon ?? CircleCheckBig, run: () => params.edit(first.request) };
+        }
+
+        return {
+            ...command,
             icon: CircleCheckBig,
             keywords: stateOptions.map(option => option.text),
             run: () => params.inline?.state?.() ?? false,

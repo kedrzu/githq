@@ -26,7 +26,7 @@ export const E2E_PORT = Number(process.env[PORT_ENV]);
 /** The app's address in the tests (`baseURL`). */
 export const E2E_BASE_URL = `http://localhost:${E2E_PORT}`;
 
-/** The dummy OAuth App the Worker runs with in the tests (`worker.vars`), and the desktop build is built with. */
+/** The dummy OAuth App the Worker runs with in the tests (`worker.vars`), and the desktop build is built with: `GITHQ_ENV=e2e`. */
 export const E2E_CLIENT_ID = 'e2e-client';
 
 /** The port the desktop app's build is served on during the tests. */

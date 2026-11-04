@@ -102,7 +102,7 @@
                     "production",
                     "^production",
                     {
-                        "env": "GITHQ_GITHUB_CLIENT_ID"
+                        "env": "GITHQ_ENV"
                     }
                 ],
                 "outputs": [

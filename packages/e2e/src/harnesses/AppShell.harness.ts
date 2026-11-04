@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -124,7 +124,7 @@ export class AppShellHarness {
     }
 
     /**
-     * The toasts showing, oldest first: the failures of edits (K1, K2), merges refused or confirmed after the user moved
+     * The toasts showing, oldest first: what was just closed, with Undo (D29), the failures of edits (K1, K2), merges refused or confirmed after the user moved
      * on (merging PM34, PM35), and that syncing the settings stopped (T9).
      */
     get toasts(): Locator {
