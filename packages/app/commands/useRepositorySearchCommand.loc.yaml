@@ -1,0 +1,22 @@
+title:
+  en: Search repositories…
+detail:
+  en: Any repository on GitHub
+placeholder:
+  en: Search GitHub for a repository…
+typeMore:
+  en: Type at least two characters
+heading:
+  en: Repositories on GitHub
+hint:
+  en: 'Asks GitHub · org: and stars: work'
+asking:
+  en: Asking GitHub…
+nothing:
+  en: Nothing on GitHub matches "{text}"
+failed:
+  en: GitHub did not answer. Change the search to try again.
+public:
+  en: public
+private:
+  en: private
