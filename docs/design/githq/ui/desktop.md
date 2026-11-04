@@ -82,9 +82,12 @@ A section only the desktop app has, after Account, with the key 7.
 - **A fresh install follows what it is (U19).** A Development build starts on Development, any other build on Stable,
   and nothing is asked.
 
-## Check for updates from the command palette
+## Update commands in the command palette
 
-The same action in ⌘K (U20). The palette closes on running it and the outcome appears at the right end of the status
+Every update action is a command in ⌘K, shown only while it can run ([D18](../../desktop-releases/DECISIONS.md#d18)): Check
+for updates, Settings: Updates, Settings: Changelog, Switch to Stable or Development, Restart, Later, Try again and What changed.
+
+Check for updates is the same action as in Settings (U20). The palette closes on running it and the outcome appears at the right end of the status
 bar, where U1 speaks (U21), never as a toast. U22 has every outcome. Up to date goes away by itself; a failure stays until
 Try again or Dismiss. A check nobody asked for says nothing until U1.
 

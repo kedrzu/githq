@@ -339,3 +339,15 @@ one commit (screen U43, a question for the owner). Those commits are read from `
 
 - A dialog, the side panel or a page opening from the toast with the range since the old version (U26–U37, recommended by the design
   agent: the dialog): the owner chose a permanent section.
+
+## D18
+
+**Everything the app can do about updates is a command in the command menu, and a command shows only while it can run.** (2026-11-04, owner)
+This widens the "check now" of [D11](#d11).
+
+Always: Check for updates, Settings: Updates and Settings: Changelog. On macOS and Linux also Switch to Stable or Switch to Development,
+whichever isn't chosen; switching to Stable from a Development build asks first, as in [D5](#d5). While an update is ready: Restart and
+Later. After a refused or failed install: Try again and Later. While the toast shows: What changed. The exact list beyond update and
+restart is the design agent's reading of the owner's "and so on".
+
+**Why.** githq is keyboard-first, and these actions otherwise live only in a status bar segment or a section of Settings.
