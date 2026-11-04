@@ -53,6 +53,7 @@
     },
     "devDependencies": {
         "@nzyme/ioc-testing": "workspace:*",
+        "@nzyme/nuxt-tools": "workspace:*",
         "@playwright/test": "1.64.0",
         "@resvg/resvg-js": "2.6.2",
         "@storybook/addon-a11y": "10.6.1",
