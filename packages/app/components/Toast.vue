@@ -16,8 +16,8 @@ import * as l from './Toast.loc.js';
 withDefaults(
   defineProps<{
     title: string;
-    /** `danger`: a change failed; `warning`: some of it went through; `done`: a merge GitHub confirmed; `neutral`: nothing is wrong (give it an `icon`). */
-    tone?: 'danger' | 'done' | 'warning' | 'neutral';
+    /** `danger`: a change failed; `warning`: some of it went through; `done`: a merge GitHub confirmed; `neutral`: nothing is wrong (give it an `icon`); `accent`: news, nothing is wrong either (give it an `icon`). */
+    tone?: 'danger' | 'done' | 'warning' | 'neutral' | 'accent';
     /** Instead of the tone's own. */
     icon?: LucideIcon;
     /** How long it stays, in ms. */
@@ -40,7 +40,13 @@ defineSlots<{
 
 const open = defineModel<boolean>('open', { default: true });
 const t = useTranslate();
-const icons = { danger: CircleX, done: GitMerge, warning: TriangleAlert, neutral: TriangleAlert };
+const icons = {
+  danger: CircleX,
+  done: GitMerge,
+  warning: TriangleAlert,
+  neutral: TriangleAlert,
+  accent: TriangleAlert,
+};
 
 // Escape dismisses it before the screen sees the key (an opened item would close) — unless the key is someone
 // else's: typed into a field, or closing a picker, a menu or a tooltip that is open.
@@ -160,6 +166,10 @@ function onOpenChange(value: boolean) {
 
   .toast_neutral & {
     color: $color-fg-2;
+  }
+
+  .toast_accent & {
+    color: $color-accent;
   }
 }
 

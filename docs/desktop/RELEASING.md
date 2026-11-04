@@ -2,7 +2,8 @@
 
 The desktop app (`packages/desktop`, decision [D23](../design/githq/DECISIONS.md#d23)) is released on demand by
 the Release action. It works out the version from the PR titles, tags `main`, and CI builds every platform into a
-draft GitHub release; you publish it by hand. Installed apps update from the release GitHub marks "latest".
+draft GitHub release; you publish it by hand. Apps on the Stable stream update from the release GitHub marks "latest". Every
+push to `main` also builds the [Development stream](#the-development-stream).
 
 ## When to release
 
@@ -29,13 +30,13 @@ to its users.
    The version is worked out from the PR titles since the last stable tag, and the first one is 0.1.0. While 0.x
    a breaking change bumps minor, from 1.0 major; `feat` bumps minor, `fix` and `perf` patch. The scopes `web` and
    `cloud` (see the `git-workflow` skill) do not count. With nothing user-visible since the last stable tag,
-   `stable` and `candidate` fail with a clear message and make no tag. The version comes from the tag only: CI
+   `stable` fails with a clear message and makes no tag. The version comes from the tag only: CI
    writes it into `tauri.conf.json` before building, and the committed `version` there is just for local builds. A
    tag pushed by hand builds nothing.
 
 3. The run (`.github/workflows/release.yml`) has these jobs:
    - `prepare` works out the version and the notes, creates the tag at the commit the run started on, and a draft
-     release `githq v0.2.0` with the generated notes, marked as a prerelease when the tag has a `-`;
+     release `githq v0.2.0` with the generated notes;
    - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with `GITHQ_ENV=prod`);
    - `bundle` builds on GitHub-hosted runners: macOS Apple Silicon and Intel (`.dmg`, `.app.tar.gz`), Windows x64
      (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
@@ -49,7 +50,9 @@ to its users.
      and `linux-x86_64`;
    - if you can, install it on your Mac and launch it.
 
-5. Edit the release notes if you want to: they are generated from the PR titles, and editable until you publish.
+5. Add the plain-language summary with the `release` skill (`/release`), which an agent runs on the draft before you publish.
+   The list under it is generated from the PR titles. A forgotten summary leaves the list, which is still correct. Descriptions
+   stay editable after publishing, and the app reads them when opened, so a correction reaches everyone.
    Then **publish** the draft. Published and not a prerelease, it becomes GitHub's "latest". Installed apps read
    `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
 
@@ -59,11 +62,17 @@ and the tag (`git push origin :refs/tags/v0.2.0`), then run the action again.
 
 There is no way yet to force a version. When 1.0 is near, 1.0.0 needs a small PR that adds an input to the action.
 
-### Prereleases for testing
+## The Development stream
 
-Run the action with `mode=candidate`: it tags `v0.2.0-rc.1`, then `-rc.2`, and so on, and makes a draft
-**prerelease**. Publish it to share the installers. GitHub never marks a prerelease "latest", so installed apps are
-never offered it. Delete the prerelease and its tag once the real version is out.
+`.github/workflows/development.yml` runs after the Deploy action succeeds on `main`, unless only documentation changed since the published build. It builds
+macOS and Linux, signed and notarized like a release, as a draft under the tag `development`, checks the draft's `latest.json`, then deletes
+the published release and publishes the draft. The tag never moves; the description names the commit. Nothing here is done by hand.
+
+The version is the last stable version with its minor raised plus the commit count: `0.3.0-dev.214` after `0.2.0`, `0.1.0-dev.N`
+before any stable release. Apps on the stream read `releases/download/development/latest.json`. Windows has no Development builds.
+
+A failed build leaves the last published one in place, and the next run builds everything since it. A newer build cancels an older one,
+and the draft it left is removed by the next run. A run never publishes a commit older than the published build.
 
 ## Local development
 
@@ -109,19 +118,38 @@ On any machine, once logged in with `bun nzyme secrets login`:
 ### Apple signing and notarization (once the Developer ID exists)
 
 Without these secrets the macOS app is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), and macOS calls it
-from an unidentified developer. With them, the `bundle` job signs and notarizes. Follow Tauri's
+from an unidentified developer. With them, the build signs and notarizes. Follow Tauri's
 [macOS code signing](https://v2.tauri.app/distribute/sign/macos/) guide:
 
-1. Join the Apple Developer Program. Create a **Developer ID Application** certificate and install it in your
-   keychain.
-2. Export it from Keychain Access as a `.p12` with a password, and base64 it: `base64 -i certificate.p12 | pbcopy`.
-3. Set the repository secrets:
-   - `APPLE_CERTIFICATE` — the base64 `.p12`;
-   - `APPLE_CERTIFICATE_PASSWORD` — its export password;
-   - `APPLE_SIGNING_IDENTITY` — the certificate's name, `Developer ID Application: Name (TEAMID)`;
-   - `APPLE_ID` — the Apple Account email;
-   - `APPLE_PASSWORD` — an app-specific password from account.apple.com, not the account password;
-   - `APPLE_TEAM_ID` — the team ID.
+1. Join the Apple Developer Program. As the Account Holder, create a **Developer ID Application** certificate from a
+   certificate signing request made in Keychain Access, and open the downloaded `.cer` to install it.
+
+2. Export it from Keychain Access (My Certificates) as a `.p12` with a password.
+
+3. Put everything in the secret store, under `GITHQ_ENV=prod`, the only place it can be read back from:
+
+   ```sh
+   base64 -i certificate.p12 | GITHQ_ENV=prod bun nzyme secrets set APPLE_CERTIFICATE --no-prompt
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_CERTIFICATE_PASSWORD --prompt="The .p12's export password"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_SIGNING_IDENTITY --prompt="Developer ID Application: Name (TEAMID)"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_ID --prompt="The Apple Account's email"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_PASSWORD --prompt="An app-specific password from account.apple.com"
+   GITHQ_ENV=prod bun nzyme secrets set APPLE_TEAM_ID --prompt="The team ID, developer.apple.com → Membership"
+   ```
+
+   `bun run build:desktop:signed` then signs and notarizes on any machine, with no certificate in its keychain.
+
+4. Set the repository secrets from the store, which is what the workflows read:
+
+   ```sh
+   GITHQ_ENV=prod bun nzyme secrets run -- sh -c '
+     printf %s "$APPLE_CERTIFICATE" | gh secret set APPLE_CERTIFICATE
+     printf %s "$APPLE_CERTIFICATE_PASSWORD" | gh secret set APPLE_CERTIFICATE_PASSWORD
+     printf %s "$APPLE_SIGNING_IDENTITY" | gh secret set APPLE_SIGNING_IDENTITY
+     printf %s "$APPLE_ID" | gh secret set APPLE_ID
+     printf %s "$APPLE_PASSWORD" | gh secret set APPLE_PASSWORD
+     printf %s "$APPLE_TEAM_ID" | gh secret set APPLE_TEAM_ID'
+   ```
 
 The workflow exports each one only when it is set: an empty `APPLE_CERTIFICATE` would fail the bundle. Then
 update the macOS line in the root README's download section and its Code signing policy.

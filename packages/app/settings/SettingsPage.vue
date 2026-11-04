@@ -1,7 +1,7 @@
 <!-- `/settings` (D15): the one Settings screen, its section in the address (`?tab=`, `settingsRoutes.ts`). `?q=` opens the Repositories or Projects section's picker with that search (`TrackedRepositoriesSection.vue`, `TrackedProjectsSection.vue`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AccountSection from '@/account/AccountSection.vue';
@@ -14,6 +14,10 @@ import SavingSection from './SavingSection.vue';
 import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
 import SettingsView from './SettingsView.vue';
 import { SettingsSync } from './sync/SettingsSync.js';
+
+// The desktop app's sections, in the desktop build only (`__DESKTOP__`); the web builds drop them.
+const UpdatesSection = __DESKTOP__ ? defineAsyncComponent(() => import('./UpdatesSection.vue')) : null;
+const ChangelogSection = __DESKTOP__ ? defineAsyncComponent(() => import('./ChangelogSection.vue')) : null;
 
 const tracking = useService(TrackingStore);
 const sync = useService(SettingsSync);
@@ -34,7 +38,15 @@ const section = computed({
     :tracked-projects="tracking.projects.length"
     :saving-stopped="sync.state.state === 'stopped'"
   >
-    <AccountSection v-if="section === 'account'" />
+    <component
+      :is="UpdatesSection"
+      v-if="UpdatesSection && section === 'updates'"
+    />
+    <component
+      :is="ChangelogSection"
+      v-else-if="ChangelogSection && section === 'changelog'"
+    />
+    <AccountSection v-else-if="section === 'account'" />
     <SavingSection v-else-if="section === 'sync'" />
     <DisplaySection v-else-if="section === 'display'" />
     <TrackedProjectsSection

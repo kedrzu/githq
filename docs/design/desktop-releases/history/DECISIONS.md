@@ -43,3 +43,9 @@ from; no ruleset covers tags, so an Action may move it.
 - A release per build: per-build history and rollback, at the cost of hundreds of prereleases to prune and a separate
   pointer release still needed for the fixed manifest URL.
 - The name "nightly": these builds don't come nightly.
+
+## D13
+
+**Work goes in this order: the Development stream and its choice in Settings; what changed and the toast; then the Apple
+signature and the first Stable, 0.1.0.** (2026-11-04, owner) Retired when delivery began: the order was delivery's to keep, and the Apple
+signature was done first after all. Its dependency, that the toast needs a recorded last-run version, moved to D7.

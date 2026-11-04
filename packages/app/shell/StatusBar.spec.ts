@@ -56,7 +56,26 @@ test('on the web the bar never offers an update, even one said to be ready', asy
     const restart = vi.fn();
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(AppUpdate, { readyVersion: '1.4.0', restart, later: () => {} });
+    container.set(AppUpdate, {
+        state: {
+            version: '1.3.0',
+            commit: null,
+            stream: 'stable',
+            canChoose: true,
+            manual: false,
+            checkedAt: null,
+            activity: { kind: 'ready', version: '1.4.0' },
+        },
+        notice: { kind: 'ready', version: '1.4.0' },
+        check: () => {},
+        setStream: () => {},
+        restart,
+        later: () => {},
+        dismiss: () => {},
+        previousVersion: null,
+        untoldChange: null,
+        markUpdateTold: () => {},
+    });
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({ setup: () => () => h(StatusBar, { rateLimit: null }) });

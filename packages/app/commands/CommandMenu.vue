@@ -6,6 +6,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   BookMarked,
+  CircleArrowDown,
   CircleUser,
   Check,
   ChevronRight,
@@ -17,6 +18,7 @@ import {
   Layers,
   PanelsTopLeft,
   PencilLine,
+  ScrollText,
   Settings,
   SquareKanban,
   Workflow,
@@ -99,6 +101,8 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   display: PanelsTopLeft,
   sync: CloudUpload,
   account: CircleUser,
+  updates: CircleArrowDown,
+  changelog: ScrollText,
 };
 
 /** The most options a submenu draws: one may offer every item of the local copy; typing finds the rest. */

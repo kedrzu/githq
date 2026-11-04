@@ -3,3 +3,7 @@
 jsx = "react"
 jsxFactory = "h"
 jsxFragment = "h"
+
+# The app's code that runs under `bun test` is the web app's, as in the stories (`.storybook/main.ts`).
+[define]
+__DESKTOP__ = "false"

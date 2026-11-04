@@ -10,10 +10,11 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { AppUpdateShape } from '@/services/AppUpdate.js';
+import type { AppUpdateShape, UpdateNotice, UpdateState } from '@/services/AppUpdate.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
+import { CONFIRM_STABLE_PATH } from '@/settings/settingsRoutes.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { PROJECT_PATHS, REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
@@ -50,9 +51,11 @@ test('on the web the command menu offers no update', async () => {
     await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Update later/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Check for updates/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
 });
 
-test('while an update is ready the menu offers "Restart to update" and "Update later", gone once dismissed', async () => {
+test('while an update is ready the menu offers "Restart to update" and "Update later"; Later takes only itself away', async () => {
     const update = createUpdate('1.4.0');
     mount(update);
 
@@ -66,8 +69,8 @@ test('while an update is ready the menu offers "Restart to update" and "Update l
     expect(update.restart).not.toHaveBeenCalled();
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
-    await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Restart to update\s*githq 1\.4\.0$/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).not.toBeInTheDocument();
 });
 
 test('"Restart to update" restarts into the update', async () => {
@@ -78,6 +81,76 @@ test('"Restart to update" restarts into the update', async () => {
     await userEvent.keyboard('restart to update{Enter}');
 
     expect(update.restart).toHaveBeenCalledOnce();
+});
+
+test('"Check for updates" is always there in the desktop app, and is the only update command at rest on Windows', async () => {
+    const update = createFakeUpdate({ canChoose: false });
+    mount(update);
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Try again/ })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('check for updates{Enter}');
+    expect(update.check).toHaveBeenCalledOnce();
+});
+
+test('the menu offers only the stream not chosen; a stable version switches at once', async () => {
+    const development = createFakeUpdate({ version: '0.2.0', stream: 'development' });
+    const router = mount(development);
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /Switch to Development/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('switch to stable{Enter}');
+    expect(development.setStream).toHaveBeenCalledExactlyOnceWith('stable');
+    expect(router.currentRoute.value.fullPath).toBe('/');
+});
+
+test('from a stable version to Development runs at once', async () => {
+    const stable = createFakeUpdate({ version: '0.2.0', stream: 'stable' });
+    mount(stable);
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /Switch to Stable/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('switch to development{Enter}');
+    expect(stable.setStream).toHaveBeenCalledExactlyOnceWith('development');
+});
+
+test('a Development build never switches to Stable from the menu: it goes to the confirmation in Settings', async () => {
+    const update = createFakeUpdate({ version: '0.3.0-dev.214', stream: 'development' });
+    const router = mount(update);
+
+    await openMenu();
+    await userEvent.keyboard('switch to stable{Enter}');
+
+    await expect.poll(() => router.currentRoute.value.fullPath).toBe(CONFIRM_STABLE_PATH);
+    expect(update.setStream).not.toHaveBeenCalled();
+});
+
+test('after a failed install the menu offers trying again and Later', async () => {
+    const update = createFakeUpdate({ activity: { kind: 'installFailed', version: '1.4.0' } });
+    mount(update);
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('try again{Enter}');
+    expect(update.restart).toHaveBeenCalledOnce();
+});
+
+test('a failed install put off by Later can still be tried again from the menu', async () => {
+    const update = createFakeUpdate({ activity: { kind: 'installFailed', version: '1.4.0' } });
+    mount({ ...update, notice: null });
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Try again/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).not.toBeInTheDocument();
 });
 
 test('Search repositories: asks once typing pauses, nothing under two characters, and Enter goes to the pick', async () => {
@@ -266,19 +339,45 @@ async function openMenu() {
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
 }
 
-/** An update ready to run, hidden by `later` as the desktop app's is. */
+/** An update ready to run, whose segment `later` hides as the desktop app's does. */
 function createUpdate(version: string) {
-    const ready = shallowRef<string | null>(version);
-    const update = {
-        get readyVersion() {
-            return ready.value;
+    const hidden = shallowRef(false);
+    const update = createFakeUpdate({ activity: { kind: 'ready', version } });
+    return {
+        ...update,
+        get notice(): UpdateNotice | null {
+            return hidden.value ? null : { kind: 'ready', version };
         },
-        restart: vi.fn(),
         later: vi.fn(() => {
-            ready.value = null;
+            hidden.value = true;
         }),
     } satisfies AppUpdateShape;
-    return update;
+}
+
+/** The desktop app's updates, in the state given. */
+function createFakeUpdate(state: Partial<UpdateState>) {
+    const activity = state.activity ?? { kind: 'idle' };
+    return {
+        state: {
+            version: '1.3.0',
+            commit: null,
+            stream: 'stable',
+            canChoose: true,
+            manual: false,
+            checkedAt: null,
+            activity,
+            ...state,
+        },
+        notice: activity.kind === 'installFailed' || activity.kind === 'ready' ? activity : null,
+        check: vi.fn(),
+        setStream: vi.fn(),
+        restart: vi.fn(),
+        later: vi.fn(),
+        dismiss: vi.fn(),
+        previousVersion: null,
+        untoldChange: null,
+        markUpdateTold: vi.fn(),
+    } satisfies AppUpdateShape;
 }
 
 /** A GitHub whose search answers only when told to, and what it was asked. */

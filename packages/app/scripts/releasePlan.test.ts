@@ -1,24 +1,42 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 
-import { checkTitle, findLastStableTag, hasNoCode, planRelease, renderNotes } from './releasePlan.js';
-import type { ReleaseMode } from './releasePlan.js';
+import {
+    checkTitle,
+    developmentVersion,
+    findLastStableTag,
+    hasNoCode,
+    planRelease,
+    renderNotes,
+    userVisibleChanges,
+} from './releasePlan.js';
 
-function plan(subjects: string[], tags: string[], mode: ReleaseMode = 'stable') {
-    const result = planRelease({ subjects, tags, mode });
+function plan(subjects: string[], tags: string[]) {
+    const result = planRelease({ subjects, tags });
     return result.kind === 'release' ? result.tag : 'nothing';
 }
 
 describe('checkTitle', () => {
-    test.each([
-        'feat: add the context menu',
-        'fix(web): keep the focus',
-        'chore(cloud)!: drop the old route',
-        'refactor!: rename the store',
-        'perf: load the list faster',
-    ])('accepts %p', title => {
-        expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
+    test('a scope needs a change under its paths', () => {
+        expect(checkTitle('chore(cloud)!: drop the old route', ['packages/worker/src/a.ts']).valid).toBe(true);
+        expect(checkTitle('fix(web): grow the pickers', ['packages/app/tracking/TrackPickerDialog.vue']).valid).toBe(
+            false,
+        );
+        expect(checkTitle('fix(web): fix the hero', ['packages/app/landing/Hero.vue']).valid).toBe(true);
+        expect(checkTitle('fix(web): fix a redirect', ['packages/worker/src/index.ts']).valid).toBe(true);
+        expect(checkTitle('fix(cloud): fix the shell', ['packages/app/landing/Hero.vue']).valid).toBe(false);
+        expect(checkTitle('fix(cloud): rate-limit', ['packages/worker/src/index.ts', 'nuxt.config.ts']).valid).toBe(
+            true,
+        );
+        expect(checkTitle('fix(web): lost list', []).valid).toBe(true);
     });
+
+    test.each(['feat: add the context menu', 'refactor!: rename the store', 'perf: load the list faster'])(
+        'accepts %p',
+        title => {
+            expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
+        },
+    );
 
     test.each([
         'Add the context menu',
@@ -42,7 +60,6 @@ describe('checkTitle', () => {
     test.each([
         { title: 'docs: a', files: ['README.md', 'docs/a.md', 'design/a.pen'] },
         { title: 'docs: a', files: ['docs/design/shot.png'] },
-        { title: 'docs(web)!: a', files: ['design/a.pen'] },
         { title: 'chore: a', files: ['README.md'] },
         { title: 'chore: a', files: ['src/a.ts'] },
         { title: 'feat: a', files: ['README.md', 'src/a.ts'] },
@@ -87,7 +104,7 @@ describe('hasNoCode', () => {
 });
 
 describe('findLastStableTag', () => {
-    test('compares numerically, ignores candidates and unknown tags', () => {
+    test('compares numerically, ignores prereleases and unknown tags', () => {
         const tags = ['v0.9.0', 'v0.10.0', 'v0.11.0-rc.1', 'v1.0', 'latest', 'v0.10.0-beta', 'xv0.12.0'];
         expect(findLastStableTag(tags)).toBe('v0.10.0');
     });
@@ -143,9 +160,7 @@ describe('planRelease exclusions', () => {
         ['revert: x'],
         [''],
     ])('%p counts for nothing', subject => {
-        for (const mode of ['preview', 'candidate', 'stable'] as const) {
-            expect(plan([subject], ['v0.3.1'], mode)).toBe('nothing');
-        }
+        expect(plan([subject], ['v0.3.1'])).toBe('nothing');
         expect(plan([subject], [])).toBe('nothing');
     });
 
@@ -161,33 +176,43 @@ describe('planRelease exclusions', () => {
 describe('planRelease first release', () => {
     test.each([['fix: a'], ['feat: a'], ['feat!: a'], ['chore!: a']])('%p gives v0.1.0', subject => {
         expect(plan([subject], [])).toBe('v0.1.0');
-        expect(plan([subject], ['v0.1.0-rc.1', 'nightly'])).toBe('v0.1.0');
+        expect(plan([subject], ['v0.1.0-dev.4', 'nightly'])).toBe('v0.1.0');
     });
 });
 
-describe('planRelease modes', () => {
-    test('preview is the stable tag, and nothing when nothing counts', () => {
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.2'], 'preview')).toBe('v0.4.0');
-        expect(plan(['chore: a'], ['v0.3.1'], 'preview')).toBe('nothing');
+describe('developmentVersion', () => {
+    test.each([
+        [['v0.2.0'], 214, '0.3.0-dev.214'],
+        [['v0.2.0', 'v0.2.3', 'v0.2.1'], 214, '0.3.0-dev.214'],
+        [['v0.9.0', 'v0.10.0'], 5, '0.11.0-dev.5'],
+        [['v1.4.0'], 9, '1.5.0-dev.9'],
+        [[], 3, '0.1.0-dev.3'],
+        [['v0.2.0', 'v0.3.0-dev.9', 'nightly'], 7, '0.3.0-dev.7'],
+    ])('%p at %p commits is %p', (tags, commitCount, expected) => {
+        expect(developmentVersion({ tags, commitCount })).toBe(expected);
+    });
+});
+
+describe('userVisibleChanges', () => {
+    test('keeps what users notice, under the headings of the notes, in their order, with its pull request', () => {
+        expect(
+            userVisibleChanges([
+                'perf: load the list faster (#5)',
+                'chore: tidy (#8)',
+                'fix(web): the landing page (#9)',
+                'feat: add the menu',
+                'Merge branch main',
+                'refactor!: drop the old store (#2)',
+            ]),
+        ).toEqual([
+            { kind: 'breaking', changes: [{ description: 'Drop the old store', pullRequest: 2 }] },
+            { kind: 'features', changes: [{ description: 'Add the menu', pullRequest: undefined }] },
+            { kind: 'performance', changes: [{ description: 'Load the list faster', pullRequest: 5 }] },
+        ]);
     });
 
-    test('a candidate numbers from rc.1 and one past the highest, numerically', () => {
-        expect(plan(['feat: a'], ['v0.3.1'], 'candidate')).toBe('v0.4.0-rc.1');
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.1', 'v0.4.0-rc.9'], 'candidate')).toBe('v0.4.0-rc.10');
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.4.0-rc.9', 'v0.4.0-rc.10'], 'candidate')).toBe('v0.4.0-rc.11');
-    });
-
-    test('candidates of other versions do not count for numbering', () => {
-        expect(plan(['feat: a'], ['v0.3.1', 'v0.5.0-rc.4'], 'candidate')).toBe('v0.4.0-rc.1');
-    });
-
-    test('candidates never move the stable base', () => {
-        expect(plan(['fix: a'], ['v0.1.0', 'v0.2.0-rc.1'], 'candidate')).toBe('v0.1.1-rc.1');
-        expect(plan(['fix: a'], ['v0.1.0', 'v0.2.0-rc.1'], 'stable')).toBe('v0.1.1');
-    });
-
-    test('a first candidate is a v0.1.0 candidate', () => {
-        expect(plan(['fix: a'], [], 'candidate')).toBe('v0.1.0-rc.1');
+    test('nothing users notice is no group at all', () => {
+        expect(userVisibleChanges(['chore: tidy', 'docs: explain'])).toEqual([]);
     });
 });
 

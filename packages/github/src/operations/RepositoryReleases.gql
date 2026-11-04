@@ -1,0 +1,21 @@
+# A page of a repository's releases as the desktop app's Changelog shows them (desktop-releases D10, D17).
+query RepositoryReleases($owner: String!, $name: String!, $after: String) {
+    repository(owner: $owner, name: $name) {
+        releases(first: 100, after: $after) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            nodes {
+                tagName
+                isDraft
+                isPrerelease
+                publishedAt
+                descriptionHTML
+                tagCommit {
+                    oid
+                }
+            }
+        }
+    }
+}

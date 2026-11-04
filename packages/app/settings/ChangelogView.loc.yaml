@@ -1,0 +1,65 @@
+move:
+  en: Move
+moveDown:
+  en: Next version
+moveUp:
+  en: Previous version
+openOrClose:
+  en: Open or close
+allReleases:
+  en: All releases on GitHub
+allCommits:
+  en: All commits on GitHub
+version:
+  en: githq {version}
+development:
+  en: Development
+since:
+  en: since {version}
+tagNew:
+  en: New
+tagRunning:
+  en: Running
+breaking:
+  en: Breaking changes
+features:
+  en: Features
+fixes:
+  en: Fixes
+performance:
+  en: Performance
+noticedChanges:
+  plural: count
+  en:
+    one: "{count} change you'd notice"
+    many: "{count} changes you'd notice"
+outOfCommits:
+  plural: count
+  en:
+    one: 'out of {count} commit'
+    many: 'out of {count} commits'
+inNewestCommits:
+  en: in the newest {count} commits
+noticedSentence:
+  en: '{changes}, {commits}.'
+nothingTitle:
+  en: Nothing you'd notice
+nothingDetail:
+  plural: count
+  en:
+    one: "{count} commit went in, and it doesn't change what you see."
+    many: '{count} commits went in, and none of them changes what you see.'
+nothingDetailNewest:
+  en: None of the newest {count} commits changes what you see.
+noneTitle:
+  en: No Stable version yet
+noneDetail:
+  en: The first one will be {version}. Its changes appear here once it's out.
+offlineTitle:
+  en: Waiting for the connection
+offlineDetail:
+  en: You're offline. The changelog appears here by itself once you're back.
+failedTitle:
+  en: Couldn't load the changelog
+failedDetail:
+  en: GitHub didn't answer. You can read the same changes there.

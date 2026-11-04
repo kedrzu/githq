@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
