@@ -31,13 +31,12 @@ describe('checkTitle', () => {
         expect(checkTitle('fix(web): lost list', []).valid).toBe(true);
     });
 
-    test.each([
-        'feat: add the context menu',
-        'refactor!: rename the store',
-        'perf: load the list faster',
-    ])('accepts %p', title => {
-        expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
-    });
+    test.each(['feat: add the context menu', 'refactor!: rename the store', 'perf: load the list faster'])(
+        'accepts %p',
+        title => {
+            expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
+        },
+    );
 
     test.each([
         'Add the context menu',
