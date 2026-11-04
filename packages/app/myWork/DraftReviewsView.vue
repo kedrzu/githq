@@ -13,6 +13,7 @@ import ItemRow from '@/lists/ItemRow.vue';
 import type { ListContextMenuProps, ListGroup, ListedItems } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 
 import * as l from './DraftReviewsView.loc.js';
 
@@ -114,7 +115,7 @@ const groups = computed((): ListGroup<Item>[] =>
         <p :class="css.draftReviewsView_hint">
           <Kbd keys="Enter" />
           {{ t(l.openReview) }}
-          <Kbd keys="Shift+S" />
+          <Kbd :keys="REVIEW_KEYS.submit" />
           {{ t(l.submit) }}
         </p>
       </template>
@@ -166,7 +167,7 @@ const groups = computed((): ListGroup<Item>[] =>
 
 .draftReviewsView_title {
   margin: 0;
-  font-size: 14px;
+  font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $color-fg;
 }

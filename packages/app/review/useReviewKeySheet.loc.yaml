@@ -1,0 +1,46 @@
+title:
+  en: Keys in a review
+moving:
+  en: Moving
+files:
+  en: Files
+writing:
+  en: Writing
+pullRequests:
+  en: Next and previous pull request
+fileSteps:
+  en: Next and previous file
+threads:
+  en: Next and previous thread
+lines:
+  en: Line by line
+back:
+  en: Back to the pull request
+viewed:
+  en: Viewed, file or selection
+select:
+  en: Select the file
+extend:
+  en: Extend the selection
+collapse:
+  en: Collapse or expand the file
+filter:
+  en: Filter by path
+comment:
+  en: Comment on the line
+reply:
+  en: Reply to the thread
+send:
+  en: Your default, and the other
+submit:
+  en: Submit review…
+suggest:
+  en: Suggest a change
+fileList:
+  en: File list
+conversation:
+  en: Conversation
+openOnGitHub:
+  en: Open on GitHub
+review:
+  en: Review, from an opened pull request

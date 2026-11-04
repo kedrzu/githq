@@ -4,6 +4,7 @@ import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 
@@ -102,6 +103,13 @@ async function openWriting(
                 },
             },
         };
+    });
+    github.graphqlDocument('SendPullRequestReview', ({ variables }) => {
+        writes.push({ name: 'SendPullRequestReview', variables });
+        const message = refused.get('SendPullRequestReview') ?? (draft === null ? null : DRAFT_TAKEN);
+        return message === null
+            ? { data: { addPullRequestReview: { pullRequestReview: { id: 'R' } } } }
+            : refusal(message);
     });
     github.graphqlDocument('AddPullRequestReviewThread', ({ variables }) => {
         writes.push({ name: 'AddPullRequestReviewThread', variables });
@@ -665,25 +673,163 @@ test('a comment on the pull request with a draft open goes at once and joins not
     await expect(review.pendingToolbar).toContainText('2');
 });
 
-test('the keys sheet has what works here and nothing that does not; C is a comment, not a new issue', async ({
+test('the keys sheet has every row whatever can run now, and no key of the app it would not run', async ({
     page,
     github,
 }) => {
     await openWriting(page, github, { threads: OPEN_THREADS });
 
     await page.keyboard.press('?');
-    const sheet = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    const sheet = page.getByRole('dialog', { name: 'Keys in a review' });
     const writing = sheet.getByRole('region', { name: 'Writing' });
     await expect(writing.getByText('Comment on the line')).toBeVisible();
-    await expect(writing.getByText('Suggest a change, in a comment box')).toBeVisible();
-    // With no thread focused R does nothing here.
-    await expect(sheet.getByText('Reply to the thread')).toBeHidden();
+    await expect(writing.getByText('Suggest a change')).toBeVisible();
+    // With no thread focused and no draft, R and ⇧S are listed all the same.
+    await expect(writing.getByText('Reply to the thread')).toBeVisible();
+    await expect(writing.getByText('Submit review…')).toBeVisible();
     await expect(sheet.getByText('New issue')).toBeHidden();
-    await expect(sheet.getByRole('region', { name: 'Moving' }).getByText('Next file')).toBeVisible();
-    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter files')).toBeVisible();
+    const moving = sheet.getByRole('region', { name: 'Moving' });
+    await expect(moving.getByText('Next and previous file')).toBeVisible();
+    await expect(moving.getByText('Line by line')).toBeVisible();
+    await expect(moving.getByText('Back to the pull request')).toBeVisible();
+    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter by path')).toBeVisible();
+    await expect(sheet.getByText('Review, from an opened pull request')).toBeVisible();
     await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+});
 
-    await page.keyboard.press('n');
-    await page.keyboard.press('?');
-    await expect(sheet.getByText('Reply to the thread')).toBeVisible();
+test('⇧S with no draft: an approval goes with no line comment, naming the head read, and no toolbar stays', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github);
+    await expect(review.pendingToolbar).toBeHidden();
+
+    await page.keyboard.press('Shift+S');
+    await expect(review.submitDialog).toBeVisible();
+    await expect(review.submitDialog.getByText(/pending comment/u)).toBeHidden();
+    await expect(review.submitDialog.getByRole('button', { name: 'Write a comment first' })).toBeDisabled();
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('2');
+    await review.submitDialog.getByRole('button', { name: 'Approve' }).last().click();
+
+    await expect(review.submitDialog).toBeHidden();
+    expect(writes).toHaveLength(1);
+    expect(writes[0]?.name).toBe('SendPullRequestReview');
+    expect(writes[0]?.variables).toMatchObject({ event: 'APPROVE' });
+    expect(writes[0]?.variables).toHaveProperty('commitOID');
+    expect(writes[0]?.variables).not.toHaveProperty('thread');
+    await expect(review.pendingToolbar).toBeHidden();
+});
+
+test("an approval refused with no draft shows GitHub's words though no draft is open; Edit review… has the choice", async ({
+    page,
+    github,
+}) => {
+    const { review, refused } = await openWriting(page, github);
+    refused.set('SendPullRequestReview', 'Review Can not approve your own pull request');
+
+    await page.keyboard.press('Shift+S');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('2');
+    await page.keyboard.press('ControlOrMeta+Enter');
+
+    await expect(review.pendingToolbar).toContainText('Review Can not approve your own pull request');
+    await review.pendingToolbar.getByRole('button', { name: 'Edit review…' }).click();
+    await expect(review.submitDialog.getByRole('radio', { name: 'Approve' })).toBeChecked();
+});
+
+test('Esc goes back to the pull request, last of what it does: the box, the selection and the filter first', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+
+    await review.lineNumber(20).click();
+    await expect(review.commentField('Comment on line 20')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(review.commentBox('Comment on line 20')).toBeHidden();
+
+    await page.keyboard.press('x');
+    await expect(page.getByText('1 file selected')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByText('1 file selected')).toBeHidden();
+
+    await page.keyboard.press('/');
+    await page.keyboard.type('engine');
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
+    await review.diff.focus();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(/\/acme\/web\/pull\/3$/u);
+});
+
+test('O opens the files on GitHub', async ({ page, github }) => {
+    await openWriting(page, github);
+    github.web('/acme/web/pull/3/files', () => ({ status: 200, body: '<title>Files</title>' }));
+
+    const popup = page.waitForEvent('popup');
+    await page.keyboard.press('o');
+
+    expect((await popup).url()).toBe('https://github.com/acme/web/pull/3/files');
+});
+
+test('↓ and ↑ scroll by a line', async ({ page, github }) => {
+    const { review } = await openWriting(page, github);
+    const scrollTop = () => review.diff.evaluate(element => element.scrollTop);
+    const start = await scrollTop();
+
+    await page.keyboard.press('ArrowDown');
+    await expect.poll(scrollTop).toBe(start + 20);
+    await page.keyboard.press('ArrowUp');
+    await expect.poll(scrollTop).toBe(start);
+});
+
+test('the palette offers what a review has keys for: back, GitHub and a line', async ({ page, github }) => {
+    await openWriting(page, github);
+    const menu = new CommandMenuHarness(page);
+
+    await menu.open();
+    for (const title of ['Back to the pull request', 'Open on GitHub', 'Scroll down a line', 'Scroll up a line']) {
+        await menu.field.fill(title);
+        await expect(menu.option(new RegExp(title, 'u')).first()).toBeVisible();
+    }
+});
+
+test('every file viewed with threads left: the block says so over them, and its Submit review… opens the dialog', async ({
+    page,
+    github,
+}) => {
+    const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
+    const id = world.pullRequest({
+        repository: 'acme/web',
+        number: 3,
+        title: 'Retry polls',
+        foundBy: ['authored'],
+        minutesAgo: 5,
+    });
+    await openMyWork(page, github, world);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 3,
+        id,
+        files: [
+            { path: ENGINE, before: BEFORE, after: AFTER, viewed: 'VIEWED' },
+            { path: 'src/other.ts', before: 'one\n', after: 'two\n', viewed: 'VIEWED' },
+        ],
+        threads: [{ id: 'T1', path: ENGINE, line: 20, comments: ['<p>Why here?</p>'] }],
+    });
+    await page.goto(ADDRESS);
+    const review = new ReviewScreenHarness(page);
+    await review.hideViewedButton.click();
+
+    await expect(review.diff.getByText('All 2 files viewed')).toBeInViewport();
+    await expect(review.diff.getByText(/thread.is.still.open.on.1.file,.shown.below/u)).toBeVisible();
+    await expect(review.thread('Why here?')).toBeVisible();
+    await review.diff.getByRole('button', { name: 'Submit review…' }).click();
+    await expect(review.submitDialog).toBeVisible();
 });

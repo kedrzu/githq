@@ -10,6 +10,7 @@ export type CommentedLines = readonly {
 /**
  * Whether a comment is being written on the line.
  *
+ * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function isLineCommented(ranges: CommentedLines, side: DiffLineSide, line: number): boolean {

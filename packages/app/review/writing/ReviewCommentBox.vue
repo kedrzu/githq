@@ -2,17 +2,18 @@
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, FilePenLine } from 'lucide-vue-next';
+import { FilePenLine } from 'lucide-vue-next';
 import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
-import Kbd from '@/components/Kbd.vue';
 import TextArea from '@/components/TextArea.vue';
 
+import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import * as l from './ReviewCommentBox.loc.js';
-import type { ReviewCommentTarget, ReviewCommentWay, ReviewWriteFailure } from './ReviewWriting.js';
+import ReviewFailureNote from './ReviewFailureNote.vue';
+import type { ReviewCommentFailure, ReviewCommentTarget, ReviewCommentWay } from './ReviewWriting.js';
 
 const props = defineProps<{
   target: ReviewCommentTarget;
@@ -22,7 +23,7 @@ const props = defineProps<{
   draftCount: number;
   /** `⌘↵` starts a draft rather than sends at once, when none is open: the setting of D17. */
   draftFirst: boolean;
-  failure: ReviewWriteFailure | null;
+  failure: ReviewCommentFailure | null;
   /** The keys are in this box: it takes the focus when it is drawn, and when this turns on. */
   focused: boolean;
   /** Who a reply answers; `null` if that isn't known. */
@@ -44,9 +45,6 @@ const emit = defineEmits<{
 /** What is typed. */
 const text = defineModel<string>('text', { default: '' });
 
-const FIRST_KEY = 'Mod+Enter';
-const SECOND_KEY = 'Mod+Shift+Enter';
-const SUGGEST_KEY = 'Mod+G';
 const t = useTranslate();
 const field = useTemplateRef<InstanceType<typeof TextArea>>('field');
 
@@ -84,7 +82,7 @@ const failureText = computed(() => {
     case undefined:
       return null;
     case 'refused':
-      return t(l.refused, { reason: failure.message });
+      return failure.message === null ? t(l.refusedNoReason) : t(l.refused, { reason: failure.message });
     case 'notReached':
       return t(l.notReached);
     case 'noDraft':
@@ -132,16 +130,16 @@ async function insertSuggestion() {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (matchesCommandKey(event, FIRST_KEY)) {
+  if (matchesCommandKey(event, REVIEW_KEYS.sendFirst)) {
     event.preventDefault();
     send(first.value.way);
-  } else if (matchesCommandKey(event, SECOND_KEY)) {
+  } else if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
     event.preventDefault();
     send(second.value.way);
-  } else if (matchesCommandKey(event, SUGGEST_KEY)) {
+  } else if (matchesCommandKey(event, REVIEW_KEYS.suggest)) {
     event.preventDefault();
     void insertSuggestion();
-  } else if (matchesCommandKey(event, 'Shift+ArrowDown') && !isReply.value && text.value === '') {
+  } else if (matchesCommandKey(event, REVIEW_KEYS.extendComment) && !isReply.value && text.value === '') {
     event.preventDefault();
     emit('extend');
   } else if (event.key === 'Escape') {
@@ -159,20 +157,18 @@ function onKeydown(event: KeyboardEvent) {
   >
     <div :class="css.reviewCommentBox_head">
       <p :class="css.reviewCommentBox_where">{{ where }}</p>
-      <button
+      <Button
         v-if="suggestion"
-        type="button"
         :class="css.reviewCommentBox_suggest"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(SUGGEST_KEY)"
+        variant="field"
+        size="sm"
+        :icon="FilePenLine"
+        :kbd="REVIEW_KEYS.suggest"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.suggest)"
         @click="insertSuggestion"
       >
-        <FilePenLine
-          :class="css.reviewCommentBox_suggestIcon"
-          aria-hidden="true"
-        />
         {{ t(l.suggest) }}
-        <Kbd :keys="SUGGEST_KEY" />
-      </button>
+      </Button>
     </div>
     <TextArea
       ref="field"
@@ -181,27 +177,21 @@ function onKeydown(event: KeyboardEvent) {
       label-hidden
       :placeholder="t(l.placeholder)"
       compact
-      :aria-keyshortcuts="`${formatAriaKeyShortcuts(FIRST_KEY)} ${formatAriaKeyShortcuts(SECOND_KEY)}`"
+      :aria-keyshortcuts="`${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`"
       @keydown="onKeydown"
       @focus="emit('focus')"
       @blur="emit('blur')"
     />
-    <p
+    <ReviewFailureNote
       v-if="failureText !== null"
-      :class="css.reviewCommentBox_failure"
-      role="alert"
-    >
-      <CircleAlert
-        :class="css.reviewCommentBox_failureIcon"
-        aria-hidden="true"
-      />
-      {{ failureText }}
-    </p>
+      :text="failureText"
+    />
     <div :class="css.reviewCommentBox_footer">
       <Button
         size="sm"
         :disabled="!hasText"
-        :kbd="SECOND_KEY"
+        :kbd="REVIEW_KEYS.sendSecond"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
         @click="send(second.way)"
       >
         {{ second.label }}
@@ -210,7 +200,8 @@ function onKeydown(event: KeyboardEvent) {
         size="sm"
         variant="light"
         :disabled="!hasText"
-        :kbd="FIRST_KEY"
+        :kbd="REVIEW_KEYS.sendFirst"
+        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
         @click="send(first.way)"
       >
         {{ first.label }}
@@ -237,50 +228,22 @@ function onKeydown(event: KeyboardEvent) {
   justify-content: space-between;
 }
 
-.reviewCommentBox_suggest {
-  @include focus-ring;
-
-  display: flex;
+// Twice the class: the button's own look comes from a stylesheet that may load after this one.
+.reviewCommentBox_head .reviewCommentBox_suggest {
   flex: none;
   gap: $spacing-6;
-  align-items: center;
   padding: 3px 7px;
-  font: inherit;
-  font-size: 11.5px;
+  font-size: $font-size-2xs;
   color: $color-fg-2;
   cursor: pointer;
   background: none;
-  border: 1px solid $color-border-2;
-  border-radius: 5px;
-}
-
-.reviewCommentBox_suggestIcon {
-  flex: none;
-  width: 12px;
-  height: 12px;
+  border-color: $color-border-2;
 }
 
 .reviewCommentBox_where {
   margin: 0;
   font-size: $font-size-xs;
   color: $color-fg-dim;
-}
-
-.reviewCommentBox_failure {
-  display: flex;
-  gap: $spacing-6;
-  align-items: baseline;
-  margin: 0;
-  font-size: $font-size-xs;
-  color: $color-red;
-  overflow-wrap: anywhere;
-}
-
-.reviewCommentBox_failureIcon {
-  flex: none;
-  align-self: center;
-  width: 13px;
-  height: 13px;
 }
 
 .reviewCommentBox_footer {

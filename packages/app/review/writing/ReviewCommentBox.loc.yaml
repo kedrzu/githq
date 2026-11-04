@@ -29,6 +29,8 @@ submitDraft:
     many: Submit draft ({count} comments)
 refused:
   en: 'GitHub refused it: "{reason}". Your text is kept.'
+refusedNoReason:
+  en: GitHub refused it and gave no reason. Your text is kept.
 notReached:
   en: GitHub wasn't reached, so it may not have got there. Your text is kept.
 noDraft:

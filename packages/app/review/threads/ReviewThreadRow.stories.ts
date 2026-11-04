@@ -227,3 +227,29 @@ export const ResolveRefused: Story = {
         await expect(canvas.getByRole('alert')).toHaveTextContent("Couldn't resolve it: Must have write access");
     },
 };
+
+/** CR36: a reply in a thread holding a pending comment says where it goes. */
+export const ReplyToDraft: Story = {
+    args: {
+        onSetResolved: fn(),
+        onReply: fn(),
+        row: createThreadRowSample({
+            kind: 'onLine',
+            inline: 'right',
+            thread: sampleThread({
+                comments: sampleThread().comments.map(comment => ({ ...comment, state: 'PENDING' })),
+            }),
+        }),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('button', { name: /Add.to.your.draft…/u })).toBeVisible();
+    },
+};
+
+/** Refused with no words of GitHub's: the reason is the app's. */
+export const ResolveRefusedWithoutWords: Story = {
+    args: { resolveFailure: { kind: 'refused', message: null } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('alert')).toHaveTextContent('GitHub gave no reason.');
+    },
+};

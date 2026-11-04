@@ -23,6 +23,7 @@ import type {
   ReviewDistanceRow as DistanceRow,
   ReviewFileEndRow,
   ReviewGapRow,
+  ReviewAllViewedRow,
   ReviewRow,
   ReviewThreadRow as ReviewThreadRowData,
 } from './buildReviewRows.js';
@@ -41,7 +42,8 @@ import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
 
 const props = withDefaults(
   defineProps<{
-    row: ReviewRow;
+    /** The block over what is left when all is viewed draws itself. */
+    row: Exclude<ReviewRow, ReviewAllViewedRow>;
     /** Where the pull request's files are on github.com. */
     githubUrl: string;
     /** GitHub took the file's viewed mark off since the last visit (D35). */
@@ -461,7 +463,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   align-items: center;
   height: 40px;
   padding: 0 $spacing-14;
-  font-size: 12.5px;
+  font-size: $font-size-sm;
   color: $color-fg-2;
 }
 

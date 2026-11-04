@@ -11,6 +11,7 @@ import type { DiffLineRange } from './diff/buildDiffRows.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
+import { NO_REVIEW_SUBMISSION } from './writing/ReviewWriting.js';
 import type { ReviewCommentTarget, ReviewSubmissionChoice } from './writing/ReviewWriting.js';
 
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
@@ -86,7 +87,7 @@ const NOTHING_DONE: ReviewKeptState = {
     filter: { pattern: '', regex: false },
     hideViewed: false,
     expandedLines: new Map(),
-    submission: { event: 'COMMENT', body: '' },
+    submission: NO_REVIEW_SUBMISSION,
 };
 
 /** What a review keeps on disk, by login. A `read` opens the login's database; a `write` rejects when it is not open (anymore). */

@@ -69,7 +69,7 @@ export const AllViewed: Story = {
         ),
 };
 
-/** CR63, D15: viewed files hidden, but one with an open thread stays, as its header with the thread and its code; a file gone from the diff has an entry of its own. */
+/** CR63, D15: viewed files hidden, but one with an open thread stays, as its header with the thread and its code, under the block saying all are viewed; a file gone from the diff has an entry of its own. */
 export const ViewedWithOpenThread: Story = {
     render: () =>
         renderView(

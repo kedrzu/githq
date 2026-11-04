@@ -20,7 +20,8 @@ const KEY_SEPARATOR = '\0';
 /** A placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
 const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
-const LINE_HEIGHT = 20;
+/** A line of code's height, which is also what ↓ and ↑ scroll by. */
+export const LINE_HEIGHT = 20;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
 /** A comment of two lines, and what stands between comments. */
@@ -31,6 +32,8 @@ const THREAD_FRAME_HEIGHT = 42;
 const THREAD_LINE_HEIGHT = 48;
 /** The label and the lines of the code a thread shows in a box. */
 const THREAD_CODE_HEIGHT = 110;
+/** What says all files are viewed, and the room around it. */
+const ALL_VIEWED_HEIGHT = 170;
 /** A comment box with one line of text. */
 export const COMMENT_BOX_HEIGHT = 144;
 
@@ -170,8 +173,15 @@ export interface ReviewTailRow {
     readonly key: string;
 }
 
+/** Over what is left when every file is viewed and those hidden (CR63). */
+export interface ReviewAllViewedRow {
+    readonly kind: 'allViewed';
+    readonly key: string;
+}
+
 /** A row of the review's flat list. Its key begins with its file's path ({@link getReviewRowPath}). */
 export type ReviewRow =
+    | ReviewAllViewedRow
     | ReviewCommentRow
     | ReviewDistanceRow
     | ReviewEndRow
@@ -681,6 +691,15 @@ export function getReviewHeaderKey(path: string) {
 }
 
 /**
+ * The key of the row saying all files are viewed, over the file named: it is at that file's place, to whatever asks.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewAllViewedKey(path: string) {
+    return path + KEY_SEPARATOR + 'allViewed';
+}
+
+/**
  * The file a row belongs to, by its key.
  *
  * @__NO_SIDE_EFFECTS__
@@ -721,6 +740,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
             return row.collapsed ? 12 : 16;
         case 'tail':
             return 600;
+        case 'allViewed':
+            return ALL_VIEWED_HEIGHT;
         default:
             return assertNever(row);
     }
@@ -915,6 +936,7 @@ export function findReplacementRow({
         held?.kind === 'placeholder' ||
         held?.kind === 'paused' ||
         held?.kind === 'end' ||
+        held?.kind === 'allViewed' ||
         next[start + 1]?.kind === 'end' ||
         (header.kind === 'header' && header.collapsed)
     ) {

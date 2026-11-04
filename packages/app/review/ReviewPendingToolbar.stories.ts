@@ -33,6 +33,29 @@ export const Refused: Story = {
     },
 };
 
+/** GitHub refused with no words of its own, as it has been seen to: the reason is the app's. */
+export const RefusedWithoutWords: Story = {
+    args: {
+        finish: {
+            kind: 'failed',
+            finish: { kind: 'submit', choice: { event: 'COMMENT', body: '' } },
+            failure: { kind: 'refused', message: null },
+        },
+    },
+};
+
+/** A review refused with no draft: no comments to count, and its failure shows all the same. */
+export const RefusedWithoutDraft: Story = {
+    args: {
+        commentCount: 0,
+        finish: {
+            kind: 'failed',
+            finish: { kind: 'submit', choice: { event: 'APPROVE', body: '' } },
+            failure: { kind: 'refused', message: 'Review Can not approve your own pull request' },
+        },
+    },
+};
+
 /** GitHub didn't answer, which says nothing was refused. */
 export const NotReached: Story = {
     args: {

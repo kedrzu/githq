@@ -1,3 +1,4 @@
+import { NO_REVIEW_SUBMISSION, REVIEW_FINISH_IDLE } from '@/review/writing/ReviewWriting.js';
 import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 
 /** A pull request's writing with nothing being written, for a review's stories and tests that build their files by hand. */
@@ -6,8 +7,8 @@ export const idleReviewWriting: ReviewWriting = {
     hasText: false,
     draftOpen: false,
     draftCount: 0,
-    finish: { kind: 'idle' },
-    submission: { event: 'COMMENT', body: '' },
+    finish: REVIEW_FINISH_IDLE,
+    submission: NO_REVIEW_SUBMISSION,
     setSubmission: () => {},
     open: target => ({ ...target, id: 'box' }),
     setRange: () => {},

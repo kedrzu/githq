@@ -1,18 +1,19 @@
-<!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Under the comments, what the viewer may do: Reply…, which `R` also does on the focused one, gives way while its box is open under the thread, and Resolve, or Unresolve on one opened (CR74). A change of state GitHub didn't take says so here, in the state it went back to. -->
+<!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Under the comments, what the viewer may do: Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, gives way while its box is open under the thread, and Resolve, or Unresolve on one opened (CR74). A change of state GitHub didn't take says so here, in the state it went back to. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { ChevronDown, ChevronUp, CircleAlert, CircleCheck, History } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, CircleCheck, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
-import Kbd from '@/components/Kbd.vue';
 
 import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
 import * as l from './ReviewThreadBox.loc.js';
 import ReviewThreadComment from './ReviewThreadComment.vue';
 import type { ReviewThread } from './ReviewThread.js';
+import { REVIEW_KEYS } from '../useReviewKeySheet.js';
+import ReviewFailureNote from '../writing/ReviewFailureNote.vue';
 import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
 
 const props = defineProps<{
@@ -40,6 +41,8 @@ const t = useTranslate();
 const first = computed(() => props.thread.comments[0] ?? null);
 const who = computed(() => first.value?.author?.login ?? t(l.ghost));
 const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
+/** A reply here joins the draft the thread already has a comment in (CR36, CR75, CR76). */
+const inDraft = computed(() => props.thread.comments.some(comment => comment.state === 'PENDING'));
 const failureText = computed(() => {
   const failure = props.resolveFailure;
   const reason = props.thread.isResolved ? l.unresolveFailed : l.resolveFailed;
@@ -47,10 +50,8 @@ const failureText = computed(() => {
     case undefined:
       return null;
     case 'refused':
-      return t(reason, { reason: failure.message });
+      return t(reason, { reason: failure.message ?? t(l.noReason) });
     case 'notReached':
-    case 'noDraft':
-    case 'draftFound':
       return t(reason, { reason: t(l.notReached) });
     default:
       return assertNever(failure);
@@ -123,19 +124,18 @@ const failureText = computed(() => {
         "
         :class="css.reviewThreadBox_actions"
       >
-        <button
+        <Button
           v-if="thread.viewerCanReply && !replying"
-          type="button"
           :class="css.reviewThreadBox_reply"
-          :aria-keyshortcuts="focused ? 'R' : undefined"
+          variant="field"
+          size="sm"
+          block
+          :kbd="focused ? REVIEW_KEYS.reply : undefined"
+          :aria-keyshortcuts="focused ? REVIEW_KEYS.reply : undefined"
           @click="emit('reply')"
         >
-          {{ t(l.reply) }}
-          <Kbd
-            v-if="focused"
-            keys="R"
-          />
-        </button>
+          {{ inDraft ? t(l.addToDraft) : t(l.reply) }}
+        </Button>
         <span
           v-else
           :class="css.reviewThreadBox_spacer"
@@ -150,17 +150,11 @@ const failureText = computed(() => {
         </Button>
       </div>
     </div>
-    <p
+    <ReviewFailureNote
       v-if="failureText !== null"
       :class="css.reviewThreadBox_failure"
-      role="alert"
-    >
-      <CircleAlert
-        :class="css.reviewThreadBox_failureIcon"
-        aria-hidden="true"
-      />
-      {{ failureText }}
-    </p>
+      :text="failureText"
+    />
   </div>
 </template>
 
@@ -226,7 +220,7 @@ const failureText = computed(() => {
 
 .reviewThreadBox_count {
   flex: none;
-  font-size: 11.5px;
+  font-size: $font-size-2xs;
   color: $color-fg-dim;
 }
 
@@ -254,25 +248,13 @@ const failureText = computed(() => {
   align-items: center;
 }
 
-.reviewThreadBox_reply {
-  @include focus-ring;
-
-  display: flex;
+// Twice the class: the button's own look comes from a stylesheet that may load after this one.
+.reviewThreadBox_actions .reviewThreadBox_reply {
   flex: 1;
-  gap: $spacing-8;
-  align-items: center;
-  justify-content: space-between;
   min-width: 0;
   height: 28px;
   padding: 0 $spacing-8 0 $spacing-10;
-  font: inherit;
   font-size: $font-size-xs;
-  color: $color-fg-dim;
-  text-align: left;
-  cursor: text;
-  background: $color-bg;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
 }
 
 .reviewThreadBox_spacer {
@@ -280,21 +262,7 @@ const failureText = computed(() => {
 }
 
 .reviewThreadBox_failure {
-  display: flex;
-  gap: $spacing-6;
-  align-items: baseline;
-  margin: 0;
   padding: 0 $spacing-14 $spacing-10;
-  font-size: $font-size-xs;
-  color: $color-red;
-  overflow-wrap: anywhere;
-}
-
-.reviewThreadBox_failureIcon {
-  flex: none;
-  align-self: center;
-  width: 13px;
-  height: 13px;
 }
 
 .reviewThreadBox_head {

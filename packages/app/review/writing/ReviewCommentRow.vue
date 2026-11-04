@@ -6,6 +6,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 
 import type { ReviewCommentRow } from '../buildReviewRows.js';
 import ReviewCommentFrame from '../threads/ReviewCommentFrame.vue';
+import ReviewPendingPill from '../threads/ReviewPendingPill.vue';
 import ReviewRowInset from '../threads/ReviewRowInset.vue';
 import ReviewCommentBox from './ReviewCommentBox.vue';
 import * as l from './ReviewCommentRow.loc.js';
@@ -50,11 +51,7 @@ const sentAt = new Date().toISOString();
         :created-at="sentAt"
       >
         <template #note>
-          <span
-            v-if="status.way === 'joinDraft' || status.way === 'startDraft'"
-            :class="css.reviewCommentRow_pending"
-            >{{ t(l.pending) }}</span
-          >
+          <ReviewPendingPill v-if="status.way === 'joinDraft' || status.way === 'startDraft'" />
           <span
             v-else-if="status.kind === 'sending'"
             :class="css.reviewCommentRow_sending"
@@ -94,20 +91,10 @@ const sentAt = new Date().toISOString();
 
 .reviewCommentRow_body {
   margin: 0;
-  font-size: 12.5px;
+  font-size: $font-size-sm;
   color: $color-fg-2;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-}
-
-.reviewCommentRow_pending {
-  flex: none;
-  padding: 1px $spacing-6;
-  font-size: $font-size-3xs;
-  font-weight: $font-weight-medium;
-  color: $color-amber;
-  background: rgba($color-amber, 0.12);
-  border-radius: 4px;
 }
 
 .reviewCommentRow_sending {

@@ -307,8 +307,7 @@ experience: "not even an agent can do it through the API").
 So a reply can't be refused the way a comment is: one meant to go out at once first reads the draft again and doesn't go if
 one is there, and what GitHub answers (`pullRequestReview.state`) says what happened in the moment between. A reply joining a
 draft names it, for a draft gone by then to refuse it rather than publish it, and one starting a draft is two requests, an empty
-`addPullRequestReview` and the reply, the empty draft deleted again if the reply is refused. (agent, 2026-11-04; the empty
-review and naming a gone draft are from the schema, not tried live)
+`addPullRequestReview` and the reply, the empty draft deleted again if the reply is refused. (agent, 2026-11-04; both checked live that day: the empty review is PENDING, and a gone draft's id answers NOT_FOUND with nothing published)
 
 **Rejected.**
 
@@ -558,9 +557,6 @@ submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026
 
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
 
-Not built, so not on the sheet though CR29 draws them: Esc back to the pull request and O on GitHub, which a review has only as
-buttons; ↓ ↑ scroll as the browser does rather than by a line.
-
 ## D33
 
 **The comment box's two buttons carry their label and key, and that is all it says: Comment ⌘↵ / Start a review ⌘⇧↵, or
@@ -570,6 +566,10 @@ Request changes on 1 2 3, the pending comments listed — and a refused submissi
 GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
 
 > **Checked 2026-11-03:** `SubmitPullRequestReviewInput` has `body: String`, the review's own text (`packages/github/src/schema.graphql`). Not tried live.
+
+⇧S and the dialog work with no draft too, an approval or a word with no line comment before it: `addPullRequestReview` with the event, the body and the head read, no threads. (agent, 2026-11-04)
+
+> **Checked live 2026-11-04:** with neither body nor threads COMMENT is refused with type UNPROCESSABLE and an empty message, so the app says so in its own words. Approving and requesting changes on your own pull request are refused with GitHub's words ("Review Can not approve your own pull request", "Review Can not request changes on your own pull request"). With no comments, Comment and Request changes need text before they can be sent; GitHub's docs also require a body for those two.
 
 **Why.** The buttons say what each key does. A line explaining the default broke the layout and repeats what someone who
 chose that setting already knows (owner, 2026-11-03).

@@ -1,4 +1,4 @@
-<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the ways out, neither of them one click: Discard review… and Submit review… (⇧S) each open their dialog. A refused submission turns it red with GitHub's reason (`· failed`, CR76), everything kept: Edit review… goes back to the dialog, Try again sends the same again. -->
+<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the ways out, neither of them one click: Discard review… and Submit review… (⇧S) each open their dialog. A refused submission turns it red with GitHub's reason (`· failed`, CR76), everything kept: Edit review… goes back to the dialog, Try again sends the same again; a review sent with no draft shows here too when refused, though no draft keeps the toolbar otherwise. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -8,6 +8,7 @@ import { computed } from 'vue';
 import Button from '@/components/Button.vue';
 
 import * as l from './ReviewPendingToolbar.loc.js';
+import { REVIEW_KEYS } from './useReviewKeySheet.js';
 import type { ReviewFinishState } from './writing/ReviewWriting.js';
 
 const props = defineProps<{
@@ -24,7 +25,6 @@ const emit = defineEmits<{
   retry: [];
 }>();
 
-const SUBMIT_KEY = 'Shift+S';
 const t = useTranslate();
 
 const failed = computed(() => (props.finish.kind === 'failed' ? props.finish : null));
@@ -35,11 +35,8 @@ const failureText = computed(() => {
     case undefined:
       return null;
     case 'refused':
-      return t(l.refused, { reason: failure.message });
-    // No draft is no toolbar.
+      return failure.message === null ? t(l.refusedNoReason) : t(l.refused, { reason: failure.message });
     case 'notReached':
-    case 'noDraft':
-    case 'draftFound':
       return t(l.notReached);
     default:
       return assertNever(failure);
@@ -94,7 +91,7 @@ const failureText = computed(() => {
         <strong :class="css.reviewPendingToolbar_count">{{ commentCount }}</strong>
         {{ t(l.pendingComments, { count: commentCount }) }}
       </span>
-      <span :class="css.reviewPendingToolbar_note">{{ t(l.note) }}</span>
+      <span :class="css.reviewPendingToolbar_note">{{ t(l.note, { count: commentCount }) }}</span>
       <Button
         :class="css.reviewPendingToolbar_quiet"
         size="sm"
@@ -108,8 +105,8 @@ const failureText = computed(() => {
         :class="css.reviewPendingToolbar_main"
         size="sm"
         variant="light"
-        :kbd="SUBMIT_KEY"
-        :aria-keyshortcuts="SUBMIT_KEY"
+        :kbd="REVIEW_KEYS.submit"
+        :aria-keyshortcuts="REVIEW_KEYS.submit"
         :busy="sending"
         @click="emit('submit')"
       >

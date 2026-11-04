@@ -27,11 +27,10 @@ import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
+import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatItemReference } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { Clock } from '@/services/Clock.js';
-import { ItemDetailStore } from '@/store/ItemDetailStore.js';
-import { ItemStore } from '@/store/ItemStore.js';
 import { GitHubRequesterFactory } from '@/services/GitHubRequesterFactory.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
@@ -58,7 +57,7 @@ import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
-import { createReviewWriting } from './writing/ReviewWriting.js';
+import { ReviewWritingFactory } from './writing/ReviewWritingFactory.js';
 import type { ReviewWriting } from './writing/ReviewWriting.js';
 
 /** A file of a pull request, as its list shows it. */
@@ -405,12 +404,23 @@ export const ReviewFiles = defineService({
         createRequester: GitHubRequesterFactory,
         createRest: GitHubRestFactory,
         rateLimits: GitHubRateLimitStore,
-        items: ItemStore,
-        details: ItemDetailStore,
         clock: Clock,
         logger: Logger,
+        resolver: ItemResolver,
+        createWriting: ReviewWritingFactory,
     },
-    setup({ accounts, blobs, viewedFailures, createRequester, createRest, rateLimits, items, details, clock, logger }) {
+    setup({
+        accounts,
+        blobs,
+        viewedFailures,
+        createRequester,
+        createRest,
+        rateLimits,
+        clock,
+        logger,
+        resolver,
+        createWriting,
+    }) {
         let session: Session | null = null;
 
         accounts.onChange(follow);
@@ -517,15 +527,12 @@ export const ReviewFiles = defineService({
             const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
             const threadsReader = createSingleRunner({ handler: readThreads });
-            const writing = createReviewWriting({
+            const writing = createWriting({
                 sdk: current.account.sdk,
                 login,
                 listKey,
-                blobs,
-                items,
-                details,
-                logger,
-                getPullRequestId: () => runRef.value?.id ?? null,
+                // A draft is known by the item, before any page of the list.
+                getPullRequestId: () => runRef.value?.id ?? resolver.peek(reference) ?? null,
                 getHeadRefOid: () => runRef.value?.headRefOid ?? null,
                 readThreadsAgain,
                 getThreads: () => threadsRef.value,
@@ -1190,7 +1197,7 @@ export const ReviewFiles = defineService({
 
                     threadsRef.value = threads;
                     threadsStateRef.value = THREADS_READY;
-                    keepOnDisk(() => blobs.writeThreads(login, listKey, threads));
+                    keepOnDisk(() => blobs.writeThreads(login, listKey, writing.withoutDiscarded(threads)));
                 } catch (error) {
                     if (dropped) {
                         return;

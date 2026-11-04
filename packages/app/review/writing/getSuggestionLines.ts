@@ -29,13 +29,13 @@ export function getSuggestionLines({
     }
 
     const lines = diff.after.slice(startLine - 1, line);
-    const inHunk = (_: string, offset: number) => {
-        const index = startLine - 1 + offset;
-        return diff.blocks.some(
-            ({ afterStart, afterEnd }) => index >= afterStart - CONTEXT_LINES && index < afterEnd + CONTEXT_LINES,
-        );
-    };
-    return !mustBeInHunk || lines.every(inHunk) ? lines : null;
+    return !mustBeInHunk || lines.every((_, offset) => isInHunk(diff, startLine - 1 + offset)) ? lines : null;
+}
+
+function isInHunk(diff: FileDiff, index: number) {
+    return diff.blocks.some(
+        ({ afterStart, afterEnd }) => index >= afterStart - CONTEXT_LINES && index < afterEnd + CONTEXT_LINES,
+    );
 }
 
 /**

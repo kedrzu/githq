@@ -6775,6 +6775,17 @@ export type RevertPullRequestMutation = {
     revertPullRequest: { revertPullRequest: { number: number; url: string } | null } | null;
 };
 
+export type SendPullRequestReviewMutationVariables = Exact<{
+    pullRequestId: string;
+    commitOID: string;
+    event: PullRequestReviewEvent;
+    body?: string | null | undefined;
+}>;
+
+export type SendPullRequestReviewMutation = {
+    addPullRequestReview: { pullRequestReview: { id: string } | null } | null;
+};
+
 export type SetProjectFieldValueMutationVariables = Exact<{
     projectId: string;
     itemId: string;
@@ -14519,6 +14530,17 @@ export const RevertPullRequestDocument = new TypedDocumentString(`
   }
 }
     `);
+export const SendPullRequestReviewDocument = new TypedDocumentString(`
+    mutation SendPullRequestReview($pullRequestId: ID!, $commitOID: GitObjectID!, $event: PullRequestReviewEvent!, $body: String) {
+  addPullRequestReview(
+    input: {pullRequestId: $pullRequestId, commitOID: $commitOID, event: $event, body: $body}
+  ) {
+    pullRequestReview {
+      id
+    }
+  }
+}
+    `);
 export const SetProjectFieldValueDocument = new TypedDocumentString(`
     mutation SetProjectFieldValue($projectId: ID!, $itemId: ID!, $fieldId: ID!, $fieldName: String!, $value: ProjectV2FieldValue!) {
   updateProjectV2ItemFieldValue(
@@ -15259,6 +15281,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RevertPullRequestMutation>;
+        },
+        SendPullRequestReview(
+            variables: SendPullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<SendPullRequestReviewMutation> {
+            return requester<SendPullRequestReviewMutation, SendPullRequestReviewMutationVariables>(
+                SendPullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<SendPullRequestReviewMutation>;
         },
         SetProjectFieldValue(
             variables: SetProjectFieldValueMutationVariables,

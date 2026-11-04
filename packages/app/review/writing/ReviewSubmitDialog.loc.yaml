@@ -16,6 +16,10 @@ requestChanges:
   en: Request changes
 submitReview:
   en: Submit review
+needsComment:
+  en: Write a comment first
+needsChanges:
+  en: Say what to change first
 pendingGo:
   plural: count
   en:

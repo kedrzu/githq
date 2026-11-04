@@ -13,6 +13,7 @@ import { formatItemReference, getItemReference, getReviewPath } from '@/item/ite
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
+import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import { ItemStore } from '@/store/ItemStore.js';
 
 import DraftReviewsView from './DraftReviewsView.vue';
@@ -33,7 +34,7 @@ useCommands(() => [
     id: 'draftReviews.submit',
     title: t(l.submit),
     section: 'view',
-    key: 'Shift+S',
+    key: REVIEW_KEYS.submit,
     icon: Send,
     actsOnRow: true,
     when: () => list.selectedId !== null,

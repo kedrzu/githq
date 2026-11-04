@@ -86,3 +86,6 @@ export const NotReached: Story = { args: { failure: { kind: 'notReached' } } };
 
 /** The draft it was meant for is gone. */
 export const NoDraft: Story = { args: { failure: { kind: 'noDraft' } } };
+
+/** GitHub refused with no words of its own: the reason is the app's, and the text stays. */
+export const RefusedWithoutWords: Story = { args: { failure: { kind: 'refused', message: null } } };

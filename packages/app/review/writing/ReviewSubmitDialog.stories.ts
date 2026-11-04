@@ -41,3 +41,21 @@ export const RequestChanges: Story = { args: { choice: { event: 'REQUEST_CHANGES
 
 /** The threads not read yet: only the count is known. */
 export const CommentsNotRead: Story = { args: { comments: [] } };
+
+/** No draft, nothing written: a comment needs its text, and the button says so. */
+export const NoDraftComment: Story = { args: { commentCount: 0, comments: [] } };
+
+/** No draft, nothing written: so do requested changes. */
+export const NoDraftRequestChanges: Story = {
+    args: { commentCount: 0, comments: [], choice: { event: 'REQUEST_CHANGES', body: '' } },
+};
+
+/** No draft: an approval needs no text. */
+export const NoDraftApprove: Story = {
+    args: { commentCount: 0, comments: [], choice: { event: 'APPROVE', body: '' } },
+};
+
+/** No draft, the text written: it can go. */
+export const NoDraftCommentWritten: Story = {
+    args: { commentCount: 0, comments: [], choice: { event: 'COMMENT', body: 'Fine by me.' } },
+};

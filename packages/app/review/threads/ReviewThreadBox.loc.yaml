@@ -13,6 +13,8 @@ comments:
     many: '{count} comments'
 reply:
   en: Reply…
+addToDraft:
+  en: Add to your draft…
 resolve:
   en: Resolve
 unresolve:
@@ -23,3 +25,5 @@ unresolveFailed:
   en: "Couldn't open it again: {reason}"
 notReached:
   en: GitHub wasn't reached.
+noReason:
+  en: GitHub gave no reason.

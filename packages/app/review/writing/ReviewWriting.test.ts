@@ -6,6 +6,7 @@ import { waitUntil } from '@nzyme/utils/waitUntil.js';
 import { expect, test } from 'bun:test';
 import { watch } from 'vue';
 
+import { ItemResolver } from '@/item/ItemResolver.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
@@ -13,9 +14,10 @@ import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
+import { ReviewBlobStore } from '../ReviewBlobStore.js';
 import { ReviewFiles } from '../ReviewFiles.js';
 import type { PullRequestFiles } from '../ReviewFiles.js';
-import type { ReviewThread } from '../threads/ReviewThread.js';
+import type { ReviewThread, ReviewThreadComment } from '../threads/ReviewThread.js';
 import type { ReviewCommentStatus } from './ReviewWriting.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
@@ -24,6 +26,7 @@ const HEAD = 'head-1';
 const LINE = { path: 'a.ts', side: 'after', line: 3, startLine: null, threadId: null } as const;
 const WRITES = [
     'AddPullRequestReview',
+    'SendPullRequestReview',
     'AddPullRequestReviewThread',
     'SubmitPullRequestReview',
     'DeletePullRequestReview',
@@ -44,6 +47,8 @@ function createGitHub() {
         threads: [] as ReviewThread[],
         /** A draft opened on GitHub after the reply's check: it joins it silently. */
         replyJoins: false,
+        /** Reading the threads answers with a 502. */
+        threadsFail: false,
         refused: new Map<string, string>(),
         threadsRead: () => threadsRead,
         answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {
@@ -69,6 +74,10 @@ function createGitHub() {
                     };
                 case 'PullRequestReviewThreads':
                     threadsRead++;
+                    if (github.threadsFail) {
+                        return undefined;
+                    }
+
                     return {
                         data: {
                             repository: {
@@ -157,6 +166,10 @@ function createGitHub() {
                     }
 
                     return { data: { addPullRequestReviewThread: { thread: { id: 'T' } } } };
+                case 'SendPullRequestReview':
+                    return { data: { addPullRequestReview: { pullRequestReview: { id: 'R' } } } };
+                case 'ItemByNumber':
+                    return { data: { repository: { issueOrPullRequest: { id: PULL_REQUEST } } } };
                 case 'SubmitPullRequestReview':
                     github.draft = null;
                     return { data: { submitPullRequestReview: { pullRequestReview: { id: 'R' } } } };
@@ -401,7 +414,7 @@ test('discarding deletes the draft; refused, it says so and the draft stays', as
 test('signing out: what waits goes nowhere, what was typed leaves memory and the disk, and nothing brings it back', async () => {
     const github = createGitHub();
     const { model, session, login, writes } = await open(github);
-    const release = hold(session);
+    const release = holdOperation(session, 'AddPullRequestReview');
     const first = write(model, 'Holding the queue');
     const second = model.writing.open({ ...LINE, line: 9 });
     model.writing.setText(second.id, 'Waiting behind it');
@@ -423,19 +436,249 @@ test('signing out: what waits goes nowhere, what was typed leaves memory and the
     expect(again.model.writing.targets).toEqual([]);
 });
 
-async function aMoment() {
-    await new Promise(resolve => {
-        setTimeout(resolve, 20);
-    });
-}
+test('an approval with no draft is one request naming the head read, with no threads', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await open(github);
 
-function hold(session: ReturnType<typeof createTestSession>) {
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => writes().length === 1 && model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['SendPullRequestReview']);
+    expect(session.github.requests.find(request => request.operation === 'SendPullRequestReview')?.variables).toEqual({
+        pullRequestId: PULL_REQUEST,
+        commitOID: HEAD,
+        event: 'APPROVE',
+    });
+});
+
+test('a review refused with no draft stays said, the draft read again or not, and Try again sends the same', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await open(github);
+    github.refused.set('SendPullRequestReview', 'Review Can not approve your own pull request');
+    const reads = session.operations().filter(name => name === 'ItemDetail').length;
+
+    model.writing.submit({ event: 'APPROVE', body: 'Reads well' });
+    await waitUntil(() => session.operations().filter(name => name === 'ItemDetail').length > reads, {
+        timeoutMs: 2000,
+    });
+    await aMoment();
+
+    expect(model.writing.finish).toMatchObject({
+        kind: 'failed',
+        failure: { kind: 'refused', message: 'Review Can not approve your own pull request' },
+    });
+    expect(model.writing.submission.body).toBe('');
+
+    github.refused.clear();
+    model.writing.retry();
+    await waitUntil(() => model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+    expect(writes()).toEqual(['SendPullRequestReview', 'SendPullRequestReview']);
+});
+
+test('GitHub refusing with an empty message leaves the reason to the app', async () => {
+    const github = createGitHub();
+    const { model } = await open(github);
+    github.refused.set('SendPullRequestReview', '');
+
+    model.writing.submit({ event: 'COMMENT', body: '' });
+    await waitUntil(() => model.writing.finish.kind === 'failed', { timeoutMs: 2000 });
+
+    expect(model.writing.finish).toMatchObject({ failure: { kind: 'refused', message: null } });
+});
+
+test('discarding with no draft sends nothing', async () => {
+    const github = createGitHub();
+    const { model, writes } = await open(github);
+
+    model.writing.discard();
+    await aMoment();
+
+    expect(model.writing.finish.kind).toBe('idle');
+    expect(writes()).toEqual([]);
+});
+
+test('after a discard a read still listing the pending comments shows none, keeps none on disk, until a draft opens again', async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 2 };
+    github.threads = [threadOf('T_1', ['SUBMITTED', 'PENDING']), threadOf('T_2', ['PENDING'])];
+    const { model, session, login } = await open(github);
+    expect(model.threads.map(thread => thread.id)).toEqual(['T_1', 'T_2']);
+
+    model.writing.discard();
+    await waitUntil(() => model.writing.finish.kind === 'idle' && !model.writing.draftOpen, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.threads.map(({ id, comments }) => [id, comments.length])).toEqual([['T_1', 1]]);
+    const kept = await session.container.resolve(ReviewBlobStore).readThreads(login, 'acme/web/7');
+    expect(kept?.map(({ id, comments }) => [id, comments.length])).toEqual([['T_1', 1]]);
+
+    const box = write(model, 'Again');
+    model.writing.send(box, 'startDraft');
+    await ended(model, box);
+    await waitUntil(() => model.threads.length === 2, { timeoutMs: 2000 });
+});
+
+test('a pending comment read before a draft is known still shows, for no discard took it', async () => {
+    const github = createGitHub();
+    github.threads = [threadOf('T_1', ['PENDING'])];
+    const { model } = await open(github);
+
+    expect(model.writing.draftOpen).toBe(false);
+    expect(model.threads).toHaveLength(1);
+});
+
+test("a draft can be discarded before the first page of the list: its id is the item's", async () => {
+    const github = createGitHub();
+    github.draft = { id: 'DRAFT', comments: 1 };
+    const session = createTestSession({
+        login: `user-${crypto.randomUUID()}`,
+        answer: request => github.answer(request),
+    });
+    setIndexedDbPersistence(session.container);
+    session.github.holdIf = request =>
+        request.operation === 'PullRequestReviewFiles' ? new Promise<void>(() => {}) : null;
+    await session.container.resolve(ItemResolver).resolve(REFERENCE);
+    await session.container.resolve(ItemDetailStore).readAgain(PULL_REQUEST);
+    const model = session.container.resolve(ReviewFiles).open(REFERENCE);
+    if (!model) {
+        throw new Error('Signed in, so it opens');
+    }
+
+    expect(model.id).toBeNull();
+    expect(model.writing.draftOpen).toBe(true);
+
+    model.writing.discard();
+    await waitUntil(() => session.operations().includes('DeletePullRequestReview'), { timeoutMs: 2000 });
+});
+
+test('no answer to a comment reads the threads too: one that got there shows beside the text kept', async () => {
+    const github = createGitHub();
+    const { model, session } = await open(github);
+    const id = write(model, 'It may have gone');
+    session.github.holdIf = request =>
+        request.operation === 'AddPullRequestReview' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+    const before = github.threadsRead();
+    github.threads = [sampleThread()];
+
+    model.writing.send(id, 'single');
+    await waitUntil(() => model.writing.getStatus(id).kind === 'failed', { timeoutMs: 2000 });
+    await waitUntil(() => github.threadsRead() > before && model.threads.length === 1, { timeoutMs: 2000 });
+
+    expect(model.writing.getStatus(id)).toEqual({ kind: 'failed', failure: { kind: 'notReached' } });
+    expect(model.writing.getText(id)).toBe('It may have gone');
+});
+
+test('a thread resolved whose read failed can be opened again: the new toggle goes and draws over the old', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, writes } = await open(github);
+    github.threadsFail = true;
+
+    model.writing.setResolved('T_1', true);
+    await waitUntil(() => writes().length === 1 && model.threadsState.kind !== 'ready', { timeoutMs: 2000 });
+    await aMoment();
+    expect(model.threads[0]?.isResolved).toBe(true);
+
+    model.writing.setResolved('T_1', false);
+    expect(model.threads[0]?.isResolved).toBe(false);
+    await waitUntil(() => writes().length === 2, { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['ResolveReviewThread', 'UnresolveReviewThread']);
+    github.threadsFail = false;
+    model.writing.setResolved('T_1', true);
+    await waitUntil(() => writes().length === 3, { timeoutMs: 2000 });
+    await waitUntil(() => model.threads[0]?.isResolved === true, { timeoutMs: 2000 });
+});
+
+test('no answer to a resolve that got there: read again the thread shows it, and nothing says it failed', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session } = await open(github);
+    github.threads = [sampleThread({ isResolved: true })];
+    session.github.holdIf = request =>
+        request.operation === 'ResolveReviewThread' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+    const before = github.threadsRead();
+
+    model.writing.setResolved('T_1', true);
+    await waitUntil(() => github.threadsRead() > before && model.threads[0]?.isResolved === true, {
+        timeoutMs: 2000,
+    });
+    await aMoment();
+
+    expect(model.writing.getResolveFailure('T_1')).toBeNull();
+});
+
+test('no answer to a resolve that did not get there: the failure stays', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session } = await open(github);
+    session.github.holdIf = request =>
+        request.operation === 'ResolveReviewThread' ? Promise.reject(new TypeError('Failed to fetch')) : null;
+
+    model.writing.setResolved('T_1', true);
+    await waitUntil(() => model.writing.getResolveFailure('T_1') !== null, { timeoutMs: 2000 });
+    await aMoment();
+
+    expect(model.writing.getResolveFailure('T_1')).toEqual({ kind: 'notReached' });
+});
+
+test('signed out while a reply checks for a draft: the reply does not go', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    const release = holdOperation(session, 'ItemDetail');
+
+    model.writing.send(id, 'single');
+    await waitUntil(() => session.github.requests.at(-1)?.operation === 'ItemDetail', { timeoutMs: 2000 });
+    session.signOutFromAnotherTab();
+    release();
+    await aMoment();
+
+    expect(writes()).toEqual([]);
+});
+
+test('signed out while a reply starts its draft: the reply does not go, and the empty draft does', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session, writes } = await open(github);
+    const id = reply(model, 'Agreed');
+    const release = holdOperation(session, 'StartPullRequestReview');
+
+    model.writing.send(id, 'startDraft');
+    await waitUntil(() => writes().length === 1, { timeoutMs: 2000 });
+    session.signOutFromAnotherTab();
+    release();
+    await aMoment();
+
+    expect(writes()).toEqual(['StartPullRequestReview', 'DeletePullRequestReview']);
+});
+
+function holdOperation(session: ReturnType<typeof createTestSession>, operation: string) {
     let release = () => {};
     const held = new Promise<void>(resolve => {
         release = resolve;
     });
-    session.github.holdIf = request => (request.operation === 'AddPullRequestReview' ? held : null);
+    session.github.holdIf = request => (request.operation === operation ? held : null);
     return release;
+}
+
+function threadOf(id: string, states: readonly ReviewThreadComment['state'][]) {
+    const [sample] = sampleThread().comments;
+    if (!sample) {
+        throw new Error('The sample has comments');
+    }
+
+    return sampleThread({
+        id,
+        comments: states.map((state, index) => ({ ...sample, id: `${id}_${index}`, state })),
+    });
+}
+
+async function aMoment() {
+    await new Promise(resolve => {
+        setTimeout(resolve, 20);
+    });
 }
 
 function reply(model: PullRequestFiles, text: string) {
