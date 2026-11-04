@@ -34,14 +34,17 @@ $color-scrollbar-thumb-hover: #3a3f48;
 $color-fg: #e4e6ea;
 // Secondary text, idle navigation, icons.
 $color-fg-2: #9aa0a9;
-// Dim icons and decoration only (a chevron, the "+" of a section). The design also sets dim text in it,
-// but on the window's background it reads 3.5:1, under WCAG AA — dim text is `$color-fg-dim`.
+// Dim icons and decoration only (a chevron, the "+" of a section). On the window's background it reads 3.5:1, under
+// WCAG AA for text: dim text is `$color-fg-dim`.
 $color-fg-3: #646b75;
+// The outline of what the user fills in or ticks: a field, a checkbox, a radio. Reaches 3:1 on every surface (D30), where
+// `$color-border-2` wouldn't.
+$color-control-border: $color-fg-3;
 // Dim text: counts, section headers, the status bar, footers, details. The closest step up from
 // `$color-fg-3` that passes AA (4.5:1) on every surface it sits on, up to `$color-sel` (a selected row).
 $color-fg-dim: #838992;
 // The lines of a commit graph; the default branch's stands out from the rest.
-$color-graph-line: #4a505a;
+$color-graph-line: #646b75;
 $color-graph-line-main: #7a818c;
 // Text on the light button ("Sign in with GitHub") and on the accent.
 $color-on-light: #0e1013;
@@ -59,7 +62,7 @@ $color-diff-removed: #e98b8f;
 $color-red: #f0545c;
 // A failure that isn't news (actions): a workflow broken for over a day, a run on a ref that doesn't count. Marks
 // only, never text.
-$color-red-quiet: #a6474c;
+$color-red-quiet: #ac4d52;
 $color-amber: #d6a23a;
 $color-purple: #a57bf5;
 
@@ -360,6 +363,22 @@ $landing-reveal-stagger: 80ms;
     font-weight: $font-weight-medium;
     color: $color-fg;
     background: $color-bg-3;
+}
+
+// What doesn't match, still readable, still in place (D30): instead of opacity, which would take text under AA.
+@mixin dimmed-content {
+    &,
+    & * {
+        color: $color-fg-dim;
+    }
+
+    svg {
+        color: $color-fg-3;
+    }
+
+    img {
+        opacity: 0.4;
+    }
 }
 
 // A screen of Settings, scrolling under its header, and the column its content keeps to.

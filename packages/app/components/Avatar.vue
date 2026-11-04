@@ -38,6 +38,7 @@ const initials = computed(() => {
       :class="css.avatar_image"
       :src="src"
       alt=""
+      role="presentation"
     />
     <!-- Drawn by CSS, not text: a button holding the avatar is named by its label alone. -->
     <AvatarFallback

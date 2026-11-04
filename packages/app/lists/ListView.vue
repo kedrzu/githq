@@ -1576,8 +1576,8 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   background: rgba($color-accent, 0.1);
 }
 
-.listView_row_unmatched > * {
-  opacity: 0.4;
+.listView_row.listView_row_unmatched {
+  @include dimmed-content;
 }
 
 .listView_column {

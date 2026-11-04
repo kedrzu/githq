@@ -232,6 +232,8 @@ function onLayout(sizes: number[]) {
         <SplitterPanel
           id="app-panel"
           ref="itemPanel"
+          as="aside"
+          :aria-label="t(l.openedItem)"
           :order="2"
           size-unit="px"
           :default-size="panelWidth.stored"

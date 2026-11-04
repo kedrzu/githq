@@ -3,7 +3,6 @@ import { expect, test } from 'vitest';
 import { page } from 'vitest/browser';
 
 import { matchText } from '@/testing/matchText.js';
-import { SAMPLE_WORKFLOWS } from '@/testing/sampleWorkflows.js';
 
 import * as stories from './RunStrip.stories.js';
 
@@ -46,10 +45,6 @@ test('with fewer than five runs the slots on the left are hairlines and the late
         { kind: 'failed', height: HEIGHT.failed },
         { kind: 'passed', height: HEIGHT.passed },
     ]);
-    const latest = SAMPLE_WORKFLOWS.lint.lastRuns.at(-1);
-    expect(page.getByTestId('run-bar').elements().at(-1)?.closest('a')?.getAttribute('href')).toContain(
-        `/fitloop/webapp/actions/runs/${latest?.id}`,
-    );
 });
 
 test('screen readers hear the runs in words, oldest first', async () => {
@@ -70,15 +65,12 @@ test('screen readers hear the runs in words, oldest first', async () => {
     await expect.element(page.getByText(matchText('No runs known'))).toBeInTheDocument();
 });
 
-test('hovering a tick names the run: its number, ref and time; it is a link to the run in githq, not a new tab', async () => {
+test('hovering a tick names the run: its number, ref and time; a tick is no link, so a click is the row’s', async () => {
     await BrokenOld.run();
 
-    const tick = page.getByTestId('run-bar').elements().at(-1)?.closest('a');
-    expect(tick?.title).toMatch(/^#204\s·\sv0\.2\.0-rc\.3\s·\sOct\s\d+,\s\d\d:\d\d$/);
-    expect(tick?.getAttribute('href')).toContain(
-        `/fitloop/webapp/actions/runs/${SAMPLE_WORKFLOWS.release.lastRuns.at(-1)?.id}`,
-    );
-    expect(tick?.target).toBe('');
+    const bar = page.getByTestId('run-bar').elements().at(-1);
+    expect(bar?.parentElement?.title).toMatch(/^#204\s·\sv0\.2\.0-rc\.3\s·\sOct\s\d+,\s\d\d:\d\d$/);
+    expect(bar?.closest('a')).toBeNull();
 });
 
 /** The strip's ticks, left to right: their kind and their bar's height. */

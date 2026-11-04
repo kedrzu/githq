@@ -438,7 +438,7 @@ function openRow(row: StackMapRow) {
   align-items: center;
   width: 100%;
   min-width: 0;
-  height: 23px;
+  height: 24px;
   padding: 0 $spacing-6;
 }
 

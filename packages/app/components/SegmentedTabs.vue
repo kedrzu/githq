@@ -165,6 +165,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   }
 
   &[data-state='on'] {
+    font-weight: $font-weight-medium;
     color: $color-fg;
     background: $color-bg-3;
     border-color: $color-border-2;
