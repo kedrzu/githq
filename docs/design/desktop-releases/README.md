@@ -38,7 +38,7 @@ Missing: the Apple signature, the builds from `main`, the choice in Settings, an
 ## Two streams of updates
 
 Stable is what the owner releases by hand when a release is worth it. Development is everything else: every push to
-`main` that passes the checks and reaches the desktop app builds it, about nine minutes later it is there, and each build
+`main` that passes the checks and changes more than documentation builds it, about nine minutes later it is there, and each build
 replaces the last in a single prerelease on GitHub. That keeps the Releases page readable, and it means
 [yesterday's build is gone](DECISIONS.md#d4): a broken one is fixed by the next, or left by switching to Stable.
 
@@ -55,16 +55,21 @@ app reads to learn the newest version, and removes the previous build's files.
 
 ## Signatures
 
-macOS needs a paid Apple Developer account, which the owner is creating; the app is then signed and notarized, and opens
+macOS needs a paid Apple Developer account, which the owner is creating in their own name; the app is then signed and notarized, and opens
 without a warning. Linux asks for no signature at all. Windows is the awkward one: the free route for open source signs
 only what has already been released unsigned, and approves each release by hand. So
 [Windows ships unsigned in Stable, with a plain warning, and has no Development builds](DECISIONS.md#d2). When the
 signature arrives, those installs keep updating, because updates are verified with a separate key of our own.
 
-## Still open
+## What changed
 
-- **What changed:** where the app reads it from, who writes the plain-language summary and when, and what someone sees
-  after skipping several versions.
-- **Apple:** whether the account is personal or a company's.
+The app says it updated with a toast in a corner, and what changed opens from it. On Stable that is the descriptions of
+every release since the version you had, each with its plain-language summary and formal list, so skipping two versions
+loses nothing. The owner gets that summary from an agent they run on the draft release before publishing it.
+
+On Development there is no description to read, because the release is replaced by each build, so the app asks GitHub for
+the commits between its old build and its new one and lists what users would notice.
+[Both are read from GitHub when needed](DECISIONS.md#d10), because the owner corrects descriptions after the build, and a
+correction should still arrive. Offline, the list waits for the connection.
 
 [Every decision, with the evidence](DECISIONS.md).

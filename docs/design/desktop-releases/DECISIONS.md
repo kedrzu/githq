@@ -49,7 +49,7 @@ installed side by side on one machine.
 
 **macOS is signed and notarized, on an Apple Developer account the owner is creating; Linux needs no signature. Windows
 ships in Stable releases only, as an unsigned download with an explicit warning, until a signature exists, and gets no
-Development builds.** (2026-11-04, owner) Open: whether the Apple account is personal or a company's.
+Development builds.** (2026-11-04, owner) The Apple account is personal, in the owner's name.
 
 **Why.** Windows can't wait for the signature, because the free route signs only what was already released unsigned.
 Stable is what SignPath would approve by hand; Development builds come too often for that. The updater's own key is
@@ -122,10 +122,9 @@ wrapper, so a title can't be trusted to say what reached it.
 > of the four scoped commits on `main`; the scope rule is in `.claude/skills/git-workflow/SKILL.md`, and `checkTitle` compares
 > no scope with any path (`packages/app/scripts/releasePlan.ts:56`).
 
-Proposed by the design agent, not yet confirmed: the version is the next stable version plus `-dev.N`, with N the commit
+Proposed by the design agent; explained to the owner, who raised no objection: the version is the next stable version plus `-dev.N`, with N the commit
 count on `main`, which only ever grows; the moving tag is `development`, outside the `v*` tags the version is computed
-from; no ruleset covers tags, so an Action may move it. Development checks for updates much more often than the four hours in `updater.rs:21`, and a "check now" exists:
-at four hours "shortly after a merge" is not true.
+from; no ruleset covers tags, so an Action may move it.
 
 **Rejected.**
 
@@ -187,7 +186,7 @@ version and notes; it decides no build ([D4](#d4)).
 > `pr.yml` chooses what to run from paths (`code`, from `hasNoCode`). So "`chore` might skip a deploy" is not why `chore`
 > was rejected here; the owner's preference for the true type is.
 
-Proposed by the design agent, not yet confirmed: `checkTitle` refuses a scope when the PR touches none of its paths: `web`
+`checkTitle` refuses a scope when the PR touches none of its paths: `web`
 needs something in `packages/app/landing/` or `packages/worker/`, `cloud` something in `packages/worker/`.
 
 > **Checked 2026-11-04:** against the four scoped PRs on `main`: #96 (only `packages/app/tracking/TrackPickerDialog.vue`) is
@@ -197,3 +196,41 @@ needs something in `packages/app/landing/` or `packages/worker/`, `cloud` someth
 **Rejected.**
 
 - Removing the scopes and titling such work `chore` (design agent's proposal): the owner keeps the true type.
+
+## D9
+
+**Two streams, Stable and Development. No Nightly for now.** (2026-11-04, owner)
+
+**Why.** Nightly would run the same builds and differ only in offering a restart less often, and a restart is never forced:
+on macOS and Linux the update installs in the background and runs at the next launch, and checks stop once one is ready
+(`packages/desktop/src-tauri/src/updater.rs:5`, `:84`). Its only user today would be the owner, who wants fresh builds.
+
+**Rejected.**
+
+- Nightly as a third stream: one more moving release, a schedule and a third option in Settings. Would win when someone
+  wants fresher code than Stable but finds Development too busy. Adding it later is cheap: a daily copy of the last green
+  Development build, under the same `-dev.N` numbers, because `dev.215` sorts below `nightly.214` and moving between them
+  would read as a downgrade.
+
+## D10
+
+**The app reads what changed from GitHub when it needs it. On Stable, the descriptions of the releases between the old
+version and the new one, newest first. On Development, the commits between the old build and the new one, filtered by the
+same rule as the release notes; the app knows its own commit hash.** (2026-11-04, owner)
+
+**Why.** A correction to a release's description reaches users even after publishing, and the owner edits descriptions on
+the draft, after the build. GitHub stays the only source. Accepted: offline, the list appears once back online. The
+evidence for both calls is under [D3](#d3).
+
+**Rejected.**
+
+- Writing the changes into the app at build time: works offline, but edits made after the build would never arrive.
+- A release per Development build, so that the app reads one kind of source: see [D4](#d4).
+
+## D11
+
+**Development checks for updates every 15 minutes and Stable every 4 hours, and a "check now" action exists in Settings
+and the command palette.** (2026-11-04, owner)
+
+**Why.** Four hours (`packages/desktop/src-tauri/src/updater.rs:21`) can't deliver "what I just merged". Fifteen minutes is a
+proposal, not a measurement. Whether GitHub limits such downloads of a release asset: not checked.

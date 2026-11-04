@@ -23,3 +23,6 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner: keep the scopes on `feat` and `fix`, sharpen them, no `chore` (D8). Owner's reason, that `chore` might skip
   a deploy, checked and not so; told. Agent proposed a path check on scopes. Owner asked what replacing a release means:
   explained and folded into the story. Three channels, reading from GitHub, 15-minute checks, Apple account: unanswered.
+- 2026-11-04: Owner accepted: path check on scopes (D8), two streams with no Nightly (D9), reading what changed from GitHub
+  (D10), 15-minute and 4-hour checks with "check now" (D11), personal Apple account (D2). Story folded up to here. Next:
+  failure sweep and rightsize before proposing to close.
