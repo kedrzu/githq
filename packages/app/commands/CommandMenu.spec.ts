@@ -229,3 +229,20 @@ test('E5: above 5 words a line is still found, unmarked', async () => {
     await expect.element(row).toBeInTheDocument();
     expect(getMarks(row)).toEqual([]);
 });
+
+test('↑ on the first line wraps to the last, in the menu and in a submenu', async () => {
+    await OnOpenItem.run();
+
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const lines = menu.getByRole('option');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(lines.last()).toHaveAttribute('data-highlighted');
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(lines.first()).toHaveAttribute('data-highlighted');
+
+    await userEvent.keyboard('label{ArrowRight}');
+    const options = page.getByRole('listbox', { name: 'Add or remove labels…' }).getByRole('option');
+    await expect.element(options.first()).toHaveAttribute('data-highlighted');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(options.last()).toHaveAttribute('data-highlighted');
+});
