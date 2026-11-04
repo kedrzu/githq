@@ -140,7 +140,8 @@ onMounted(() => {
 .reviewStackStrip_places {
   display: flex;
   flex: 0 1 auto;
-  gap: 3px;
+  // 18 px squares, 24 px apart: the spacing WCAG 2.5.8 asks of a target under 24 px.
+  gap: $spacing-6;
   align-items: center;
   align-self: stretch;
   min-width: 0;

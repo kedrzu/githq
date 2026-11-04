@@ -211,7 +211,14 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         const pinned = pinnedAt(scrollTop);
         const covered = pinned ? heights.height(pinned.index) - pinned.pushUp : 0;
         const index = heights.indexAt(Math.max(scrollTop, 0) + covered);
-        return index < 0 ? null : rowAt(index);
+        if (index < 0) {
+            return null;
+        }
+
+        const row = rowAt(index);
+        // A pinned row with no rows of its own under it (a collapsed file's header) is itself what shows at the top, not
+        // the next pinned row right after it.
+        return pinned && index === pinned.index + 1 && options.isPinned(row) ? pinned.row : row;
     }
 
     /** The position in `pinnedIndices`, -1 when every pinned row is below `index`. */

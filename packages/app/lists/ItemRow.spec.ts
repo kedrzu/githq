@@ -15,12 +15,14 @@ import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import { ITEM_PROPERTIES } from './ItemProperty.js';
+import type { ItemProperty } from './ItemProperty.js';
 import ItemRow from './ItemRow.vue';
 
 /** Approved, every check passed: "approved · ready to merge". */
 const READY = findPullRequest('PR_477');
 /** A merge sent from the panel, with GitHub's text, naming the head the row shows. */
 const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
+const DRAFT = { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' };
 
 test('ready to merge, a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel', async () => {
     const opened: string[] = [];
@@ -63,6 +65,46 @@ test('ready to merge, one the viewer may not merge is followed by "Open on GitHu
 
     await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toHaveAttribute('aria-keyshortcuts', 'O');
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
+});
+
+test('with a draft review the row says so in place of its status, and stays as ready: "Merge" still follows, or "Open on GitHub"', async () => {
+    mount(
+        { ...READY, pendingReview: DRAFT },
+        {
+            canOpen: () => true,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
+    await expect.element(page.getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).toBeVisible();
+});
+
+test('with a draft review on one the viewer may not merge, "Open on GitHub" still follows', async () => {
+    mount(
+        { ...READY, pendingReview: DRAFT },
+        {
+            canOpen: () => false,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
+    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toBeVisible();
+});
+
+test('D21: a list showing no status still marks a draft review, and offers no merge; what else it would say stays hidden', async () => {
+    mount({ ...READY, pendingReview: DRAFT }, null, []);
+    await expect.element(page.getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).not.toBeInTheDocument();
+
+    mount({ ...READY, id: 'PR_other', title: 'Without a draft' }, null, []);
+    await expect.element(page.getByText('Without a draft')).toBeVisible();
+    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
 });
 
 test('PM37: being merged, the row says so where the status sits and keeps the open icon — never merged until GitHub says so', async () => {
@@ -198,7 +240,7 @@ test('PM37: under auto-merge, the row says how and what it waits for, and offers
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
-function mount(item: Item, merging: MergeContext | null) {
+function mount(item: Item, merging: MergeContext | null, properties: readonly ItemProperty[] = ITEM_PROPERTIES) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     const host = document.createElement('div');
@@ -209,8 +251,7 @@ function mount(item: Item, merging: MergeContext | null) {
                 provideContext(MergeContext, merging);
             }
 
-            return () =>
-                h(ItemRow, { item, properties: ITEM_PROPERTIES, viewerLogin: SAMPLE_VIEWER.login, now: SAMPLE_NOW });
+            return () => h(ItemRow, { item, properties, viewerLogin: SAMPLE_VIEWER.login, now: SAMPLE_NOW });
         },
     });
     app.use(IocPlugin, { container });

@@ -145,6 +145,26 @@ test('on the review, the toolbar at the foot of the diff says how many wait and 
     await expect(review.pendingToolbar).toBeHidden();
 });
 
+test('a pull request outside the local copy: back from finishing the draft on GitHub, the toolbar goes', async ({
+    page,
+    github,
+}) => {
+    const { world } = createWorld();
+    const outside = world.pullRequest({ repository: 'acme/web', number: 9, title: 'Not my work', minutesAgo: 30 });
+    world.setPendingReview(outside, { comments: 2, minutesAgo: 60 });
+    await openMyWork(page, github, world);
+    answerFiles(github, 'acme/web', 9);
+
+    await page.goto('/acme/web/pull/9/files');
+    const review = new ReviewScreenHarness(page);
+    await expect(review.pendingToolbar).toContainText('2 pending comments');
+
+    world.setPendingReview(outside, null);
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+
+    await expect(review.pendingToolbar).toBeHidden();
+});
+
 test('in a stack, the row of the pull request with the draft and its square carry the mark, the others not', async ({
     page,
     github,

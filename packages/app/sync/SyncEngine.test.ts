@@ -162,26 +162,76 @@ test('the open pull requests of my work get their status re-read, without the re
     expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', reviewDecision: 'APPROVED', updatedAt: MONDAY });
 });
 
-test('a closed pull request with a draft review is re-read until the draft is gone, or its mark would outlive it', async () => {
+test('a pull request closed with a draft review stays and is re-read while the draft does; with the draft gone it goes, unless something else keeps it', async () => {
     const github = fakeGitHub();
-    const closed: PullRequestFieldsFragment = {
-        ...pullRequestNode('PR_1', MONDAY),
-        state: 'CLOSED',
-        pendingReviews: { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] },
-    };
-    github.found.authored = [closed];
+    const pendingReviews = { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] };
+    const left = { ...pullRequestNode('PR_1', MONDAY), pendingReviews };
+    const stays = { ...pullRequestNode('PR_2', MONDAY), pendingReviews };
+    github.found.authored = [left, stays];
     const { items, clock } = await setup(github, 'alice');
+
+    // Closed: the `is:open` searches no longer find it.
+    const closed: PullRequestFieldsFragment = { ...left, state: 'CLOSED' };
+    github.found.authored = [stays];
+    github.statuses.set('PR_1', closed);
     github.requests.length = 0;
+    await clock.advance(60_000);
+
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_2', 'PR_1']]);
+    expect(items.membership.authored).toEqual(new Set(['PR_2']));
+    expect(items.get('PR_1')).toMatchObject({ state: 'CLOSED', pendingReview: { commentCount: 2 } });
 
     github.statuses.set('PR_1', { ...closed, pendingReviews: { nodes: [] } });
+    github.statuses.set('PR_2', { ...stays, pendingReviews: { nodes: [] } });
     await clock.advance(60_000);
 
-    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_1']]);
-    expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', pendingReview: null });
+    expect(items.get('PR_1')).toBeUndefined();
+    expect(items.get('PR_2')).toMatchObject({ pendingReview: null });
 
     github.requests.length = 0;
     await clock.advance(60_000);
-    expect(github.graphql('PullRequestStatuses')).toEqual([]);
+    expect(github.graphql('PullRequestStatuses')).toEqual([['PR_2']]);
+});
+
+test('a draft review kept after its pull request left my work keeps its stack, read once, until the draft is gone', async () => {
+    const github = fakeGitHub();
+    const pendingReviews = { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] };
+    const mine = { ...stackedNode('PR_2', 2, 3), pendingReviews };
+    github.found.reviewRequested = [mine];
+    github.stacks.set('ST_1', [stackedNode('PR_1', 1, 3, 'MERGED'), mine, stackedNode('PR_3', 3, 3)]);
+    const { items, clock } = await setup(github, 'alice');
+
+    // The request for the review withdrawn.
+    github.found.reviewRequested = [];
+    github.requests.length = 0;
+    await clock.advance(60_000);
+
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+    expect(items.all.map(item => item.id).toSorted()).toEqual(['PR_1', 'PR_2', 'PR_3']);
+
+    github.statuses.set('PR_2', { ...mine, pendingReviews: { nodes: [] } });
+    await clock.advance(60_000);
+
+    expect(items.all).toEqual([]);
+    expect(github.graphql('PullRequestStacks')).toEqual([]);
+});
+
+test('a pull request kept for its draft review alone, found deleted by the next read of the statuses, goes', async () => {
+    const github = fakeGitHub();
+    const draft = {
+        ...pullRequestNode('PR_1', MONDAY),
+        pendingReviews: { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] },
+    };
+    github.found.authored = [draft];
+    const { items, clock } = await setup(github, 'alice');
+
+    github.found.authored = [];
+    await clock.advance(60_000);
+    expect(items.get('PR_1')).toMatchObject({ pendingReview: { commentCount: 2 } });
+
+    github.deleted.add('PR_1');
+    await clock.advance(60_000);
+    expect(items.get('PR_1')).toBeUndefined();
 });
 
 test('a pull request of a stack brings the rest of the stack, merged ones too, read once; a stack held whole costs nothing more', async () => {

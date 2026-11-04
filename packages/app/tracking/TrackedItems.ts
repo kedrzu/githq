@@ -21,9 +21,9 @@ export interface ProjectContents {
 
 /**
  * Which items the local copy keeps, and what each tracked repository and project holds: an item stays while
- * "my work" has it, its repository is tracked, or a tracked project holds it (D4) — and a pull request while
- * another of its stack stays for one of those (stacked PRs, D7). When the user stops tracking a repository or
- * project, its items go — those nothing else keeps.
+ * "my work" has it, its repository is tracked, or a tracked project holds it (D4), a pull request while it holds the
+ * user's draft review (code review D21) — and while another of its stack stays for one of those (stacked PRs, D7).
+ * When the user stops tracking a repository or project, its items go — those nothing else keeps.
  */
 export type TrackedItems = Resolved<typeof TrackedItems>;
 export const TrackedItems = defineService({
@@ -56,11 +56,11 @@ export const TrackedItems = defineService({
 
             return names;
         });
-        // The stacks with a pull request kept for itself: the rest of each is kept with it.
+        // The stacks with a pull request kept for itself or its draft review: the rest of each is kept with it.
         const keptStacks = computed(() => {
             const ids = new Set<string>();
             for (const item of items.all) {
-                if (item.kind === 'pullRequest' && item.stack && keepsForItself(item)) {
+                if (item.kind === 'pullRequest' && item.stack && (keepsForItself(item) || item.pendingReview)) {
                     ids.add(item.stack.id);
                 }
             }
@@ -83,18 +83,19 @@ export const TrackedItems = defineService({
 
         /**
          * Whether the local copy keeps the item: "my work" has it, a tracked repository or project, or it is a pull
-         * request of a stack another of which one of those has; reactive.
+         * request with the user's draft review, or of a stack another of which one of those has; reactive.
          */
         function keeps(item: Item) {
             return (
                 keepsForItself(item) ||
-                (item.kind === 'pullRequest' && item.stack !== null && keptStacks.value.has(item.stack.id))
+                (item.kind === 'pullRequest' &&
+                    (item.pendingReview !== null || (item.stack !== null && keptStacks.value.has(item.stack.id))))
             );
         }
 
         /**
          * Whether the local copy keeps the item for itself — "my work" has it, a tracked repository or project — rather
-         * than only for its stack, whose pull requests nothing else re-reads.
+         * than only for its stack or its draft review, whose pull requests nothing else re-reads.
          */
         function keepsForItself(item: Item) {
             const { membership } = items;

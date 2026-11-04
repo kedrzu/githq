@@ -34,6 +34,16 @@ test('the first row showing is under the pinned one that covers the top, and the
     expect(model.firstVisibleRow(490)?.key).toBe('r20');
 });
 
+test('a collapsed file at the top is the first row showing, not the next header right under its own pin', () => {
+    // Rows of 25; r5 and r6 are pinned headers with nothing between them; r6 is followed by its diff.
+    const model = createModel(rows(20).map((row, index) => ({ ...row, pinned: index === 5 || index === 6 })));
+
+    expect(model.firstVisibleRow(125)?.key).toBe('r5');
+    expect(model.firstVisibleRow(135)?.key).toBe('r5');
+    // r6's own pin is at the top now: what shows is the row under it.
+    expect(model.firstVisibleRow(150)?.key).toBe('r7');
+});
+
 test('heights changing above the anchor move the scroll position by exactly their sum, those below not at all', () => {
     const model = createModel(rows(100));
     model.captureAnchor(255);

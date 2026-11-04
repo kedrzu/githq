@@ -143,22 +143,27 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             return null;
         }
 
+        let standing: ItemStatusFact | null = null;
+        if (listed.merged) {
+            standing = getMergedStatus(listed);
+        } else if (listed.state === 'OPEN') {
+            standing = getStatus(listed);
+        }
+
         // D28: until it's sent nothing else about it moves, and a draft outlives the pull request being closed. Only a
-        // merge on its way goes first, for the moment it takes.
+        // merge on its way goes first, for the moment it takes. The draft takes the words, not what can be done: `⇧M`
+        // still merges.
         if (listed.pendingReview && !listed.merging) {
             return {
+                readyToMerge: false,
+                ...standing,
                 icon: PencilLine,
                 tone: 'warning',
                 text: t(l.draftReview, { count: listed.pendingReview.commentCount }),
-                readyToMerge: false,
             };
         }
 
-        if (listed.merged) {
-            return getMergedStatus(listed);
-        }
-
-        return listed.state === 'OPEN' ? getStatus(listed) : null;
+        return standing;
     });
     const size = computed((): ItemSizeFact | null => {
         const listed = item.value;

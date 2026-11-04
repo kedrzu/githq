@@ -751,7 +751,8 @@ export const SyncEngine = defineService({
          * The four searches at once, as "my work" is what the user waits for (D27). As each answers, its items whose
          * `updated_at` moved — or that are new — are read again, the ones GitHub no longer returns removed, and its
          * group set to what it found: on the first download the groups arrive one by one, and one failing leaves the
-         * others in place. Once all have answered, an item no search found leaves "my work" and the store.
+         * others in place. Once all have answered, an item no search found leaves "my work" and, unless something else
+         * keeps it, the store.
          */
         async function pollMyWork(current: Session) {
             let incomplete = false;
@@ -846,7 +847,8 @@ export const SyncEngine = defineService({
 
         /**
          * Removes from the store the items no "my work" group holds any more, and returns their ids — but not the
-         * items of tracked repositories and projects: they stay, whatever "my work" says.
+         * items of tracked repositories and projects, or a pull request with the user's draft review: they stay,
+         * whatever "my work" says.
          */
         function removeItemsOutsideMyWork() {
             return trackedItems.evict(items.all.map(item => item.id));
@@ -883,6 +885,8 @@ export const SyncEngine = defineService({
 
             // Those copied for their stack only whose `updatedAt` moved: nothing else re-reads the rest of their row.
             const moved: string[] = [];
+            // Those whose draft is gone: a draft may have been all that kept them.
+            const draftGone: string[] = [];
             for (const ids of splitIntoChunks([...open], NODES_BATCH_SIZE)) {
                 checkAllowance('graphql');
                 const errors: GitHubGraphQLErrorEntry[] = [];
@@ -899,19 +903,32 @@ export const SyncEngine = defineService({
                 }
 
                 const updated: PullRequestItem[] = [];
-                for (const node of nodes) {
-                    // Gone or no longer a pull request: the next search finds out.
-                    if (!isPullRequestNode(node)) {
+                for (const [index, id] of ids.entries()) {
+                    // As stored: a change of the user's still on its way must not become part of it.
+                    const item = items.getStored(id);
+                    if (item?.kind !== 'pullRequest') {
                         continue;
                     }
 
-                    // As stored: a change of the user's still on its way must not become part of it.
-                    const item = items.getStored(node.id);
-                    if (item?.kind === 'pullRequest') {
-                        updated.push({ ...item, ...toPullRequestStatus(node) });
-                        if (node.updatedAt !== item.updatedAt && !trackedItems.keepsForItself(item)) {
+                    // Gone or no longer a pull request: the next search finds out, but none looks for one only its
+                    // draft keeps, so it is read to tell.
+                    const node = nodes[index] ?? null;
+                    if (!isPullRequestNode(node)) {
+                        if (item.pendingReview && !trackedItems.keepsForItself(item)) {
                             moved.push(item.id);
                         }
+
+                        continue;
+                    }
+
+                    const status = toPullRequestStatus(node);
+                    updated.push({ ...item, ...status });
+                    if (node.updatedAt !== item.updatedAt && !trackedItems.keepsForItself(item)) {
+                        moved.push(item.id);
+                    }
+
+                    if (item.pendingReview && !status.pendingReview) {
+                        draftGone.push(item.id);
                     }
                 }
 
@@ -923,6 +940,8 @@ export const SyncEngine = defineService({
                     return;
                 }
             }
+
+            trackedItems.evict(draftGone);
 
             await readIncompleteStacks(current);
         }

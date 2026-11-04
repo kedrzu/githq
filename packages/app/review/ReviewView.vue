@@ -8,6 +8,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import {
   ArrowDownToLine,
   ArrowUpToLine,
@@ -45,6 +46,7 @@ import { useItemWalk } from '@/item/useItemWalk.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -114,6 +116,7 @@ const reviewFiles = useService(ReviewFiles);
 const preferences = useService(LocalPreferences);
 const screenFreshness = useService(ReviewScreenFreshness);
 const details = useService(ItemDetailStore);
+const items = useService(ItemStore);
 const navigation = useService(ItemNavigation);
 const router = useRouter();
 
@@ -457,6 +460,14 @@ watch(rows, next => {
     requestAnimationFrame(() => {
       performance.measure('review:first-row', { start: openedAt, end: performance.now() });
     });
+  }
+});
+
+// Outside the local copy no poll reads its draft, and its row moves on with the detail alone: back from finishing the
+// draft on GitHub, the toolbar must not stay. `ensure` would skip a read made under a minute ago.
+onWindowEvent('focus', () => {
+  if (opened.id !== null && pendingReview.value && !items.getStored(opened.id)) {
+    void details.readAgain(opened.id);
   }
 });
 

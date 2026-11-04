@@ -175,3 +175,11 @@ export const AutoMergeOn: Story = {
 export const DraftReview: Story = {
     args: { item: { ...READY, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } } },
 };
+
+/** D21: a view that shows no status (a project with no saved views) still marks a draft review. */
+export const DraftReviewWithNoStatusShown: Story = {
+    args: { ...DraftReview.args, properties: [] },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    },
+};

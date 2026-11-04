@@ -90,6 +90,8 @@ const shown = computed(() => new Set(props.properties));
 /** The viewer may merge it: when it is ready, "Merge" follows instead of "Open on GitHub". */
 const mergeable = computed(() => merging?.canOpen(props.item.id) === true);
 const onQueueBranch = computed(() => props.item.kind === 'pullRequest' && props.item.isMergeQueueEnabled);
+/** D21: an open draft is marked whatever the list shows; the rest of the status and the merge buttons follow the option. */
+const hasDraft = computed(() => props.item.kind === 'pullRequest' && props.item.pendingReview !== null);
 const waitingDraft = computed(() =>
   props.draftAge && props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
 );
@@ -146,7 +148,7 @@ const waitingDraft = computed(() =>
           :opened-id="openedId"
         />
         <ItemStatus
-          v-if="facts.status && shown.has('status')"
+          v-if="facts.status && (shown.has('status') || hasDraft)"
           :class="css.itemRow_shared"
           :status="facts.status"
         />

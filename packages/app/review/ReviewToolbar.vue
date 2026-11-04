@@ -90,7 +90,12 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
     />
     <span :class="css.reviewToolbar_repository">{{ reference.owner }}/{{ reference.name }}</span>
     <span :class="css.reviewToolbar_number">#{{ reference.number }}</span>
-    <h1 :class="css.reviewToolbar_title">{{ item?.title }}</h1>
+    <h1
+      v-if="item?.title"
+      :class="css.reviewToolbar_title"
+    >
+      {{ item.title }}
+    </h1>
     <span :class="css.reviewToolbar_where">{{ t(l.review) }}</span>
     <span :class="css.reviewToolbar_spacer" />
     <ItemWalkStepper
