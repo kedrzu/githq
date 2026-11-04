@@ -22,6 +22,9 @@ const REPOSITORY = 'acme/web';
 const SHARE_KEY = 'githq.panelShare.commitGraph';
 
 test('only the rows near the viewport are drawn: a 5,000-commit graph draws a few dozen, and asks the state of those on screen only', async () => {
+    // Wide, so the details sit beside the graph and the pane keeps the section's whole height.
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
     const commits = sampleHistory({ count: 5000, seed: 11 });
     const view = await mount({ commits });
     const rows = page.getByRole('listitem');
@@ -29,13 +32,15 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     await expect.element(rows.first()).toBeVisible();
     expect(view.github.requests.filter(request => request === 'RepositoryCommitRefs')).toHaveLength(1);
     expect(rows.elements().length).toBeLessThan(60);
+    // The opened commit asks for its own state, one at a time: what the rows on screen ask is the longer call.
+    const asksOfScreen = () => view.ensureStates.mock.calls.findLast(([, asked]) => asked.length > 1)?.[1];
     // 600 px of 32 px rows: about 20 on screen, from the newest.
-    await expect.poll(() => view.ensureStates.mock.lastCall?.[1].length).toBeGreaterThan(15);
+    await expect.poll(() => asksOfScreen()?.length).toBeGreaterThan(15);
     for (const [, asked] of view.ensureStates.mock.calls) {
         expect(asked.length).toBeLessThanOrEqual(21);
     }
     const newest = view.store.get(REPOSITORY)?.commits;
-    expect(view.ensureStates.mock.lastCall?.[1][0]?.oid).toBe(newest?.[0]?.oid);
+    expect(asksOfScreen()?.[0]?.oid).toBe(newest?.[0]?.oid);
     expect(view.loadMore).not.toHaveBeenCalled();
 
     // Far down: the rows there, still a few dozen, and only they ask for their state.
@@ -43,8 +48,8 @@ test('only the rows near the viewport are drawn: a 5,000-commit graph draws a fe
     scroller.scrollTop = 2500 * 32;
     await expect.poll(() => rows.first().element().getAttribute('aria-posinset')).toBe(String(2500 - 8 + 1));
     expect(rows.elements().length).toBeLessThan(60);
-    const last = view.ensureStates.mock.lastCall?.[1];
-    expect(last?.[0]?.oid).toBe(newest?.[2500]?.oid);
+    await expect.poll(() => asksOfScreen()?.[0]?.oid).toBe(newest?.[2500]?.oid);
+    const last = asksOfScreen();
     expect(last?.length).toBeLessThanOrEqual(21);
     expect(view.loadMore).not.toHaveBeenCalled();
 
@@ -92,9 +97,14 @@ test('D18, CH34: not known yet is an empty bar, never a blank; a commit with no 
     await expect.element(row('Commit c1').getByRole('img', { name: 'Checks failing' })).toBeVisible();
 });
 
-test('CH23: the cursor starts on the newest commit; J/K and the arrows move it, a click moves it there', async () => {
+test("CH23: the cursor starts on the default branch's tip; J/K and the arrows move it, a click moves it there", async () => {
     await mount(sampleWebappHistory());
 
+    // `main` points at the third commit, not the newest.
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    await userEvent.keyboard('k');
+    await expect.poll(() => cursor()?.textContent).toContain("fix: booking time uses the studio's timezone");
+    await userEvent.keyboard('{ArrowUp}');
     await expect
         .poll(() => cursor()?.textContent)
         .toContain('feat: preview a class while dragging it in the week view');
@@ -102,15 +112,40 @@ test('CH23: the cursor starts on the newest commit; J/K and the arrows move it, 
     await expect.poll(() => cursor()?.textContent).toContain("fix: booking time uses the studio's timezone");
     await userEvent.keyboard('{ArrowDown}');
     await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
-    await userEvent.keyboard('k');
-    await expect.poll(() => cursor()?.textContent).toContain("fix: booking time uses the studio's timezone");
-    await userEvent.keyboard('{ArrowUp}{ArrowUp}');
-    await expect
-        .poll(() => cursor()?.textContent)
-        .toContain('feat: preview a class while dragging it in the week view');
 
-    await userEvent.click(page.getByText('chore: bump vite to 6.2'));
+    await userEvent.click(graphText('chore: bump vite to 6.2'));
     await expect.poll(() => cursor()?.textContent).toContain('chore: bump vite to 6.2');
+});
+
+test('the cursor starts on the top row when there is no default branch', async () => {
+    const commits = [sampleCommit('c3', 30, ['c1']), sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)];
+    const branches = [sampleCommitRef('main', 'c2'), sampleCommitRef('feat/a', 'c3')];
+    const view = await mount({ commits, branches });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    view.unmount();
+
+    await mount({ commits, branches, defaultBranch: null });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
+    await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
+});
+
+test('the details are open on the selected commit from the start; Esc closes them, and the next move, even onto the same row, shows them again', async () => {
+    await mount(sampleWebappHistory());
+    await expect.element(details().getByRole('heading', { name: /Merge pull request #1226/ })).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    await userEvent.click(graphText('chore: bump vite to 6.2'));
+    await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
 });
 
 test('J moves the cursor past the screen and keeps its row in view', async () => {
@@ -150,6 +185,14 @@ test('D19: commits arriving above stay out of the way — the cursor stays on it
     repository.commits.set('n2', sampleCommit('n2', 5001, ['n1']));
     await arrive(sampleCommit('n3', 5002, ['n2']));
     await expect.poll(() => scroller.scrollTop).toBe(3 * 32);
+    expect(cursor()?.textContent).toBe(under);
+    expect(cursor()?.getBoundingClientRect().top).toBe(before);
+
+    // A new tip of the default branch moves nothing either: the cursor was placed already.
+    repository.commits.set('n4', sampleCommit('n4', 5003, ['n3']));
+    repository.branch('main', 'n4');
+    await view.store.open(REPOSITORY);
+    await expect.poll(() => scroller.scrollTop).toBe(4 * 32);
     expect(cursor()?.textContent).toBe(under);
     expect(cursor()?.getBoundingClientRect().top).toBe(before);
 });
@@ -227,7 +270,7 @@ test('CH40: offline, what is kept stays and the last row says older commits wait
     });
 
     await expect.element(page.getByText("Older commits load when you're back online")).toBeVisible();
-    await expect.element(page.getByText('Commit c2')).toBeVisible();
+    await expect.element(graphText('Commit c2')).toBeVisible();
     expect(view.store.getFreshness(REPOSITORY)).toMatchObject({ kind: 'stale', reason: 'offline' });
 });
 
@@ -288,8 +331,8 @@ test('a page too short to fill the screen is followed by the next, without a scr
     });
 
     await expect.element(page.getByText("The beginning of acme/web's history")).toBeVisible();
-    await expect.element(page.getByText('Commit a')).toBeVisible();
-    await expect.element(page.getByText('Commit b')).toBeVisible();
+    await expect.element(graphText('Commit a')).toBeVisible();
+    await expect.element(graphText('Commit b')).toBeVisible();
     expect(view.github.requests.filter(request => request === 'CommitHistories')).toHaveLength(2);
 });
 
@@ -311,7 +354,7 @@ test('a page that fails is not asked for again on its own: the next scroll asks'
 
 test('another account signing in opens the graph again for them, the view staying open', async () => {
     const view = await mount(sampleWebappHistory());
-    const row = page.getByText('chore: bump vite to 6.2');
+    const row = graphText('chore: bump vite to 6.2');
     await expect.element(row).toBeVisible();
     const refsRead = () => view.github.requests.filter(request => request === 'RepositoryCommitRefs').length;
     expect(refsRead()).toBe(1);
@@ -453,7 +496,7 @@ test.each([
     expect(new Set(dotsX()).size).toBe(Number(lanes));
 });
 
-test("D15: below about 1,200 px of window the list is folded away; B opens it over the graph at the pane's left edge without taking the graph's width, Esc closes it and choosing does too, and so does opening a commit's details", async () => {
+test("D15: below about 1,200 px of window the list is folded away; B opens it over the graph at the pane's left edge without taking the graph's width, Esc closes it and choosing does too, the details below the graph staying meanwhile", async () => {
     await page.viewport(1100, 700);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(14) });
@@ -475,11 +518,14 @@ test("D15: below about 1,200 px of window the list is folded away; B opens it ov
     await expect.element(list).not.toBeInTheDocument();
     expect(document.activeElement).toBe(view.scroller());
 
+    // The details docked below the graph stay while the list is over the graph, and Esc leaves the list first.
     await userEvent.keyboard('b');
     filter().element().blur();
-    await userEvent.keyboard('{Enter}');
+    await expect.element(list).toBeVisible();
     await expect.element(details()).toBeVisible();
+    await userEvent.keyboard('{Escape}');
     await expect.element(list).not.toBeInTheDocument();
+    await expect.element(details()).toBeVisible();
     await userEvent.keyboard('{Escape}');
     await expect.element(details()).not.toBeInTheDocument();
 
@@ -523,6 +569,7 @@ test('D15: refs arriving on a first open bring the column and the list; a reposi
 
     answered.resolve();
     await expect.element(refList()).toBeVisible();
+    await closeDetails();
     await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
     expect(refList().element().getBoundingClientRect().right).toBeLessThanOrEqual(
         view.scroller().getBoundingClientRect().left,
@@ -601,7 +648,7 @@ test('D15, D16: on a wide window Enter opens the details right of the graph with
     await expect.poll(() => scroller.clientWidth).toBe(1200 - 280 - 440);
     const panel = details().element().getBoundingClientRect();
     expect(panel.left).toBeGreaterThanOrEqual(scroller.getBoundingClientRect().right);
-    expect(getComputedStyle(details().element()).position).toBe('static');
+    expect(getComputedStyle(details().element()).position).toBe('relative');
     expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(scroller.getBoundingClientRect().left);
     expect(view.scroller()).toBe(scroller);
     expect(refList().element()).toBe(list);
@@ -633,11 +680,89 @@ test('D15, D16: the kept width of 480 px on a 1,200 px window leaves the graph 2
     await expect.element(refList()).toBeVisible();
     await expect.poll(() => refList().element().getBoundingClientRect().width).toBe(479);
 
-    await userEvent.keyboard('{Enter}');
     await expect.element(details()).toBeVisible();
     await expect.poll(() => view.scroller().getBoundingClientRect().width).toBe(240);
     expect(details().element().getBoundingClientRect().width).toBe(900 - 480 - 240);
-    expect(getComputedStyle(details().element()).position).toBe('static');
+    expect(getComputedStyle(details().element()).position).toBe('relative');
+});
+
+test("D16: the arrow keys on the details' left edge resize them 20 px at a time, kept under their own key and no other panel's, the graph keeping at least 240 px", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({ commits: parallelBranches(4) }, { width: 1000, keptColumnWidth: 300 });
+    const preferences = view.container.resolve(LocalPreferences);
+    await expect.element(details()).toBeVisible();
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(440);
+
+    detailsHandle().element().focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
+    expect(preferences.getPanelWidth('commitDetails').value).toBe(460);
+    expect(preferences.getPanelWidth('repositoryColumn').value).toBe(300);
+    expect(preferences.getPanelWidth('modal').value).toBeNull();
+
+    // At the most the graph lets it have (1000 - 300 - 240), nothing more is kept.
+    await userEvent.keyboard('{ArrowLeft}');
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
+    expect(view.scroller().getBoundingClientRect().width).toBeGreaterThanOrEqual(240);
+    expect(preferences.getPanelWidth('commitDetails').value).toBe(460);
+
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(440);
+    expect(preferences.getPanelWidth('commitDetails').value).toBe(440);
+});
+
+test('D16: a width squeezed by the window is never kept over the one the user chose: the details narrower, by a key that does nothing at the limit', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    // 1,000 - 300 leaves the details 460 of the 600 chosen.
+    const view = await mount(
+        { commits: parallelBranches(4) },
+        { width: 1000, keptColumnWidth: 300, keptDetailsWidth: 600 },
+    );
+    const preferences = view.container.resolve(LocalPreferences);
+    await expect.element(details()).toBeVisible();
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
+    expect(preferences.getPanelWidth('commitDetails').value).toBe(600);
+
+    detailsHandle().element().focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await userEvent.keyboard('{Tab}');
+    expect(preferences.getPanelWidth('commitDetails').value).toBe(600);
+
+    detailsHandle().element().focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(440);
+});
+
+test("D16: with less room than the details' least width the handle changes and keeps nothing", async () => {
+    await page.viewport(1200, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    // 900 - 480 - 240 leaves 180, under the 320 least.
+    const view = await mount({ commits: parallelBranches(4) }, { keptColumnWidth: 480, width: 900 });
+    const preferences = view.container.resolve(LocalPreferences);
+    await expect.element(details()).toBeVisible();
+    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(180);
+
+    detailsHandle().element().focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await userEvent.keyboard('{ArrowRight}');
+    expect(details().element().getBoundingClientRect().width).toBe(180);
+    expect(preferences.getPanelWidth('commitDetails').value).toBeNull();
+});
+
+test("D16: the details' handle is there beside the graph only, and a click on it leaves the focus where it was", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount({ commits: parallelBranches(4) });
+    await expect.element(details()).toBeVisible();
+    await userEvent.click(detailsHandle());
+    expect(document.activeElement).not.toBe(detailsHandle().element());
+
+    await page.viewport(1100, 800);
+    await expect.element(detailsHandle()).not.toBeInTheDocument();
+    expect((details().element() as HTMLElement).style.width).toBe('');
 });
 
 test("D17: the graph's share is of the pane without the list", async () => {
@@ -645,8 +770,9 @@ test("D17: the graph's share is of the pane without the list", async () => {
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(14) });
     await expect.poll(() => graphCells().length).toBeGreaterThan(0);
+    await closeDetails();
 
-    expect(view.scroller().clientWidth).toBe(1200 - 280);
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
     expect(graphCells()[0]?.getBoundingClientRect().width).toBe(92);
 });
 
@@ -659,7 +785,8 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
 
     await expect.poll(() => list('[role="listbox"]')).not.toBeNull();
-    expect(view.scroller().clientWidth).toBe(1200);
+    await closeDetails();
+    await expect.poll(() => view.scroller().clientWidth).toBe(1200);
     // D17: the share is of the pane, the list taking none of it.
     expect(graphCells()[0]?.getBoundingClientRect().width).toBe(120);
 
@@ -674,7 +801,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     expect(list('[role="listbox"]')).not.toBeNull();
     expect(view.scroller().clientWidth).toBe(1200 - 440);
     // Beside the graph, not over it.
-    expect(getComputedStyle(details().element()).position).toBe('static');
+    expect(getComputedStyle(details().element()).position).toBe('relative');
 
     // B with the details open: the filter, and they stay.
     await userEvent.keyboard('b');
@@ -689,7 +816,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     expect(list('[role="listbox"]')).not.toBeNull();
 });
 
-test('D15, CH42: with the list in the column, below 1,200 px of window the details open over the graph, and the list stays', async () => {
+test('D15, CH42: with the list in the column, below 1,200 px of window the details dock under the graph, and the list stays', async () => {
     await page.viewport(1100, 800);
     onTestFinished(() => page.viewport(414, 896));
     const target = columnTarget();
@@ -698,10 +825,9 @@ test('D15, CH42: with the list in the column, below 1,200 px of window the detai
     const paneWidth = view.scroller().clientWidth;
 
     await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
-    await userEvent.keyboard('{Enter}');
     await expect.element(details()).toBeVisible();
-    expect(getComputedStyle(details().element()).position).toBe('absolute');
     expect(view.scroller().clientWidth).toBe(paneWidth);
+    expect(details().element().getBoundingClientRect().top).toBe(view.scroller().getBoundingClientRect().bottom);
     expect(target.querySelector('[role="listbox"]')).not.toBeNull();
 });
 
@@ -715,6 +841,7 @@ test('D14: the layout changed while the graph is open, by another tab or device:
     await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
     expect(target.querySelector('[role="listbox"]')).toBeNull();
     const list = refList().element();
+    await closeDetails();
 
     inColumn.value = true;
     await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
@@ -775,10 +902,10 @@ test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet,
     await expect.poll(() => cursor()?.textContent).toContain('Commit c200');
     const top = (cursor()?.getBoundingClientRect().top ?? 0) - scroller.getBoundingClientRect().top;
     expect(Math.abs(top - scroller.clientHeight / 3)).toBeLessThan(1);
-    // CH26: back to the graph, whose next Enter is on that commit; the list keeps no choice.
+    // CH26: back to the graph, on that commit with its details; the list keeps no choice.
     await expect.poll(() => document.activeElement).toBe(scroller);
     await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
-    await expect.element(details()).not.toBeInTheDocument();
+    await expect.element(details().getByRole('heading', { name: 'Commit c200' })).toBeVisible();
 
     const scrolled = scroller.scrollTop;
     await userEvent.keyboard('b');
@@ -883,7 +1010,7 @@ test("the commit that's open isn't read again by opening it again; a read that f
     await expect.poll(reads).toBe(4);
 });
 
-test('D16, CH18: Enter opens the details beside the list and the graph at 440 px, the body arriving after; J and K follow, a click too; Esc closes them and focus goes to the graph', async () => {
+test('D16, CH18: the details are open from the start beside the list and the graph at 440 px, the body arriving after; J and K follow, a click too; Esc closes them and focus goes to the graph', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const answered = createPromise();
@@ -898,9 +1025,6 @@ test('D16, CH18: Enter opens the details beside the list and the graph at 440 px
     await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
     const list = page.getByRole('listbox', { name: 'Branches and tags' });
     await expect.element(list).toBeVisible();
-    expect(view.scroller().clientWidth).toBe(1200 - 280);
-
-    await userEvent.keyboard('{Enter}');
 
     // At once, from what the graph knows.
     await expect.element(details().getByRole('heading', { name: 'Commit c3' })).toBeVisible();
@@ -930,7 +1054,6 @@ test('D16, CH18: Enter opens the details beside the list and the graph at 440 px
 test('a burst of J reads only the commit it stops on', async () => {
     const view = await mount({ commits: sampleHistory({ count: 40, seed: 3 }) });
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
-    await userEvent.keyboard('{Enter}');
     for (let i = 0; i < 10; i++) {
         pressJ();
     }
@@ -938,7 +1061,7 @@ test('a burst of J reads only the commit it stops on', async () => {
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('11');
     const stoppedOn = view.store.get(REPOSITORY)?.commits[10]?.oid ?? '';
     await expect.poll(() => view.store.getDetail(REPOSITORY, stoppedOn)?.kind).toBe('read');
-    // The first Enter's, and the one it stopped on.
+    // The one the details opened on, and the one it stopped on.
     expect(view.github.requests.filter(request => request === 'CommitDetail')).toHaveLength(2);
     expect(view.store.getDetail(REPOSITORY, view.store.get(REPOSITORY)?.commits[5]?.oid ?? '')).toBeUndefined();
 
@@ -947,23 +1070,22 @@ test('a burst of J reads only the commit it stops on', async () => {
     }
 });
 
-test('a first Enter reads the commit at once, with no pause to rest on it', async () => {
+test('details closed and shown again by a move read the commit at once, with no pause to rest on it', async () => {
     const view = await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)] });
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    await closeDetails();
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'j', cancelable: true }));
     await nextTick();
 
-    expect(view.store.getDetail(REPOSITORY, 'c2')).toBeDefined();
+    expect(view.store.getDetail(REPOSITORY, 'c1')).toBeDefined();
 });
 
 test('D16, CH20, CH27, CH28: P and Shift+P go to the parents, selected in the graph and in view, with the details; a key with nothing to go to does nothing', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     await mount(sampleWebappHistory());
-    await expect.poll(() => cursor()?.textContent).toContain('feat: preview a class');
-    await userEvent.click(page.getByRole('listitem').filter({ hasText: 'Merge pull request #1226' }));
-    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
     await expect.element(details().getByRole('heading', { name: 'Parents' })).toBeVisible();
 
     await userEvent.keyboard('{Shift>}p{/Shift}');
@@ -1037,7 +1159,7 @@ test("the details' K and J buttons do what the keys do: on the first row with a 
     expect(cursor()?.textContent).toContain('Commit c1');
 });
 
-test("Enter from a ref's details moves on to the cursor's commit; another account signing in closes the details", async () => {
+test("Enter from a ref's details moves on to the cursor's commit; another account signing in opens them again on the new graph's commit", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
@@ -1068,16 +1190,17 @@ test("Enter from a ref's details moves on to the cursor's commit; another accoun
     localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
     localStorage.setItem(TOKEN_KEY, `gho_${login}`);
     window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));
-    await expect.element(details()).not.toBeInTheDocument();
-    await expect.element(page.getByText('Commit c2')).toBeVisible();
+    // Opened again, on the commit the new account's graph starts on: nothing of the previous account's is left.
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).not.toBeInTheDocument();
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
 });
 
 test("D16, CH29: Shift+Enter opens the pull request in place of the details, the keys are the item's meanwhile, and closing it comes back to the commit", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount(sampleWebappHistory());
-    await expect.poll(() => cursor()?.textContent).toContain('feat: preview a class');
-    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    await userEvent.keyboard('kk');
     await expect.element(details().getByRole('button', { name: /Pull request 1231/ })).toBeVisible();
 
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
@@ -1111,7 +1234,6 @@ test("a fork's commit opens its upstream's pull request, by its address, in the 
         states: new Map([['c1', { pullRequest, ci: null }]]),
     });
     await expect.poll(() => cursor()?.textContent).toContain('Commit c1');
-    await userEvent.keyboard('{Enter}');
     await expect.element(details().getByRole('button', { name: /From the fork/ })).toBeVisible();
 
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
@@ -1133,7 +1255,8 @@ test("D16: O opens the commit on GitHub; Esc with a layer open is the layer's", 
     const openInNewTab = vi.spyOn(view.container.resolve(Browser), 'openInNewTab').mockImplementation(() => {});
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
 
-    // Not before the details are open.
+    // Not while they are closed.
+    await closeDetails();
     await userEvent.keyboard('o');
     expect(openInNewTab).not.toHaveBeenCalled();
     await userEvent.keyboard('{Enter}');
@@ -1212,8 +1335,9 @@ test('CH41: the commit gone from the graph under open details stays readable and
         kept: [sampleCommit('old', 30, ['base']), sampleCommit('other', 25, ['base']), sampleCommit('base', 10)],
         branches: [sampleCommitRef('main', 'other'), sampleCommitRef('fix/a', 'old')],
     });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit other');
+    await userEvent.keyboard('k');
     await expect.poll(() => cursor()?.textContent).toContain('Commit old');
-    await userEvent.keyboard('{Enter}');
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
 
     const { repository } = view.github;
@@ -1235,40 +1359,148 @@ test('CH41: the commit gone from the graph under open details stays readable and
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).not.toBeInTheDocument();
 });
 
-test("D15, D16: below about 1,200 px the details open over the graph at the pane's right edge, leaving its width alone, one over the graph at a time, and Esc goes back to the graph", async () => {
+test('CH41: the commit gone under details closed by Esc does not open them again', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({
+        commits: [
+            sampleCommit('old', 30, ['base']),
+            sampleCommit('other', 25, ['base']),
+            sampleCommit('base', 10),
+            sampleCommit('new', 40, ['base']),
+        ],
+        kept: [sampleCommit('old', 30, ['base']), sampleCommit('other', 25, ['base']), sampleCommit('base', 10)],
+        branches: [sampleCommitRef('main', 'other'), sampleCommitRef('fix/a', 'old')],
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit other');
+    await userEvent.keyboard('k');
+    await expect.poll(() => cursor()?.textContent).toContain('Commit old');
+    await closeDetails();
+
+    view.github.repository.branch('fix/a', 'new');
+    await view.store.open(REPOSITORY);
+
+    await expect.element(page.getByRole('listitem').filter({ hasText: 'Commit old' })).not.toBeInTheDocument();
+    await expect.poll(() => cursor()?.textContent).not.toContain('Commit old');
+    await expect.element(details()).not.toBeInTheDocument();
+});
+
+test("a section entered with the graph already in memory starts on the default branch's tip in view, reading its details", async () => {
+    const commits = Array.from({ length: 300 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    const view = await mount(
+        {
+            commits,
+            branches: [sampleCommitRef('main', 'c50'), sampleCommitRef('feat/a', 'c299')],
+            bodies: new Map([['c50', 'Read at mount.']]),
+        },
+        { graphInMemory: true },
+    );
+
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c50');
+    const scroller = view.scroller();
+    // Far down the list: brought into view once the pane was there.
+    await expect.poll(() => scroller.scrollTop).toBeGreaterThan(0);
+    const row = (cursor()?.getBoundingClientRect().top ?? 0) - scroller.getBoundingClientRect().top;
+    expect(row).toBeGreaterThanOrEqual(0);
+    expect(row + 32).toBeLessThanOrEqual(scroller.clientHeight);
+    await expect.element(details().getByRole('heading', { name: 'Commit c50' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('Read at mount.');
+    expect(view.github.requests.filter(request => request === 'CommitStates').length).toBeGreaterThan(0);
+});
+
+test('D15, D16: below about 1,200 px the details dock under the graph, the full width at 45% of the height, the list over the graph only, and Esc leaves the list first', async () => {
     await page.viewport(1100, 700);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(4) });
     const paneWidth = view.scroller().clientWidth;
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
 
-    await userEvent.keyboard('{Enter}');
+    // Open from the start, under the graph: the whole width, 45% of the section, the graph above it.
     await expect.element(details()).toBeVisible();
+    const docked = details().element().getBoundingClientRect();
+    const pane = view.scroller().getBoundingClientRect();
     expect(view.scroller().clientWidth).toBe(paneWidth);
-    expect(details().element().getBoundingClientRect().right).toBe(view.scroller().getBoundingClientRect().right);
+    expect(docked.width).toBe(paneWidth);
+    expect(docked.top).toBe(pane.bottom);
+    expect(docked.height).toBeCloseTo(600 * 0.45, 0);
 
-    // B closes them for the list; the keys off its filter, Esc is the list's and nothing is left under it.
+    // B puts the list over the graph, and the details stay under it, not covered.
     await userEvent.keyboard('b');
     await expect.element(filter()).toHaveFocus();
-    await expect.element(details()).not.toBeInTheDocument();
-    await userEvent.keyboard('{Escape}');
-    await expect.element(filter()).not.toBeInTheDocument();
-
-    await userEvent.keyboard('{Enter}');
     await expect.element(details()).toBeVisible();
-    await userEvent.keyboard('{Escape}');
-    await expect.element(details()).not.toBeInTheDocument();
-    expect(document.activeElement).toBe(view.scroller());
+    expect(refList().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(docked.top);
+    expect(details().element().getBoundingClientRect().top).toBe(docked.top);
 
-    // Opened from over the list, with the keys off its filter: Esc lands on the graph, not on the list again.
-    await userEvent.keyboard('b');
+    // With the keys off its filter, Esc leaves the list first and the details after it.
     filter().element().blur();
-    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(filter()).not.toBeInTheDocument();
     await expect.element(details()).toBeVisible();
     await userEvent.keyboard('{Escape}');
     await expect.element(details()).not.toBeInTheDocument();
-    await expect.element(filter()).not.toBeInTheDocument();
     expect(document.activeElement).toBe(view.scroller());
+});
+
+test("the cursor's row stays in view when the details dock under the graph and shorten it: at the start, after a click on a lower row, and after J", async () => {
+    await page.viewport(1100, 700);
+    onTestFinished(() => page.viewport(414, 896));
+    const commits = Array.from({ length: 100 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    // The default branch's tip is the 16th row: in the tall pane, below the short one.
+    const view = await mount({ commits, branches: [sampleCommitRef('main', 'c84'), sampleCommitRef('feat/a', 'c99')] });
+    const scroller = view.scroller();
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c84');
+    const inView = () => {
+        const row = cursor()?.getBoundingClientRect();
+        const pane = scroller.getBoundingClientRect();
+        return row !== undefined && row.top >= pane.top && row.bottom <= pane.bottom;
+    };
+    // The pane is the shorter one from the start, and the viewport the rows are measured from with it.
+    await expect.element(details()).toBeVisible();
+    expect(scroller.clientHeight).toBeLessThan(400);
+    expect(inView()).toBe(true);
+
+    // Closed, the pane is tall; a click on a row near its bottom, then the details open again by J: still in view.
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+    const tall = scroller.clientHeight;
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('li[aria-posinset]'));
+    const lower = rows.findLast(row => row.getBoundingClientRect().bottom <= scroller.getBoundingClientRect().bottom);
+    expect(lower).toBeDefined();
+    lower?.click();
+    expect(inView()).toBe(true);
+
+    await userEvent.keyboard('j');
+    await expect.element(details()).toBeVisible();
+    expect(scroller.clientHeight).toBeLessThan(tall);
+    await expect.poll(inView).toBe(true);
+});
+
+test("the cursor's row stays in view when the window narrows below 1,200 px and the details dock under the graph", async () => {
+    await page.viewport(1500, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const commits = Array.from({ length: 100 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    // The tip is the 16th row: in view beside the details, below the pane that is left under them.
+    const view = await mount({ commits, branches: [sampleCommitRef('main', 'c84'), sampleCommitRef('feat/a', 'c99')] });
+    const scroller = view.scroller();
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c84');
+    await expect.element(details()).toBeVisible();
+    const tall = scroller.clientHeight;
+
+    await page.viewport(1100, 700);
+    await expect.poll(() => scroller.clientHeight).toBeLessThan(tall);
+    await expect
+        .poll(() => {
+            const row = cursor()?.getBoundingClientRect();
+            const pane = scroller.getBoundingClientRect();
+            return row !== undefined && row.top >= pane.top && row.bottom <= pane.bottom;
+        })
+        .toBe(true);
 });
 
 test('a deleted ref disappears when the refs are read again: the selection falls back without an error', async () => {
@@ -1299,9 +1531,79 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     await expect.element(page.getByRole('option', { selected: true })).toHaveTextContent('main');
 });
 
+/** Esc: the details close, and the pane is the graph's again. */
+async function closeDetails() {
+    await userEvent.keyboard('{Escape}');
+    await expect.element(details()).not.toBeInTheDocument();
+}
+
+/** A commit's text in the graph, not in the details beside or over it. */
+function graphText(text: string) {
+    return page.getByRole('region', { name: 'Commits of acme/web' }).getByText(text);
+}
+
+test('a click on a row and then a key draw no ring around the pane: the cursor row shows where the keys go', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({ commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)] });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.click(page.getByRole('listitem').filter({ hasText: 'Commit c1' }));
+    await userEvent.keyboard('{Enter}');
+
+    const scroller = view.scroller();
+    expect(document.activeElement).toBe(scroller);
+    expect(scroller.matches(':focus-visible')).toBe(true);
+    expect(getComputedStyle(scroller).outlineStyle).toBe('none');
+});
+
+test("D18: the row's pull request number links to it: a click opens it, the cursor staying, a modified click is the browser's, and the list's stays text", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const pullRequest = {
+        number: 1203,
+        state: 'OPEN',
+        title: 'From the fork',
+        url: 'https://github.com/upstream/web/pull/1203',
+        isDraft: false,
+    } as const;
+    const view = await mount({
+        commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c2'), sampleCommitRef('feat/a', 'c1')],
+        states: new Map([['c1', { pullRequest, ci: null }]]),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    const link = page.getByRole('listitem').filter({ hasText: 'Commit c1' }).getByRole('link', { name: /1203/ });
+    await expect.element(link).toHaveAttribute('href', '/upstream/web/pull/1203');
+    await expect.element(refList().getByRole('link')).not.toBeInTheDocument();
+
+    // A listener of the link's own runs after the component's, and stops the new tab a test has no use for.
+    let handedToBrowser = false;
+    link.element().addEventListener('click', event => {
+        handedToBrowser = !event.defaultPrevented;
+        event.preventDefault();
+    });
+    link.element().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, metaKey: true }));
+    expect(handedToBrowser).toBe(true);
+    expect(view.router.currentRoute.value.query).toEqual({});
+    expect(cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.click(link);
+    await expect
+        .poll(() => view.router.currentRoute.value.query)
+        .toMatchObject({ pane: 'issue', issue: 'upstream|web|1203' });
+    expect(handedToBrowser).toBe(false);
+    expect(cursor()?.textContent).toContain('Commit c2');
+});
+
 /** The panel of a commit's details. */
 function details() {
     return page.getByRole('region', { name: 'Commit details' });
+}
+
+/** The handle on the details' left edge. */
+function detailsHandle() {
+    return page.getByRole('separator', { name: 'Resize the commit details' });
 }
 
 /** The field of the list of branches and tags. */
@@ -1375,25 +1677,37 @@ interface MountPlace {
     readonly keptShare?: string;
     /** Kept on this device as the left column's width. */
     readonly keptColumnWidth?: number;
+    /** Kept on this device as the commit details' width. */
+    readonly keptDetailsWidth?: number;
     /** A ref to change it while mounted. */
     readonly refListInColumn?: boolean | Ref<boolean>;
     /** What the section has of the window: 1,200 px when not given. */
     readonly width?: number;
+    /** The graph was opened before: the section is entered with it in memory. */
+    readonly graphInMemory?: boolean;
 }
 
 /** Mounts the section over the real store and a GitHub holding `options`, 600 px tall, at the sample's moment. */
 async function mount(
     options: CommitGraphTestOptions,
-    { keptShare, keptColumnWidth, refListInColumn, width = 1200 }: MountPlace = {},
+    { keptShare, keptColumnWidth, keptDetailsWidth, refListInColumn, width = 1200, graphInMemory }: MountPlace = {},
 ) {
     const { container, store, github, setOnline, ready } = createCommitGraphTest(options);
     await ready;
+    if (graphInMemory) {
+        await store.open(REPOSITORY);
+    }
+
     if (keptShare !== undefined) {
         container.resolve(Browser).localStorage.setItem(SHARE_KEY, keptShare);
     }
 
     if (keptColumnWidth !== undefined) {
         container.resolve(LocalPreferences).getPanelWidth('repositoryColumn').value = keptColumnWidth;
+    }
+
+    if (keptDetailsWidth !== undefined) {
+        container.resolve(LocalPreferences).getPanelWidth('commitDetails').value = keptDetailsWidth;
     }
 
     const ensureStates = vi.spyOn(store, 'ensureStates');

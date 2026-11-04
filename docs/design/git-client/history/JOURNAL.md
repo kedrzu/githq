@@ -52,3 +52,7 @@ Append-only; one line per turn that settled something.
 - 2026-11-03 — Building the details: the body is read on opening (D13), no count of failing checks; CH16, CH18, CH20, CH27, CH40, CH41 follow.
 - 2026-11-03 — Owner: branches and tags always on the left, also in the tabs layout; the repository's column resizable and
   one width with that list (D15, CH46); in the tabs layout the details on the right with the list staying (D16).
+- 2026-11-03 — Owner on the details: they follow the selection from the section's opening, starting on the default branch's
+  newest commit; `Esc` until the next move; on a narrow window under the graph (CH48), on a wide one resizable under their
+  own name (D16). The row's pull request number is a link (D18). The graph's pane draws no focus ring: the cursor row shows
+  where the keys go.
