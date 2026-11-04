@@ -68,7 +68,11 @@ function getView(notice: UpdateNotice): UpdateSegmentView {
         secondary: { text: t(l.dismiss), run: () => emit('dismiss') },
       };
     case 'noRelease':
-      return { icon: Info, tone: 'muted', text: t(l.noRelease) };
+      return {
+        icon: Info,
+        tone: 'muted',
+        text: t(notice.stream === 'development' ? l.noDevelopmentBuild : l.noStableVersion),
+      };
     case 'installing':
       return { icon: LoaderCircle, tone: 'muted', text: t(l.installing, { version: notice.version }) };
     case 'installFailed':

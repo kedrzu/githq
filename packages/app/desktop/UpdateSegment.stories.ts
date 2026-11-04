@@ -64,7 +64,10 @@ export const FailedOffline: Story = { args: { notice: { kind: 'failed', reason: 
 export const FailedUnreachable: Story = { args: { notice: { kind: 'failed', reason: 'unreachable' } } };
 
 /** U22: nothing failed, the stream has no release. */
-export const NoRelease: Story = { args: { notice: { kind: 'noRelease' } } };
+export const NoRelease: Story = { args: { notice: { kind: 'noRelease', stream: 'stable' } } };
+
+/** No release, on Development. */
+export const NoDevelopmentBuild: Story = { args: { notice: { kind: 'noRelease', stream: 'development' } } };
 
 /** U40: installing, the system perhaps asking for a password; offers nothing. */
 export const Installing: Story = { args: { notice: { kind: 'installing', version: '1.4.0' } } };

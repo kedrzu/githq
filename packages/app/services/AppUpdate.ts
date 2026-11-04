@@ -24,7 +24,7 @@ export interface UpdateState {
     readonly stream: UpdateStream;
     /** Whether the user may change the stream. Windows has no Development builds. */
     readonly canChoose: boolean;
-    /** Whether the check under way, or the last finished one, was asked for by the user. */
+    /** Whether the check under way or waiting its turn, or the last finished one, was asked for by the user. */
     readonly manual: boolean;
     /** When the last check finished, in epoch milliseconds. */
     readonly checkedAt: number | null;
@@ -41,7 +41,8 @@ export type UpdateNotice =
     | { readonly kind: 'downloading'; readonly version: string; readonly percent: number | null }
     | { readonly kind: 'ready'; readonly version: string }
     | { readonly kind: 'failed'; readonly reason: 'offline' | 'unreachable' }
-    | { readonly kind: 'noRelease' }
+    /** The stream that has none. */
+    | { readonly kind: 'noRelease'; readonly stream: UpdateStream }
     | { readonly kind: 'installing'; readonly version: string }
     | { readonly kind: 'installFailed'; readonly version: string };
 
@@ -93,4 +94,19 @@ export const AppUpdate = defineInterface<AppUpdateShape>({
  */
 export function isPrereleaseVersion(version: string) {
     return /^[^+]*-/.test(version);
+}
+
+/**
+ * Whether `version` comes before `other` by its numbers alone. `0.1.0` is not older than `0.1.0-dev.214`: it is what that
+ * build led up to.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isOlderVersion(version: string, other: string) {
+    const [major = 0, minor = 0, patch = 0] = parseCore(version);
+    const [otherMajor = 0, otherMinor = 0, otherPatch = 0] = parseCore(other);
+    return (major - otherMajor || minor - otherMinor || patch - otherPatch) < 0;
+}
+
+function parseCore(version: string) {
+    return version.split(/[-+]/, 1).join('').split('.').map(Number);
 }

@@ -114,7 +114,7 @@ export function createDesktopAppUpdate({
                 holdOutcome(next, { kind: 'upToDate', version: next.version }, true);
                 return;
             case 'noRelease':
-                holdOutcome(next, activity, true);
+                holdOutcome(next, { kind: 'noRelease', stream: next.stream }, true);
                 return;
             case 'failed':
                 holdOutcome(next, activity, false);

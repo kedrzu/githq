@@ -1,4 +1,5 @@
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
+import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 
 import { expect, test } from './desktopFixtures.js';
 import { signInOnDesktop } from './desktopSession.js';
@@ -124,6 +125,7 @@ test('a Development build goes to Stable only through the confirmation; Developm
     await menu.field.pressSequentially('Switch to Stable');
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(/\/settings\?tab=updates&confirm=stable$/);
+    await expect(page.getByRole('dialog', { name: 'Switch to Stable?' })).toBeVisible();
     expect(native.streamChanges).toEqual([]);
 
     await native.sendUpdateState({ version: '0.2.0', stream: 'stable' });
@@ -131,6 +133,117 @@ test('a Development build goes to Stable only through the confirmation; Developm
     await menu.field.pressSequentially('Switch to Development');
     await page.keyboard.press('Enter');
     await expect.poll(() => native.streamChanges).toEqual(['development']);
+});
+
+test('Settings has Updates in the desktop app: the sixth tab, on `6` and in the command menu', async ({
+    page,
+    github,
+    native,
+}) => {
+    await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Settings: Updates');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
+
+    const settings = new SettingsScreenHarness(page);
+    await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
+    await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '6');
+    await expect(page.getByText('githq 1.3.0', { exact: true })).toBeVisible();
+
+    await page.keyboard.press('5');
+    await expect(settings.section('Account')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('6');
+    await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
+
+    await page.keyboard.press('u');
+    await expect.poll(() => native.checkCount).toBe(1);
+});
+
+test('U13: Switch to Stable opens the confirmation once; cancelling keeps the stream and takes it out of the address, confirming switches', async ({
+    page,
+    github,
+    native,
+}) => {
+    native.updateState = { ...native.updateState, version: '0.3.0-dev.214', stream: 'development' };
+    await signInOnDesktop({ page, github, native });
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Switch to Stable');
+    await page.keyboard.press('Enter');
+
+    const dialog = page.getByRole('dialog', { name: 'Switch to Stable?' });
+    // Behind the dialog while it is open, so out of the accessibility tree.
+    const development = page.getByRole('radio', { name: 'Development', includeHidden: true });
+    const stable = page.getByRole('radio', { name: 'Stable', includeHidden: true });
+    await expect(dialog).toBeVisible();
+    await expect(development).toBeChecked();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
+    await expect(development).toBeChecked();
+    expect(native.streamChanges).toEqual([]);
+
+    await stable.click();
+    await expect(dialog).toBeVisible();
+    await expect(development).toBeChecked();
+    expect(native.streamChanges).toEqual([]);
+
+    await page.keyboard.press('Enter');
+    await expect.poll(() => native.streamChanges).toEqual(['stable']);
+    await expect(dialog).toBeHidden();
+    await expect(stable).toBeChecked();
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
+    await expect(page.getByText('Development build, following Stable')).toBeVisible();
+
+    await development.click();
+    await expect.poll(() => native.streamChanges).toEqual(['stable', 'development']);
+    await expect(dialog).toBeHidden();
+});
+
+test('an address asking to confirm with nothing to confirm loses it and switches nothing', async ({
+    page,
+    github,
+    native,
+}) => {
+    await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Settings: Updates');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
+
+    await page.evaluate(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('confirm', 'stable');
+        const state: unknown = window.history.state;
+        window.history.pushState(state, '', url);
+        window.dispatchEvent(new PopStateEvent('popstate', { state }));
+    });
+    await expect(page).toHaveURL(/\/settings\?tab=updates$/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect(native.streamChanges).toEqual([]);
+});
+
+test('Windows offers no choice of stream in Settings', async ({ page, github, native }) => {
+    native.updateState = { ...native.updateState, canChoose: false };
+    await signInOnDesktop({ page, github, native });
+    await expect.poll(() => native.isListening('update-state')).toBe(true);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('Settings: Updates');
+    await page.keyboard.press('Enter');
+
+    await expect(page.getByText('Stable version', { exact: true })).toBeVisible();
+    await expect(page.getByRole('radio')).toHaveCount(0);
 });
 
 /** The command menu offers neither "Restart to update" nor "Update later". */

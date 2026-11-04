@@ -236,7 +236,7 @@ export class FakeNativeBridge {
                 }
 
                 this.chosenStreams.push(readString(args, 'stream'));
-                this.updateState = { ...this.updateState, stream: readString(args, 'stream') };
+                await this.sendUpdateState({ stream: readString(args, 'stream'), manual: true });
                 return { ok: true, value: null };
             case 'update_restart':
                 // Does nothing while checking, downloading or installing, as the native side.

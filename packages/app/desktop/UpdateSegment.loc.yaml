@@ -12,8 +12,10 @@ failedOffline:
   en: "Couldn't check for updates: you're offline"
 failedUnreachable:
   en: "Couldn't check for updates: GitHub can't be reached"
-noRelease:
+noStableVersion:
   en: No Stable version yet
+noDevelopmentBuild:
+  en: No Development build yet
 installing:
   en: Installing githq {version}…
 installFailed:

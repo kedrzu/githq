@@ -123,6 +123,15 @@ test('a check the user asks for shows each step, the running version in "up to d
     expect(update.notice).toEqual({ kind: 'upToDate', version: '1.3.0' });
 });
 
+test('no release says which stream has none', async () => {
+    const { native, update } = await start();
+
+    native.emit({ kind: 'checking' }, { manual: true });
+    native.emit({ kind: 'noRelease' }, { manual: true, stream: 'development' });
+
+    expect(update.notice).toEqual({ kind: 'noRelease', stream: 'development' });
+});
+
 for (const [name, activity] of [
     ['up to date', { kind: 'upToDate' }],
     ['no release', { kind: 'noRelease' }],

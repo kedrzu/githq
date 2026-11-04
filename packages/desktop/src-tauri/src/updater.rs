@@ -103,7 +103,7 @@ pub struct UpdateState {
     stream: Stream,
     /// Whether the user may change the stream. Windows has no Development builds.
     can_choose: bool,
-    /// Whether the check under way, or the last finished one, was asked for by the user.
+    /// Whether the check under way or waiting its turn, or the last finished one, was asked for by the user.
     manual: bool,
     /// When the last check finished, in epoch milliseconds.
     checked_at: Option<u64>,
@@ -158,6 +158,13 @@ impl Inner {
             check_requested: false,
             install_requested: None,
         }
+    }
+
+    /// The user asked for a check. It runs after the job under way, and that job shows as asked for from here on too, so
+    /// whoever pressed the button sees it through.
+    fn request_check(&mut self) {
+        self.check_requested = true;
+        self.state.manual = true;
     }
 
     /// The next piece of work, if there is any; `due` says the timer ran out. A check in progress shows from here on,
@@ -223,7 +230,7 @@ impl Inner {
         }
 
         self.state.stream = stream;
-        self.check_requested = true;
+        self.request_check();
         true
     }
 
@@ -567,7 +574,7 @@ pub fn update_status(updates: State<'_, Updates>) -> UpdateState {
 /// Asks for a check at the user's word; if one is under way, it runs after that.
 #[tauri::command]
 pub fn update_check(app: AppHandle, updates: State<'_, Updates>) {
-    updates.change(&app, |inner| inner.check_requested = true);
+    updates.change(&app, Inner::request_check);
     updates.wake.notify_one();
 }
 
@@ -717,6 +724,7 @@ mod tests {
 
         assert_eq!(inner.state.stream, Stream::Stable);
         assert!(!inner.check_requested);
+        assert!(!inner.state.manual);
     }
 
     #[test]
@@ -922,6 +930,39 @@ mod tests {
 
         assert!(matches!(inner.next_job(false), Some(Job::Check)));
         assert!(inner.state.manual);
+    }
+
+    #[test]
+    fn a_request_during_a_timed_job_shows_at_once_and_through_the_check_it_queues() {
+        for request in [
+            Inner::request_check as fn(&mut Inner),
+            |inner: &mut Inner| {
+                inner.choose_stream(Stream::Development);
+            },
+        ] {
+            let mut inner = inner();
+            assert!(matches!(inner.next_job(true), Some(Job::Check)));
+            assert!(inner.found_update("0.3.0", 1));
+            assert!(!inner.state.manual);
+
+            request(&mut inner);
+            assert!(inner.state.manual);
+            assert!(matches!(inner.state.activity, Activity::Downloading { .. }));
+
+            inner.settle(Activity::Failed {
+                reason: FailReason::Offline,
+            });
+            assert!(inner.state.manual);
+
+            assert!(matches!(inner.next_job(false), Some(Job::Check)));
+            assert!(inner.state.manual);
+
+            inner.finish_check(Activity::UpToDate, 2);
+            assert!(inner.state.manual);
+
+            assert!(matches!(inner.next_job(true), Some(Job::Check)));
+            assert!(!inner.state.manual);
+        }
     }
 
     #[test]

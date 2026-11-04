@@ -1,0 +1,105 @@
+versionTitle:
+  en: Version
+version:
+  en: githq {version}
+stableVersion:
+  en: Stable version
+developmentBuild:
+  en: Development build
+developmentBuildFromCommit:
+  en: Development build from commit {commit}
+following:
+  en: '{build}, following {stream}'
+checkForUpdates:
+  en: Check for updates
+restart:
+  en: Restart
+tryAgain:
+  en: Try again
+
+checking:
+  en: Checking for updates…
+newestVersion:
+  en: You're on the newest version
+newestBuild:
+  en: You're on the newest build
+checkedJustNow:
+  en: Checked just now.
+checkedAgo:
+  en: Checked {age}.
+nothingNewer:
+  en: Nothing newer than {version} yet
+nothingNewerDetail:
+  en: You stay on this version. The next Development build downloads by itself.
+downloading:
+  en: Found githq {version}. Downloading
+downloadingPercent:
+  en: Found githq {version}. Downloading, {percent}%
+downloadingStable:
+  en: Found githq {version}, the newest Stable. Downloading
+downloadingStablePercent:
+  en: Found githq {version}, the newest Stable. Downloading, {percent}%
+downloadProgress:
+  en: Download progress
+ready:
+  en: githq {version} is ready
+readyDetail:
+  en: Restart to start using it.
+readyStableDetail:
+  en: It's older than the build you're on, as expected. Your GitHub data is fetched again after the restart.
+installing:
+  en: Installing githq {version}…
+installFailed:
+  en: githq {version} couldn't be installed
+installFailedDetail:
+  en: You're still on {version}. Nothing is lost.
+
+failedCheck:
+  en: Couldn't check for updates
+failedOffline:
+  en: You're offline. githq tries again by itself.
+failedUnreachable:
+  en: GitHub can't be reached right now. githq tries again by itself.
+failedStable:
+  en: Couldn't get Stable yet
+failedStableOffline:
+  en: You're offline. You stay on this build until githq can reach GitHub, then the newest Stable installs.
+failedStableUnreachable:
+  en: GitHub can't be reached right now. You stay on this build until githq can reach GitHub, then the newest Stable installs.
+
+noStableVersion:
+  en: No Stable version yet
+noStableVersionFirst:
+  en: The first one will be {version}. githq gets it by itself once it's out.
+noStableVersionSwitched:
+  en: No Stable version yet, so nothing was installed
+noStableVersionSwitchedDetail:
+  en: You stay on this build and get no more updates until {version} is out, or until you go back to Development.
+noDevelopmentBuild:
+  en: No Development build yet
+noReleaseDetail:
+  en: githq gets it by itself once it's out.
+
+streamTitle:
+  en: Update stream
+streamScope:
+  en: On this device only
+stable:
+  en: Stable
+stableDetail:
+  en: Official versions, released now and then.
+development:
+  en: Development
+developmentDetail:
+  en: A build of every push to main, minutes after it lands. You get what's new first, and a build may have bugs.
+
+confirmTitle:
+  en: Switch to Stable?
+confirmInstall:
+  en: githq installs the newest Stable version right away. It can be older than {version}, the build you're on.
+confirmSync:
+  en: Your local copy of GitHub data is then fetched again. That costs one first sync and nothing else.
+cancel:
+  en: Cancel
+confirmSwitch:
+  en: Switch to Stable

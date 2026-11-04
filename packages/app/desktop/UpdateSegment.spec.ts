@@ -13,6 +13,7 @@ const {
     FailedOffline,
     FailedUnreachable,
     NoRelease,
+    NoDevelopmentBuild,
     Installing,
     InstallFailed,
 } = composeStories(stories);
@@ -38,6 +39,7 @@ for (const [name, story, text] of [
     ['U22: downloading', Downloading, 'Downloading githq 1.4.0, 38%'],
     ['downloading with no length', DownloadingNoPercent, /^Downloading githq 1\.4\.0$/],
     ['U22: no release', NoRelease, 'No Stable version yet'],
+    ['no release on Development', NoDevelopmentBuild, 'No Development build yet'],
     ['U40: installing', Installing, 'Installing githq 1.4.0…'],
 ] as const) {
     test(`${name} says so and offers nothing`, async () => {

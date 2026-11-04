@@ -9,11 +9,21 @@ export const SETTINGS_PATH = '/settings';
  */
 export const CONFIRM_STABLE_PATH = `${SETTINGS_PATH}?tab=updates&confirm=stable`;
 
-/** The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. */
-export const SETTINGS_SECTIONS = ['repositories', 'projects', 'display', 'sync', 'account'] as const;
-
 /** A section of Settings. */
-export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+export type SettingsSection = 'account' | 'display' | 'projects' | 'repositories' | 'sync' | 'updates';
+
+/**
+ * The sections of Settings, in the order of its tabs; each one's `?tab=`, but the first, which has none. Updates is the
+ * desktop app's (`__DESKTOP__`): on the web it isn't one, so nothing offers it and its `?tab=` is not known.
+ */
+export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
+    'repositories',
+    'projects',
+    'display',
+    'sync',
+    'account',
+    ...(__DESKTOP__ ? (['updates'] as const) : []),
+];
 
 /**
  * The section an address's `?tab=` names; none, or one not known (an old address's `tracking` or `saving` among

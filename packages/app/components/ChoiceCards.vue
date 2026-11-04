@@ -1,4 +1,4 @@
-<!-- One choice out of a few, each a card side by side (reka-ui's `RadioGroup`): the repository layout in Settings. A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, each a card side by side (reka-ui's `RadioGroup`): the repository layout in Settings; or with `stacked`, rows in one box (the update stream). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
 <script lang="ts">
 /** One option of `ChoiceCards`. */
 export interface ChoiceCardsOption<T extends string> {
@@ -18,6 +18,8 @@ const props = defineProps<{
   options: readonly ChoiceCardsOption<T>[];
   /** The id of the heading naming the group. */
   labelledby: string;
+  /** One above the other in one box, the line of detail under the label, for options with no picture to compare. */
+  stacked?: boolean;
 }>();
 
 defineSlots<{
@@ -57,7 +59,7 @@ function chooseOnArrow(value: T, event: FocusEvent) {
   <RadioGroupRoot
     :model-value="model"
     :aria-labelledby="labelledby"
-    :class="css.choiceCards"
+    :class="[css.choiceCards, stacked && css.choiceCards_stacked]"
     @update:model-value="choose"
   >
     <RadioGroupItem
@@ -116,6 +118,36 @@ function chooseOnArrow(value: T, event: FocusEvent) {
   &[data-state='checked'] {
     background: rgba($color-accent, 0.06);
     border-color: $color-accent;
+  }
+}
+
+.choiceCards_stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+
+  .choiceCards_card {
+    gap: 3px;
+    padding: $spacing-12 $spacing-14;
+    background: none;
+    border: none;
+    border-radius: $radius-xl;
+
+    + .choiceCards_card {
+      border-top: 1px solid $color-border;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  .choiceCards_head {
+    gap: $spacing-10;
+  }
+
+  .choiceCards_detail {
+    padding-left: 24px;
   }
 }
 
