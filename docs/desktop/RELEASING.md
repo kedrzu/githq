@@ -134,9 +134,12 @@ from an unidentified developer. With them, the build signs and notarizes. Follow
 
    ```sh
    GITHQ_ENV=prod bun nzyme secrets run -- sh -c '
-     for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
-       printf %s "$(printenv "$name")" | gh secret set "$name"
-     done'
+     printf %s "$APPLE_CERTIFICATE" | gh secret set APPLE_CERTIFICATE
+     printf %s "$APPLE_CERTIFICATE_PASSWORD" | gh secret set APPLE_CERTIFICATE_PASSWORD
+     printf %s "$APPLE_SIGNING_IDENTITY" | gh secret set APPLE_SIGNING_IDENTITY
+     printf %s "$APPLE_ID" | gh secret set APPLE_ID
+     printf %s "$APPLE_PASSWORD" | gh secret set APPLE_PASSWORD
+     printf %s "$APPLE_TEAM_ID" | gh secret set APPLE_TEAM_ID'
    ```
 
 The workflow exports each one only when it is set: an empty `APPLE_CERTIFICATE` would fail the bundle. Then
