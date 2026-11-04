@@ -62,15 +62,15 @@ There is no way yet to force a version. When 1.0 is near, 1.0.0 needs a small PR
 
 ## The Development stream
 
-`.github/workflows/development.yml` runs after the Deploy action succeeds on `main`, unless the push changes only documentation. It builds
+`.github/workflows/development.yml` runs after the Deploy action succeeds on `main`, unless only documentation changed since the published build. It builds
 macOS and Linux, signed and notarized like a release, as a draft under the tag `development`, checks the draft's `latest.json`, then deletes
 the published release and publishes the draft. The tag never moves; the description names the commit. Nothing here is done by hand.
 
 The version is the last stable version with its minor raised plus the commit count: `0.3.0-dev.214` after `0.2.0`, `0.1.0-dev.N`
 before any stable release. Apps on the stream read `releases/download/development/latest.json`. Windows has no Development builds.
 
-A failed run leaves the last published build in place, and the next push starts over. A cancelled one leaves a draft that the next run
-removes.
+A failed build leaves the last published one in place, and the next run builds everything since it. A newer build cancels an older one,
+and the draft it left is removed by the next run that builds. A run never publishes a commit older than the published build.
 
 ## Local development
 
