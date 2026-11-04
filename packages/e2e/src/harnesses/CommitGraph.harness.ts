@@ -130,14 +130,19 @@ export class CommitGraphHarness {
         return this.refList.getByRole('combobox', { name: 'Filter branches and tags' });
     }
 
-    /** The list's row of the branch or tag named `name`. */
-    refRow(name: string): Locator {
-        return this.refList.getByRole('option').filter({ hasText: name });
+    /** The list's rows of branches and tags, not its groups' headings. */
+    get refRows(): Locator {
+        return this.refList.getByRole('row').filter({ has: this.page.getByRole('gridcell') });
     }
 
-    /** The list's selected row. */
+    /** The list's row of the branch or tag named `name`. */
+    refRow(name: string): Locator {
+        return this.refRows.filter({ hasText: name });
+    }
+
+    /** The name of the list's selected row. */
     get selectedRef(): Locator {
-        return this.refList.getByRole('option', { selected: true });
+        return this.refList.getByRole('gridcell', { selected: true });
     }
 
     /** The line under the rows at the first commit of the repository. */

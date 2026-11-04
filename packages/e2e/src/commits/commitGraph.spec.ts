@@ -6,6 +6,7 @@ import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
+import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
@@ -200,12 +201,7 @@ test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed le
     await expect(graph.rows).toHaveCount(6);
 
     // The default branch first, then branches and tags newest first, each with its tip's pull request and CI.
-    await expect(graph.refList.getByRole('option')).toHaveText([
-        /main\s*default/,
-        /feat\/login\s*#5/,
-        /release\/1\.0\s*#4/,
-        /v1\.0\.0/,
-    ]);
+    await expect(graph.refRows).toHaveText([/main\s*default/, /feat\/login\s*#5/, /release\/1\.0\s*#4/, /v1\.0\.0/]);
     await expect(graph.mark(graph.refRow('feat/login'), 'Checks failing')).toBeVisible();
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
 
@@ -213,7 +209,7 @@ test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed le
     await expect(graph.refFilter).toBeFocused();
     await page.keyboard.type('rel');
     // Letters a graph would take are typed, and the cursor stays.
-    await expect(graph.refList.getByRole('option')).toHaveText([/release\/1\.0/]);
+    await expect(graph.refRows).toHaveText([/release\/1\.0/]);
     await expect(graph.selectedRef).toContainText('release/1.0');
     await expect(graph.refList).toContainText('No tag matches "rel".');
     await page.keyboard.press('j');
@@ -366,6 +362,41 @@ test('git-client D15, CH46: the left column is one width: dragged in tabs it is 
     await expect.poll(() => graph.leftColumnEdgeX()).toBe(byKey);
 });
 
+test('a failing check opens its run in the app, and Esc comes back to the commit that was open with the cursor on it; another way into the section starts at its start', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Deploy', runs: [] });
+    const runId = sample.world.workflowRun(SAMPLE_REPOSITORY, 'Deploy', { conclusion: 'failure', minutesAgo: 30 });
+    sample.world.runJobs(SAMPLE_REPOSITORY, runId, [{ name: 'build', conclusion: 'failure', steps: [] }]);
+    giveHistory(sample.world, SAMPLE_REPOSITORY, [runId]);
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+
+    await page.keyboard.press('k');
+    await expect(graph.detailsHeadline).toHaveText('feat: sign in with GitHub');
+    await graph.details.getByRole('link', { name: `Log · ci / ci / run ${runId}` }).click();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions/runs/${runId}`);
+    await expect(new WorkflowRunScreenHarness(page).job('build')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
+    await expect(graph.cursorRow).toContainText('feat: sign in with GitHub');
+    await expect(graph.detailsHeadline).toHaveText('feat: sign in with GitHub');
+    await page.keyboard.press('j');
+    await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
+
+    await page.keyboard.press('k');
+    await page.keyboard.press('1');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/issues`);
+    await page.keyboard.press('3');
+    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
+    await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
+});
+
 test('CH38: an empty repository says it has no commits yet', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     await openTrackedWork(page, github, sample.world);
@@ -446,9 +477,9 @@ test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column 
 
 /**
  * A small history: `main` with a release branch merged back (tagged `v1.0.0`, from a merged pull request whose CI
- * passed), and `feat/login` a commit ahead of it, from an open pull request whose CI fails.
+ * passed), and `feat/login` a commit ahead of it, from an open pull request whose CI fails, in the runs `failedRuns`.
  */
-function giveHistory(world: GitHubWorld, repository: string) {
+function giveHistory(world: GitHubWorld, repository: string, failedRuns: readonly number[] = []) {
     world.history(repository, {
         commits: [
             {
@@ -459,6 +490,7 @@ function giveHistory(world: GitHubWorld, repository: string) {
                 parents: ['m4'],
                 pullRequest: { number: 5, state: 'OPEN', title: 'Sign in with GitHub' },
                 ci: 'FAILURE',
+                failedRuns,
             },
             {
                 oid: 'm4',

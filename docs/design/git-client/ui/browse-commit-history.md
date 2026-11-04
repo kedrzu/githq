@@ -157,8 +157,8 @@ Still open, not settled by the screens:
     with the same `nodes(ids:)` request as the graph's rows;
   - "newest first" for branches: GitHub orders refs only by name (tags alone by date), so the refs request needs each
     tip's `committedDate` and a local sort (D15);
-  - the commit's details show CI as the rollup only (CH18); naming the failing checks would need
-    `statusCheckRollup.contexts`, which nothing fetches. The details point to GitHub instead.
+  - the commit's details list the checks ([D24](../DECISIONS.md#d24)), read with `statusCheckRollup.contexts` when they
+    open. CH18 still draws the rollup alone.
 - **A clone of an untracked repository (CD6).** [D5](../DECISIONS.md#d5) matches a folder to a tracked repository only,
   while [D11](../DECISIONS.md#d11) lets Commits work without tracking. CD6 follows D5 and offers to track; the owner may
   prefer to add the clone to the untracked repository's Commits.

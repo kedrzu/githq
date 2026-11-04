@@ -4,6 +4,7 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
 
+import type { PullRequestCheckFieldsFragment } from '@githq/github/generated.gen.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
@@ -18,7 +19,7 @@ import { sampleCommit } from '@/testing/sampleCommits.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
-import type { CommitState } from './CommitTypes.js';
+import type { CommitChecksRead, CommitGraphPlace, CommitState } from './CommitTypes.js';
 
 test('a first open shows the default branch at once, then joins a branch a few commits ahead', async () => {
     const world = fakeCommitGitHub();
@@ -964,6 +965,204 @@ test('D13: details arriving after the user signed out, or another signed in, are
     }
 });
 
+test('only the commit asked for has its checks read, once a minute, and a re-read leaves the last list in place', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.add('c2', 20, ['c1']);
+    web.branch('main', 'c2');
+    web.states.set('c1', { pullRequest: null, ci: 'SUCCESS' });
+    web.states.set('c2', { pullRequest: null, ci: 'SUCCESS' });
+    web.checks.set('c1', [checkRun('first')]);
+    const { graphs, session, requests } = setup(uniqueLogin(), world);
+    await graphs.open('acme/web');
+    const commit = { id: 'C_c1', oid: 'c1' };
+
+    // The rows ask for their state, never for their checks.
+    graphs.ensureStates('acme/web', [commit, { id: 'C_c2', oid: 'c2' }]);
+    await session.clock.advance(100);
+    expect(checkReads(requests())).toEqual([]);
+
+    expect(graphs.getChecks('acme/web', 'c1')).toBeUndefined();
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    const first: CommitChecksRead = {
+        kind: 'read',
+        checks: [
+            {
+                id: 'CR_first',
+                kind: 'checkRun',
+                name: 'first',
+                workflow: 'ci',
+                state: 'passing',
+                url: 'https://github.com/acme/web/actions/runs/1',
+                startedAt: null,
+                completedAt: null,
+            },
+        ],
+        checkCount: 1,
+        readAt: session.clock.now(),
+    };
+    expect(graphs.getChecks('acme/web', 'c1')).toEqual(first);
+    expect(checkReads(requests())).toEqual([{ operation: 'CommitChecks', variables: { id: 'C_c1' } }]);
+
+    await session.clock.advance(59_999);
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(checkReads(requests())).toHaveLength(1);
+
+    await session.clock.advance(1);
+    web.checks.set('c1', [checkRun('second')]);
+    const held = createPromise();
+    session.github.holdIf = request => (request.operation === 'CommitChecks' ? held.promise : null);
+    graphs.ensureChecks('acme/web', commit);
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(graphs.getChecks('acme/web', 'c1')).toEqual(first);
+    expect(checkReads(requests())).toHaveLength(2);
+
+    held.resolve();
+    await session.clock.advance(0);
+    expect(graphs.getChecks('acme/web', 'c1')).toMatchObject({ checks: [{ name: 'second' }] });
+});
+
+test('a commit known to have no checks is not read, while one whose state is not known yet is', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('none', 10, []);
+    web.add('unknown', 20, ['none']);
+    web.branch('main', 'unknown');
+    const { graphs, session, requests } = setup(uniqueLogin(), world);
+    await graphs.open('acme/web');
+    graphs.ensureStates('acme/web', [{ id: 'C_none', oid: 'none' }]);
+    await session.clock.advance(100);
+    expect(graphs.getState('acme/web', 'none')?.ci).toBeNull();
+
+    graphs.ensureChecks('acme/web', { id: 'C_none', oid: 'none' });
+    graphs.ensureChecks('acme/web', { id: 'C_unknown', oid: 'unknown' });
+    await session.clock.advance(0);
+
+    expect(checkReads(requests())).toEqual([{ operation: 'CommitChecks', variables: { id: 'C_unknown' } }]);
+    expect(graphs.getChecks('acme/web', 'none')).toBeUndefined();
+    expect(graphs.getChecks('acme/web', 'unknown')).toMatchObject({ kind: 'read', checks: [], checkCount: 0 });
+});
+
+test('a failed read of checks is not repeated for a minute, and a failed re-read keeps the list', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.branch('main', 'c1');
+    web.checks.set('c1', [checkRun('first')]);
+    let failing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (request.operation === 'CommitChecks' && failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    const commit = { id: 'C_c1', oid: 'c1' };
+
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    const failed: CommitChecksRead = { kind: 'failed', readAt: session.clock.now() };
+    expect(graphs.getChecks('acme/web', 'c1')).toEqual(failed);
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(checkReads(requests())).toHaveLength(1);
+
+    await session.clock.advance(60_000);
+    failing = false;
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(graphs.getChecks('acme/web', 'c1')).toMatchObject({ kind: 'read' });
+    expect(checkReads(requests())).toHaveLength(2);
+
+    await session.clock.advance(60_000);
+    failing = true;
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(graphs.getChecks('acme/web', 'c1')).toMatchObject({
+        kind: 'read',
+        checks: [{ name: 'first' }],
+    });
+    expect(checkReads(requests())).toHaveLength(3);
+
+    await session.clock.advance(59_999);
+    graphs.ensureChecks('acme/web', commit);
+    await session.clock.advance(0);
+    expect(checkReads(requests())).toHaveLength(3);
+});
+
+test('checks arriving after the user signed out, or another signed in, are dropped', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.branch('main', 'c1');
+
+    for (const change of ['signOut', 'switch'] as const) {
+        const { graphs, session } = setup(uniqueLogin(), world);
+        await graphs.open('acme/web');
+        const held = createPromise();
+        session.github.hold = held.promise;
+        graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
+        await session.clock.advance(0);
+
+        if (change === 'signOut') {
+            session.signOutFromAnotherTab();
+        } else {
+            session.signInFromAnotherTab(uniqueLogin());
+        }
+
+        held.resolve();
+        await session.clock.advance(0);
+
+        expect(graphs.getChecks('acme/web', 'c1')).toBeUndefined();
+    }
+});
+
+test('with the allowance spent no checks are asked for: an earlier list stays, and with none the read says it failed', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.add('c1', 10, []);
+    web.add('c2', 20, ['c1']);
+    web.branch('main', 'c2');
+    const { graphs, session, requests } = setup(uniqueLogin(), world);
+    await graphs.open('acme/web');
+    graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
+    await session.clock.advance(0);
+    const read = graphs.getChecks('acme/web', 'c1');
+    expect(read?.kind).toBe('read');
+
+    session.github.graphqlRemaining = 0;
+    await graphs.open('acme/web');
+    expect(session.container.resolve(GitHubRateLimitStore).remaining('graphql')).toBe(0);
+    await session.clock.advance(60_000);
+    graphs.ensureChecks('acme/web', { id: 'C_c1', oid: 'c1' });
+    graphs.ensureChecks('acme/web', { id: 'C_c2', oid: 'c2' });
+    await session.clock.advance(0);
+
+    expect(checkReads(requests())).toHaveLength(1);
+    expect(graphs.getChecks('acme/web', 'c1')).toEqual(read);
+    const failed: CommitChecksRead = { kind: 'failed', readAt: session.clock.now() };
+    expect(graphs.getChecks('acme/web', 'c2')).toEqual(failed);
+});
+
+test("a place left for a run's page comes back once, in its own repository, and to no other account", () => {
+    const place: CommitGraphPlace = { cursorOid: 'c2', opened: { oid: 'c1', id: 'C_c1', chosenRef: null } };
+
+    const { graphs, session } = setup(uniqueLogin(), fakeCommitGitHub());
+    graphs.setPlace('acme/web', place);
+    expect(graphs.takePlace('acme/other')).toBeUndefined();
+    expect(graphs.takePlace('acme/web')).toEqual(place);
+    expect(graphs.takePlace('acme/web')).toBeUndefined();
+
+    graphs.setPlace('acme/web', place);
+    session.signInFromAnotherTab(uniqueLogin());
+    expect(graphs.takePlace('acme/web')).toBeUndefined();
+
+    graphs.setPlace('acme/web', place);
+    session.signOutFromAnotherTab();
+    expect(graphs.takePlace('acme/web')).toBeUndefined();
+});
+
 test("a force-pushed branch's old commit stays known, and stands as gone from the graph", async () => {
     const world = fakeCommitGitHub();
     const web = world.repository('acme/web');
@@ -1031,6 +1230,25 @@ function refsVariables(name: string, withHistory: boolean) {
 function idsOf(request: { readonly variables: Readonly<Record<string, unknown>> }): unknown[] {
     const ids = request.variables.ids;
     return Array.isArray(ids) ? ids : [];
+}
+
+/** The `CommitChecks` reads among the operations asked of GitHub. */
+function checkReads<T extends { readonly operation: string }>(requests: readonly T[]) {
+    return requests.filter(request => request.operation === 'CommitChecks');
+}
+
+function checkRun(name: string): PullRequestCheckFieldsFragment {
+    return {
+        __typename: 'CheckRun',
+        id: `CR_${name}`,
+        name,
+        status: 'COMPLETED',
+        conclusion: 'SUCCESS',
+        detailsUrl: 'https://github.com/acme/web/actions/runs/1',
+        startedAt: null,
+        completedAt: null,
+        checkSuite: { workflowRun: { workflow: { name: 'ci' } } },
+    };
 }
 
 function uniqueLogin() {
