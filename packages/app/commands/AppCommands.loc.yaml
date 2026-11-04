@@ -8,6 +8,8 @@ createKeyword:
   en: create
 settings:
   en: Settings
+repositorySettings:
+  en: Repository settings
 signOut:
   en: Sign out
 restartToUpdate:

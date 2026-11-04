@@ -25,10 +25,16 @@ conflicts:
   en: conflicts
 checksRunning:
   en: checks running
+checksPassed:
+  en: checks passed
 approvedReadyToMerge:
   en: approved · ready to merge
+readyToMerge:
+  en: ready to merge
 approved:
   en: approved
+approvedChecksPassed:
+  en: approved · checks passed
 yourReviewRequested:
   en: your review requested
 draft:

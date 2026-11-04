@@ -15,7 +15,14 @@ import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
-import type { ListChoice, ListContextMenuProps, ListGroup, ListRow, ListViewOptions } from '@/lists/ListTypes.js';
+import type {
+  ListChoice,
+  ListContextMenuProps,
+  ListedItems,
+  ListGroup,
+  ListRow,
+  ListViewOptions,
+} from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
@@ -53,6 +60,8 @@ const props = withDefaults(
     trackedRepositories?: readonly string[];
     /** The item opened over the list (panel or modal): moving the selection opens the next one in its place. */
     openedId?: string | null;
+    /** The user has an edit of the item on its way (`ListView`). */
+    isEdited?: (id: string) => boolean;
     /** What was just undone of an item's edits, by its id ("“regression” label undone"). */
     undone?: ReadonlyMap<string, string>;
     /** The view options differ from the defaults: the display options offer a reset. */
@@ -62,6 +71,7 @@ const props = withDefaults(
     group: null,
     getItem: () => undefined,
     openedId: null,
+    isEdited: () => false,
     undone: () => new Map(),
     modified: false,
     trackedRepositories: () => [],
@@ -72,7 +82,7 @@ const emit = defineEmits<{
   /** Enter or a click on a row, or the selection moved while an item is open. */
   open: [id: string];
   /** The items the list shows, top to bottom — what an opened item steps through. */
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
   /** The view options back to their defaults. */
   reset: [];
 }>();
@@ -269,6 +279,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       :groups="groups"
       :layout="options.layout"
       :opened-id="openedId"
+      :is-edited="isEdited"
       :get-url="item => item.url"
       @open="emit('open', $event)"
       @listed="emit('listed', $event)"

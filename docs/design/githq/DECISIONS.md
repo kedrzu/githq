@@ -387,7 +387,7 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   hosts.
 - **Updates:** the app checks GitHub Releases at launch and every 4 hours and downloads in the background. The
   signature is always verified. The update is then offered as "githq X.Y.Z is ready · Restart · Later" at the
-  right end of the status bar (`githq.pen`, "Desktop · Update ready", U1). Nothing restarts on its own. On macOS
+  right end of the status bar (`githq.pen`, "Desktop · Updates", U1). Nothing restarts on its own. On macOS
   and Linux the download is installed at once and runs from the next launch. On Windows the installer runs on
   Restart.
 - **Releases:** a manually dispatched action, `.github/workflows/release.yml`, with a mode: `preview` prints the
@@ -558,7 +558,7 @@ toast, and so does closing several items.
 
 **Undo reopens.** The close goes to GitHub at once, like every other edit (D8), and Undo sends a plain reopen, so it is
 visible on github.com as closed and reopened, and it can fail like any edit (a failed edit's toast says so). A close GitHub
-refused offers no Undo.
+refused offers no Undo. Undo returns the cursor, and an open panel or modal, to the undone item (owner, 2026-11-04).
 
 **Rejected.** Holding the close back until the toast goes, which would leave no trace on GitHub: the item would look closed
 here while it is open everywhere else, and closing the tab would have to send it or lose it. A confirmation step: slower on
@@ -596,6 +596,61 @@ widening the strip past 100 px in every row was rejected, and so was recording a
 
 **Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
 only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
+
+### D31
+
+**A pull request's row and card say when its checks passed and when it is ready to merge** (owner, 2026-11-04, screen D7). An
+open pull request with no review needed that GitHub would merge reads "Ready to merge", with the same "Merge" follow-up as an
+approved one, whether it has checks or not. Green checks with something else holding it read "Checks passed" before the other
+status: "Your review requested", "Waiting for review", "Draft", "Changes requested", or nothing else. Approved and held reads
+"Approved · checks passed" in one. With no checks, nothing is said about checks. Nothing changes while it is being merged, in a
+queue, on auto-merge, or when a merge's end speaks for it.
+
+**Why.** A row with no status could mean checks passed, no checks, or not known yet, and a row "Waiting for review" said nothing
+of its checks.
+
+**A review asked stays "Waiting for review"** when none is required, although GitHub would merge it: it was asked for, and a
+"Merge" there invites skipping it. **Known cost:** the opened item's verdict says "Ready to merge" in this one case.
+
+**Rejected.** "Ready to merge" alone: says nothing of the checks of a pull request waiting for review. "Checks passed" alone:
+leaves one with no checks saying nothing, and offers no "Merge".
+
+### D32
+
+**The screen's repository is a context of the command menu** (owner, 2026-11-04). When no opened item or selection takes
+the chip, a chip names the repository; ⌫ steps out from the item or selection to the repository, and again to none. A group
+headed by its name sits above "Go to": its sections (Workflows only while it is tracked), Open on GitHub, Copy link and
+Repository settings (only while tracked). On its view the sections keep their keys `1`–`4` and act as its tabs.
+
+**Rejected,** by the owner: any tracked repository's sections from elsewhere by typing; the existing repository line stays
+the way there.
+
+**Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
+already starts in the screen's repository.
+
+**"Settings" stays the app's** (owner, 2026-11-04): a repository is in context nearly always, so the repository's line is
+"Repository settings", and "settings" + Enter opens the app's Settings there too. Rejected: "Settings" in the group, which
+took that Enter and made the app's screen harder to reach.
+
+### D33
+
+**The desktop app's update screens are drawn in `githq.pen`, frame "Desktop · Updates" (U1–U40), following
+[desktop releases](../desktop-releases/DECISIONS.md).** (design agent, 2026-11-04, for the owner to overrule.) Where what
+changed opens is the owner's pick, with the dialog recommended (U26–U37), and U19 is a question for them.
+
+- **The outcome of a check started from the palette appears at the right end of the status bar, not in a toast.** That's where
+  U1 already speaks and the palette has just closed. Up to date goes away by itself; a failure stays until Try again or
+  Dismiss.
+- **The confirmation to Stable names no version,** since that would take a request before the dialog could open, and it
+  would then need its own states.
+- **Offline, the switch to Stable stands and is not undone.** [D5](../desktop-releases/DECISIONS.md#d5) holds no state, so the
+  newest Stable installs once GitHub can be reached.
+- **The update toast stays until dismissed,** unlike the default 12 seconds, because the app has just started. Its key is ⌥W.
+  It sits in the bottom right corner as the owner asked, while `Toaster.vue` centres every other toast: building it needs
+  a second position.
+
+**Rejected.** A second button for Try again in Settings: Check for updates already is that. Disabling the stream block on
+Windows: a choice that leads nowhere, so it isn't drawn.
 
 ## Open questions
 

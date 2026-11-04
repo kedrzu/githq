@@ -63,8 +63,8 @@ test('one value: ↓ and Enter pick it and close; "none" clears it', async () =>
 
     const trigger = page.getByRole('button', { name: 'Milestone' });
     await userEvent.click(trigger);
-    // "No milestone" first, then the milestones.
-    await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
+    // "No milestone" first, then the milestones; the selected v4.2 starts highlighted.
+    await userEvent.keyboard('{ArrowDown}{Enter}');
     await expect.element(page.getByTestId('picked')).toHaveTextContent('Picked: v4.3');
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
 

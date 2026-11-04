@@ -76,6 +76,9 @@ test('⇧X closes an issue as not planned', async ({ page, github }) => {
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
     await expect(item.statePill('Open')).toBeVisible();
+    // On its page it stays in view: a panel moves on with the list once it leaves.
+    await item.arrangement('Full page').click();
+    await expect(page).toHaveURL('/acme/web/issues/12');
 
     await page.keyboard.press('Shift+X');
     await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
@@ -102,7 +105,9 @@ test('⇧X closes a pull request at once, and Undo reopens it on GitHub', async 
     await shell.toasts.getByRole('button', { name: 'Undo' }).click();
 
     await expect.poll(() => sample.world.stateOf(sample.pullRequest)).toMatchObject({ state: 'OPEN' });
-    await expect(item.statePill('Open')).toBeVisible();
+    // It is back in the list, and the panel and the highlight are back on it.
+    await expect(myWork.selectedRow).toContainText('Redirect once after sign-in');
+    await expect(item.title).toHaveText('Redirect once after sign-in');
     await expectConfirmed(shell);
 });
 

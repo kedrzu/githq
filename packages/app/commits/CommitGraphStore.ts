@@ -1,4 +1,5 @@
 import type {
+    CommitChecksQuery,
     CommitDetailQuery,
     CommitFieldsFragment,
     CommitRefFieldsFragment,
@@ -10,6 +11,7 @@ import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
+import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { splitIntoChunks } from '@nzyme/utils/array/splitIntoChunks.js';
 import { shallowRef } from 'vue';
 
@@ -19,6 +21,7 @@ import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { toItemCheck } from '@/store/toItemCheck.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { getRefusalPause } from '@/sync/getRefusalPause.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
@@ -26,7 +29,9 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { CommitPersistence } from './CommitPersistence.js';
 import type { PersistedCommits } from './CommitPersistence.js';
 import type {
+    CommitChecksRead,
     CommitDetailRead,
+    CommitGraphPlace,
     CommitParent,
     CommitPlace,
     CommitRef,
@@ -47,7 +52,7 @@ const JOIN_ROUNDS = 3;
 const MORE_PAGE = 100;
 /** The most ids GitHub takes in one `nodes(ids:)`. */
 const MAX_IDS = 100;
-/** How long a commit's pull request and CI state is used before it is read again. */
+/** How long a commit's pull request and CI state, or its checks, are used before they are read again. */
 const STATES_TTL_MS = 60_000;
 /** How long the rows asking for their state are gathered into one request. */
 const STATES_BATCH_MS = 50;
@@ -141,6 +146,10 @@ interface Session {
     readonly pendingStates: Map<string, Map<string, string>>;
     /** The oids whose state is being read, by `owner/name`. */
     readonly statesInFlight: Map<string, Set<string>>;
+    /** The oids whose checks are being read, by `owner/name`. */
+    readonly checksInFlight: Map<string, Set<string>>;
+    /** Where the section was left for a run's page, by `owner/name`; in memory alone, gone with the session. */
+    readonly places: Map<string, CommitGraphPlace>;
     cancelStatesBatch: (() => void) | null;
 }
 
@@ -149,12 +158,12 @@ interface Session {
  * repository they can see, tracked or not (D11). Nothing is read in the background: a graph is read when it opens
  * ({@link open}) and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
  * state ({@link ensureStates}, D8), and a commit whose details open asks for its full message ({@link ensureDetail},
- * D13).
+ * D13) and its checks ({@link ensureChecks}).
  *
  * Commits and refs are kept in the user's local copy for good, so a graph opened before draws at once; the refs
  * are then read again and the branches that moved to commits not loaded are read down to the loaded history, as soon
  * as the branches are read, while the remaining pages of tags still are.
- * Pull request and CI state and details are kept in memory only, and a commit read for its details never joins the
+ * Pull request and CI state, checks and details are kept in memory only, and a commit read for its details never joins the
  * graph (D12).
  *
  * Like the other stores it follows the signed-in user: their graphs leave memory when they sign out or another
@@ -176,6 +185,7 @@ export const CommitGraphStore = defineService({
         const graphsRef = shallowRef<ReadonlyMap<string, CommitGraph>>(new Map());
         const statesRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, ReadState>>>(new Map());
         const detailsRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitDetailRead>>>(new Map());
+        const checksRef = shallowRef<ReadonlyMap<string, ReadonlyMap<string, CommitChecksRead>>>(new Map());
 
         let session: Session | null = null;
 
@@ -189,10 +199,14 @@ export const CommitGraphStore = defineService({
             getCommit,
             getCommitPlace,
             getDetail,
+            getChecks,
             open,
             loadMore,
             ensureStates,
             ensureDetail,
+            ensureChecks,
+            setPlace,
+            takePlace,
         };
 
         /** The graph of `owner/name`, or `undefined` until {@link open} brought its kept copy; reactive. */
@@ -231,6 +245,11 @@ export const CommitGraphStore = defineService({
         /** What is known of the details of the commit `oid` of `owner/name`; `undefined` until asked for. Reactive. */
         function getDetail(nameWithOwner: string, oid: string): CommitDetailRead | undefined {
             return detailsRef.value.get(nameWithOwner)?.get(oid);
+        }
+
+        /** What is known of the checks of the commit `oid` of `owner/name`; `undefined` until asked for. Reactive. */
+        function getChecks(nameWithOwner: string, oid: string): CommitChecksRead | undefined {
+            return checksRef.value.get(nameWithOwner)?.get(oid);
         }
 
         /**
@@ -353,6 +372,50 @@ export const CommitGraphStore = defineService({
             void readDetail(current, nameWithOwner, commit);
         }
 
+        /**
+         * Asks for the checks of `commit` of `owner/name`, at most once a minute, a read that failed included. A commit
+         * known to have none is not asked; one whose state is not known yet is, for nothing would ask again once it is.
+         * With the allowance spent nothing is sent, and with no list to keep it reads as failed, for the panel not to
+         * wait for good.
+         */
+        function ensureChecks(nameWithOwner: string, commit: CommitParent) {
+            const current = session;
+            if (
+                !current ||
+                getState(nameWithOwner, commit.oid)?.ci === null ||
+                current.checksInFlight.get(nameWithOwner)?.has(commit.oid)
+            ) {
+                return;
+            }
+
+            const known = getChecks(nameWithOwner, commit.oid);
+            if (known && clock.now() - known.readAt < STATES_TTL_MS) {
+                return;
+            }
+
+            if (rateLimits.remaining('graphql') === 0) {
+                if (known?.kind !== 'read') {
+                    setChecks(nameWithOwner, commit.oid, { kind: 'failed', readAt: clock.now() });
+                }
+
+                return;
+            }
+
+            void readChecks(current, nameWithOwner, commit);
+        }
+
+        /** Keeps where the Commits section of `owner/name` was left for a run's page, in place of any kept before. */
+        function setPlace(nameWithOwner: string, place: CommitGraphPlace) {
+            session?.places.set(nameWithOwner, place);
+        }
+
+        /** Where the Commits section of `owner/name` was left, if it was; used once, for it is forgotten here. */
+        function takePlace(nameWithOwner: string): CommitGraphPlace | undefined {
+            const place = session?.places.get(nameWithOwner);
+            session?.places.delete(nameWithOwner);
+            return place;
+        }
+
         /** Another account signed in, or none: the graphs of whoever was before leave memory. */
         function follow(account: Account | null) {
             session?.cancelStatesBatch?.();
@@ -360,6 +423,7 @@ export const CommitGraphStore = defineService({
             graphsRef.value = new Map();
             statesRef.value = new Map();
             detailsRef.value = new Map();
+            checksRef.value = new Map();
             if (!account) {
                 return;
             }
@@ -369,6 +433,8 @@ export const CommitGraphStore = defineService({
                 graphs: new Map(),
                 pendingStates: new Map(),
                 statesInFlight: new Map(),
+                checksInFlight: new Map(),
+                places: new Map(),
                 cancelStatesBatch: null,
             };
         }
@@ -807,6 +873,50 @@ export const CommitGraphStore = defineService({
             detailsRef.value = new Map(detailsRef.value).set(nameWithOwner, details);
         }
 
+        /**
+         * Reads a commit's checks; never rejects. A failure leaves a list read before in place and says so otherwise; either
+         * way it counts as a read for the minute. An ended session's answer is dropped.
+         */
+        async function readChecks(current: Session, nameWithOwner: string, { id, oid }: CommitParent) {
+            const inFlight = current.checksInFlight.get(nameWithOwner) ?? new Set<string>();
+            current.checksInFlight.set(nameWithOwner, inFlight);
+            inFlight.add(oid);
+
+            let answer: ReturnType<typeof toCommitChecks> = null;
+            try {
+                const { node } = await current.account.sdk.CommitChecks({ id });
+                answer = toCommitChecks(node);
+            } catch (error) {
+                if (isCurrent(current)) {
+                    logger.warn('The checks of a commit could not be read', { nameWithOwner, error });
+                }
+            } finally {
+                inFlight.delete(oid);
+            }
+
+            if (!isCurrent(current)) {
+                return;
+            }
+
+            const now = clock.now();
+            if (answer) {
+                setChecks(nameWithOwner, oid, { kind: 'read', ...answer, readAt: now });
+                return;
+            }
+
+            const known = getChecks(nameWithOwner, oid);
+            setChecks(
+                nameWithOwner,
+                oid,
+                known?.kind === 'read' ? { ...known, readAt: now } : { kind: 'failed', readAt: now },
+            );
+        }
+
+        function setChecks(nameWithOwner: string, oid: string, read: CommitChecksRead) {
+            const checks = new Map(checksRef.value.get(nameWithOwner)).set(oid, read);
+            checksRef.value = new Map(checksRef.value).set(nameWithOwner, checks);
+        }
+
         /** The commit if loaded, shown or not; reactive, for every change of the loaded commits publishes the graph. */
         function findLoadedCommit(nameWithOwner: string, oid: string) {
             return graphsRef.value.has(nameWithOwner)
@@ -1047,6 +1157,19 @@ function splitMessage(message: string) {
     return end === -1
         ? { headline: message.trim(), body: '' }
         : { headline: message.slice(0, end).trim(), body: message.slice(end).trim() };
+}
+
+/** A commit's checks as read; `null` when GitHub gave no commit. A commit with no rollup has no checks. */
+function toCommitChecks(node: CommitChecksQuery['node']) {
+    if (!node || !('statusCheckRollup' in node)) {
+        return null;
+    }
+
+    const page = node.statusCheckRollup?.contextPage;
+    return {
+        checks: mapNotNull(page?.nodes ?? [], context => context && toItemCheck(context)),
+        checkCount: page?.totalCount ?? 0,
+    };
 }
 
 /** A commit GitHub gave nothing for has neither a pull request nor checks. */

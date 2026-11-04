@@ -4,7 +4,7 @@ import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h, nextTick, ref, unref } from 'vue';
 import type { Ref } from 'vue';
-import { createMemoryHistory, createRouter } from 'vue-router';
+import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-router';
 
 import { VIEWER_KEY } from '@/auth/AuthStore.js';
 import { TOKEN_KEY } from '@/auth/TokenVault.js';
@@ -12,7 +12,15 @@ import { Browser } from '@/services/Browser.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
-import { sampleCommit, sampleCommitRef, sampleHistory, sampleWebappHistory } from '@/testing/sampleCommits.js';
+import {
+    sampleCheckRun,
+    sampleCommit,
+    sampleCommitRef,
+    sampleHistory,
+    sampleWebappHistory,
+} from '@/testing/sampleCommits.js';
+import { trackTabFocus } from '@/testing/trackTabFocus.js';
+import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
 
 import CommitGraphView from './CommitGraphView.vue';
 import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
@@ -20,6 +28,8 @@ import type { CommitState } from './CommitTypes.js';
 
 const REPOSITORY = 'acme/web';
 const SHARE_KEY = 'githq.panelShare.commitGraph';
+const COMMITS = '/acme/web/commits';
+const RUN = '/acme/web/actions/runs/1';
 
 test('only the rows near the viewport are drawn: a 5,000-commit graph draws a few dozen, and asks the state of those on screen only', async () => {
     // Wide, so the details sit beside the graph and the pane keeps the section's whole height.
@@ -146,6 +156,26 @@ test('the details are open on the selected commit from the start; Esc closes the
     await userEvent.keyboard('{Escape}');
     await userEvent.keyboard('{Enter}');
     await expect.element(details().getByRole('heading', { name: 'chore: bump vite to 6.2' })).toBeVisible();
+});
+
+test("the opened commit's checks are read and listed in its details, the next commit's when the cursor moves", async () => {
+    const view = await mount({
+        commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c2')],
+        states: new Map([
+            ['c2', { pullRequest: null, ci: 'FAILURE' }],
+            ['c1', { pullRequest: null, ci: 'SUCCESS' }],
+        ]),
+        checks: new Map([
+            ['c2', [sampleCheckRun('build', 'FAILURE')]],
+            ['c1', [sampleCheckRun('lint', 'FAILURE')]],
+        ]),
+    });
+
+    await expect.element(details().getByText('CI / build')).toBeVisible();
+    await userEvent.keyboard('j');
+    await expect.element(details().getByText('CI / lint')).toBeVisible();
+    expect(view.github.requests.filter(request => request === 'CommitChecks')).toHaveLength(2);
 });
 
 test('J moves the cursor past the screen and keeps its row in view', async () => {
@@ -500,7 +530,7 @@ test("D15: below about 1,200 px of window the list is folded away; B opens it ov
     await page.viewport(1100, 700);
     onTestFinished(() => page.viewport(414, 896));
     const view = await mount({ commits: parallelBranches(14) });
-    const list = page.getByRole('listbox', { name: 'Branches and tags' });
+    const list = page.getByRole('grid', { name: 'Branches and tags' });
     const paneWidth = view.scroller().clientWidth;
 
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
@@ -784,7 +814,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     const list = target.querySelector.bind(target);
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
 
-    await expect.poll(() => list('[role="listbox"]')).not.toBeNull();
+    await expect.poll(() => list('[role="grid"]')).not.toBeNull();
     await closeDetails();
     await expect.poll(() => view.scroller().clientWidth).toBe(1200);
     // D17: the share is of the pane, the list taking none of it.
@@ -798,7 +828,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
 
     await userEvent.keyboard('{Enter}');
     await expect.element(details()).toBeVisible();
-    expect(list('[role="listbox"]')).not.toBeNull();
+    expect(list('[role="grid"]')).not.toBeNull();
     expect(view.scroller().clientWidth).toBe(1200 - 440);
     // Beside the graph, not over it.
     expect(getComputedStyle(details().element()).position).toBe('relative');
@@ -813,7 +843,7 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
 
     await userEvent.keyboard('{Escape}');
     await expect.element(details()).not.toBeInTheDocument();
-    expect(list('[role="listbox"]')).not.toBeNull();
+    expect(list('[role="grid"]')).not.toBeNull();
 });
 
 test('D15, CH42: with the list in the column, below 1,200 px of window the details dock under the graph, and the list stays', async () => {
@@ -824,11 +854,11 @@ test('D15, CH42: with the list in the column, below 1,200 px of window the detai
     await expect.poll(() => cursor()?.getAttribute('aria-posinset')).toBe('1');
     const paneWidth = view.scroller().clientWidth;
 
-    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    await expect.poll(() => target.querySelector('[role="grid"]')).not.toBeNull();
     await expect.element(details()).toBeVisible();
     expect(view.scroller().clientWidth).toBe(paneWidth);
     expect(details().element().getBoundingClientRect().top).toBe(view.scroller().getBoundingClientRect().bottom);
-    expect(target.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(target.querySelector('[role="grid"]')).not.toBeNull();
 });
 
 test('D14: the layout changed while the graph is open, by another tab or device: the list moves to the column and back', async () => {
@@ -838,19 +868,19 @@ test('D14: the layout changed while the graph is open, by another tab or device:
     const inColumn = ref(false);
     const view = await mount({ commits: parallelBranches(14) }, { refListInColumn: inColumn });
 
-    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
-    expect(target.querySelector('[role="listbox"]')).toBeNull();
+    await expect.element(page.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
+    expect(target.querySelector('[role="grid"]')).toBeNull();
     const list = refList().element();
     await closeDetails();
 
     inColumn.value = true;
-    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    await expect.poll(() => target.querySelector('[role="grid"]')).not.toBeNull();
     expect(refList().element()).toBe(list);
     await expect.poll(() => view.scroller().clientWidth).toBe(1200);
 
     inColumn.value = false;
-    await expect.poll(() => target.querySelector('[role="listbox"]')).toBeNull();
-    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+    await expect.poll(() => target.querySelector('[role="grid"]')).toBeNull();
+    await expect.element(page.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
     expect(refList().element()).toBe(list);
     await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280);
     expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(view.scroller().getBoundingClientRect().left);
@@ -859,7 +889,7 @@ test('D14: the layout changed while the graph is open, by another tab or device:
     target.remove();
     const remounted = columnTarget();
     inColumn.value = true;
-    await expect.poll(() => remounted.querySelector('[role="listbox"]')).not.toBeNull();
+    await expect.poll(() => remounted.querySelector('[role="grid"]')).not.toBeNull();
 });
 
 test('D14, D15: the layout changed with the list open over the graph: it moves to the column, the same list with its filter', async () => {
@@ -875,7 +905,7 @@ test('D14, D15: the layout changed with the list open over the graph: it moves t
     const list = refList().element();
 
     inColumn.value = true;
-    await expect.poll(() => target.querySelector('[role="listbox"]')).not.toBeNull();
+    await expect.poll(() => target.querySelector('[role="grid"]')).not.toBeNull();
     expect(refList().element()).toBe(list);
     expect(getComputedStyle(list).position).toBe('static');
     await expect.element(filter()).toHaveValue('branch');
@@ -897,14 +927,14 @@ test('D12: a chosen ref on a loaded commit scrolls the graph, row not drawn yet,
     // Far past what is drawn.
     await expect.element(page.getByText('Commit c200')).not.toBeInTheDocument();
 
-    await userEvent.click(page.getByRole('option', { name: /v1/ }));
+    await userEvent.click(page.getByRole('row', { name: /v1/ }));
 
     await expect.poll(() => cursor()?.textContent).toContain('Commit c200');
     const top = (cursor()?.getBoundingClientRect().top ?? 0) - scroller.getBoundingClientRect().top;
     expect(Math.abs(top - scroller.clientHeight / 3)).toBeLessThan(1);
     // CH26: back to the graph, on that commit with its details; the list keeps no choice.
     await expect.poll(() => document.activeElement).toBe(scroller);
-    await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('gridcell', { selected: true })).not.toBeInTheDocument();
     await expect.element(details().getByRole('heading', { name: 'Commit c200' })).toBeVisible();
 
     const scrolled = scroller.scrollTop;
@@ -940,7 +970,7 @@ test('D12, CH16: a ref whose commit is not loaded opens its details, the graph s
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
     await expect.element(details()).toHaveTextContent('Why it was released.');
     await expect.element(details().getByText('Passing')).toBeVisible();
-    await expect.element(page.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+    await expect.element(page.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
     await expect.element(filter()).toHaveValue('');
     expect(cursor()?.textContent).toContain('Commit c2');
     expect(view.scroller().scrollTop).toBe(0);
@@ -1023,7 +1053,7 @@ test('D16, CH18: the details are open from the start beside the list and the gra
         holdIf: operation => (operation === 'CommitDetail' ? answered.promise : null),
     });
     await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
-    const list = page.getByRole('listbox', { name: 'Branches and tags' });
+    const list = page.getByRole('grid', { name: 'Branches and tags' });
     await expect.element(list).toBeVisible();
 
     // At once, from what the graph knows.
@@ -1104,6 +1134,36 @@ test('D16, CH20, CH27, CH28: P and Shift+P go to the parents, selected in the gr
     // A row clicked does the same.
     await userEvent.click(details().getByRole('button', { name: /chore: prepare the 4\.2\.1 release/ }));
     await expect.poll(() => cursor()?.textContent).toContain('chore: prepare the 4.2.1 release');
+});
+
+test('a control Tab reached in the details holds J and P, the commit staying; B, about the view, still opens the list; the graph itself holds nothing', async () => {
+    trackTabFocus();
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    const pane = document.querySelector('[data-screen-keys]');
+    const control = details().getByRole('button').first().element();
+
+    for (const target of [pane, control]) {
+        for (let tabs = 0; tabs < 40 && document.activeElement !== target; tabs++) {
+            await userEvent.tab();
+        }
+
+        expect(document.activeElement).toBe(target);
+    }
+
+    expect(pane?.hasAttribute('data-tab-focus')).toBe(false);
+    expect(control.hasAttribute('data-tab-focus')).toBe(true);
+    await userEvent.keyboard('jp{Shift>}p{/Shift}');
+    expect(cursor()?.textContent).toContain('Merge pull request #1226');
+
+    await userEvent.keyboard('{Escape}b');
+    await expect.element(filter()).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+
+    await userEvent.keyboard('p');
+    await expect.poll(() => cursor()?.textContent).not.toContain('Merge pull request #1226');
 });
 
 test('CH16: P to a parent not loaded opens its details the same way, the graph not moving and not taking it; J goes on from the graph', async () => {
@@ -1515,26 +1575,37 @@ test('a deleted ref disappears when the refs are read again: the selection falls
     window.addEventListener('error', onError);
     onTestFinished(() => window.removeEventListener('error', onError));
 
-    await userEvent.click(page.getByRole('option', { name: /feat\/a/ }));
+    await userEvent.click(page.getByRole('row', { name: /feat\/a/ }));
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
 
     view.github.repository.deleteBranch('feat/a');
     await view.store.open(REPOSITORY);
 
-    await expect.element(page.getByRole('option', { name: /feat\/a/ })).not.toBeInTheDocument();
-    await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('row', { name: /feat\/a/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('gridcell', { selected: true })).not.toBeInTheDocument();
     expect(errors).toEqual([]);
 
     // With a filter, on to the best match that is left.
     await userEvent.keyboard('b');
     await userEvent.keyboard('main');
-    await expect.element(page.getByRole('option', { selected: true })).toHaveTextContent('main');
+    await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('main');
 });
 
 /** Esc: the details close, and the pane is the graph's again. */
 async function closeDetails() {
     await userEvent.keyboard('{Escape}');
     await expect.element(details()).not.toBeInTheDocument();
+}
+
+/** An open pull request of `acme/web`. */
+function samplePullRequest(number: number) {
+    return {
+        number,
+        state: 'OPEN',
+        title: 'A change',
+        url: `https://github.com/acme/web/pull/${number}`,
+        isDraft: false,
+    } as const;
 }
 
 /** A commit's text in the graph, not in the details beside or over it. */
@@ -1557,7 +1628,7 @@ test('a click on a row and then a key draw no ring around the pane: the cursor r
     expect(getComputedStyle(scroller).outlineStyle).toBe('none');
 });
 
-test("D18: the row's pull request number links to it: a click opens it, the cursor staying, a modified click is the browser's, and the list's stays text", async () => {
+test("D18: the row's pull request number links to it, in the tab order: a click opens it, the cursor staying, a modified click is the browser's", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const pullRequest = {
@@ -1575,7 +1646,7 @@ test("D18: the row's pull request number links to it: a click opens it, the curs
     await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
     const link = page.getByRole('listitem').filter({ hasText: 'Commit c1' }).getByRole('link', { name: /1203/ });
     await expect.element(link).toHaveAttribute('href', '/upstream/web/pull/1203');
-    await expect.element(refList().getByRole('link')).not.toBeInTheDocument();
+    expect(link.element().tabIndex).toBe(0);
 
     // A listener of the link's own runs after the component's, and stops the new tab a test has no use for.
     let handedToBrowser = false;
@@ -1594,6 +1665,210 @@ test("D18: the row's pull request number links to it: a click opens it, the curs
         .toMatchObject({ pane: 'issue', issue: 'upstream|web|1203' });
     expect(handedToBrowser).toBe(false);
     expect(cursor()?.textContent).toContain('Commit c2');
+});
+
+test("D18: a branch's pull request in the list opens it, the list done with: its filter cleared, closed over the graph, the keys on the graph and the cursor where it was", async () => {
+    await page.viewport(1100, 700);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount({
+        commits: [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c2'), sampleCommitRef('feat/a', 'c1')],
+        states: new Map([['c1', { pullRequest: samplePullRequest(1203), ci: null }]]),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('feat');
+    await expect.element(filter()).toHaveValue('feat');
+
+    await userEvent.click(refList().getByRole('link', { name: /1203/ }));
+
+    await expect
+        .poll(() => view.router.currentRoute.value.query)
+        .toMatchObject({ pane: 'issue', issue: 'acme|web|1203' });
+    await expect.element(refList()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(view.scroller());
+    expect(cursor()?.textContent).toContain('Commit c2');
+
+    await view.router.push({ query: {} });
+    await userEvent.keyboard('b');
+    await expect.element(filter()).toHaveValue('');
+});
+
+test('a click on a CI mark is a click on what it sits in: the commit of a graph row, the branch of a list row, with its details', async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    await mount({
+        commits: [sampleCommit('c3', 30, ['c2']), sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c3'), sampleCommitRef('feat/a', 'c1')],
+        states: new Map([
+            ['c2', { pullRequest: null, ci: 'FAILURE' }],
+            ['c1', { pullRequest: null, ci: 'SUCCESS' }],
+        ]),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c3');
+    const graphRow = page.getByRole('region', { name: 'Commits of acme/web' }).getByRole('listitem').nth(1);
+
+    await userEvent.click(graphRow.getByRole('img', { name: 'Checks failing' }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    expect(cursor()?.textContent).toContain('Commit c2');
+
+    await userEvent.click(page.getByRole('row', { name: /feat\/a/ }).getByRole('img', { name: 'Checks passing' }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c1' })).toBeVisible();
+    expect(cursor()?.textContent).toContain('Commit c1');
+});
+
+test("back from a run's page: the cursor on its commit in view, its details, kept through what the open reads; used once, and another page or closed details leave none", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const commits = Array.from({ length: 300 }, (_, index) =>
+        sampleCommit(`c${index}`, index, index > 0 ? [`c${index - 1}`] : []),
+    );
+    const view = await mountRouted({
+        commits,
+        branches: [sampleCommitRef('main', 'c299')],
+        tags: [sampleCommitRef('v1', 'c100')],
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+
+    await userEvent.click(page.getByRole('row', { name: /v1/ }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c100' })).toBeVisible();
+
+    await view.router.push(RUN);
+    await expect.element(page.getByRole('region', { name: 'Commits of acme/web' })).not.toBeInTheDocument();
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c100');
+    await expect.element(details().getByRole('heading', { name: 'Commit c100' })).toBeVisible();
+    const scroller = view.scroller();
+    const inView = () => {
+        const row = cursor()?.getBoundingClientRect();
+        const pane = scroller.getBoundingClientRect();
+        return row !== undefined && row.top >= pane.top && row.bottom <= pane.bottom;
+    };
+    await expect.poll(inView).toBe(true);
+
+    await view.store.open(REPOSITORY);
+    await nextTick();
+    expect(cursor()?.textContent).toContain('Commit c100');
+    await expect.element(details().getByRole('heading', { name: 'Commit c100' })).toBeVisible();
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'Commit c99' })).toBeVisible();
+
+    // Somewhere else after the run's page, and the place is gone: only coming straight back finds it.
+    await view.router.push(RUN);
+    await view.router.push('/acme/web/pull/1');
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+    await userEvent.click(page.getByRole('row', { name: /v1/ }));
+    await expect.element(details().getByRole('heading', { name: 'Commit c100' })).toBeVisible();
+    await view.router.push(RUN);
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c100');
+    await userEvent.keyboard('j');
+    await expect.element(details().getByRole('heading', { name: 'Commit c99' })).toBeVisible();
+
+    // Used once: another page next, and it starts at its start. Leaving for it keeps nothing, details open or not.
+    await view.router.push('/acme/web/pull/1');
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+    await expect.element(details().getByRole('heading', { name: 'Commit c299' })).toBeVisible();
+
+    await userEvent.keyboard('j');
+    await closeDetails();
+    await view.router.push(RUN);
+    await view.router.push(COMMITS);
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c299');
+});
+
+test("back from a run's page, the commit that was open though it isn't a row or the cursor's: its ref with it, and it stays through what the open reads", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const history = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['old'])];
+    const view = await mountRouted({
+        commits: [...history, sampleCommit('old', 1)],
+        branches: [sampleCommitRef('main', 'c2')],
+        tags: [sampleCommitRef('v0.1', 'old')],
+        kept: history,
+        holdIf: operation => (operation === 'CommitHistories' ? new Promise<void>(() => {}) : null),
+    });
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c2');
+    await userEvent.keyboard('j');
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c1');
+    await userEvent.keyboard('b');
+    await userEvent.keyboard('v0.1{Enter}');
+    await expect.element(details()).toHaveTextContent('Not in the loaded history. v0.1 is from');
+
+    await view.router.push(RUN);
+    await view.router.push(COMMITS);
+
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('Not in the loaded history. v0.1 is from');
+    await expect.poll(() => cursor()?.textContent).toContain('Commit c1');
+    await expect.poll(cursorDrawn).toBe(false);
+
+    await view.store.open(REPOSITORY);
+    await nextTick();
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+
+    await userEvent.keyboard('k');
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+    await expect.poll(cursorDrawn).toBe(true);
+});
+
+test("back from a run's page with the cursor's commit gone from the graph meanwhile: the cursor at the start with no error, the commit that was open saying so", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mountRouted({
+        commits: [
+            sampleCommit('old', 30, ['base']),
+            sampleCommit('other', 25, ['base']),
+            sampleCommit('base', 10),
+            sampleCommit('new', 40, ['base']),
+        ],
+        kept: [sampleCommit('old', 30, ['base']), sampleCommit('other', 25, ['base']), sampleCommit('base', 10)],
+        branches: [sampleCommitRef('main', 'other'), sampleCommitRef('fix/a', 'old')],
+    });
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => errors.push(event.error);
+    window.addEventListener('error', onError);
+    onTestFinished(() => window.removeEventListener('error', onError));
+    await expect.poll(() => cursor()?.textContent).toContain('Commit other');
+    await userEvent.keyboard('k');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+
+    await view.router.push(RUN);
+    view.github.repository.branch('fix/a', 'new');
+    await view.store.open(REPOSITORY);
+    await view.router.push(COMMITS);
+
+    await expect.poll(() => cursor()?.textContent).toContain('Commit other');
+    await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
+    await expect.element(details()).toHaveTextContent('It is no longer in the graph.');
+    expect(errors).toEqual([]);
+});
+
+test("a run in another repository: the place is this repository's; with the prop already on the other, none is kept, nothing of the other's under this one", async () => {
+    const commits = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10)];
+    const view = await mountRouted({ commits, branches: [sampleCommitRef('main', 'c2')] });
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+
+    await view.router.push('/acme/other/actions/runs/1');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(view.store.takePlace('acme/other')).toBeUndefined();
+    expect(view.store.takePlace(REPOSITORY)).toMatchObject({ cursorOid: 'c2', opened: { oid: 'c2' } });
+
+    const other = view.github.otherRepository('acme/other');
+    other.add('o1', 30, []);
+    other.branch('main', 'o1');
+    await view.router.push(COMMITS);
+    await expect.element(details().getByRole('heading', { name: 'Commit c2' })).toBeVisible();
+
+    // The same page's prop moves to the other repository first, and shows its commit, before the page goes.
+    await view.router.push('/acme/other/commits');
+    await expect.element(details().getByRole('heading', { name: 'Commit o1' })).toBeVisible();
+    await view.router.push('/acme/other/actions/runs/1');
+    await expect.element(details()).not.toBeInTheDocument();
+    expect(view.store.takePlace(REPOSITORY)).toBeUndefined();
+    expect(view.store.takePlace('acme/other')).toBeUndefined();
 });
 
 /** The panel of a commit's details. */
@@ -1669,6 +1944,54 @@ function columnTarget() {
     document.body.append(target);
     onTestFinished(() => target.remove());
     return target;
+}
+
+/** The section as the app has it, under a router view: leaving for another route unmounts it. */
+async function mountRouted(options: CommitGraphTestOptions) {
+    const { container, store, github, ready } = createCommitGraphTest(options);
+    await ready;
+    const section = defineComponent({
+        setup() {
+            const route = useRoute();
+            return () => h(CommitGraphView, { nameWithOwner: getRouteNameWithOwner(route) });
+        },
+    });
+    const elsewhere = defineComponent({ render: () => null });
+    const router = createRouter({
+        history: createMemoryHistory(),
+        routes: [
+            { path: '/:owner/:name/commits', name: 'repository', component: section },
+            { path: WORKFLOW_RUN_PATH, name: 'workflow-run', component: elsewhere },
+            { path: '/:path(.*)*', component: elsewhere },
+        ],
+    });
+    await router.push(COMMITS);
+    const host = document.createElement('div');
+    host.style.display = 'flex';
+    host.style.width = '1200px';
+    host.style.height = '600px';
+    document.body.append(host);
+    const app = createApp({ setup: () => () => h(RouterView) });
+    app.use(IocPlugin, { container });
+    app.use(router);
+    app.mount(host);
+    onTestFinished(() => {
+        app.unmount();
+        host.remove();
+    });
+
+    return {
+        store,
+        github,
+        router,
+        scroller: () => {
+            const element = host.querySelector<HTMLElement>('[role="region"]');
+            if (!element) {
+                throw new Error('No scroller');
+            }
+            return element;
+        },
+    };
 }
 
 /** How `mount` places the section. */

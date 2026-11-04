@@ -108,6 +108,7 @@ function onRowClick(event: MouseEvent, row: T) {
         <ul
           :class="css.trackedListView_rows"
           :aria-label="group.login"
+          data-screen-keys
         >
           <li
             v-for="row in group.rows"
