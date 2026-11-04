@@ -38,7 +38,7 @@ test('my work as a board: a column per group, ←/→ between them, Enter opens;
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('D31: an untracked repository holding what concerns the user lists each of its items once, with its toolbar', async ({
+test('D32: an untracked repository holding what concerns the user lists each of its items once, with its toolbar', async ({
     page,
     github,
 }) => {

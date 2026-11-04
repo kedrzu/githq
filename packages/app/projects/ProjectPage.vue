@@ -524,11 +524,6 @@ function open(id: string) {
   list.open(id);
 }
 
-function setListed(ids: readonly string[]) {
-  // Draft issues are not opened through the item view: stepping through the list skips them.
-  list.setListed(ids.filter(id => findEntry(id)?.content));
-}
-
 function setRowField(fieldId: string | null) {
   if (project.value) {
     projects.setRowField(project.value.id, fieldId);
@@ -556,13 +551,14 @@ function setRowField(fieldId: string | null) {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
     @update:options="options.set($event)"
     @update:row-field-id="setRowField"
     @reset="options.reset()"
     @open="open"
-    @listed="setListed"
+    @listed="list.setListed"
     @move="move"
     @add-draft="addDraft"
     @new-issue="startNewIssue"
@@ -612,6 +608,7 @@ function setRowField(fieldId: string | null) {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     @open="list.open"
     @listed="list.setListed"

@@ -94,7 +94,7 @@ Only the first of these is new content. The others can be small, but must exist.
 - **Nothing on my plate**, overall and for "Needs me". It's a good state, not an error.
 - **Still downloading** on the first sign-in: the groups that already arrived are usable.
 - **An item from an untracked repository** (already marked "not tracked" in D1): the repository's screen is the full
-  view, read on demand (J5, [D31](../DECISIONS.md#d31)), and tracking starts from the command menu or in Settings.
+  view, read on demand (J5, [D32](../DECISIONS.md#d32)), and tracking starts from the command menu or in Settings.
 
 ## Inconsistencies to fix in the existing screens
 

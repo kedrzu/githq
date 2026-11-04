@@ -36,9 +36,9 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { RepositoryHolds } from './RepositoryHolds.js';
 
-/** A section read this recently asks nothing on entering (D31). */
+/** A section read this recently asks nothing on entering (D32). */
 export const BROWSE_FRESH_MS = 10_000;
-/** How often the section on screen is checked: the interval of a tracked repository's change poll (D31). */
+/** How often the section on screen is checked: the interval of a tracked repository's change poll (D32). */
 export const BROWSE_POLL_MS = 60_000;
 
 const SECTIONS: readonly RepositoryItemSection[] = ['issues', 'pullRequests'];
@@ -102,7 +102,7 @@ interface BrowsedSectionState {
 }
 
 /**
- * The only thing reading for a repository only browsed (D31), per tab and in memory, and only for the section a screen
+ * The only thing reading for a repository only browsed (D32), per tab and in memory, and only for the section a screen
  * shows while this tab is visible: its pages as the user scrolls, and a conditional check on entering (past
  * {@link BROWSE_FRESH_MS}) and every {@link BROWSE_POLL_MS}. A screen holds the repository through {@link hold} for its
  * whole life, which is what keeps the section's state: it goes when the hold is let go, or with the account. An answer

@@ -1,4 +1,4 @@
-<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move, Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover; the command menu and the new issue's choosers show it in place. -->
+<!-- A keyboard-first list to pick from, inline (reka-ui's `Listbox`): an optional filter field on top — type to narrow, ↑/↓ to move (wrapping at the ends), Enter to pick — rows in groups under their headings, a quiet line under them, and a footer of keyboard hints. The rows are the caller's (its slot draws each); with a filter the best match is highlighted as the rows change, and Enter typed before the highlight caught up picks it. `Picker` puts it in a popover; the command menu and the new issue's choosers show it in place. -->
 <script lang="ts" setup generic="TRow extends FilterListRow">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ListboxContent, ListboxFilter, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRoot } from 'reka-ui';
@@ -35,6 +35,7 @@ export interface FilterListHint {
 /** What the list calls on reka-ui's `ListboxRoot`. */
 interface ListboxHandle {
   highlightFirstItem(): void;
+  highlightItem(value: string): void;
 }
 
 const props = withDefaults(
@@ -148,6 +149,26 @@ function onEnter(event: KeyboardEvent) {
   }
 }
 
+/**
+ * ↑ on the first enabled row goes to the last, ↓ on the last to the first (reka-ui's list stops at the ends). Anywhere
+ * else the list moves the highlight itself. Taken before the list sees it, so one key never moves twice.
+ */
+function onArrow(event: KeyboardEvent) {
+  if (event.isComposing || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) {
+    return;
+  }
+
+  const enabled = rows.value.filter(row => !row.disabled);
+  const up = event.key === 'ArrowUp';
+  const from = up ? enabled[0] : enabled.at(-1);
+  const to = up ? enabled.at(-1) : enabled[0];
+  if (from && to && highlighted.value === from.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    rootRef.value?.highlightItem(to.value);
+  }
+}
+
 function onKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape' && props.backOnEscape) {
     event.preventDefault();
@@ -173,6 +194,7 @@ function onKeydown(event: KeyboardEvent) {
     <div
       v-if="filterable"
       :class="css.filterList_input"
+      @keydown.capture="onArrow"
     >
       <slot name="beforeFilter" />
       <ListboxFilter
@@ -188,6 +210,7 @@ function onKeydown(event: KeyboardEvent) {
     <div
       ref="list"
       :class="css.filterList_scroll"
+      @keydown.capture="onArrow"
     >
       <ListboxContent
         :id="listId"

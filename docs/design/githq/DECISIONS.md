@@ -68,7 +68,7 @@ Rejected: mirror everything the user can see — expensive first sync and clutte
 and still misses contributions to repos the user isn't a member of.
 
 A third kind of local data, "browsed", joined these two on 2026-11-04: a repository the user only looks at, read on
-demand and never in the background. See [D31](#d31).
+demand and never in the background. See [D32](#d32).
 
 ### D5
 
@@ -561,7 +561,7 @@ toast, and so does closing several items.
 
 **Undo reopens.** The close goes to GitHub at once, like every other edit (D8), and Undo sends a plain reopen, so it is
 visible on github.com as closed and reopened, and it can fail like any edit (a failed edit's toast says so). A close GitHub
-refused offers no Undo.
+refused offers no Undo. Undo returns the cursor, and an open panel or modal, to the undone item (owner, 2026-11-04).
 
 **Rejected.** Holding the close back until the toast goes, which would leave no trace on GitHub: the item would look closed
 here while it is open everywhere else, and closing the tab would have to send it or lose it. A confirmation step: slower on
@@ -601,6 +601,24 @@ widening the strip past 100 px in every row was rejected, and so was recording a
 only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
 
 ### D31
+
+**A pull request's row and card say when its checks passed and when it is ready to merge** (owner, 2026-11-04, screen D7). An
+open pull request with no review needed that GitHub would merge reads "Ready to merge", with the same "Merge" follow-up as an
+approved one, whether it has checks or not. Green checks with something else holding it read "Checks passed" before the other
+status: "Your review requested", "Waiting for review", "Draft", "Changes requested", or nothing else. Approved and held reads
+"Approved · checks passed" in one. With no checks, nothing is said about checks. Nothing changes while it is being merged, in a
+queue, on auto-merge, or when a merge's end speaks for it.
+
+**Why.** A row with no status could mean checks passed, no checks, or not known yet, and a row "Waiting for review" said nothing
+of its checks.
+
+**A review asked stays "Waiting for review"** when none is required, although GitHub would merge it: it was asked for, and a
+"Merge" there invites skipping it. **Known cost:** the opened item's verdict says "Ready to merge" in this one case.
+
+**Rejected.** "Ready to merge" alone: says nothing of the checks of a pull request waiting for review. "Checks passed" alone:
+leaves one with no checks saying nothing, and offers no "Merge".
+
+### D32
 
 **Any repository GitHub shows the user can be found from the command menu, browsed as if tracked, and tracked from there**
 (owner, 2026-11-04). In the owner's words: "to search GitHub for any repository, enter it and browse it as if it were our

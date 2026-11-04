@@ -43,7 +43,7 @@ export interface RepositoryCommands {
  * and its workflows only while it is tracked, actions D4), a new issue in it, its page on GitHub and the link to it, its
  * settings (T16) and no longer tracking it (both only while it is tracked), and tracking it (only while it is not). The
  * sidebar's menu of a repository offers them all but tracking it; the repository's view offers its page on GitHub and
- * tracking it or no longer tracking it in the command menu (D31).
+ * tracking it or no longer tracking it in the command menu (D32).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
     const t = useTranslate();

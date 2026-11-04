@@ -285,6 +285,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
           selection.selectedKey === DEFAULT_KEY && css.workflowAlertsBlock_selected,
         ]"
         :data-alert-key="DEFAULT_KEY"
+        data-screen-keys
         :aria-current="selection.selectedKey === DEFAULT_KEY ? 'true' : undefined"
         @click="selection.select(DEFAULT_KEY)"
       >
@@ -353,6 +354,7 @@ function onPatternClick(event: MouseEvent, pattern: string) {
             selection.selectedKey === getPatternKey(entry.pattern) && css.workflowAlertsBlock_selected,
           ]"
           :data-alert-key="getPatternKey(entry.pattern)"
+          data-screen-keys
           :aria-current="selection.selectedKey === getPatternKey(entry.pattern) ? 'true' : undefined"
           @click="onPatternClick($event, entry.pattern)"
         >

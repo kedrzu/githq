@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D31), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`), on the board, whose columns scroll on their own, by one button beside the count; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D32), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`), on the board, whose columns scroll on their own, by one button beside the count; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -36,7 +36,14 @@ import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
 import ListTitle from '@/lists/ListTitle.vue';
-import type { ListChoice, ListContextMenuProps, ListEntry, ListMove, ListViewOptions } from '@/lists/ListTypes.js';
+import type {
+  ListChoice,
+  ListContextMenuProps,
+  ListedItems,
+  ListEntry,
+  ListMove,
+  ListViewOptions,
+} from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
@@ -93,6 +100,8 @@ const props = withDefaults(
     now: number;
     /** The item opened over the list (panel or modal). */
     openedId?: string | null;
+    /** The user has an edit of the item on its way (`ListView`). */
+    isEdited?: (id: string) => boolean;
     /** What was just undone of an item's edits, by its id. */
     undone?: ReadonlyMap<string, string>;
     /** The view options differ from the defaults. */
@@ -110,6 +119,7 @@ const props = withDefaults(
     projects: () => [],
     withoutProject: 0,
     openedId: null,
+    isEdited: () => false,
     undone: () => new Map(),
     modified: false,
     canMove: () => false,
@@ -120,7 +130,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
   /** An item dropped into another group: set its value. */
   move: [move: ListMove];
   /** The view options back to their defaults. */
@@ -520,6 +530,7 @@ function getSectionCount(value: RepositorySection) {
             :groups="list.groups"
             :layout="options.layout"
             :opened-id="openedId"
+            :is-edited="isEdited"
             :get-url="item => item.url"
             :can-move="canMove"
             @open="emit('open', $event)"

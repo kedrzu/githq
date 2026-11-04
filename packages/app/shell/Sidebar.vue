@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -51,7 +51,7 @@ import {
   SquareKanban,
   Workflow,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 
 import type { Viewer } from '@/auth/AuthStore.js';
@@ -69,6 +69,8 @@ import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { BROKEN_WORKFLOWS_PATH, REPOSITORY_SECTION_SEGMENTS } from '@/tracking/trackingRoutes.js';
+import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
+import { moveTabFocus } from '@/utils/useTabFocus.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
@@ -105,6 +107,7 @@ defineSlots<{
 
 const t = useTranslate();
 const route = useRoute();
+const navRef = useTemplateRef<HTMLElement>('nav');
 
 const projects = computed(() => props.tracked?.projects ?? []);
 const repositories = computed(() => props.tracked?.repositories ?? []);
@@ -116,6 +119,26 @@ function isCurrentRepository(repository: SidebarTrackedEntry) {
     route.path === repository.to ||
     Object.values(REPOSITORY_SECTION_SEGMENTS).some(segment => route.path === `${repository.to}/${segment}`)
   );
+}
+
+function moveBetweenLinks(event: KeyboardEvent) {
+  const { key, target } = event;
+  if (
+    (key !== 'ArrowDown' && key !== 'ArrowUp') ||
+    event.shiftKey ||
+    !isSingleKeyShortcut(event) ||
+    !(target instanceof HTMLAnchorElement) ||
+    !target.hasAttribute('data-tab-focus')
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  const links = [...(navRef.value?.querySelectorAll<HTMLElement>('a[href]') ?? [])];
+  const next = links[links.indexOf(target) + (key === 'ArrowDown' ? 1 : -1)];
+  if (next) {
+    moveTabFocus(next);
+  }
 }
 
 function countText(group: MyWorkGroup | 'total') {
@@ -145,8 +168,10 @@ function getProjectMark(title: string) {
 
 <template>
   <nav
+    ref="nav"
     :class="[css.sidebar, collapsed && css.sidebar_collapsed, windowControls && css.sidebar_underWindowControls]"
     :aria-label="t(l.navigation)"
+    @keydown="moveBetweenLinks"
   >
     <div
       v-if="windowControls"

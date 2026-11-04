@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D31); GitHub's own name for it replaces the address. The command menu offers tracking it while it is not and no longer tracking it while it is, the rows staying on screen either way (D31). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D32); GitHub's own name for it replaces the address. The command menu offers tracking it while it is not and no longer tracking it while it is, the rows staying on screen either way (D32). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -226,7 +226,7 @@ const projectLinks = computed(() => {
 });
 
 // The repository's page on GitHub is in the command menu too, named, as the screen is about it; and tracking it or no
-// longer tracking it, whichever applies (D31).
+// longer tracking it, whichever applies (D32).
 useCommands(() => {
   const commands = repositoryCommands(nameWithOwner.value);
   return [commands.track, { ...commands.openOnGitHub, detail: nameWithOwner.value }, commands.untrack];
@@ -366,6 +366,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
     :workflow-count="tracked ? workflowList.count : null"

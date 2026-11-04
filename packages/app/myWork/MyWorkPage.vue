@@ -79,6 +79,7 @@ const waitingCount = computed(() => {
     :waiting-count="waitingCount"
     :tracked-repositories="trackedRepositories"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     @update:options="view.set($event)"
     @reset="view.reset()"

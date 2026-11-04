@@ -44,3 +44,8 @@ rebaseOnGitHub:
   en: Rebase on GitHub
 markReady:
   en: 'Mark #{number} ready…'
+pullRequests:
+  plural: count
+  en:
+    one: 1 pull request
+    many: '{count} pull requests'

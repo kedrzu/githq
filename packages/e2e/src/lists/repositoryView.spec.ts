@@ -96,7 +96,7 @@ test("in a repository the user may only read, a section's board moves nothing", 
     expect(sample.world.edits).toEqual([]);
 });
 
-test('D31, CH37: an untracked repository lists all of its open items, read from GitHub, and offers no button to track it; tracked in Settings, it is counted and kept', async ({
+test('D32, CH37: an untracked repository lists all of its open items, read from GitHub, and offers no button to track it; tracked in Settings, it is counted and kept', async ({
     page,
     github,
 }) => {

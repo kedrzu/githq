@@ -46,7 +46,8 @@ test('K3: with the API allowance used up refresh pauses, saying until when and w
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
         .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
-    await expect(item.statePill('Not planned')).toBeVisible();
+    // It leaves the list, and the panel goes on to the next row.
+    await expect(item.title).not.toHaveText('Sign-in loops after the token expires');
     await expect(shell.failedEdits).toHaveCount(0);
 
     // At the reset refresh resumes by itself, and the change that waited arrives.
