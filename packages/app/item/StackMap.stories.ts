@@ -117,3 +117,16 @@ export const PanelReviewRequestedFolded: Story = { args: { ...PanelReviewRequest
 export const PanelBeingMerged: Story = {
     args: { stack: sampleStackDescription(GLYPHS_STACK.map(pr => ({ ...pr, merging: 'SQUASH' as const }))) },
 };
+
+/** D25: an amber dot on the row of a pull request with the viewer's draft review; the folded line's pip carries it too. */
+const WITH_DRAFT = sampleStackDescription(
+    GLYPHS_STACK.map((pr, index) =>
+        index === 1
+            ? { ...pr, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+            : pr,
+    ),
+);
+
+export const WithDraft: Story = { args: { stack: WITH_DRAFT } };
+
+export const WithDraftFolded: Story = { args: { stack: WITH_DRAFT, folded: true } };

@@ -1,0 +1,11 @@
+# The submitted reviews of a pull request older than `$before` (a `ReviewPageFields.pageInfo.startCursor`).
+query MoreReviews($id: ID!, $before: String!) {
+    node(id: $id) {
+        ... on PullRequest {
+            id
+            reviews(last: 100, before: $before, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+                ...ReviewPageFields
+            }
+        }
+    }
+}

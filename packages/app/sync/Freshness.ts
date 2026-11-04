@@ -17,7 +17,19 @@
  *   (actions W4j);
  * - `filling`: a first open's branches are being read down to the loaded history, `done` of `total` (git-client D19);
  * - `answered`: a saved view whose filter githq can't evaluate, answered by GitHub instead (K6) and refreshed more
- *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered.
+ *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered;
+ * - `fetchingFiles`: a review's file contents arriving, `here` of `total`, `first` the name of the one a jump asked for
+ *   ahead of the rest (code review D35);
+ * - `filesPaused`: `waiting` of a review's files wait for the API allowance, until `until`;
+ * - `filesCapped`: GitHub lists only the first `listed` of a pull request's `total` changed files;
+ * - `filesUnread`: GitHub didn't give a pull request's list of files;
+ * - `threadsUnread`: GitHub didn't give a pull request's review threads;
+ * - `threadsPaused`: a pull request's review threads wait for the API allowance, until `until`;
+ * - `threadPosition`: a review's thread is focused, `position` of `total` that `N` walks, `open` of them unresolved: not how
+ *   fresh it is, but what the segment says then (CR15);
+ * - `landing`: a review has just opened and hasn't been moved yet, on its first file not viewed or where it was left: not
+ *   how fresh it is, but what the segment says then (CR20, CR25, CR26). `backTo` is the pull request a walk came from;
+ * - `filesSelected`: files of a review are selected together: not how fresh it is, but what the segment says then (CR23).
  *
  * The user's own edits on the way, or one GitHub rejected, are said over it in the segment (`FreshnessSegment`).
  */
@@ -37,7 +49,36 @@ export type Freshness =
     | { readonly kind: 'logFailed'; readonly job: string }
     | { readonly kind: 'statusChecked'; readonly checkedAt: number }
     | { readonly kind: 'filling'; readonly done: number; readonly total: number }
-    | { readonly kind: 'answered'; readonly term: string; readonly checkedAt: number | null };
+    | { readonly kind: 'answered'; readonly term: string; readonly checkedAt: number | null }
+    | {
+          readonly kind: 'fetchingFiles';
+          readonly here: number;
+          readonly total: number;
+          readonly first: string | null;
+          readonly listComplete: boolean;
+      }
+    | { readonly kind: 'filesPaused'; readonly waiting: number; readonly until: number }
+    | { readonly kind: 'filesCapped'; readonly listed: number; readonly total: number }
+    | { readonly kind: 'filesUnread' }
+    | { readonly kind: 'threadsUnread' }
+    | { readonly kind: 'threadsPaused'; readonly until: number }
+    | { readonly kind: 'threadPosition'; readonly position: number; readonly total: number; readonly open: number }
+    | {
+          readonly kind: 'landing';
+          readonly at: 'firstFile';
+          readonly number: number;
+          readonly viewed: number;
+          readonly total: number;
+          readonly backTo: { readonly key: 'J' | 'K'; readonly number: number } | null;
+      }
+    | {
+          readonly kind: 'landing';
+          readonly at: 'left';
+          readonly number: number;
+          readonly file: string;
+          readonly line: number | null;
+      }
+    | { readonly kind: 'filesSelected' };
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {

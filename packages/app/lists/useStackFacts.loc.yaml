@@ -25,3 +25,8 @@ matches:
   en: '{count} of {size} matches'
 shareHeld:
   en: '#{number} blocks'
+draftReviews:
+  plural: count
+  en:
+    one: '{reviews} draft reviews · {count} comment unsent'
+    many: '{reviews} draft reviews · {count} comments unsent'

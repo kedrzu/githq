@@ -210,6 +210,7 @@ export class GitHubMock {
     ) => readonly GitHubSearchHit[] | undefined | Promise<readonly GitHubSearchHit[] | undefined> = () => [];
 
     private readonly operations = new Map<GitHubOperationName, (request: GitHubGraphQLRequest) => Promise<unknown>>();
+    private readonly documents = new Map<string, (request: GitHubGraphQLRequest) => Promise<GitHubGraphQLBody>>();
     private readonly pages = new Map<string, (url: URL) => GitHubWebAnswer>();
     private readonly answeredGraphQL: GitHubGraphQLCall[] = [];
     private readonly answeredRest: GitHubRestCall[] = [];
@@ -252,6 +253,17 @@ export class GitHubMock {
      */
     graphql<TName extends GitHubOperationName>(name: TName, handler: GitHubGraphQLHandler<TName>): void {
         this.operations.set(name, async request => (typeof handler === 'function' ? await handler(request) : handler));
+    }
+
+    /**
+     * Answers an operation written by hand, which the SDK doesn't type as its aliases vary in number
+     * (`readReviewBlobOids()` in `packages/github/src/readReviewBlobs.ts`), with the body of GitHub's answer.
+     */
+    graphqlDocument(
+        name: string,
+        handler: (request: GitHubGraphQLRequest) => GitHubGraphQLBody | Promise<GitHubGraphQLBody>,
+    ): void {
+        this.documents.set(name, async request => await handler(request));
     }
 
     /**
@@ -464,13 +476,20 @@ export class GitHubMock {
         const request = route.request();
         const body = parseJson(request.postData());
         const name = readOperationName(readQuery(body));
+        const document = name === undefined ? undefined : this.documents.get(name);
+        if (document) {
+            const answer = await document({ variables: readVariables(body), token: readToken(request) });
+            await route.fulfill(this.apiAnswer(200, answer, 'graphql', this.rateLimit));
+            return;
+        }
+
         const operation = name === undefined ? undefined : this.findOperation(name);
         if (!operation) {
             await this.reject(route, `${describe(request)} — operation ${name ?? '(no name)'}`);
             return;
         }
 
-        const variables = isPlainObject(body) && isPlainObject(body.variables) ? body.variables : {};
+        const variables = readVariables(body);
         this.answeredGraphQL.push({ name: operation.name, variables });
         const handler = operation.handler;
         const answer = await handler({ variables, token: readToken(request) });
@@ -596,4 +615,8 @@ function parseJson(text: string | null): unknown {
 /** No such repository, as GitHub answers it. */
 function answerNoRepository(): GitHubRestAnswer {
     return { status: 404, json: { message: 'Not Found' } };
+}
+
+function readVariables(body: unknown) {
+    return isPlainObject(body) && isPlainObject(body.variables) ? body.variables : {};
 }

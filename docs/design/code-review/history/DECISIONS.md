@@ -81,3 +81,39 @@ optimise for speed"; the candidate is the agent's)
 
 **Why.** github.com stutters on large pull requests (owner). Fetching inside the worker removes the cost the owner
 worried about, sending texts there and back.
+
+## D30
+
+Retired 2026-11-04, replaced by the current [D30](../DECISIONS.md#d30): a gone file says only that it's no longer in the diff, not which commits added and deleted it.
+
+**An outdated thread carries an amber "Outdated" head that says how it was placed: "placed by finding its line
+again, so the place is approximate", or, when the line is gone, the thread moves into a box of its own above the
+file's first change, with the old code and the commit it was written on, closed off before the diff begins. A file
+gone from the diff is a block with a file-x icon, a struck-through name and the reason ("added in 3f0c2aa, deleted
+again in 9b7e411"), holding only its threads; its row in the list says "not in the diff".** (2026-11-02, agent,
+CR2, CR10, CR14)
+
+## D12, the file deleted
+
+Retired 2026-11-04, replaced by the current [D12](../DECISIONS.md#d12): a file simply deleted keeps its diff, and only a file created and deleted again is an entry of threads alone.
+
+**Every thread is shown with the code it belongs to, outdated ones included. An outdated thread is placed by looking
+for the commented line — the last line of its `diffHunk` — in the current file: found exactly once, the thread sits
+there; otherwise at the top of its file, showing the code it was written on. Either way it is marked outdated. A
+thread on a file that is no longer in the diff — deleted, or created and deleted again within the pull request so
+that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
+such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
+me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
+pass) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
+
+## D16
+
+Retired 2026-11-04, replaced by the current [D16](../DECISIONS.md#d16): `J` / `K` go through a review's stack first, stacked PRs D26 having made a collapsed stack one step elsewhere.
+
+**In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
+today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
+and the command palette goes to any of them. Review is a full-screen route of its own, so Back returns; one key
+opens it from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys
+jumps between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on
+the remembered position ([D14](#d14)).** (2026-11-02, owner: `J` / `K` and `[` / `]` for consistency with the pull
+request view; the rest the agent's proposal, confirmed after the rightsize pass)

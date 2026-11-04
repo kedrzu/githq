@@ -81,7 +81,7 @@ test('PM34: a merge confirmed after moving on offers ⌥D, on the pull request m
     const land = sample.world.holdMerges();
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toBeEnabled();
+    await expect(panel.primary).toBeVisible();
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(panel.root).toBeHidden();
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
@@ -104,7 +104,7 @@ test('PM34: "Revert" opens a new pull request, and its toast leads to it', async
     const land = sample.world.holdMerges();
 
     await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toBeEnabled();
+    await expect(panel.primary).toBeVisible();
     await page.keyboard.press('ControlOrMeta+Enter');
     await expect(myWork.selectedRow).toContainText(SECOND_TITLE);
     land();

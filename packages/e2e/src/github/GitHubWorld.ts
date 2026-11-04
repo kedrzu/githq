@@ -137,6 +137,24 @@ export interface GitHubWorldPlacement {
     readonly archived?: boolean;
 }
 
+/** A comment on an item of the world ({@link GitHubWorld.comment}). */
+export interface GitHubWorldCommentParams {
+    readonly author: string;
+    readonly body: string;
+    readonly minutesAgo: number;
+}
+
+/** A submitted review of a pull request of the world ({@link GitHubWorld.review}). */
+export interface GitHubWorldReviewParams {
+    /** Its node id, which a thread's first comment names to be the review's. */
+    readonly id: string;
+    readonly author: string;
+    readonly state: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED';
+    /** Its text as GitHub renders it (`bodyHTML`); none by default. */
+    readonly bodyHtml?: string;
+    readonly minutesAgo: number;
+}
+
 /** An issue of the world; assigned to the viewer when "assigned" finds it. */
 export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
     /** Its issue type; none by default. */
@@ -145,6 +163,12 @@ export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
 
 /** The issue types of every repository of the world. */
 export type GitHubWorldIssueType = 'Bug' | 'Feature' | 'Task';
+
+/** A review the viewer started and hasn't submitted. */
+export interface GitHubWorldPendingReview {
+    readonly comments: number;
+    readonly minutesAgo: number;
+}
 
 /** An open pull request of the world, and where it stands. */
 export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
@@ -519,6 +543,8 @@ interface WorldPullRequest {
     readonly failingChecks: number;
     readonly conflicts: boolean;
     reviewRequests: string[];
+    readonly reviews: GitHubWorldReviewParams[];
+    pendingReview: GitHubWorldPendingReview | null;
     readonly closes: readonly string[];
     behindBase: boolean;
     readonly mergeabilityUnknown: boolean;
@@ -656,6 +682,7 @@ const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
 const COMMENT_PAGE = 50;
 const OLDER_COMMENT_PAGE = 100;
+const REVIEW_PAGE = 100;
 
 const DEFAULT_LABELS: readonly GitHubWorldLabel[] = [
     { name: 'bug', color: 'd73a4a' },
@@ -698,7 +725,7 @@ const PROJECT_FIRST_PAGE = 100;
  * A small GitHub for the e2e tests: repositories with issues and pull requests, some found by the four "my work"
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
- * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
+ * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestPendingReviews`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
  * out, no rules on a base branch); `ItemByNumber`;
  * `RepositoryMetadata`; `RepositoryBrowseSearch`; `ViewerProjects` (every project of the world is the viewer's).
@@ -999,6 +1026,33 @@ export class GitHubWorld {
     /** Adds an open pull request; returns its node id. */
     pullRequest(params: GitHubWorldPullRequestParams): string {
         return this.createPullRequest(params, null).item.id;
+    }
+
+    /** Adds a comment to an item, its newest: call them oldest first. */
+    comment(id: string, params: GitHubWorldCommentParams): void {
+        const item = this.get(id);
+        item.comments.push({
+            id: `IC_${id}_${item.comments.length + 1}`,
+            author: params.author,
+            body: params.body,
+            createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+        });
+    }
+
+    /** Adds a submitted review to a pull request, its newest: call them oldest first. */
+    review(id: string, params: GitHubWorldReviewParams): void {
+        this.get(id).pullRequest?.reviews.push(params);
+    }
+
+    /**
+     * Starts the viewer's draft review on github.com, or with `null` submits or discards it. Whether that moves
+     * `updated_at` on GitHub isn't known (code review D21), so here it doesn't: only the statuses' read can find out.
+     */
+    setPendingReview(id: string, review: GitHubWorldPendingReview | null): void {
+        const { pullRequest } = this.get(id);
+        if (pullRequest) {
+            pullRequest.pendingReview = review;
+        }
     }
 
     /** Adds a stack of open pull requests; returns their node ids, bottom first. */
@@ -1531,6 +1585,22 @@ export class GitHubWorld {
                 notFoundErrors(ids, id => this.readItem(id) !== undefined),
             );
         });
+        github.graphql('PullRequestPendingReviews', ({ variables }) => {
+            const ids = readIds(variables);
+            return new GitHubPartialAnswer<'PullRequestPendingReviews'>(
+                {
+                    nodes: ids.map(id => {
+                        const node = this.readNode(id);
+                        if (!node) {
+                            return null;
+                        }
+
+                        return node.__typename === 'PullRequest' ? node : {};
+                    }),
+                },
+                notFoundErrors(ids, id => this.readItem(id) !== undefined),
+            );
+        });
         // Every pull request of each stack, deleted ones left out; a stack the world has not is not there.
         github.graphql('PullRequestStacks', ({ variables }) => ({
             nodes: readIds(variables).map(id => {
@@ -1649,6 +1719,18 @@ export class GitHubWorld {
 
             const before = parseCursor(variables.before) ?? item.comments.length;
             return { node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE) } };
+        });
+        github.graphql('MoreReviews', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item?.pullRequest) {
+                return new GitHubPartialAnswer<'MoreReviews'>({ node: null }, [notFoundError(id, ['node'])]);
+            }
+
+            const { reviews } = item.pullRequest;
+            return {
+                node: { id, reviews: toReviewPage(item, reviews, parseCursor(variables.before) ?? reviews.length) },
+            };
         });
     }
 
@@ -2639,6 +2721,8 @@ export class GitHubWorld {
             failingChecks: params.failingChecks ?? 0,
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
+            reviews: [],
+            pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             mergeabilityUnknown: params.mergeabilityUnknown ?? false,
@@ -2821,6 +2905,7 @@ export class GitHubWorld {
                 contextPage: { totalCount: 0, nodes: [] },
             },
             latestReviews: { nodes: [] },
+            reviews: toReviewPage(item, item.pullRequest.reviews, item.pullRequest.reviews.length),
             reviewRequests: {
                 nodes: item.pullRequest.reviewRequests.map(login => ({ requestedReviewer: createUser(login) })),
             },
@@ -2881,6 +2966,19 @@ export class GitHubWorld {
                 nodes: pullRequest.reviewRequests.map(login => ({ requestedReviewer: { login } })),
             },
             latestOpinionatedReviews: { nodes: [] },
+            pendingReviews: {
+                nodes: pullRequest.pendingReview
+                    ? [
+                          {
+                              id: `PRR_${item.id}`,
+                              createdAt: new Date(
+                                  Date.now() - pullRequest.pendingReview.minutesAgo * 60_000,
+                              ).toISOString(),
+                              comments: { totalCount: pullRequest.pendingReview.comments },
+                          },
+                      ]
+                    : [],
+            },
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
@@ -3311,6 +3409,21 @@ function toCommentPage(item: WorldItem, before: number, count: number) {
         totalCount: item.comments.length,
         pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
         nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment)),
+    };
+}
+
+function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams[], before: number) {
+    const start = Math.max(0, before - REVIEW_PAGE);
+    return {
+        pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
+        nodes: reviews.slice(start, before).map(review => ({
+            id: review.id,
+            url: `${toUrl(item)}#pullrequestreview-${review.id}`,
+            author: createUser(review.author),
+            state: review.state,
+            bodyHTML: review.bodyHtml ?? '',
+            submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
+        })),
     };
 }
 

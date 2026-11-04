@@ -74,6 +74,7 @@ const {
     RequiredRunning,
     Sending,
     SentReopened,
+    SettingsBeingRead,
 } = composeStories(stories);
 
 test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub writes its default (D6)', async () => {
@@ -85,6 +86,31 @@ test('PM8: ⌘↵ merges before the read arrives, with no commit text — GitHub
 
     await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
     await expect.element(panel()).not.toBeInTheDocument();
+});
+
+test("PM8: ⌘↵ before the repository's settings merges once they arrive, the primary busy until then", async () => {
+    await SettingsBeingRead.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).toHaveAttribute('aria-busy', 'true');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
+
+    document.querySelector<HTMLElement>('[tid="settingsArrive"]')?.click();
+
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('{"method":"SQUASH"}');
+});
+
+test('PM8: ⌘↵ before settings that could not be read is dropped: settings arriving later send nothing', async () => {
+    await SettingsBeingRead.run();
+
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    document.querySelector<HTMLElement>('[tid="settingsLost"]')?.click();
+    await expect.element(page.getByRole('button', { name: 'No method to merge with' })).toBeDisabled();
+
+    document.querySelector<HTMLElement>('[tid="settingsArrive"]')?.click();
+
+    await expect.element(page.getByRole('button', { name: 'Squash and merge' })).toBeEnabled();
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 
 test('PM8: before the read, ⌘↵ merges when only a check not required failed — not auto-merge', async () => {

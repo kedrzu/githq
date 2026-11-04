@@ -1,0 +1,351 @@
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<script lang="ts">
+import type { VNodeChild } from 'vue';
+
+/** The slot's props. */
+export interface AnchoredListSlotProps<T> {
+  row: T;
+}
+
+/** What a template ref to the list gives. */
+export interface AnchoredListExposed {
+  /** Lands the row at `offset` from the viewport's top and holds it there; an unknown key leaves the list as it is. */
+  jumpTo(key: string, offset?: number): void;
+  /**
+   * Gives the list the focus, for the keys to scroll it, moving nothing and without a focus ring: nobody got there by
+   * keyboard, whatever the browser concludes from the last key pressed. Tabbing back to it shows the ring as usual.
+   */
+  focus(): void;
+  /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
+  getRowOffset(key: string): number | null;
+  /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
+  readonly anchor: AnchoredListAnchor | null;
+  /** The key of the first row showing under the pinned one, reactive: `anchor` is usually hidden behind that. */
+  readonly firstVisibleKey: string | null;
+}
+
+/** How far the rendered rows reach beyond the viewport, each way: about a screen. */
+const OVERSCAN = 600;
+/** A difference in scroll position only float arithmetic can make: writing it would disturb a scroll in progress. */
+const SCROLL_EPSILON = 0.01;
+
+/**
+ * Draws one row. It is a component so that the list re-rendering, which it does whenever rows move, runs a row's slot
+ * only if the row itself changed: a position is the wrapper's in the list's own render. The slot is a plain prop because
+ * a `<slot>` inside `v-for` compiles to dynamic slots, which update the child every time.
+ */
+function AnchoredListCell<T>(props: AnchoredListCellProps<T>) {
+  return props.render({ row: props.row });
+}
+
+interface AnchoredListCellProps<T> extends AnchoredListSlotProps<T> {
+  render: (slotProps: AnchoredListSlotProps<T>) => VNodeChild;
+}
+</script>
+
+<script lang="ts" setup generic="T extends AnchoredListRow">
+import { assertValue } from '@nzyme/utils/assert.js';
+import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue';
+import type { ObjectDirective } from 'vue';
+
+import { createAnchoredListModel } from './anchoredList/createAnchoredListModel.js';
+import type {
+  AnchoredListAnchor,
+  AnchoredListPinnedRow,
+  AnchoredListPlacedRow,
+  AnchoredListRange,
+  AnchoredListRow,
+} from './anchoredList/createAnchoredListModel.js';
+
+const props = withDefaults(
+  defineProps<{
+    rows: readonly T[];
+    /** A row's height until it has been drawn. */
+    estimateHeight: (row: T) => number;
+    isPinned?: (row: T) => boolean;
+    /** What the list is, for screen readers. */
+    label: string;
+  }>(),
+  { isPinned: () => false },
+);
+
+const emit = defineEmits<{
+  /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
+  userScroll: [];
+}>();
+
+const slots = defineSlots<{
+  default(slotProps: AnchoredListSlotProps<T>): VNodeChild;
+}>();
+
+const scroller = useTemplateRef<HTMLElement>('scroller');
+const spacer = useTemplateRef<HTMLElement>('spacer');
+const model = createAnchoredListModel<T>({
+  estimateHeight: row => props.estimateHeight(row),
+  isPinned: row => props.isPinned(row),
+});
+model.setRows(props.rows);
+
+const anchor = shallowRef(model.anchor);
+const firstVisibleKey = shallowRef<string | null>(null);
+const focusedQuietly = shallowRef(false);
+const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
+const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
+
+const observer = new ResizeObserver(onResize);
+const measuredKeys = new WeakMap<Element, string>();
+const rowsToObserve = new Set<Element>();
+const vMeasured: ObjectDirective<HTMLElement, string> = {
+  mounted(element, { value }) {
+    measuredKeys.set(element, value);
+    if (observationHeldBack === 0) {
+      observer.observe(element, { box: 'border-box' });
+    } else {
+      rowsToObserve.add(element);
+    }
+  },
+  beforeUnmount(element) {
+    // A row scrolled out takes its focus with it: the keys stay with the list instead of falling to the page.
+    if (element.contains(document.activeElement)) {
+      focus();
+    }
+
+    rowsToObserve.delete(element);
+    observer.unobserve(element);
+  },
+};
+
+let observationHeldBack = 0;
+let shownRange: AnchoredListRange = { start: 0, end: 0 };
+let viewportHeight = 0;
+/** What the browser says the scroll position is since we last wrote or read it: anything else is the user's. */
+let knownScrollTop = 0;
+
+watch(
+  () => props.rows,
+  rows => {
+    model.setRows(rows);
+    anchor.value = model.anchor;
+    applyLayout();
+  },
+);
+
+defineExpose({ jumpTo, focus, getRowOffset, anchor, firstVisibleKey });
+
+onMounted(() => {
+  const element = assertValue(scroller.value);
+  viewportHeight = element.clientHeight;
+  observer.observe(element);
+  applyLayout();
+});
+
+onBeforeUnmount(() => {
+  observer.disconnect();
+  cancelAnimationFrame(observationHeldBack);
+});
+
+function jumpTo(key: string, offset = 0) {
+  if (model.jumpTo(key, offset)) {
+    anchor.value = model.anchor;
+    applyLayout();
+  }
+}
+
+function getRowOffset(key: string) {
+  const placed = placedRows.value.find(({ row }) => row.key === key);
+  return placed ? placed.top - knownScrollTop : null;
+}
+
+function focus() {
+  focusedQuietly.value = true;
+  // Not there anymore when the whole list goes with the row that had the focus.
+  scroller.value?.focus({ preventScroll: true });
+}
+
+function onScroll() {
+  // A scroll event may still be on its way to a list that has been unmounted.
+  const scrollTop = scroller.value?.scrollTop;
+  if (scrollTop === undefined || scrollTop === knownScrollTop) {
+    return;
+  }
+
+  knownScrollTop = scrollTop;
+  model.captureAnchor(scrollTop);
+  anchor.value = model.anchor;
+  showWindow(false);
+  emit('userScroll');
+}
+
+/** One observer call is the whole frame's observations of these elements, so it is one layout. */
+function onResize(entries: ResizeObserverEntry[]) {
+  const element = assertValue(scroller.value);
+  // A list that is not displayed reports every row at 0: that says nothing about the rows.
+  const height = element.clientHeight;
+  if (height === 0) {
+    return;
+  }
+
+  let changed = height !== viewportHeight;
+  viewportHeight = height;
+  for (const entry of entries) {
+    const key = measuredKeys.get(entry.target);
+    const size = entry.borderBoxSize[0];
+    if (key !== undefined && size !== undefined && model.setMeasuredHeight(key, size.blockSize)) {
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    applyLayout();
+    holdBackObservation();
+  }
+}
+
+/**
+ * Rows this layout brings in are drawn before the browser leaves its resize loop; observing them right away would have
+ * it report "ResizeObserver loop completed with undelivered notifications". They wait for the next frame, whose
+ * rendering delivers them before anything is painted from their measurements.
+ */
+function holdBackObservation() {
+  if (observationHeldBack !== 0) {
+    return;
+  }
+
+  observationHeldBack = requestAnimationFrame(() => {
+    observationHeldBack = 0;
+    for (const element of rowsToObserve) {
+      observer.observe(element, { box: 'border-box' });
+    }
+
+    rowsToObserve.clear();
+  });
+}
+
+/**
+ * Puts the anchor back where it belongs after the heights or the rows changed. The spacer comes first, as the browser
+ * clamps a position to what it can scroll to at the moment of writing; while the anchor is out of reach it is kept as
+ * asked, and each later layout tries again.
+ */
+function applyLayout() {
+  const element = assertValue(scroller.value);
+  const total = model.total;
+  assertValue(spacer.value).style.height = `${total}px`;
+
+  const scrollTop = Math.min(Math.max(model.anchorScrollTop, 0), Math.max(total - viewportHeight, 0));
+  if (Math.abs(scrollTop - knownScrollTop) > SCROLL_EPSILON) {
+    element.scrollTop = scrollTop;
+    // Read back: the browser rounds the position to its pixels, and the scroll event to come must not look like the user's.
+    knownScrollTop = element.scrollTop;
+  }
+
+  showWindow(true);
+}
+
+function showWindow(layoutChanged: boolean) {
+  const range = model.rangeBetween(knownScrollTop - OVERSCAN, knownScrollTop + viewportHeight + OVERSCAN);
+  if (layoutChanged || range.start !== shownRange.start || range.end !== shownRange.end) {
+    shownRange = range;
+    placedRows.value = model.placeRows(range);
+  }
+
+  const pinned = model.pinnedAt(knownScrollTop);
+  if (layoutChanged || pinned?.index !== pinnedRow.value?.index || pinned?.pushUp !== pinnedRow.value?.pushUp) {
+    pinnedRow.value = pinned;
+  }
+
+  firstVisibleKey.value = model.firstVisibleRow(knownScrollTop)?.key ?? null;
+}
+</script>
+
+<template>
+  <div
+    ref="scroller"
+    :class="[css.anchoredList, focusedQuietly && css.anchoredList_quiet]"
+    role="region"
+    :aria-label="label"
+    tabindex="0"
+    @blur="focusedQuietly = false"
+    @scroll.passive="onScroll"
+  >
+    <!-- Sticky, of no height: it stays out of the scroll height and off the scrollbar. -->
+    <div
+      v-if="pinnedRow"
+      :class="css.anchoredList_pin"
+    >
+      <div
+        :key="pinnedRow.row.key"
+        v-measured="pinnedRow.row.key"
+        :class="css.anchoredList_pinnedRow"
+        :style="{ top: `${-pinnedRow.pushUp}px` }"
+      >
+        <AnchoredListCell
+          :row="pinnedRow.row"
+          :render="slots.default"
+        />
+      </div>
+    </div>
+    <div
+      ref="spacer"
+      :class="css.anchoredList_spacer"
+    >
+      <div
+        v-for="placed in placedRows"
+        :key="placed.row.key"
+        v-measured="placed.row.key"
+        :class="css.anchoredList_row"
+        :style="{ top: `${placed.top}px` }"
+      >
+        <AnchoredListCell
+          :row="placed.row"
+          :render="slots.default"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" module="css">
+.anchoredList {
+  @include focus-ring;
+
+  position: relative;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  // The browser's own anchoring would fight ours.
+  overflow-anchor: none;
+
+  // Inside the scroller, which clips what is drawn outside it.
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}
+
+.anchoredList_quiet:focus-visible {
+  outline: none;
+}
+
+.anchoredList_spacer {
+  position: relative;
+  // Its height is set, and rows come and go inside it: their layout has no business outside.
+  contain: strict;
+}
+
+.anchoredList_row,
+.anchoredList_pinnedRow {
+  position: absolute;
+  right: 0;
+  left: 0;
+}
+
+.anchoredList_pin {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 0;
+}
+
+.anchoredList_pinnedRow {
+  background: $color-bg;
+}
+</style>

@@ -75,6 +75,9 @@ handful of their own repositories the two parts mostly overlap.
 [Why not simply copy everything](DECISIONS.md#d4). Any other repository can still be browsed: read on demand while
 its screen is open, never in the background, and let go soon after ([D34](DECISIONS.md#d34)).
 
+Reviewing a pull request adds code to that: the contents of the files it changes stay in the browser until you sign
+out, so a pull request read once reopens at once ([code review D19](../code-review/DECISIONS.md#d19)).
+
 ## How the copy stays fresh
 
 GitHub cannot tell a web page that something changed — that would need a server to receive its webhooks — so

@@ -1,0 +1,28 @@
+renamedFrom:
+  en: from {path}
+collapse:
+  en: Collapse file
+expand:
+  en: Expand file
+viewed:
+  en: Viewed
+changedSince:
+  en: Changed since your last visit
+lockFile:
+  en: lock file
+generated:
+  en: generated · .gitattributes
+large:
+  en: large
+notInDiff:
+  en: No longer in this pull request's diff
+notListed:
+  en: Not among the files GitHub has listed
+threadsOpen:
+  en: '{count} open'
+threadsOutdated:
+  en: '{count} outdated'
+threadsLineGone:
+  en: '{count} outdated, line gone'
+threadsResolved:
+  en: '{count} resolved'

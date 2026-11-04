@@ -1,13 +1,5 @@
 reviews:
   en: Reviews
-approved:
-  en: Approved
-changesRequested:
-  en: Changes requested
-commented:
-  en: Commented
-dismissed:
-  en: Dismissed
 pending:
   en: Pending
 requested:

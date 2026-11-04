@@ -1,5 +1,5 @@
 import { deleteDB, openDB } from 'idb';
-import type { DBSchema, IDBPDatabase } from 'idb';
+import type { DBSchema } from 'idb';
 
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
@@ -14,9 +14,11 @@ import type {
 import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/RepositoryPersistence.js';
 import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
+import { getReviewBlobDatabaseName } from '@/review/ReviewBlobStore.js';
 import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
+import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 import type { WorkflowPersistenceShape } from '@/workflows/WorkflowPersistence.js';
 import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
@@ -34,7 +36,7 @@ import type { Item } from './ItemTypes.js';
  * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` or what a tab says of itself changes, so tabs of two githq versions do not
  * hear each other, and a tab of one is not left waiting for a tab of another.
  */
-export const LOCAL_DATABASE_VERSION = 11;
+export const LOCAL_DATABASE_VERSION = 15;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -95,8 +97,15 @@ interface LocalDatabase extends DBSchema {
  * the next `load`: a write or read must never bring back a database deleted on sign-out.
  */
 export function createIndexedDbPersistence(): IndexedDbPersistence {
-    const connections = new Map<string, Promise<IDBPDatabase<LocalDatabase>>>();
     const newerVersionListeners: (() => void)[] = [];
+    const { connect, getOpen, forget } = createDatabaseConnections(
+        login => open(getLocalDatabaseName(login)),
+        () => {
+            for (const listener of newerVersionListeners) {
+                listener();
+            }
+        },
+    );
 
     return {
         onNewerVersion: listener => {
@@ -182,8 +191,10 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function destroy(login: string) {
         // Not waiting for this tab's connection to close: the deletion is queued behind it by IndexedDB itself,
         // and a `load` called after this one is queued behind the deletion.
-        connections.delete(login);
-        await deleteDB(getLocalDatabaseName(login));
+        forget(login);
+        // The contents of the files they reviewed go with it: `ReviewBlobStore` keeps them apart only so that they
+        // survive a raise of this database's version.
+        await Promise.all([deleteDB(getLocalDatabaseName(login)), deleteDB(getReviewBlobDatabaseName(login))]);
     }
 
     async function loadDetailVersions(login: string) {
@@ -333,47 +344,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function saveCommitRefs(login: string, refs: KeptCommitRefs) {
         const db = await getOpen(login);
         await db.put('commitRefs', refs);
-    }
-
-    /** The connection `load` opened; rejects when there is none (anymore). */
-    async function getOpen(login: string) {
-        const connection = connections.get(login);
-        if (!connection) {
-            throw new Error(`The local copy of ${login} is not open`);
-        }
-
-        return await connection;
-    }
-
-    function connect(login: string) {
-        let connection = connections.get(login);
-        if (!connection) {
-            connection = open(getLocalDatabaseName(login)).then(db => {
-                db.addEventListener('versionchange', event => {
-                    db.close();
-                    if (connections.get(login) === connection) {
-                        connections.delete(login);
-                    }
-
-                    // `null`: the copy is being deleted — another tab signing out — not replaced by a newer one.
-                    if (event.newVersion !== null) {
-                        for (const listener of newerVersionListeners) {
-                            listener();
-                        }
-                    }
-                });
-                return db;
-            });
-
-            connections.set(login, connection);
-            connection.catch(() => {
-                if (connections.get(login) === connection) {
-                    connections.delete(login);
-                }
-            });
-        }
-
-        return connection;
     }
 }
 

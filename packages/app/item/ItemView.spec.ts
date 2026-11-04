@@ -375,9 +375,7 @@ test('F3: a ready pull request leads with "Merge…" — ⇧M, its button and th
     // Beside it, by their text: the header has its own GitHub button, an icon alone.
     const gitHub = page.getByRole('link', { name: 'Open on GitHub' }).filter({ hasText: 'Open on GitHub' });
     await expect.element(gitHub).toHaveAttribute('aria-keyshortcuts', 'O');
-    await expect
-        .element(page.getByRole('link', { name: 'Review files' }))
-        .toHaveAttribute('aria-keyshortcuts', 'Shift+O');
+    await expect.element(page.getByRole('link', { name: 'Review files' })).toHaveAttribute('aria-keyshortcuts', 'D');
     await expect.element(page.getByText("githq doesn't merge")).not.toBeInTheDocument();
 
     await userEvent.click(merge);

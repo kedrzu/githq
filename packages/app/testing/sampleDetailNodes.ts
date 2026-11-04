@@ -73,6 +73,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         statusCheckRollup: null,
         reviewRequests: { nodes: [] },
         latestOpinionatedReviews: { nodes: [] },
+        pendingReviews: { nodes: [] },
         stack: null,
         stackEntry: null,
         baseRefOid: 'base-oid',
@@ -90,6 +91,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         commits: { totalCount: 1 },
         headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },
+        reviews: { pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
         projectItems: { nodes: [] },
     };
 }

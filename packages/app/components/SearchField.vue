@@ -109,7 +109,7 @@ defineExpose({
   font-family: inherit;
   font-size: inherit;
   line-height: 16px;
-  color: $color-fg;
+  color: var(--search-field-color, #{$color-fg});
   background: none;
   border: none;
   outline: none;

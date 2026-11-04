@@ -6,6 +6,7 @@ import { effectScope } from 'vue';
 
 import { ITEM_ARRANGEMENTS } from '@/item/itemRoutes.js';
 import type { ItemArrangement } from '@/item/itemRoutes.js';
+import type { DiffLayout } from '@/review/diff/buildDiffRows.js';
 
 import { Browser } from './Browser.js';
 
@@ -15,10 +16,15 @@ const LOG_WRAP_KEY = 'githq.logWrap';
 const LOG_TIMES_KEY = 'githq.logTimes';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
 const PANEL_SHARE_KEY_PREFIX = 'githq.panelShare.';
+const REVIEW_LAYOUT_KEY = 'githq.reviewLayout';
+const REVIEW_HIDE_WHITESPACE_KEY = 'githq.reviewHideWhitespace';
+const REVIEW_FILE_LIST_HIDDEN_KEY = 'githq.reviewFileListHidden';
+const REVIEW_CONVERSATION_SHOWN_KEY = 'githq.reviewConversationShown';
+const REVIEW_THREADS_IN_COLLAPSED_KEY = 'githq.reviewThreadsInCollapsed';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, and how job logs show. The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -45,6 +51,23 @@ export const LocalPreferences = defineService({
         const sidebarCollapsed = getFlag(SIDEBAR_COLLAPSED_KEY);
         const logWrap = getFlag(LOG_WRAP_KEY);
         const logTimes = getFlag(LOG_TIMES_KEY);
+        const reviewHideWhitespace = getFlag(REVIEW_HIDE_WHITESPACE_KEY);
+        const reviewFileListHidden = getFlag(REVIEW_FILE_LIST_HIDDEN_KEY);
+        const reviewConversationShown = getFlag(REVIEW_CONVERSATION_SHOWN_KEY);
+        const reviewLayout = storageRef<DiffLayout>({
+            key: REVIEW_LAYOUT_KEY,
+            storage,
+            default: () => 'split',
+            serialize: value => value,
+            deserialize: raw => (raw === 'unified' ? 'unified' : 'split'),
+        });
+        const reviewThreadsInCollapsed = storageRef<boolean>({
+            key: REVIEW_THREADS_IN_COLLAPSED_KEY,
+            storage,
+            default: () => true,
+            serialize: String,
+            deserialize: raw => raw !== 'false',
+        });
         const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
         // that component is gone (the item panel, once the item moves to the modal).
@@ -59,6 +82,14 @@ export const LocalPreferences = defineService({
                 if (key === null || key === flagKey) {
                     flag.reload();
                 }
+            }
+
+            if (key === null || key === REVIEW_LAYOUT_KEY) {
+                reviewLayout.reload();
+            }
+
+            if (key === null || key === REVIEW_THREADS_IN_COLLAPSED_KEY) {
+                reviewThreadsInCollapsed.reload();
             }
 
             for (const [panelKey, size] of panelSizes) {
@@ -77,6 +108,16 @@ export const LocalPreferences = defineService({
             logWrap,
             /** Whether a job's log shows each line's own time (actions W4d). */
             logTimes,
+            /** Split or unified, in every code review. */
+            reviewLayout,
+            /** Whether a code review leaves whitespace changes out, in every one. */
+            reviewHideWhitespace,
+            /** Whether a code review's diff has the whole width, in every one (⌘B, D26). */
+            reviewFileListHidden,
+            /** Whether a code review shows the pull request's conversation beside the diff, in every one (⌥⌘B, D5, D26). */
+            reviewConversationShown,
+            /** Whether a collapsed file in a code review shows its threads under its header, in every one (D13). */
+            reviewThreadsInCollapsed,
             getPanelWidth,
             getPanelShare,
         };

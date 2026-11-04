@@ -79,7 +79,7 @@ is.
 A thread on code that has changed since is still shown in its file. GitHub sends each comment with the few lines of
 code it was written on, so githq looks for the commented line in the file as it is now; found exactly once, the
 thread sits there, otherwise at the top of its file with the old code beside it. Either way it is marked outdated. A
-thread on a file that is gone from the diff — deleted, or created and deleted again within the pull request — gets
+thread on a file that is gone from the diff — created and deleted again within the pull request — gets
 an entry of its own in the file list, until it is resolved. [Outdated threads](DECISIONS.md#d12).
 
 A thread on a line you cannot see — inside collapsed context, on a whitespace change you hid, in a collapsed file —
@@ -106,8 +106,8 @@ your filters and expanded context. Leave a pull request halfway and come back, a
 
 ## Moving through a stack
 
-`J` and `K` already walk pull requests in githq — through a stack and on into the next one — and they keep that
-meaning in a review. Files are `[` and `]`. The stack's map sits at the top of the review, one click per pull
+In a review `J` and `K` walk the pull requests of the stack, then on along the list you came from: the next stack, as one
+step. Files are `[` and `]`. The stack's map sits at the top of the review, one click per pull
 request, and the command palette goes to any of them. [The keys](DECISIONS.md#d16).
 
 ## Writing a review
@@ -135,17 +135,10 @@ bottleneck. [Measured, not assumed](DECISIONS.md#d20). Files are fetched when a 
 browser's database by their content's id, which never changes, so a pull request read once reopens at once;
 fetching ahead of time for pull requests waiting on you may come later ([fetching](DECISIONS.md#d19)).
 
-## What ships first
-
-Reading comes first: everything above except writing, plus the warnings about open drafts, which help even while the
-drafts are still written on github.com. Writing — comments, replies, resolving threads, drafts and submitting — comes
-second. [The order](DECISIONS.md#d23).
-
 ## What this leaves out
 
 Applying suggestions, a combined diff across a stack (GitHub has none either), and fetching files ahead of time.
 
 ## Where this stands
 
-The design is closed, with nothing open. The screens are being designed from [the brief](ui/review-a-pull-request.md); reading, with the open-draft
-warnings, is built first.
+The design is closed, with nothing open. The screens are in [the brief](ui/review-a-pull-request.md).

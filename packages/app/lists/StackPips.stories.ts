@@ -51,6 +51,20 @@ export const Narrow: Story = {
     },
 };
 
+/** One with the viewer's draft review carries an amber dot, a tall one too (code review D28). */
+export const WithDraft: Story = {
+    args: {
+        pips: sampleListStack(
+            HELD.map((pr, index) =>
+                index < 2
+                    ? { ...pr, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+                    : pr,
+            ),
+        ).description.pips,
+        current: HELD[0]!.id,
+    },
+};
+
 /** The pips drawn: the children of the decoration. */
 function getPips(canvasElement: HTMLElement) {
     return [...(canvasElement.querySelector('[aria-hidden="true"]')?.children ?? [])];

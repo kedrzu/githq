@@ -1,4 +1,4 @@
-<!-- A stack's pips (D6, D14, D16): one per pull request, first to last, each in its own state — a missing one hollow while the copy is incomplete. Beside an entry holding a share of the stack's open pull requests, or on a lone row's marker, only those of the entry or the row are drawn in their state: the stack's other open ones are hollow (SP24). The pip of the row's own pull request is tall (SP13), and so is that of the one opened over the list (D14). Narrower beyond 12. Decoration: the words beside them say how the stack stands. -->
+<!-- A stack's pips (D6, D14, D16): one per pull request, first to last, each in its own state — a missing one hollow while the copy is incomplete. Beside an entry holding a share of the stack's open pull requests, or on a lone row's marker, only those of the entry or the row are drawn in their state: the stack's other open ones are hollow (SP24). The pip of the row's own pull request is tall (SP13), and so is that of the one opened over the list (D14). One with the viewer's draft review carries an amber dot (code review D28). Narrower beyond 12. Decoration: the words beside them say how the stack stands. -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
@@ -23,17 +23,23 @@ const props = withDefaults(
 interface ShownPip {
   readonly kind: StackPip['kind'] | 'hollow';
   readonly tall: boolean;
+  /** The viewer has a draft review on it (code review D28). */
+  readonly draft: boolean;
 }
 
 const shown = computed(() =>
   props.pips.map((pip): ShownPip => {
     if (pip.kind === 'missing') {
-      return { kind: 'missing', tall: false };
+      return { kind: 'missing', tall: false, draft: false };
     }
 
     const { filled } = props;
     const hollow = filled !== null && isOpenPullRequest(pip.pullRequest) && !filled.has(pip.pullRequest.id);
-    return { kind: hollow ? 'hollow' : pip.kind, tall: pip.pullRequest.id === props.current };
+    return {
+      kind: hollow ? 'hollow' : pip.kind,
+      tall: pip.pullRequest.id === props.current,
+      draft: pip.pullRequest.pendingReview !== null,
+    };
   }),
 );
 const narrow = computed(() => props.pips.length > MAX_WIDE_PIPS);
@@ -47,7 +53,12 @@ const narrow = computed(() => props.pips.length > MAX_WIDE_PIPS);
     <span
       v-for="(pip, index) in shown"
       :key="index"
-      :class="[css.stackPips_pip, css[`stackPips_pip_${pip.kind}`], pip.tall && css.stackPips_pip_tall]"
+      :class="[
+        css.stackPips_pip,
+        css[`stackPips_pip_${pip.kind}`],
+        pip.tall && css.stackPips_pip_tall,
+        pip.draft && css.stackPips_pip_withDraft,
+      ]"
     />
   </span>
 </template>
@@ -74,6 +85,23 @@ const narrow = computed(() => props.pips.length > MAX_WIDE_PIPS);
 
 .stackPips_pip_tall {
   height: 10px;
+}
+
+// Scaled from the amber dot on the stack bar's square (`Stack bar / Place · soft, draft`) to what a pip's height leaves.
+.stackPips_pip_withDraft {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    top: -3px;
+    right: -2px;
+    width: 5px;
+    height: 5px;
+    content: '';
+    background: $color-amber;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px $color-bg;
+  }
 }
 
 .stackPips_pip_merged {

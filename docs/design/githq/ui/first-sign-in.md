@@ -21,7 +21,7 @@ projects githq should copy in full.
 2. **GitHub's consent screen.** This one is not ours. It will say githq wants "full access to
    repositories" and access to projects. The wording is broad because GitHub has nothing narrower. One
    line under each "Sign in with GitHub" on the landing page warns about it and says that githq only touches
-   issues, pull requests and projects; its "Why?" leads to the full explanation on the Privacy page.
+   issues, pull requests and the code they change, and projects; its "Why?" leads to the full explanation on the Privacy page.
 3. **Back in githq: choosing what to track.** If the user's account already holds saved settings, githq
    offers to load them instead ([settings sync](../../settings-sync/README.md)). Otherwise githq lists the user's
    repositories and projects. Their own repositories are pre-selected, and organisation repositories are not. The
