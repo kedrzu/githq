@@ -1,6 +1,3 @@
-#Bad heading
-*   bad   list
-
-
+# CI proof
 
 A throwaway file.
