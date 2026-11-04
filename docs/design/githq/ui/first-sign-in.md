@@ -60,9 +60,10 @@ projects githq should copy in full.
 
 ## Also part of this path
 
-- **Changing what I track, later.** The same choice as on first sign-in, in settings, the only place to start
-  tracking something ([why](../../settings-sync/DECISIONS.md#d15)). Settings is reached from the command menu and the
-  menu on the signed-in user. A tracked item's own menu can still stop tracking it.
+- **Changing what I track, later.** The same choice as on first sign-in, in settings
+  ([why](../../settings-sync/DECISIONS.md#d15)); a repository can also start from the command menu on its own screen
+  ([D31](../DECISIONS.md#d31)). Settings is reached from the command menu and the menu on the signed-in user. A tracked
+  item's own menu can still stop tracking it.
 - **Account.** Who I'm signed in as, signing out (which also clears the copy kept in this browser), and the
   organisations whose private data is hidden, each with a way to request approval.
 

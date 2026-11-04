@@ -67,6 +67,9 @@ of which the user cares about five.
 Rejected: mirror everything the user can see — expensive first sync and clutter for members of large orgs,
 and still misses contributions to repos the user isn't a member of.
 
+A third kind of local data, "browsed", joined these two on 2026-11-04: a repository the user only looks at, read on
+demand and never in the background. See [D31](#d31).
+
 ### D5
 
 On the dashboard a PR's status means: CI checks, review state (approved / changes requested / review
@@ -596,6 +599,55 @@ widening the strip past 100 px in every row was rejected, and so was recording a
 
 **Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
 only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
+
+### D31
+
+**Any repository GitHub shows the user can be found from the command menu, browsed as if tracked, and tracked from there**
+(owner, 2026-11-04). In the owner's words: "to search GitHub for any repository, enter it and browse it as if it were our
+repository... it is not tracked, so we don't fetch in the background, only on demand... never in the background". A
+repository only browsed is **browsed**: a third kind of local data beside "about me" and "tracked" ([D4](#d4)).
+
+**Every untracked repository's screen is this full view,** however it was reached: search, a typed `owner/name`, a link, a
+row of my work's "Other repositories". The same toolbar, List and Board, state filter, grouping and sort as a tracked
+repository, plus a "not tracked" chip and how much is read. Rows edit as tracked ones do, by the user's permission. This
+replaces J3 for repositories (J5, J6); untracked projects keep theirs. Workflows stay tracked-only (actions D4) and Commits
+does not change. When GitHub does not show the repository the screen says so, with the way to GitHub, and asks nothing more
+(J7).
+
+**The rows are ordinary items in the item store, held by a hold.** A tab holds a repository while its screen is open there
+and for 10 minutes after leaving it. The user's other tabs know of the hold through presence, and it ends with its tab. Once
+none holds it, the rows nothing else keeps go at my work's next clean-up; a row in my work, a tracked repository or a tracked
+project stays as before. No cap while held, since each page is the user scrolling. **No sync loop reads a browsed row:** not
+the change polls, pull request statuses, stack reads or detail prefetch. Requests come only from the section on screen, its
+scrolling, or the user opening an item.
+
+**When it reads.**
+
+- A section read within the last 10 seconds asks nothing on entering. Otherwise the cached rows show at once and one REST
+  conditional check goes, free when GitHub answers 304.
+- While the section is on screen in a visible tab, the check repeats every 60 seconds, the interval of a tracked
+  repository's change poll. Only the section shown is checked.
+- Pages come on scroll in List, 100 issues or 30 pull requests at a time. On the Board, whose columns scroll on their own,
+  one "Read more" button in the toolbar reads the next page.
+- The toolbar says "N of M": M is GitHub's total for the section and state, N the rows listed for them. Grouping and sort
+  work on what is read. A stack is shown as far as read and is never completed by reading more of it.
+
+**Tracking also starts from the command menu:** "Track repository" on an untracked repository's screen. Until now Settings
+was the only place ([settings-sync D15](../settings-sync/DECISIONS.md#d15)), and Settings keeps its picker. "Search
+repositories…" is a command in the menu, and only its submenu asks GitHub, from two typed characters once typing pauses.
+Nothing else outside the menu: no button for search or tracking on the screen. Screens E6 to E10.
+
+**Why.** Looking through someone else's repository meant either tracking it, which mirrors it in full and polls it for good,
+or leaving for github.com. Reading only what the user scrolls to keeps a repository of thousands of issues cheap, and a hold
+keeps coming back to it instant without any request in the background.
+
+**Known cost.** Counts per group and a board's columns describe what is read, not the repository. Paging positions don't
+survive a reload: the section reads from its first page again.
+
+**Rejected.** A separate in-memory store with read-only rows: simpler to keep out of the sync loops, but the owner picked full
+edits in the shared store (2026-11-04), so a browsed row behaves like any other. Reading a whole section at once: a large
+repository would cost its whole allowance for a look. A refresh with no poll: rows on screen would go stale in silence,
+when the conditional check is free.
 
 ## Open questions
 
