@@ -115,5 +115,5 @@ export const Offline: Story = { args: { content: { kind: 'offline' } } };
 /** U48: GitHub answered with an error, or not at all. */
 export const Failed: Story = { args: { content: { kind: 'failed' } } };
 
-/** U48 on a Development build: the link is to the releases, what failed to load. */
+/** U48 on a Development build: the link is to its commits, which is where its changes are. */
 export const FailedOnDevelopment: Story = { args: { content: { kind: 'failed' }, commitsUrl: COMMITS_URL } };

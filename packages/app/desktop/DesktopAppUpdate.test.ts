@@ -18,7 +18,6 @@ test('an update the native side readies is offered, and nothing restarts until t
 
     native.emit(READY);
 
-    expect(update.readyVersion).toBe('1.4.0');
     expect(update.notice).toEqual(READY);
     // Offered, never forced: no restart while the user has not asked for one.
     await settle();
@@ -37,7 +36,7 @@ test('it listens before it asks, so what happened before the app listened is kno
     expect(update.state).toBeNull();
     expect(update.notice).toBeNull();
 
-    await waitUntil(() => update.readyVersion === '1.4.0', WAIT);
+    await waitUntil(() => update.notice?.kind === 'ready', WAIT);
     expect(native.calls).toEqual(['listen', 'update_status']);
 });
 
@@ -49,7 +48,7 @@ test('an event that arrives before the answer is not overwritten by it', async (
     await waitUntil(() => native.calls.includes('update_status'), WAIT);
     await settle();
 
-    expect(update.readyVersion).toBe('1.4.0');
+    expect(update.notice).toEqual(READY);
 });
 
 test('"Later" hides the offer until the app next starts, whatever a check nobody asked for does', async () => {
@@ -58,14 +57,12 @@ test('"Later" hides the offer until the app next starts, whatever a check nobody
 
     update.later();
 
-    expect(update.readyVersion).toBeNull();
     expect(update.notice).toBeNull();
     // Told again in this run, it stays hidden.
     native.emit(READY);
-    expect(update.readyVersion).toBeNull();
+    expect(update.notice).toBeNull();
     native.emit({ kind: 'checking' });
     native.emit(READY);
-    expect(update.readyVersion).toBeNull();
     expect(update.notice).toBeNull();
     await settle();
     expect(native.calls).not.toContain('update_restart');
@@ -74,7 +71,7 @@ test('"Later" hides the offer until the app next starts, whatever a check nobody
     const nextStart = createFakeNative();
     nextStart.status = { ...STATE, activity: READY };
     const restarted = createUpdate(nextStart);
-    await waitUntil(() => restarted.readyVersion === '1.4.0', WAIT);
+    await waitUntil(() => restarted.notice?.kind === 'ready', WAIT);
 });
 
 test('a check the user asks for brings an offer put off by "Later" back', async () => {
@@ -86,7 +83,6 @@ test('a check the user asks for brings an offer put off by "Later" back', async 
     expect(update.notice).toEqual({ kind: 'checking' });
     native.emit(READY, { manual: true });
 
-    expect(update.readyVersion).toBe('1.4.0');
     expect(update.notice).toEqual(READY);
 });
 
@@ -197,7 +193,6 @@ test('the install says so whether or not anyone asked, and offers nothing while 
     for (const manual of [false, true]) {
         native.emit({ kind: 'installing', version: '1.4.0' }, { manual });
         expect(update.notice).toEqual({ kind: 'installing', version: '1.4.0' });
-        expect(update.readyVersion).toBeNull();
     }
 });
 
@@ -235,7 +230,6 @@ test('a native side that cannot listen offers nothing and breaks nothing', async
     await settle();
 
     expect(update.state).toBeNull();
-    expect(update.readyVersion).toBeNull();
     expect(update.notice).toBeNull();
 });
 
@@ -277,7 +271,7 @@ test('a storage that refuses costs the memory, not the updates', async () => {
     await waitUntil(() => update.state !== null, WAIT);
 
     native.emit(READY);
-    expect(update.readyVersion).toBe('1.4.0');
+    expect(update.notice).toEqual(READY);
 });
 
 const WAIT = { intervalMs: 1, timeoutMs: 1000 };

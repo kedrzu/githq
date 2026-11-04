@@ -59,8 +59,6 @@ export interface VersionChange {
 export interface AppUpdateShape {
     /** All the native side says; `null` on the web and before its first answer; reactive. */
     readonly state: UpdateState | null;
-    /** The version ready to run (`1.4.0`) while it is offered; `null` before, and after "Later"; reactive. */
-    readonly readyVersion: string | null;
     /** What the status bar shows, if anything; reactive. */
     readonly notice: UpdateNotice | null;
     /**
@@ -81,7 +79,7 @@ export interface AppUpdateShape {
     setStream(stream: UpdateStream): void;
     /** Restarts into the ready version, or tries installing it again. */
     restart(): void;
-    /** Stops offering the update until the app next starts, or until the user checks again. */
+    /** Hides the update from the status bar until the app next starts, or until the user checks again. */
     later(): void;
     /** Closes the outcome of a check; the next check the user asks for can notice again. */
     dismiss(): void;
@@ -92,7 +90,6 @@ export const AppUpdate = defineInterface<AppUpdateShape>({
     name: 'AppUpdate',
     default: () => ({
         state: null,
-        readyVersion: null,
         notice: null,
         previousVersion: null,
         untoldChange: null,
@@ -123,6 +120,18 @@ export function isOlderVersion(version: string, other: string) {
     const [major = 0, minor = 0, patch = 0] = parseCore(version);
     const [otherMajor = 0, otherMinor = 0, otherPatch = 0] = parseCore(other);
     return (major - otherMajor || minor - otherMinor || patch - otherPatch) < 0;
+}
+
+/**
+ * Whether `version` comes after `other`, a prerelease part counting as semver has it: `0.1.0` is newer than
+ * `0.1.0-dev.214`, the build that led up to it. Two prereleases of one core aren't told apart.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isNewerVersion(version: string, other: string) {
+    return (
+        isOlderVersion(other, version) ||
+        (isPrereleaseVersion(other) && !isPrereleaseVersion(version) && !isOlderVersion(version, other))
+    );
 }
 
 function parseCore(version: string) {

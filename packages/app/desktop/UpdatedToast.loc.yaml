@@ -5,6 +5,6 @@ updatedDetail:
 olderTitle:
   en: You're on githq {version}
 olderDetail:
-  en: The newest Stable, older than the Development build you were on. Your GitHub data is being fetched again.
+  en: The newest Stable, older than the Development build you were on. Your GitHub data may be fetched again.
 whatChanged:
   en: What changed

@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32); in the desktop app "Check for updates", on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, while an update is ready "Restart to update" and "Update later" (U1), after a failed install "Try again to install the update" and "Update later" (U40), each only while it can run (D18). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J5); "Search repositories…" asks GitHub from its submenu (E7–E10). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32); in the desktop app "Check for updates", on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, while an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J5); "Search repositories…" asks GitHub from its submenu (E7–E10). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -182,7 +182,7 @@ useCommands(() => {
 
 /** The updater's actions, each only while it can run (D18) — only ever in the desktop app (`AppUpdate`). */
 function getUpdateCommands(): Command[] {
-  const { state, readyVersion, notice } = update;
+  const { state, notice } = update;
   if (state === null) {
     return [];
   }
@@ -200,32 +200,32 @@ function getUpdateCommands(): Command[] {
     commands.push(getSwitchCommand(state));
   }
 
-  if (readyVersion !== null) {
-    commands.push(
-      {
-        id: 'app.restartToUpdate',
-        title: t(l.restartToUpdate),
-        detail: t(l.updateVersion, { version: readyVersion }),
-        section: 'app',
-        icon: CircleArrowDown,
-        run: () => update.restart(),
-      },
-      getUpdateLaterCommand(),
-    );
+  const { activity } = state;
+  if (activity.kind === 'ready') {
+    commands.push({
+      id: 'app.restartToUpdate',
+      title: t(l.restartToUpdate),
+      detail: t(l.updateVersion, { version: activity.version }),
+      section: 'app',
+      icon: CircleArrowDown,
+      run: () => update.restart(),
+    });
   }
 
-  if (notice?.kind === 'installFailed') {
-    commands.push(
-      {
-        id: 'app.retryInstall',
-        title: t(l.retryInstall),
-        detail: t(l.updateVersion, { version: notice.version }),
-        section: 'app',
-        icon: RotateCcw,
-        run: () => update.restart(),
-      },
-      getUpdateLaterCommand(),
-    );
+  if (activity.kind === 'installFailed') {
+    commands.push({
+      id: 'app.retryInstall',
+      title: t(l.retryInstall),
+      detail: t(l.updateVersion, { version: activity.version }),
+      section: 'app',
+      icon: RotateCcw,
+      run: () => update.restart(),
+    });
+  }
+
+  // "Later" hides the status bar's segment and nothing else, so it goes with the segment.
+  if (notice?.kind === 'ready' || notice?.kind === 'installFailed') {
+    commands.push(getUpdateLaterCommand());
   }
 
   return commands;

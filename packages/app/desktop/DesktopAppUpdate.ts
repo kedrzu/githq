@@ -53,10 +53,6 @@ export function createDesktopAppUpdate({
         get state() {
             return state.value;
         },
-        get readyVersion() {
-            const activity = state.value?.activity;
-            return activity?.kind === 'ready' && !hidden.value ? activity.version : null;
-        },
         get notice() {
             return notice.value;
         },

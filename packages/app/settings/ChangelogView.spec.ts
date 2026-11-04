@@ -132,15 +132,15 @@ test('U47: offline waits, and offers no link, by the button or by its key', asyn
     expect(Offline.args.onOpenOnGitHub).not.toHaveBeenCalled();
 });
 
-test('U48: a failure says so and links to the releases, on a Development build too', async () => {
+test('U48: a failure says so and links to the releases', async () => {
     await Failed.run();
     await expect.element(page.getByText("Couldn't load the changelog")).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^All releases on GitHub/ })).toBeVisible();
 });
 
-test('U48 on a Development build links to the releases, what failed to load', async () => {
+test('U48 on a Development build links to its commits, where its changes are', async () => {
     await FailedOnDevelopment.run();
 
-    await userEvent.click(page.getByRole('button', { name: /^All releases on GitHub/ }));
-    expect(FailedOnDevelopment.args.onOpenOnGitHub).toHaveBeenCalledExactlyOnceWith(RELEASES_URL);
+    await userEvent.click(page.getByRole('button', { name: /^All commits on GitHub/ }));
+    expect(FailedOnDevelopment.args.onOpenOnGitHub).toHaveBeenCalledExactlyOnceWith(COMMITS_URL);
 });

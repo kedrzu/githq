@@ -72,7 +72,6 @@ function mount(change: VersionChange | null) {
     const untold = shallowRef(change);
     const update = {
         state: null,
-        readyVersion: null,
         notice: null,
         previousVersion: change?.previousVersion ?? null,
         get untoldChange() {

@@ -107,6 +107,11 @@ export const ToStableDownloading: Story = {
     args: { state: { ...LEAVING, activity: { kind: 'downloading', version: '0.2.0', percent: 62 } } },
 };
 
+/** A download begun on Development and overtaken by the switch: not the newest Stable, whatever the stream says now. */
+export const DevelopmentDownloadOvertaken: Story = {
+    args: { state: { ...LEAVING, activity: { kind: 'downloading', version: '0.3.0-dev.216', percent: 62 } } },
+};
+
 /** U15: to Stable, ready. */
 export const ToStableReady: Story = { args: { state: { ...LEAVING, activity: { kind: 'ready', version: '0.2.0' } } } };
 

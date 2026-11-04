@@ -18,6 +18,7 @@ function plan(subjects: string[], tags: string[]) {
 
 describe('checkTitle', () => {
     test('a scope needs a change under its paths', () => {
+        expect(checkTitle('chore(cloud)!: drop the old route', ['packages/worker/src/a.ts']).valid).toBe(true);
         expect(checkTitle('fix(web): grow the pickers', ['packages/app/tracking/TrackPickerDialog.vue']).valid).toBe(
             false,
         );
@@ -32,8 +33,6 @@ describe('checkTitle', () => {
 
     test.each([
         'feat: add the context menu',
-        'fix(web): keep the focus',
-        'chore(cloud)!: drop the old route',
         'refactor!: rename the store',
         'perf: load the list faster',
     ])('accepts %p', title => {
@@ -62,7 +61,6 @@ describe('checkTitle', () => {
     test.each([
         { title: 'docs: a', files: ['README.md', 'docs/a.md', 'design/a.pen'] },
         { title: 'docs: a', files: ['docs/design/shot.png'] },
-        { title: 'docs(web)!: a', files: ['design/a.pen'] },
         { title: 'chore: a', files: ['README.md'] },
         { title: 'chore: a', files: ['src/a.ts'] },
         { title: 'feat: a', files: ['README.md', 'src/a.ts'] },

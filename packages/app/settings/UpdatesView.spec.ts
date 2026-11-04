@@ -23,6 +23,7 @@ const {
     Windows,
     ConfirmSwitch,
     ToStableDownloading,
+    DevelopmentDownloadOvertaken,
     ToStableReady,
     DevelopmentReadyOnStable,
     ToStableOffline,
@@ -77,7 +78,7 @@ for (const [name, story, title, detail] of [
         'U15: ready, to an older Stable',
         ToStableReady,
         'githq 0.2.0 is ready',
-        `${STILL_STABLE} Your GitHub data is fetched again after the restart.`,
+        `${STILL_STABLE} Your GitHub data may be fetched again after the restart.`,
     ],
     [
         'a Development build still ready after the switch',
@@ -123,6 +124,12 @@ for (const [name, story, title, detail] of [
 for (const [name, story, title, value] of [
     ['U7: downloading', Downloading, 'Found githq 0.2.1. Downloading, 38%', '38'],
     ['U14: to Stable', ToStableDownloading, 'Found githq 0.2.0, the newest Stable. Downloading, 62%', '62'],
+    [
+        'a Development download overtaken by the switch',
+        DevelopmentDownloadOvertaken,
+        'Found githq 0.3.0-dev.216. Downloading, 62%',
+        '62',
+    ],
 ] as const) {
     test(`${name} says how far it is, and the bar says the same`, async () => {
         await story.run();

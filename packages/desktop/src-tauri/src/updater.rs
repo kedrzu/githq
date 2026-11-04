@@ -4,9 +4,12 @@
 //! Nothing restarts on its own.
 //!
 //! On macOS the download is installed at once: the plugin replaces the app on disk and the running one goes on, so the
-//! new version starts at the next launch, whether the user restarts now or quits later. On Linux and Windows it installs
-//! only at the user's restart: Linux may ask for an administrator password, which the user can refuse and retry, and the
-//! Windows installer quits the app.
+//! new version starts at the next launch, whether the user restarts now or quits later. If that fails, because the app is
+//! somewhere only an administrator may replace it and they refused the prompt, say, the package is kept and the update is
+//! ready all the same: timed checks stop, so nothing asks again unprompted, and Restart installs it, where a failure shows
+//! as `InstallFailed`. A failed install is not a failed check. On Linux and Windows it installs only at the user's restart:
+//! Linux may ask for an administrator password, which the user can refuse and retry, and the Windows installer quits the
+//! app.
 //!
 //! The native side owns one state, [`UpdateState`]. Every change sends it whole as the `update-state` event, and
 //! `update_status` answers it, so a window that starts listening and then asks once can't miss one. Errors are logged and
@@ -110,16 +113,15 @@ pub struct UpdateState {
     activity: Activity,
 }
 
-/// The downloaded update that `update_restart` installs. The plugin verifies its signature again when installing.
+/// The downloaded update that `update_restart` installs. Its install is the plugin's, which verifies the signature again.
 struct Package {
-    update: Update,
-    bytes: Vec<u8>,
+    install: Box<dyn Fn() -> tauri_plugin_updater::Result<()> + Send + Sync>,
 }
 
 /// A downloaded and verified update.
 struct Ready {
     version: String,
-    /// What is still to be installed on Linux and Windows; `None` on macOS, where it already is.
+    /// What is still to be installed; `None` once it is, which on macOS it usually is by the time it's ready.
     package: Option<Arc<Package>>,
 }
 
@@ -134,6 +136,8 @@ enum Job {
 
 /// What happens to the state, free of the app so that it can be tested.
 struct Inner {
+    /// The running version, which [`UpdateState`] carries only as text.
+    running: Version,
     state: UpdateState,
     ready: Option<Ready>,
     /// The user asked for a check that hasn't started.
@@ -145,6 +149,7 @@ struct Inner {
 impl Inner {
     fn new(version: &Version, commit: Option<&str>, stream: Stream, can_choose: bool) -> Self {
         Self {
+            running: version.clone(),
             state: UpdateState {
                 version: version.to_string(),
                 commit: commit.map(str::to_owned),
@@ -183,14 +188,37 @@ impl Inner {
         Some(Job::Check)
     }
 
-    /// How a check or a download ended, unless an update is ready: that one is never lost, and stays on offer.
+    /// How a check or a download ended, unless an update is ready: that one stays on offer, unless the stream the user is
+    /// on now wouldn't take it.
     fn settle(&mut self, activity: Activity) {
+        self.drop_unwanted_update();
         self.state.activity = match &self.ready {
             Some(ready) => Activity::Ready {
                 version: ready.version.clone(),
             },
             None => activity,
         };
+    }
+
+    /// Drops a waiting update the stream wouldn't accept, one from the stream the user left. Only while it can still be
+    /// dropped: one already installed on macOS is what runs next, whatever the stream (D5).
+    fn drop_unwanted_update(&mut self) {
+        let unwanted = self.ready.as_ref().is_some_and(|ready| {
+            ready.package.is_some()
+                && Version::parse(&ready.version)
+                    .is_ok_and(|waiting| !is_update(self.state.stream, &self.running, &waiting))
+        });
+        if unwanted {
+            self.ready = None;
+        }
+    }
+
+    /// How long until the next timed check. Once an update is ready the timed checks stop: the next launch runs it, and
+    /// checks again from there.
+    fn timed_check_interval(&self) -> Option<Duration> {
+        self.ready
+            .is_none()
+            .then(|| check_interval(self.state.stream))
     }
 
     /// A check found nothing to download, or failed.
@@ -344,11 +372,15 @@ fn write_stream(file: &Path, stream: Stream) -> std::io::Result<()> {
 }
 
 /// Whether a release is an update: strictly greater, except that a running version with a prerelease part on Stable takes
-/// any stable release, even an older one, so leaving Development gets away from its bugs at once (D5). The rule holds no
+/// any stable release, even an older one, so leaving Development gets away from its bugs at once (D5). Stable never takes a
+/// prerelease: its manifest offers none, but a build still waiting from Development is judged here too. The rule holds no
 /// state, so it survives being offline or a failed download.
 fn is_update(stream: Stream, current: &Version, release: &Version) -> bool {
+    if stream == Stream::Stable && !release.pre.is_empty() {
+        return false;
+    }
     if stream == Stream::Stable && !current.pre.is_empty() {
-        return release.pre.is_empty();
+        return true;
     }
     release > current
 }
@@ -372,13 +404,24 @@ fn check_interval(stream: Stream) -> Duration {
 /// What the window is told about a failed check or download.
 fn failure_activity(error: &Error) -> Activity {
     match error {
-        Error::ReleaseNotFound => Activity::NoRelease,
         Error::Reqwest(error) if error.is_connect() || error.is_timeout() => Activity::Failed {
             reason: FailReason::Offline,
         },
         _ => Activity::Failed {
             reason: FailReason::Unreachable,
         },
+    }
+}
+
+/// What a manifest's status says when the plugin found no release: only a 404 means the stream has none. Anything else is
+/// GitHub not answering as it should, a rate limit or an outage, which the next check retries.
+fn status_activity(status: reqwest::StatusCode) -> Activity {
+    if status == reqwest::StatusCode::NOT_FOUND {
+        Activity::NoRelease
+    } else {
+        Activity::Failed {
+            reason: FailReason::Unreachable,
+        }
     }
 }
 
@@ -427,16 +470,9 @@ pub fn start(app: &AppHandle) {
     });
 }
 
-/// Waits for a request or the next timed check, and answers whether a timed check is due. Once an update is ready the
-/// timed checks stop: the next launch runs it, and checks again from there.
+/// Waits for a request or the next timed check, and answers whether a timed check is due.
 async fn wait(updates: &Updates) -> bool {
-    let interval = {
-        let inner = updates.lock();
-        inner
-            .ready
-            .is_none()
-            .then(|| check_interval(inner.state.stream))
-    };
+    let interval = updates.lock().timed_check_interval();
 
     match interval {
         Some(interval) => tokio::time::timeout(interval, updates.wake.notified())
@@ -461,11 +497,8 @@ async fn check(app: &AppHandle, updates: &Updates) {
             });
             return;
         }
-        Err(error) => {
-            eprintln!("Could not check for updates, retrying later: {error}");
-            updates.change(app, |inner| {
-                inner.finish_check(failure_activity(&error), now_ms());
-            });
+        Err(activity) => {
+            updates.change(app, |inner| inner.finish_check(activity, now_ms()));
             return;
         }
     };
@@ -480,12 +513,30 @@ async fn check(app: &AppHandle, updates: &Updates) {
     }
 }
 
-async fn find_update(
+/// Asks for the stream's manifest: the update it offers if any, or what the window is told about why not.
+async fn find_update(app: &AppHandle, stream: Stream) -> Result<Option<Update>, Activity> {
+    let manifest =
+        manifest_url(stream, since_epoch().as_secs()).map_err(|error| check_failed(&error))?;
+
+    match ask_plugin(app, stream, manifest.clone()).await {
+        Err(Error::ReleaseNotFound) => Err(manifest_activity(manifest).await),
+        Err(error) => Err(check_failed(&error)),
+        Ok(update) => Ok(update),
+    }
+}
+
+fn check_failed(error: &Error) -> Activity {
+    eprintln!("Could not check for updates, retrying later: {error}");
+    failure_activity(error)
+}
+
+async fn ask_plugin(
     app: &AppHandle,
     stream: Stream,
+    manifest: Url,
 ) -> tauri_plugin_updater::Result<Option<Update>> {
     app.updater_builder()
-        .endpoints(vec![manifest_url(stream, since_epoch().as_secs())?])?
+        .endpoints(vec![manifest])?
         .version_comparator(move |current, release| is_update(stream, &current, &release.version))
         .configure_client(|client| {
             client
@@ -497,7 +548,32 @@ async fn find_update(
         .await
 }
 
-/// Downloads the update, which verifies it, and readies it; on macOS that includes installing it.
+/// The plugin says `ReleaseNotFound` for any status but a success, and drops the status: asks the manifest once more for it.
+async fn manifest_activity(manifest: Url) -> Activity {
+    match manifest_status(manifest).await {
+        Ok(status) => {
+            let activity = status_activity(status);
+            if activity != Activity::NoRelease {
+                eprintln!(
+                    "Could not check for updates, retrying later: the manifest answered {status}"
+                );
+            }
+            activity
+        }
+        Err(error) => check_failed(&Error::Reqwest(error)),
+    }
+}
+
+async fn manifest_status(manifest: Url) -> reqwest::Result<reqwest::StatusCode> {
+    let client = reqwest::Client::builder()
+        .connect_timeout(CONNECT_TIMEOUT)
+        .read_timeout(READ_TIMEOUT)
+        .build()?;
+
+    Ok(client.get(manifest).send().await?.status())
+}
+
+/// Downloads the update, which verifies it, and readies it; on macOS that includes trying to install it.
 async fn prepare(
     app: &AppHandle,
     updates: &Updates,
@@ -532,17 +608,29 @@ async fn prepare(
         return Ok(());
     }
 
-    let package = Arc::new(Package { update, bytes });
+    let package = Arc::new(Package {
+        install: Box::new(move || update.install(&bytes)),
+    });
     let package = if cfg!(target_os = "macos") {
-        // Replaces the app on disk; the running one goes on until the user restarts or quits.
-        run_install(package).await?;
-        None
+        install_now(package).await
     } else {
         Some(package)
     };
 
     updates.change(app, |inner| inner.set_ready(Ready { version, package }));
     Ok(())
+}
+
+/// Installs right after the download, which replaces the app on disk while the running one goes on until the user restarts
+/// or quits. Answers what is still to be installed: the package when that failed, for the user's restart to try again.
+async fn install_now(package: Arc<Package>) -> Option<Arc<Package>> {
+    match run_install(Arc::clone(&package)).await {
+        Ok(()) => None,
+        Err(error) => {
+            eprintln!("Could not install the update, leaving it for the restart: {error}");
+            Some(package)
+        }
+    }
 }
 
 /// Installs at the user's restart, and restarts into it. The package stays when that fails, so a further `update_restart`
@@ -562,7 +650,7 @@ async fn install(app: &AppHandle, updates: &Updates, version: String, package: A
 /// Runs the plugin's install, which verifies the signature again, away from the async threads: it blocks for as long as
 /// the system's password prompt is open.
 async fn run_install(package: Arc<Package>) -> tauri_plugin_updater::Result<()> {
-    tauri::async_runtime::spawn_blocking(move || package.update.install(&package.bytes)).await?
+    tauri::async_runtime::spawn_blocking(move || (package.install)()).await?
 }
 
 /// The state as it is now, for the window to ask once it listens for `update-state`.
@@ -620,6 +708,8 @@ pub fn update_restart(app: AppHandle, updates: State<'_, Updates>) {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
+    use wiremock::matchers::{method, path, query_param};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
 
     use super::*;
 
@@ -640,6 +730,22 @@ mod tests {
         inner.set_ready(Ready {
             version: "0.3.0".to_owned(),
             package: None,
+        });
+        inner
+    }
+
+    fn package() -> Option<Arc<Package>> {
+        Some(Arc::new(Package {
+            install: Box::new(|| Ok(())),
+        }))
+    }
+
+    /// A Development build on Development with `waiting` downloaded, `package` being what's left of installing it.
+    fn waiting_inner(waiting: &str, package: Option<Arc<Package>>) -> Inner {
+        let mut inner = Inner::new(&version("0.3.0-dev.214"), None, Stream::Development, true);
+        inner.set_ready(Ready {
+            version: waiting.to_owned(),
+            package,
         });
         inner
     }
@@ -679,6 +785,11 @@ mod tests {
     #[test]
     fn a_development_build_on_stable_refuses_another_development_build() {
         assert!(!takes(Stream::Stable, "0.3.0-dev.214", "0.3.0-dev.215"));
+    }
+
+    #[test]
+    fn stable_never_takes_a_development_build_even_a_greater_one() {
+        assert!(!takes(Stream::Stable, "0.2.0", "0.3.0-dev.215"));
     }
 
     #[test]
@@ -864,10 +975,66 @@ mod tests {
     }
 
     #[test]
-    fn a_missing_release_is_not_a_failure() {
+    fn only_a_404_from_the_manifest_means_no_release() {
         assert_eq!(
-            failure_activity(&Error::ReleaseNotFound),
+            status_activity(reqwest::StatusCode::NOT_FOUND),
             Activity::NoRelease
+        );
+
+        for status in [
+            reqwest::StatusCode::OK,
+            reqwest::StatusCode::FORBIDDEN,
+            reqwest::StatusCode::TOO_MANY_REQUESTS,
+            reqwest::StatusCode::BAD_GATEWAY,
+        ] {
+            assert_eq!(
+                status_activity(status),
+                Activity::Failed {
+                    reason: FailReason::Unreachable
+                }
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn the_manifest_is_asked_once_for_its_status() {
+        for (status, expected) in [
+            (404, Activity::NoRelease),
+            (
+                503,
+                Activity::Failed {
+                    reason: FailReason::Unreachable,
+                },
+            ),
+        ] {
+            let server = MockServer::start().await;
+            Mock::given(method("GET"))
+                .and(path("/latest.json"))
+                .and(query_param("t", "1700"))
+                .respond_with(ResponseTemplate::new(status))
+                .expect(1)
+                .mount(&server)
+                .await;
+            let manifest = format!("{}/latest.json?t=1700", server.uri());
+
+            assert_eq!(
+                manifest_activity(Url::parse(&manifest).unwrap_or_else(|error| panic!("{error}")))
+                    .await,
+                expected
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn no_answer_from_the_manifest_is_classified_as_any_failure() {
+        // Port 1 on this machine: nothing listens there.
+        let manifest = Url::parse("http://127.0.0.1:1/latest.json");
+
+        assert_eq!(
+            manifest_activity(manifest.unwrap_or_else(|error| panic!("{error}"))).await,
+            Activity::Failed {
+                reason: FailReason::Offline
+            }
         );
     }
 
@@ -1042,6 +1209,115 @@ mod tests {
                 version: "0.4.0".to_owned()
             }
         );
+    }
+
+    #[test]
+    fn switching_back_drops_a_waiting_update_the_stream_would_not_take() {
+        for outcome in [
+            Activity::UpToDate,
+            Activity::Failed {
+                reason: FailReason::Offline,
+            },
+        ] {
+            let mut inner = Inner::new(&version("0.3.0-dev.214"), None, Stream::Stable, true);
+            inner.set_ready(Ready {
+                version: "0.2.0".to_owned(),
+                package: package(),
+            });
+            assert!(inner.ready.is_some());
+
+            assert!(inner.choose_stream(Stream::Development));
+            assert!(matches!(inner.next_job(false), Some(Job::Check)));
+
+            inner.finish_check(outcome.clone(), 1700);
+
+            assert!(inner.ready.is_none());
+            assert_eq!(inner.state.activity, outcome);
+            assert!(inner.timed_check_interval().is_some());
+        }
+    }
+
+    #[test]
+    fn leaving_development_drops_a_waiting_build_even_if_the_download_of_stable_fails() {
+        let mut inner = waiting_inner("0.3.0-dev.216", package());
+        assert!(inner.choose_stream(Stream::Stable));
+        assert!(matches!(inner.next_job(false), Some(Job::Check)));
+        assert!(inner.found_update("0.2.0", 1700));
+
+        let failed = Activity::Failed {
+            reason: FailReason::Unreachable,
+        };
+        inner.settle(failed.clone());
+
+        assert!(inner.ready.is_none());
+        assert_eq!(inner.state.activity, failed);
+    }
+
+    #[test]
+    fn a_waiting_update_the_stream_still_takes_stays_on_offer() {
+        let mut inner = waiting_inner("0.3.0-dev.216", package());
+        assert!(matches!(inner.next_job(true), Some(Job::Check)));
+
+        inner.finish_check(Activity::UpToDate, 1700);
+
+        assert_eq!(
+            inner.state.activity,
+            Activity::Ready {
+                version: "0.3.0-dev.216".to_owned()
+            }
+        );
+    }
+
+    #[test]
+    fn an_update_already_installed_stays_whatever_the_stream() {
+        let mut inner = waiting_inner("0.3.0-dev.216", None);
+        assert!(inner.choose_stream(Stream::Stable));
+        assert!(matches!(inner.next_job(false), Some(Job::Check)));
+
+        inner.finish_check(Activity::UpToDate, 1700);
+
+        assert_eq!(
+            inner.state.activity,
+            Activity::Ready {
+                version: "0.3.0-dev.216".to_owned()
+            }
+        );
+    }
+
+    #[tokio::test]
+    async fn a_failed_install_after_the_download_keeps_the_package_for_the_restart() {
+        let refused = Arc::new(Package {
+            install: Box::new(|| Err(Error::Network("refused".to_owned()))),
+        });
+        let kept = install_now(refused).await;
+        assert!(kept.is_some());
+
+        let mut inner = waiting_inner("0.3.0-dev.216", kept);
+        assert_eq!(
+            inner.state.activity,
+            Activity::Ready {
+                version: "0.3.0-dev.216".to_owned()
+            }
+        );
+        assert_eq!(inner.timed_check_interval(), None);
+
+        assert!(!inner.request_restart());
+        assert_eq!(
+            inner.state.activity,
+            Activity::Installing {
+                version: "0.3.0-dev.216".to_owned()
+            }
+        );
+        assert!(matches!(inner.next_job(false), Some(Job::Install { .. })));
+    }
+
+    #[tokio::test]
+    async fn an_install_that_worked_leaves_nothing_to_install() {
+        let package = Arc::new(Package {
+            install: Box::new(|| Ok(())),
+        });
+
+        assert!(install_now(package).await.is_none());
     }
 
     #[test]

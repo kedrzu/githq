@@ -55,7 +55,7 @@ test('on the web the command menu offers no update', async () => {
     await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
 });
 
-test('while an update is ready the menu offers "Restart to update" and "Update later", gone once dismissed', async () => {
+test('while an update is ready the menu offers "Restart to update" and "Update later"; Later takes only itself away', async () => {
     const update = createUpdate('1.4.0');
     mount(update);
 
@@ -69,8 +69,8 @@ test('while an update is ready the menu offers "Restart to update" and "Update l
     expect(update.restart).not.toHaveBeenCalled();
 
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
-    await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Restart to update\s*githq 1\.4\.0$/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).not.toBeInTheDocument();
 });
 
 test('"Restart to update" restarts into the update', async () => {
@@ -141,6 +141,16 @@ test('after a failed install the menu offers trying again and Later', async () =
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
     await userEvent.keyboard('try again{Enter}');
     expect(update.restart).toHaveBeenCalledOnce();
+});
+
+test('a failed install put off by Later can still be tried again from the menu', async () => {
+    const update = createFakeUpdate({ activity: { kind: 'installFailed', version: '1.4.0' } });
+    mount({ ...update, notice: null });
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Try again/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).not.toBeInTheDocument();
 });
 
 test('Search repositories: asks once typing pauses, nothing under two characters, and Enter goes to the pick', async () => {
@@ -329,20 +339,17 @@ async function openMenu() {
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
 }
 
-/** An update ready to run, hidden by `later` as the desktop app's is. */
+/** An update ready to run, whose segment `later` hides as the desktop app's does. */
 function createUpdate(version: string) {
-    const ready = shallowRef<string | null>(version);
+    const hidden = shallowRef(false);
     const update = createFakeUpdate({ activity: { kind: 'ready', version } });
     return {
         ...update,
-        get readyVersion() {
-            return ready.value;
-        },
         get notice(): UpdateNotice | null {
-            return ready.value === null ? null : { kind: 'ready', version };
+            return hidden.value ? null : { kind: 'ready', version };
         },
         later: vi.fn(() => {
-            ready.value = null;
+            hidden.value = true;
         }),
     } satisfies AppUpdateShape;
 }
@@ -361,7 +368,6 @@ function createFakeUpdate(state: Partial<UpdateState>) {
             activity,
             ...state,
         },
-        readyVersion: activity.kind === 'ready' ? activity.version : null,
         notice: activity.kind === 'installFailed' || activity.kind === 'ready' ? activity : null,
         check: vi.fn(),
         setStream: vi.fn(),

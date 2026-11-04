@@ -1,13 +1,16 @@
-import type { GitHubRelease } from '@githq/github/rest/listReleases.js';
+import type { GitHubRelease } from '@githq/github/listReleases.js';
 import { expect, test } from 'bun:test';
 
-import { buildChangelog, findLastStable, getCommitsUrl } from './buildChangelog.js';
+import { isNewerVersion } from '@/services/AppUpdate.js';
+
+import { buildChangelog, findStableAt, getCommitsUrl } from './buildChangelog.js';
 import type { BuildChangelogParams } from './buildChangelog.js';
 
 const RELEASES: GitHubRelease[] = ['v0.1.0', 'v0.2.0', 'v0.1.10', 'v0.1.2'].map(tagName => ({
     tagName,
     publishedAt: '2026-11-03T10:00:00Z',
     bodyHtml: `<p>${tagName}</p>`,
+    tagCommit: `commit-of-${tagName}`,
 }));
 
 function build(params: Partial<BuildChangelogParams>) {
@@ -47,6 +50,14 @@ test('New is every version newer than the one the user had; with none before, no
     expect(tagged({ version: '0.1.0', previousVersion: '0.3.0-dev.214' }, 'isNew')).toEqual([]);
 });
 
+test('a Stable after a Development build of the same core is new; going back to an older line brings nothing new', () => {
+    expect(tagged({ previousVersion: '0.1.0-dev.187' }, 'isNew')).toEqual(['0.2.0', '0.1.10', '0.1.2', '0.1.0']);
+    expect(tagged({ previousVersion: '0.2.0-dev.300' }, 'isNew')).toEqual(['0.2.0']);
+    expect(tagged({ previousVersion: '0.2.0' }, 'isNew')).toEqual([]);
+    expect(isNewerVersion('0.2.0-dev.9', '0.2.0')).toBe(false);
+    expect(isNewerVersion('0.2.0', '0.3.0-dev.1')).toBe(false);
+});
+
 test('a Development build has its own fold first, filtered as release notes are', () => {
     const [first, second] = build({
         version: '0.3.0-dev.214',
@@ -67,11 +78,10 @@ test('a Development build has its own fold first, filtered as release notes are'
     expect(second).toMatchObject({ kind: 'release', version: '0.2.0' });
 });
 
-test('the last Stable of a build is the newest before it, not one that came out after it', () => {
-    expect(findLastStable(RELEASES, '0.3.0-dev.214')?.tagName).toBe('v0.2.0');
-    expect(findLastStable(RELEASES, '0.2.0-dev.100')?.tagName).toBe('v0.1.10');
-    expect(findLastStable(RELEASES, '0.1.0-dev.5')).toBeNull();
-    expect(findLastStable([], '0.1.0-dev.5')).toBeNull();
+test('the Stable on a commit is the newest by number when a commit has several', () => {
+    const [first, second] = RELEASES.map(release => ({ ...release, tagCommit: 'shared' }));
+    expect(first && second && findStableAt([first, second], 'shared')?.tagName).toBe('v0.2.0');
+    expect(findStableAt(RELEASES, 'no-such-commit')).toBeNull();
 });
 
 test('a build with no commit, a local one, links to main; a Stable version has no commits to link to', () => {

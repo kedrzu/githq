@@ -46,7 +46,7 @@ ready:
 readyDetail:
   en: Restart to start using it.
 readyStableDetail:
-  en: It's older than the build you're on, as expected. Your GitHub data is fetched again after the restart.
+  en: It's older than the build you're on, as expected. Your GitHub data may be fetched again after the restart.
 installing:
   en: Installing githq {version}…
 installFailed:
@@ -98,7 +98,7 @@ confirmTitle:
 confirmInstall:
   en: githq installs the newest Stable version right away. It can be older than {version}, the build you're on.
 confirmSync:
-  en: Your local copy of GitHub data is then fetched again. That costs one first sync and nothing else.
+  en: Your local copy of GitHub data may then be fetched again. That costs one first sync and nothing else.
 cancel:
   en: Cancel
 confirmSwitch:

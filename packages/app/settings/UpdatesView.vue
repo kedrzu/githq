@@ -126,7 +126,12 @@ function getStatus(): UpdatesStatus | null {
       return {
         icon: CircleArrowDown,
         tone: 'accent',
-        title: getDownloadingTitle(activity.version, activity.percent, leaving),
+        // A download started on Development can be overtaken by the switch: only a stable version is the newest Stable.
+        title: getDownloadingTitle(
+          activity.version,
+          activity.percent,
+          leaving && !isPrereleaseVersion(activity.version),
+        ),
         progress: activity.percent === null ? null : activity.percent / 100,
       };
     case 'ready':

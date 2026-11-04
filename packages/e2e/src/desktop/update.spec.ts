@@ -7,7 +7,6 @@ import { expect, test } from './desktopFixtures.js';
 import { signInOnDesktop } from './desktopSession.js';
 
 const READY = { kind: 'ready', version: '1.4.0' };
-const RELEASES_PATH = '/repos/kedrzu/githq/releases';
 
 test('an update readied while the app runs is offered in the status bar; Restart restarts into it, and so does "Restart to update"', async ({
     page,
@@ -33,7 +32,7 @@ test('an update readied while the app runs is offered in the status bar; Restart
     await expect.poll(() => native.restartCount).toBe(2);
 });
 
-test('an update readied before the app started is offered at once; Later hides it, and its commands go with it', async ({
+test('an update readied before the app started is offered at once; Later hides the segment and leaves Restart in the menu', async ({
     page,
     github,
     native,
@@ -44,8 +43,16 @@ test('an update readied before the app started is offered at once; Later hides i
 
     await shell.updateLaterButton.click();
     await expect(shell.updateNotice).toBeHidden();
-    await expectNoUpdateCommands(new CommandMenuHarness(page));
     expect(native.restartCount).toBe(0);
+
+    const menu = new CommandMenuHarness(page);
+    await menu.open();
+    await menu.field.pressSequentially('update');
+    await expect(menu.option(/^Update later/)).toHaveCount(0);
+    await expect(menu.option(/^Restart to update/)).toContainText('githq 1.4.0');
+    await menu.field.fill('Restart to update');
+    await page.keyboard.press('Enter');
+    await expect.poll(() => native.restartCount).toBe(1);
 });
 
 test('a check nobody asked for says nothing until the update is ready', async ({ page, github, native }) => {
@@ -286,8 +293,7 @@ test('after an update the toast says so once and What changed leads to the Chang
     await expect(page.getByRole('button', { name: /^githq 1\.3\.0/ })).toHaveAttribute('aria-expanded', 'false');
     await expect(page.getByRole('heading', { name: 'Features' })).toBeVisible();
 
-    const reads = github.restCalls.filter(call => call.url.pathname.endsWith('/releases'));
-    expect(reads).toHaveLength(1);
+    expect(github.graphqlCalls.filter(call => call.name === 'RepositoryReleases')).toHaveLength(1);
 
     await page.reload();
     await expect(shell.account(SAMPLE_VIEWER.viewer.login)).toBeVisible();
@@ -342,9 +348,7 @@ test('a Development build lists its commits since the last Stable, and O opens t
         'href',
         'https://github.com/kedrzu/githq/pull/7',
     );
-    expect(github.restCalls.find(call => call.url.pathname.endsWith('/commits'))?.url.searchParams.get('sha')).toBe(
-        'abc1234',
-    );
+    expect(github.graphqlCalls.find(call => call.name === 'CommitSubjects')?.variables.from).toBe('abc1234');
 
     await page.keyboard.press('o');
     await expect.poll(() => native.opened).toEqual(['https://github.com/kedrzu/githq/commits/abc1234']);
@@ -355,7 +359,7 @@ test('a refused read answers with the failure and the releases on GitHub, and op
     github,
     native,
 }) => {
-    github.rest('GET', RELEASES_PATH, () => ({ status: 403, json: { message: 'API rate limit exceeded' } }));
+    github.graphql('RepositoryReleases', { status: 403, message: 'API rate limit exceeded' });
     await signInOnDesktop({ page, github, native });
 
     const menu = new CommandMenuHarness(page);
@@ -373,42 +377,51 @@ test('a refused read answers with the failure and the releases on GitHub, and op
 
 /** GitHub's answers for the Changelog: two Stable versions, and commits back to the last of them. */
 function answerChangelog(github: GitHubMock) {
-    github.rest('GET', RELEASES_PATH, () => ({
-        status: 200,
-        json: [
-            {
-                tag_name: 'v1.3.0',
-                draft: false,
-                prerelease: false,
-                published_at: '2026-10-21T10:00:00Z',
-                body_html: '<h2>Fixes</h2><ul><li>Keep the focus</li></ul>',
+    github.graphql('RepositoryReleases', {
+        repository: {
+            releases: {
+                pageInfo: { hasNextPage: false, endCursor: null },
+                nodes: [
+                    {
+                        tagName: 'v1.3.0',
+                        isDraft: false,
+                        isPrerelease: false,
+                        publishedAt: '2026-10-21T10:00:00Z',
+                        descriptionHTML: '<h2>Fixes</h2><ul><li>Keep the focus</li></ul>',
+                        tagCommit: { oid: 'older' },
+                    },
+                    {
+                        tagName: 'v1.4.0',
+                        isDraft: false,
+                        isPrerelease: false,
+                        publishedAt: '2026-11-03T10:00:00Z',
+                        descriptionHTML: '<h2>Features</h2><ul><li>Merge pull requests</li></ul>',
+                        tagCommit: { oid: 'tagged' },
+                    },
+                    {
+                        tagName: 'development',
+                        isDraft: false,
+                        isPrerelease: true,
+                        publishedAt: '2026-11-04T10:00:00Z',
+                        descriptionHTML: null,
+                        tagCommit: { oid: 'abc1234' },
+                    },
+                ],
             },
-            {
-                tag_name: 'v1.4.0',
-                draft: false,
-                prerelease: false,
-                published_at: '2026-11-03T10:00:00Z',
-                body_html: '<h2>Features</h2><ul><li>Merge pull requests</li></ul>',
+        },
+    });
+    github.graphql('CommitSubjects', {
+        repository: {
+            object: {
+                history: {
+                    pageInfo: { hasNextPage: false, endCursor: null },
+                    nodes: [
+                        { oid: 'abc1234', message: 'feat: add a thing (#7)' },
+                        { oid: 'def5678', message: 'chore: tidy (#6)' },
+                        { oid: 'tagged', message: 'chore: the last Stable' },
+                    ],
+                },
             },
-            { tag_name: 'development', draft: false, prerelease: true, published_at: '2026-11-04T10:00:00Z' },
-        ],
-    }));
-    github.rest('GET', '/repos/kedrzu/githq/commits/v1.4.0', () => ({ status: 200, json: { sha: 'tagged' } }));
-    github.rest('GET', '/repos/kedrzu/githq/commits', () => ({
-        status: 200,
-        json: [
-            { sha: 'abc1234', commit: { message: 'feat: add a thing (#7)' } },
-            { sha: 'def5678', commit: { message: 'chore: tidy (#6)' } },
-            { sha: 'tagged', commit: { message: 'chore: the last Stable' } },
-        ],
-    }));
-}
-
-/** The command menu offers neither "Restart to update" nor "Update later". */
-async function expectNoUpdateCommands(menu: CommandMenuHarness) {
-    await menu.open();
-    await menu.field.pressSequentially('update');
-    await expect(menu.option(/^Restart to update/)).toHaveCount(0);
-    await expect(menu.option(/^Update later/)).toHaveCount(0);
-    await menu.page.keyboard.press('Escape');
+        },
+    });
 }

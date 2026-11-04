@@ -1,16 +1,12 @@
-import type { GitHubRelease } from '@githq/github/rest/listReleases.js';
+import type { GitHubRelease } from '@githq/github/listReleases.js';
 
+import { REPOSITORY_URL } from '@/landing/landingLinks.js';
 import { userVisibleChanges } from '@/scripts/releasePlan.js';
 import type { UserVisibleChangeGroup } from '@/scripts/releasePlan.js';
-import { isOlderVersion, isPrereleaseVersion } from '@/services/AppUpdate.js';
+import { isNewerVersion, isOlderVersion, isPrereleaseVersion } from '@/services/AppUpdate.js';
 
 /** The repository the app's versions are published in. */
-export const GITHQ_REPOSITORY = 'kedrzu/githq';
-
-const GITHQ_REPOSITORY_URL = `https://github.com/${GITHQ_REPOSITORY}`;
-
-/** The releases on GitHub. */
-export const GITHQ_RELEASES_URL = `${GITHQ_REPOSITORY_URL}/releases`;
+export const GITHQ_REPOSITORY = { owner: 'kedrzu', name: 'githq' };
 
 /** A Stable version with its own fold (U41, U42). */
 export interface ChangelogRelease {
@@ -30,7 +26,7 @@ export interface ChangelogRelease {
 /** The one fold of a Development build, for everything since the last Stable (U43, U44). */
 export interface ChangelogDevelopment {
     readonly kind: 'development';
-    /** The last Stable; `null` before the first, when the commits have no end to read to. */
+    /** The Stable the walk back from the build ended at; `null` when it met none. */
     readonly since: string | null;
     /** How many commits were read. */
     readonly commits: number;
@@ -79,7 +75,7 @@ export function buildChangelog({
             publishedAt: release.publishedAt,
             html: release.bodyHtml,
             running: released === version,
-            isNew: previousVersion !== null && isOlderVersion(previousVersion, released),
+            isNew: previousVersion !== null && isNewerVersion(released, previousVersion),
         };
     });
 
@@ -100,12 +96,11 @@ export function buildChangelog({
 }
 
 /**
- * The Stable a Development build counts from: the newest before it by number, since a Stable can come out after the build
- * that led up to it.
+ * The Stable tagged on a commit, the newest by number when a commit has several.
  * @__NO_SIDE_EFFECTS__
  */
-export function findLastStable(releases: readonly GitHubRelease[], version: string) {
-    return sortReleases(releases).find(release => isOlderVersion(getReleaseVersion(release), version)) ?? null;
+export function findStableAt(releases: readonly GitHubRelease[], commit: string) {
+    return sortReleases(releases).find(release => release.tagCommit === commit) ?? null;
 }
 
 /**
@@ -113,7 +108,7 @@ export function findLastStable(releases: readonly GitHubRelease[], version: stri
  * @__NO_SIDE_EFFECTS__
  */
 export function getCommitsUrl(version: string, commit: string | null) {
-    return isPrereleaseVersion(version) ? `${GITHQ_REPOSITORY_URL}/commits/${commit ?? 'main'}` : null;
+    return isPrereleaseVersion(version) ? `${REPOSITORY_URL}/commits/${commit ?? 'main'}` : null;
 }
 
 /**
@@ -121,7 +116,7 @@ export function getCommitsUrl(version: string, commit: string | null) {
  * @__NO_SIDE_EFFECTS__
  */
 export function getPullRequestUrl(number: number) {
-    return `${GITHQ_REPOSITORY_URL}/pull/${number}`;
+    return `${REPOSITORY_URL}/pull/${number}`;
 }
 
 /**

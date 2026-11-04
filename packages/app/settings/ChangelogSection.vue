@@ -1,4 +1,4 @@
-<!-- The Changelog section of Settings, wired to GitHub through `ChangelogStore`, in the desktop app only (`SettingsPage.vue`): opening it is what reads, and opening it again after a failure reads again. What it shows is worked out here, from what was read and which build runs (`buildChangelog.ts`, desktop releases D17). -->
+<!-- The Changelog section of Settings, wired to GitHub through `ChangelogStore`, in the desktop app only (`SettingsPage.vue`): opening it is what reads, and every further opening reads again. What it shows is worked out here, from what was read and which build runs (`buildChangelog.ts`, desktop releases D17). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, watch } from 'vue';

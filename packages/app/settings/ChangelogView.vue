@@ -1,4 +1,4 @@
-<!-- The Changelog section of Settings, in the desktop app only (desktop releases D17, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests link to GitHub. No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: its commits once a Development build shows them, else its releases; offline nothing can open, so nothing is offered. -->
+<!-- The Changelog section of Settings, in the desktop app only (desktop releases D17, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests link to GitHub. No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. -->
 <script lang="ts">
 /** What the section has to show. */
 export type ChangelogContent =
@@ -20,7 +20,9 @@ import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import type { ChangeGroupKind } from '@/scripts/releasePlan.js';
 
-import { getPullRequestUrl, GITHQ_RELEASES_URL } from './buildChangelog.js';
+import { RELEASES_URL } from '@/landing/landingLinks.js';
+
+import { getPullRequestUrl } from './buildChangelog.js';
 import type { ChangelogDevelopment, ChangelogVersion } from './buildChangelog.js';
 import * as l from './ChangelogView.loc.js';
 import * as sectionLabels from './SettingsSectionLabel.loc.js';
@@ -51,8 +53,10 @@ const id = useId();
 const list = useTemplateRef<HTMLElement>('list');
 
 const versions = computed(() => (props.content.kind === 'versions' ? props.content.versions : []));
-const showsCommits = computed(() => props.content.kind === 'versions' && props.commitsUrl !== null);
-const gitHubUrl = computed(() => (showsCommits.value && props.commitsUrl) || GITHQ_RELEASES_URL);
+const showsCommits = computed(
+  () => (props.content.kind === 'versions' || props.content.kind === 'failed') && props.commitsUrl !== null,
+);
+const gitHubUrl = computed(() => (showsCommits.value && props.commitsUrl) || RELEASES_URL);
 const gitHubLabel = computed(() => t(showsCommits.value ? l.allCommits : l.allReleases));
 const hasGitHubLink = computed(() => props.content.kind !== 'offline');
 const message = computed(() => {
