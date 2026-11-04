@@ -3267,6 +3267,20 @@ export type RepositoryAssignableUsersQuery = {
     } | null;
 };
 
+export type RepositoryBrowseSearchQueryVariables = Exact<{
+    query: string;
+}>;
+
+export type RepositoryBrowseSearchQuery = {
+    search: {
+        nodes: Array<
+            | { nameWithOwner: string; description: string | null; isPrivate: boolean }
+            | Record<PropertyKey, never>
+            | null
+        > | null;
+    };
+};
+
 export type RepositoryCommitRefsQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -3384,6 +3398,7 @@ export type RepositoryIssuesQueryVariables = Exact<{
 
 export type RepositoryIssuesQuery = {
     repository: {
+        nameWithOwner: string;
         issues: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -3507,15 +3522,6 @@ export type RepositoryMetadataQuery = {
     } | null;
 };
 
-export type RepositoryOpenCountsQueryVariables = Exact<{
-    owner: string;
-    name: string;
-}>;
-
-export type RepositoryOpenCountsQuery = {
-    repository: { issues: { totalCount: number }; pullRequests: { totalCount: number } } | null;
-};
-
 export type RepositoryPullRequestsQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -3526,6 +3532,7 @@ export type RepositoryPullRequestsQueryVariables = Exact<{
 
 export type RepositoryPullRequestsQuery = {
     repository: {
+        nameWithOwner: string;
         pullRequests: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -12422,6 +12429,19 @@ export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
   name
   avatarUrl
 }`);
+export const RepositoryBrowseSearchDocument = new TypedDocumentString(`
+    query RepositoryBrowseSearch($query: String!) {
+  search(query: $query, type: REPOSITORY, first: 20) {
+    nodes {
+      ... on Repository {
+        nameWithOwner
+        description
+        isPrivate
+      }
+    }
+  }
+}
+    `);
 export const RepositoryCommitRefsDocument = new TypedDocumentString(`
     query RepositoryCommitRefs($owner: String!, $name: String!, $withHistory: Boolean!, $withBranches: Boolean!, $withTags: Boolean!, $branchesAfter: String, $tagsAfter: String) {
   repository(owner: $owner, name: $name) {
@@ -12569,6 +12589,7 @@ export const RepositoryIssueTemplatesDocument = new TypedDocumentString(`
 export const RepositoryIssuesDocument = new TypedDocumentString(`
     query RepositoryIssues($owner: String!, $name: String!, $states: [IssueState!]!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     issues(
       first: 100
       after: $after
@@ -12762,21 +12783,10 @@ fragment RepositoryUserFields on User {
   name
   avatarUrl
 }`);
-export const RepositoryOpenCountsDocument = new TypedDocumentString(`
-    query RepositoryOpenCounts($owner: String!, $name: String!) {
-  repository(owner: $owner, name: $name) {
-    issues(states: OPEN) {
-      totalCount
-    }
-    pullRequests(states: OPEN) {
-      totalCount
-    }
-  }
-}
-    `);
 export const RepositoryPullRequestsDocument = new TypedDocumentString(`
     query RepositoryPullRequests($owner: String!, $name: String!, $states: [PullRequestState!]!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     pullRequests(
       first: $first
       after: $after
@@ -14674,6 +14684,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RepositoryAssignableUsersQuery>;
         },
+        RepositoryBrowseSearch(
+            variables: RepositoryBrowseSearchQueryVariables,
+            options?: C,
+        ): Promise<RepositoryBrowseSearchQuery> {
+            return requester<RepositoryBrowseSearchQuery, RepositoryBrowseSearchQueryVariables>(
+                RepositoryBrowseSearchDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryBrowseSearchQuery>;
+        },
         RepositoryCommitRefs(
             variables: RepositoryCommitRefsQueryVariables,
             options?: C,
@@ -14731,16 +14751,6 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositoryMetadataQuery>;
-        },
-        RepositoryOpenCounts(
-            variables: RepositoryOpenCountsQueryVariables,
-            options?: C,
-        ): Promise<RepositoryOpenCountsQuery> {
-            return requester<RepositoryOpenCountsQuery, RepositoryOpenCountsQueryVariables>(
-                RepositoryOpenCountsDocument,
-                variables,
-                options,
-            ) as Promise<RepositoryOpenCountsQuery>;
         },
         RepositoryPullRequests(
             variables: RepositoryPullRequestsQueryVariables,

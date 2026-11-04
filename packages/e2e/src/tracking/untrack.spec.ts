@@ -21,11 +21,14 @@ test('untracking a repository drops its items that nothing else keeps: those in 
     await shell.myWorkLink('My work').click();
     await expect(new MyWorkScreenHarness(page).rows('Assigned to me')).toHaveText([/Crash on start/]);
 
-    // Kept: the issue of My work, and the one the tracked project holds; the others are gone.
+    // Kept: the issue of My work, and the one the tracked project holds; the others are gone until GitHub is asked.
     const repository = new RepositoryScreenHarness(page);
+    github.holdAnswers();
     await page.goto(`/${SAMPLE_REPOSITORY}`);
-    await expect(repository.notTracked(SAMPLE_REPOSITORY)).toBeVisible();
+    await expect(repository.notTrackedChip).toBeVisible();
     await expect(repository.root.getByRole('listitem')).toHaveText([/Crash on start/, /Document the setup/]);
+    github.releaseAnswers();
+    await expect(repository.row('Add a dark theme')).toBeVisible();
 
     await shell.tracked(SAMPLE_PROJECT).click();
     await expect(new ProjectScreenHarness(page).row('Document the setup')).toBeVisible();

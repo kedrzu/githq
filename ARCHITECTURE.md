@@ -28,7 +28,7 @@ The app builds with `nuxt generate` for one of three targets (`GITHQ_TARGET`): `
 
 Routes live only in `app/router.options.ts`; a file Nuxt would route fails the build. Nothing is auto-imported. `plugins/iocPlugin.ts` creates the one IoC container, and other plugins state `dependsOn: ['ioc-plugin']`.
 
-Every screen reads the local store, and the sync engine refreshes it in the background, so navigation never waits on the network. Components have stories that run as tests in a real Chromium, with axe failing a story on an accessibility violation. Tokens are in `styles/tokens.scss`, injected through `viteShared.ts`. The product design is in `docs/design/`.
+Every screen reads the local store, and the sync engine refreshes it in the background, so navigation never waits on the network. The exception is a repository only browsed, not tracked: no sync loop touches it, and its screen reads GitHub itself, on demand, while it is on screen (`docs/design/githq/DECISIONS.md` D34). Its rows still live in the local store, so re-entering shows them at once, but the first read of a section waits on GitHub. Components have stories that run as tests in a real Chromium, with axe failing a story on an accessibility violation. Tokens are in `styles/tokens.scss`, injected through `viteShared.ts`. The product design is in `docs/design/`.
 
 ## Integrations
 

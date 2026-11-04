@@ -1,11 +1,12 @@
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowRight, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
+import { ArrowRight, CloudDownload, EyeOff, Github, Link, Settings, SquarePen } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { Browser } from '@/services/Browser.js';
+import { RepositoryTracker } from '@/tracking/RepositoryTracker.js';
 import { getRepositoryPath, getRepositorySettingsPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -24,6 +25,7 @@ export interface RepositoryCommands {
     readonly openOnGitHub: Command;
     readonly copyLink: Command;
     readonly settings: Command;
+    readonly track: Command;
     readonly untrack: Command;
 }
 
@@ -31,13 +33,15 @@ export interface RepositoryCommands {
  * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests,
  * its commits — tracked or not, git-client D11 — and its workflows only while it is tracked, actions D4), a new issue in
  * it, its page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is
- * tracked). All are of the `repository` section. The sidebar's menu of a repository offers them by name; the command
- * menu's group of the repository the screen belongs to is registered by `AppCommands`.
+ * tracked), and tracking it (only while it is not). All are of the `repository` section. The sidebar's menu of a
+ * repository offers them by name, all but tracking it; the command menu's group of the repository the screen belongs to
+ * is registered by `AppCommands`, with tracking it last (D34) and without no longer tracking it (D32).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
     const t = useTranslate();
     const router = useRouter();
     const tracking = useService(TrackingStore);
+    const tracker = useService(RepositoryTracker);
     const composer = useService(NewIssueComposer);
     const browser = useService(Browser);
     const tabs = useService(LastRepositoryTab);
@@ -110,6 +114,15 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 icon: Settings,
                 when: () => tracking.isTracked({ kind: 'repository', nameWithOwner }),
                 run: () => void router.push(getRepositorySettingsPath(nameWithOwner)),
+            },
+            track: {
+                id: 'repository.track',
+                title: t(l.track),
+                detail: t(l.trackDetail),
+                section: 'repository',
+                icon: CloudDownload,
+                when: () => !tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                run: () => void tracker.track(nameWithOwner),
             },
             untrack: {
                 id: 'repository.untrack',

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { SquareKanban } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
 import { getSettingsPath } from '@/settings/settingsRoutes.js';
@@ -11,7 +10,6 @@ import UntrackedView from './UntrackedView.vue';
 const meta = {
     component: UntrackedView,
     args: {
-        icon: SquareKanban,
         name: 'Mobile launch',
         meta: 'fitloop',
         githubUrl: 'https://github.com/orgs/fitloop/projects/4',
@@ -48,7 +46,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** J4: a project not tracked, with what concerns the user. J3 is the repository's own story. */
+/** J4: a project not tracked, with what concerns the user. */
 export const Project: Story = {};
 
 /** Nothing of it concerns the user: its group, empty, and the lines. */

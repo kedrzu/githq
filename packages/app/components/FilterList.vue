@@ -52,6 +52,8 @@ const props = withDefaults(
     multiple?: boolean;
     /** A quiet line under the rows ("Nothing matches", "Searching GitHub…"); the caller says when. */
     message?: string | null;
+    /** The heading over {@link message}, for a list that keeps its heading while it lists nothing. */
+    messageHeading?: string | null;
     /** The footer's keys after "↑↓ Move"; no footer when not given. */
     hints?: readonly FilterListHint[];
     /** Escape goes back (`back`) instead of closing what the list is in. */
@@ -64,6 +66,7 @@ const props = withDefaults(
     placeholder: undefined,
     filterLabel: undefined,
     message: null,
+    messageHeading: null,
     hints: undefined,
     size: 'md',
   },
@@ -238,13 +241,22 @@ function onKeydown(event: KeyboardEvent) {
             />
           </ListboxItem>
         </ListboxGroup>
+      </ListboxContent>
+      <!-- Outside the listbox, which may hold only its options. -->
+      <div
+        v-if="message"
+        :class="css.filterList_status"
+      >
         <p
-          v-if="message"
-          :class="css.filterList_message"
+          v-if="messageHeading"
+          :class="css.filterList_heading"
         >
+          {{ messageHeading }}
+        </p>
+        <p :class="css.filterList_message">
           {{ message }}
         </p>
-      </ListboxContent>
+      </div>
     </div>
     <slot name="afterList" />
     <footer
@@ -325,6 +337,10 @@ function onKeydown(event: KeyboardEvent) {
   cursor: default;
 }
 
+.filterList_status {
+  flex: none;
+}
+
 .filterList_message {
   color: $color-fg-dim;
 }
@@ -393,6 +409,14 @@ function onKeydown(event: KeyboardEvent) {
 .filterList_lg {
   .filterList_list {
     padding: $spacing-6;
+
+    &:empty {
+      padding: 0;
+    }
+  }
+
+  .filterList_status {
+    padding: 0 $spacing-6 $spacing-6;
   }
 
   .filterList_row {

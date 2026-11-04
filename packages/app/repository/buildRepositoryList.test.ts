@@ -40,6 +40,18 @@ test('J1: grouped by milestone — the soonest due first, those without a date a
     expect(groups.map(group => group.label)).toContain('No milestone');
 });
 
+test('on its way, a state with nothing listed yet is one group still arriving, never a list with nothing; what is listed shows', () => {
+    const { groups, count } = build([], { grouping: 'milestone', arriving: true });
+
+    expect(groups).toMatchObject([{ arrived: false, rows: [] }]);
+    expect(count).toBe(0);
+    expect(build([], { grouping: 'milestone' }).groups).toEqual([]);
+
+    const kept = build([issue('I_1')], { grouping: 'none', arriving: true });
+    expect(summarize(kept.groups)).toEqual([['all', ['I_1']]]);
+    expect(kept.groups.every(group => group.arrived)).toBe(true);
+});
+
 test('grouped by label or assignee, an item with two is under both; by issue type, those without one last', () => {
     const tagged = issue('I_1', {
         labels: [
@@ -100,6 +112,7 @@ interface BuildOptions {
     readonly state?: RepositoryState;
     readonly kind?: Item['kind'];
     readonly sort?: ItemSort;
+    readonly arriving?: boolean;
 }
 
 function build(items: readonly Item[], options: BuildOptions) {
@@ -110,6 +123,7 @@ function build(items: readonly Item[], options: BuildOptions) {
         kind: options.kind ?? 'issue',
         sort: options.sort ?? 'updated',
         texts: TEXTS,
+        arriving: options.arriving,
     });
 }
 

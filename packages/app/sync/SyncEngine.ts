@@ -143,7 +143,7 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * - `myWork`: the four "my work" searches (REST, `search` bucket — no ETag, so no free 304s), then a re-read
  *   of only the items whose `updated_at` moved (`ItemsByIds`), and each group's members;
  * - `pullRequestStatuses`: checks, reviews, the viewer's draft review, mergeability and stack of the open pull requests
- *   in "my work" and in the stacks the copy holds, and of any with a draft known (`PullRequestStatuses`), which change
+ *   in "my work" and in the stacks the copy syncs, and of any with a draft known (`PullRequestStatuses`), which change
  *   without moving `updated_at`; then the
  *   stacks the copy holds only some pull requests of are read whole (`PullRequestStacks`, stacked PRs D7);
  * - `repositories`, `projects`, `download`: the tracked repositories' and projects' change polls (free 304s)
@@ -156,6 +156,9 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * - `pendingReviews`: whether the viewer has a draft review on the open pull requests only a tracked repository or
  *   project holds (`PullRequestPendingReviews`, code review D21), as a draft moves nothing the polls watch: every 5
  *   minutes, and when the window regains focus, at most once a minute. Once found, `pullRequestStatuses` follows it.
+ *
+ * A row only browsed (`RepositoryHolds`, D34) is asked about by none of them: it is read while a screen shows it, never
+ * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
  * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
@@ -875,8 +878,8 @@ export const SyncEngine = defineService({
 
         /**
          * Removes from the store the items no "my work" group holds any more, and returns their ids — but not the
-         * items of tracked repositories and projects, or a pull request with the user's draft review: they stay,
-         * whatever "my work" says.
+         * items of tracked repositories and projects, a pull request with the user's draft review, or of a repository
+         * any tab holds: they stay, whatever "my work" says.
          */
         function removeItemsOutsideMyWork() {
             return trackedItems.evict(items.all.map(item => item.id));
@@ -904,10 +907,14 @@ export const SyncEngine = defineService({
                 }
             }
 
-            // Those copied for their stack only: nothing else re-reads them. Nor the draft of one outside "my work", or
-            // closed since: its mark would stay after the draft is gone (code review D21).
+            // Those copied for their stack only: nothing else re-reads them. Those only browsed nothing should. Nor the
+            // draft of one outside "my work", or closed since: its mark would stay after the draft is gone (code review D21).
             for (const item of items.all) {
-                if (item.kind === 'pullRequest' && ((isOpenPullRequest(item) && item.stack) || item.pendingReview)) {
+                if (
+                    item.kind === 'pullRequest' &&
+                    trackedItems.isSynced(item) &&
+                    ((isOpenPullRequest(item) && item.stack) || item.pendingReview)
+                ) {
                     open.add(item.id);
                 }
             }
@@ -1035,12 +1042,12 @@ export const SyncEngine = defineService({
          * Reads whole the stacks the copy holds fewer pull requests of than they have — merged and closed ones too —
          * so a stack's entry is whole whichever of its pull requests brought it in (stacked PRs, D7), and those it
          * holds too many of ({@link readStacksWhole}). Once the copy holds them all, one at each place, nothing is
-         * asked.
+         * asked; nor for a stack only browsed.
          */
         async function readIncompleteStacks(current: Session) {
             const held = new Map<string, { size: number; members: number; positions: Set<number> }>();
             for (const item of items.all) {
-                if (item.kind !== 'pullRequest' || !item.stack) {
+                if (item.kind !== 'pullRequest' || !item.stack || !trackedItems.isSynced(item)) {
                     continue;
                 }
 

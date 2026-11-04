@@ -306,6 +306,9 @@ collapsed.** (2026-11-01, owner; that this also removes the offers to track on a
 and the "Track repositories…" command, is the design agent's reading of "no track buttons", and untracking from a tracked item's
 menu stays)
 
+Since 2026-11-04 tracking a repository also starts from the command menu, "Track repository" on its screen: [githq D34](../githq/DECISIONS.md#d34).
+There is still no button for it outside the menu. A project still starts only here.
+
 **Why.** Owner's call on the shape of the app, made together with the settings screen this design introduces. It changes what
 [the screens of the first sign-in path](../githq/ui/first-sign-in.md) describe. A list opened for an untracked repository still works.
 

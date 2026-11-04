@@ -1,6 +1,5 @@
-<!-- A repository's view (J1–J3, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Tracked: the section's items from the local copy, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J3, CH37, `UntrackedView`): githq has only what concerns the user here; it lists that of the section — the same tabs, without counts, a stack's pull requests as one entry — and says so of the section's items: how many others are open on GitHub (their count there less the open ones listed; without a number while GitHub's count is not known), pointing to Settings, and that its commits need no tracking (D20). The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked. Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
-import Translate from '@nzyme/vue-i18n/Translate.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   ArrowRight,
@@ -9,6 +8,7 @@ import {
   Github,
   Ban,
   BookMarked,
+  EyeOff,
   ListFilter,
   Milestone,
   Shapes,
@@ -31,6 +31,7 @@ import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
+import ListEndSentinel from '@/lists/ListEndSentinel.vue';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import ListToolbar from '@/lists/ListToolbar.vue';
 import type { ListToolbarOption } from '@/lists/ListToolbarControl.vue';
@@ -39,6 +40,7 @@ import type {
   ListChoice,
   ListContextMenuProps,
   ListedItems,
+  ListEndProps,
   ListEntry,
   ListMove,
   ListViewOptions,
@@ -47,12 +49,11 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import { useItemListChoices } from '@/lists/useItemListChoices.js';
-import { getSettingsPath } from '@/settings/settingsRoutes.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
+import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { Item } from '@/store/ItemTypes.js';
 import NotTrackedChip from '@/tracking/NotTrackedChip.vue';
 import { getGitHubUrl, getRepositoryPath } from '@/tracking/trackingRoutes.js';
-import UntrackedView from '@/tracking/UntrackedView.vue';
 import type { RepositoryLayout } from '@/settings/sync/SettingsDocument.js';
 
 import type { RepositoryList, RepositoryState } from './buildRepositoryList.js';
@@ -65,7 +66,6 @@ import type { RepositoryItemSection, RepositorySection } from './RepositorySecti
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
 import * as l from './RepositoryView.loc.js';
-import { useRepositoryMeta } from './useRepositoryMeta.js';
 
 /** A project the repository's listed items live in, and the way there. */
 export interface RepositoryProjectLink {
@@ -84,14 +84,14 @@ const props = withDefaults(
     nameWithOwner: string;
     /** `null` while nothing of it is in the local copy to tell. */
     isPrivate: boolean | null;
-    /** Tracked: githq keeps its copy. Not: only what concerns the user is in it (J3). */
+    /** Tracked: githq keeps its copy. Not: what is listed is read on demand (J5). */
     tracked: boolean;
     /** The section's list; `null` on Commits, which lists no items. */
     list?: RepositoryList | null;
     /** How many open items each item section holds, on its tab while tracked. */
     openCounts: Readonly<Record<RepositoryItemSection, number>>;
-    /** Not tracked: how many open items each item section holds on GitHub; `null` while not known. */
-    gitHubOpenCounts?: Readonly<Record<RepositoryItemSection, number>> | null;
+    /** How the reading of the section's state stands while it is read on demand; else `null`. */
+    status?: BrowsedStatus | null;
     /** The projects the listed items live in, and how many listed items are in none. */
     projects?: readonly RepositoryProjectLink[];
     withoutProject?: number;
@@ -116,7 +116,7 @@ const props = withDefaults(
   }>(),
   {
     list: null,
-    gitHubOpenCounts: null,
+    status: null,
     projects: () => [],
     withoutProject: 0,
     openedId: null,
@@ -138,6 +138,8 @@ const emit = defineEmits<{
   reset: [];
   /** On Commits, the header's tool: to the list of branches and tags beside the graph. */
   openRefList: [];
+  /** Read on demand: the end of the list came in reach, or the toolbar's button was pressed. */
+  readMore: [];
 }>();
 
 const state = defineModel<RepositoryState>('state', { default: 'open' });
@@ -182,22 +184,8 @@ const SECTION_KEYS: Readonly<Record<RepositorySection, string>> = {
 };
 /** What each item section says of its items. */
 const SECTION_TEXTS = {
-  issues: {
-    count: l.issueCount,
-    liveIn: l.issuesLiveIn,
-    nothing: l.nothingIssues,
-    noneConcerns: l.noIssueConcerns,
-    others: l.otherOpenIssues,
-    othersUncounted: l.otherOpenIssuesUncounted,
-  },
-  pullRequests: {
-    count: l.pullRequestCount,
-    liveIn: l.pullRequestsLiveIn,
-    nothing: l.nothingPullRequests,
-    noneConcerns: l.noPullRequestConcerns,
-    others: l.otherOpenPullRequests,
-    othersUncounted: l.otherOpenPullRequestsUncounted,
-  },
+  issues: { liveIn: l.issuesLiveIn, nothing: l.nothingIssues },
+  pullRequests: { liveIn: l.pullRequestsLiveIn, nothing: l.nothingPullRequests },
 } as const;
 
 // An untracked repository's workflows are not read (actions D4): it has no Workflows section.
@@ -247,23 +235,12 @@ const stateOption = computed((): ListToolbarOption => {
     },
   };
 });
-const meta = useRepositoryMeta(() => props.isPrivate);
-/** Not tracked: what githq has of the section's items (J3, CH37). */
-const summary = computed(() => {
-  const name = props.nameWithOwner;
-  const count = props.list?.count ?? 0;
-  return count > 0
-    ? t(l.onlyWhatConcerns, { name, what: t(sectionTexts.value.count, { count }) })
-    : t(sectionTexts.value.noneConcerns, { name });
-});
-/** Not tracked: where the section's other open items are — their count on GitHub less the open ones listed here. */
-const others = computed(() => {
-  const texts = sectionTexts.value;
-  const shown = itemSection.value ?? 'issues';
-  const onGitHub = props.gitHubOpenCounts?.[shown];
-  return onGitHub == null
-    ? t(texts.othersUncounted)
-    : t(texts.others, { count: Math.max(0, onGitHub - props.openCounts[shown]) });
+/** How much of the section's state is read ("120 of 3412"); `null` before GitHub has said. */
+const readCount = computed(() => {
+  const total = props.status?.total ?? null;
+  return total === null || !props.list
+    ? null
+    : t(l.readCount, { read: props.list.count, total: Math.max(total, props.list.count) });
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
@@ -278,6 +255,8 @@ const columnGitHubUrl = computed(() => {
       return githubUrl.value;
   }
 });
+/** A group of the list is collapsed (`ListView`). */
+const someCollapsed = ref(false);
 const inColumn = computed(() => props.layout === 'column');
 // A column coming mounts after the pane is updated, and the graph's list must find its place there once told to go.
 const refListInColumn = ref(inColumn.value);
@@ -302,6 +281,16 @@ useCommands(() =>
   })),
 );
 
+/**
+ * What moving looks the end of the list up again; the state and the section each read pages of their own. Each page read
+ * moves it, but with a group collapsed only one that added rows on screen: a page gone into the collapsed group leaves
+ * the end where it was, in reach, and going on would read the whole repository with nothing scrolled.
+ */
+function getReadPosition({ rowsShown }: ListEndProps) {
+  const read = someCollapsed.value ? `shown:${rowsShown}` : `cursor:${props.status?.cursor ?? ''}`;
+  return `${section.value}:${state.value}:${read}`;
+}
+
 function getSectionCount(value: RepositorySection) {
   if (value === 'workflows') {
     return props.workflowCount === 'unknown' ? '–' : (props.workflowCount ?? undefined);
@@ -322,7 +311,7 @@ function getSectionCount(value: RepositorySection) {
           :tracked="tracked"
           :sections="sectionOptions"
           :github-url="columnGitHubUrl"
-          :projects="itemSection !== null && tracked ? projects : []"
+          :projects="itemSection !== null ? projects : []"
           :without-project="withoutProject"
           :projects-label="t(sectionTexts.liveIn)"
         >
@@ -342,7 +331,7 @@ function getSectionCount(value: RepositorySection) {
       <div :class="css.repositoryView_pane">
         <!-- In the column, the section's name alone, where the section has no tools of its own to put beside it. -->
         <header
-          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || !tracked)"
+          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || status?.notShown)"
           :class="css.repositoryView_header"
           v-bind="WINDOW_DRAG_REGION"
         >
@@ -432,7 +421,43 @@ function getSectionCount(value: RepositorySection) {
           />
         </template>
 
-        <template v-else-if="tracked">
+        <!-- J7: nothing of it can be listed, and none of the list's tools apply. -->
+        <template v-else-if="status?.notShown">
+          <header
+            v-if="!inColumn"
+            :class="css.repositoryView_header"
+            v-bind="WINDOW_DRAG_REGION"
+          >
+            <ListTitle :title="nameWithOwner">
+              <template
+                v-if="$slots.menu"
+                #menu
+              >
+                <slot name="menu" />
+              </template>
+            </ListTitle>
+            <NotTrackedChip />
+          </header>
+          <EmptyState
+            :icon="EyeOff"
+            :title="t(l.notShownTitle)"
+            :detail="t(l.notShownDetail)"
+          >
+            <template #action>
+              <Button
+                variant="outline"
+                size="sm"
+                :icon="Github"
+                :link="githubUrl"
+                target="_blank"
+              >
+                {{ t(l.openOnGitHub) }}
+              </Button>
+            </template>
+          </EmptyState>
+        </template>
+
+        <template v-else>
           <ListToolbar
             v-model:options="options"
             :title="inColumn ? t(l[itemSection]) : nameWithOwner"
@@ -449,11 +474,12 @@ function getSectionCount(value: RepositorySection) {
             >
               <slot name="menu" />
             </template>
-            <template
-              v-if="!inColumn"
-              #title
-            >
-              <RepositoryMeta :is-private="isPrivate" />
+            <template #title>
+              <RepositoryMeta
+                v-if="!inColumn"
+                :is-private="isPrivate"
+              />
+              <NotTrackedChip v-if="!inColumn && !tracked" />
             </template>
             <slot
               v-if="checkedIds.length > 0"
@@ -468,6 +494,21 @@ function getSectionCount(value: RepositorySection) {
               :label="t(l.sections)"
               :options="sectionOptions"
             />
+            <span
+              v-if="readCount"
+              :class="css.repositoryView_readCount"
+              >{{ readCount }}</span
+            >
+            <!-- The board's columns scroll on their own, and a short one would read everything: a button, not its end. So too
+                 with a group collapsed: a page gone into it leaves the end where it was, and reading stops until expanded. -->
+            <Button
+              v-if="status?.hasMore && (options.layout === 'board' || someCollapsed)"
+              variant="outline"
+              size="sm"
+              @click="emit('readMore')"
+            >
+              {{ t(status.reading ? l.readingMore : l.readMore) }}
+            </Button>
           </ListToolbar>
 
           <nav
@@ -508,6 +549,7 @@ function getSectionCount(value: RepositorySection) {
             @open="emit('open', $event)"
             @listed="emit('listed', $event)"
             @move="emit('move', $event)"
+            @some-collapsed="someCollapsed = $event"
           >
             <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker }">
               <StackRow
@@ -583,6 +625,17 @@ function getSectionCount(value: RepositorySection) {
               />
             </template>
             <template
+              v-if="status?.hasMore"
+              #end="end"
+            >
+              <ListEndSentinel
+                :position="getReadPosition(end)"
+                @reach="emit('readMore')"
+              >
+                <template v-if="status.reading">{{ t(l.readingMore) }}</template>
+              </ListEndSentinel>
+            </template>
+            <template
               v-if="$slots.contextMenu"
               #contextMenu="menu"
             >
@@ -593,63 +646,6 @@ function getSectionCount(value: RepositorySection) {
             </template>
           </ListView>
         </template>
-
-        <UntrackedView
-          v-else
-          v-model:selected-id="selectedId"
-          v-model:checked-ids="checkedIds"
-          :icon="BookMarked"
-          :name="nameWithOwner"
-          :meta="meta"
-          :github-url="githubUrl"
-          :rows="list.groups.flatMap(group => group.rows)"
-          :summary="summary"
-          :properties="properties"
-          :viewer-login="viewerLogin"
-          :now="now"
-          :opened-id="openedId"
-          :is-edited="isEdited"
-          :undone="undone"
-          :headerless="inColumn"
-          @open="emit('open', $event)"
-          @listed="emit('listed', $event)"
-        >
-          <template #controls>
-            <SegmentedTabs
-              v-model="section"
-              :class="css.repositoryView_sections"
-              :label="t(l.sections)"
-              :options="sectionOptions"
-            />
-          </template>
-          <template #others>
-            <p>
-              <Translate :t="l.onlyConcernsYou">
-                <template #name>{{ nameWithOwner }}</template>
-                <template #others>{{ others }}</template>
-                <template #settings>
-                  <Button
-                    variant="link"
-                    :link="getSettingsPath('repositories', nameWithOwner)"
-                  >
-                    {{ t(l.settings) }}
-                  </Button>
-                </template>
-              </Translate>
-            </p>
-            <!-- D20: the explanation is about the items; Commits needs no tracking. -->
-            <p>{{ t(l.commitsNeedNoTracking) }}</p>
-          </template>
-          <template
-            v-if="$slots.contextMenu"
-            #contextMenu="menu"
-          >
-            <slot
-              name="contextMenu"
-              v-bind="menu"
-            />
-          </template>
-        </UntrackedView>
       </div>
     </RepositoryColumnSplit>
   </div>
@@ -708,6 +704,13 @@ function getSectionCount(value: RepositorySection) {
   font-size: $font-size-xs;
   color: $color-fg-dim;
   border-bottom: 1px solid $color-border;
+}
+
+.repositoryView_readCount {
+  flex: none;
+  font-family: $font-family-mono;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
 }
 
 .repositoryView_count {
