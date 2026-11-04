@@ -812,7 +812,7 @@ test('W4k: without permission to re-run the command is not there', async ({ page
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
-    await expect(menu.option(/Open on GitHub/u)).toBeVisible();
+    await expect(menu.option(/Open on GitHub/u).first()).toBeVisible();
     await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
 });
 

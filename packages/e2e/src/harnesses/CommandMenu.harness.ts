@@ -2,8 +2,8 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for the command menu (`CommandMenu.vue`, ⌘K): its field, its lines — actions, values found
- * directly, places and items — and the submenu it is in.
+ * Playwright harness for the command menu (`CommandMenu.vue`, ⌘K): its field and chip, its lines — actions, values found
+ * directly, places and items — the groups they sit in and the submenu it is in.
  */
 export class CommandMenuHarness {
     readonly page: Page;
@@ -22,6 +22,16 @@ export class CommandMenuHarness {
     /** A line of the list, by its text. */
     option(name: string | RegExp): Locator {
         return this.root.getByRole('option', { name });
+    }
+
+    /** The group of lines headed `name`: a repository's actions sit under its name. */
+    group(name: string): Locator {
+        return this.root.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name, exact: true });
+    }
+
+    /** The chip in the field's line, naming what the actions act on. */
+    chip(name: string | RegExp): Locator {
+        return this.field.locator('xpath=..').getByText(name, { exact: typeof name === 'string' });
     }
 
     /** Opens it with ⌘K (Ctrl+K) — again until it shows: a key pressed while the screen still loads is lost. */

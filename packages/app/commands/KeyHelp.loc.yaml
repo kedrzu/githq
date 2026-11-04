@@ -6,5 +6,7 @@ item:
   en: Opened item
 view:
   en: This view
+repository:
+  en: This repository
 app:
   en: Anywhere

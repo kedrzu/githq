@@ -5,8 +5,15 @@ import type { Locator } from 'vitest/browser';
 
 import * as stories from './CommandMenu.stories.jsx';
 
-const { OnOpenItem, OnOpenItemAsContributor, Typing, SeveralSelected, Closed, MatchInHiddenWord } =
-    composeStories(stories);
+const {
+    OnOpenItem,
+    OnOpenItemInRepository,
+    OnOpenItemAsContributor,
+    Typing,
+    SeveralSelected,
+    Closed,
+    MatchInHiddenWord,
+} = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
 function getMarks(row: Locator) {
@@ -72,6 +79,26 @@ test('Escape steps back out of a submenu, then closes; ⌫ in the empty field ta
 
     await userEvent.keyboard('{Escape}');
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).not.toBeInTheDocument();
+});
+
+test('⌫ in the empty field takes out the item, then the repository with its group', async () => {
+    await OnOpenItemInRepository.run();
+
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const repositoryGroup = menu.getByRole('group', { name: 'skyline-labs/portal' });
+    await expect.element(menu.getByText('portal#1187', { exact: true })).toBeInTheDocument();
+    await expect.element(repositoryGroup.getByRole('option', { name: /Pull requests/u })).toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}');
+    await expect.element(page.getByRole('option', { name: /Set status/u })).not.toBeInTheDocument();
+    await expect.element(menu.getByText('portal#1187', { exact: true })).not.toBeInTheDocument();
+    await expect.element(menu.getByText('skyline-labs/portal', { exact: true }).first()).toBeInTheDocument();
+    await expect.element(repositoryGroup).toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}');
+    await expect.element(repositoryGroup).not.toBeInTheDocument();
+    await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /Collapse sidebar/u })).toBeInTheDocument();
 });
 
 test("K1b: what a contributor can't edit is not offered — no labels, no assignees, no milestone", async () => {

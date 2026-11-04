@@ -597,6 +597,22 @@ widening the strip past 100 px in every row was rejected, and so was recording a
 **Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
 only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
 
+### D31
+
+**The screen's repository is a context of the command menu** (owner, 2026-11-04). When no opened item or selection takes
+the chip, a chip names the repository; ⌫ steps out from the item or selection to the repository, and again to none. A group
+headed by its name sits above "Go to": its sections (Workflows only while it is tracked), Open on GitHub, Copy link and
+Settings (only while tracked). On its view the sections keep their keys `1`–`4` and act as its tabs.
+
+**Rejected,** by the owner: any tracked repository's sections from elsewhere by typing; the existing repository line stays
+the way there.
+
+**Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
+already starts in the screen's repository.
+
+**A consequence accepted:** with a repository in context, "settings" + Enter finds the repository's Settings; `,` stays
+the app's.
+
 ## Open questions
 
 ### D26
