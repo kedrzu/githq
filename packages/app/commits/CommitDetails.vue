@@ -1,4 +1,4 @@
-<!-- A commit's details, right of the graph at the width the user chose (kept under its own name, resized by a handle on its left edge), or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known. It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
+<!-- A commit's details, right of the graph at the width the user chose (kept under its own name, resized by a handle on its left edge), or under it below about 1,200 px of window (git-client D13, D16, CH18, CH20): its headline and full message as plain text, its author, when it was committed and its sha, its parents, the branches and tags pointing at it, its pull request and its CI, an empty bar under their titles until those are known; its checks replace the CI's rollup once read, and a read that fails leaves the rollup with a link to them on GitHub (D24). It draws at once from what the graph knows, the message arriving after; a commit not loaded (D12, CH16) says why the graph stayed and is quiet until it is read, one gone from the graph says so and stays readable (CH41), and a read that fails says so while the rest stays usable (CH40). Its keys are the graph's (`CommitGraphView`), listed at its foot. -->
 <script lang="ts">
 /** The keys of the open details, in the app's notation; `J`/`K` are the graph's own, and `Esc` closes. */
 export const COMMIT_DETAILS_KEYS = {
@@ -13,15 +13,18 @@ export const COMMIT_DETAILS_KEYS = {
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { GitCommitHorizontal, Github, Info, X } from 'lucide-vue-next';
+import { ArrowUpRight, GitCommitHorizontal, Github, Info, X } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import Kbd from '@/components/Kbd.vue';
 import PropertyRow from '@/components/PropertyRow.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
 import WidthHandle from '@/components/WidthHandle.vue';
+import CheckList from '@/item/CheckList.vue';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatLocalDate } from '@/utils/formatLocalDate.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -64,6 +67,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useService(CommitGraphStore);
+const tracking = useService(TrackingStore);
 const t = useTranslate();
 /** Kept under its own name, whatever the other panels are: squeezed by a narrow window, the kept width stays. */
 const panelWidth = usePanelWidth({ key: 'commitDetails', default: 440, min: 320 });
@@ -72,6 +76,9 @@ const commit = computed(() => store.getCommit(props.nameWithOwner, props.oid));
 const detail = computed(() => store.getDetail(props.nameWithOwner, props.oid));
 const place = computed(() => store.getCommitPlace(props.nameWithOwner, props.oid));
 const state = computed(() => store.getState(props.nameWithOwner, props.oid));
+const checks = computed(() => store.getChecks(props.nameWithOwner, props.oid));
+/** Only a tracked repository has runs' pages (actions D4): any other's run opens on GitHub. */
+const runsInApp = computed(() => tracking.isTracked({ kind: 'repository', nameWithOwner: props.nameWithOwner }));
 /** Whole once read: the commit's own headline is cut when it is long. */
 const headline = computed(() => (detail.value?.kind === 'read' ? detail.value.headline : commit.value?.headline));
 const body = computed(() => (detail.value?.kind === 'read' ? detail.value.body : ''));
@@ -335,8 +342,18 @@ function getParentKey(index: number) {
         :class="css.commitDetails_section"
       >
         <h3 :class="css.commitDetails_title">{{ t(l.ci) }}</h3>
+        <!-- Keyed: the next commit's list starts folded, read before or not. -->
+        <CheckList
+          v-if="checks?.kind === 'read' && checks.checks.length > 0"
+          :key="oid"
+          :checks="checks.checks"
+          :check-count="checks.checkCount"
+          :more-url="`${url}/checks`"
+          :now="now"
+          :runs-in-app="runsInApp"
+        />
         <CommitStateMarks
-          v-if="state === undefined"
+          v-else-if="state === undefined"
           :state="state"
         />
         <p
@@ -348,12 +365,19 @@ function getParentKey(index: number) {
             :with-pull-request="false"
           />
           <span :class="css[`commitDetails_ci_${ci.tone}`]">{{ ci.word }}</span>
-          <span
-            v-if="ci.tone === 'danger'"
-            :class="css.commitDetails_ciNote"
-            >{{ t(l.checksOnGitHub) }}</span
-          >
         </p>
+        <Button
+          v-if="checks?.kind === 'failed'"
+          :class="css.commitDetails_ciLink"
+          variant="link"
+          size="sm"
+          :icon="ArrowUpRight"
+          :link="`${url}/checks`"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ t(l.checksOnGitHub) }}
+        </Button>
       </section>
     </div>
 
@@ -569,8 +593,8 @@ function getParentKey(index: number) {
   color: $color-amber;
 }
 
-.commitDetails_ciNote {
-  color: $color-fg-dim;
+.commitDetails_ciLink {
+  align-self: flex-start;
 }
 
 .commitDetails_keys {

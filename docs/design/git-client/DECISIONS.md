@@ -285,6 +285,13 @@ column giving way down to 200 px; the width chosen comes back with the room (CH4
 CH3, CH15–CH17, CH6; the keys settled by the owner 2026-11-03; the left, the one width and its resizing by the owner
 2026-11-03, the numbers the agent's)
 
+**A branch's pull request number in the list is a real link, as in the graph (D18): a plain click opens it as any item
+opens and the list gives way, its filter cleared; right, middle and modified clicks are the browser's; neither chooses
+the branch. So the list is ARIA's combobox with a grid popup rather than a listbox, whose options can't hold a link: the
+keys stay in the filter, the selection is the row's name cell with the whole row drawn selected, and the links stay out of
+the tab order.** (2026-11-04, owner: the link must be copyable and open in a new tab; the keyboard's target is the title,
+the highlight the whole row)
+
 **Why.** Where the branches stand is half of what the view answers, so it should not wait behind a key. Two layouts
 placing the same list on opposite sides made one of them feel wrong to the owner, and the list is the same column in
 both, so it has one place and one width. Panel widths are local ([settings-sync D7](../settings-sync/DECISIONS.md#d7)).
@@ -375,6 +382,9 @@ the right of the headline, "not somewhere far right in a separate column"; the a
 little smaller; failing as a red dot and a red ✕ "but no red text"; "a very gentle zebra" to tie a dot to its row;
 the narrow-row rule is the design agent's; CH12, CH34; the link by the owner 2026-11-03)
 
+**The CI mark is no link of its own: a click on it is a click on its row, which opens that commit's details, where its
+checks are listed (D24).** (2026-11-04, owner)
+
 **Why.** Read with the headline, the pull request and CI belong to it; in a far column they are hard to tie to the
 right commit. The stripe carries the eye from a dot far to the left to its row in a wide graph.
 
@@ -449,3 +459,29 @@ redrawn without the header's freshness mark)
 **Rejected.**
 
 - A freshness mark in the Commits header as well (the first drawing of CH3) — the same fact in two places (owner).
+
+## D24
+
+**A commit's details list its checks in their CI section, in the look of an opened pull request's: failing first, then
+running, those passed or skipped folded into one row that opens, each with how long it ran. A check that is an Actions run
+or job opens the app's run page, in a tracked repository; any other check, and any check in a repository not tracked, opens
+its own address in a new tab. They are read when the details open, at most once a minute, and only for that commit; the
+rollup shows until they are read. A read that fails leaves the rollup and a link to the commit's checks on GitHub, as do
+more checks than the 100 read. Coming back from a run's page, the section is where it was: the same commit under the cursor
+and open in the details, remembered for the session; a switch between sections starts where it always did.** (2026-11-04,
+owner: stay in the app and see every check, not just one failing; a repository not tracked opens a new tab, for its run
+address would replace the app; read on opening alone; the place remembered. CH18 in `githq.pen` still draws the rollup alone)
+
+**Why.** A failing ✕ led nowhere, while the app already lists a pull request's checks and has a run page with logs. Rows pay
+nothing: only the opened commit reads the list.
+
+**Rejected.**
+
+- The mark a link to the commit's checks on GitHub — one small change, but it leaves the app though the app can show them
+  (owner).
+- A failing mark opening the run page of its first failing job — every row on screen would read the list of checks, and
+  only one of several failures would show (owner).
+- Reading the checks again when the commit's rollup changes — the rollup is read with them on opening and rarely moves
+  with the details open, and without polling it would still miss a check finishing (owner).
+- The Log links of an opened pull request's checks and the merge panel moving to the run page too — left as they are, on
+  GitHub, for now (owner).

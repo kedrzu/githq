@@ -1,9 +1,11 @@
 import type {
+    CommitChecksQuery,
     CommitDetailQuery,
     CommitFieldsFragment,
     CommitHistoriesQuery,
     CommitRefFieldsFragment,
     CommitStatesQuery,
+    PullRequestCheckFieldsFragment,
     RepositoryCommitRefsQuery,
 } from '@githq/github/generated.gen.js';
 
@@ -31,6 +33,8 @@ export interface FakeCommitRepository {
     readonly tags: Map<string, string>;
     /** The pull request and CI state of the commits having any, by oid. */
     readonly states: Map<string, CommitState>;
+    /** The checks of the commits having any, by oid; an answer holds the first 100, as `CommitChecks` asks. */
+    readonly checks: Map<string, readonly PullRequestCheckFieldsFragment[]>;
     /** The full message below the first line of the commits having one, by oid. */
     readonly bodies: Map<string, string>;
     /** The first line of the commits whose headline cuts it, by oid; the headline for any other. */
@@ -120,6 +124,20 @@ export function fakeCommitGitHub(): FakeCommitGitHub {
                     };
                     return { data };
                 }
+                case 'CommitChecks': {
+                    const found = findCommit(String(variables.id));
+                    const checks = found?.repository.checks.get(found.commit.oid);
+                    const data: CommitChecksQuery = {
+                        node: found
+                            ? {
+                                  statusCheckRollup: checks
+                                      ? { contextPage: { totalCount: checks.length, nodes: checks.slice(0, 100) } }
+                                      : null,
+                              }
+                            : null,
+                    };
+                    return { data };
+                }
                 default:
                     return undefined;
             }
@@ -144,6 +162,7 @@ function createRepository(): FakeCommitRepository {
         branches: new Map(),
         tags: new Map(),
         states: new Map(),
+        checks: new Map(),
         bodies: new Map(),
         subjects: new Map(),
         defaultBranch: 'main',

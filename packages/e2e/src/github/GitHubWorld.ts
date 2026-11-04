@@ -1,4 +1,5 @@
 import type {
+    CommitChecksQuery,
     CommitDetailQuery,
     CommitFieldsFragment,
     CommitHistoriesQuery,
@@ -261,6 +262,8 @@ export interface GitHubWorldCommitParams {
     readonly pullRequest?: { readonly number: number; readonly state: PullRequestState; readonly title: string };
     /** Its checks' rollup; none by default. */
     readonly ci?: StatusState;
+    /** The GitHub Actions runs that failed among its checks, listed once it has a rollup; none by default. */
+    readonly failedRuns?: readonly number[];
 }
 
 /** A repository's history: its commits, and the branches and tags pointing at them, by name. */
@@ -1364,6 +1367,26 @@ export class GitHubWorld {
             });
             return { nodes };
         });
+        github.graphql('CommitChecks', ({ variables }) => {
+            const found = this.findCommit(String(variables.id));
+            if (!found) {
+                return { node: null };
+            }
+
+            const { repository, commit } = found;
+            const runs = commit.failedRuns ?? [];
+            const node: CommitChecksQuery['node'] = {
+                statusCheckRollup: commit.ci
+                    ? {
+                          contextPage: {
+                              totalCount: runs.length,
+                              nodes: runs.map(runId => toFailedCheckRun(repository.nameWithOwner, runId)),
+                          },
+                      }
+                    : null,
+            };
+            return { node };
+        });
         github.graphql('RepositoryIssueTemplates', ({ variables }) => {
             const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
             if (!repository) {
@@ -1585,7 +1608,7 @@ export class GitHubWorld {
                         ...node.statusCheckRollup,
                         contextPage: {
                             nodes: [
-                                ...item.pullRequest.failedRuns.map(toFailedCheckRun),
+                                ...item.pullRequest.failedRuns.map(runId => toFailedCheckRun(item.repository, runId)),
                                 ...item.pullRequest.failedOutsideActions.map(toFailedCheckOutsideActions),
                             ],
                         },
@@ -3420,14 +3443,14 @@ function toHeadRefId(item: WorldItem) {
 }
 
 /** A failed check of the merge options, of a GitHub Actions run. */
-function toFailedCheckRun(runId: number) {
+function toFailedCheckRun(nameWithOwner: string, runId: number) {
     return {
         __typename: 'CheckRun' as const,
         id: `CR_${runId}`,
         name: `ci / run ${runId}`,
         status: 'COMPLETED' as const,
         conclusion: 'FAILURE' as const,
-        detailsUrl: `https://github.com/actions/runs/${runId}`,
+        detailsUrl: `https://github.com/${nameWithOwner}/actions/runs/${runId}`,
         startedAt: null,
         completedAt: null,
         isRequired: false,
@@ -3437,7 +3460,8 @@ function toFailedCheckRun(runId: number) {
 
 function toFailedCheckOutsideActions(name: string) {
     return {
-        ...toFailedCheckRun(0),
+        // Its address is replaced below: a check outside Actions has none of a run's.
+        ...toFailedCheckRun('', 0),
         id: `CR_${name}`,
         name,
         detailsUrl: null,

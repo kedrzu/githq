@@ -22,8 +22,10 @@ const props = withDefaults(
     state: CommitState | undefined;
     /** `false`: the CI alone, as the default branch's row in the list (CH3). */
     withPullRequest?: boolean;
-    /** The pull request is a link; not where the marks sit in a row that is itself a choice, as in the list (CH3). */
+    /** The pull request is a link, in a row that is itself a choice too (the graph's, the list's): a click on it is the link's alone. */
     linked?: boolean;
+    /** The link stays out of the tab order: a list whose keys stay in its filter, as the list of branches (D15). */
+    linkOutOfTabOrder?: boolean;
   }>(),
   { withPullRequest: true },
 );
@@ -94,6 +96,7 @@ function getCiLook(state: StatusState): CiLook {
       v-if="pullRequest"
       :class="[css.commitStateMarks_pullRequest, reference && css.commitStateMarks_pullRequest_link]"
       :href="reference ? getItemPagePath(reference, 'pullRequest') : undefined"
+      :tabindex="reference && linkOutOfTabOrder ? -1 : undefined"
       @click="onPullRequestClick"
     >
       <CommitPullRequestIcon :pull-request="pullRequest" />

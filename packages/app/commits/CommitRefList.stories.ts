@@ -27,7 +27,7 @@ export const List: Story = {
     render: () => renderList(webapp()),
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(await canvas.findByRole('option', { name: /main/ })).toHaveTextContent('default');
+        await expect(await canvas.findByRole('row', { name: /main/ })).toHaveTextContent('default');
         await expect(await canvas.findByRole('img', { name: 'Checks failing' })).toBeVisible();
     },
 };
@@ -59,7 +59,7 @@ export const Filtering: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.type(await canvas.findByRole('combobox'), 'rel');
-        await expect(canvas.getByRole('option', { selected: true })).toHaveTextContent('release/4.2');
+        await expect(canvas.getByRole('gridcell', { selected: true })).toHaveTextContent('release/4.2');
         await expect(canvas.getByText('No tag matches "rel".')).toBeVisible();
     },
 };
