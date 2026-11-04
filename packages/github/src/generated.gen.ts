@@ -528,6 +528,45 @@ export type StatusState =
     /** Status is successful. */
     | 'SUCCESS';
 
+export type CommitChecksQueryVariables = Exact<{
+    id: string;
+}>;
+
+export type CommitChecksQuery = {
+    node:
+        | {
+              statusCheckRollup: {
+                  contextPage: {
+                      totalCount: number;
+                      nodes: Array<
+                          | {
+                                __typename: 'CheckRun';
+                                id: string;
+                                name: string;
+                                status: CheckStatusState;
+                                conclusion: CheckConclusionState | null;
+                                detailsUrl: string | null;
+                                startedAt: string | null;
+                                completedAt: string | null;
+                                checkSuite: { workflowRun: { workflow: { name: string } } | null };
+                            }
+                          | {
+                                __typename: 'StatusContext';
+                                id: string;
+                                context: string;
+                                state: StatusState;
+                                targetUrl: string | null;
+                                createdAt: string;
+                            }
+                          | null
+                      > | null;
+                  };
+              } | null;
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type CommitDetailQueryVariables = Exact<{
     id: string;
 }>;
@@ -9357,6 +9396,48 @@ export const ViewerProjectFieldsFragmentDoc = new TypedDocumentString(
     `,
     { fragmentName: 'ViewerProjectFields' },
 );
+export const CommitChecksDocument = new TypedDocumentString(`
+    query CommitChecks($id: ID!) {
+  node(id: $id) {
+    ... on Commit {
+      statusCheckRollup {
+        contextPage: contexts(first: 100) {
+          totalCount
+          nodes {
+            ...PullRequestCheckFields
+          }
+        }
+      }
+    }
+  }
+}
+    fragment PullRequestCheckFields on StatusCheckRollupContext {
+  ... on CheckRun {
+    __typename
+    id
+    name
+    status
+    conclusion
+    detailsUrl
+    startedAt
+    completedAt
+    checkSuite {
+      workflowRun {
+        workflow {
+          name
+        }
+      }
+    }
+  }
+  ... on StatusContext {
+    __typename
+    id
+    context
+    state
+    targetUrl
+    createdAt
+  }
+}`);
 export const CommitDetailDocument = new TypedDocumentString(`
     query CommitDetail($id: ID!) {
   node(id: $id) {
@@ -14401,6 +14482,13 @@ export const UpdatePullRequestMilestoneDocument = new TypedDocumentString(`
 export type Requester<C = {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>;
 export function getSdk<C>(requester: Requester<C>) {
     return {
+        CommitChecks(variables: CommitChecksQueryVariables, options?: C): Promise<CommitChecksQuery> {
+            return requester<CommitChecksQuery, CommitChecksQueryVariables>(
+                CommitChecksDocument,
+                variables,
+                options,
+            ) as Promise<CommitChecksQuery>;
+        },
         CommitDetail(variables: CommitDetailQueryVariables, options?: C): Promise<CommitDetailQuery> {
             return requester<CommitDetailQuery, CommitDetailQueryVariables>(
                 CommitDetailDocument,

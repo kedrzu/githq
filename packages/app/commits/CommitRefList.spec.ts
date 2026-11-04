@@ -3,6 +3,7 @@ import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, h } from 'vue';
 
+import type { ItemReference } from '@/item/itemRoutes.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { sampleCommit, sampleCommitRef } from '@/testing/sampleCommits.js';
 
@@ -19,11 +20,11 @@ test('D15: the default branch first, then branches and tags, each newest first b
     });
 
     expect(rowNames()).toEqual(['main', 'newest', 'old', 'v3', 'v2', 'v1']);
-    await expect.element(page.getByRole('option', { name: /main/ })).toHaveTextContent('default');
+    await expect.element(page.getByRole('row', { name: /main/ })).toHaveTextContent('default');
     await expect
-        .element(page.getByRole('group', { name: 'Branches' }))
+        .element(page.getByRole('rowgroup', { name: 'Branches' }))
         .toHaveTextContent(/^Branches\s*3\s*newest first/);
-    await expect.element(page.getByRole('group', { name: 'Tags' })).toHaveTextContent(/^Tags\s*3\s*newest first/);
+    await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent(/^Tags\s*3\s*newest first/);
 });
 
 test('hundreds of refs draw a bounded number of rows and count the rest; typing searches all of them', async () => {
@@ -37,9 +38,7 @@ test('hundreds of refs draw a bounded number of rows and count the rest; typing 
 
     await filter().fill('branch-7');
     // branch-7 itself is far past the 20 newest, and the best match.
-    await expect
-        .element(page.getByRole('option', { selected: true }).getByTitle('branch-7', { exact: true }))
-        .toBeVisible();
+    await expect.element(page.getByRole('gridcell', { selected: true })).toHaveAttribute('title', 'branch-7');
     await filter().fill('tag-12');
     await expect.poll(rowNames).toContain('tag-12');
     await expect.element(page.getByText(/more · keep typing/)).not.toBeInTheDocument();
@@ -56,16 +55,16 @@ test('CH15, CH17: typing narrows both groups; a group left with none says so; th
     await filter().fill('rel');
 
     await expect.poll(rowNames).toEqual(['release/4.2', 'release/4.1']);
-    await expect.element(page.getByRole('option', { selected: true })).toHaveTextContent('release/4.2');
-    await expect.element(page.getByRole('group', { name: 'Tags' })).toHaveTextContent('No tag matches "rel".');
-    await expect.element(page.getByRole('group', { name: 'Branches' })).not.toHaveTextContent('newest first');
+    await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('release/4.2');
+    await expect.element(page.getByRole('rowgroup', { name: 'Tags' })).toHaveTextContent('No tag matches "rel".');
+    await expect.element(page.getByRole('rowgroup', { name: 'Branches' })).not.toHaveTextContent('newest first');
 
     // The exact name wins over a newer branch holding it.
     await filter().fill('v4.1');
-    await expect.element(page.getByRole('option', { selected: true })).toHaveTextContent('v4.1');
+    await expect.element(page.getByRole('gridcell', { selected: true })).toHaveTextContent('v4.1');
     await filter().fill('');
     await expect.poll(rowNames).toEqual(['main', 'feat/x', 'release/4.2', 'release/4.1', 'v4.2.1', 'v4.1']);
-    await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('gridcell', { selected: true })).not.toBeInTheDocument();
 });
 
 test('↑/↓ move through the matches and letters are typed, J and K too; Enter chooses', async () => {
@@ -75,7 +74,7 @@ test('↑/↓ move through the matches and letters are typed, J and K too; Enter
     const windowKeys = vi.fn<(event: KeyboardEvent) => void>();
     window.addEventListener('keydown', windowKeys);
     onTestFinished(() => window.removeEventListener('keydown', windowKeys));
-    const selected = page.getByRole('option', { selected: true });
+    const selected = page.getByRole('gridcell', { selected: true });
 
     await userEvent.click(filter());
     await userEvent.keyboard('j');
@@ -113,7 +112,7 @@ test('Enter with nothing selected chooses nothing; Esc clears the filter and lea
     await userEvent.keyboard('{Escape}');
     await expect.element(filter()).toHaveValue('');
     expect(view.leave).toHaveBeenCalledTimes(1);
-    await expect.element(page.getByRole('option', { selected: true })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('gridcell', { selected: true })).not.toBeInTheDocument();
 });
 
 test('D18: the branch rows drawn ask for their state, tags never; not known yet is a bar; a branch without a pull request shows none; tags show their age alone', async () => {
@@ -134,7 +133,7 @@ test('D18: the branch rows drawn ask for their state, tags never; not known yet 
         states,
     });
 
-    const row = (name: string) => page.getByRole('option', { name: new RegExp(`^${name}`) });
+    const row = (name: string) => page.getByRole('row', { name: new RegExp(`^${name}`) });
     await expect.element(row('with-pr').getByRole('img', { name: 'Merged pull request' })).toBeVisible();
     await expect.element(row('with-pr')).toHaveTextContent('#1209');
     await expect.element(row('with-pr').getByRole('img', { name: 'Checks passing' })).toBeVisible();
@@ -152,6 +151,58 @@ test('D18: the branch rows drawn ask for their state, tags never; not known yet 
     expect(asked()).not.toContain('tagged');
 });
 
+test("a branch's pull request is a link: a click on it opens it, choosing nothing and leaving the selection and the focus where they were; a modified click is the browser's", async () => {
+    const view = await mount({
+        branches: [ref('main', 100), ref('feat/a', 50), ref('feat/b', 40)],
+        states: new Map([['feat/b', { pullRequest: pullRequest(1209), ci: 'FAILURE' }]]),
+    });
+    await userEvent.click(filter());
+    await userEvent.keyboard('feat{ArrowDown}');
+    const selected = page.getByRole('gridcell', { selected: true });
+    await expect.element(selected).toHaveTextContent('feat/b');
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(selected).toHaveTextContent('feat/a');
+    const link = page.getByRole('row', { name: /feat\/b/ }).getByRole('link', { name: /1209/ });
+    await expect.element(link).toHaveAttribute('href', '/acme/web/pull/1209');
+
+    await userEvent.click(link);
+    expect(view.openPullRequest.mock.lastCall?.[0]).toMatchObject({ owner: 'acme', name: 'web', number: 1209 });
+    expect(view.choose).not.toHaveBeenCalled();
+    await expect.element(selected).toHaveTextContent('feat/a');
+    await expect.element(filter()).toHaveFocus();
+
+    // A listener of the link's own runs after the component's, and stops the new tab a test has no use for.
+    let handedToBrowser = false;
+    link.element().addEventListener('click', event => {
+        handedToBrowser = !event.defaultPrevented;
+        event.preventDefault();
+    });
+    link.element().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, metaKey: true }));
+    expect(handedToBrowser).toBe(true);
+    expect(view.openPullRequest).toHaveBeenCalledTimes(1);
+    expect(view.choose).not.toHaveBeenCalled();
+});
+
+test('the links are no tab stops: Tab leaves the filter past them, and Enter in the filter still chooses the selected row', async () => {
+    const view = await mount({
+        branches: [ref('main', 100), ref('feat/a', 50)],
+        states: new Map([['feat/a', { pullRequest: pullRequest(1209), ci: null }]]),
+    });
+    const link = page.getByRole('link', { name: /1209/ });
+    await expect.element(link).toBeVisible();
+    expect(link.element().tabIndex).toBe(-1);
+
+    await userEvent.click(filter());
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    await userEvent.keyboard('{Enter}');
+    expect(view.choose.mock.lastCall?.[0]).toMatchObject({ name: 'feat/a' });
+    expect(view.openPullRequest).not.toHaveBeenCalled();
+
+    await userEvent.click(filter());
+    await userEvent.keyboard('{Tab}');
+    expect(document.activeElement).not.toBe(link.element());
+});
+
 test('CH34: while a branch is not known yet, the bar stands in for its marks', async () => {
     await mount({
         branches: [ref('main', 100), ref('feat/a', 50)],
@@ -161,7 +212,7 @@ test('CH34: while a branch is not known yet, the bar stands in for its marks', a
     await expect
         .element(
             page
-                .getByRole('option', { name: /feat\/a/ })
+                .getByRole('row', { name: /feat\/a/ })
                 .getByRole('img', { name: 'Pull request and checks not known yet' }),
         )
         .toBeVisible();
@@ -172,7 +223,10 @@ function filter() {
 }
 
 function rows() {
-    return page.getByRole('option').elements();
+    return page
+        .getByRole('row')
+        .filter({ has: page.getByRole('gridcell') })
+        .elements();
 }
 
 function rowNames() {
@@ -221,6 +275,7 @@ async function mount(refs: MountRefs, { height = 600 } = {}) {
     const ensureStates = vi.spyOn(store, 'ensureStates');
     const choose = vi.fn<(chosen: CommitRef) => void>();
     const leave = vi.fn<() => void>();
+    const openPullRequest = vi.fn<(reference: ItemReference) => void>();
 
     const host = document.createElement('div');
     host.style.display = 'flex';
@@ -240,6 +295,7 @@ async function mount(refs: MountRefs, { height = 600 } = {}) {
                 now: Date.parse('2026-10-02T00:00:00Z'),
                 onChoose: choose,
                 onLeave: leave,
+                onOpenPullRequest: openPullRequest,
             }),
     });
     app.use(IocPlugin, { container });
@@ -249,5 +305,5 @@ async function mount(refs: MountRefs, { height = 600 } = {}) {
         host.remove();
     });
 
-    return { store, ensureStates, choose, leave };
+    return { store, ensureStates, choose, leave, openPullRequest };
 }

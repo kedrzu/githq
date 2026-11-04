@@ -13,12 +13,12 @@ export const SearchFieldProps = {
   kbd: defineProp<string>(),
   /** `md` (30px) a page's filter, `sm` (26px) a header's; `md` when not given. */
   size: defineProp<'md' | 'sm'>(),
-  /** The list the field narrows, whose keys it takes: it is then a combobox, the focus staying in it (`activeId`: the row selected). */
-  listbox: defineProp<SearchFieldListbox>(),
+  /** The grid the field narrows, whose keys it takes: it is then a combobox, the focus staying in it (`activeId`: the cell selected). */
+  grid: defineProp<SearchFieldGrid>(),
 };
 
-/** The list a field narrows and the row selected in it, by their element ids. */
-export interface SearchFieldListbox {
+/** The grid a field narrows and the cell selected in it, by their element ids. */
+export interface SearchFieldGrid {
   readonly id: string;
   readonly activeId: string | undefined;
 }
@@ -54,11 +54,12 @@ defineExpose({
     <TextInput
       :class="css.searchField_input"
       :aria-keyshortcuts="kbd ?? undefined"
-      :role="listbox ? 'combobox' : undefined"
-      :aria-expanded="listbox ? true : undefined"
-      :aria-autocomplete="listbox ? 'list' : undefined"
-      :aria-controls="listbox?.id"
-      :aria-activedescendant="listbox?.activeId"
+      :role="grid ? 'combobox' : undefined"
+      :aria-haspopup="grid ? 'grid' : undefined"
+      :aria-expanded="grid ? true : undefined"
+      :aria-autocomplete="grid ? 'list' : undefined"
+      :aria-controls="grid?.id"
+      :aria-activedescendant="grid?.activeId"
     />
     <Kbd
       v-if="kbd"

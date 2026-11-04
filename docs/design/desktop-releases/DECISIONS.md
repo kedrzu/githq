@@ -299,3 +299,21 @@ never holds it.
   is shared with the owner's other repos (`ARCHITECTURE.md`), and `bundle` builds without `bun install`
   (`.github/workflows/release.yml:181`). The owner: what runs on GitHub reads GitHub's secrets.
 - A backup only, not mapped: nothing could read it back without a manual trip to the vault.
+
+## D15
+
+**A fresh install always starts on Stable, including a build downloaded from the Development release.** (2026-11-04, owner)
+
+**Why.** Not recorded by the owner when deciding; the safe stream is the default wherever the user hasn't chosen.
+
+Open, from drawing it (screen U19 in `githq.pen`): with [D5](#d5)'s rule that a running `-dev` build on Stable accepts any
+Stable, such a build takes the older Stable at its first check, at launch. The owner decides whether that stands.
+
+## D16
+
+**On Linux an update installs only when the user clicks Restart, and the system may ask for an administrator password at that
+moment. It can be refused.** (2026-11-04, owner)
+
+**Why.** It settles the question in the README of whether a `.deb` asks for a password out of nowhere while installing in the
+background: it asks when the user has just asked for the update. Consequence: on Linux a user who quits without
+restarting stays on the old version, and the offer comes back at the next launch. Screens: U38–U40 in `githq.pen`.

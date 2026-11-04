@@ -1,4 +1,8 @@
-import type { PullRequestState } from '@githq/github/generated.gen.js';
+import type {
+    CheckConclusionState,
+    PullRequestCheckFieldsFragment,
+    PullRequestState,
+} from '@githq/github/generated.gen.js';
 
 import type { CommitPullRequest, CommitRef, CommitState, KeptCommit } from '@/commits/CommitTypes.js';
 
@@ -17,6 +21,25 @@ export function sampleCommit(oid: string, minutes: number, parents: readonly str
         author: { name: 'Octo Cat', login: 'octocat', avatarUrl: null },
         parents: parents.map(parent => ({ id: `C_${parent}`, oid: parent })),
     };
+}
+
+/**
+ * An Actions job for tests and stories, at a job's address on GitHub, which ran 2m 14s; `conclusion` `null`: still
+ * running.
+ */
+export function sampleCheckRun(name: string, conclusion: CheckConclusionState | null, workflow = 'CI') {
+    const check: PullRequestCheckFieldsFragment = {
+        __typename: 'CheckRun',
+        id: `CR_${name}`,
+        name,
+        status: conclusion === null ? 'IN_PROGRESS' : 'COMPLETED',
+        conclusion,
+        detailsUrl: 'https://github.com/acme/web/actions/runs/123/job/456',
+        startedAt: new Date(EPOCH).toISOString(),
+        completedAt: conclusion === null ? null : new Date(EPOCH + 134_000).toISOString(),
+        checkSuite: { workflowRun: { workflow: { name: workflow } } },
+    };
+    return check;
 }
 
 /** Options of `sampleHistory`. */

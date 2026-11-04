@@ -160,7 +160,7 @@ export const ListOverTheGraph: Story = {
         await findInGraph(canvas, 'chore: bump vite to 6.2');
         await userEvent.keyboard('b');
         await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toHaveFocus();
-        await expect(canvas.getByRole('listbox', { name: 'Branches and tags' })).toBeVisible();
+        await expect(canvas.getByRole('grid', { name: 'Branches and tags' })).toBeVisible();
     },
 };
 

@@ -1,4 +1,4 @@
-<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph, the list staying and the graph keeping at least 240 px of the pane, the details giving up width for it; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. -->
+<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph, the list staying and the graph keeping at least 240 px of the pane, the details giving up width for it; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. A branch's pull request number in the list opens it as any item opens, the list giving way (D15). Left for a run's page with the details open, the section comes back to the same commit under the cursor and in the details (D24). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -6,18 +6,20 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { onWindowResize } from '@nzyme/vue-utils/onWindowResize.js';
 import { CloudOff, Flag, GitCommitHorizontal, LoaderCircle, MoveHorizontal } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, useTemplateRef, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import { useCommands } from '@/commands/useCommands.js';
 import EmptyState from '@/components/EmptyState.vue';
 import { getOpenedItemRoute, parseItemUrl } from '@/item/itemRoutes.js';
+import type { ItemReference } from '@/item/itemRoutes.js';
 import { useOpenItemReference } from '@/item/useOpenItemReference.js';
 import RepositoryColumnSplit from '@/repository/RepositoryColumnSplit.vue';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
+import { getRepositoryPath, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
@@ -31,7 +33,7 @@ import CommitRefList from './CommitRefList.vue';
 import CommitRow, { COMMIT_ROW_HEIGHT } from './CommitRow.vue';
 import type { CommitRowRef } from './CommitRow.vue';
 import { COMMIT_REF_LIST_TARGET_ID } from './CommitTypes.js';
-import type { CommitParent, CommitRef, KeptCommit } from './CommitTypes.js';
+import type { CommitParent, CommitRef, KeptCommit, OpenedCommit } from './CommitTypes.js';
 import { COMMIT_GRAPH_DEFAULT_SHARE, fitCommitGraph, getCommitGraphWidth, getMinLanes } from './fitCommitGraph.js';
 
 const props = defineProps<{
@@ -40,12 +42,6 @@ const props = defineProps<{
   /** The list of branches and tags renders in the repository's column instead of this view's own (D14). */
   refListInColumn?: boolean;
 }>();
-
-/** The commit whose details are open. */
-interface OpenedCommit extends CommitParent {
-  /** The ref it was opened from, its commit not loaded (D12). */
-  readonly chosenRef: CommitRef | null;
-}
 
 /** How many rows are drawn above and below the viewport, so a quick scroll shows no gap. */
 const OVERSCAN = 8;
@@ -65,6 +61,7 @@ const accounts = useService(AccountSession);
 const browser = useService(Browser);
 const clock = useService(Clock);
 const route = useRoute();
+const router = useRouter();
 const openItemReference = useOpenItemReference();
 const t = useTranslate();
 const now = useNow(AGE_TICK_MS);
@@ -92,6 +89,10 @@ const opened = shallowRef<OpenedCommit | null>(null);
 
 /** The details were closed by a new repository or account, not by the user, and open again once a commit is selected. */
 let detailsPending = false;
+/** The repository this view was set up with: leaving, the prop may already name another. */
+const repositorySetUp = props.nameWithOwner;
+/** Where this section was left for a run's page, until the cursor is placed: it comes back there, not at the start. */
+let leftAt = store.takePlace(repositorySetUp);
 
 const graph = computed(() => store.get(props.nameWithOwner));
 const refs = computed(() => graph.value?.refs ?? null);
@@ -223,7 +224,11 @@ const refsByOid = computed(() => {
 // in has emptied the store: the graph is opened again for them.
 watch(
   [() => props.nameWithOwner, () => accounts.current],
-  ([nameWithOwner]) => {
+  ([nameWithOwner], [previousName]) => {
+    if (previousName !== undefined) {
+      leftAt = undefined;
+    }
+
     opened.value = null;
     detailsPending = true;
     void store.open(nameWithOwner);
@@ -259,13 +264,15 @@ watch(
     }
 
     if (oid === null) {
-      const start = getStart(next);
+      // Back from a run's page, its cursor's commit if that is still a row, and the commit it had open whether or not.
+      const start = next.find(commit => commit.oid === leftAt?.cursorOid) ?? getStart(next);
       if (start) {
         cursor.select(start.oid);
         // Mounted, the scroller isn't there yet: `onMounted` brings the row into view.
         reveal(next.indexOf(start));
         detailsPending = false;
-        showDetails(start);
+        showDetails(leftAt?.opened ?? start, leftAt?.opened.chosenRef);
+        leftAt = undefined;
       }
 
       return;
@@ -445,7 +452,25 @@ onMounted(() => {
   }
 });
 
-onBeforeUnmount(() => observer?.disconnect());
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  // The route is already the one left for. A prop on another repository closed this one's details, and any open now are
+  // that repository's, which never go under this one's place.
+  if (opened.value && isWorkflowRunRoute(route) && props.nameWithOwner === repositorySetUp) {
+    store.setPlace(repositorySetUp, { cursorOid: cursor.selectedKey, opened: opened.value });
+    // Only coming straight back from a run's page finds the place: anywhere else first, and it is gone.
+    const stopFollowing = router.afterEach((to, _from, failure) => {
+      if (failure || isWorkflowRunRoute(to)) {
+        return;
+      }
+
+      stopFollowing();
+      if (to.path !== getRepositoryPath(repositorySetUp) && to.path !== getRepositoryPath(repositorySetUp, 'commits')) {
+        store.takePlace(repositorySetUp);
+      }
+    });
+  }
+});
 
 defineExpose({
   /** Puts the cursor in the filter of the list of branches and tags, opening the list first when it is folded away. */
@@ -563,6 +588,12 @@ function onRefListLeft() {
   returnToGraph();
 }
 
+/** As from a row, the list done with first: the keys are on the graph when the item closes, its filter cleared. */
+function onRefListPullRequest(reference: ItemReference) {
+  refList.value?.leave();
+  openItemReference(reference, 'pullRequest');
+}
+
 function returnToGraph() {
   scroller.value?.focus({ preventScroll: true });
 }
@@ -605,6 +636,7 @@ function goToCommit(commit: CommitParent) {
 function readOpened(commit: OpenedCommit) {
   store.ensureDetail(props.nameWithOwner, commit);
   store.ensureStates(props.nameWithOwner, [commit]);
+  store.ensureChecks(props.nameWithOwner, commit);
 }
 
 /** The details' keys are theirs: shown, and with nothing over them. A tooltip takes no keys. */
@@ -863,6 +895,7 @@ function resetShare() {
           :now="now"
           @choose="onRefChosen"
           @leave="onRefListLeft"
+          @open-pull-request="onRefListPullRequest"
         />
       </Teleport>
       <CommitDetails
