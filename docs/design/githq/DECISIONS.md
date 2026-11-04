@@ -555,7 +555,7 @@ Text already passed everywhere it was measured, except in the two states below; 
 and checkboxes get an outline of 3:1 (`control-border`, the value of `fg-3`), commit graph lines too (`graph-line`,
 `#646B75`, the default branch's line staying brighter), and `red-quiet` moves to `#AC4D52`. Dim rows lose their opacity
 and use `fg-dim` and `fg-3` instead: stack members below the line and rows not matching a filter. The undone chip loses its
-tint. A current project tab gets weight 500, and the current item of the collapsed sidebar an accent edge, because a fill
+tint. A current project or repository section tab gets weight 500, and the current item of the collapsed sidebar an accent edge, because a fill
 of 1.13:1 alone doesn't tell them apart. `border-2` stays for what doesn't need it: cards, label pills, keys.
 
 **Why.** Measured across every story and the e2e screens, rendered and composited (`packages/e2e/src/audit/`,
@@ -577,6 +577,9 @@ WCAG 2.5.8's minimum, and every other row was already over it. The ticks of a wo
 run, and a click on the strip is a click on the row: the latest failed run on the cross-repository screen, and in a
 repository's tab what the row does there. An older run takes two clicks and a tick can't be modifier-clicked into a new tab;
 widening the strip past 100 px in every row was rejected, and so was recording an exception.
+
+**Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
+only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
 
 ## Open questions
 
