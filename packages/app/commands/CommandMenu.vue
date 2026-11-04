@@ -73,6 +73,8 @@ interface Row extends FilterListRow {
   /** In a found option: the action it is of ("Set status"), before an arrow. */
   readonly lead?: string;
   readonly detail?: string;
+  /** Dim text at the line's end. */
+  readonly aside?: string;
   /** Monospaced dim text: an item's reference. */
   readonly reference?: string;
   readonly color?: string;
@@ -125,13 +127,16 @@ const chip = computed(() =>
 );
 const submenu = computed(() => props.commands.find(command => command.id === submenuId.value) ?? null);
 const submenuOptions = computed(() => submenu.value?.options?.() ?? null);
+/** The action being searched in, while the menu is open: only it is told what is typed. */
+const searching = computed(() => (open.value && submenu.value?.search ? submenu.value : null));
 
 const groups = computed((): FilterListGroup<Row>[] => {
   const command = submenu.value;
   const options = submenuOptions.value;
   if (command && options) {
-    const found = filterOptions(query.value, options.options).slice(0, SUBMENU_LIMIT);
-    return groupOptions(command, found);
+    // What a search offers is what it answered, whether or not the typed letters are in it (`org:acme`).
+    const found = filterOptions(command.search ? '' : query.value, options.options).slice(0, SUBMENU_LIMIT);
+    return groupOptions(command, found, options.heading ?? null);
   }
 
   return buildCommandMenu({
@@ -147,21 +152,29 @@ const groups = computed((): FilterListGroup<Row>[] => {
   }));
 });
 const rows = computed(() => groups.value.flatMap(group => group.rows));
-const placeholder = computed(() => (submenu.value ? t(l.filterOptions) : t(l.placeholder)));
+const placeholder = computed(() =>
+  submenu.value ? (submenuOptions.value?.placeholder ?? t(l.filterOptions)) : t(l.placeholder),
+);
 const message = computed(() => {
   if (rows.value.length > 0) {
     return null;
   }
 
-  return submenuOptions.value?.loading ? t(l.loading) : t(l.noMatch);
+  const options = submenuOptions.value;
+  return options?.message ?? (options?.loading ? t(l.loading) : t(l.noMatch));
 });
 const hints = computed((): FilterListHint[] => {
   if (submenu.value) {
-    return [
-      { keys: 'Enter', label: t(l.set) },
+    const leaving: FilterListHint[] = [
       { keys: 'Backspace', label: t(l.back) },
       { keys: 'Escape', label: t(l.close) },
     ];
+    if (!submenu.value.search) {
+      return [{ keys: 'Enter', label: t(l.set) }, ...leaving];
+    }
+
+    // What a search found is gone to, and until it answers there is nothing to pick.
+    return rows.value.length > 0 ? [{ keys: 'Enter', label: t(l.open) }, ...leaving] : leaving;
   }
 
   const shown: FilterListHint[] = [
@@ -191,6 +204,15 @@ watch(
   },
   { immediate: true },
 );
+
+// A registration recomputing makes a new object of the same action, which is told the same text: not a leaving.
+watch([searching, query], ([command, text], [before]) => {
+  if (before && before.id !== command?.id) {
+    before.search?.('');
+  }
+
+  command?.search?.(text);
+});
 
 function getHeading(key: CommandMenuGroupKey): string | null {
   switch (key) {
@@ -289,16 +311,22 @@ function toNavigationRow(value: string, result: NavigationResult): Row {
   }
 }
 
-function groupOptions(command: Command, found: readonly FoundOption<CommandOption>[]): FilterListGroup<Row>[] {
+function groupOptions(
+  command: Command,
+  found: readonly FoundOption<CommandOption>[],
+  fallbackHeading: string | null,
+): FilterListGroup<Row>[] {
   const grouped: { key: string; heading: string | null; rows: Row[] }[] = [];
   for (const foundOption of found) {
     const { option } = foundOption;
-    const heading = option.group ?? null;
+    const heading = option.group ?? fallbackHeading;
     const row: Row = {
       value: `option:${option.value}`,
-      icon: null,
+      // A repository's visibility; another action's options stay without theirs, as they always were here.
+      icon: command.search ? (option.icon ?? null) : null,
       title: option.label,
       detail: option.detail,
+      aside: option.aside,
       color: option.color,
       avatarUrl: option.avatarUrl,
       chosen: option.chosen,
@@ -434,6 +462,7 @@ function onEscape(event: KeyboardEvent) {
       :groups="groups"
       :placeholder="placeholder"
       :message="message"
+      :message-heading="submenuOptions?.heading"
       :hints="hints"
       size="lg"
       data-layer
@@ -454,10 +483,19 @@ function onEscape(event: KeyboardEvent) {
         </span>
         <template v-if="submenu">
           <ChevronRight
+            v-if="subject || !submenu.search"
             :class="css.commandMenu_crumb"
             aria-hidden="true"
           />
-          <span :class="css.commandMenu_chip">{{ submenu.title.replace(/…$/u, '') }}</span>
+          <span :class="css.commandMenu_chip">
+            <component
+              :is="submenu.icon"
+              v-if="submenu.search && submenu.icon"
+              :class="css.commandMenu_chipSearchIcon"
+              aria-hidden="true"
+            />
+            {{ submenu.title.replace(/…$/u, '') }}
+          </span>
         </template>
       </template>
       <template #row="{ row }">
@@ -520,6 +558,11 @@ function onEscape(event: KeyboardEvent) {
           :aria-label="t(l.chosen)"
         />
         <span :class="css.commandMenu_spacer" />
+        <span
+          v-if="row.aside"
+          :class="css.commandMenu_aside"
+          >{{ row.aside }}</span
+        >
         <Kbd
           v-for="(key, index) in row.keys ?? []"
           :key="index"
@@ -538,6 +581,12 @@ function onEscape(event: KeyboardEvent) {
         <p :class="css.commandMenu_note">
           {{ submenuOptions.note }}
         </p>
+      </template>
+      <template
+        v-if="submenu && submenuOptions?.hint"
+        #footerEnd
+      >
+        {{ submenuOptions.hint }}
       </template>
     </FilterList>
   </Dialog>
@@ -562,6 +611,12 @@ function onEscape(event: KeyboardEvent) {
   width: 12px;
   height: 12px;
   color: $color-green;
+}
+
+.commandMenu_chipSearchIcon {
+  width: 13px;
+  height: 13px;
+  color: $color-fg-2;
 }
 
 .commandMenu_crumb {
@@ -606,6 +661,12 @@ function onEscape(event: KeyboardEvent) {
   font-size: $font-size-sm;
   color: $color-fg-dim;
   white-space: nowrap;
+}
+
+.commandMenu_aside {
+  flex: none;
+  font-size: $font-size-sm;
+  color: $color-fg-dim;
 }
 
 .commandMenu_check {

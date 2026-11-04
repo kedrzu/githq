@@ -28,6 +28,8 @@ run:
   en: Run
 set:
   en: Set
+open:
+  en: Open
 back:
   en: Back
 close:

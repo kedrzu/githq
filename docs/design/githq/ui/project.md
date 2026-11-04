@@ -2,7 +2,7 @@
 
 Read `README.md` in this folder first.
 
-**Status:** designed in Direction D (projects D4, D5; repository J1–J3; states K6–K9).
+**Status:** designed in Direction D (projects D4, D5; repository J1–J3, J5–J7; states K6–K9).
 
 ## Purpose
 
@@ -57,8 +57,9 @@ triage and move things quickly, and don't make me wait."
   - What does it group by when there is no project? Labels, assignee, milestone, issue type, issues versus
     PRs?
   - How does the user get from a repository to the projects its issues live in?
-  - Show a tracked repository, and also what happens when the user opens an untracked one from the command
-    menu (it shows what concerns the user and points to Settings, J3).
+  - Show a tracked repository, and also what happens when the user opens an untracked one: the full view, read
+    on demand (J5, J6; J7 when GitHub does not show it), which replaces J3 for repositories
+    ([D34](../DECISIONS.md#d34)). An untracked project keeps J4.
 - **A view modified locally, and resetting it.**
 - **A view whose filter is answered by GitHub** rather than locally.
 - **A project with no single-choice field at all,** where there's nothing to group a board by.

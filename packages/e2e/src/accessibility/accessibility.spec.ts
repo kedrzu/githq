@@ -130,6 +130,38 @@ test('a repository, a project as a list and a board, and the sidebar’s context
     await expectAccessible(page, 'a project’s board');
 });
 
+test('a repository browsed, as a list and a board, the search of repositories, and one GitHub does not show', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.repository('hubot/tools', { description: 'Tools for the release' });
+    for (const number of Array.from({ length: 101 }, (_, index) => index + 1)) {
+        sample.world.issue({ repository: 'hubot/tools', number, title: `Issue ${number}`, minutesAgo: number + 10 });
+    }
+
+    await openTrackedWork(page, github, sample.world);
+
+    const repository = new RepositoryScreenHarness(page);
+    await page.goto('/hubot/tools');
+    await expect(repository.readCount).toHaveText('100 of 101');
+    await expectAccessible(page, 'a repository browsed');
+
+    await repository.layout('Board').click();
+    await expect(repository.readMore).toBeVisible();
+    await expectAccessible(page, 'a repository browsed, as a board');
+
+    const menu = new CommandMenuHarness(page);
+    await menu.openRepositorySearch();
+    await menu.field.pressSequentially('tools');
+    await expect(menu.option(/^hubot\/tools/u)).toBeVisible();
+    await expectAccessible(page, 'the search of repositories');
+
+    await page.goto('/hubot/hidden');
+    await expect(repository.notShown).toBeVisible();
+    await expectAccessible(page, 'a repository GitHub does not show');
+});
+
 test('the commit graph', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     sample.world.history(SAMPLE_REPOSITORY, {

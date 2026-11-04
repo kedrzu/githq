@@ -53,6 +53,8 @@ export interface BuildRepositoryListParams {
     readonly grouping: RepositoryGrouping;
     readonly sort: ItemSort;
     readonly texts: RepositoryListTexts;
+    /** GitHub has not said yet what the state holds (a browsed repository's first page): none listed means not known. */
+    readonly arriving?: boolean;
 }
 
 /**
@@ -65,11 +67,18 @@ export interface BuildRepositoryListParams {
  * @__NO_SIDE_EFFECTS__
  */
 export function buildRepositoryList(params: BuildRepositoryListParams): RepositoryList {
-    const { items, state, kind, grouping, sort, texts } = params;
+    const { items, state, kind, grouping, sort, texts, arriving = false } = params;
 
     const listed = items
         .filter(item => item.kind === kind && matchesState(item, state))
         .toSorted(getItemComparator(sort));
+
+    if (arriving && listed.length === 0) {
+        return {
+            groups: [{ key: 'arriving', label: texts.all, arrived: false, droppable: false, rows: [] }],
+            count: 0,
+        };
+    }
 
     return {
         groups: groupEntries({

@@ -10,6 +10,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
+import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
@@ -23,8 +24,10 @@ import { NewIssueComposer } from './NewIssueComposer.js';
 /** What the capture chooses from, and what GitHub's search answers. */
 interface ChooserParams {
     readonly tracked?: readonly string[];
-    /** Repositories of the local copy's items: "From your work". */
+    /** Repositories of the items in my work: "From your work". */
     readonly work?: readonly string[];
+    /** Repositories of the items only held, read for a screen browsing them. */
+    readonly browsed?: readonly string[];
     readonly found?: readonly FoundOnGitHub[];
 }
 
@@ -76,6 +79,13 @@ test('sections come best first, each ranked; a repository stays in the first tha
     await expect.poll(() => composer.draft.repository).toBe('acme/web');
 });
 
+test('a repository only browsed is not one of your work', async () => {
+    await openChooser({ work: ['acme/web'], browsed: ['vitejs/vite', 'vuejs/core', 'vuejs/core-next'] });
+
+    await expect.poll(sections).toEqual([expect.stringMatching(/^From your work.*acme\/web/u)]);
+    expect(page.getByRole('option', { name: /vite|vuejs/u }).elements()).toHaveLength(0);
+});
+
 test('a typed owner/name is offered though GitHub’s search does not rank it, and finds ours in full', async () => {
     await openChooser({ tracked: ['acme/web'] });
 
@@ -101,8 +111,10 @@ async function openChooser(params: ChooserParams) {
 
     const items = container.resolve(ItemStore);
     await items.ready();
+    const work = params.work ?? [];
+    const browsed = params.browsed ?? [];
     items.upsertMany(
-        (params.work ?? []).map(nameWithOwner => ({
+        [...work, ...browsed].map(nameWithOwner => ({
             ...sampleIssue(`I_${nameWithOwner}`),
             repository: {
                 nameWithOwner,
@@ -112,6 +124,14 @@ async function openChooser(params: ChooserParams) {
             },
         })),
     );
+    items.setMembership(
+        'assigned',
+        work.map(nameWithOwner => `I_${nameWithOwner}`),
+    );
+    const holds = container.resolve(RepositoryHolds);
+    for (const nameWithOwner of browsed) {
+        holds.hold(nameWithOwner);
+    }
 
     const composer = container.resolve(NewIssueComposer);
     composer.start({ repository: null, project: null, parent: null });
