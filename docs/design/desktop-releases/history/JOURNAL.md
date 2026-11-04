@@ -47,3 +47,6 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner reopened the key's backup: scripts must read it from the store, independent of the machine (D14). Mapped prod
   only, `build:desktop:signed` added and tried, procedure in `docs/desktop/RELEASING.md`. Asked: CI through repository secrets or
   through the store; whether to delete `~/.githq-secrets`.
+- 2026-11-04: Owner: what runs on GitHub reads GitHub secrets, Bitwarden only manages them (D14). `~/.githq-secrets/updater.key` and its
+  password deleted after one more comparison with the store. The secret-store change split into its own pull request, because a
+  `docs` pull request can't touch code.

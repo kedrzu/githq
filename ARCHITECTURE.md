@@ -35,7 +35,7 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **GitHub:** `packages/github` holds the client. Users' tokens come from the sign-in and stay on their device.
 - **GitHub OAuth Apps:** `githq` in production and `githq (dev)` in development. `GITHQ_ENV` (`prod`, `dev`, or `e2e` for the tests' dummy) picks one. Client IDs are public, in `packages/github/src/oauthClientIds.json`; the Worker, the desktop build and its native side all read that file. Client secrets are in the secret store, and production's is also a Worker secret.
 - **Cloudflare:** Workers and static assets; `packages/worker/wrangler.jsonc`.
-- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets and the desktop updater's signing key, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
+- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
 
 ## Tooling and workflow
 
@@ -51,7 +51,7 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **Markdown is formatted by ESLint.** `lint` and `lint:check` cover it through the `markdown()` preset; `format:md` runs only that part, and `format` includes it.
 - **There is no separate UI package.** One app uses the components, so they live in `packages/app`.
 - **Pull requests do not run component tests or e2e.** They are the slow part of the checks, and they run before each deploy.
-- **Stories are checked against WCAG 2.1 AA; target size is deferred.** Adding `wcag22aa` fails 35 tests, and larger targets affect the dense lists, so it needs a design decision first: [#119](https://github.com/kedrzu/githq/issues/119).
+- **Stories and the e2e screens are checked with axe, as errors:** WCAG 2.2 AA and axe's best practices (`packages/app/testing/accessibilityTags.ts`). Stories leave out the three rules that judge a whole page; `packages/e2e/src/accessibility/` checks those on real screens, in the layers a story can't reach, and walks Tab through them. `packages/app/styles/tokens.test.ts` holds the contrast of what axe doesn't measure: icons, outlines, graph lines. Decision: `docs/design/githq/DECISIONS.md` D30.
 - **Client secrets live in Bitwarden Secrets Manager, in one project shared with the owner's other repos, each key prefixed `GITHQ_` and suffixed with its environment (`_DEV`, `_PROD`).** It is the one store `@nzyme/secrets` implements, and a machine-account token cannot reach vault items. A worktree reads it through the keychain, so no credentials are copied between checkouts. Cloudflare cannot give a secret back, so the store is the only readable copy of production's, which `secrets:put:prod` pushes to the Worker. `.env` still wins where it exists, until [#118](https://github.com/kedrzu/githq/issues/118) removes it.
 - **`bun run dev` works without access to the store.** The repo is open to contributors who have no Bitwarden account, so `scripts/withSecrets.sh` warns and goes on; the development token form signs them in.
 - **`wrangler.jsonc` declares the Worker's secrets under `secrets.required`.** It is what lets `wrangler dev` read them from its environment without binding the whole shell, and it makes a deploy fail when production lacks one.

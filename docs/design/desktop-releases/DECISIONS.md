@@ -283,17 +283,19 @@ a recorded last-run version, which the first public version has to write for its
 
 ## D14
 
-**The updater's signing key and password live in the secret store and are read through the provider, mapped only with
-`GITHQ_ENV=prod`, so a signed build works on any machine after `secrets login`.** (2026-11-04, owner) Open: whether the Release
-action reads the store too, or keeps repository secrets set from it.
+**The updater's signing key and password live in the secret store and local scripts read them through the provider, mapped only
+with `GITHQ_ENV=prod`, so a signed build works on any machine after `secrets login`. Everything running on GitHub reads GitHub
+secrets; Bitwarden is the manager they are set from, and CI never reads it.** (2026-11-04, owner)
 
-**Why.** A key that exists only on one Mac has no recovery procedure. Prod only, so `bun run dev` never holds it.
+**Why.** A key that exists only on one Mac has no recovery procedure, so the local copies were deleted. Prod only, so `bun run dev`
+never holds it.
 
 > **Checked 2026-11-04:** `bun run build:desktop:signed` produced `githq.app.tar.gz.sig` with the key read from the store; the store's
-> values equal the original files (`cmp`), and `tauri.conf.json`'s public key equals `updater.key.pub`. CI reading the store means a
-> `BWS_ACCESS_TOKEN` (`nzyme/packages/bitwarden/README.md`) whose machine account reads the whole project, which is shared with
-> the owner's other repos (`ARCHITECTURE.md`), and `bundle` builds without `bun install` (`.github/workflows/release.yml:181`).
+> values equalled the original files (`cmp`) before those were deleted, and `tauri.conf.json`'s public key equals `updater.key.pub`.
 
 **Rejected.**
 
-- A backup only, not mapped (design agent, the same day): nothing could read it back without a manual trip to the vault.
+- The Release action reading the store: a `BWS_ACCESS_TOKEN` (`nzyme/packages/bitwarden/README.md`) reads the whole project, which
+  is shared with the owner's other repos (`ARCHITECTURE.md`), and `bundle` builds without `bun install`
+  (`.github/workflows/release.yml:181`). The owner: what runs on GitHub reads GitHub's secrets.
+- A backup only, not mapped: nothing could read it back without a manual trip to the vault.
