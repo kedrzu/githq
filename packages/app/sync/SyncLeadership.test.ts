@@ -318,7 +318,9 @@ test('a row only browsed in one tab is asked about by none of the syncing tab, h
 
     // What runs meanwhile, change polls and prefetch of what is new among them: what proves the silence below.
     expect(polls(syncing)).toContain('GET /search/issues');
-    const asked = syncing.session.github.requests.map(request => `${request.operation} ${JSON.stringify(request.variables)}`);
+    const asked = syncing.session.github.requests.map(
+        request => `${request.operation} ${JSON.stringify(request.variables)}`,
+    );
     expect(asked.filter(request => /I_browsed|octo\/browsed/u.test(request))).toEqual([]);
     // Held all the while: it is there still.
     expect(syncing.items.get('I_browsed')?.id).toBe('I_browsed');
