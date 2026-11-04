@@ -1,4 +1,4 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ⌫ in an empty field or Esc steps back out of a submenu, Esc closes. -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ⌫ in an empty field steps back out of a submenu, then takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back out of a submenu, or closes. -->
 <script lang="ts" setup>
 import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -48,12 +48,14 @@ const props = withDefaults(
     commands: readonly Command[];
     /** What the actions act on: the chip. */
     subject?: CommandSubject | null;
+    /** The repository (`owner/name`) the screen belongs to: a chip after the subject's, its actions under its name. */
+    repository?: string | null;
     /** Where places and items are found. */
     navigation: NavigationData;
     /** Opens in this action's submenu (its key was pressed, and it has no other way to run). */
     startCommandId?: string | null;
   }>(),
-  { subject: null, startCommandId: null },
+  { subject: null, repository: null, startCommandId: null },
 );
 
 const emit = defineEmits<{
@@ -103,11 +105,22 @@ const SUBMENU_LIMIT = 100;
 const t = useTranslate();
 const query = ref('');
 const subjectRemoved = ref(false);
+const repositoryRemoved = ref(false);
 const submenuId = shallowRef<string | null>(null);
 const highlighted = shallowRef<string | null>(null);
 
 /** What the actions act on: `null` once the user took it out (⌫). */
 const subject = computed(() => (subjectRemoved.value ? null : props.subject));
+/** The repository the actions belong to: `null` once the user took it out (⌫). */
+const repository = computed(() => (repositoryRemoved.value ? null : props.repository));
+/** What the chip names: the subject, else the repository. */
+const chip = computed(() =>
+  subject.value
+    ? { icon: subject.value.kind === 'item' ? CircleDot : Layers, label: subject.value.label }
+    : repository.value
+      ? { icon: BookMarked, label: repository.value }
+      : null,
+);
 const submenu = computed(() => props.commands.find(command => command.id === submenuId.value) ?? null);
 const submenuOptions = computed(() => submenu.value?.options?.() ?? null);
 
@@ -123,6 +136,7 @@ const groups = computed((): FilterListGroup<Row>[] => {
     query: query.value,
     commands: props.commands,
     subject: subject.value,
+    repository: repository.value,
     navigation: props.navigation,
   }).map(group => ({
     key: group.key,
@@ -153,7 +167,7 @@ const hints = computed((): FilterListHint[] => {
     { keys: 'ArrowRight', label: t(l.openSubmenu) },
     { keys: '>', label: t(l.commandsOnly) },
   ];
-  if (subject.value) {
+  if (chip.value) {
     shown.push({ keys: 'Backspace', label: t(l.removeContext) });
   }
 
@@ -166,6 +180,7 @@ watch(
     if (isOpen) {
       query.value = '';
       subjectRemoved.value = false;
+      repositoryRemoved.value = false;
       submenuId.value = null;
       if (props.startCommandId) {
         enter(props.startCommandId);
@@ -181,6 +196,8 @@ function getHeading(key: CommandMenuGroupKey): string | null {
       return subject.value?.title ?? null;
     case 'view':
       return t(l.view);
+    case 'repository':
+      return repository.value;
     case 'goTo':
       return t(l.goTo);
     case 'projects':
@@ -383,6 +400,9 @@ function onFilterKeydown(event: KeyboardEvent) {
       } else if (subject.value) {
         event.preventDefault();
         subjectRemoved.value = true;
+      } else if (repository.value) {
+        event.preventDefault();
+        repositoryRemoved.value = true;
       }
   }
 }
@@ -420,15 +440,15 @@ function onEscape(event: KeyboardEvent) {
     >
       <template #beforeFilter>
         <span
-          v-if="subject"
+          v-if="chip"
           :class="css.commandMenu_chip"
         >
           <component
-            :is="subject.kind === 'item' ? CircleDot : Layers"
+            :is="chip.icon"
             :class="css.commandMenu_chipIcon"
             aria-hidden="true"
           />
-          {{ subject.label }}
+          {{ chip.label }}
         </span>
         <template v-if="submenu">
           <ChevronRight

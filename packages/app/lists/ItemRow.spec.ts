@@ -20,50 +20,169 @@ import ItemRow from './ItemRow.vue';
 
 /** Approved, every check passed: "approved · ready to merge". */
 const READY = findPullRequest('PR_477');
+/** Green checks, no review decision and nothing asked, with GitHub not yet saying it would merge. */
+const HELD: PullRequestItem = { ...READY, reviewDecision: null, mergeStateStatus: 'BLOCKED', reviewRequests: [] };
+/** GitHub would merge it with no review decision and no review asked: "ready to merge". */
+const NO_REVIEW: PullRequestItem = { ...HELD, mergeStateStatus: 'CLEAN' };
+const ASKED: PullRequestItem['reviewRequests'] = [{ kind: 'user', login: 'sapphi-red' }];
+const MAY_MERGE: MergeContext = {
+    canOpen: () => true,
+    open: () => undefined,
+    getRecord: () => null,
+    getCommands: () => [],
+    run: () => undefined,
+};
 /** A merge sent from the panel, with GitHub's text, naming the head the row shows. */
 const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
 const DRAFT = { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' };
 
-test('ready to merge, a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel', async () => {
-    const opened: string[] = [];
-    mount(READY, {
-        canOpen: id => id === READY.id,
-        open: id => opened.push(id),
-        getRecord: () => null,
-        getCommands: () => [],
-        run: () => undefined,
-    });
+const READY_ROWS = [
+    { name: 'approved', ready: READY },
+    { name: 'no review needed', ready: NO_REVIEW },
+];
 
-    const merge = page.getByRole('button', { name: /^Merge/ });
-    await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
-    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).not.toBeInTheDocument();
-    await userEvent.click(merge);
-    expect(opened).toEqual([READY.id]);
+test.each(READY_ROWS)(
+    'ready to merge ($name), a pull request the viewer may merge is followed by "Merge ⇧M", which opens the merge panel',
+    async ({ ready }) => {
+        const opened: string[] = [];
+        mount(ready, {
+            canOpen: id => id === ready.id,
+            open: id => opened.push(id),
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        });
+
+        const merge = page.getByRole('button', { name: /^Merge/ });
+        await expect.element(merge).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
+        await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).not.toBeInTheDocument();
+        await userEvent.click(merge);
+        expect(opened).toEqual([ready.id]);
+    },
+);
+
+test.each(READY_ROWS)(
+    'ready to merge ($name) on a merge queue\'s branch, the row says what it does: "Add to queue ⇧M"',
+    async ({ ready }) => {
+        const queueBranch = { ...ready, isMergeQueueEnabled: true };
+        mount(queueBranch, {
+            canOpen: id => id === ready.id,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        });
+
+        await expect.element(page.getByRole('button', { name: /^Add to queue/ })).toBeVisible();
+    },
+);
+
+test.each(READY_ROWS)(
+    'ready to merge ($name), one the viewer may not merge is followed by "Open on GitHub O"',
+    async ({ ready }) => {
+        mount(ready, {
+            canOpen: () => false,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        });
+
+        await expect
+            .element(page.getByRole('link', { name: /Open on GitHub/ }))
+            .toHaveAttribute('aria-keyshortcuts', 'O');
+        await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
+    },
+);
+
+const RUNNING = { state: 'PENDING', passing: 1, failing: 0, pending: 1 } as const;
+const FAILING = { state: 'FAILURE', passing: 1, failing: 2, pending: 0 } as const;
+const AUTO_MERGE = { mergeMethod: 'SQUASH', enabledAt: null, enabledBy: 'mlaine', commitHeadline: null } as const;
+const QUEUE_ENTRY = {
+    position: 3,
+    state: 'AWAITING_CHECKS',
+    estimatedTimeToMerge: null,
+    enqueuedAt: new Date(SAMPLE_NOW).toISOString(),
+    enqueuer: 'mlaine',
+} as const;
+
+test.each<{ name: string; pr: PullRequestItem; reviewRequested?: boolean; says: readonly string[] }>([
+    { name: 'being merged', pr: { ...READY, merging: 'SQUASH' }, says: ['Being merged · not merged yet'] },
+    { name: 'in a merge queue', pr: { ...READY, mergeQueueEntry: QUEUE_ENTRY }, says: ['in queue · 3rd'] },
+    { name: 'auto-merge on', pr: { ...READY, autoMerge: AUTO_MERGE }, says: ['auto-merge on · squash'] },
+    { name: 'closed', pr: { ...READY, state: 'CLOSED' }, says: [] },
+    { name: 'merged', pr: { ...READY, merged: true, state: 'MERGED', closedAt: null }, says: ['Merged'] },
+    { name: 'failing checks', pr: { ...NO_REVIEW, checks: FAILING }, says: ['2 checks failing'] },
+    { name: 'checks running, GitHub would merge', pr: { ...NO_REVIEW, checks: RUNNING }, says: ['checks running'] },
+    {
+        name: 'green, changes requested',
+        pr: { ...HELD, reviewDecision: 'CHANGES_REQUESTED' },
+        says: ['checks passed', 'changes requested'],
+    },
+    {
+        name: 'green, approved with conflicts',
+        pr: { ...READY, mergeable: 'CONFLICTING', mergeStateStatus: 'DIRTY' },
+        says: ['checks passed', 'conflicts'],
+    },
+    { name: 'approved, GitHub would merge', pr: READY, says: ['approved · ready to merge'] },
+    { name: 'no review, green, GitHub would merge', pr: NO_REVIEW, says: ['ready to merge'] },
+    { name: 'no review, no checks, GitHub would merge', pr: { ...NO_REVIEW, checks: null }, says: ['ready to merge'] },
+    {
+        name: 'approved, held, green',
+        pr: { ...READY, mergeStateStatus: 'BLOCKED' },
+        says: ['approved · checks passed'],
+    },
+    {
+        name: 'approved, held, no checks',
+        pr: { ...READY, mergeStateStatus: 'BLOCKED', checks: null },
+        says: ['approved'],
+    },
+    {
+        name: 'green, your review asked',
+        pr: NO_REVIEW,
+        reviewRequested: true,
+        says: ['checks passed', 'your review requested'],
+    },
+    {
+        name: 'green, a review asked with none required',
+        pr: { ...NO_REVIEW, reviewRequests: ASKED },
+        says: ['checks passed', 'waiting for review'],
+    },
+    {
+        name: 'green, review required',
+        pr: { ...HELD, reviewDecision: 'REVIEW_REQUIRED' },
+        says: ['checks passed', 'waiting for review'],
+    },
+    { name: 'green, draft', pr: { ...NO_REVIEW, isDraft: true }, says: ['checks passed', 'draft'] },
+    { name: 'green, blocked', pr: HELD, says: ['checks passed'] },
+    { name: 'green, behind', pr: { ...HELD, mergeStateStatus: 'BEHIND' }, says: ['checks passed'] },
+    { name: 'green, not known yet', pr: { ...HELD, mergeStateStatus: 'UNKNOWN' }, says: ['checks passed'] },
+    {
+        name: 'no checks, review required',
+        pr: { ...HELD, reviewDecision: 'REVIEW_REQUIRED', checks: null },
+        says: ['waiting for review'],
+    },
+    { name: 'no checks, blocked', pr: { ...HELD, checks: null }, says: [] },
+])('line two, in order: $name', ({ pr, reviewRequested, says }) => {
+    mount(pr, null, { reviewRequested });
+
+    expect(readStatuses()).toEqual(says);
 });
 
-test('ready to merge on a merge queue\'s branch, the row says what it does: "Add to queue ⇧M"', async () => {
-    const queueBranch = { ...READY, isMergeQueueEnabled: true };
-    mount(queueBranch, {
-        canOpen: id => id === READY.id,
-        open: () => undefined,
-        getRecord: () => null,
-        getCommands: () => [],
-        run: () => undefined,
-    });
+test('a review asked with no decision required offers no merge, although GitHub would merge it', async () => {
+    mount({ ...NO_REVIEW, reviewRequests: ASKED }, MAY_MERGE);
 
-    await expect.element(page.getByRole('button', { name: /^Add to queue/ })).toBeVisible();
+    await expect.element(page.getByText('waiting for review')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
-test('ready to merge, one the viewer may not merge is followed by "Open on GitHub O"', async () => {
-    mount(READY, {
-        canOpen: () => false,
-        open: () => undefined,
-        getRecord: () => null,
-        getCommands: () => [],
-        run: () => undefined,
-    });
+test('with the status off in Display, neither fact shows and nothing follows', async () => {
+    const properties = ITEM_PROPERTIES.filter(property => property !== 'status');
+    mount({ ...HELD, reviewDecision: 'REVIEW_REQUIRED' }, null, { properties });
+    expect(readStatuses()).toEqual([]);
 
-    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toHaveAttribute('aria-keyshortcuts', 'O');
+    mount(NO_REVIEW, MAY_MERGE, { properties });
+    expect(readStatuses()).toEqual([]);
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
@@ -98,11 +217,11 @@ test('with a draft review on one the viewer may not merge, "Open on GitHub" stil
 });
 
 test('D21: a list showing no status still marks a draft review, and offers no merge; what else it would say stays hidden', async () => {
-    mount({ ...READY, pendingReview: DRAFT }, null, []);
+    mount({ ...READY, pendingReview: DRAFT }, null, { properties: [] });
     await expect.element(page.getByText('Your draft review · 3 comments unsent')).toBeVisible();
     await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).not.toBeInTheDocument();
 
-    mount({ ...READY, id: 'PR_other', title: 'Without a draft' }, null, []);
+    mount({ ...READY, id: 'PR_other', title: 'Without a draft' }, null, { properties: [] });
     await expect.element(page.getByText('Without a draft')).toBeVisible();
     await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
 });
@@ -144,7 +263,7 @@ test('PM37: a merge refused says so on line two, followed by "Back to the merge 
     });
 
     await expect.element(page.getByText('Merge refused')).toBeVisible();
-    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
+    expect(readStatuses()).toEqual(['Merge refused']);
     const back = page.getByRole('button', { name: /^Back to the merge/ });
     await expect.element(back).toHaveAttribute('aria-keyshortcuts', 'Shift+M');
     await userEvent.click(back);
@@ -240,7 +359,19 @@ test('PM37: under auto-merge, the row says how and what it waits for, and offers
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
 });
 
-function mount(item: Item, merging: MergeContext | null, properties: readonly ItemProperty[] = ITEM_PROPERTIES) {
+/** What line two of the rows says, in order. */
+function readStatuses() {
+    return Array.from(document.querySelectorAll('[class*="itemStatus_text"]'), status =>
+        // Normalised as `getByText` does: the translations glue short words with no-break spaces.
+        status.textContent.replaceAll(/\s+/g, ' '),
+    );
+}
+
+function mount(
+    item: Item,
+    merging: MergeContext | null,
+    props: { reviewRequested?: boolean; properties?: readonly ItemProperty[] } = {},
+) {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     const host = document.createElement('div');
@@ -251,7 +382,14 @@ function mount(item: Item, merging: MergeContext | null, properties: readonly It
                 provideContext(MergeContext, merging);
             }
 
-            return () => h(ItemRow, { item, properties, viewerLogin: SAMPLE_VIEWER.login, now: SAMPLE_NOW });
+            return () =>
+                h(ItemRow, {
+                    item,
+                    properties: ITEM_PROPERTIES,
+                    viewerLogin: SAMPLE_VIEWER.login,
+                    now: SAMPLE_NOW,
+                    ...props,
+                });
         },
     });
     app.use(IocPlugin, { container });

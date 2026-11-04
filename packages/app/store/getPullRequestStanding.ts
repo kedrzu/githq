@@ -11,12 +11,16 @@ export interface PullRequestStanding {
     readonly checksFailing: boolean;
     /** Checks are still running and none fails. */
     readonly checksRunning: boolean;
+    /** The rollup reports success with none failing or running; `false` when nothing runs on the head commit. */
+    readonly checksPassed: boolean;
     readonly changesRequested: boolean;
     /** It cannot be merged without resolving conflicts. */
     readonly conflicts: boolean;
     readonly approved: boolean;
     /** Approved, not a draft, and GitHub says it can be merged now. */
     readonly readyToMerge: boolean;
+    /** GitHub says it can be merged now with no review decision, and neither a draft nor {@link needsAuthor}. */
+    readonly mergesWithoutReview: boolean;
     /** Not a draft, and a review is still required, or asked of someone with no decision yet. */
     readonly waitingForReview: boolean;
     /** Its author has something to do: failing checks, changes requested, or conflicts. */
@@ -41,11 +45,12 @@ export function getPullRequestStanding(pr: PullRequestStatus): PullRequestStandi
         !checksFailing &&
         checks !== null &&
         (checks.pending > 0 || checks.state === 'PENDING' || checks.state === 'EXPECTED');
+    const checksPassed = checks?.state === 'SUCCESS' && !checksFailing && !checksRunning;
     const changesRequested = pr.reviewDecision === 'CHANGES_REQUESTED';
     const conflicts = pr.mergeable === 'CONFLICTING' || pr.mergeStateStatus === 'DIRTY';
     const approved = pr.reviewDecision === 'APPROVED';
-    const readyToMerge =
-        approved && !pr.isDraft && (pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS');
+    const clean = pr.mergeStateStatus === 'CLEAN' || pr.mergeStateStatus === 'HAS_HOOKS';
+    const readyToMerge = approved && !pr.isDraft && clean;
     const waitingForReview =
         !pr.isDraft &&
         (pr.reviewDecision === 'REVIEW_REQUIRED' || (pr.reviewDecision === null && pr.reviewRequests.length > 0));
@@ -55,10 +60,12 @@ export function getPullRequestStanding(pr: PullRequestStatus): PullRequestStandi
         failingChecks,
         checksFailing,
         checksRunning,
+        checksPassed,
         changesRequested,
         conflicts,
         approved,
         readyToMerge,
+        mergesWithoutReview: clean && !pr.isDraft && pr.reviewDecision === null && !needsAuthor,
         waitingForReview,
         needsAuthor,
         waitingOnOthers: waitingForReview || checksRunning,

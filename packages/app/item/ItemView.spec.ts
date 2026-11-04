@@ -539,6 +539,21 @@ test('PM38: before the merge options are read, GitHub saying only checks not req
     await expect.element(page.getByRole('heading', { name: /^Ready to merge/ })).toBeVisible();
 });
 
+test('PM38: before the merge options are read, GitHub saying it merges with no review decision reads ready', async () => {
+    const { args } = PullRequestOptionalFailing;
+    await PullRequestOptionalFailing.run({
+        args: {
+            ...args,
+            item: { ...F3_PULL_REQUEST, mergeStateStatus: 'CLEAN', reviewDecision: null },
+            mergeChecks: null,
+        },
+    });
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Ready to merge/ }))
+        .toHaveTextContent('Ready to mergeNo review required · no conflicts');
+});
+
 test('PM38: before the merge options are read, a failing check GitHub holds it for holds the standing', async () => {
     const { args } = PullRequestOptionalFailing;
     await PullRequestOptionalFailing.run({

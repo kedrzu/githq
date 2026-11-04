@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first) and, off its view, which registers its sections on `1`–`4` itself, its sections too; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -26,6 +26,7 @@ import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
+import { useRepositoryCommands } from '@/repository/useRepositoryCommands.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
@@ -57,8 +58,9 @@ const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
 const openItem = useOpenItem();
+const repositoryCommands = useRepositoryCommands();
 
-/** The repository the screen is about: a repository's view, or the opened item's. */
+/** The repository a new issue starts in: the opened item's, or the one of a repository's view. */
 const repository = computed(() => {
   const opened = getOpenedItemRoute(route);
   if (opened) {
@@ -69,6 +71,21 @@ const repository = computed(() => {
   return route.name === 'repository' && typeof owner === 'string' && typeof name === 'string'
     ? `${owner}/${name}`
     : null;
+});
+
+/**
+ * The repository (`owner/name`) the screen belongs to, whose actions the menu offers: the one its address names (a
+ * repository's view, an item's page, a workflow's run, its settings), else the one of the item opened over the screen;
+ * `null` elsewhere.
+ */
+const contextRepository = computed(() => {
+  const { owner, name } = route.params;
+  if (typeof owner === 'string' && typeof name === 'string') {
+    return `${owner}/${name}`;
+  }
+
+  const opened = getOpenedItemRoute(route);
+  return opened ? `${opened.reference.owner}/${opened.reference.name}` : null;
 });
 
 const navigationData = computed((): NavigationData => ({
@@ -134,6 +151,25 @@ useCommands(() => [
   },
   ...getUpdateCommands(),
 ]);
+
+// The repository's own group follows the screen. Its view registers its sections, with their keys, itself.
+useCommands(() => {
+  const name = contextRepository.value;
+  if (name === null) {
+    return [];
+  }
+
+  const commands = repositoryCommands(name);
+  const sections =
+    route.name === 'repository' ? [] : [commands.issues, commands.pullRequests, commands.commits, commands.workflows];
+  return [
+    ...sections,
+    { ...commands.openOnGitHub, detail: name },
+    commands.copyLink,
+    // "Settings" alone stays the app's: a repository is in context nearly always.
+    { ...commands.settings, title: t(l.repositorySettings) },
+  ];
+});
 
 /** "Restart to update" and "Update later" while an update is ready — only ever in the desktop app (`AppUpdate`). */
 function getUpdateCommands(): Command[] {
@@ -274,6 +310,7 @@ function navigate(result: NavigationResult) {
     v-model:open="menuOpen"
     :commands="registry.commands"
     :subject="registry.subject"
+    :repository="contextRepository"
     :navigation="navigationData"
     :start-command-id="registry.menu?.commandId ?? null"
     @navigate="navigate"
