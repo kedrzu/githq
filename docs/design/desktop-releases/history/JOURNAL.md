@@ -39,3 +39,5 @@ Append-only. One line per turn that settled something.
   predicted from titles (D4, old form in history); draft then replace, tag not moved (D4); keep "check now", useful later (D11).
   Separate app not pursued. Still unconfirmed: the sweep's rules (marked in D4, D5, D10), the two accepted cases, the order, whether
   the updater key is backed up. Not checked: a draft holding a tag a published release holds. Story folded up to here.
+- 2026-11-04: Owner accepted the sweep's three rules (D4, D5, D10), the two cases without code (D12), the order (D13). Owner asked
+  what the updater key is: explained. Backup still to be settled. Story folded.

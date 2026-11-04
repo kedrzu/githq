@@ -133,7 +133,7 @@ named in the description. Accepted: for seconds a check can fail, and the update
 whether GitHub allows a draft with a tag that a published release holds; if not, the draft takes a temporary tag until
 it is published.
 
-Proposed by the design agent, not yet confirmed: a newer push cancels an older build still running, so an older build can't
+Proposed by the design agent, accepted by the owner: a newer push cancels an older build still running, so an older build can't
 overwrite a newer one, and the draft a cancelled build left is removed by the next.
 
 **Rejected.**
@@ -159,7 +159,7 @@ installed build.** (2026-11-04, owner)
 local copy is ready for it (evidence under [D1](#d1)): an older database is dropped and fetched again, so the cost is one
 first sync. Only this switch may install an older version: the updater's normal comparison stays strictly greater.
 
-Proposed by the design agent, not yet confirmed: the rule holds no state, so it survives being offline or a failed download:
+Proposed by the design agent, accepted by the owner: the rule holds no state, so it survives being offline or a failed download:
 a running `-dev` build on Stable accepts any stable version. Switching checks at once, even if an update is already waiting,
 and on macOS and Linux whatever was installed last is what runs. Switching to Development waits for a build newer than the installed
 version, so a Stable that was just released is not replaced by the same code under a lower number.
@@ -248,7 +248,7 @@ evidence for both calls is under [D3](#d3).
   (rightsize, 2026-11-04): no hash and no filter in the app, but Development would list everything since the last stable, and
   skipped stable versions would hide behind a link. The owner kept the exact ranges.
 
-Proposed by the design agent, not yet confirmed: the toast always appears after a version change, the list is fetched when it is
+Proposed by the design agent, accepted by the owner: the toast always appears after a version change, the list is fetched when it is
 opened, and a failure offers a link to GitHub. After going back to an older stable version there is no list.
 
 ## D11
@@ -265,3 +265,18 @@ Check now reports its outcome: up to date, or that it failed. Today the updater 
 **Rejected.**
 
 - Dropping check now, since a restart also checks (rightsize, 2026-11-04): the owner wants it, now and later.
+
+## D12
+
+**Accepted without code: a draft can be published by hand with a platform missing, because the failed check warns and does not
+block; and a published version number is never reused, so a bad release is fixed by the next one.** (2026-11-04, owner)
+
+**Why.** Publishing is the owner's own step, and no app can tell that a version's contents changed under the same number.
+
+## D13
+
+**Work goes in this order: the Development stream and its choice in Settings; what changed and the toast; then the Apple
+signature and the first Stable, 0.1.0.** (2026-11-04, owner)
+
+**Why.** Development needs nothing from Apple, so the owner can start testing updates on themselves at once. The toast depends on
+a recorded last-run version, which the first public version has to write for its successor to show anything.

@@ -73,3 +73,9 @@ the commits between its old build and its new one and lists what users would not
 correction should still arrive. Offline, the list waits for the connection.
 
 [Every decision, with the evidence](DECISIONS.md).
+
+## What gets built first
+
+First the Development stream and its choice in Settings, which need nothing from Apple, so updates can be tried on a real
+install at once. Then the list of what changed and its toast. Last the Apple signature and the first Stable release, 0.1.0.
+[Why in that order](DECISIONS.md#d13).
