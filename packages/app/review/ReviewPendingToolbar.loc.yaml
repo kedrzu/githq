@@ -7,5 +7,19 @@ pendingComments:
     many: pending comments
 note:
   en: Others can't see them until you submit.
-finishOnGitHub:
-  en: Finish on GitHub
+discard:
+  en: Discard review…
+submit:
+  en: Submit review…
+sendFailed:
+  en: Couldn't send your review
+discardFailed:
+  en: Couldn't discard your review
+refused:
+  en: 'GitHub refused it: "{reason}". Everything is kept.'
+notReached:
+  en: GitHub wasn't reached. Everything is kept.
+edit:
+  en: Edit review…
+tryAgain:
+  en: Try again

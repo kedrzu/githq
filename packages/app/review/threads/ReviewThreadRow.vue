@@ -7,6 +7,7 @@ import { computed } from 'vue';
 
 import type { ReviewThreadRow } from '../buildReviewRows.js';
 import { parseDiffHunk } from './parseDiffHunk.js';
+import ReviewRowInset from './ReviewRowInset.vue';
 import ReviewThreadBox from './ReviewThreadBox.vue';
 import ReviewThreadCode from './ReviewThreadCode.vue';
 import * as l from './ReviewThreadRow.loc.js';
@@ -80,80 +81,39 @@ const codeLabel = computed(() => {
 </script>
 
 <template>
-  <div
-    :class="[
-      css.reviewThreadRow,
-      row.inline && css[`reviewThreadRow_${row.inline}`],
-      row.placement.kind === 'fileTop' && css.reviewThreadRow_fileTop,
-    ]"
+  <ReviewRowInset
+    :inline="row.inline"
+    :class="row.placement.kind === 'fileTop' && css.reviewThreadRow_fileTop"
   >
-    <div :class="css.reviewThreadRow_content">
-      <p
-        v-if="lineGone"
-        :class="css.reviewThreadRow_lineGone"
-      >
-        <History
-          :class="css.reviewThreadRow_lineGoneIcon"
-          aria-hidden="true"
-        />
-        <span :class="css.reviewThreadRow_lineGoneTitle">{{ t(l.lineGone) }}</span>
-        {{ lineGoneDetail }}
-      </p>
-      <ReviewThreadCode
-        v-if="codeShown"
-        :label="codeLabel"
-        :lines="hunk"
+    <p
+      v-if="lineGone"
+      :class="css.reviewThreadRow_lineGone"
+    >
+      <History
+        :class="css.reviewThreadRow_lineGoneIcon"
+        aria-hidden="true"
       />
-      <ReviewThreadBox
-        :thread="thread"
-        :outdated-note="outdatedNote"
-        :open="open"
-        :focused="focused"
-        @toggle="emit('toggle')"
-      />
-    </div>
-  </div>
+      <span :class="css.reviewThreadRow_lineGoneTitle">{{ t(l.lineGone) }}</span>
+      {{ lineGoneDetail }}
+    </p>
+    <ReviewThreadCode
+      v-if="codeShown"
+      :label="codeLabel"
+      :lines="hunk"
+    />
+    <ReviewThreadBox
+      :thread="thread"
+      :outdated-note="outdatedNote"
+      :open="open"
+      :focused="focused"
+      @toggle="emit('toggle')"
+    />
+  </ReviewRowInset>
 </template>
 
 <style lang="scss" module="css">
-.reviewThreadRow {
-  padding: $spacing-8 $spacing-14;
-  background: $color-bg;
-}
-
 .reviewThreadRow_fileTop {
   border-bottom: 1px solid $color-border;
-}
-
-.reviewThreadRow_content {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-8;
-}
-
-// On its own half, the line between the halves going on beside it.
-.reviewThreadRow_left {
-  width: 50%;
-  padding-right: $spacing-6;
-  padding-left: $spacing-6;
-}
-
-.reviewThreadRow_right {
-  padding-right: $spacing-6;
-  padding-left: calc(50% + #{$spacing-6});
-  background:
-    linear-gradient($color-border, $color-border) 50% 0 / 1px 100% no-repeat,
-    $color-bg;
-}
-
-// Indented to the code: two numbers and the sign.
-.reviewThreadRow_unified {
-  padding-right: $spacing-14;
-  padding-left: 108px;
-
-  .reviewThreadRow_content {
-    max-width: 760px;
-  }
 }
 
 .reviewThreadRow_lineGone {

@@ -6,6 +6,7 @@ import { createApp, effectScope, nextTick, shallowRef } from 'vue';
 
 import { Clock } from '@/services/Clock.js';
 import { createTestSession } from '@/testing/createTestSession.js';
+import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 
 import type { DiffLineRange } from './diff/buildDiffRows.js';
 import type {
@@ -142,6 +143,7 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
                 hideWhitespace: false,
                 currentPath: null,
                 threadsInCollapsed: true,
+                commentTargets: [],
             }),
         ),
     );
@@ -220,6 +222,7 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
             getExpandedLines: () => NO_LINES,
             isExpansionReset: () => false,
             expandLines: () => {},
+            writing: idleReviewWriting,
         };
     }
 }

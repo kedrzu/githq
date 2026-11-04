@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait (D28), and until writing comes (D23) sends them to GitHub to finish it. -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen, or else the first line on screen. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -24,15 +24,19 @@ import {
   ListChecks,
   ListFilter,
   MessageSquare,
+  MessageSquarePlus,
+  Send,
   PanelLeft,
   PanelRight,
   Pause,
+  Trash2,
   UnfoldVertical,
 } from 'lucide-vue-next';
 import { computed, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
+import { AuthStore } from '@/auth/AuthStore.js';
 import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -50,6 +54,7 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
+import { ReloadHolds } from '@/sync/ReloadHolds.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
@@ -57,10 +62,14 @@ import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import AnchoredList from './AnchoredList.vue';
 import type { AnchoredListExposed } from './AnchoredList.vue';
 import {
+  clampCommentRange,
+  COMMENT_BOX_HEIGHT,
   estimateReviewRowHeight,
+  findCommentLine,
   findReplacementRow,
   getDistanceLinesToShow,
   getGapLinesToShow,
+  getReviewCommentKey,
   getReviewHeaderKey,
   getReviewPlacePath,
   getReviewPosition,
@@ -68,12 +77,14 @@ import {
   getReviewThreadKey,
 } from './buildReviewRows.js';
 import type {
+  ReviewCommentLine,
   ReviewDistanceRow,
   ReviewFileEndRow,
   ReviewGapRow,
   ReviewRow,
   ReviewThreadRow,
 } from './buildReviewRows.js';
+import type { DiffLineSide } from './diff/buildDiffRows.js';
 import { getReviewOwnThreads } from './conversation/getReviewOwnThreads.js';
 import ReviewConversation from './conversation/ReviewConversation.vue';
 import { groupReviewFiles } from './groupReviewFiles.js';
@@ -100,6 +111,12 @@ import { getFailureText } from './utils/getFailureText.js';
 import { getLandingFreshness } from './utils/getLandingFreshness.js';
 import { getReviewFreshness } from './utils/getReviewFreshness.js';
 import { getReviewPlaceFreshness } from './utils/getReviewPlaceFreshness.js';
+import type { CommentedLines } from './utils/isLineCommented.js';
+import { getPendingComments } from './writing/getPendingComments.js';
+import ReviewCommentRow from './writing/ReviewCommentRow.vue';
+import ReviewDiscardDialog from './writing/ReviewDiscardDialog.vue';
+import ReviewSubmitDialog from './writing/ReviewSubmitDialog.vue';
+import type { ReviewCommentTarget, ReviewCommentWay } from './writing/ReviewWriting.js';
 
 const props = defineProps<{
   reference: ItemReference;
@@ -110,9 +127,15 @@ const NO_FILTER: FileFilterInput = { pattern: '', regex: false };
 const NO_FILES: ReadonlySet<string> = new Set();
 /** A jump to a thread never lands higher than this under the top: the pinned header and a little air. */
 const THREAD_MIN_OFFSET = 46;
+const NO_TARGETS: readonly ReviewCommentTarget[] = [];
+const IDLE_FINISH = { kind: 'idle' } as const;
+/** Whether `⌘↵` of a comment box starts a draft with none open, rather than sends at once (D17). The setting comes with M7. */
+const COMMENT_DRAFT_FIRST = false;
 
 const t = useTranslate();
 const accounts = useService(AccountSession);
+const auth = useService(AuthStore);
+const holds = useService(ReloadHolds);
 const reviewFiles = useService(ReviewFiles);
 const preferences = useService(LocalPreferences);
 const screenFreshness = useService(ReviewScreenFreshness);
@@ -163,12 +186,43 @@ const leftScrolled = shallowRef(false);
 const landing = shallowRef(true);
 /** Why it opened where it did, for the status bar, until the first move: `landing` is over long before that. */
 const arrival = shallowRef<ReviewArrival | null>(null);
+/** The comment box the keys are in; it takes them back when its row returns to the list's window. */
+const focusedBox = shallowRef<string | null>(null);
+/** The box sent last, which takes the keys back if GitHub refuses it. */
+const sentBox = shallowRef<string | null>(null);
+/** A range being dragged on the lines' numbers (CR73). */
+const commentDrag = shallowRef<{ path: string; side: DiffLineSide; from: number; to: number } | null>(null);
+const submitOpen = shallowRef(false);
+const discardOpen = shallowRef(false);
 
 const hideViewed = computed({
   get: () => files.value?.hideViewed ?? false,
   set: hide => files.value?.setHideViewed(hide),
 });
 const allFiles = computed(() => files.value?.files ?? []);
+const writing = computed(() => files.value?.writing ?? null);
+const commentTargets = computed(() => writing.value?.targets ?? NO_TARGETS);
+const commentPaths = computed(() => new Set(commentTargets.value.map(target => target.path)));
+/** By file: what is being written on, for its lines to be tinted. */
+const commentedLines = computed(() => {
+  const byPath = new Map<string, CommentedLines>();
+  function add(path: string, side: DiffLineSide, start: number, end: number) {
+    byPath.set(path, [...(byPath.get(path) ?? []), { side, start, end }]);
+  }
+
+  for (const { id, path, side, startLine, line } of commentTargets.value) {
+    if (canEdit(id)) {
+      add(path, side, startLine ?? line, line);
+    }
+  }
+
+  const drag = commentDrag.value;
+  if (drag) {
+    add(drag.path, drag.side, Math.min(drag.from, drag.to), Math.max(drag.from, drag.to));
+  }
+
+  return byPath;
+});
 const filterInput = computed(() => files.value?.filter ?? NO_FILTER);
 const typedFilter = computed(() => createFileFilter(filterInput.value));
 // A regular expression that doesn't compile, often just not finished, leaves the list as it was (CR28).
@@ -183,8 +237,13 @@ const matchedFiles = computed(() => {
 const placements = shallowRef<ReviewThreadPlacements>({ byFile: new Map(), goneEntries: [] });
 // Apart: nothing downstream of `goneFiles` is to be rebuilt by what doesn't change them.
 const listEnd = computed(() => files.value?.listEnd ?? 'growing');
-const goneFiles = computed(() =>
-  placements.value.goneEntries.map((path): ReviewFile => ({
+const goneFiles = computed(() => {
+  // A comment being written on a file a push took away stays in sight, the text being all the reader has of it.
+  const unlisted =
+    listEnd.value === 'growing'
+      ? []
+      : [...commentPaths.value].filter(path => !allFiles.value.some(file => file.path === path));
+  return [...new Set([...placements.value.goneEntries, ...unlisted])].map((path): ReviewFile => ({
     path,
     previousPath: null,
     changeType: 'DELETED',
@@ -192,8 +251,8 @@ const goneFiles = computed(() =>
     deletions: 0,
     viewed: 'UNVIEWED',
     gone: { kind: listEnd.value === 'certain' ? 'notInDiff' : 'notListed' },
-  })),
-);
+  }));
+});
 const openThreads = computed(() => {
   const counts = new Map<string, number>();
   for (const [path, placed] of placements.value.byFile) {
@@ -221,9 +280,12 @@ const reviewThreads = computed(() => getReviewOwnThreads(placements.value));
 const groups = computed(() => {
   const current = filter.value;
   const gone = current.kind === 'on' ? goneFiles.value.filter(file => current.matches(file.path)) : goneFiles.value;
-  // A file with an unresolved thread stays: a colleague's comment on it would appear nowhere else (D15).
+  // A file with an unresolved thread stays: a colleague's comment on it would appear nowhere else (D15). So does one with a
+  // comment being written.
   const shown = hideViewed.value
-    ? matchedFiles.value.filter(file => file.viewed !== 'VIEWED' || openThreads.value.has(file.path))
+    ? matchedFiles.value.filter(
+        file => file.viewed !== 'VIEWED' || openThreads.value.has(file.path) || commentPaths.value.has(file.path),
+      )
     : matchedFiles.value;
   return groupReviewFiles([...shown, ...gone]);
 });
@@ -273,6 +335,7 @@ const { rows, threadPlacements } = useReviewRows({
   hideWhitespace,
   currentPath,
   threadsInCollapsed,
+  commentTargets,
 });
 watch(threadPlacements, next => (placements.value = next), { flush: 'sync', immediate: true });
 useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, arrival });
@@ -288,6 +351,12 @@ const currentFile = computed(() => {
 const branches = computed(() => (opened.item?.kind === 'pullRequest' ? opened.item : null));
 const detail = computed(() => (opened.detail?.kind === 'pullRequest' ? opened.detail : null));
 const pendingReview = computed(() => branches.value?.pendingReview ?? null);
+const finish = computed(() => writing.value?.finish ?? IDLE_FINISH);
+const pendingComments = computed(() => getPendingComments(files.value?.threads ?? []));
+const submission = computed({
+  get: () => writing.value?.submission ?? { event: 'COMMENT' as const, body: '' },
+  set: choice => writing.value?.setSubmission(choice),
+});
 const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
 /** The threads N and ⇧N walk (CR15). */
 const walkedThreads = computed(() => listWalkedThreads(rows.value));
@@ -313,6 +382,9 @@ let selectionStart: string | null = null;
 /** The row under lines being expanded, at where it is on screen: it stays there once they are in. */
 let heldInExpanding: { key: string; offset: number } | null = null;
 const walkedBy = navigation.takeReviewWalk(formatItemReference(props.reference));
+
+// The text is safe on disk, but a reload under a typing hand would take the box from it.
+onScopeDispose(holds.holdWhile(() => writing.value?.hasText ?? false));
 
 // Once, when the diff first shows: PageDown, Space and the arrows then scroll it at once. By then the user may be in a
 // field, like the command palette's, which nothing here takes them out of.
@@ -480,6 +552,36 @@ watch(rows, next => {
   }
 });
 
+onWindowEvent('pointerup', () => {
+  const drag = commentDrag.value;
+  commentDrag.value = null;
+  if (drag && drag.from !== drag.to) {
+    startComment({
+      path: drag.path,
+      side: drag.side,
+      startLine: Math.min(drag.from, drag.to),
+      line: Math.max(drag.from, drag.to),
+    });
+  }
+});
+
+// Gone elsewhere in the app: a box coming back into the window doesn't take the keys from there.
+onWindowEvent('focusin', event => {
+  if (event.target instanceof Node && !diffColumn.value?.contains(event.target)) {
+    focusedBox.value = null;
+  }
+});
+
+// Refused while the keys are still around the diff: back in the box, where they can try another way.
+watch(
+  () => (sentBox.value === null ? null : (writing.value?.getStatus(sentBox.value).kind ?? null)),
+  kind => {
+    if (kind === 'failed' && diffColumn.value?.contains(document.activeElement)) {
+      focusedBox.value = sentBox.value;
+    }
+  },
+);
+
 // Outside the local copy no poll reads its draft, and its row moves on with the detail alone: back from finishing the
 // draft on GitHub, the toolbar must not stay. `ensure` would skip a read made under a minute ago.
 onWindowEvent('focus', () => {
@@ -556,6 +658,42 @@ useCommands(() => [
     icon: MessageSquare,
     when: () => walkedThreads.value.length > 0,
     run: () => stepThread(-1),
+  },
+  {
+    id: 'review.comment',
+    title: t(l.commentOnLine),
+    section: 'view',
+    key: 'C',
+    icon: MessageSquarePlus,
+    // Here it never means a new issue, which the menu still offers: with no line on screen it does nothing.
+    when: () => ordered.value.length > 0,
+    run: () => {
+      const line = findCursorLine();
+      if (line) {
+        startComment({ path: line.path, side: line.side, line: line.line, startLine: null });
+      }
+    },
+  },
+  {
+    id: 'review.submit',
+    title: t(l.submitReview),
+    section: 'view',
+    key: 'Shift+S',
+    icon: Send,
+    when: () => pendingReview.value !== null && finish.value.kind !== 'sending',
+    run: () => {
+      submitOpen.value = true;
+    },
+  },
+  {
+    id: 'review.discard',
+    title: t(l.discardReview),
+    section: 'view',
+    icon: Trash2,
+    when: () => pendingReview.value !== null && finish.value.kind !== 'sending',
+    run: () => {
+      discardOpen.value = true;
+    },
   },
   {
     id: 'review.toggleViewed',
@@ -939,6 +1077,135 @@ function showOnlyLostViewed() {
   fileListHidden.value = false;
 }
 
+function canEdit(id: string) {
+  const kind = writing.value?.getStatus(id).kind;
+  return kind === 'editing' || kind === 'failed';
+}
+
+/** The line of the focused thread while it is on screen, or else the first line on screen (D32). */
+function findCursorLine(): ReviewCommentLine | null {
+  const height = diffColumn.value?.clientHeight ?? 0;
+  const isOnScreen = (key: string) => {
+    const offset = list.value?.getRowOffset(key) ?? null;
+    return offset !== null && offset < height && offset >= 0;
+  };
+  const row = walkedThreads.value.find(({ placement }) => placement.thread.id === focusedThread.value);
+  if (row && isOnScreen(row.key)) {
+    const { placement } = row;
+    if (placement.kind === 'onLine' || placement.kind === 'hiddenLine') {
+      return { path: getReviewRowPath(row.key), side: placement.side, line: placement.line, key: row.key };
+    }
+  }
+
+  const line = findCommentLine(rows.value, list.value?.firstVisibleKey ?? null);
+  return line && isOnScreen(line.key) ? line : null;
+}
+
+function startComment(target: Omit<ReviewCommentTarget, 'id'>) {
+  const box = writing.value?.open(target);
+  if (box) {
+    stopLanding();
+    focusedBox.value = box.id;
+    void revealComment(box);
+  }
+}
+
+/** Only when it wouldn't fit on screen, and then by as little as it takes (D7). */
+async function revealComment({ path, id }: ReviewCommentTarget) {
+  await nextTick();
+  const key = getReviewCommentKey(path, id);
+  const height = diffColumn.value?.clientHeight ?? 0;
+  const offset = list.value?.getRowOffset(key) ?? height;
+  if (offset + COMMENT_BOX_HEIGHT > height) {
+    list.value?.jumpTo(key, Math.max(height - COMMENT_BOX_HEIGHT, THREAD_MIN_OFFSET));
+  }
+}
+
+/** ⇧click: the box being written on this side of the file now reaches the line, up to what hides lines from it (CR73). */
+function extendComment(path: string, side: DiffLineSide, line: number) {
+  const box = commentTargets.value.findLast(
+    target => target.path === path && target.side === side && (target.id === focusedBox.value || canEdit(target.id)),
+  );
+  if (!box) {
+    startComment({ path, side, line, startLine: null });
+    return;
+  }
+
+  const from = box.startLine ?? box.line;
+  const to = clampCommentRange({ rows: rows.value, path, side, line: from, to: line });
+  writing.value?.setRange(box.id, from === to ? null : Math.min(from, to), Math.max(from, to));
+  focusedBox.value = box.id;
+}
+
+function onGutter(row: ReviewRow, event: MouseEvent, side: DiffLineSide, line: number) {
+  const path = getReviewRowPath(row.key);
+  const drag = commentDrag.value;
+  switch (event.type) {
+    case 'pointerdown':
+      commentDrag.value = event.button === 0 && !event.shiftKey ? { path, side, from: line, to: line } : null;
+      break;
+    case 'pointerenter':
+      if (drag?.path === path && drag.side === side) {
+        const to = clampCommentRange({ rows: rows.value, path, side, line: drag.from, to: line });
+        commentDrag.value = { ...drag, to };
+      }
+
+      break;
+    case 'click':
+      if (event.shiftKey) {
+        extendComment(path, side, line);
+      } else {
+        startComment({ path, side, line, startLine: null });
+      }
+
+      break;
+    default:
+      break;
+  }
+}
+
+function onRowFocusLost(key: string) {
+  const box = commentTargets.value.find(target => getReviewCommentKey(target.path, target.id) === key);
+  if (box) {
+    focusedBox.value = box.id;
+  }
+}
+
+function sendComment(id: string, way: ReviewCommentWay) {
+  sentBox.value = id;
+  focusedBox.value = null;
+  writing.value?.send(id, way);
+  returnKeysToDiff();
+}
+
+/** Escape: with text in it the box stays, with its text; empty it goes. Either way the keys are the diff's again. */
+function leaveComment(id: string) {
+  focusedBox.value = null;
+  if (writing.value?.getText(id).trim() === '') {
+    writing.value.close(id);
+  }
+
+  list.value?.focus();
+}
+
+function onCommentBlur(id: string) {
+  if (focusedBox.value === id) {
+    focusedBox.value = null;
+  }
+}
+
+function submitReview() {
+  submitOpen.value = false;
+  writing.value?.submit(submission.value);
+  returnKeysToDiff();
+}
+
+function discardReview() {
+  discardOpen.value = false;
+  writing.value?.discard();
+  returnKeysToDiff();
+}
+
 function isPinned(row: ReviewRow) {
   return row.kind === 'header';
 }
@@ -1033,6 +1300,7 @@ function readAgain() {
             :is-pinned="isPinned"
             :label="t(l.diff)"
             @user-scroll="stopLanding"
+            @row-focus-lost="onRowFocusLost"
           >
             <template #default="{ row }">
               <ReviewDiffRow
@@ -1041,6 +1309,7 @@ function readAgain() {
                 :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
                 :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"
                 :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
+                :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
                 @expand="expandGap"
                 @expand-to-thread="expandToThread"
                 @expand-to-file-end="expandToFileEnd"
@@ -1049,7 +1318,26 @@ function readAgain() {
                 @retry="path => files?.retry(path)"
                 @toggle-collapsed="toggleCollapsed"
                 @toggle-viewed="toggleViewed"
-              />
+                @gutter="(event, side, line) => onGutter(row, event, side, line)"
+              >
+                <template #comment="{ row: commentRow }">
+                  <ReviewCommentRow
+                    :row="commentRow"
+                    :text="writing?.getText(commentRow.target.id)"
+                    :status="writing?.getStatus(commentRow.target.id) ?? { kind: 'editing' }"
+                    :draft-open="writing?.draftOpen ?? false"
+                    :draft-count="writing?.draftCount ?? 0"
+                    :draft-first="COMMENT_DRAFT_FIRST"
+                    :focused="focusedBox === commentRow.target.id"
+                    :author="auth.viewer ?? null"
+                    @update:text="writing?.setText(commentRow.target.id, $event)"
+                    @send="way => sendComment(commentRow.target.id, way)"
+                    @leave="leaveComment(commentRow.target.id)"
+                    @focus="focusedBox = commentRow.target.id"
+                    @blur="onCommentBlur(commentRow.target.id)"
+                  />
+                </template>
+              </ReviewDiffRow>
             </template>
           </AnchoredList>
           <!-- Over the list, not instead of it: a pattern passing through no match keeps the place being read (D7). -->
@@ -1170,7 +1458,10 @@ function readAgain() {
         <ReviewPendingToolbar
           v-if="pendingReview"
           :comment-count="pendingReview.commentCount"
-          :github-url="githubUrl"
+          :finish="finish"
+          @discard="discardOpen = true"
+          @submit="submitOpen = true"
+          @retry="writing?.retry()"
         />
       </div>
       <div
@@ -1188,6 +1479,21 @@ function readAgain() {
         />
       </div>
     </div>
+    <ReviewSubmitDialog
+      v-model:open="submitOpen"
+      v-model:choice="submission"
+      :number="reference.number"
+      :comment-count="pendingReview?.commentCount ?? 0"
+      :comments="pendingComments"
+      @submit="submitReview"
+    />
+    <ReviewDiscardDialog
+      v-model:open="discardOpen"
+      :number="reference.number"
+      :comment-count="pendingReview?.commentCount ?? 0"
+      :comments="pendingComments"
+      @discard="discardReview"
+    />
   </div>
 </template>
 

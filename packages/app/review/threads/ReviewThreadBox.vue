@@ -6,6 +6,7 @@ import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 
+import { getHtmlFirstLine } from '../utils/getHtmlFirstLine.js';
 import * as l from './ReviewThreadBox.loc.js';
 import ReviewThreadComment from './ReviewThreadComment.vue';
 import type { ReviewThread } from './ReviewThread.js';
@@ -28,12 +29,7 @@ const t = useTranslate();
 
 const first = computed(() => props.thread.comments[0] ?? null);
 const who = computed(() => first.value?.author?.login ?? t(l.ghost));
-// Only ever as text: a body is shown as HTML nowhere but in `GitHubHtml`. Not a document scripts run in.
-const firstLine = computed(() => {
-  const html = first.value?.bodyHTML ?? '';
-  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
-  return text.trim().split('\n')[0] ?? '';
-});
+const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
 </script>
 
 <template>

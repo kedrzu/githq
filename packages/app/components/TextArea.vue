@@ -15,7 +15,7 @@ const { TextArea, field, input } = useTextArea();
 
 defineExpose({
   /** Puts the cursor in the field. */
-  focus: () => input.value?.focus(),
+  focus: (options?: FocusOptions) => input.value?.focus(options),
 });
 </script>
 

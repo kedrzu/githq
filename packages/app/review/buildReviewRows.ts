@@ -11,6 +11,7 @@ import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { countThreads } from './threads/countThreads.js';
 import type { ThreadCounts } from './threads/countThreads.js';
 import type { ThreadOnHiddenLine, ThreadOnLine, ThreadPlacement } from './threads/placeThreads.js';
+import type { ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 /** How many unchanged lines show around a change. */
 export const CONTEXT_LINES = 3;
@@ -30,6 +31,8 @@ const THREAD_FRAME_HEIGHT = 42;
 const THREAD_LINE_HEIGHT = 48;
 /** The label and the lines of the code a thread shows in a box. */
 const THREAD_CODE_HEIGHT = 110;
+/** A comment box with one line of text. */
+export const COMMENT_BOX_HEIGHT = 144;
 
 /** The pinned head of a file's block (D24). */
 export interface ReviewHeaderRow {
@@ -122,6 +125,14 @@ export interface ReviewThreadRow {
     readonly inline: 'left' | 'right' | 'unified' | null;
 }
 
+/** A comment being written, placed like a thread, or under its file's header when its line isn't shown. Same key wherever it goes (D7). */
+export interface ReviewCommentRow {
+    readonly kind: 'comment';
+    readonly key: string;
+    readonly target: ReviewCommentTarget;
+    readonly inline: ReviewThreadRow['inline'];
+}
+
 /** The mark above code shown out of place for its thread (D29). */
 export interface ReviewDistanceRow {
     readonly kind: 'distance';
@@ -161,6 +172,7 @@ export interface ReviewTailRow {
 
 /** A row of the review's flat list. Its key begins with its file's path ({@link getReviewRowPath}). */
 export type ReviewRow =
+    | ReviewCommentRow
     | ReviewDistanceRow
     | ReviewEndRow
     | ReviewFailedRow
@@ -197,6 +209,8 @@ export interface BuildReviewRowsParams {
     readonly getThreads?: (file: ReviewFile) => readonly ThreadPlacement[] | undefined;
     /** Whether a collapsed file shows its threads under its header (D13); `true` if not given. */
     readonly threadsInCollapsed?: boolean;
+    /** A file's comment boxes, wherever they show; lines of the file already hold theirs ({@link BuildFileLineRowsParams.comments}). */
+    readonly getComments?: (file: ReviewFile) => readonly ReviewCommentTarget[] | undefined;
 }
 
 /**
@@ -210,6 +224,7 @@ export function buildReviewRows({
     getCollapseReason,
     getThreads,
     threadsInCollapsed = true,
+    getComments,
 }: BuildReviewRowsParams): ReviewRow[] {
     const rows: ReviewRow[] = [];
     const contents = files.map(getContent);
@@ -221,11 +236,16 @@ export function buildReviewRows({
         const collapsed = content.kind === 'collapsed';
         const collapseReason = getCollapseReason?.(file) ?? null;
         const placements = getThreads?.(file) ?? [];
-        // In a file with no text here, as lines hold theirs.
-        const under =
+        // In a file with no text here, as lines hold theirs. Comments being written always show: they are not GitHub's yet.
+        const threads =
             content.kind === 'lines' || (collapsed && !threadsInCollapsed)
                 ? []
                 : placements.map((placement): ReviewThreadRow => createThreadRow(path, placement, null));
+        const comments =
+            content.kind === 'lines'
+                ? []
+                : (getComments?.(file) ?? []).map(target => createCommentRow(path, target, null));
+        const under = [...threads, ...comments];
         rows.push({
             kind: 'header',
             key: getReviewHeaderKey(path),
@@ -319,6 +339,8 @@ export interface BuildFileLineRowsParams {
     readonly expansionReset?: boolean;
     /** The file's threads as placed on this diff: their rows go in where they belong. */
     readonly threads?: readonly ThreadPlacement[];
+    /** The file's comment boxes: under their lines, or at its top when those aren't shown. */
+    readonly comments?: readonly ReviewCommentTarget[];
 }
 
 /**
@@ -335,6 +357,7 @@ export function buildFileLineRows({
     expanded,
     expansionReset = false,
     threads = [],
+    comments = [],
 }: BuildFileLineRowsParams): ReviewRow[] {
     let resetToSay = expansionReset;
     const rows = buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
@@ -360,7 +383,10 @@ export function buildFileLineRows({
         };
     });
 
-    const withThreads = threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows;
+    const withThreads = insertCommentRows(
+        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows,
+        { path, layout, comments },
+    );
     if (!isOnlyWhitespaceChanged(diff)) {
         return withThreads;
     }
@@ -504,6 +530,33 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
     }
 }
 
+interface InsertCommentRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'layout'> {
+    readonly comments: readonly ReviewCommentTarget[];
+}
+
+/** Each after its line and what already sits under it; with its line not shown, first, for its text to stay in sight. */
+function insertCommentRows(rows: readonly ReviewRow[], { path, layout, comments }: InsertCommentRowsParams) {
+    const result = [...rows];
+    for (const target of comments) {
+        const shown = result.findLastIndex(
+            row => row.kind === 'line' && getLineNumber(row.line, target.side) === target.line,
+        );
+        if (shown === -1) {
+            result.unshift(createCommentRow(path, target, null));
+            continue;
+        }
+
+        let at = shown + 1;
+        while (result[at]?.kind === 'thread' || result[at]?.kind === 'comment') {
+            at++;
+        }
+
+        result.splice(at, 0, createCommentRow(path, target, getInlineSide(target.side, layout)));
+    }
+
+    return result;
+}
+
 /** How many lines of a gap the threads in it show, however many of them show the same line. */
 function countShownLines(placements: readonly ThreadOnHiddenLine[]) {
     const shown = new Set<number>();
@@ -519,6 +572,14 @@ function countShownLines(placements: readonly ThreadOnHiddenLine[]) {
 
 function createThreadRow(path: string, placement: ThreadPlacement, inline: ReviewThreadRow['inline']): ReviewThreadRow {
     return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline };
+}
+
+function createCommentRow(
+    path: string,
+    target: ReviewCommentTarget,
+    inline: ReviewThreadRow['inline'],
+): ReviewCommentRow {
+    return { kind: 'comment', key: getReviewCommentKey(path, target.id), target, inline };
 }
 
 function getInlineSide(side: ThreadOnLine['side'], layout: DiffLayout): ReviewThreadRow['inline'] {
@@ -570,6 +631,16 @@ export function getReviewThreadKey(path: string, threadId: string) {
 }
 
 /**
+ * The key of a comment box's row: the same wherever it shows, in whichever layout, so that it holds through them and a typing
+ * hand keeps its place (D7).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewCommentKey(path: string, id: string) {
+    return path + KEY_SEPARATOR + 'comment' + KEY_SEPARATOR + id;
+}
+
+/**
  * The key of a file's header: the same whatever the layout or the whitespace setting, which is what keeps a jump's
  * landing in place through them (D7).
  *
@@ -608,6 +679,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
             return 30;
         case 'thread':
             return estimateThreadHeight(row);
+        case 'comment':
+            return COMMENT_BOX_HEIGHT;
         case 'placeholder':
             return getPlaceholderHeight(row.file) + (row.first ? FETCHING_FIRST_HEIGHT : 0);
         case 'notice':
@@ -883,6 +956,75 @@ function findNextFileHeader({
     return { row, offset: held?.kind === 'header' ? Math.max(offset, 0) : 0 };
 }
 
+/** A line a comment can start on. */
+export interface ReviewCommentLine extends RowLine {
+    readonly path: string;
+    readonly key: string;
+}
+
+/**
+ * The line `C` comments on when no thread is focused (D32): the first of the rows from `key` on, on its newer side unless it
+ * only has an older one. `null` with no line after it.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function findCommentLine(rows: readonly ReviewRow[], key: string | null): ReviewCommentLine | null {
+    const start = Math.max(
+        rows.findIndex(row => row.key === key),
+        0,
+    );
+    for (let index = start; index < rows.length; index++) {
+        const row = rows[index];
+        const line = row?.kind === 'line' ? getRowLine(row) : null;
+        if (row && line) {
+            return { ...line, path: getReviewRowPath(row.key), key: row.key };
+        }
+    }
+
+    return null;
+}
+
+export interface ClampCommentRangeParams extends RowLine {
+    readonly rows: readonly ReviewRow[];
+    readonly path: string;
+    /** Where the range is wanted to reach. */
+    readonly to: number;
+}
+
+/**
+ * How far a range from a line reaches towards `to`: within what is shown, on the one side, up to what hides lines from it.
+ * GitHub takes a range within a hunk only, and one over lines not on screen would say more than the reader saw (CR73).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function clampCommentRange({ rows, path, side, line, to }: ClampCommentRangeParams): number {
+    const header = rows.findIndex(row => row.key === getReviewHeaderKey(path));
+    const pieces = new Map<number, number>();
+    let piece = 0;
+    for (const row of header === -1 ? [] : rows.slice(header + 1)) {
+        if (row.kind === 'header') {
+            break;
+        }
+
+        if (row.kind === 'line') {
+            const shown = getLineNumber(row.line, side);
+            if (shown !== null) {
+                pieces.set(shown, piece);
+            }
+        } else if (row.kind === 'gap' || row.kind === 'distance' || row.kind === 'fileEnd') {
+            piece++;
+        }
+    }
+
+    const step = Math.sign(to - line);
+    let reached = line;
+    while (reached !== to && pieces.has(reached + step) && pieces.get(reached + step) === pieces.get(line)) {
+        reached += step;
+    }
+
+    return reached;
+}
+
 /** A line of a file on one side, which no layout changes. */
 interface RowLine {
     readonly side: 'before' | 'after';
@@ -903,6 +1045,8 @@ function getRowLine(row: ReviewRow): RowLine | null {
             return { side: row.placement.side, line: row.placement.firstLine };
         case 'fileEnd':
             return { side: 'after', line: row.lines.start + 1 };
+        case 'comment':
+            return { side: row.target.side, line: row.target.line };
         default:
             return null;
     }

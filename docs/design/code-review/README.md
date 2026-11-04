@@ -116,8 +116,8 @@ People review in two ways: some collect comments in a draft and send one review 
 as it comes. github.com pushes everyone into the first as soon as a draft is started. In githq a setting chooses
 which one `Cmd+Enter` does, and `Cmd+Shift+Enter` does the other. [Single comments and drafts](DECISIONS.md#d17).
 
-GitHub accepts nothing else from you on a pull request while your draft there is open, so with a draft open a
-comment can only join it — and the second key adds it and sends the whole draft at once, saying how many comments go
+GitHub takes no other comment on a line from you on a pull request while your draft there is open, so with a draft
+open a comment can only join it — and the second key adds it and sends the whole draft at once, saying how many comments go
 ([sending the draft](DECISIONS.md#d22)). An open draft is impossible to miss: the review says so prominently, lists
 mark the pull request, and the app's sidebar lists the pull requests with your drafts whenever there are any.
 [Open drafts](DECISIONS.md#d21).

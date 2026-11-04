@@ -7,6 +7,7 @@ import { defineComponent, h } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { ReviewFiles } from './ReviewFiles.js';
@@ -216,5 +217,6 @@ function createFiles(
         getExpandedLines: () => [],
         isExpansionReset: () => false,
         expandLines: () => {},
+        writing: idleReviewWriting,
     };
 }

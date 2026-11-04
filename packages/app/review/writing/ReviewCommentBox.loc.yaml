@@ -1,0 +1,25 @@
+onLine:
+  en: Comment on line {line}
+onLines:
+  en: Comment on lines {start}–{end}
+placeholder:
+  en: Leave a comment
+comment:
+  en: Comment
+commentNow:
+  en: Comment now
+startReview:
+  en: Start a review
+addToDraft:
+  en: Add to draft
+submitDraft:
+  plural: count
+  en:
+    one: Submit draft (1 comment)
+    many: Submit draft ({count} comments)
+refused:
+  en: 'GitHub refused it: "{reason}". Your text is kept.'
+notReached:
+  en: GitHub wasn't reached, so it may not have got there. Your text is kept.
+noDraft:
+  en: Your draft isn't open anymore. Your text is kept.

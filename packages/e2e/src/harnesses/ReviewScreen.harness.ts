@@ -81,6 +81,41 @@ export class ReviewScreenHarness {
         return this.page.getByRole('region', { name: 'Your draft review' });
     }
 
+    /** The toolbar's "Submit review…". */
+    get submitReviewButton(): Locator {
+        return this.pendingToolbar.getByRole('button', { name: 'Submit review…' });
+    }
+
+    /** The toolbar's "Discard review…". */
+    get discardReviewButton(): Locator {
+        return this.pendingToolbar.getByRole('button', { name: 'Discard review…' });
+    }
+
+    /** The submit dialog (CR75). */
+    get submitDialog(): Locator {
+        return this.page.getByRole('dialog', { name: /^Submit your review/ });
+    }
+
+    /** The discard dialog (CR39). */
+    get discardDialog(): Locator {
+        return this.page.getByRole('dialog', { name: /^Discard your pending review/ });
+    }
+
+    /** A line's number on a side of the file in view: `Comment on line 50`, the newer side last in split. */
+    lineNumber(line: number): Locator {
+        return this.diff.getByRole('button', { name: `Comment on line ${line}`, exact: true }).last();
+    }
+
+    /** A comment box; by the line it says, or the only one. */
+    commentBox(where?: string): Locator {
+        return this.diff.getByRole('group', { name: where ?? /^Comment on line/ });
+    }
+
+    /** The text of a comment box. */
+    commentField(where?: string): Locator {
+        return this.commentBox(where).getByRole('textbox');
+    }
+
     /** The row of the file named `name` in the list. */
     fileRow(name: string): Locator {
         return this.fileList.getByRole('button', { name: new RegExp(`\\b${escapeRegExp(name)}\\b`) });

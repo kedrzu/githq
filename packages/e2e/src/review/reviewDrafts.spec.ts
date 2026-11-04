@@ -159,7 +159,7 @@ test('the list of drafts: the one waiting longest first, J and K move, Enter ope
     await expect(page).toHaveURL('/pulls/drafts');
 });
 
-test('on the review, the toolbar at the foot of the diff says how many wait and leads to GitHub; no other pull request has it', async ({
+test('on the review, the toolbar at the foot of the diff says how many wait and offers the ways out; no other pull request has it', async ({
     page,
     github,
 }) => {
@@ -175,11 +175,8 @@ test('on the review, the toolbar at the foot of the diff says how many wait and 
 
     await expect(review.pendingToolbar).toContainText('3 pending comments');
     await expect(review.pendingToolbar).toContainText("Others can't see them until you submit.");
-    await expect(review.pendingToolbar.getByRole('link', { name: 'Finish on GitHub' })).toHaveAttribute(
-        'href',
-        'https://github.com/acme/web/pull/3/files',
-    );
-    await expect(review.pendingToolbar.getByRole('button')).toHaveCount(0);
+    await expect(review.discardReviewButton).toBeVisible();
+    await expect(review.submitReviewButton).toBeVisible();
     const toolbarBox = await review.pendingToolbar.boundingBox();
     const diffBox = await review.diff.boundingBox();
     expect(toolbarBox?.height).toBe(44);

@@ -72,6 +72,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
   userScroll: [];
+  /** A row with the focus inside it left the window, or the list: the list took the focus, for whoever wants it back. */
+  rowFocusLost: [key: string];
 }>();
 
 const slots = defineSlots<{
@@ -108,6 +110,7 @@ const vMeasured: ObjectDirective<HTMLElement, string> = {
     // A row scrolled out takes its focus with it: the keys stay with the list instead of falling to the page.
     if (element.contains(document.activeElement)) {
       focus();
+      emit('rowFocusLost', measuredKeys.get(element) ?? '');
     }
 
     rowsToObserve.delete(element);

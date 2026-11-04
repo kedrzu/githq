@@ -76,3 +76,9 @@ nextPullRequest:
   en: Next pull request
 goToPullRequest:
   en: 'Go to #{number} {title}'
+commentOnLine:
+  en: Comment on the line
+submitReview:
+  en: Submit review
+discardReview:
+  en: Discard review

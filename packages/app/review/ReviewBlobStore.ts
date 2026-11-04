@@ -11,9 +11,10 @@ import type { DiffLineRange } from './diff/buildDiffRows.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 import type { FileFilterInput } from './utils/createFileFilter.js';
+import type { ReviewCommentTarget, ReviewSubmissionChoice } from './writing/ReviewWriting.js';
 
 /** The layout of the database. Separate from the local copy's version, whose every raise would drop the contents. */
-const REVIEW_BLOB_DATABASE_VERSION = 3;
+const REVIEW_BLOB_DATABASE_VERSION = 4;
 
 /** Every store of the database, with how it is keyed. */
 const STORES = [
@@ -23,6 +24,7 @@ const STORES = [
     ['fileLists', {}],
     ['threads', {}],
     ['reviewStates', {}],
+    ['commentBoxes', {}],
 ] as const;
 
 /**
@@ -68,6 +70,13 @@ export interface ReviewKeptState {
     readonly hideViewed: boolean;
     /** By path. */
     readonly expandedLines: ReadonlyMap<string, ReviewExpandedLines>;
+    /** What the submit dialog holds, until it is sent or the draft is discarded (CR76). */
+    readonly submission: ReviewSubmissionChoice;
+}
+
+/** A comment box left with text in it: what makes a comment not sent yet survive a reload. */
+export interface ReviewKeptCommentBox extends ReviewCommentTarget {
+    readonly text: string;
 }
 
 /** What a pull request keeps until something is done in it. */
@@ -77,6 +86,7 @@ const NOTHING_DONE: ReviewKeptState = {
     filter: { pattern: '', regex: false },
     hideViewed: false,
     expandedLines: new Map(),
+    submission: { event: 'COMMENT', body: '' },
 };
 
 /** What a review keeps on disk, by login. A `read` opens the login's database; a `write` rejects when it is not open (anymore). */
@@ -100,6 +110,11 @@ export interface ReviewBlobStoreShape {
     readState(login: string, key: string): Promise<ReviewKeptState | undefined>;
     /** Over what is kept, in one transaction: the rest may be what another tab on the pull request did. */
     writeState(login: string, key: string, changes: Partial<ReviewKeptState>): Promise<void>;
+    /** A pull request's comment boxes with text in them, by the same key as its list. */
+    readCommentBoxes(login: string, key: string): Promise<readonly ReviewKeptCommentBox[]>;
+    /** One record per box: another tab on the pull request has boxes of its own. */
+    writeCommentBox(login: string, key: string, box: ReviewKeptCommentBox): Promise<void>;
+    deleteCommentBox(login: string, key: string, id: string): Promise<void>;
 }
 
 interface ReviewBlobDatabase extends DBSchema {
@@ -109,12 +124,13 @@ interface ReviewBlobDatabase extends DBSchema {
     fileLists: { key: string; value: ReviewKeptFileList };
     threads: { key: string; value: readonly ReviewThread[] };
     reviewStates: { key: string; value: ReviewKeptState };
+    commentBoxes: { key: string; value: ReviewKeptCommentBox };
 }
 
 /**
  * What makes a review open without the network, on disk (D19) in a database per login: the contents of reviewed files
  * by blob oid, what expressions resolve to and merge bases, which never change, and each pull request's list of files,
- * review threads and what the user did in it, which do. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
+ * review threads and what the user did in it, which do, and the comments typed there and not sent. A cache kept apart from the local copy, for that one is dropped on every version raise and these are
  * worth not downloading again. Nothing cleans it up yet but signing out.
  *
  * Only the `read` functions open the database, so they must be called only for the user signed in now. A connection
@@ -142,6 +158,9 @@ export const ReviewBlobStore = defineService({
             deleteThreads,
             readState,
             writeState,
+            readCommentBoxes,
+            writeCommentBox,
+            deleteCommentBox,
         };
 
         async function read(login: string, oids: readonly string[]) {
@@ -235,6 +254,21 @@ export const ReviewBlobStore = defineService({
             const tx = db.transaction('reviewStates', 'readwrite');
             const kept = await tx.store.get(key);
             await Promise.all([tx.store.put({ ...NOTHING_DONE, ...kept, ...changes }, key), tx.done]);
+        }
+
+        async function readCommentBoxes(login: string, key: string) {
+            const db = await connect(login);
+            return await db.getAll('commentBoxes', IDBKeyRange.bound(`${key}\0`, `${key}\0\uffff`));
+        }
+
+        async function writeCommentBox(login: string, key: string, box: ReviewKeptCommentBox) {
+            const db = await getOpen(login);
+            await db.put('commentBoxes', box, `${key}\0${box.id}`);
+        }
+
+        async function deleteCommentBox(login: string, key: string, id: string) {
+            const db = await getOpen(login);
+            await db.delete('commentBoxes', `${key}\0${id}`);
         }
     },
 });

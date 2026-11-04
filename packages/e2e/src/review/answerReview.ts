@@ -41,7 +41,10 @@ export interface AnswerReviewParams {
     /** `owner/name`. */
     readonly repository: string;
     readonly number: number;
+    /** Its node id, when the test's world holds it; made of its number if not. */
+    readonly id?: string;
     readonly files: readonly SampleReviewFile[];
+    /** Read anew at each read, so a test can add to them. */
     readonly threads?: readonly SampleReviewThread[];
 }
 
@@ -101,7 +104,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         return {
             repository: {
                 pullRequest: {
-                    id: `PR_${params.number}`,
+                    id: params.id ?? `PR_${params.number}`,
                     headRefOid: HEAD_OID,
                     baseRefOid: BASE_OID,
                     changedFiles: params.files.length,
