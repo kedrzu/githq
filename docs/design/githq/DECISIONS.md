@@ -572,7 +572,11 @@ Labels stay: their colour is a dot beside a name in `fg-2`, so it carries nothin
 is exempt in WCAG.
 
 The rows of a stack map and the members of a stack's card are **24 px tall** (owner, 2026-11-04): 23 and 20 before, under
-WCAG 2.5.8's minimum, and every other row was already over it. The ticks of a workflow's run strip aren't decided yet.
+WCAG 2.5.8's minimum, and every other row was already over it. The ticks of a workflow's run strip
+**stop being links** (owner, 2026-11-04): a new one starts every 10 px, under the same minimum. Hovering one still names its
+run, and a click on the strip is a click on the row: the latest failed run on the cross-repository screen, and in a
+repository's tab what the row does there. An older run takes two clicks and a tick can't be modifier-clicked into a new tab;
+widening the strip past 100 px in every row was rejected, and so was recording an exception.
 
 ## Open questions
 
