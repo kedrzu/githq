@@ -302,12 +302,16 @@ never holds it.
 
 ## D15
 
-**A fresh install always starts on Stable, including a build downloaded from the Development release.** (2026-11-04, owner)
+**A fresh install follows what it is: a Development build starts on Development, any other build on Stable.** (2026-11-04, owner)
 
-**Why.** Not recorded by the owner when deciding; the safe stream is the default wherever the user hasn't chosen.
+**Why.** Whoever downloaded a Development build wanted one. With no choice stored, the stream is read from the running version
+(`-dev` or not), so it holds no extra state; once the user chooses, the choice counts. Windows has no Development builds
+([D2](#d2)), so it always starts on Stable. Screen: U19 in `githq.pen`.
 
-Open, from drawing it (screen U19 in `githq.pen`): with [D5](#d5)'s rule that a running `-dev` build on Stable accepts any
-Stable, such a build takes the older Stable at its first check, at launch. The owner decides whether that stands.
+**Rejected.**
+
+- Every fresh install on Stable, the owner's first form (2026-11-04): with [D5](#d5)'s rule that a running `-dev` build on Stable
+  accepts any Stable, a build just downloaded from the Development release would take the older Stable at its first check, at launch.
 
 ## D16
 
@@ -317,3 +321,36 @@ moment. It can be refused.** (2026-11-04, owner)
 **Why.** It settles the question in the README of whether a `.deb` asks for a password out of nowhere while installing in the
 background: it asks when the user has just asked for the update. Consequence: on Linux a user who quits without
 restarting stays on the old version, and the offer comes back at the next launch. Screens: U38–U40 in `githq.pen`.
+
+## D17
+
+**What changed is a section of Settings, Changelog, and it lists every version with its own changes, each in a fold: the first open,
+the rest collapsed. There are no ranges between versions.** (2026-11-04, owner) This replaces the ranges of [D10](#d10); GitHub is still
+read when needed, and the toast of [D7](#d7) still comes, with its action leading here.
+
+**Why.** A version saying its own changes needs no range to work out, and the section stays reachable after the toast is gone.
+
+On Development there is one fold for everything since the last Stable, then the Stable versions, because builds have no descriptions and
+most are one commit (proposed by the design agent, accepted by the owner, screen U43). Those commits are read from `main` rather than
+compared, so the 250 limit of [D3](#d3) doesn't apply.
+
+Proposed by the design agent, not yet confirmed: "New" on versions the user didn't have before this update, so a skipped version isn't
+lost behind its fold.
+
+**Rejected.**
+
+- A fold per Development build: a long list of folds holding one line or nothing.
+- A dialog, the side panel or a page opening from the toast with the range since the old version (U26–U37, recommended by the design
+  agent: the dialog): the owner chose a permanent section.
+
+## D18
+
+**Everything the app can do about updates is a command in the command menu, and a command shows only while it can run.** (2026-11-04, owner)
+This widens the "check now" of [D11](#d11).
+
+Always: Check for updates, Settings: Updates and Settings: Changelog. On macOS and Linux also Switch to Stable or Switch to Development,
+whichever isn't chosen; switching to Stable from a Development build asks first, as in [D5](#d5). While an update is ready: Restart and
+Later. After a refused or failed install: Try again and Later. While the toast shows: What changed. The exact list beyond update and
+restart is the design agent's reading of the owner's "and so on".
+
+**Why.** githq is keyboard-first, and these actions otherwise live only in a status bar segment or a section of Settings.

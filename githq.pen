@@ -87598,6 +87598,9 @@
                   "descendants": {
                     "NJNWb": {
                       "enabled": true
+                    },
+                    "XRz95": {
+                      "enabled": true
                     }
                   }
                 },
@@ -88474,7 +88477,7 @@
             {
               "type": "frame",
               "id": "o8qMRb",
-              "name": "What changed",
+              "name": "Changelog",
               "width": 720,
               "layout": "vertical",
               "gap": 24,
@@ -88482,7 +88485,7 @@
                 {
                   "type": "frame",
                   "id": "YDEMT",
-                  "name": "What changed / Change",
+                  "name": "Changelog / Change",
                   "reusable": true,
                   "gap": 8,
                   "alignItems": "center",
@@ -88520,42 +88523,12 @@
                 {
                   "type": "frame",
                   "id": "ofOJx",
-                  "name": "What changed / Release · 0.2.0",
+                  "name": "Changelog / Release · 0.2.0",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
                   "gap": 14,
                   "children": [
-                    {
-                      "type": "frame",
-                      "id": "OSPxK",
-                      "name": "Head",
-                      "width": "fill_container",
-                      "gap": 10,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "v8kf0",
-                          "name": "Version",
-                          "fill": "$fg",
-                          "content": "githq 0.2.0",
-                          "fontFamily": "$mono",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "hEV64",
-                          "name": "Date",
-                          "fill": "$fg-dim",
-                          "content": "November 3, 2026",
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
                     {
                       "type": "text",
                       "id": "b91Kz",
@@ -88766,42 +88739,12 @@
                 {
                   "type": "frame",
                   "id": "Tw7xW",
-                  "name": "What changed / Release · 0.1.2",
+                  "name": "Changelog / Release · 0.1.2",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
                   "gap": 14,
                   "children": [
-                    {
-                      "type": "frame",
-                      "id": "kvS57",
-                      "name": "Head",
-                      "width": "fill_container",
-                      "gap": 10,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "yHi44",
-                          "name": "Version",
-                          "fill": "$fg",
-                          "content": "githq 0.1.2",
-                          "fontFamily": "$mono",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "yGcmR",
-                          "name": "Date",
-                          "fill": "$fg-dim",
-                          "content": "October 21, 2026",
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
                     {
                       "type": "text",
                       "id": "qfG40",
@@ -88902,42 +88845,12 @@
                 {
                   "type": "frame",
                   "id": "c9dRl",
-                  "name": "What changed / Release · 0.1.1",
+                  "name": "Changelog / Release · 0.1.1",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
                   "gap": 14,
                   "children": [
-                    {
-                      "type": "frame",
-                      "id": "vt2qx",
-                      "name": "Head",
-                      "width": "fill_container",
-                      "gap": 10,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "aQV2K",
-                          "name": "Version",
-                          "fill": "$fg",
-                          "content": "githq 0.1.1",
-                          "fontFamily": "$mono",
-                          "fontSize": 14,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "text",
-                          "id": "IwBtz",
-                          "name": "Date",
-                          "fill": "$fg-dim",
-                          "content": "October 14, 2026",
-                          "fontFamily": "$font",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
                     {
                       "type": "frame",
                       "id": "Q15nZM",
@@ -89024,89 +88937,8 @@
                 },
                 {
                   "type": "frame",
-                  "id": "hf4Sl",
-                  "name": "What changed / Releases · jump over three",
-                  "reusable": true,
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 24,
-                  "children": [
-                    {
-                      "id": "qKpvC",
-                      "type": "ref",
-                      "ref": "ofOJx",
-                      "name": "Release",
-                      "width": "fill_container"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ZwFRt",
-                      "name": "Divider",
-                      "width": "fill_container",
-                      "height": 1,
-                      "fill": "$border"
-                    },
-                    {
-                      "id": "A4J0bi",
-                      "type": "ref",
-                      "ref": "Tw7xW",
-                      "name": "Release",
-                      "width": "fill_container"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "YO2lB",
-                      "name": "Divider",
-                      "width": "fill_container",
-                      "height": 1,
-                      "fill": "$border"
-                    },
-                    {
-                      "id": "FnPQu",
-                      "type": "ref",
-                      "ref": "c9dRl",
-                      "name": "Release",
-                      "width": "fill_container"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Z08eMx",
-                  "name": "What changed / Releases · jump over three, scrolled down",
-                  "reusable": true,
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 24,
-                  "children": [
-                    {
-                      "id": "G9yN2",
-                      "type": "ref",
-                      "ref": "Tw7xW",
-                      "name": "Release",
-                      "width": "fill_container"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "qIYSd",
-                      "name": "Divider",
-                      "width": "fill_container",
-                      "height": 1,
-                      "fill": "$border"
-                    },
-                    {
-                      "id": "pjmWL",
-                      "type": "ref",
-                      "ref": "c9dRl",
-                      "name": "Release",
-                      "width": "fill_container"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "n6TPY",
-                  "name": "What changed / Builds · list",
+                  "name": "Changelog / Development · list",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
@@ -89222,257 +89054,8 @@
                 },
                 {
                   "type": "frame",
-                  "id": "UVZzN",
-                  "name": "What changed / Builds · cut off",
-                  "reusable": true,
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "rKAHf",
-                      "name": "Cut off",
-                      "width": "fill_container",
-                      "cornerRadius": 8,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        12
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "XhIfa",
-                          "name": "Icon",
-                          "padding": [
-                            2,
-                            0,
-                            0,
-                            0
-                          ],
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "cXEY6",
-                              "name": "icon info",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "info",
-                              "library": "lucide",
-                              "fill": "$fg-2"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "AyLbx",
-                          "name": "Text",
-                          "fill": "$fg",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "This update covers 312 commits, more than GitHub lists at once, so some changes may be missing here. All of them are on GitHub.",
-                          "lineHeight": 1.5,
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ZgVSz",
-                      "name": "Group · Features",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 7,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "N1rm8",
-                          "name": "Heading",
-                          "fill": "$fg-2",
-                          "content": "Features",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "id": "yCiZY",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #80",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Merge pull requests from githq"
-                            },
-                            "Gbb45": {
-                              "content": "#80"
-                            }
-                          }
-                        },
-                        {
-                          "id": "rBBQW",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #104",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Show a repository's commit graph"
-                            },
-                            "Gbb45": {
-                              "content": "#104"
-                            }
-                          }
-                        },
-                        {
-                          "id": "lNtvM",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #110",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Keep branches and tags on the left, in one resizable column"
-                            },
-                            "Gbb45": {
-                              "content": "#110"
-                            }
-                          }
-                        },
-                        {
-                          "id": "ilwP6",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #123",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "List a repository's workflows and choose which refs raise alerts"
-                            },
-                            "Gbb45": {
-                              "content": "#123"
-                            }
-                          }
-                        },
-                        {
-                          "id": "fzGB1",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #124",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Open a failed run in githq, with its log, search and re-run"
-                            },
-                            "Gbb45": {
-                              "content": "#124"
-                            }
-                          }
-                        },
-                        {
-                          "id": "PRnJ6",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #126",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Show a commit's details with the selection and let their width be chosen"
-                            },
-                            "Gbb45": {
-                              "content": "#126"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Eod79",
-                      "name": "Group · Fixes",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 7,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "J3yK6y",
-                          "name": "Heading",
-                          "fill": "$fg-2",
-                          "content": "Fixes",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "id": "h1XiUs",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #111",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Keep a tab left open across a deploy from stopping the sync"
-                            },
-                            "Gbb45": {
-                              "content": "#111"
-                            }
-                          }
-                        },
-                        {
-                          "id": "wARnR",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #94",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Open a repository on its remembered tab without flashing All first"
-                            },
-                            "Gbb45": {
-                              "content": "#94"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "FqLsg",
-                      "name": "Group · Performance",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 7,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "zLD1k",
-                          "name": "Heading",
-                          "fill": "$fg-2",
-                          "content": "Performance",
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "id": "kM0c5",
-                          "type": "ref",
-                          "ref": "YDEMT",
-                          "name": "Change #103",
-                          "descendants": {
-                            "aT3j7": {
-                              "content": "Read the first sync's essentials first, a few requests at once"
-                            },
-                            "Gbb45": {
-                              "content": "#103"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
                   "id": "McHUU",
-                  "name": "What changed / Message",
+                  "name": "Changelog / Message",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
@@ -89522,7 +89105,7 @@
                 {
                   "type": "frame",
                   "id": "ol23G",
-                  "name": "What changed / Loading",
+                  "name": "Changelog / Loading",
                   "reusable": true,
                   "width": "fill_container",
                   "layout": "vertical",
@@ -89595,98 +89178,138 @@
                 },
                 {
                   "type": "frame",
-                  "id": "J1oys",
-                  "name": "What changed / Dialog",
+                  "id": "xz4Md",
+                  "name": "Changelog / Tag",
                   "reusable": true,
-                  "clip": true,
-                  "width": 720,
-                  "fill": "$bg-2",
-                  "cornerRadius": 12,
+                  "cornerRadius": 4,
                   "stroke": "$border-2",
                   "strokeWidth": 1,
-                  "effect": {
-                    "type": "shadow",
-                    "shadowType": "outer",
-                    "color": "#000000C0",
-                    "offset": {
-                      "x": 0,
-                      "y": 24
-                    },
-                    "blur": 64
-                  },
+                  "padding": [
+                    1,
+                    5
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "d6sqo",
+                      "name": "Label",
+                      "fill": "$fg-2",
+                      "content": "Running",
+                      "fontFamily": "$font",
+                      "fontSize": 11,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "id": "S75vkL",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "xz4Md",
+                  "name": "Changelog / Tag · new",
+                  "stroke": "$accent",
+                  "descendants": {
+                    "d6sqo": {
+                      "content": "New",
+                      "fill": "$accent"
+                    }
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "kYYMN",
+                  "name": "Changelog / Version",
+                  "reusable": true,
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg-2",
+                  "cornerRadius": 10,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
                   "layout": "vertical",
                   "children": [
                     {
                       "type": "frame",
-                      "id": "qWVjm",
+                      "id": "W5aWee",
                       "name": "Head",
                       "width": "fill_container",
-                      "height": 48,
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "bottom": 1
-                      },
-                      "gap": 10,
+                      "gap": 8,
                       "padding": [
-                        0,
-                        16
+                        12,
+                        14
                       ],
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "tS1zl",
-                          "name": "Title",
-                          "fill": "$fg",
-                          "content": "What changed",
-                          "fontFamily": "$font",
-                          "fontSize": 14,
-                          "fontWeight": "600"
+                          "type": "icon",
+                          "id": "Vcl6H",
+                          "name": "Chevron",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-down",
+                          "library": "lucide",
+                          "fill": "$fg-3"
                         },
                         {
                           "type": "text",
-                          "id": "n8GR6P",
-                          "name": "Range",
-                          "fill": "$fg-dim",
-                          "content": "0.1.2 → 0.2.0",
+                          "id": "UbJRm",
+                          "name": "Version",
+                          "fill": "$fg",
+                          "content": "githq 0.2.0",
                           "fontFamily": "$mono",
+                          "fontSize": 13.5,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "J3brH",
+                          "name": "Date",
+                          "fill": "$fg-dim",
+                          "content": "November 3, 2026",
+                          "fontFamily": "$font",
                           "fontSize": 12,
                           "fontWeight": "normal"
                         },
                         {
+                          "id": "D7iA2",
+                          "type": "ref",
+                          "ref": "S75vkL",
+                          "name": "Tag New",
+                          "enabled": false
+                        },
+                        {
+                          "id": "wFBLn",
+                          "type": "ref",
+                          "ref": "xz4Md",
+                          "name": "Tag Running",
+                          "enabled": false
+                        },
+                        {
                           "type": "frame",
-                          "id": "jejPq",
+                          "id": "pANE1",
                           "name": "spacer",
                           "width": "fill_container",
                           "height": 1
-                        },
-                        {
-                          "type": "icon",
-                          "id": "z786zn",
-                          "name": "icon x",
-                          "width": 14,
-                          "height": 14,
-                          "icon": "x",
-                          "library": "lucide",
-                          "fill": "$fg-3"
                         }
                       ]
                     },
                     {
                       "type": "frame",
-                      "id": "QFAlW",
+                      "id": "P9sAU",
                       "name": "Body",
-                      "clip": true,
                       "width": "fill_container",
                       "layout": "vertical",
                       "padding": [
-                        20,
-                        24
+                        2,
+                        14,
+                        18,
+                        36
                       ],
                       "children": [
                         {
                           "type": "frame",
-                          "id": "Obr0f",
+                          "id": "upOKl",
                           "name": "Content",
                           "width": "fill_container",
                           "height": 40,
@@ -89694,81 +89317,149 @@
                           "cornerRadius": 6
                         }
                       ]
+                    }
+                  ]
+                },
+                {
+                  "id": "q6YMI",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "kYYMN",
+                  "name": "Changelog / Version · collapsed",
+                  "width": "fill_container",
+                  "descendants": {
+                    "Vcl6H": {
+                      "icon": "chevron-right"
+                    },
+                    "P9sAU": {
+                      "enabled": false
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "t5HjX",
+              "name": "Changelog / Pane",
+              "reusable": true,
+              "width": 760,
+              "height": 640,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "D6Xfl",
+                  "name": "Page header",
+                  "width": "fill_container",
+                  "height": 48,
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "gap": 14,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "T5uMp",
+                      "name": "Title",
+                      "fill": "$fg",
+                      "content": "Changelog",
+                      "fontFamily": "$font",
+                      "fontSize": 14,
+                      "fontWeight": "600"
                     },
                     {
                       "type": "frame",
-                      "id": "jph3y",
-                      "name": "Footer",
+                      "id": "FmEmz",
+                      "name": "spacer",
                       "width": "fill_container",
-                      "fill": "$bg",
-                      "stroke": "$border",
-                      "strokeWidth": {
-                        "top": 1
-                      },
-                      "gap": 14,
-                      "padding": [
-                        8,
-                        16
-                      ],
-                      "alignItems": "center",
+                      "height": 1
+                    },
+                    {
+                      "id": "B1tP4",
+                      "type": "ref",
+                      "ref": "XSeiZ",
+                      "name": "Hint Move",
+                      "descendants": {
+                        "z2kG0": {
+                          "content": "Move"
+                        }
+                      }
+                    },
+                    {
+                      "id": "UFulb",
+                      "type": "ref",
+                      "ref": "xfbOl",
+                      "name": "Hint Open or close",
+                      "descendants": {
+                        "m5wIG9": {
+                          "name": "Kbd Space"
+                        },
+                        "m5wIG9/luKkY": {
+                          "content": "Space"
+                        },
+                        "IOvfA": {
+                          "name": "Open or close",
+                          "content": "Open or close"
+                        }
+                      }
+                    },
+                    {
+                      "id": "H5QV6",
+                      "type": "ref",
+                      "ref": "n73Aps",
+                      "name": "Button On GitHub",
+                      "descendants": {
+                        "O9dWyI": {
+                          "icon": "arrow-up-right"
+                        },
+                        "i9UKWn": {
+                          "content": "All releases on GitHub"
+                        },
+                        "I9KkTl": {
+                          "name": "Kbd O"
+                        },
+                        "I9KkTl/luKkY": {
+                          "content": "O"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uugCv",
+                  "name": "Body",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "padding": [
+                    28,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cUWZt",
+                      "name": "Column",
+                      "width": 680,
+                      "layout": "vertical",
                       "children": [
                         {
-                          "id": "ppN22",
-                          "type": "ref",
-                          "ref": "XSeiZ",
-                          "name": "Hint Scroll",
-                          "descendants": {
-                            "z2kG0": {
-                              "name": "Scroll",
-                              "content": "Scroll"
-                            }
-                          }
-                        },
-                        {
-                          "id": "rA0zj",
-                          "type": "ref",
-                          "ref": "xfbOl",
-                          "name": "Hint Close",
-                          "descendants": {
-                            "m5wIG9": {
-                              "name": "Kbd Esc"
-                            },
-                            "m5wIG9/luKkY": {
-                              "content": "Esc"
-                            },
-                            "IOvfA": {
-                              "name": "Close",
-                              "content": "Close"
-                            }
-                          }
-                        },
-                        {
                           "type": "frame",
-                          "id": "reaLU",
-                          "name": "spacer",
+                          "id": "XF1Lq",
+                          "name": "List",
+                          "clip": true,
                           "width": "fill_container",
-                          "height": 1
-                        },
-                        {
-                          "id": "l638o",
-                          "type": "ref",
-                          "ref": "n73Aps",
-                          "name": "Button Open on GitHub",
-                          "descendants": {
-                            "O9dWyI": {
-                              "name": "icon arrow-up-right",
-                              "icon": "arrow-up-right"
-                            },
-                            "i9UKWn": {
-                              "content": "This release on GitHub"
-                            },
-                            "I9KkTl": {
-                              "name": "Kbd O"
-                            },
-                            "I9KkTl/luKkY": {
-                              "content": "O"
-                            }
-                          }
+                          "height": 60,
+                          "cornerRadius": 10,
+                          "stroke": "$border",
+                          "strokeWidth": 1
                         }
                       ]
                     }
@@ -91532,7 +91223,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Nothing failed, so no amber. Until 0.1.0 only Development builds exist, so whoever runs one and follows Stable sees this. Its number is 0.1.0-dev.N, because before any Stable the builds are numbered that way (D4). Development can read the same for the seconds a build replaces the last.",
+                      "content": "Nothing failed, so no amber. Until 0.1.0 only Development builds exist, so whoever runs one and chose Stable sees this (U17 is how they get here). Its number is 0.1.0-dev.N, because before any Stable the builds are numbered that way (D4). Development can read the same for the seconds a build replaces the last.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -92742,13 +92433,11 @@
             {
               "type": "frame",
               "id": "xTXbd",
-              "name": "Slot · U19 · Question · A fresh Development build, on Stable",
-              "fill": "#D6A23A1A",
+              "name": "Slot · U19 · A fresh Development build",
+              "fill": "#00000000",
               "stroke": "#D6A23A",
-              "strokeWidth": 2,
               "layout": "vertical",
               "gap": 14,
-              "padding": 24,
               "children": [
                 {
                   "type": "frame",
@@ -92763,7 +92452,7 @@
                       "id": "jPeS3",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "U19 · Question · A fresh Development build, on Stable",
+                      "content": "U19 · A fresh Development build",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -92775,7 +92464,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A fresh install always starts on Stable, also from a build downloaded from the Development release. With D5's rule (a running -dev build on Stable accepts any Stable) the check at launch then takes the older Stable straight away: this screen, minutes after installing, without anyone having asked. Choosing Development stops it only from the next build on, since what was installed last runs. Does the owner want that, or should a fresh install follow what it is, Development for a -dev build? Drawn as the rules read today.",
+                      "content": "A fresh install follows what it is: a build downloaded from the Development release starts on Development, any other on Stable. It stays where it was downloaded for, with no older Stable installing behind the user's back. Nothing is asked; the choice only starts to count once the user makes one. Windows has no Development builds, so it always starts on Stable.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -92786,7 +92475,7 @@
                 {
                   "type": "frame",
                   "id": "LyVx2",
-                  "name": "U19 · Settings · Updates · Question · A fresh Development build, on Stable",
+                  "name": "U19 · Settings · Updates · A fresh Development build",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -92837,7 +92526,7 @@
                           }
                         },
                         {
-                          "id": "VQ5ad",
+                          "id": "x00IK8",
                           "type": "ref",
                           "ref": "Q7XjaK",
                           "name": "Updates pane",
@@ -92848,31 +92537,22 @@
                               "content": "githq 0.3.0-dev.214"
                             },
                             "chKF1": {
-                              "content": "Development build from commit 632d28b, following Stable"
-                            },
-                            "OS1jO": {
-                              "opacity": 0.45
+                              "content": "Development build from commit 632d28b, following Development"
                             },
                             "U7pCT/xepJB": {
-                              "icon": "circle-arrow-down",
-                              "fill": "$accent"
+                              "icon": "check",
+                              "fill": "$fg-3"
                             },
                             "U7pCT/o3YUv": {
-                              "content": "Found githq 0.2.0, the newest Stable. Downloading, 62%"
+                              "content": "You're on the newest build"
                             },
                             "U7pCT/c3RbR": {
-                              "enabled": false
+                              "content": "Checked just now."
                             },
-                            "U7pCT/X1WrT": {
-                              "enabled": true
-                            },
-                            "U7pCT/v7lPK": {
-                              "width": 388
-                            },
-                            "BOAGw/q5uuTV": {
+                            "IKEAI/q5uuTV": {
                               "stroke": "$accent"
                             },
-                            "BOAGw/dOaO4": {
+                            "IKEAI/dOaO4": {
                               "enabled": true
                             }
                           }
@@ -92880,38 +92560,11 @@
                       ]
                     },
                     {
-                      "id": "yRb29",
+                      "id": "x8Otp0",
                       "type": "ref",
                       "ref": "KJ7RH",
                       "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "BqCqd/zwF3j": {
-                          "id": "C5APW",
-                          "type": "ref",
-                          "ref": "SoI9D",
-                          "enabled": true,
-                          "name": "Update",
-                          "descendants": {
-                            "bFHn7": {
-                              "icon": "circle-arrow-down",
-                              "fill": "$accent"
-                            },
-                            "G7xRr": {
-                              "content": "Downloading githq 0.2.0, 62%"
-                            },
-                            "cgBnL": {
-                              "enabled": false
-                            },
-                            "RMotX": {
-                              "content": "Restart"
-                            },
-                            "ttyBv": {
-                              "enabled": false
-                            }
-                          }
-                        }
-                      }
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -92990,7 +92643,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Listed in App beside Settings: Updates. It has no key of its own. While an update is ready, U1's Restart and Later are commands here too, as they already are.",
+                      "content": "Every update action is in the command menu (D18), and a command shows only while it can run. Always: Check for updates, Settings: Updates, Settings: Changelog, and on macOS and Linux Switch to Stable or Switch to Development, whichever isn't chosen. While an update is ready: Restart and Later. After a refused or failed install: Try again and Later. While the toast shows: What changed (⌥W).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -94128,7 +93781,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "On the first launch after the version changed, in the bottom right corner, above the status bar. It stays until dismissed (Esc or ×), because the app has just started and the user may be looking elsewhere. Only ever a toast: no window opens by itself (D7). ⌥W opens what changed and is a command in ⌘K while the toast shows, as ⌥S is for Sync settings stopped.",
+              "content": "On the first launch after the version changed, in the bottom right corner, above the status bar. It stays until dismissed (Esc or ×), because the app has just started and the user may be looking elsewhere. Only ever a toast: no window opens by itself (D7). ⌥W goes to the changelog and is a command in ⌘K while the toast shows, as ⌥S is for Sync settings stopped.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -94174,7 +93827,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Says the version and the one it replaced, however many it skipped. What changed opens U26 or U27.",
+                      "content": "Says the version and the one it replaced, however many it skipped. What changed opens Settings: Changelog (U41).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -94293,7 +93946,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same toast. It comes after every restart into a new build, so it must stay this small. What changed opens U30.",
+                      "content": "The same toast. It comes after every restart into a new build, so it must stay this small. What changed opens Settings: Changelog (U43).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -94412,7 +94065,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "After U15. It says which version is running and why the number went down. No list to offer (D10), so no button; the status bar shows the first sync under way.",
+                      "content": "After U15. It says which version is running and why the number went down. Nothing new to read, so no button; the status bar shows the first sync under way. The changelog stays in Settings as always.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -94517,7 +94170,7 @@
               "id": "M7RDj",
               "name": "Group title",
               "fill": "$fg",
-              "content": "What changed",
+              "content": "Changelog",
               "fontFamily": "$font",
               "fontSize": 20,
               "fontWeight": "600"
@@ -94529,7 +94182,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Opens only from the toast. The surface is the owner's pick: A is recommended and drawn in every state (U26–U35), B and C once each (U36, U37). Whichever wins, the content is the same components.",
+              "content": "A section of Settings, after Updates, that's always there, on the desktop app only. Every version has its own fold with its own text, newest first: the first open, the rest collapsed. The toast's What changed (⌥W) opens it, and so does Settings: Changelog in ⌘K. It is read from GitHub when opened (D10).",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -94539,504 +94192,1253 @@
         },
         {
           "type": "frame",
-          "id": "y3dvz",
-          "name": "Variants · Where What changed opens",
-          "fill": "#D6A23A1A",
-          "stroke": "#D6A23A",
-          "strokeWidth": 2,
-          "layout": "vertical",
-          "gap": 56,
-          "padding": 24,
+          "id": "z7sW0b",
+          "name": "Row of screens",
+          "gap": 80,
           "children": [
             {
               "type": "frame",
-              "id": "d8xZ4",
-              "name": "Row of screens",
-              "gap": 80,
+              "id": "v2orvo",
+              "name": "Slot · U41 · Stable",
+              "layout": "vertical",
+              "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "oh09m",
-                  "name": "Slot · U26 · Variant A · A dialog over where you were",
+                  "id": "yvdrj",
+                  "name": "Caption",
+                  "width": 1440,
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 4,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "G8lRu",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "sf8kv",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U26 · Variant A · A dialog over where you were",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "V5xbG",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Recommended. One release. ⌥W opens it, Esc returns to exactly what you were doing, it looks the same whether the sidebar is collapsed or an item is open, and the text keeps a reading width. It needs no address of its own, since it only ever opens from the toast. The toast closes as it opens. The body is GitHub's Markdown: headings, bullets and #numbers come from the release text, and a number opens the pull request in the system browser.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                      "type": "text",
+                      "id": "HvG1C",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U41 · Stable",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
                     },
                     {
-                      "type": "frame",
-                      "id": "hjEn5",
-                      "name": "U26 · Variant A · A dialog over where you were",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "t4IGK",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "D680iS",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "t9AF6",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "UYI0o",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "AUbNC",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "h7O2ww",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 72,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.2 → 0.2.0"
-                            },
-                            "Obr0f": {
-                              "id": "Ll4Gb",
-                              "type": "ref",
-                              "ref": "ofOJx",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "This release on GitHub"
-                            }
-                          }
-                        }
-                      ]
+                      "type": "text",
+                      "id": "xQgZr",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Updated from 0.1.0 to 0.2.0, skipping two versions. Each version says its own changes, with no range to work out. New marks versions the user didn't have before this update, so a skipped one isn't lost behind its fold; it goes away when they next update. Running marks what's installed. Folds open independently and stay as they were.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "MrAln",
-                  "name": "Slot · U36 · Variant B · The side panel",
+                  "id": "H0SvWV",
+                  "name": "U41 · Settings · Changelog · Stable",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 14,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "G4itPA",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
+                      "id": "fREoh",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "hwSrm",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U36 · Variant B · The side panel",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
+                          "id": "g8WDu",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
                         },
                         {
-                          "type": "text",
-                          "id": "ICNkD",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
+                          "id": "QIazL",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "FgSdW",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
                           "width": "fill_container",
-                          "content": "The list stays in view and the panel is already how an item opens. But it takes the place of the opened item, it has no such place when items open in a modal or on a page, and 560 px is tight for the formal list.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
+                          "height": "fill_container",
+                          "descendants": {
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "u3KGUR",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "EvGh8",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    },
+                                    "D7iA2": {
+                                      "enabled": true
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "eBz9n",
+                                      "type": "ref",
+                                      "ref": "ofOJx",
+                                      "name": "Content",
+                                      "width": "fill_container"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "EeDuj",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    },
+                                    "D7iA2": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "AFmMg",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.1",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.1"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 14, 2026"
+                                    },
+                                    "D7iA2": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ERMwV",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 2, 2026"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
                         }
                       ]
                     },
                     {
+                      "id": "PSpvz",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "USqYr",
+              "name": "Slot · U42 · A release with no summary",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UAp1W",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zJtDR",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U42 · A release with no summary",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "m8caM",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "An older fold opened, here one with no summary written (D6): the list starts right under the version, with no gap where the summary would go. Folds open and close independently, and here the first has been closed.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dPgvW",
+                  "name": "U42 · Settings · Changelog · A release with no summary",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
                       "type": "frame",
-                      "id": "vM3kX",
-                      "name": "U36 · Variant B · The side panel",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
+                      "id": "N0Vvv",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "CC0A8",
-                          "name": "Main",
+                          "id": "rmoHf",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
+                        },
+                        {
+                          "id": "ZdPqn",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "XdrXt",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
                           "width": "fill_container",
                           "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "Ox8Rx",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "qmlHn",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            },
-                            {
+                          "descendants": {
+                            "XF1Lq": {
                               "type": "frame",
-                              "id": "zNLMq",
-                              "name": "Panel What changed",
+                              "id": "B9atV",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "x2ohLr",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "pnZtJ",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "dhrqY",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version githq 0.1.1",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.1"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 14, 2026"
+                                    },
+                                    "upOKl": {
+                                      "id": "kd6vh",
+                                      "type": "ref",
+                                      "ref": "c9dRl",
+                                      "name": "Content",
+                                      "width": "fill_container"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "jHFyM",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 2, 2026"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "dZakg",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "WLNUh",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "rpcUQ",
+              "name": "Slot · U43 · Development",
+              "fill": "#00000000",
+              "stroke": "#D6A23A",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "W0Lc7",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Q1Bj1",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U43 · Development",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ZXbvT",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Development builds have no description and most are one commit, so there is one fold for everything since the last Stable, filtered as release notes are, then the Stable versions. Commits are read from main, so GitHub's limit of 250 on a comparison doesn't apply.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ksgH6",
+                  "name": "U43 · Settings · Changelog · Development",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "i538Wj",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "q3tU2",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
+                        },
+                        {
+                          "id": "FABRG",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "a4a4F2",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "H5QV6/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "gbQ2Y",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "Y0kGG",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "jlUKo",
+                                      "type": "ref",
+                                      "ref": "n6TPY",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "GKGz7": {
+                                          "content": "4 changes you'd notice, out of 7 commits."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "hnW8n",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "F3Ay7b",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "jaIYo",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VJfEa",
+              "name": "Slot · U44 · Development, nothing you'd notice",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "WswgZ",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "k9y7f",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U44 · Development, nothing you'd notice",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SKIgb",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Everything since the last Stable was filtered out. It says so, and the header's link goes to all commits.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "elkuv",
+                  "name": "U44 · Settings · Changelog · Development, nothing you'd notice",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HFECv",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "sViLL",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
+                        },
+                        {
+                          "id": "GIKsb",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "S4sq9b",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "H5QV6/i9UKWn": {
+                              "content": "All commits on GitHub"
+                            },
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "XQTOO",
+                              "name": "List",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "C31f4m",
+                                  "type": "ref",
+                                  "ref": "kYYMN",
+                                  "name": "Version Development",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "Development"
+                                    },
+                                    "J3brH": {
+                                      "content": "since 0.2.0"
+                                    },
+                                    "wFBLn": {
+                                      "enabled": true
+                                    },
+                                    "upOKl": {
+                                      "id": "fJVhg",
+                                      "type": "ref",
+                                      "ref": "McHUU",
+                                      "name": "Content",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "YXepU": {
+                                          "icon": "check",
+                                          "fill": "$fg-2"
+                                        },
+                                        "XwEiI": {
+                                          "content": "Nothing you'd notice"
+                                        },
+                                        "NnRYv": {
+                                          "content": "7 commits went in, and none of them changes what you see."
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "XHzeo",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.2.0",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.2.0"
+                                    },
+                                    "J3brH": {
+                                      "content": "November 3, 2026"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "B5zxt4",
+                                  "type": "ref",
+                                  "ref": "q6YMI",
+                                  "name": "Version githq 0.1.2",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "UbJRm": {
+                                      "content": "githq 0.1.2"
+                                    },
+                                    "J3brH": {
+                                      "content": "October 21, 2026"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "r0A747",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "vsh7q",
+              "name": "Slot · U45 · No versions yet",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wEULR",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WSlpW",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U45 · No versions yet",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "vr1E3",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Before 0.1.0, on a build that chose Stable. The section is still there and says why it's empty.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "w4LFD6",
+                  "name": "U45 · Settings · Changelog · No versions yet",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KoxO0",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "OCEz0",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
+                        },
+                        {
+                          "id": "wWDee",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "s20SGC",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "H5QV6": {
+                              "enabled": false
+                            },
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "AUnsG",
+                              "name": "List",
                               "clip": true,
-                              "width": 560,
-                              "height": "fill_container",
+                              "width": "fill_container",
+                              "cornerRadius": 10,
                               "stroke": "$border",
-                              "strokeWidth": {
-                                "left": 1
-                              },
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "VowrX",
+                                  "type": "ref",
+                                  "ref": "McHUU",
+                                  "name": "Content",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "YXepU": {
+                                      "icon": "info",
+                                      "fill": "$fg-2"
+                                    },
+                                    "XwEiI": {
+                                      "content": "No Stable version yet"
+                                    },
+                                    "NnRYv": {
+                                      "content": "The first one will be 0.1.0. Its changes appear here once it's out."
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tDHU1",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "E8RpdF",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "IlPc1",
+              "name": "Slot · U46 · Loading",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iWDJC",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rUCt5",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U46 · Loading",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Kkuwo",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The versions are fetched when the section opens. Quiet lines hold the place, no spinner, and the GitHub link already works.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "RNY74",
+                  "name": "U46 · Settings · Changelog · Loading",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Kx0Zp",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "Lf5V4",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
+                        },
+                        {
+                          "id": "R7CIdv",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "id": "SDZWz",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "Lv3S6",
+                              "name": "List",
+                              "clip": true,
+                              "width": "fill_container",
+                              "cornerRadius": 10,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
                               "layout": "vertical",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "oB9At",
-                                  "name": "Head",
+                                  "id": "f0I5h",
+                                  "name": "Loading",
                                   "width": "fill_container",
-                                  "height": 48,
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "bottom": 1
-                                  },
-                                  "gap": 10,
-                                  "padding": [
-                                    0,
-                                    16
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "DpcCl",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "What changed",
-                                      "fontFamily": "$font",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "mPJDT",
-                                      "name": "Range",
-                                      "fill": "$fg-dim",
-                                      "content": "0.1.2 → 0.2.0",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "h5KEf",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "height": "fill_container",
                                   "layout": "vertical",
                                   "padding": [
-                                    20,
-                                    16
+                                    16,
+                                    14
                                   ],
                                   "children": [
                                     {
-                                      "id": "faQ34",
+                                      "id": "ZgBUZ",
                                       "type": "ref",
-                                      "ref": "ofOJx",
-                                      "name": "Release",
+                                      "ref": "ol23G",
+                                      "name": "Loading",
                                       "width": "fill_container"
                                     }
                                   ]
                                 }
                               ]
                             }
-                          ]
-                        },
-                        {
-                          "id": "zuPVz",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
                           }
                         }
                       ]
+                    },
+                    {
+                      "id": "BlfVJ",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hpcGX",
+              "name": "Slot · U47 · Offline",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "fycq0",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KL9ri",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U47 · Offline",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Cf2LF",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Nothing to do: the list waits for the connection and takes this place when it's back. No Try again, and no GitHub link, which couldn't open either.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "kar4y",
-                  "name": "Slot · U37 · Variant C · A full page",
+                  "id": "hLewv",
+                  "name": "U47 · Settings · Changelog · Offline",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 14,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "s6wjV",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
+                      "id": "gmytX",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "Og1LK",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U37 · Variant C · A full page",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
+                          "id": "aJ5w5",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
                         },
                         {
-                          "type": "text",
-                          "id": "uwppC",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "The most room, and an address of its own. But it takes the user away from what they were doing for something usually read once, and needs a way back; a page is what a list or an item gets, and this is neither.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "seXFH",
-                      "name": "U37 · Variant C · A full page",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
+                          "id": "LlN5O",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
                         {
-                          "type": "frame",
-                          "id": "F31um",
-                          "name": "Main",
+                          "id": "QI6Ls",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
                           "width": "fill_container",
                           "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "TK7iD",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container",
-                              "descendants": {
-                                "jn3nI": {
-                                  "fill": "#00000000",
-                                  "cornerRadius": 6
-                                }
-                              }
+                          "descendants": {
+                            "H5QV6": {
+                              "enabled": false
                             },
-                            {
+                            "XF1Lq": {
                               "type": "frame",
-                              "id": "uZUVa",
-                              "name": "Page pane",
+                              "id": "RJY0E",
+                              "name": "List",
+                              "clip": true,
                               "width": "fill_container",
-                              "height": "fill_container",
+                              "cornerRadius": 10,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
                               "layout": "vertical",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "c8IXm",
-                                  "name": "Page header",
+                                  "id": "YLgkR",
+                                  "type": "ref",
+                                  "ref": "McHUU",
+                                  "name": "Content",
                                   "width": "fill_container",
-                                  "height": 48,
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "bottom": 1
-                                  },
-                                  "gap": 12,
-                                  "padding": [
-                                    0,
-                                    20
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "M2yth",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "What changed",
-                                      "fontFamily": "$font",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
+                                  "descendants": {
+                                    "YXepU": {
+                                      "icon": "wifi-off",
+                                      "fill": "$fg-2"
                                     },
-                                    {
-                                      "type": "text",
-                                      "id": "RcWsA",
-                                      "name": "Range",
-                                      "fill": "$fg-dim",
-                                      "content": "0.1.2 → 0.2.0",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
+                                    "XwEiI": {
+                                      "content": "Waiting for the connection"
+                                    },
+                                    "NnRYv": {
+                                      "content": "You're offline. The changelog appears here by itself once you're back."
                                     }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "f5QRA",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "height": "fill_container",
-                                  "padding": [
-                                    28,
-                                    20
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "iUXvC",
-                                      "name": "Column",
-                                      "width": 680,
-                                      "layout": "vertical",
-                                      "children": [
-                                        {
-                                          "id": "jcJUY",
-                                          "type": "ref",
-                                          "ref": "ofOJx",
-                                          "name": "Release",
-                                          "width": "fill_container"
-                                        }
-                                      ]
-                                    }
-                                  ]
+                                  }
                                 }
                               ]
                             }
-                          ]
-                        },
-                        {
-                          "id": "k5sToJ",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
                           }
                         }
                       ]
+                    },
+                    {
+                      "id": "Z7SN8",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -95044,1292 +95446,146 @@
             },
             {
               "type": "frame",
-              "id": "S1agD",
-              "name": "Row of screens",
-              "gap": 80,
+              "id": "M6N6H",
+              "name": "Slot · U48 · Failure",
+              "layout": "vertical",
+              "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "rfCIy",
-                  "name": "Slot · U27 · Variant A · A jump over three",
+                  "id": "o2Z22E",
+                  "name": "Caption",
+                  "width": 1440,
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 4,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "nDPyk",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "F3RtnD",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U27 · Variant A · A jump over three",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "PcvhK",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Every release between the old version and the new, newest first, each with its summary and list, all open, so skipping versions loses nothing. The dialog stops at the window's height and the body scrolls (↑↓, Space).",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                      "type": "text",
+                      "id": "SYwSa",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "U48 · Failure",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
                     },
                     {
-                      "type": "frame",
-                      "id": "mineS",
-                      "name": "U27 · Variant A · A jump over three",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "RhwR2",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "m9JX1",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "G0yP3",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "ISwE7",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "uMUkD",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "QVh6X",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 60,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.0 → 0.2.0 · 3 releases"
-                            },
-                            "QFAlW": {
-                              "height": 690
-                            },
-                            "Obr0f": {
-                              "id": "QB7ld",
-                              "type": "ref",
-                              "ref": "hf4Sl",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "All releases on GitHub"
-                            }
-                          }
-                        }
-                      ]
+                      "type": "text",
+                      "id": "MyRMN",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "GitHub answered with an error or not at all. The header's link leads to the same changes on GitHub: O, in the system browser.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "Y0ppTZ",
-                  "name": "Slot · U28 · Variant A · A jump, scrolled down",
+                  "id": "Fctc6",
+                  "name": "U48 · Settings · Changelog · Failure",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 14,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "JTzmV",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
+                      "id": "NFfxm",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "xXwcb",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U28 · Variant A · A jump, scrolled down",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
+                          "id": "JoqGt",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "jn3nI": {
+                              "fill": "#00000000",
+                              "cornerRadius": 6
+                            }
+                          }
                         },
                         {
-                          "type": "text",
-                          "id": "OZ2vV",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "The same, further down, ending at the oldest release in the range. 0.1.1 has no summary here.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "n4tAab",
-                      "name": "U28 · Variant A · A jump, scrolled down",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
+                          "id": "mdH0r",
+                          "type": "ref",
+                          "ref": "Mxhs1",
+                          "name": "Settings column",
+                          "height": "fill_container",
+                          "descendants": {
+                            "XRz95": {
+                              "fill": "$bg-3"
+                            },
+                            "XRz95/kk8BQ": {
+                              "fill": "$fg"
+                            },
+                            "XRz95/upTOT": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
                         {
-                          "type": "frame",
-                          "id": "defJO",
-                          "name": "Main",
+                          "id": "uLqXE",
+                          "type": "ref",
+                          "ref": "t5HjX",
+                          "name": "Changelog pane",
                           "width": "fill_container",
                           "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "nMpZd",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "khC6g",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
+                          "descendants": {
+                            "XF1Lq": {
+                              "type": "frame",
+                              "id": "Xfiue",
+                              "name": "List",
+                              "clip": true,
                               "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "QztA6",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "jrqJh",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "Pzgp1",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 60,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.0 → 0.2.0 · 3 releases"
-                            },
-                            "QFAlW": {
-                              "height": 690
-                            },
-                            "Obr0f": {
-                              "id": "n4mbj",
-                              "type": "ref",
-                              "ref": "Z08eMx",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "All releases on GitHub"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ac6P9",
-                  "name": "Slot · U29 · Variant A · A release with no summary",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "S5amhS",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "U49Fs",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U29 · Variant A · A release with no summary",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "zA0E2",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "No summary was written (D6): the list starts right under the version, with no gap or apology where the summary would go.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "S3Fjd",
-                      "name": "U29 · Variant A · A release with no summary",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "V35RB",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "ivDDU",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "huWO6",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "pbU7x",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "OGPO3",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "pF9T8",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 220,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.0 → 0.1.1"
-                            },
-                            "Obr0f": {
-                              "id": "upZH7",
-                              "type": "ref",
-                              "ref": "c9dRl",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "This release on GitHub"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "jSEzW",
-              "name": "Row of screens",
-              "gap": 80,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "S2rcF",
-                  "name": "Slot · U30 · Variant A · Development, the list",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "EKkiV",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Byvho",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U30 · Variant A · Development, the list",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "DmgjY",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Commits between the two builds, no summary (D3). Same headings as a release, filtered by the same rule (D10), so a count tells how much was left out.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "r5YJb",
-                      "name": "U30 · Variant A · Development, the list",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "fyc3H",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "TBxEh",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "E9uNAI",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "rLQ02",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "N8TWx9",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "rJ3XI",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 200,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.3.0-dev.207 → 0.3.0-dev.214"
-                            },
-                            "Obr0f": {
-                              "id": "ZufR3",
-                              "type": "ref",
-                              "ref": "n6TPY",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "All commits on GitHub"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "f9z5O",
-                  "name": "Slot · U31 · Variant A · Development, nothing you'd notice",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "uKNpl",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "M1i4Qi",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U31 · Variant A · Development, nothing you'd notice",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "FMXwR",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Everything in the range was filtered out. The toast still came, since it always does after a version change (D10), and this says so honestly, with the way to all commits.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "x4kKM",
-                      "name": "U31 · Variant A · Development, nothing you'd notice",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "N2XTzu",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "q9cQv",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "UeqGd",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "owijF",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "YjCBN",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "DMUG1",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 280,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.3.0-dev.207 → 0.3.0-dev.214"
-                            },
-                            "Obr0f": {
-                              "id": "XcMPT",
-                              "type": "ref",
-                              "ref": "McHUU",
-                              "name": "Content",
-                              "width": "fill_container",
-                              "descendants": {
-                                "YXepU": {
-                                  "icon": "check",
-                                  "fill": "$fg-2"
-                                },
-                                "XwEiI": {
-                                  "content": "Nothing you'd notice"
-                                },
-                                "NnRYv": {
-                                  "content": "7 commits went in, and none of them changes what you see."
+                              "cornerRadius": 10,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "LKEag",
+                                  "type": "ref",
+                                  "ref": "McHUU",
+                                  "name": "Content",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "YXepU": {
+                                      "icon": "triangle-alert",
+                                      "fill": "$amber"
+                                    },
+                                    "XwEiI": {
+                                      "content": "Couldn't load the changelog"
+                                    },
+                                    "NnRYv": {
+                                      "content": "GitHub didn't answer. You can read the same changes there."
+                                    }
+                                  }
                                 }
-                              }
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "All 7 commits on GitHub"
+                              ]
                             }
                           }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "C7kZl",
-                  "name": "Slot · U32 · Variant A · Development, past 250 commits",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "xqgkl",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "u1aS0q",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U32 · Variant A · Development, past 250 commits",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "h4cGI",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "GitHub returns at most 250 commits for a range. The total is known, so the note says how much the list can't cover, ahead of the list, and the link takes the full count.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
                         }
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "l18D5w",
-                      "name": "U32 · Variant A · Development, past 250 commits",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "REuNf",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "iEUmV",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "tV1YM",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "IwUTx",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "SV07a",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "LjMaT",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 110,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.3.0-dev.214 → 0.3.0-dev.526"
-                            },
-                            "Obr0f": {
-                              "id": "AGuW8",
-                              "type": "ref",
-                              "ref": "UVZzN",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "All 312 commits on GitHub"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "Pqdrx",
-              "name": "Row of screens",
-              "gap": 80,
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "EqrHS",
-                  "name": "Slot · U33 · Variant A · Loading",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "kXRey",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "f3XuIS",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U33 · Variant A · Loading",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "SVEUy",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "The list is fetched when opened (D10). The range is already known, so the head is complete; quiet lines hold the place, no spinner, and the GitHub link works already.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "nHFqn",
-                      "name": "U33 · Variant A · Loading",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "uRrO7",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "PqHoA",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "bJxNj",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "x85naq",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Vrg9v",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "fnuCy",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 280,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.2 → 0.2.0"
-                            },
-                            "Obr0f": {
-                              "id": "p8SyH",
-                              "type": "ref",
-                              "ref": "ol23G",
-                              "name": "Content",
-                              "width": "fill_container"
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "This release on GitHub"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "SoOrJ",
-                  "name": "Slot · U34 · Variant A · Offline",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "s940wr",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "mrqWX",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U34 · Variant A · Offline",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "ZJDwR",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Nothing to do: the list waits for the connection and takes this place when it's back. No Try again, and no GitHub link, which couldn't open either.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "fLufY",
-                      "name": "U34 · Variant A · Offline",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "fmECS",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "fPLPG",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "kTGFv",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "hXtjR",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "us7Dg",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "s0Vc1",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 280,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.2 → 0.2.0"
-                            },
-                            "Obr0f": {
-                              "id": "dYChq",
-                              "type": "ref",
-                              "ref": "McHUU",
-                              "name": "Content",
-                              "width": "fill_container",
-                              "descendants": {
-                                "YXepU": {
-                                  "icon": "wifi-off",
-                                  "fill": "$fg-2"
-                                },
-                                "XwEiI": {
-                                  "content": "Waiting for the connection"
-                                },
-                                "NnRYv": {
-                                  "content": "You're offline. What changed appears here by itself once you're back."
-                                }
-                              }
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o": {
-                              "enabled": false
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Xbx7r",
-                  "name": "Slot · U35 · Variant A · Failure",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "TBQqk",
-                      "name": "Caption",
-                      "width": 1440,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "RtliJ",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "U35 · Variant A · Failure",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "kOlZb",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "GitHub answered with an error or not at all. The same changes on GitHub are the way out (D10): O from the footer, opened in the system browser. For Development the link is the comparison of the two builds.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "xwkIk",
-                      "name": "U35 · Variant A · Failure",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "Y7Vhy",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "BGH43",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container"
-                            },
-                            {
-                              "id": "rUq6N",
-                              "type": "ref",
-                              "ref": "A8DFa",
-                              "name": "List pane",
-                              "width": "fill_container",
-                              "height": "fill_container"
-                            }
-                          ]
-                        },
-                        {
-                          "id": "s5eJj",
-                          "type": "ref",
-                          "ref": "KJ7RH",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "BqCqd/zYDcH": {
-                              "enabled": true,
-                              "icon": "check",
-                              "fill": "$fg-3"
-                            },
-                            "BqCqd/unZbw": {
-                              "content": "Up to date",
-                              "fill": "$fg-dim"
-                            }
-                          }
-                        },
-                        {
-                          "type": "frame",
-                          "id": "izrcb",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "width": 1440,
-                          "height": 900,
-                          "fill": "#05060899"
-                        },
-                        {
-                          "id": "o2dLDS",
-                          "type": "ref",
-                          "ref": "J1oys",
-                          "name": "What changed",
-                          "layoutPosition": "absolute",
-                          "x": 360,
-                          "y": 280,
-                          "descendants": {
-                            "n8GR6P": {
-                              "content": "0.1.2 → 0.2.0"
-                            },
-                            "Obr0f": {
-                              "id": "TuPx8",
-                              "type": "ref",
-                              "ref": "McHUU",
-                              "name": "Content",
-                              "width": "fill_container",
-                              "descendants": {
-                                "YXepU": {
-                                  "icon": "triangle-alert",
-                                  "fill": "$amber"
-                                },
-                                "XwEiI": {
-                                  "content": "Couldn't load what changed"
-                                },
-                                "NnRYv": {
-                                  "content": "GitHub didn't answer. You can read the same changes there."
-                                }
-                              }
-                            },
-                            "ppN22": {
-                              "enabled": false
-                            },
-                            "l638o/i9UKWn": {
-                              "content": "This release on GitHub"
-                            }
-                          }
-                        }
-                      ]
+                      "id": "UbxqY",
+                      "type": "ref",
+                      "ref": "KJ7RH",
+                      "name": "Status bar",
+                      "width": "fill_container"
                     }
                   ]
                 }
@@ -183344,6 +182600,25 @@
                         },
                         "v5Hae9/luKkY": {
                           "content": "7"
+                        }
+                      }
+                    },
+                    {
+                      "id": "XRz95",
+                      "type": "ref",
+                      "ref": "N8UMD",
+                      "name": "Section Changelog",
+                      "enabled": false,
+                      "width": "fill_container(0)",
+                      "descendants": {
+                        "kk8BQ": {
+                          "icon": "scroll-text"
+                        },
+                        "upTOT": {
+                          "content": "Changelog"
+                        },
+                        "v5Hae9/luKkY": {
+                          "content": "8"
                         }
                       }
                     }

@@ -54,3 +54,7 @@ Append-only. One line per turn that settled something.
   starts on Stable (D15), Linux installs on Restart (D16). Drawing it raised U19: a fresh Development build takes the older Stable at
   its first check. Also seen: GitHub's compare call does page (`compare/1e38779...632d28b?per_page=2&page=2` returned 2 of 69), which D3
   says it doesn't; past 250 not tried, so U32 is drawn as asked.
+- 2026-11-04: U19 settled by the owner: a fresh Development build starts on Development (D15 rewritten; the first form rejected in it).
+- 2026-11-04: Owner rejected all three surfaces for what changed: a Changelog section in Settings, every version in its own fold, no ranges (D17). Asked: one fold for Development, or one per build (U43).
+- 2026-11-04: Owner: the commands for updating, restarting and so on belong in the command menu (D18).
+- 2026-11-04: Owner accepted one fold for Development (U43, D17).
