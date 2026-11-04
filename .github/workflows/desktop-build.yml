@@ -155,6 +155,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # Picks the client ID compiled into the app (`build.rs`), as it does for the SPA.
           GITHQ_ENV: prod
+          # The commit the app says it was built from (`build.rs`, `updater.rs`).
+          GITHQ_COMMIT: ${{ inputs.ref }}
           # aws-lc-sys (rustls, through reqwest) assembles with NASM on x86_64 Windows, which the runner lacks;
           # this uses its prebuilt objects instead. Ignored on every other target.
           AWS_LC_SYS_PREBUILT_NASM: 1
