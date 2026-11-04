@@ -34,3 +34,9 @@ closedPullRequest:
   en: Closed pull request
 commentsInCollapsed:
   en: Comments in collapsed files
+previousPullRequest:
+  en: Previous pull request
+nextPullRequest:
+  en: Next pull request
+position:
+  en: '{index} / {count}'

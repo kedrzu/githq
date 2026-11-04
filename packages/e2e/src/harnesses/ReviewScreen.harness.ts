@@ -31,6 +31,51 @@ export class ReviewScreenHarness {
         return this.page.getByRole('button', { name: 'Back', exact: true });
     }
 
+    /** Where it is in the list it was opened from, in the toolbar: "2 / 4". */
+    get position(): Locator {
+        return this.page.locator('header').getByText(/^\d+ \/ \d+$/);
+    }
+
+    /** The toolbar's `J`. */
+    get nextPullRequestButton(): Locator {
+        return this.page.getByRole('button', { name: 'Next pull request' });
+    }
+
+    /** The stack's and the files' column, which scrolls as one. */
+    get leftColumn(): Locator {
+        return this.fileList.locator('..');
+    }
+
+    /** The stack's rows at the top of the left column, first to last. */
+    get stackRows(): Locator {
+        return this.page.getByRole('list', { name: 'Pull requests of the stack' }).getByRole('link');
+    }
+
+    /** The stack's row of the pull request titled `title`. */
+    stackRow(title: string): Locator {
+        return this.stackRows.filter({ hasText: title });
+    }
+
+    /** The stack's row of the pull request under review. */
+    get currentStackRow(): Locator {
+        return this.page.getByRole('list', { name: 'Pull requests of the stack' }).locator('[aria-current="true"]');
+    }
+
+    /** "2 of 4" in the stack's head. */
+    get stackPlace(): Locator {
+        return this.page.getByRole('region', { name: 'The stack' }).getByText(/^\d+\s+of\s+\d+$/);
+    }
+
+    /** The bar pinned once the left column scrolls: its squares. */
+    get stackStrip(): Locator {
+        return this.page.getByRole('list', { name: 'Places in the stack' });
+    }
+
+    /** The bar's square of the pull request titled `title`. */
+    stackSquare(title: string): Locator {
+        return this.stackStrip.getByRole('link', { name: title });
+    }
+
     /** The row of the file named `name` in the list. */
     fileRow(name: string): Locator {
         return this.fileList.getByRole('button', { name: new RegExp(`\\b${escapeRegExp(name)}\\b`) });

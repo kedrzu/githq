@@ -1,4 +1,4 @@
-<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), comments in collapsed files and the two columns among them (D13, D26), the columns' toggles beside them (D31), and github.com. -->
+<!-- The review's toolbar (D24): back, the pull request's state, repository, number and title, and at the right the way through the list it was opened from, shown once it is known (`K`/`J`, "2 / 4", D16), the view options, under a button naming what's on (split or unified, whitespace hidden, for every pull request: D4, D14), comments in collapsed files and the two columns among them (D13, D26), the columns' toggles beside them (D31), and github.com. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -21,6 +21,7 @@ import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import Switch from '@/components/Switch.vue';
 import type { ItemReference } from '@/item/itemRoutes.js';
+import type { ItemWalkPosition } from '@/item/useItemWalk.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 
@@ -33,10 +34,14 @@ const props = defineProps<{
   /** The pull request's row, once known. */
   item: Item | null;
   githubUrl: string;
+  /** Where it is in the list it was opened from; `null` outside one, with no way through to show. */
+  position: ItemWalkPosition | null;
 }>();
 
 const emit = defineEmits<{
   back: [];
+  previous: [];
+  next: [];
 }>();
 
 const layout = defineModel<DiffLayout>('layout', { required: true });
@@ -87,6 +92,35 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
     <h1 :class="css.reviewToolbar_title">{{ item?.title }}</h1>
     <span :class="css.reviewToolbar_where">{{ t(l.review) }}</span>
     <span :class="css.reviewToolbar_spacer" />
+    <template v-if="position">
+      <div :class="css.reviewToolbar_stepper">
+        <IconButton
+          :label="t(l.previousPullRequest)"
+          kbd="K"
+          aria-keyshortcuts="K"
+          :disabled="position.index <= 1"
+          @click="emit('previous')"
+        >
+          <Kbd keys="K" />
+        </IconButton>
+        <IconButton
+          :label="t(l.nextPullRequest)"
+          kbd="J"
+          aria-keyshortcuts="J"
+          :disabled="position.index >= position.count"
+          @click="emit('next')"
+        >
+          <Kbd keys="J" />
+        </IconButton>
+        <span :class="css.reviewToolbar_position">{{
+          t(l.position, { index: position.index, count: position.count })
+        }}</span>
+      </div>
+      <span
+        :class="css.reviewToolbar_divider"
+        aria-hidden="true"
+      />
+    </template>
     <Popover
       :label="t(l.viewOptions)"
       align="end"
@@ -250,6 +284,27 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
 
 .reviewToolbar_spacer {
   flex: 1;
+}
+
+.reviewToolbar_stepper {
+  display: flex;
+  flex: none;
+  gap: $spacing-4;
+  align-items: center;
+}
+
+.reviewToolbar_position {
+  font-family: $font-family-mono;
+  font-size: $font-size-2xs;
+  color: $color-fg-dim;
+  white-space: nowrap;
+}
+
+.reviewToolbar_divider {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  background: $color-border-2;
 }
 
 .reviewToolbar_whitespace {

@@ -20,11 +20,10 @@ import StackTone from '@/lists/StackTone.vue';
 import type { StackLook, StackStateFact } from '@/lists/useStackFacts.js';
 import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
+import { getStackMemberKind } from '@/lists/utils/getStackMemberKind.js';
 import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
-import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
-import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type {
   StackDescription,
@@ -125,7 +124,7 @@ const neighbourNumbers = computed(() => ({
 function getRow(pip: StackPullRequestPip): StackMapRow {
   const { pullRequest } = pip;
   const { id } = pullRequest;
-  const kind = getRowKind(pip);
+  const kind = getStackMemberKind(pip);
   return {
     kind: 'row',
     pullRequest,
@@ -134,15 +133,6 @@ function getRow(pip: StackPullRequestPip): StackMapRow {
     current: id === props.currentId,
     key: getKey(id),
   };
-}
-
-/** Its pip's state, but a merged or closed one as it is where its pip is pale while the copy is incomplete (D7). */
-function getRowKind({ kind, pullRequest }: StackPullRequestPip): StackPullRequestPipKind {
-  if (isMergedPullRequest(pullRequest)) {
-    return 'merged';
-  }
-
-  return isClosedPullRequest(pullRequest) ? 'closed' : kind;
 }
 
 function getKey(id: string): 'J' | 'K' | null {

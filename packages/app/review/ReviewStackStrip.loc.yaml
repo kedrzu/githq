@@ -1,0 +1,4 @@
+places:
+  en: Places in the stack
+pullRequest:
+  en: '{position}: #{number} {title}'

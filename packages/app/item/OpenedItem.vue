@@ -21,10 +21,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
-import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import type { StackDescription } from '@/store/stacks/describeStack.js';
-import { describeStackInCopy } from '@/store/stacks/describeStackInCopy.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -32,7 +29,8 @@ import { getItemPagePath, getItemReference, getOpenedItemQuery, getReviewPath } 
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
-import type { StackNeighbours } from './StackMap.vue';
+import { useItemStack } from './useItemStack.js';
+import { useItemWalk } from './useItemWalk.js';
 import { useOpenedItem } from './useOpenedItem.js';
 
 const props = defineProps<{
@@ -45,7 +43,6 @@ const TICK_MS = 30_000;
 
 const t = useTranslate();
 const details = useService(ItemDetailStore);
-const items = useService(ItemStore);
 const navigation = useService(ItemNavigation);
 const editor = useService(ItemEditor);
 const repositories = useService(RepositoryStore);
@@ -56,6 +53,8 @@ const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
+const walk = useItemWalk({ id: () => opened.id });
+const stack = useItemStack(() => opened.item);
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
@@ -82,38 +81,6 @@ const waitingTitle = computed(() => {
   }
 
   return opened.failed ? t(l.unreachable) : t(l.opening, { reference: referenceText.value });
-});
-const listIndex = computed(() => {
-  const ids = navigation.list?.ids ?? [];
-  return opened.id === null ? -1 : ids.indexOf(opened.id);
-});
-const position = computed(() => {
-  const index = listIndex.value;
-  return index === -1 ? null : { index: index + 1, count: navigation.list?.ids.length ?? 0 };
-});
-const neighbours = computed((): StackNeighbours => {
-  const ids = navigation.list?.ids ?? [];
-  const index = listIndex.value;
-  return index === -1
-    ? { previous: null, next: null }
-    : { previous: ids[index - 1] ?? null, next: ids[index + 1] ?? null };
-});
-// The stack an opened pull request is in, from the local copy alone — no request (D17). Its map shows only with two or
-// more of its pull requests in the copy.
-const stack = computed((): StackDescription | null => {
-  const { item } = opened;
-  if (item?.kind !== 'pullRequest' || item.stack === null) {
-    return null;
-  }
-
-  const description = describeStackInCopy({
-    stackId: item.stack.id,
-    item,
-    items: items.all,
-    viewerLogin: auth.viewer?.login ?? '',
-    getItem: id => details.getItem(id),
-  });
-  return description && description.held >= 2 ? description : null;
 });
 const closes = computed((): Item[] => {
   const { item } = opened;
@@ -198,7 +165,7 @@ function merge() {
 }
 
 function step(delta: 1 | -1) {
-  const target = delta === 1 ? neighbours.value.next : neighbours.value.previous;
+  const target = delta === 1 ? walk.neighbours.next : walk.neighbours.previous;
   if (target !== null) {
     openInPlace(target);
   }
@@ -291,13 +258,13 @@ function loadViewerProjects() {
       :item="opened.item"
       :detail="opened.detail"
       arrangement="modal"
-      :position="position"
+      :position="walk.position"
       :closes="closes"
       :now="now"
       :load-all-comments="opened.loadAllComments"
       :editing="editing"
       :stack="stack"
-      :neighbours="neighbours"
+      :neighbours="walk.neighbours"
       :merge-checks="mergeOptions.options?.checks ?? null"
       :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
       @edit="edit"
@@ -337,13 +304,13 @@ function loadViewerProjects() {
     :item="opened.item"
     :detail="opened.detail"
     :arrangement="arrangement"
-    :position="position"
+    :position="walk.position"
     :closes="closes"
     :now="now"
     :load-all-comments="opened.loadAllComments"
     :editing="editing"
     :stack="stack"
-    :neighbours="neighbours"
+    :neighbours="walk.neighbours"
     :merge-checks="mergeOptions.options?.checks ?? null"
     :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
     @edit="edit"

@@ -70,3 +70,9 @@ showConversation:
   en: Show the conversation
 hideConversation:
   en: Hide the conversation
+previousPullRequest:
+  en: Previous pull request
+nextPullRequest:
+  en: Next pull request
+goToPullRequest:
+  en: 'Go to #{number} {title}'

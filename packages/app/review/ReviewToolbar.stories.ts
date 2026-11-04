@@ -18,7 +18,10 @@ const meta = {
         threadsInCollapsed: true,
         fileListHidden: false,
         conversationShown: false,
+        position: null,
         onBack: fn(),
+        onPrevious: fn(),
+        onNext: fn(),
     },
 } satisfies Meta<typeof ReviewToolbar>;
 
@@ -82,5 +85,35 @@ export const Merged: Story = {
     args: { item: { ...samplePullRequest('PR_1'), title: 'Sync: queue edits made offline', merged: true } },
     play: async ({ canvas }) => {
         await expect(canvas.getByRole('img', { name: 'Merged pull request' })).toBeVisible();
+    },
+};
+
+/** CR25: opened from a list: `K`, `J` and how far along, a click stepping as the key does. */
+export const InAList: Story = {
+    args: { position: { index: 2, count: 4 } },
+    play: async ({ args, canvas }) => {
+        await expect(canvas.getByText('2 / 4')).toBeVisible();
+        await userEvent.click(canvas.getByRole('button', { name: 'Next pull request' }));
+        await expect(args.onNext).toHaveBeenCalledOnce();
+        await userEvent.click(canvas.getByRole('button', { name: 'Previous pull request' }));
+        await expect(args.onPrevious).toHaveBeenCalledOnce();
+    },
+};
+
+/** At the top of the list: `K` has nowhere to go. */
+export const FirstInAList: Story = {
+    args: { position: { index: 1, count: 4 } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('button', { name: 'Previous pull request' })).toBeDisabled();
+        await expect(canvas.getByRole('button', { name: 'Next pull request' })).toBeEnabled();
+    },
+};
+
+/** At the end of the list: `J` has nowhere to go. */
+export const LastInAList: Story = {
+    args: { position: { index: 4, count: 4 } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('button', { name: 'Previous pull request' })).toBeEnabled();
+        await expect(canvas.getByRole('button', { name: 'Next pull request' })).toBeDisabled();
     },
 };

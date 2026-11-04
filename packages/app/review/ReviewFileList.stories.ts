@@ -56,7 +56,7 @@ const meta = {
     render: args => ({
         components: { ReviewFileList },
         setup: () => ({ args }),
-        template: `<div style="width: 300px; height: 500px"><ReviewFileList v-bind="args" /></div>`,
+        template: `<div style="display: flex; flex-direction: column; width: 300px; height: 500px; overflow-y: auto"><ReviewFileList v-bind="args" /></div>`,
     }),
 } satisfies Meta<typeof ReviewFileList>;
 

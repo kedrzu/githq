@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). ⌘B hides the file list and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -16,7 +16,10 @@ import {
   Equal,
   Eye,
   FileSearch,
+  ChevronDown,
+  ChevronUp,
   FoldVertical,
+  GitPullRequest,
   ListChecks,
   ListFilter,
   MessageSquare,
@@ -29,14 +32,19 @@ import { computed, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch }
 import { useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
+import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
-import { formatItemReference, getItemPagePath } from '@/item/itemRoutes.js';
+import { formatItemReference, getItemPagePath, getItemReference, getReviewPath } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
+import { useItemStack } from '@/item/useItemStack.js';
+import { useItemWalk } from '@/item/useItemWalk.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
+import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
@@ -68,6 +76,8 @@ import ReviewFileList from './ReviewFileList.vue';
 import ReviewLostViewedBar from './ReviewLostViewedBar.vue';
 import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewScreenFreshness } from './ReviewScreenFreshness.js';
+import ReviewStack from './ReviewStack.vue';
+import ReviewStackStrip from './ReviewStackStrip.vue';
 import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
 import { countThreads } from './threads/countThreads.js';
 import { findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
@@ -96,13 +106,21 @@ const accounts = useService(AccountSession);
 const reviewFiles = useService(ReviewFiles);
 const preferences = useService(LocalPreferences);
 const screenFreshness = useService(ReviewScreenFreshness);
+const details = useService(ItemDetailStore);
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
+// D2: walking stays in the review, and an issue has none: the list's issues are stepped over.
+const walk = useItemWalk({
+  id: () => opened.id,
+  stopsAt: id => details.getItem(id)?.kind === 'pullRequest',
+});
+const stack = useItemStack(() => opened.item);
 const files = shallowRef<PullRequestFiles | null>(reviewFiles.open(props.reference));
 const list = useTemplateRef<AnchoredListExposed>('list');
 const fileList = useTemplateRef<InstanceType<typeof ReviewFileList>>('fileList');
 const diffColumn = useTemplateRef<HTMLElement>('diffColumn');
+const leftColumn = useTemplateRef<HTMLElement>('leftColumn');
 const layout = preferences.reviewLayout;
 const hideWhitespace = preferences.reviewHideWhitespace;
 const fileListHidden = preferences.reviewFileListHidden;
@@ -111,6 +129,8 @@ const threadsInCollapsed = preferences.reviewThreadsInCollapsed;
 const selected = shallowRef<ReadonlySet<string>>(new Set());
 /** The thread N and ⇧N are at. Its row may be scrolled out of the list, and it is still the one. */
 const focusedThread = shallowRef<string | null>(null);
+/** The left column is off its top: the stack's bar shows over the rows going by (D25). */
+const leftScrolled = shallowRef(false);
 
 const hideViewed = computed({
   get: () => files.value?.hideViewed ?? false,
@@ -223,6 +243,16 @@ const walkedThreads = computed(() => listWalkedThreads(rows.value));
 const lostViewedPaths = computed(() =>
   files.value?.lostViewedNotice ? allPaths.value.filter(path => lostViewed.value.has(path)) : [],
 );
+const otherStackPullRequests = computed((): PullRequestItem[] => {
+  const others: PullRequestItem[] = [];
+  for (const pip of stack.value?.pips ?? []) {
+    if (pip.kind !== 'missing' && pip.pullRequest.id !== opened.id) {
+      others.push(pip.pullRequest);
+    }
+  }
+
+  return others;
+});
 
 const openedAt = performance.now();
 let firstRowMeasured = false;
@@ -330,7 +360,20 @@ watch(ordered, shown => {
 watch(fileListHidden, hidden => {
   if (hidden) {
     selected.value = new Set();
+    leftScrolled.value = false;
     returnKeysToDiff();
+  }
+});
+
+// A pull request not in the local copy: its stack is known only now. Its rows go in above the files on screen, which
+// stay where they are, the bar showing in their place; the rows are one scroll up.
+watch(stack, async (known, before) => {
+  const fileListTop =
+    allFiles.value.length > 0 ? leftColumn.value?.lastElementChild?.getBoundingClientRect().top : null;
+  if (known && !before && fileListTop != null) {
+    await nextTick();
+    const moved = (leftColumn.value?.lastElementChild?.getBoundingClientRect().top ?? fileListTop) - fileListTop;
+    leftColumn.value?.scrollBy(0, moved);
   }
 });
 
@@ -365,6 +408,31 @@ watch(rows, next => {
 });
 
 useCommands(() => [
+  {
+    id: 'review.nextPullRequest',
+    title: t(l.nextPullRequest),
+    section: 'view',
+    key: 'J',
+    icon: ChevronDown,
+    when: () => walk.neighbours.next !== null,
+    run: () => stepPullRequest(walk.neighbours.next),
+  },
+  {
+    id: 'review.previousPullRequest',
+    title: t(l.previousPullRequest),
+    section: 'view',
+    key: 'K',
+    icon: ChevronUp,
+    when: () => walk.neighbours.previous !== null,
+    run: () => stepPullRequest(walk.neighbours.previous),
+  },
+  ...otherStackPullRequests.value.map((pullRequest): Command => ({
+    id: `review.goTo.${pullRequest.id}`,
+    title: t(l.goToPullRequest, { number: pullRequest.number, title: pullRequest.title }),
+    section: 'view',
+    icon: GitPullRequest,
+    run: () => goToPullRequest(pullRequest),
+  })),
   {
     id: 'review.previousFile',
     title: t(l.previousFile),
@@ -473,7 +541,7 @@ useCommands(() => [
     section: 'view',
     key: '/',
     icon: ListFilter,
-    run: focusFilter,
+    run: () => void focusFilter(),
   },
   {
     id: 'review.toggleFileList',
@@ -510,6 +578,18 @@ useCommands(() => [
     },
   },
 ]);
+
+function stepPullRequest(id: string | null) {
+  const item = id === null ? undefined : details.getItem(id);
+  if (item) {
+    goToPullRequest(item);
+  }
+}
+
+/** In this one's place, on the review's page: Back returns to where the review was entered (D2). */
+function goToPullRequest(item: Item) {
+  void router.replace(getReviewPath(getItemReference(item)));
+}
 
 function stepFile(delta: 1 | -1) {
   const index = ordered.value.findIndex(file => file.path === currentPath.value);
@@ -772,7 +852,10 @@ function readAgain() {
       :reference="reference"
       :item="opened.item"
       :github-url="githubUrl"
+      :position="walk.position"
       @back="back"
+      @previous="stepPullRequest(walk.neighbours.previous)"
+      @next="stepPullRequest(walk.neighbours.next)"
     />
     <ReviewLostViewedBar
       v-if="lostViewedPaths.length > 0"
@@ -783,8 +866,21 @@ function readAgain() {
     <div :class="css.reviewView_body">
       <div
         v-if="!fileListHidden"
-        :class="css.reviewView_files"
+        ref="leftColumn"
+        :class="[css.reviewView_left, stack && opened.id !== null && css.reviewView_left_stacked]"
+        @scroll.passive="leftScrolled = (leftColumn?.scrollTop ?? 0) > 0"
       >
+        <template v-if="stack && opened.id !== null">
+          <ReviewStackStrip
+            :class="!leftScrolled && css.reviewView_strip_hidden"
+            :stack="stack"
+            :current-id="opened.id"
+          />
+          <ReviewStack
+            :stack="stack"
+            :current-id="opened.id"
+          />
+        </template>
         <ReviewFileList
           ref="fileList"
           v-model:hide-viewed="hideViewed"
@@ -991,11 +1087,25 @@ function readAgain() {
   min-height: 0;
 }
 
-.reviewView_files {
+// One scroller for the stack and the files: nothing here takes height from the diff, and what stops moves nothing (D25).
+// No browser's own anchoring: where the files stay when a stack arrives is `ReviewView`'s, in the desktop app's too.
+.reviewView_left {
+  display: flex;
   flex: none;
+  flex-direction: column;
   width: $review-file-list-width;
   min-height: 0;
+  overflow-y: auto;
+  overflow-anchor: none;
   border-right: 1px solid $color-border;
+}
+
+.reviewView_left_stacked {
+  --review-file-list-top: #{$review-stack-strip-height};
+}
+
+.reviewView_strip_hidden {
+  visibility: hidden;
 }
 
 .reviewView_diff {

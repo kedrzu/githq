@@ -1,4 +1,4 @@
-<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). Each says its open threads, a click on them landing on the first. A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It follows the file the diff is at, keeping its row in view. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
+<!-- The review's list of files (CR46): how many and how many are viewed, the filter (D11, CR27, CR28) with its toggle to a regular expression, the eye hiding viewed files from it and from the diff (D9), then the files in GitHub's tree order, those at the root first and each folder's under a quiet label; while a filter is on, flat and each followed by its folder (D27). Each says its open threads, a click on them landing on the first. A click on one jumps to it; ⇧click selects a range and ⌘/Ctrl+click adds one (D10), the bar at the foot acting on what is selected (CR23). A pull request with more files than GitHub lists pins what's missing under the rows (CR66). Esc in the filter clears it and leaves, Enter leaves. It scrolls with the column it sits in (`ReviewView`), its head pinned at the column's top, under the stack's bar when there is one (`--review-file-list-top`, D25), and what's at its foot pinned there. It follows the file the diff is at, keeping its row in view clear of both. Up to 3000 rows, drawn whole: the browser skips laying out those off screen. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -68,7 +68,9 @@ const filterPattern = defineModel<string>('filterPattern', { required: true });
 const filterRegex = defineModel<boolean>('filterRegex', { required: true });
 
 const t = useTranslate();
-const scroller = useTemplateRef<HTMLElement>('scroller');
+const rows = useTemplateRef<HTMLElement>('rows');
+const head = useTemplateRef<HTMLElement>('head');
+const foot = useTemplateRef<HTMLElement>('foot');
 const filterField = useTemplateRef<InstanceType<typeof SearchField>>('filterField');
 
 const listed = computed(() => props.files.length);
@@ -83,7 +85,13 @@ watch(
   () => props.currentPath,
   async () => {
     await nextTick();
-    scroller.value?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+    const row = rows.value?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (row) {
+      // What's pinned covers the rows scrolled under it: a row there isn't in view.
+      row.style.scrollMarginTop = `calc(var(--review-file-list-top, 0px) + ${head.value?.offsetHeight ?? 0}px)`;
+      row.style.scrollMarginBottom = `${foot.value?.offsetHeight ?? 0}px`;
+      row.scrollIntoView({ block: 'nearest' });
+    }
   },
   { immediate: true },
 );
@@ -140,7 +148,10 @@ function onFilterKeydown(event: KeyboardEvent) {
     :class="css.reviewFileList"
     :aria-label="t(l.files)"
   >
-    <header :class="css.reviewFileList_head">
+    <header
+      ref="head"
+      :class="css.reviewFileList_head"
+    >
       <h2 :class="css.reviewFileList_title">{{ t(l.files) }}</h2>
       <span :class="css.reviewFileList_count">{{
         hasMore ? t(l.moreThanListed, { listed: numbers.format(listed) }) : numbers.format(listed)
@@ -192,8 +203,8 @@ function onFilterKeydown(event: KeyboardEvent) {
       </p>
     </header>
     <div
-      ref="scroller"
-      :class="css.reviewFileList_scroll"
+      ref="rows"
+      :class="css.reviewFileList_rows"
     >
       <p
         v-if="flat && groups.length === 0"
@@ -242,66 +253,74 @@ function onFilterKeydown(event: KeyboardEvent) {
         </li>
       </ul>
     </div>
-    <footer
-      v-if="hasMore && listComplete"
-      :class="css.reviewFileList_capped"
+    <div
+      ref="foot"
+      :class="css.reviewFileList_pinnedFoot"
     >
-      <p :class="css.reviewFileList_cappedTitle">{{ t(l.listedOnly, { listed: numbers.format(listed) }) }}</p>
-      <p :class="css.reviewFileList_cappedDetail">
-        {{
-          t(l.listedOnlyDetail, {
-            listed: numbers.format(listed),
-            total: numbers.format(changedFiles ?? 0),
-            rest: numbers.format((changedFiles ?? 0) - listed),
-          })
-        }}
-      </p>
-    </footer>
-    <footer
-      v-if="selected.size > 0"
-      :class="css.reviewFileList_selection"
-    >
-      <span :class="css.reviewFileList_selected">{{
-        t(l.filesSelected, { count: selected.size, formatted: numbers.format(selected.size) })
-      }}</span>
-      <span :class="css.reviewFileList_spacer" />
-      <Button
-        variant="light"
-        size="sm"
-        kbd="V"
-        aria-keyshortcuts="V"
-        @click="emit('markSelected')"
+      <footer
+        v-if="hasMore && listComplete"
+        :class="css.reviewFileList_capped"
       >
-        {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}
-      </Button>
-      <button
-        type="button"
-        :class="css.reviewFileList_clear"
-        :aria-label="t(l.clearSelection)"
-        aria-keyshortcuts="Escape"
-        @click="emit('clearSelection')"
+        <p :class="css.reviewFileList_cappedTitle">{{ t(l.listedOnly, { listed: numbers.format(listed) }) }}</p>
+        <p :class="css.reviewFileList_cappedDetail">
+          {{
+            t(l.listedOnlyDetail, {
+              listed: numbers.format(listed),
+              total: numbers.format(changedFiles ?? 0),
+              rest: numbers.format((changedFiles ?? 0) - listed),
+            })
+          }}
+        </p>
+      </footer>
+      <footer
+        v-if="selected.size > 0"
+        :class="css.reviewFileList_selection"
       >
-        <Kbd keys="Escape" />
-      </button>
-    </footer>
+        <span :class="css.reviewFileList_selected">{{
+          t(l.filesSelected, { count: selected.size, formatted: numbers.format(selected.size) })
+        }}</span>
+        <span :class="css.reviewFileList_spacer" />
+        <Button
+          variant="light"
+          size="sm"
+          kbd="V"
+          aria-keyshortcuts="V"
+          @click="emit('markSelected')"
+        >
+          {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}
+        </Button>
+        <button
+          type="button"
+          :class="css.reviewFileList_clear"
+          :aria-label="t(l.clearSelection)"
+          aria-keyshortcuts="Escape"
+          @click="emit('clearSelection')"
+        >
+          <Kbd keys="Escape" />
+        </button>
+      </footer>
+    </div>
   </section>
 </template>
 
 <style lang="scss" module="css">
 .reviewFileList {
   display: flex;
+  flex: 1 0 auto;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
 }
 
 .reviewFileList_head {
+  position: sticky;
+  top: var(--review-file-list-top, 0);
+  z-index: 1;
   display: flex;
   flex: none;
   flex-wrap: wrap;
   gap: $spacing-6;
   align-items: baseline;
   padding: $spacing-10 $spacing-12 $spacing-8;
+  background: $color-bg;
   border-bottom: 1px solid $color-border;
 }
 
@@ -348,11 +367,16 @@ function onFilterKeydown(event: KeyboardEvent) {
   color: $color-red;
 }
 
-.reviewFileList_scroll {
-  flex: 1;
-  min-height: 0;
+.reviewFileList_rows {
+  flex: 1 0 auto;
   padding: $spacing-6;
-  overflow-y: auto;
+}
+
+.reviewFileList_pinnedFoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: $color-bg;
 }
 
 .reviewFileList_groups,
