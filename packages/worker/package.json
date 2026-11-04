@@ -10,9 +10,10 @@
         "./*.js": "./src/*.ts"
     },
     "scripts": {
-        "dev": "mkdir -p ../app/.output/public && touch ../../.env && wrangler dev --port 8788 --env-file ../../.env",
-        "preview": "touch ../../.env && wrangler dev --env-file ../../.env",
+        "dev": "mkdir -p ../app/.output/public && touch ../../.env && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --port 8788 --env-file ../../.env",
+        "preview": "touch ../../.env && GITHQ_ENV=dev sh ../../scripts/withSecrets.sh wrangler dev --env-file ../../.env",
         "deploy": "wrangler deploy && wrangler deploy --config wrangler.www.jsonc",
+        "secrets:put:prod": "env -u GITHUB_CLIENT_SECRET GITHQ_ENV=prod bun nzyme secrets run -- sh -c 'printf %s \"$GITHUB_CLIENT_SECRET\" | wrangler secret put GITHUB_CLIENT_SECRET'",
         "bundle": "mkdir -p ../app/.output/public && wrangler deploy --dry-run --outdir .wrangler/dist",
         "test": "TZ=UTC bun test"
     },

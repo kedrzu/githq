@@ -37,7 +37,7 @@ a green codebase.
 |E2E|`bun run e2e <spec files, relative to packages/e2e>`; one test by title: `bun run e2e -g "<title>"`|a screen or flow an e2e spec drives changed, or the harness or the GitHub mock|
 |Desktop (Rust)|`mkdir -p packages/app/.output-desktop/public`, then in `packages/desktop/src-tauri`: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`|anything under `packages/desktop`|
 |Desktop build|`bun --cwd packages/app build:desktop` (runs `scripts/checkDesktopBuild.ts`); the whole app: `bun run build:desktop` (no signing key needed — the release workflow turns the signed updater bundles on)|`nuxt.config.ts`, the desktop code of the app, or `tauri.conf.json` changed|
-|Worker|`bun --cwd packages/app build`, then `bun --cwd packages/worker dev` and `curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8788/api/auth/authorize?state=abcdefghijklmnop0123'` → `302` (with the OAuth App in the root `.env`; `500` without), `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/some/deep/link` → `200`, `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/api/unknown` → `404`; stop it after (by PID)|`packages/worker/**` or `nuxt.config.ts` changed|
+|Worker|`bun --cwd packages/app build`, then `bun --cwd packages/worker dev` and `curl -s -o /dev/null -w '%{http_code}' 'http://localhost:8788/api/auth/authorize?state=abcdefghijklmnop0123'` → `302` (with the OAuth App from the secret store or the root `.env`; `500` without), `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/some/deep/link` → `200`, `curl -s -o /dev/null -w '%{http_code}' http://localhost:8788/api/unknown` → `404`; stop it after (by PID)|`packages/worker/**` or `nuxt.config.ts` changed|
 
 `*.test.ts` = `bun test`; `*.spec.ts` under `packages/app` = browser component specs run by Vitest
 through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts` are tests too
@@ -81,7 +81,7 @@ Rules:
 (`bun --cwd packages/app build:local` → `packages/app/.output-local`, which includes the dev token sign-in) and
 serves it with the Worker in one `wrangler dev`, with a dummy OAuth App from
 `packages/e2e/worker.vars` (never the real `.env`). `desktop` (`src/desktop/`) builds the desktop app's SPA
-(`GITHQ_GITHUB_CLIENT_ID=e2e-client bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
+(`GITHQ_ENV=e2e bun --cwd packages/app build:desktop` → `packages/app/.output-desktop`)
 and serves it with a static server falling back to `index.html`
 (`src/desktop/serveDesktopApp.ts`, no Worker); its native side is faked in the page
 (`src/desktop/FakeNativeBridge.ts`), and a request to githq.dev or `/api/*` fails the test. Both servers
