@@ -44,3 +44,6 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Updater key and password stored in Bitwarden through a temporary mapping, compared with the files without showing
   them; not mapped in the repo so development doesn't load them (`docs/desktop/RELEASING.md`). Owner closed the design. Goes to
   `/dev:deliver`.
+- 2026-11-04: Owner reopened the key's backup: scripts must read it from the store, independent of the machine (D14). Mapped prod
+  only, `build:desktop:signed` added and tried, procedure in `docs/desktop/RELEASING.md`. Asked: CI through repository secrets or
+  through the store; whether to delete `~/.githq-secrets`.

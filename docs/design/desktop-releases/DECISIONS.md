@@ -280,3 +280,20 @@ signature and the first Stable, 0.1.0.** (2026-11-04, owner)
 
 **Why.** Development needs nothing from Apple, so the owner can start testing updates on themselves at once. The toast depends on
 a recorded last-run version, which the first public version has to write for its successor to show anything.
+
+## D14
+
+**The updater's signing key and password live in the secret store and are read through the provider, mapped only with
+`GITHQ_ENV=prod`, so a signed build works on any machine after `secrets login`.** (2026-11-04, owner) Open: whether the Release
+action reads the store too, or keeps repository secrets set from it.
+
+**Why.** A key that exists only on one Mac has no recovery procedure. Prod only, so `bun run dev` never holds it.
+
+> **Checked 2026-11-04:** `bun run build:desktop:signed` produced `githq.app.tar.gz.sig` with the key read from the store; the store's
+> values equal the original files (`cmp`), and `tauri.conf.json`'s public key equals `updater.key.pub`. CI reading the store means a
+> `BWS_ACCESS_TOKEN` (`nzyme/packages/bitwarden/README.md`) whose machine account reads the whole project, which is shared with
+> the owner's other repos (`ARCHITECTURE.md`), and `bundle` builds without `bun install` (`.github/workflows/release.yml:181`).
+
+**Rejected.**
+
+- A backup only, not mapped (design agent, the same day): nothing could read it back without a manual trip to the vault.
