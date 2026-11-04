@@ -325,6 +325,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
     :workflow-count="tracked ? workflowList.count : null"
