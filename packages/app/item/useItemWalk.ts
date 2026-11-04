@@ -13,6 +13,11 @@ export interface UseItemWalkOptions {
     id: MaybeRefOrGetter<string | null>;
     /** Which of the list's items the walk stops at; left out, every one. */
     stopsAt?: (id: string) => boolean;
+    /**
+     * Whether the keys reach what the list's cursor is next to rather than the item's own steps, told whether the item has
+     * a step in the list; left out, never: a list's cursor means nothing where the list isn't beside the item.
+     */
+    followsCursor?: (listed: boolean) => boolean;
 }
 
 /** Where an item is in the list it was opened from: "3 / 13". */
@@ -26,8 +31,10 @@ export interface ItemWalkPosition {
 export interface ItemWalkViewModel {
     /** `null` with no list, or outside it (an item opened by its address). */
     readonly position: ItemWalkPosition | null;
-    /** Both `null` wherever {@link position} is: the keys do nothing there. */
+    /** What `K`/`J` reach. Both `null` wherever {@link position} is, unless they follow the list's cursor. */
     readonly neighbours: StackNeighbours;
+    /** The steps either side of the item, or of the entry that stands for it, whatever the cursor. */
+    readonly stepNeighbours: StackNeighbours;
 }
 
 /**
@@ -39,18 +46,26 @@ export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
     const navigation = useService(ItemNavigation);
 
     const id = makeRef(options.id);
-    const ids = computed(() => {
-        const listed = navigation.list?.ids ?? [];
+    const steps = computed(() => {
+        const listed = navigation.list?.steps ?? [];
         return options.stopsAt ? listed.filter(options.stopsAt) : listed;
     });
-    const index = computed(() => (id.value === null ? -1 : ids.value.indexOf(id.value)));
-
-    return reactive<ItemWalkViewModel>({
-        position: computed(() => (index.value === -1 ? null : { index: index.value + 1, count: ids.value.length })),
-        neighbours: computed(() =>
+    const index = computed(() =>
+        id.value === null ? -1 : steps.value.indexOf(navigation.list?.stepOf.get(id.value) ?? id.value),
+    );
+    const stepNeighbours = computed(
+        (): StackNeighbours =>
             index.value === -1
                 ? { previous: null, next: null }
-                : { previous: ids.value[index.value - 1] ?? null, next: ids.value[index.value + 1] ?? null },
+                : { previous: steps.value[index.value - 1] ?? null, next: steps.value[index.value + 1] ?? null },
+    );
+
+    return reactive<ItemWalkViewModel>({
+        position: computed(() => (index.value === -1 ? null : { index: index.value + 1, count: steps.value.length })),
+        neighbours: computed(
+            () =>
+                (options.followsCursor?.(index.value !== -1) && navigation.list?.around) || stepNeighbours.value,
         ),
+        stepNeighbours,
     });
 }

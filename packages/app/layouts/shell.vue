@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
@@ -58,6 +58,7 @@ import UntrackToast from '@/tracking/UntrackToast.vue';
 import { ReviewScreenFreshness } from '@/review/ReviewScreenFreshness.js';
 import ReviewViewedToast from '@/review/ReviewViewedToast.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
+import { releaseTabFocus, useTabFocus } from '@/utils/useTabFocus.js';
 import { useWorkflowRerunTexts } from '@/workflows/useWorkflowRerunTexts.js';
 import { getSidebarBrokenWorkflows } from '@/workflows/utils/getSidebarBrokenWorkflows.js';
 import { getSidebarWorkflowMarker } from '@/workflows/utils/getSidebarWorkflowMarker.js';
@@ -95,6 +96,13 @@ const route = useRoute();
 const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
 const pullRequestCommands = useService(PullRequestCommands);
+
+useTabFocus();
+// Another screen: the keys are its list's again, whatever Tab focused on the last one.
+watch(
+  () => route.path,
+  () => releaseTabFocus(),
+);
 
 // Merging from the screens' lists (merging D9): the rows and keys of a pull request the viewer may merge offer it.
 provideContext(MergeContext, {

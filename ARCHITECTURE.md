@@ -35,7 +35,7 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **GitHub:** `packages/github` holds the client. Users' tokens come from the sign-in and stay on their device.
 - **GitHub OAuth Apps:** `githq` in production and `githq (dev)` in development. `GITHQ_ENV` (`prod`, `dev`, or `e2e` for the tests' dummy) picks one. Client IDs are public, in `packages/github/src/oauthClientIds.json`; the Worker, the desktop build and its native side all read that file. Client secrets are in the secret store, and production's is also a Worker secret.
 - **Cloudflare:** Workers and static assets; `packages/worker/wrangler.jsonc`.
-- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
+- **Bitwarden Secrets Manager:** the OAuth Apps' client secrets and the desktop updater's signing key, read through `@nzyme/secrets` (`secrets` skill). Provider: `scripts/secrets.ts`.
 
 ## Tooling and workflow
 

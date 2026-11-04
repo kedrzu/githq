@@ -1,6 +1,7 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7); a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { SearchX } from 'lucide-vue-next';
@@ -53,7 +54,13 @@ const route = useRoute();
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
-const walk = useItemWalk({ id: () => opened.id });
+// In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
+// the last one's cursor stale, and the modal leaves the keys to the opened item: both walk the steps — but for an item
+// that left the list under the modal, which has no step: the cursor's neighbours then are the way back in.
+const walk = useItemWalk({
+  id: () => opened.id,
+  followsCursor: listed => props.arrangement === 'panel' || (props.arrangement === 'modal' && !listed),
+});
 const stack = useItemStack(() => opened.item);
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
@@ -158,14 +165,49 @@ watch(
   { immediate: true },
 );
 
+// An Undo of a close (D29): over a list its cursor goes back (`useItemList`); on the item's page, with no list under it, the
+// page shows the undone item, unless it does already.
+watch(
+  () => navigation.returnRequest,
+  request => {
+    const [first] = request?.ids ?? [];
+    if (props.arrangement === 'page' && first !== undefined && !request?.ids.includes(opened.id ?? '')) {
+      openInPlace(first);
+    }
+  },
+);
+
 function merge() {
-  if (opened.id !== null) {
-    mergePanel.open(opened.id);
+  const { id } = opened;
+  if (id !== null) {
+    mergePanel.open(id, { onSent: merged => moveOnFrom(id, merged) });
+  }
+}
+
+/** A merge sent moves on at once, as from a list (PM32a); on its page, with no list under it, the item stays. */
+function moveOnFrom(id: string, merged: readonly string[]) {
+  if (opened.id !== id) {
+    return;
+  }
+
+  switch (props.arrangement) {
+    case 'panel':
+      navigation.requestMoveOn(merged);
+      break;
+    case 'modal':
+      step(walk.neighbours.next === null ? -1 : 1);
+      break;
+    case 'page':
+      break;
+    default:
+      assertNever(props.arrangement);
   }
 }
 
 function step(delta: 1 | -1) {
-  const target = delta === 1 ? walk.neighbours.next : walk.neighbours.previous;
+  const side = delta === 1 ? 'next' : 'previous';
+  // The cursor's neighbour can be the opened item's own row, which a button has nothing to open on: on past it.
+  const target = walk.neighbours[side] === opened.id ? walk.stepNeighbours[side] : walk.neighbours[side];
   if (target !== null) {
     openInPlace(target);
   }

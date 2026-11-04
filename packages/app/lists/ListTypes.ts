@@ -122,6 +122,31 @@ export interface ListMove {
     readonly to: string;
 }
 
+/** The items `K` and `J` open from the list's cursor, by id; `null` past either end. */
+export interface ListedNeighbours {
+    readonly previous: string | null;
+    readonly next: string | null;
+}
+
+/** What a list hands over of the items it shows (`ListView`'s `listed`): column by column on the board. */
+export interface ListedItems {
+    /** Every item, each once: a stack's pull requests one by one, collapsed or not, never the entry's own id. */
+    readonly all: readonly string[];
+    /**
+     * What an opened item steps through, each item once in the list's order: an entry's item, what `Enter` opens on a
+     * collapsed stack's entry and nothing of an expanded one's own, its rows being its pull requests; nothing of an entry
+     * that can't open over the list (a project's draft).
+     */
+    readonly steps: readonly string[];
+    /** An item with no step of its own, a pull request of a collapsed entry: the item whose step stands for it. */
+    readonly stepOf: ReadonlyMap<string, string>;
+    /**
+     * What the cursor's actual neighbours open, within the column on the board; `null` with nothing selected or the list
+     * gone. `steps` can't say it: on an expanded stack's entry `J` opens the first row, whatever is opened.
+     */
+    readonly around: ListedNeighbours | null;
+}
+
 /**
  * How a list is shown on this device: layout, grouping, order, the properties its rows show and its filter. The grouping,
  * order and property values are the list's own (a repository groups by milestone, a project by a field's id).

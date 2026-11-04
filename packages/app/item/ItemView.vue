@@ -320,7 +320,7 @@ useCommands(
   }),
 );
 
-// Escape closes the item; `K`/`J` step through the list it was opened from (the list's own `j`/`k`, run first,
+// Escape closes the item; `K`/`J` step through the list it was opened from (in a panel the list's own `j`/`k`, run first,
 // move its selection instead, which the opened item follows).
 onWindowEvent('keydown', event => {
   // An open picker or menu takes Escape for itself.
