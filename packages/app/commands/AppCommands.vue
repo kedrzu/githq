@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first) and, off its view, which registers its sections on `1`–`4` itself, its sections too; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32); in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J5); "Search repositories…" asks GitHub from its submenu (E7–E10). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -44,6 +44,7 @@ import type { Command } from './CommandTypes.js';
 import KeyHelp from './KeyHelp.vue';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
+import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
 
 const t = useTranslate();
 const registry = useService(CommandRegistry);
@@ -58,6 +59,7 @@ const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
 const openItem = useOpenItem();
+const repositorySearchCommand = useRepositorySearchCommand();
 const repositoryCommands = useRepositoryCommands();
 
 /** The repository a new issue starts in: the opened item's, or the one of a repository's view. */
@@ -149,6 +151,7 @@ useCommands(() => [
     icon: LogOut,
     run: () => auth.signOut(),
   },
+  repositorySearchCommand(),
   ...getUpdateCommands(),
 ]);
 
@@ -168,6 +171,8 @@ useCommands(() => {
     commands.copyLink,
     // "Settings" alone stays the app's: a repository is in context nearly always.
     { ...commands.settings, title: t(l.repositorySettings) },
+    // Last, so that a plain Enter cannot start it.
+    commands.track,
   ];
 });
 

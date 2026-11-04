@@ -265,6 +265,46 @@ test('the layout and hide whitespace are kept for the next review, and hiding wh
     await expect(review.viewOptionsButton).toHaveText(/Unified · whitespace hidden/);
 });
 
+test('the view options are commands that change what their controls change, their titles saying what picking them does', async ({
+    page,
+    github,
+}) => {
+    const review = await openReview(page, github);
+    const menu = new CommandMenuHarness(page);
+    await review.fileRow('engine.ts').click();
+    await expect(review.viewOptionsButton).toHaveText(/^Split/);
+
+    await menu.run('Show unified diff');
+    await expect(review.viewOptionsButton).toHaveText(/^Unified/);
+    await expect(review.code('flush();')).toHaveCount(2);
+
+    await menu.run('Hide whitespace changes');
+    await expect(review.viewOptionsButton).toHaveText(/Unified · whitespace hidden/);
+    await expect(review.code('flush();')).toHaveCount(1);
+
+    await menu.open();
+    await expect(menu.option('Show split diff')).toBeVisible();
+    await expect(menu.option('Show whitespace changes')).toBeVisible();
+    await expect(menu.option('Hide comments in collapsed files')).toBeVisible();
+    await expect(menu.option('Hide viewed files')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await menu.run('Hide comments in collapsed files');
+    await review.viewOptionsButton.click();
+    await expect(page.getByRole('switch', { name: 'Comments in collapsed files' })).not.toBeChecked();
+    await page.keyboard.press('Escape');
+
+    await menu.run('Hide viewed files');
+    await expect(review.hideViewedButton).toHaveAttribute('aria-pressed', 'true');
+    await menu.open();
+    await expect(menu.option('Show viewed files')).toBeVisible();
+    await expect(menu.option('Show comments in collapsed files')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    await menu.run('Show split diff');
+    await expect(review.viewOptionsButton).toHaveText(/^Split · whitespace hidden/);
+});
+
 test("a file that fails says GitHub's words in place and marks its row, the others unaffected, and Try again fetches it; binary and too large say so", async ({
     page,
     github,

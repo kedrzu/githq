@@ -7,12 +7,13 @@ import CommitGraphView from '@/commits/CommitGraphView.vue';
 import { foldStacks } from '@/lists/foldStacks.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListLayout, ListViewOptions } from '@/lists/ListTypes.js';
+import type { BrowsedStatus } from '@/repos/BrowsedRepositories.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { sampleWebappHistory } from '@/testing/sampleCommits.js';
-import { D1_ITEMS, SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_REPOSITORY, SAMPLE_REPOSITORY_ITEMS } from '@/testing/sampleRepositoryItems.js';
 import { SPREAD_STACK_ITEMS } from '@/testing/sampleStacks.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -153,43 +154,76 @@ export const NothingMatches: Story = {
     args: { list: sampleList([], 'milestone'), openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
 };
 
-const VITE_PULL_REQUESTS = sampleList(
-    D1_ITEMS.filter(item => item.repository.nameWithOwner === 'vitejs/vite'),
-    'none',
-    'pullRequest',
-);
+const NOT_TRACKED = {
+    nameWithOwner: 'vitejs/vite',
+    isPrivate: false,
+    tracked: false,
+    openCounts: { issues: 0, pullRequests: 0 },
+    projects: [],
+    withoutProject: 0,
+    status: browsedStatus({ total: 3412, hasMore: true, cursor: 'c2' }),
+} as const;
 
-/**
- * J3: opened without being tracked, on its pull requests — only what concerns the user is here, and how many others
- * are open on GitHub; Settings is where tracking starts. The tabs have no counts.
- */
+/** J5: not tracked, the full view read on demand: the chip, how much of it is read, and no counts on the tabs. */
 export const NotTracked: Story = {
-    args: {
-        nameWithOwner: 'vitejs/vite',
-        isPrivate: false,
-        tracked: false,
-        section: 'pullRequests',
-        list: VITE_PULL_REQUESTS,
-        openCounts: { issues: 0, pullRequests: VITE_PULL_REQUESTS.count },
-        gitHubOpenCounts: { issues: 640, pullRequests: 58 },
+    args: NOT_TRACKED,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText('not tracked')).toBeVisible();
+        await expect(canvas.getByText('5 of 3412')).toBeVisible();
     },
 };
 
-/** CH37: J3 on its issues, with none of them concerning the user: the group empty, and its 892 other open issues. */
-export const NotTrackedNothingConcerns: Story = {
+/** J5, its next page on its way: said after the last row. */
+export const NotTrackedReadingMore: Story = {
+    args: { ...NOT_TRACKED, status: browsedStatus({ total: 3412, hasMore: true, cursor: 'c2', reading: true }) },
+};
+
+/** J6: the board, with one button for the next page, as a column's end says nothing of the rest. */
+export const NotTrackedBoard: Story = {
     args: {
-        nameWithOwner: 'nuxt/nuxt',
-        isPrivate: false,
-        tracked: false,
+        ...NOT_TRACKED,
+        list: sampleList(SAMPLE_REPOSITORY_ITEMS, 'issueType'),
+        options: options('board', 'issueType'),
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('button', { name: 'Read more' })).toBeVisible();
+    },
+};
+
+/** The first page on its way: still arriving, never a list saying there is nothing. */
+export const NotTrackedArriving: Story = {
+    args: {
+        ...NOT_TRACKED,
+        list: buildRepositoryList({
+            items: [],
+            state: 'open',
+            kind: 'issue',
+            grouping: 'milestone',
+            sort: 'updated',
+            texts: TEXTS,
+            arriving: true,
+        }),
+        status: browsedStatus({ reading: true }),
+    },
+};
+
+/** J7: GitHub does not show it: the name, the chip and the way to GitHub. */
+export const NotTrackedNotShown: Story = {
+    args: {
+        ...NOT_TRACKED,
+        isPrivate: null,
         list: sampleList([], 'none'),
-        openCounts: { issues: 0, pullRequests: 0 },
-        gitHubOpenCounts: { issues: 892, pullRequests: 104 },
+        status: browsedStatus({ notShown: true }),
     },
-};
-
-/** J3 before GitHub's counts are known (a first visit offline): the lines say it without a number. */
-export const NotTrackedCountUnknown: Story = {
-    args: { ...NotTrackedNothingConcerns.args, gitHubOpenCounts: null },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+        await expect(canvas.getByRole('link', { name: /^Open on\sGitHub$/ })).toHaveAttribute(
+            'href',
+            'https://github.com/vitejs/vite',
+        );
+    },
 };
 
 /**
@@ -287,14 +321,14 @@ export const ColumnCommitsNotTracked: Story = {
     },
 };
 
-/** J3, D20: not tracked in the column layout, on Issues: the chip in the column only, and no header of the list's own. */
+/** J5, D20: not tracked in the column layout: the chip in the column only, the toolbar and the count in the pane. */
 export const ColumnNotTracked: Story = {
-    args: { ...NotTrackedNothingConcerns.args, layout: 'column' },
+    args: { ...NOT_TRACKED, layout: 'column' },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await expect(canvas.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
         await expect(canvas.getAllByText('not tracked')).toHaveLength(1);
-        await expect(canvas.getByRole('region', { name: "You're not tracking nuxt/nuxt" })).toBeVisible();
+        await expect(canvas.getByText('5 of 3412')).toBeVisible();
     },
 };
 
@@ -310,6 +344,10 @@ export const ColumnCommitDetails: Story = {
         await expect(canvas.getByRole('combobox', { name: 'Filter branches and tags' })).toBeVisible();
     },
 };
+
+function browsedStatus(status: Partial<BrowsedStatus>): BrowsedStatus {
+    return { reading: false, total: null, hasMore: false, cursor: null, notShown: false, settledName: null, ...status };
+}
 
 function sampleList(items: readonly Item[], grouping: RepositoryGrouping, kind: Item['kind'] = 'issue') {
     return buildRepositoryList({ items, state: 'open', kind, grouping, sort: 'updated', texts: TEXTS });

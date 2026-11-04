@@ -18,6 +18,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.js';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
@@ -52,6 +53,7 @@ const templateStore = useService(IssueTemplateStore);
 const items = useService(ItemStore);
 const projects = useService(ProjectStore);
 const tracking = useService(TrackingStore);
+const trackedItems = useService(TrackedItems);
 
 const repositoryQuery = ref('');
 /** The repositories GitHub did not show the user, by name — read once each while the capture is open. */
@@ -353,9 +355,13 @@ function getProjectRepositories(projectId: string) {
   );
 }
 
-/** The repositories of what the local copy holds (my work), the used last and those with most items first. */
+/**
+ * The repositories of what the local copy syncs (my work) — a repository only browsed is not one the user works in —
+ * the used last and those with most items first.
+ */
 function getWorkRepositories() {
-  const names = byCount(items.all.map(item => item.repository.nameWithOwner)).slice(0, 8);
+  const synced = items.all.filter(item => trackedItems.isSynced(item));
+  const names = byCount(synced.map(item => item.repository.nameWithOwner)).slice(0, 8);
   const last = composer.lastRepository;
   return last ? [last, ...names.filter(name => name !== last)] : names;
 }

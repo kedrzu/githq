@@ -49,7 +49,7 @@ test('a title starting with the text ranks above a title holding its words; plac
     );
 });
 
-test('owner/name of a repository not tracked is offered to open (J3); a tracked one is its place', () => {
+test('owner/name of a repository not tracked is offered to open (J5); a tracked one is its place', () => {
     expect(searchNavigation('skyline-labs/platform-infra', DATA)).toContainEqual({
         kind: 'repository',
         score: 100,

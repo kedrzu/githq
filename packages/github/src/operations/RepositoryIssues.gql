@@ -2,6 +2,7 @@
 # reads the open ones, then the closed ones (`$states`).
 query RepositoryIssues($owner: String!, $name: String!, $states: [IssueState!]!, $after: String) {
     repository(owner: $owner, name: $name) {
+        nameWithOwner
         issues(first: 100, after: $after, states: $states, orderBy: { field: UPDATED_AT, direction: DESC }) {
             totalCount
             pageInfo {

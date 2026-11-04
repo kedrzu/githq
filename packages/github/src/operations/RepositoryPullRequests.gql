@@ -8,6 +8,7 @@ query RepositoryPullRequests(
     $after: String
 ) {
     repository(owner: $owner, name: $name) {
+        nameWithOwner
         pullRequests(first: $first, after: $after, states: $states, orderBy: { field: UPDATED_AT, direction: DESC }) {
             totalCount
             pageInfo {

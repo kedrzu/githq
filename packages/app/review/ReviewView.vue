@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ go line by line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen, or else the first line on screen. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box under the thread (CR74), `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until the reader moves on from it (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ go line by line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen, or else the first line on screen. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box under the thread (CR74), `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until the reader moves on from it (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -19,9 +19,11 @@ import {
   CircleCheck,
   Equal,
   Eye,
+  EyeOff,
   FileSearch,
   ChevronDown,
   ChevronUp,
+  Columns2,
   FoldVertical,
   GitPullRequest,
   Github,
@@ -34,6 +36,7 @@ import {
   PanelLeft,
   PanelRight,
   Pause,
+  Rows2,
   Trash2,
   UnfoldVertical,
 } from 'lucide-vue-next';
@@ -959,6 +962,44 @@ useCommands(() => [
     icon: PanelRight,
     run: () => {
       conversationShown.value = !conversationShown.value;
+    },
+  },
+  {
+    id: 'review.toggleLayout',
+    title: layout.value === 'split' ? t(l.showUnifiedDiff) : t(l.showSplitDiff),
+    section: 'view',
+    icon: layout.value === 'split' ? Rows2 : Columns2,
+    run: () => {
+      layout.value = layout.value === 'split' ? 'unified' : 'split';
+    },
+  },
+  {
+    id: 'review.toggleHideWhitespace',
+    title: hideWhitespace.value ? t(l.showWhitespaceChanges) : t(l.hideWhitespaceChanges),
+    section: 'view',
+    icon: Equal,
+    run: () => {
+      hideWhitespace.value = !hideWhitespace.value;
+    },
+  },
+  {
+    id: 'review.toggleThreadsInCollapsed',
+    title: threadsInCollapsed.value ? t(l.hideCommentsInCollapsed) : t(l.showCommentsInCollapsed),
+    section: 'view',
+    icon: MessageSquare,
+    run: () => {
+      threadsInCollapsed.value = !threadsInCollapsed.value;
+    },
+  },
+  {
+    id: 'review.toggleHideViewed',
+    title: hideViewed.value ? t(l.showViewed) : t(l.hideViewedFiles),
+    section: 'view',
+    icon: hideViewed.value ? Eye : EyeOff,
+    // Hiding is the file list's setting: until the files are known there is nothing to set it on.
+    when: () => files.value !== null,
+    run: () => {
+      hideViewed.value = !hideViewed.value;
     },
   },
   {
