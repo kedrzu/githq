@@ -53,16 +53,19 @@ function createWorld(count: number) {
     return world;
 }
 
-/** The second pull request of the list, its review entered with `D`. Answers every review of the stack with `files`. */
+/** The stack's second pull request, its entry expanded in the list, its review entered with `D`. Answers every review of the stack with `files`. */
 async function openReview(page: Page, github: GitHubMock, files = FILES, count = 3) {
     const { myWork } = await openMyWork(page, github, createWorld(count));
     const answered = answerReview(github, { repository: 'acme/api', number: 202, files });
     await expect(myWork.row(FIRST)).toBeVisible();
     await page.keyboard.press('j');
+    await page.keyboard.press('ArrowRight');
+    await expect(myWork.row(SECOND)).toBeVisible();
+    await page.keyboard.press('j');
+    await page.keyboard.press('j');
+    await expect(myWork.selectedRow).toContainText(SECOND);
     await page.keyboard.press('Enter');
     const item = new ItemViewHarness(page);
-    await expect(item.title).toHaveText(FIRST);
-    await page.keyboard.press('j');
     await expect(item.title).toHaveText(SECOND);
     await page.keyboard.press('d');
     await expect(page).toHaveURL('/acme/api/pull/202/files');

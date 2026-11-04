@@ -39,8 +39,8 @@ export interface ItemWalkViewModel {
 
 /**
  * The walk through the list an item was opened from (`ItemNavigation.list`), the same in an opened item and in a
- * pull request's review: the list's order, so the last of one stack is followed by the first of the next (stacked PRs
- * D9), and the end of a stack no special case.
+ * pull request's review: the list's order, a collapsed stack being one step (stacked PRs D26). A review goes through
+ * its stack's pull requests before it takes the list's next step (`ReviewView`).
  */
 export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
     const navigation = useService(ItemNavigation);
@@ -53,18 +53,16 @@ export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
     const index = computed(() =>
         id.value === null ? -1 : steps.value.indexOf(navigation.list?.stepOf.get(id.value) ?? id.value),
     );
-    const stepNeighbours = computed(
-        (): StackNeighbours =>
-            index.value === -1
-                ? { previous: null, next: null }
-                : { previous: steps.value[index.value - 1] ?? null, next: steps.value[index.value + 1] ?? null },
+    const stepNeighbours = computed((): StackNeighbours =>
+        index.value === -1
+            ? { previous: null, next: null }
+            : { previous: steps.value[index.value - 1] ?? null, next: steps.value[index.value + 1] ?? null },
     );
 
     return reactive<ItemWalkViewModel>({
         position: computed(() => (index.value === -1 ? null : { index: index.value + 1, count: steps.value.length })),
         neighbours: computed(
-            () =>
-                (options.followsCursor?.(index.value !== -1) && navigation.list?.around) || stepNeighbours.value,
+            () => (options.followsCursor?.(index.value !== -1) && navigation.list?.around) || stepNeighbours.value,
         ),
         stepNeighbours,
     });

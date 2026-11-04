@@ -47,7 +47,6 @@ function createWorld() {
                 number: 101,
                 title: NEXT_STACK_FIRST,
                 foundBy: ['authored'],
-                reviewDecision: 'APPROVED',
                 minutesAgo: 50,
             },
             { number: 102, title: NEXT_STACK_SECOND, foundBy: ['authored'], minutesAgo: 40 },
@@ -83,8 +82,8 @@ function answerFiles(github: GitHubMock) {
     }
 }
 
-/** My work's second pull request, walked to in the panel, and its review entered with `D`. */
-async function openReviewFromList(page: Parameters<typeof openMyWork>[0], github: GitHubMock) {
+/** My work's first stack, read from the list: `D` on its first pull request, what Enter on the collapsed entry opens. */
+async function openFirstOfCollapsedStack(page: Parameters<typeof openMyWork>[0], github: GitHubMock) {
     const { myWork } = await openMyWork(page, github, createWorld());
     answerFiles(github);
     await expect(myWork.row(FIRST)).toBeVisible();
@@ -92,7 +91,26 @@ async function openReviewFromList(page: Parameters<typeof openMyWork>[0], github
     await page.keyboard.press('Enter');
     const item = new ItemViewHarness(page);
     await expect(item.title).toHaveText(FIRST);
+    await page.keyboard.press('d');
+    const review = new ReviewScreenHarness(page);
+    await expect(page).toHaveURL('/acme/api/pull/201/files');
+    await expect(review.fileRow('file0.ts')).toBeVisible();
+    return { review, item };
+}
+
+/** My work's first stack's second pull request, its entry expanded in the list, and its review entered with `D`. */
+async function openReviewFromList(page: Parameters<typeof openMyWork>[0], github: GitHubMock) {
+    const { myWork } = await openMyWork(page, github, createWorld());
+    answerFiles(github);
+    await expect(myWork.row(FIRST)).toBeVisible();
     await page.keyboard.press('j');
+    await page.keyboard.press('ArrowRight');
+    await expect(myWork.row(SECOND)).toBeVisible();
+    await page.keyboard.press('j');
+    await page.keyboard.press('j');
+    await expect(myWork.selectedRow).toContainText(SECOND);
+    await page.keyboard.press('Enter');
+    const item = new ItemViewHarness(page);
     await expect(item.title).toHaveText(SECOND);
     await page.keyboard.press('d');
     const review = new ReviewScreenHarness(page);
@@ -106,7 +124,7 @@ test('J walks the stack and on into the next one, K walks back, Back returns to 
     github,
 }) => {
     const { review, item } = await openReviewFromList(page, github);
-    await expect(review.position).toHaveText('2 / 5');
+    await expect(review.position).toHaveText('2 / 3');
     await expect(review.stackPlace).toHaveText('2 of 3');
     await expect(review.currentStackRow).toContainText(SECOND);
 
@@ -117,7 +135,7 @@ test('J walks the stack and on into the next one, K walks back, Back returns to 
     await page.keyboard.press('j');
     await expect(page).toHaveURL('/acme/api/pull/203/files');
     await expect(review.title).toHaveText(THIRD);
-    await expect(review.position).toHaveText('3 / 5');
+    await expect(review.position).toHaveText('3 / 3');
     await expect(review.currentStackRow).toContainText(THIRD);
     await expect(review.fileRow('file0.ts')).toBeVisible();
 
@@ -130,7 +148,7 @@ test('J walks the stack and on into the next one, K walks back, Back returns to 
     // The list's issue after it is stepped over: walking stays in the review.
     await page.keyboard.press('j');
     await expect(page).toHaveURL('/acme/web/pull/102/files');
-    await expect(review.position).toHaveText('5 / 5');
+    await expect(review.position).toHaveText('2 / 2');
     await expect(review.nextPullRequestButton).toBeDisabled();
 
     await page.keyboard.press('k');
@@ -142,6 +160,34 @@ test('J walks the stack and on into the next one, K walks back, Back returns to 
     await review.backButton.click();
     await expect(item.title).toHaveText(SECOND);
     await expect(page).not.toHaveURL(/\/files$/);
+});
+
+test('from a collapsed entry J goes through the stack and on into the next entry at its end, K back through it and on to the entry before', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openFirstOfCollapsedStack(page, github);
+    await expect(review.position).toHaveText('1 / 3');
+
+    await page.keyboard.press('j');
+    await expect(page).toHaveURL('/acme/api/pull/202/files');
+    await expect(review.position).toHaveText('2 / 3');
+    await page.keyboard.press('j');
+    await expect(page).toHaveURL('/acme/api/pull/203/files');
+    await expect(review.position).toHaveText('3 / 3');
+
+    await page.keyboard.press('j');
+    await expect(page).toHaveURL('/acme/web/pull/101/files');
+    await expect(review.position).toHaveText('1 / 2');
+    await page.keyboard.press('j');
+    await expect(page).toHaveURL('/acme/web/pull/102/files');
+
+    await page.keyboard.press('k');
+    await expect(page).toHaveURL('/acme/web/pull/101/files');
+    // Back over the end of a stack it is one step again: the entry before, on what Enter opens.
+    await page.keyboard.press('k');
+    await expect(page).toHaveURL('/acme/api/pull/201/files');
+    await expect(review.position).toHaveText('1 / 3');
 });
 
 test('a stack row is a link to its review, replacing the address; the command menu goes to any of them', async ({

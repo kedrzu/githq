@@ -883,7 +883,8 @@ export const SyncEngine = defineService({
                 }
             }
 
-            // Those copied for their stack only whose `updatedAt` moved: nothing else re-reads the rest of their row.
+            // Those copied for their stack only whose `updatedAt` moved: nothing else re-reads the rest of their row. And
+            // those with a draft found gone.
             const moved: string[] = [];
             // Those whose draft is gone: a draft may have been all that kept them.
             const draftGone: string[] = [];
@@ -910,11 +911,11 @@ export const SyncEngine = defineService({
                         continue;
                     }
 
-                    // Gone or no longer a pull request: the next search finds out, but none looks for one only its
-                    // draft keeps, so it is read to tell.
+                    // Gone or no longer a pull request: the next search finds out, but none looks for one with a draft
+                    // outside "my work", tracked or not, so it is read to tell.
                     const node = nodes[index] ?? null;
                     if (!isPullRequestNode(node)) {
-                        if (item.pendingReview && !trackedItems.keepsForItself(item)) {
+                        if (item.pendingReview) {
                             moved.push(item.id);
                         }
 

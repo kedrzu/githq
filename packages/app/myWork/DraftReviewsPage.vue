@@ -37,6 +37,7 @@ function open(id: string) {
     :drafts="drafts"
     :viewer-login="auth.viewer.login"
     :now="list.now"
+    :undone="list.undone"
     @open="open"
     @listed="list.setListed"
   >

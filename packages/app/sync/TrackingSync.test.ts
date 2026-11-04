@@ -393,6 +393,23 @@ test('a project hidden during its first download is downloaded once GitHub shows
     expect(projects.getStoredItems('PVT_1').map(item => item.itemId)).toEqual(['PVTI_1', 'PVTI_2', 'PVTI_3']);
 });
 
+test('a pull request of a tracked repository with a draft review, found deleted by the read of the statuses, goes', async () => {
+    const world = sampleWorld();
+    world.items.set('PR_draft', {
+        ...samplePullRequestNode('PR_draft', { repository: 'acme/web', number: 7, updatedAt: MONDAY }),
+        pendingReviews: { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] },
+    });
+    const { session, tracking, items } = await setup(world);
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+    expect(items.get('PR_draft')).toMatchObject({ pendingReview: { commentCount: 2 } });
+
+    world.items.delete('PR_draft');
+    await session.clock.advance(60_000);
+
+    expect(items.get('PR_draft')).toBeUndefined();
+});
+
 test('a page on its way when its repository or project is untracked brings nothing back', async () => {
     const world = sampleWorld();
     const { session, tracking, items, projects } = await setup(world);

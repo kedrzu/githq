@@ -165,6 +165,29 @@ test('a pull request outside the local copy: back from finishing the draft on Gi
     await expect(review.pendingToolbar).toBeHidden();
 });
 
+test('a pull request outside the local copy: a draft begun on GitHub shows on coming back, a minute after the last read', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the minute can be skipped.
+    await page.clock.install();
+    const { world } = createWorld();
+    const outside = world.pullRequest({ repository: 'acme/web', number: 9, title: 'Not my work', minutesAgo: 30 });
+    await openMyWork(page, github, world);
+    answerFiles(github, 'acme/web', 9);
+
+    await page.goto('/acme/web/pull/9/files');
+    const review = new ReviewScreenHarness(page);
+    await expect(review.title).toHaveText('Not my work');
+    await expect(review.pendingToolbar).toBeHidden();
+
+    world.setPendingReview(outside, { comments: 2, minutesAgo: 1 });
+    await page.clock.fastForward('01:01');
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+
+    await expect(review.pendingToolbar).toContainText('2 pending comments');
+});
+
 test('in a stack, the row of the pull request with the draft and its square carry the mark, the others not', async ({
     page,
     github,

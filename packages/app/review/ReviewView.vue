@@ -42,6 +42,7 @@ import { formatItemReference, getItemPagePath, getItemReference, getReviewPath }
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { useItemStack } from '@/item/useItemStack.js';
+import { getStackMembers } from '@/store/stacks/getStackMembers.js';
 import { useItemWalk } from '@/item/useItemWalk.js';
 import { useOpenedItem } from '@/item/useOpenedItem.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
@@ -127,6 +128,22 @@ const walk = useItemWalk({
   stopsAt: id => details.getItem(id)?.kind === 'pullRequest',
 });
 const stack = useItemStack(() => opened.item);
+// In a review `K`/`J` go through its stack's pull requests and only then on along the list, where a collapsed stack is one
+// step: going through a stack in a row is what a review is for (D16). Opened by its address there is no list to walk,
+// stack or not: its map goes to the others.
+const stackIds = computed(() => getStackMembers(stack.value?.pips ?? []).map(pip => pip.pullRequest.id));
+const stackIndex = computed(() =>
+  opened.id === null || walk.position === null ? -1 : stackIds.value.indexOf(opened.id),
+);
+const nextPullRequest = computed(
+  () => (stackIndex.value === -1 ? null : stackIds.value[stackIndex.value + 1]) ?? walk.neighbours.next,
+);
+const previousPullRequest = computed(
+  () => (stackIndex.value === -1 ? null : stackIds.value[stackIndex.value - 1]) ?? walk.neighbours.previous,
+);
+const walkPosition = computed(() =>
+  stackIndex.value === -1 ? walk.position : { index: stackIndex.value + 1, count: stackIds.value.length },
+);
 const files = shallowRef<PullRequestFiles | null>(reviewFiles.open(props.reference));
 const list = useTemplateRef<AnchoredListExposed>('list');
 const fileList = useTemplateRef<InstanceType<typeof ReviewFileList>>('fileList');
@@ -466,8 +483,15 @@ watch(rows, next => {
 // Outside the local copy no poll reads its draft, and its row moves on with the detail alone: back from finishing the
 // draft on GitHub, the toolbar must not stay. `ensure` would skip a read made under a minute ago.
 onWindowEvent('focus', () => {
-  if (opened.id !== null && pendingReview.value && !items.getStored(opened.id)) {
+  if (opened.id === null) {
+    return;
+  }
+
+  // A draft begun on GitHub shows on coming back, whatever polls this pull request: at most one read a minute.
+  if (pendingReview.value && !items.getStored(opened.id)) {
     void details.readAgain(opened.id);
+  } else {
+    void details.ensure(opened.id);
   }
 });
 
@@ -478,8 +502,8 @@ useCommands(() => [
     section: 'view',
     key: 'J',
     icon: ChevronDown,
-    when: () => walk.neighbours.next !== null,
-    run: () => stepPullRequest(walk.neighbours.next, 'K'),
+    when: () => nextPullRequest.value !== null,
+    run: () => stepPullRequest(nextPullRequest.value, 'K'),
   },
   {
     id: 'review.previousPullRequest',
@@ -487,8 +511,8 @@ useCommands(() => [
     section: 'view',
     key: 'K',
     icon: ChevronUp,
-    when: () => walk.neighbours.previous !== null,
-    run: () => stepPullRequest(walk.neighbours.previous, 'J'),
+    when: () => previousPullRequest.value !== null,
+    run: () => stepPullRequest(previousPullRequest.value, 'J'),
   },
   ...otherStackPullRequests.value.map((pullRequest): Command => ({
     id: `review.goTo.${pullRequest.id}`,
@@ -939,10 +963,10 @@ function readAgain() {
       :reference="reference"
       :item="opened.item"
       :github-url="githubUrl"
-      :position="walk.position"
+      :position="walkPosition"
       @back="back"
-      @previous="stepPullRequest(walk.neighbours.previous, 'J')"
-      @next="stepPullRequest(walk.neighbours.next, 'K')"
+      @previous="stepPullRequest(previousPullRequest, 'J')"
+      @next="stepPullRequest(nextPullRequest, 'K')"
     />
     <ReviewLostViewedBar
       v-if="lostViewedPaths.length > 0"

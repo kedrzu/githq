@@ -10,7 +10,7 @@ import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
 import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import ItemRow from '@/lists/ItemRow.vue';
-import type { ListContextMenuProps, ListGroup } from '@/lists/ListTypes.js';
+import type { ListContextMenuProps, ListGroup, ListedItems } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 
@@ -25,13 +25,15 @@ const props = defineProps<{
   viewerLogin: string;
   /** Epoch ms the ages are counted to. */
   now: number;
+  /** What was just undone of an item's edits, by its id. */
+  undone?: ReadonlyMap<string, string>;
 }>();
 
 const emit = defineEmits<{
   /** Enter or a click on a row. */
   open: [id: string];
   /** The items the list shows, top to bottom. */
-  listed: [ids: readonly string[]];
+  listed: [listed: ListedItems];
 }>();
 
 /** The selected item's id. */
@@ -104,6 +106,7 @@ const groups = computed((): ListGroup<Item>[] =>
           :viewer-login="viewerLogin"
           :now="now"
           :checked="checked"
+          :undone="undone?.get(entry.value.id)"
           draft-age
         />
       </template>
