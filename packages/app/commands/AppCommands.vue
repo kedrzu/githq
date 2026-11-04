@@ -32,9 +32,8 @@ import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
-import { getProjectPath } from '@/tracking/trackingRoutes.js';
+import { BROKEN_WORKFLOWS_PATH, getProjectPath } from '@/tracking/trackingRoutes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
-import { BROKEN_WORKFLOWS_PATH } from '@/workflows/workflowRoutes.js';
 
 import * as l from './AppCommands.loc.js';
 import CommandMenu from './CommandMenu.vue';

@@ -2,6 +2,14 @@ upToDate:
   en: Up to date
 checking:
   en: Checking…
+readingLog:
+  en: 'Reading the log of {job}…'
+logFailed:
+  en: "The log of {job} didn't load"
+statusChecked:
+  en: 'Status checked {age} ago'
+readingRuns:
+  en: Reading runs · {read} of {total} workflows
 asOf:
   en: As of {time}
 offline:
@@ -14,6 +22,8 @@ refused:
   en: As of {time} · GitHub refuses to list its changes, asking again hourly
 refusedNothingYet:
   en: GitHub refuses to list its changes, asking again hourly
+workflowsUnavailable:
+  en: Last known workflows · GitHub doesn't list them now
 notRefreshedSince:
   en: Not refreshed since {time}
 pausedUntil:

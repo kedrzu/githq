@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `MergeToasts.vue`, `SyncStoppedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -134,6 +134,11 @@ export class AppShellHarness {
     /** The status bar's button saying an edit failed ("1 change failed · …"), which shows its toast again. */
     get failedEdits(): Locator {
         return this.statusBar.getByRole('button', { name: /changes? failed/ });
+    }
+
+    /** The status bar's button saying a run's re-run failed, which shows its toast again. */
+    get failedRerun(): Locator {
+        return this.statusBar.getByRole('button', { name: /^Re-run / });
     }
 
     /** Opens Settings' Account section (G9), with "Settings" of the account menu and then its tab. */

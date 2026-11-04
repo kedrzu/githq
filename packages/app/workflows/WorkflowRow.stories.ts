@@ -11,7 +11,12 @@ const TAGS: WorkflowRowRef = { name: 'v*', kind: 'tag' };
 
 const meta = {
     component: WorkflowRow,
-    args: { workflow: SAMPLE_WORKFLOWS.deploy, now: SAMPLE_WORKFLOWS_NOW, gitRef: MAIN },
+    args: {
+        workflow: SAMPLE_WORKFLOWS.deploy,
+        nameWithOwner: 'fitloop/webapp',
+        now: SAMPLE_WORKFLOWS_NOW,
+        gitRef: MAIN,
+    },
     // As wide as the list of the design's screens.
     decorators: [
         story => {
@@ -66,6 +71,7 @@ export const CrossRepository: Story = {
         setup: () => () =>
             h('div', [
                 h(WorkflowRow, {
+                    nameWithOwner: 'fitloop/webapp',
                     workflow: SAMPLE_WORKFLOWS.deploy,
                     now: SAMPLE_WORKFLOWS_NOW,
                     gitRef: MAIN,
@@ -73,6 +79,7 @@ export const CrossRepository: Story = {
                     selected: true,
                 }),
                 h(WorkflowRow, {
+                    nameWithOwner: 'fitloop/webapp',
                     workflow: SAMPLE_WORKFLOWS.release,
                     now: SAMPLE_WORKFLOWS_NOW,
                     gitRef: TAGS,
@@ -80,12 +87,14 @@ export const CrossRepository: Story = {
                     repository: 'fitloop/webapp',
                 }),
                 h(WorkflowRow, {
+                    nameWithOwner: 'fitloop/webapp',
                     workflow: SAMPLE_WORKFLOWS.nightly,
                     now: SAMPLE_WORKFLOWS_NOW,
                     gitRef: MAIN,
                     repository: 'mlaine/mdlint',
                 }),
                 h(WorkflowRow, {
+                    nameWithOwner: 'fitloop/webapp',
                     workflow: SAMPLE_WORKFLOWS.dependabot,
                     now: SAMPLE_WORKFLOWS_NOW,
                     gitRef: MAIN,
@@ -96,6 +105,15 @@ export const CrossRepository: Story = {
 };
 
 /** W3a: a repository's own tab — no repository column, passing and disabled workflows too. */
+export const FailingOnNoRef: Story = {
+    args: {
+        workflow: SAMPLE_WORKFLOWS.release,
+        gitRef: null,
+        standing: { kind: 'noAlerts', ref: null, alertsOff: false },
+    },
+};
+
+/** In a repository's Workflows tab. */
 export const RepositoryTab: Story = {
     render: () => ({
         setup: () => () =>
@@ -113,6 +131,7 @@ export const RepositoryTab: Story = {
                 ].map(workflow =>
                     h(WorkflowRow, {
                         key: workflow.workflow.id,
+                        nameWithOwner: 'fitloop/webapp',
                         workflow,
                         now: SAMPLE_WORKFLOWS_NOW,
                         gitRef: workflow === SAMPLE_WORKFLOWS.release ? TAGS : MAIN,

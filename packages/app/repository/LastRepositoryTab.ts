@@ -7,6 +7,7 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import { getRepositoryPath } from '@/tracking/trackingRoutes.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { REPOSITORY_SECTIONS } from './RepositorySection.js';
 import type { RepositorySection } from './RepositorySection.js';
@@ -26,8 +27,9 @@ export const LastRepositoryTab = defineService({
     deps: {
         accounts: AccountSession,
         browser: Browser,
+        tracking: TrackingStore,
     },
-    setup({ accounts, browser }) {
+    setup({ accounts, browser, tracking }) {
         const tabsRef = shallowRef<Readonly<Record<string, RepositorySection>>>({});
         const slot = createAccountSlot({
             accounts,
@@ -46,9 +48,15 @@ export const LastRepositoryTab = defineService({
 
         return { get, getPath, getShown, remember };
 
-        /** The repository's last section, `null` when it has none; reactive. */
+        /**
+         * The repository's last section, `null` when it has none, or when that was its Workflows section and it is no
+         * longer tracked, which has none (actions D4); reactive.
+         */
         function get(nameWithOwner: string): RepositorySection | null {
-            return tabsRef.value[nameWithOwner] ?? null;
+            const section = tabsRef.value[nameWithOwner] ?? null;
+            return section === 'workflows' && !tracking.isTracked({ kind: 'repository', nameWithOwner })
+                ? null
+                : section;
         }
 
         /**
