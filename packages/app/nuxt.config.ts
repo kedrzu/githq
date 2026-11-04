@@ -1,3 +1,5 @@
+import { getOAuthClientId } from '@githq/github/oauth.js';
+import { simplifyAliasesModule } from '@nzyme/nuxt-tools';
 import Beasties from 'beasties';
 import { defineNuxtConfig } from 'nuxt/config';
 
@@ -28,7 +30,7 @@ export default defineNuxtConfig({
     // The landing page's screenshots (`<NuxtImg>`), resized at prerender into `_ipx/` for the widths their `sizes`
     // ask for. Every URL carries one modifier, the size (`s_1200x750`): no `quality` or `format`, as the sources
     // are WebP already. Two would be joined by `&`, which Cloudflare's assets answer with a redirect to `%26`.
-    modules: ['@nuxt/image'],
+    modules: ['@nuxt/image', simplifyAliasesModule()],
     // Pinned instead of left to Nuxt's guess: Nuxt switches `srcDir` to `app/` as soon as that folder holds
     // anything besides `router.options.ts`.
     srcDir: '.',
@@ -104,7 +106,7 @@ export default defineNuxtConfig({
         // `/` is the landing page. `index.html` is the shell: with `ssr: true` Nuxt adds it to the prerendered routes
         // only when told to, and renders it with no server rendering whatever the route rules say. The desktop build
         // is a SPA, whose `index.html` is the shell anyway.
-        prerender: DESKTOP ? {} : { routes: ['/', '/index.html'], crawlLinks: false },
+        prerender: DESKTOP ? {} : { routes: ['/', '/index.html'], crawlLinks: false, failOnError: true },
         hooks: DESKTOP
             ? {}
             : {
@@ -144,7 +146,9 @@ export default defineNuxtConfig({
             // `shims.d.ts`: a literal in the built code, so the production build drops what it guards.
             __LOCAL_BUILD__: JSON.stringify(LOCAL_BUILD),
             __DESKTOP__: JSON.stringify(DESKTOP),
-            __GITHUB_CLIENT_ID__: JSON.stringify((DESKTOP && process.env.GITHQ_GITHUB_CLIENT_ID) || null),
+            __GITHUB_CLIENT_ID__: JSON.stringify(
+                DESKTOP ? (getOAuthClientId(process.env.GITHQ_ENV ?? 'dev') ?? null) : null,
+            ),
         },
     },
 });

@@ -548,6 +548,22 @@ pull request would look different on a board. Keeping `Table row` for projects: 
 one list that differs, and of a design the code doesn't follow. Showing assignees everywhere: my work would lose who asked
 for a review.
 
+### D29
+
+**Closing acts at once, with Undo** (owner, 2026-11-04). A pull request has no reason to close for, so "Close pull
+request" is one action, not a submenu holding a second "Close pull request", and `Shift+X` closes it there and then;
+reopening is one action too. With no step left to catch a slip, every close offers Undo: a toast names what closed, with
+Undo (⌘Z) for 10 seconds, as untracking does (D25). An issue's close keeps its submenu, for the reason, and gets the same
+toast, and so does closing several items.
+
+**Undo reopens.** The close goes to GitHub at once, like every other edit (D8), and Undo sends a plain reopen, so it is
+visible on github.com as closed and reopened, and it can fail like any edit (a failed edit's toast says so). A close GitHub
+refused offers no Undo.
+
+**Rejected.** Holding the close back until the toast goes, which would leave no trace on GitHub: the item would look closed
+here while it is open everywhere else, and closing the tab would have to send it or lose it. A confirmation step: slower on
+every close, to guard against a rare slip that Undo already covers.
+
 ## Open questions
 
 ### D26

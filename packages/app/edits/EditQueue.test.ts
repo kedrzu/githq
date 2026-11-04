@@ -428,6 +428,49 @@ test('closing as not planned shows closed at once; GitHub answering it still ope
     expect(items.get('I_1')?.state).toBe('CLOSED');
 });
 
+test('a close offers Undo, which reopens it — sent after the close when that is still on its way', async () => {
+    const { editor, items, github, session } = await setup();
+    const held = createPromise();
+    github.hold(held.promise);
+
+    const closed = editor.edit(['I_1'], { kind: 'close', reason: 'COMPLETED' });
+    await session.clock.advance(0);
+    expect(editor.closes.map(close => close.targets)).toEqual([[{ itemId: 'I_1', reference: 'acme/web#1' }]]);
+
+    const undone = editor.undoClose(editor.closes[0]?.id ?? 0);
+    await session.clock.advance(0);
+    expect(editor.closes).toEqual([]);
+    expect(items.get('I_1')?.state).toBe('OPEN');
+
+    held.resolve();
+    await closed;
+    expect(await undone).toEqual({ failed: [] });
+    expect(github.mutations().map(mutation => mutation.operation)).toEqual(['CloseIssue', 'ReopenIssue']);
+    expect(items.getStored('I_1')?.state).toBe('OPEN');
+});
+
+test('a close GitHub refused offers no Undo; its failure says what happened', async () => {
+    const { editor, queue, github } = await setup();
+    github.keepState = false;
+
+    await editor.edit(['I_1'], { kind: 'close', reason: 'COMPLETED' });
+
+    expect(editor.closes).toEqual([]);
+    expect(queue.failures).toHaveLength(1);
+});
+
+test('only closing offers Undo: not reopening, nor an item closed already', async () => {
+    const { editor } = await setup();
+
+    await editor.edit(['I_1'], { kind: 'close', reason: 'COMPLETED' });
+    editor.forgetClose(editor.closes[0]?.id ?? 0);
+    await editor.edit(['I_1'], { kind: 'close', reason: 'NOT_PLANNED' });
+    expect(editor.closes).toEqual([]);
+
+    await editor.edit(['I_1'], { kind: 'reopen' });
+    expect(editor.closes).toEqual([]);
+});
+
 interface SetupOptions {
     /** The browser the session is a tab of, with the other sessions given it. */
     readonly tabs?: TestTabs;

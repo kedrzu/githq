@@ -1,6 +1,8 @@
-# Checks that a pull request's title is a Conventional Commit. PRs are squash-merged, so the title becomes the
-# commit on main, and the commits since the last stable tag decide the version and the release notes of the
-# desktop app (`release.yml`). The convention is in `.claude/skills/git-workflow/SKILL.md`.
+# Checks that a pull request's title is a Conventional Commit and that the changes keep its promise: `docs` touches no
+# code, `feat`, `fix` and `perf` do. PRs are squash-merged, so the title becomes the commit on main, and the commits
+# since the last stable tag decide the version and the release notes of the desktop app (`release.yml`). The convention
+# is in `.claude/skills/git-workflow/SKILL.md`.
+# Its own workflow, apart from `pr.yml`: it runs on title edits and on drafts, and neither may touch the tests' run.
 name: PR title
 
 on:
@@ -15,13 +17,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      # A pull request's checkout is the merge commit, so its first parent is the base and the diff is the PR's change.
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
 
+      - name: List the changed files
+        run: git diff -z --name-only --no-renames HEAD^1 HEAD > "$RUNNER_TEMP/files"
+
       - name: Check the title
-        run: bun packages/app/scripts/release.ts check-title "$TITLE"
+        run: bun packages/app/scripts/release.ts check-title "$TITLE" --files "$RUNNER_TEMP/files"
         env:
           TITLE: ${{ github.event.pull_request.title }}

@@ -229,6 +229,25 @@ test('⇧X opens the item menu at closing it: close as not planned', async () =>
     expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'close', reason: 'NOT_PLANNED' });
 });
 
+test('⇧X closes a pull request at once: there is nothing to choose, so no menu', async () => {
+    await PullRequestReady.run();
+
+    await userEvent.keyboard('{Shift>}X{/Shift}');
+
+    expect(PullRequestReady.args.onEdit).toHaveBeenCalledWith({ kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
+test("the item menu's Close pull request closes it, with no submenu of itself", async () => {
+    await PullRequestReady.run();
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of / }));
+    await userEvent.click(page.getByRole('menuitem', { name: /^Close pull request/ }));
+
+    expect(PullRequestReady.args.onEdit).toHaveBeenCalledWith({ kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
 test('⌘↵ posts the comment typed and empties the box', async () => {
     await IssueInPanel.run();
 

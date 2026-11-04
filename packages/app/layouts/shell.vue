@@ -11,6 +11,7 @@ import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { CommitGraphStore } from '@/commits/CommitGraphStore.js';
 import Toaster from '@/components/Toaster.vue';
 import { EditQueue } from '@/edits/EditQueue.js';
+import CloseToasts from '@/edits/CloseToasts.vue';
 import EditToasts from '@/edits/EditToasts.vue';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
@@ -355,6 +356,7 @@ function showLastFailure() {
     arrangement="modal"
   />
   <Toaster v-if="auth.viewer">
+    <CloseToasts />
     <EditToasts />
     <MergeToasts />
     <WorkflowRerunToast />

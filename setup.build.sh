@@ -2,9 +2,8 @@
 # Everything needed to compile and test the repo, and nothing else: dependencies, the nzyme CLI,
 # generated code (per-package tsconfigs, `.loc.ts` translations), TypeScript, the test browser.
 #
-# Called by setup.sh and meant to be the CI build step too, so what CI proves is exactly what a local
-# build does. Anything needing local infrastructure (a database, secrets) belongs in setup.sh, never
-# here.
+# Called by setup.sh and run by CI as its build step, so what CI proves is exactly what a local build
+# does. Anything needing local infrastructure (a database, secrets) belongs in setup.sh, never here.
 #
 # bash rather than zsh: the GitHub-hosted runners have bash, and nothing here needs zsh.
 set -e

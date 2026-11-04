@@ -16,6 +16,10 @@ All your repositories in one place, no separate tracker: a fast, keyboard-first 
 - **Faithful to GitHub.** Map onto GitHub concepts rather than inventing parallel ones, so changes made here and on github.com stay consistent in both directions.
 - **Respect API limits.** GraphQL for fetching and writing whenever it can do the job, REST where it can't, REST conditional requests (free 304s) for change detection, and degrade gracefully on rate limits. No webhooks: there is no server to receive them.
 
+## Architecture
+
+How the repo is built and why: `ARCHITECTURE.md`. Read it before changing the layout, tooling or a package's role.
+
 ## Status
 
 Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`.
@@ -30,16 +34,16 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 
 - `bun run setup` — install, build nzyme's CLI, generate tsconfigs and translations, build, prepare Nuxt.
 - `bun run dev` — the app on http://localhost:8787 (`nuxt dev`) with the Worker on 8788 behind `/api/**`.
-  Real "Sign in with GitHub" needs the repo root `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` of
-  the OAuth App "githq (dev)", callback `http://localhost:8787/auth/callback`; template `.env.example`). It lives
-  in the main checkout `~/Dev/githq/.env` and `setup.sh` copies it into every worktree;
-  without it, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
+  Real "Sign in with GitHub" needs `GITHUB_CLIENT_SECRET` of the OAuth App "githq (dev)"
+  (callback `http://localhost:8787/auth/callback`), from Bitwarden after `bun nzyme secrets login` (`secrets` skill)
+  or from a root `.env`, which wins while it exists and which `setup.sh` copies from the main checkout;
+  without either, the dev-only token form on the sign-in screen takes a token (`gh auth token`).
 - `bun run preview` — the production shape: the built SPA and the Worker in one `wrangler dev` on 8787.
 - `bun run deploy` — build the SPA and deploy both Workers by hand: `githq` on https://githq.dev and
   `githq-www` redirecting www (Cloudflare account of kedrzu@gmail.com; the OAuth App "githq" credentials are
   Worker secrets). Every push to `main` deploys by itself once the checks pass (`.github/workflows/deploy.yml`).
 - `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D23) against `nuxt dev`; sign-in uses the
-  Device Flow with `.env`'s `GITHUB_CLIENT_ID` ("githq (dev)", Device Flow enabled). Needs Rust.
+  Device Flow of "githq (dev)", which needs no secret (`GITHQ_ENV` picks the app; Device Flow enabled). Needs Rust.
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
 - Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|candidate|stable`)
   works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.
@@ -48,7 +52,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
   (`bun --cwd packages/github schema` refreshes GitHub's schema).
 - `bun run tests`, `bun run test:stories`, `bun run e2e` — bun tests, Storybook component tests, Playwright
   against a mocked GitHub.
-- `bun run lint`, `bun run format`.
+- `bun run lint`, `bun run format` (both also format Markdown, through ESLint); `bun run format:md` for Markdown alone.
+- `bun run index` — the gitignored code map (`INDEX.md`, `UTILS.md`), also run by setup.
 - `bun run lighthouse [url]` — Lighthouse with PageSpeed Insights' settings (mobile and desktop, medians of 3 runs);
   by default against `bun run preview` on 8787, or e.g. `https://githq.dev/`.
 
@@ -77,12 +82,19 @@ fast-forwards the local `main`, copies files that live outside git from the main
 `.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
 
 **Without asking** (standing permission): name the branch and the workspace once the task is known; at the
-end of every turn that changed files — commit, catch up with `main`, push, then open the PR (ready for review,
-not a draft) or update its description when the scope grew. Keep the branch current with `main` by merging,
+end of every turn that changed files — commit, catch up with `main`, push, then open the PR as a draft or update its
+description when the scope grew. Keep the branch current with `main` by merging,
 never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
 Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 
-**Only on the owner's word** ("mergujemy", "merge it"): the squash merge. Never push to `main` — the `git`
+**Drafts.** A PR stays a draft until its work is finished, because the checks (`.github/workflows/pr.yml`) run on every
+push to a PR that is ready. Pushing to a draft mid-work is fine, and a turn that ends with work left or a question for
+the owner leaves it a draft. Finished means the task is done, the full `verify` is green, everything is pushed and the
+description is current; `gh pr ready` is then the last step, done without asking. A follow-up on a ready PR: finished
+within one turn, push it once verified, the PR stays ready and the checks restart; longer than that, `gh pr ready --undo`
+first and `gh pr ready` again at the end.
+
+**Only on the owner's word** ("mergujemy", "merge it"): the squash merge, of a stack too. Never push to `main` — the `git`
 plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an
 explicit throwaway experiment.
 
@@ -90,6 +102,6 @@ The commands for every step are in the `git-workflow` skill (`.claude/skills/git
 
 ## Agent skills
 
-Plugins come from the `kedrzu-skills` marketplace (https://github.com/kedrzu/skills) and are enabled in `.claude/settings.json`: `dev`, `git`, `playwright`, `web-search`, `naming`, `guardrails`, `secrets`, `skill-improve`, plus `skill-creator` and `claude-md-management` from `claude-plugins-official`. Run `claude plugin install <plugin>@<marketplace>` once per plugin on a new machine. Change skills in the kedrzu/skills repo, not here.
+Plugins come from the `kedrzu-skills` marketplace (https://github.com/kedrzu/skills) and are enabled in `.claude/settings.json`: `dev`, `git`, `playwright`, `web-search`, `guardrails`, `handoff`, `retro`, `skill-improve`, plus `skill-creator` and `claude-md-management` from `claude-plugins-official`. Run `claude plugin install <plugin>@<marketplace>` once per plugin on a new machine. Change skills in the kedrzu/skills repo, not here.
 
-nzyme's skills load from the submodule through the symlink `.claude/skills/nzyme` → `../../nzyme/plugins/nzyme`, so they always match the pinned nzyme commit (don't also install `nzyme@nzyme` from its marketplace — it would shadow them). Every implementation task reads `nzyme:code-conventions` plus the skill for the nzyme package it touches. Work inside `nzyme/` follows `nzyme/AGENTS.md` (Conventional Commits, PR to `kedrzu/nzyme`).
+nzyme's skills load from the submodule through the symlink `.claude/skills/nzyme` → `../../nzyme/plugins/nzyme`, so they always match the pinned nzyme commit (don't also install `nzyme@nzyme` from its marketplace — it would shadow them). Every implementation task reads `nzyme:code-conventions` plus the skill for the nzyme package it touches. Work inside `nzyme/` follows `nzyme/CLAUDE.md` (Conventional Commits, PR to `kedrzu/nzyme`).

@@ -22,8 +22,11 @@ Facts this rests on (checked 2026-11-03):
   in as `kedrzu`. The repo deletes a PR's branch on merge.
 - `main` has a ruleset with no bypass actors (`gh api repos/kedrzu/githq/rules/branches/main`; classic
   branch protection is not used): changes arrive by PR, squash only, no force-push or deletion. A merge
-  needs no approval, but the `title` check must pass and every review thread must be resolved. The branch
-  need not be up to date with `main`, so nothing but Sync catches that.
+  needs no approval, but the `title` and `checks` checks must pass and every review thread must be resolved. The
+  branch need not be up to date with `main`, so nothing but Sync catches that.
+- A PR that is ready for review goes through the deploy's checks on Linux (`.github/workflows/pr.yml` calls `checks.yml`,
+  as `deploy.yml` does), one run at a time per PR: a newer push cancels the older run. A draft runs none of them. A PR
+  with no code (Titles) runs only lint and format. Whichever path a run takes, its result is the check named `checks`.
 - Agents never push to `main`: `.claude/git.json` lists it in `protectedBranches`, and the `git`
   plugin's hook blocks such a push.
 - Tracker: GitHub Issues in the same repository. A task may have no issue.
@@ -46,6 +49,11 @@ Form: `<type>[(scope)][!]: <description>`, a lowercase imperative description, i
 The **PR title** is what counts, and CI checks it (`.github/workflows/pr-title.yml`): the squash makes it the
 commit on `main`, and the desktop release reads those commits. Commits on a branch use the same form, but
 nothing enforces it, because they vanish in the squash. Update the title when the PR's scope changes.
+
+The check holds the changes to the title's promise. **No code** means every changed path is a `.md` or `.pen` file or
+under `docs/` (`hasNoCode` in `packages/app/scripts/releasePlan.ts`). `docs` may not touch code, and `feat`, `fix` and
+`perf` must, since they promise a user-visible change. Formatting docs is `docs` or `chore`, never `fix`. A broken
+promise turns `title` and `checks` red and starts no tests. The fix may be the diff rather than the title.
 
 |Type|Use for|Version|Release notes|
 |-|-|-|-|
@@ -92,7 +100,7 @@ the pinned nzyme (and, once the workspace exists, built everything).
    shows its title; `mcp__paseo__rename_workspace` without `workspaceId` renames the current one. A few
    Polish words the owner recognises the task by („Lista My work”). Rename a generated name
    (`somber-rabbit`, `null`, `githq`); leave a meaningful one. No Paseo tools → skip.
-3. No draft PR at start: the PR opens at the first push (Publish).
+3. No PR yet at the start: it opens as a draft at the first push (Publish).
 
 Not in a fresh worktree: `git fetch origin main` and `git switch -c <type>/<N>-<slug> origin/main --no-track`
 (otherwise the branch tracks `origin/main` until its first push).
@@ -160,12 +168,12 @@ git push -u origin HEAD     # Paseo creates branches without upstream; later jus
 
 ## Publish
 
-PRs open ready for review, not as drafts, at the first push of the branch. Publish means the PR exists
-and its title and description are current. The pipeline supplies the texts.
+PRs open as drafts at the first push of the branch, and leave draft when the work is finished. Publish means the PR
+exists and its title and description are current. The pipeline supplies the texts.
 
 - **No PR for the branch** (`gh pr view` fails):
   ```bash
-  gh pr create --base main --title "<type>[(scope)]: <description>" --body-file - <<'EOF'
+  gh pr create --draft --base main --title "<type>[(scope)]: <description>" --body-file - <<'EOF'
   <what changed and why>
 
   Closes #<N>
@@ -177,8 +185,13 @@ and its title and description are current. The pipeline supplies the texts.
   GitHub refuses a PR with no diff from `main`. When the owner wants it open before there is anything
   to commit, one `git commit --allow-empty` gives it a diff; the commit vanishes in the squash.
 - **PR exists:** read the body with `gh pr view --json body --jq .body`, write the new one with
-  `gh pr edit --body-file - <<'EOF' … EOF`; `gh pr edit --title "…"` when the scope changed.
-- **A draft exists anyway** (opened by hand): `gh pr ready`.
+  `gh pr edit --body-file - <<'EOF' … EOF`; `gh pr edit --title "…"` when the scope changed. A title edit re-runs `title` only. If the old title
+  failed `checks`, push to restart it, an empty commit if there is nothing else: a re-run reads the old title.
+- **The work is finished** (the task is done, the full `verify` is green, everything is pushed and the description is
+  current): `gh pr ready`, as the last step, also on a PR created just now. Until then it stays a draft, whatever the
+  number of pushes and turns. It says nothing about merging (Land).
+- **A follow-up on a ready PR:** finished within one turn, push it once verified, and the PR stays ready while the checks
+  restart. Longer than that, `gh pr ready --undo` first, which cancels the run, and `gh pr ready` at the end.
 - **Issue:** the number in the branch name (`<type>/<N>-<slug>`) and in `Closes #<N>`;
   `gh issue comment <N> --body-file <file>` posts the summary. No issue → no comment, say so in the
   hand-off.
@@ -200,13 +213,15 @@ Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`)
   git switch -c <branch>-<k+1>
   # commit the node's changes (Checkpoint), then:
   git push -u origin HEAD
-  gh pr create --base <branch of node k> --title "…" --body-file - <<'EOF'
+  gh pr create --draft --base <branch of node k> --title "…" --body-file - <<'EOF'
   Part <k+1> of <n>; previous: #<PR of node k>. Closes #<N> only in the last part.
   EOF
   # the first extra node creates the stack, bottom first; later ones append:
   echo '{"pull_requests":[<pr 1>,<pr 2>]}' | gh api -X POST repos/kedrzu/githq/stacks --input -
   echo '{"pull_requests":[<new pr>]}' | gh api -X POST repos/kedrzu/githq/stacks/<stack>/add --input -
   ```
+- **Mark the chain ready** once, when the whole chain is up and verified: `gh pr ready <PR>` for each node, bottom first.
+  Each node then gets its own run, which is what proves it green on its own.
 - **Check out the tip / node `k`:** `git switch <branch of that node> && git pull --no-rebase`. A
   branch another worktree holds cannot be switched to here: work on it in that worktree.
 - **Propagate an edit to a lower node** without force-pushing: commit and push it on node `k`, then
@@ -226,8 +241,14 @@ Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`)
 Only on the owner's word („mergujemy”, „merge it”) — it is irreversible and lands on `main`.
 
 1. Sync, the full `verify` (it says what a change with no code needs), push; the PR must be out of draft.
-2. Wait for the `title` check, which every push and title edit restarts:
-   `gh pr checks <PR> --watch --required --interval 5` (in a stack, on each PR).
+2. Wait for the checks (in a stack, on each PR) and confirm that `checks` ran on this commit:
+   ```bash
+   gh pr checks <PR> --watch --interval 30
+   gh pr checks <PR> --json name,bucket --jq '.[] | select(.name == "checks") | .bucket'   # must print pass
+   ```
+   A red check stops the merge. `skipping` or nothing printed means the run has not started, so wait and ask again: right
+   after `gh pr ready` the draft's skipped result still shows, and GitHub counts a skipped check as passed, so neither
+   `--watch` nor the ruleset would stop this.
 3. Merge:
    - **One PR:** `gh pr merge <PR> --squash --match-head-commit "$(git rev-parse HEAD)"` — the PR
      title becomes the commit on `main`; the branch is deleted on merge.
@@ -246,9 +267,11 @@ Only on the owner's word („mergujemy”, „merge it”) — it is irreversibl
 out why and merge again. The way out is one of these, not the `--admin` the message offers (nobody can
 bypass this ruleset):
 
-- **`title` is running.** A new run takes a few seconds to appear, and until then `gh pr checks` shows the
+- **`title` or `checks` is running.** A new run takes a few seconds to appear, and until then `gh pr checks` shows the
   previous result. Watch again.
-- **`title` failed.** Fix the title (Titles) with `gh pr edit --title`, then watch again.
+- **`title` failed.** Fix the title with `gh pr edit --title`, or the diff if that is what broke its promise (Titles).
+  Then push, so `checks` runs against it, and watch again.
+- **`checks` failed.** Every red is yours (`verify`): fix it, push and watch again.
 - **A review thread is unresolved.** List them:
   ```bash
   gh api graphql -f query='{repository(owner:"kedrzu",name:"githq"){pullRequest(number:<PR>){reviewThreads(first:100){nodes{isResolved path line comments(first:1){nodes{body}}}}}}}' \
@@ -257,5 +280,6 @@ bypass this ruleset):
   Each one is a comment someone is waiting on: act on it or bring it to the owner, rather than resolving
   it to clear the way.
 
-Landing deploys: the push to `main` runs `.github/workflows/deploy.yml`, whose checks a PR does not go
-through first. One that goes red there blocks every later deploy until someone fixes `main`.
+Landing deploys: the push to `main` runs `.github/workflows/deploy.yml`, which runs the same checks again, because the
+PR's run tested the `main` of its last push. One that goes red there blocks every later deploy until someone fixes
+`main`.
