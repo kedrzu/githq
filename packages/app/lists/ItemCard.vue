@@ -1,4 +1,4 @@
-<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands — how its last merge ended when it did not merge too (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
+<!-- The content of one card of a board (D5, J2): the kind and state icon with the repository and number, the people on the right; the title; for a pull request listed alone out of its stack, its marker (D16, SP26: a stack icon, the stack's pips with its own tall — the stack's other open ones hollow — and its place, "1 of 3"); under it where a pull request stands — "Checks passed" first when its checks are green and no green status says as much, how its last merge ended when it did not merge too (PM37) — its size, the row field of its first project (D12), the milestone, a project's field values (in its view, `fields`), the labels and how long ago it changed — those of them the list's display options show. The board draws the card, its selection and its handlers. A pull request nested under the issue it closes (my work) is a smaller card under it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -65,6 +65,7 @@ const facts = useItemFacts({
 });
 const shown = computed(() => new Set(props.properties));
 const status = computed(() => (shown.value.has('status') ? facts.status : null));
+const checks = computed(() => (shown.value.has('status') ? facts.checks : null));
 const size = computed(() => (shown.value.has('size') ? facts.size : null));
 const projectField = computed(() => (shown.value.has('projectField') ? facts.projectField : null));
 const milestone = computed(() => (shown.value.has('milestone') ? props.item.milestone : null));
@@ -72,6 +73,7 @@ const labels = computed(() => (shown.value.has('labels') ? props.item.labels : [
 const hasFooter = computed(
   () =>
     status.value !== null ||
+    checks.value !== null ||
     size.value !== null ||
     projectField.value !== null ||
     milestone.value !== null ||
@@ -121,6 +123,11 @@ const hasFooter = computed(
       v-if="hasFooter"
       :class="css.itemCard_footer"
     >
+      <ItemStatus
+        v-if="checks"
+        :class="css.itemCard_shared"
+        :status="checks"
+      />
       <ItemStatus
         v-if="status"
         :class="css.itemCard_shared"

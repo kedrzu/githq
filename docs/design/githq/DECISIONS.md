@@ -597,6 +597,24 @@ widening the strip past 100 px in every row was rejected, and so was recording a
 **Dim text is `fg-dim` in the design too** (owner, 2026-11-04): `fg-3`, at 3.54:1 on the window, is for icons and decoration
 only, as the code already had it. A repository's current section tab gets weight 500, like a project's.
 
+### D31
+
+**A pull request's row and card say when its checks passed and when it is ready to merge** (owner, 2026-11-04, screen D7). An
+open pull request with no review needed that GitHub would merge reads "Ready to merge", with the same "Merge" follow-up as an
+approved one, whether it has checks or not. Green checks with something else holding it read "Checks passed" before the other
+status: "Your review requested", "Waiting for review", "Draft", "Changes requested", or nothing else. Approved and held reads
+"Approved · checks passed" in one. With no checks, nothing is said about checks. Nothing changes while it is being merged, in a
+queue, on auto-merge, or when a merge's end speaks for it.
+
+**Why.** A row with no status could mean checks passed, no checks, or not known yet, and a row "Waiting for review" said nothing
+of its checks.
+
+**A review asked stays "Waiting for review"** when none is required, although GitHub would merge it: it was asked for, and a
+"Merge" there invites skipping it. **Known cost:** the opened item's verdict says "Ready to merge" in this one case.
+
+**Rejected.** "Ready to merge" alone: says nothing of the checks of a pull request waiting for review. "Checks passed" alone:
+leaves one with no checks saying nothing, and offers no "Merge".
+
 ## Open questions
 
 ### D26
