@@ -31,7 +31,7 @@ export default defineNuxtRouteMiddleware(async to => {
     await items.ready();
     await tracking.ready();
 
-    // Only a tracked repository has a Workflows tab and runs' pages (actions D4): any other's address is GitHub's page,
+    // Only a tracked repository has a Workflows section and runs' pages (actions D4): any other's address is GitHub's page,
     // signed out too.
     if (
         ((to.name === 'repository' && getRepositorySection(to.params.section) === 'workflows') ||

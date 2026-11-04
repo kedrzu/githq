@@ -79,7 +79,7 @@ export class RepositoryScreenHarness {
         return this.root.getByRole('listitem').filter({ hasText: title });
     }
 
-    /** A workflow's row button in the Workflows tab, by the workflow's name. */
+    /** A workflow's row button in the Workflows section, by the workflow's name. */
     workflow(name: string): Locator {
         return this.root.getByRole('button', { name, exact: true });
     }
@@ -94,7 +94,7 @@ export class RepositoryScreenHarness {
         return this.runsOf(name).locator('button[data-mark]');
     }
 
-    /** The Workflows tab's Alerts bar: which branches and tags raise alerts. */
+    /** The Workflows section's Alerts bar: which branches and tags raise alerts. */
     get alertsBar(): Locator {
         return this.root.getByTestId('workflow-alerts-bar');
     }

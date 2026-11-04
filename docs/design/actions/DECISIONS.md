@@ -21,7 +21,7 @@ workflow green, and a rebuilt cache gives the same answer. Only workflows in Git
 run's event, not its ref, and `issue_comment` counts as one: GitHub runs it on the default branch whatever the comment
 is on, so a bot such as CLA would otherwise light the counters. (2026-11-03, owner) The cost: a real workflow on comments never lights anything.
 
-**In a repository's Workflows tab, a workflow whose latest verdict on any ref failed stands under No alerts, whatever
+**In a repository's Workflows section, a workflow whose latest verdict on any ref failed stands under No alerts, whatever
 passed later on another ref.** (2026-11-03, owner) A workflow left failing on an abandoned branch stays there until
 those runs fall out of what is kept.
 
@@ -64,7 +64,7 @@ the earlier attempt from GitHub costs a request per re-running workflow, for a n
 
 **Workflow state is read per repository over REST only: a conditional request on the repository's runs detects a
 change, then conditional requests per workflow on `actions/workflows/{id}/runs` read the runs of the refs that
-count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope. Polled every 3 minutes while a tab is shown, and at once when the Workflows tab or the
+count. Workflows and runs are stored; "broken" is computed from them on read. No new OAuth scope. Polled every 3 minutes while a tab is shown, and at once when the Workflows section or the
 cross-repository screen opens.** (2026-11-01, owner for the 3 minutes, design agent for the rest, accepted when closing the design)
 
 **Why.** There is no cross-repository listing, and a 304 costs nothing against the primary allowance. REST is the
@@ -171,7 +171,7 @@ and for turning off counters; "counters only" as the design agent's reading, acc
 
 **Why.** The owner's example: no counters for feature branches, or counters only on `main` and release. If a
 wrong pattern only silences a counter, it cannot hide a failure from someone looking for it. Asked again on
-2026-11-02 whether failures on pull request branches should also disappear from the Workflows tab, the owner
+2026-11-02 whether failures on pull request branches should also disappear from the Workflows section, the owner
 kept "counters only".
 
 **Default: the repository's default branch only, without runs started by a pull request. Anything else is added
@@ -185,7 +185,7 @@ nothing, and its workflows are still listed in the tab.** (2026-11-02, owner)
 > `packages/github/src/schema.graphql`, in no operation.
 
 Consequence: a failed release on a tag lights nothing until the repository's settings add `v*`, as in this
-repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows tab.
+repository's own Release workflow ([D1](#d1)). It is still visible in the Workflows section.
 
 **Patterns live in the user's settings, synchronised through GitHub when saving is on and local otherwise, the same
 way for every repository.** (2026-11-01, owner; "no per-repository choice" is the design agent's reading, 2026-11-02, not contradicted) Their place in
@@ -200,7 +200,7 @@ the settings file is [D14](#d14).
 
 ## D6
 
-**Failing workflows are reached three ways: a Workflows tab in the repository view at `/owner/name/actions`, a
+**Failing workflows are reached three ways: a Workflows section in the repository view at `/owner/name/actions`, a
 red marker on the repository's sidebar row, and one cross-repository entry in the sidebar with a total.**
 (2026-11-01, owner)
 
@@ -224,7 +224,7 @@ requests already exist on the same page (`packages/app/tracking/trackingRoutes.t
 
 ## D7
 
-**The Workflows tab lists all of the repository's workflows, passing ones too, one row per workflow with its
+**The Workflows section lists all of the repository's workflows, passing ones too, one row per workflow with its
 recent runs, instead of GitHub's single chronological feed.** (2026-11-01, owner)
 
 **Why.** The owner: failing workflows are buried, runs are mixed together, and failures on pull requests and
