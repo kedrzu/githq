@@ -2,14 +2,15 @@
 
 Read `README.md` in this folder first.
 
-**Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Update
-ready" (U1 chosen, U2 an alternative not chosen).
+**Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Updates"
+(U1 chosen, U2 an alternative not chosen, U3–U40 the update streams and what changed). Waiting for the owner: where what
+changed opens (U26–U37), and U19.
 
 ## Purpose
 
 The desktop app is the same githq in a native window. Only two things differ from the web: how the user signs in
 and how a new version arrives. Everything else (my work, projects, items, the palette) is unchanged and needs no
-screens of its own.
+screens of its own. Why the updates work as they do: [desktop releases](../../desktop-releases/README.md).
 
 ## The user's task
 
@@ -48,10 +49,65 @@ getting in my way."
 - **Ready (U1).** At the right end of the status bar, one quiet segment: "githq X.Y.Z is ready · Restart ·
   Later". Restart starts the new version. Later hides the segment until the next launch. The same two actions are
   in the command palette while an update is ready.
-- **Never forced.** Nothing restarts on its own. On macOS and Linux a downloaded update also runs from the next
-  launch if the user just quits.
+- **Never forced.** Nothing restarts on its own. On macOS a downloaded update also runs from the next launch if the
+  user just quits. On Linux it installs only when the user clicks Restart.
 - U2 is an alternative drawn beside it and not chosen. U1's place is the status bar, where githq already says how
   fresh things are ([D15](../DECISIONS.md#d15)).
+
+## Updates in Settings
+
+A section only the desktop app has, after Account, with the key 7.
+
+- **What is running (U3, U4).** The version in the monospace font (`0.2.0`, `0.3.0-dev.214`), and under it what kind of
+  build that is and which stream it follows, since after a switch the two can differ. A Development build also names
+  its commit.
+- **Check for updates (U), with one status line under the version:** checking (U5), up to date (U6), found and
+  downloading with its progress (U7), ready with Restart (U8, the status bar's U1 too), failed because the user is
+  offline or GitHub can't be reached (U9, U10), and no release on this stream yet (U11). The button is also how to try
+  again after a failure.
+- **The stream.** Two radio options, Stable and Development, marked as being on this device only. Development says there
+  that a build may have bugs.
+- **Windows (U12).** No Development builds, so no stream block at all.
+
+## Switching streams
+
+- **To Stable from a Development build (U13).** A confirmation: the newest Stable installs at once, it can be older than
+  the running build, and the local copy of GitHub data is fetched again, which costs one first sync and nothing else.
+  It names no Stable version, because that would take a request before it could open. Then the download (U14) and U1
+  (U15). Offline (U16), the choice stands and the newest Stable installs once GitHub can be reached. With no Stable yet
+  (U17), the user stays on the build and gets no updates until 0.1.0 or until they go back to Development.
+- **To Development (U18).** No confirmation and no install. It waits for a build newer than the installed version, so
+  right after a Stable release it says nothing is newer yet.
+- **From a Stable version following Development, back to Stable.** Nothing older can install, so no confirmation.
+- **A fresh install always starts on Stable,** including a build downloaded from the Development release. U19 is a
+  question for the owner: by the rules as they stand, that build takes the older Stable at its first check.
+
+## Check for updates from the command palette
+
+The same action in ⌘K (U20). The palette closes on running it and the outcome appears at the right end of the status
+bar, where U1 speaks (U21), never as a toast. U22 has every outcome. Up to date goes away by itself; a failure stays until
+Try again or Dismiss. A check nobody asked for says nothing until U1.
+
+## After an update
+
+- **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, until
+  dismissed. No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
+  while the toast shows). After going back to an older Stable (U25) it says which version is running and offers nothing.
+- **What changed.** Where it opens is the owner's pick: a dialog (U26, recommended), the side panel (U36) or a full page
+  (U37). In every state, drawn for the dialog:
+  - Stable: every release between the old version and the new one, newest first, each with its summary and its list
+    under Breaking changes, Features, Fixes and Performance (one release U26, a jump over three U27 and U28). A release
+    can have no summary (U29).
+  - Development: the commits between the two builds, filtered as release notes are, with no summary (U30). It can be
+    empty, "Nothing you'd notice" (U31). Past GitHub's 250 commits a note says the list can't cover them all (U32).
+  - Loading (U33), offline, where the list waits for the connection (U34), and failure, with a link to the same changes on
+    GitHub (U35).
+
+## A refused install on Linux
+
+U1 stays as it is. When the user refuses the system's password prompt, or the install fails, the same segment says so and
+offers Try again and Later (U38), and Settings says the same (U39). While the system is asking, the segment waits and
+offers nothing. U40 has the whole sequence.
 
 ## Also part of this path
 
