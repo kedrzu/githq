@@ -20,7 +20,7 @@ import type {
     WorkflowsUnavailable,
 } from './WorkflowTypes.js';
 
-/** The groups of a repository's Workflows tab, in the order it shows them (actions W3a). */
+/** The groups of a repository's Workflows section, in the order it shows them (actions W3a). */
 export type RepositoryWorkflowGroupKind =
     | 'broken'
     | 'pullRequestsOnly'
@@ -47,7 +47,7 @@ const GROUP_ORDER: readonly RepositoryWorkflowGroupKind[] = [
     'disabled',
 ];
 
-/** A workflow in its repository's Workflows tab: one row. */
+/** A workflow in its repository's Workflows section: one row. */
 export interface RepositoryWorkflowEntry {
     /** The workflow's id, unique in the repository. */
     readonly key: string;
@@ -78,7 +78,7 @@ export interface RepositoryWorkflowAlerts {
     readonly patterns: readonly string[];
 }
 
-/** A repository's Workflows tab (actions W3a–W3e, W13, W14). */
+/** A repository's Workflows section (actions W3a–W3e, W13, W14). */
 export interface RepositoryWorkflowList {
     /** `unread` while nothing is stored of it, `unavailable` while GitHub shows nothing of it. */
     readonly status: 'read' | 'unavailable' | 'unread';
@@ -109,7 +109,7 @@ export interface BuildRepositoryWorkflowsParams {
 }
 
 /**
- * Every workflow of a repository, one row each, grouped for its Workflows tab (actions D7, W3a): broken ones (the
+ * Every workflow of a repository, one row each, grouped for its Workflows section (actions D7, W3a): broken ones (the
  * newest break first), those only pull requests ran (which never raise alerts), those failing only on refs without
  * alerts — the latest of their runs with a verdict, not started by a pull request, failed —, passing ones, those with
  * no verdict yet, and disabled ones; with alerts off, those failing come first (W14); in GitHub's order within a group. A workflow GitHub generates is a row like any

@@ -4,7 +4,7 @@ import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 
-/** Where the user is in a repository's Workflows tab. */
+/** Where the user is in a repository's Workflows section. */
 export interface WorkflowTabPlace {
     /** The selected row's key; `null` until the user moves. */
     readonly selected: string | null;
@@ -17,7 +17,7 @@ export interface WorkflowTabPlace {
 const NOWHERE: WorkflowTabPlace = { selected: null, unfolded: null, refFilter: null };
 
 /**
- * Where the user was in each repository's Workflows tab and on the broken workflows' screen, so P or a run's page and
+ * Where the user was in each repository's Workflows section and on the broken workflows' screen, so P or a run's page and
  * back to it lands on the same row, unfolded as it was (actions W13, W4a) — the screen is gone meanwhile. For this
  * session of the app, never persisted; forgotten when another account signs in.
  */

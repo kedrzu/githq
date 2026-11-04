@@ -14,7 +14,7 @@ export interface UnfoldedRun {
     readonly ref: WorkflowRowRef | null;
 }
 
-/** A workflow unfolded in its repository's Workflows tab (actions W3b): its runs, on any ref or on one. */
+/** A workflow unfolded in its repository's Workflows section (actions W3b): its runs, on any ref or on one. */
 export interface UnfoldedWorkflow {
     /** The workflow's row's key. */
     readonly key: string;

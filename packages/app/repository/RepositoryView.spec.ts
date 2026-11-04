@@ -163,7 +163,7 @@ test('J3, CH37: not tracked, it lists what concerns the user of the section, how
     // Never negative: GitHub counts no more open pull requests than the one listed.
     await expect.element(lines).toHaveTextContent('none of its other pull requests is open on GitHub.');
     await expect.element(page.getByRole('button', { name: /^Track/ })).not.toBeInTheDocument();
-    // Its workflows are not read: no Workflows tab.
+    // Its workflows are not read: no Workflows section.
     await expect.element(page.getByRole('button', { name: /^Workflows/ })).not.toBeInTheDocument();
 });
 

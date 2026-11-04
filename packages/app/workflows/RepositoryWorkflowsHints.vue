@@ -1,4 +1,4 @@
-<!-- The Workflows tab's key hints in the repository's toolbar (actions W3a, W3b): Enter opens and → unfolds the other runs; with a workflow unfolded, Enter opens a run, ← folds and F filters by ref. For the eye only: the keys are in the help sheet. -->
+<!-- The Workflows section's key hints in the repository's toolbar (actions W3a, W3b): Enter opens and → unfolds the other runs; with a workflow unfolded, Enter opens a run, ← folds and F filters by ref. For the eye only: the keys are in the help sheet. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';

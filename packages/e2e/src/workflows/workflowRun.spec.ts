@@ -68,7 +68,7 @@ test('a failed run at its address: what is known, failed jobs first with the fai
     await expect(screen.logTexts).toHaveText(['all fine']);
 });
 
-test('with no history Esc goes to the repository’s Workflows tab; O and ⌘K open the selected job on GitHub in a new tab, the page staying', async ({
+test('with no history Esc goes to the repository’s Workflows section; O and ⌘K open the selected job on GitHub in a new tab, the page staying', async ({
     page,
     github,
 }) => {
@@ -784,7 +784,7 @@ test('W4k, W4j: first in ⌘K, no key, no question: the page goes running at onc
     await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
     await page.keyboard.press('Escape');
 
-    // The workflow stays broken, as read now by the Workflows tab, though a pass stands before the run re-run.
+    // The workflow stays broken, as read now by the Workflows section, though a pass stands before the run re-run.
     await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
     const repository = new RepositoryScreenHarness(page);
     await expect(repository.workflow('Deploy')).toBeVisible();
