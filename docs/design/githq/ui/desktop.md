@@ -3,8 +3,7 @@
 Read `README.md` in this folder first.
 
 **Status:** designed in `githq.pen`, frames "Desktop · Sign in with a device code" (S1–S4) and "Desktop · Updates"
-(U1 chosen, U2 an alternative not chosen, U3–U40 the update streams and what changed). Waiting for the owner: where what
-changed opens (U26–U37), and U19.
+(U1 chosen, U2 an alternative not chosen, U3–U48 the update streams and the changelog; U26–U37 are gone).
 
 ## Purpose
 
@@ -79,12 +78,15 @@ A section only the desktop app has, after Account, with the key 7.
 - **To Development (U18).** No confirmation and no install. It waits for a build newer than the installed version, so
   right after a Stable release it says nothing is newer yet.
 - **From a Stable version following Development, back to Stable.** Nothing older can install, so no confirmation.
-- **A fresh install always starts on Stable,** including a build downloaded from the Development release. U19 is a
-  question for the owner: by the rules as they stand, that build takes the older Stable at its first check.
+- **A fresh install follows what it is (U19).** A Development build starts on Development, any other build on Stable,
+  and nothing is asked.
 
-## Check for updates from the command palette
+## Update commands in the command palette
 
-The same action in ⌘K (U20). The palette closes on running it and the outcome appears at the right end of the status
+Every update action is a command in ⌘K, shown only while it can run ([D18](../../desktop-releases/DECISIONS.md#d18)): Check
+for updates, Settings: Updates, Settings: Changelog, Switch to Stable or Development, Restart, Later, Try again and What changed.
+
+Check for updates is the same action as in Settings (U20). The palette closes on running it and the outcome appears at the right end of the status
 bar, where U1 speaks (U21), never as a toast. U22 has every outcome. Up to date goes away by itself; a failure stays until
 Try again or Dismiss. A check nobody asked for says nothing until U1.
 
@@ -92,16 +94,17 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
 
 - **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, until
   dismissed. No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
-  while the toast shows). After going back to an older Stable (U25) it says which version is running and offers nothing.
-- **What changed.** Where it opens is the owner's pick: a dialog (U26, recommended), the side panel (U36) or a full page
-  (U37). In every state, drawn for the dialog:
-  - Stable: every release between the old version and the new one, newest first, each with its summary and its list
-    under Breaking changes, Features, Fixes and Performance (one release U26, a jump over three U27 and U28). A release
-    can have no summary (U29).
-  - Development: the commits between the two builds, filtered as release notes are, with no summary (U30). It can be
-    empty, "Nothing you'd notice" (U31). Past GitHub's 250 commits a note says the list can't cover them all (U32).
-  - Loading (U33), offline, where the list waits for the connection (U34), and failure, with a link to the same changes on
-    GitHub (U35).
+  while the toast shows), which goes to the changelog. After going back to an older Stable (U25) it says which version is
+  running and offers nothing.
+- **Changelog.** A section of Settings, after Updates, with the key 8, on the desktop app only. Every version has its own
+  fold, newest first, the first open and the rest collapsed, and each opens on its own. There are no ranges between
+  versions: a version says its own changes.
+  - Stable (U41): a plain-language summary, then the list under Breaking changes, Features, Fixes and Performance. A release
+    can have no summary (U42). "New" marks versions the user didn't have before this update, "Running" what is installed.
+  - Development (U43): one fold for everything since the last Stable, filtered as release notes
+    are, then the Stable versions. It can be empty, "Nothing you'd notice" (U44).
+  - No versions yet (U45), loading (U46), offline, where the list waits for the connection (U47), and failure, with a link to
+    the same changes on GitHub (U48).
 
 ## A refused install on Linux
 
