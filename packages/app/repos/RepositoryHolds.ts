@@ -20,7 +20,7 @@ interface Hold {
 }
 
 /**
- * Which repositories' rows the local copy keeps though nothing syncs them (D33): a screen browsing a repository holds
+ * Which repositories' rows the local copy keeps though nothing syncs them (D34): a screen browsing a repository holds
  * it while it is open, the hold lasts a while after it is released, and all of the account's tabs know of it, since
  * any of them may be the one cleaning up. A tab's holds end with the tab (`TabChannel` forgets it) and with the account.
  */

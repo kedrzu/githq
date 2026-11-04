@@ -13,7 +13,7 @@ interface FailedLookup {
 }
 
 /**
- * Tracks a repository known only by its address (D33): its id is GitHub's, so it is looked up first. A look-up that
+ * Tracks a repository known only by its address (D34): its id is GitHub's, so it is looked up first. A look-up that
  * finds nothing tracks nothing and stays here for `TrackFailedToast`, until dismissed or tried again, and only for the
  * account that asked. A service, as the toast outlives the screen the user asked from.
  */

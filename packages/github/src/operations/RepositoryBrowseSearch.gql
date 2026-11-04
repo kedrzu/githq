@@ -1,5 +1,5 @@
 # GitHub's repository search as the user typed it, qualifiers (`org:`, `stars:`) included: the command menu's
-# "Search repositories…" (D33, E8), with what its rows show.
+# "Search repositories…" (D34, E8), with what its rows show.
 query RepositoryBrowseSearch($query: String!) {
     search(query: $query, type: REPOSITORY, first: 20) {
         nodes {

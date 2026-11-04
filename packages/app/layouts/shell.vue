@@ -176,7 +176,7 @@ const brokenWorkflows = computed(() => getSidebarBrokenWorkflows(workflows.total
 
 // How fresh the screen is (D15): a repository's commit graph its refs as last read, tracked or not (git-client D9); a
 // tracked repository's or project's own poll — a saved view GitHub answers says so (K6); an untracked repository's item
-// section the reads of the screen browsing it (D33); the broken workflows and a repository's Workflows section their own
+// section the reads of the screen browsing it (D34); the broken workflows and a repository's Workflows section their own
 // poll; anything else shows what "my work" holds.
 const screenFreshness = computed((): Freshness => {
   if (route.name === 'workflows') {

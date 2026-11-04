@@ -32,7 +32,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** D33: the look-up of `vitejs/vite` found nothing. */
+/** D34: the look-up of `vitejs/vite` found nothing. */
 export const LookUpFailed: Story = {
     decorators: [
         story =>

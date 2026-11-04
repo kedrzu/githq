@@ -68,7 +68,7 @@ Rejected: mirror everything the user can see — expensive first sync and clutte
 and still misses contributions to repos the user isn't a member of.
 
 A third kind of local data, "browsed", joined these two on 2026-11-04: a repository the user only looks at, read on
-demand and never in the background. See [D33](#d33).
+demand and never in the background. See [D34](#d34).
 
 ### D5
 
@@ -390,7 +390,7 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   hosts.
 - **Updates:** the app checks GitHub Releases at launch and every 4 hours and downloads in the background. The
   signature is always verified. The update is then offered as "githq X.Y.Z is ready · Restart · Later" at the
-  right end of the status bar (`githq.pen`, "Desktop · Update ready", U1). Nothing restarts on its own. On macOS
+  right end of the status bar (`githq.pen`, "Desktop · Updates", U1). Nothing restarts on its own. On macOS
   and Linux the download is installed at once and runs from the next launch. On Windows the installer runs on
   Restart.
 - **Releases:** a manually dispatched action, `.github/workflows/release.yml`, with a mode: `preview` prints the
@@ -636,6 +636,26 @@ already starts in the screen's repository.
 took that Enter and made the app's screen harder to reach.
 
 ### D33
+
+**The desktop app's update screens are drawn in `githq.pen`, frame "Desktop · Updates" (U1–U40), following
+[desktop releases](../desktop-releases/DECISIONS.md).** (design agent, 2026-11-04, for the owner to overrule.) Where what
+changed opens is the owner's pick, with the dialog recommended (U26–U37), and U19 is a question for them.
+
+- **The outcome of a check started from the palette appears at the right end of the status bar, not in a toast.** That's where
+  U1 already speaks and the palette has just closed. Up to date goes away by itself; a failure stays until Try again or
+  Dismiss.
+- **The confirmation to Stable names no version,** since that would take a request before the dialog could open, and it
+  would then need its own states.
+- **Offline, the switch to Stable stands and is not undone.** [D5](../desktop-releases/DECISIONS.md#d5) holds no state, so the
+  newest Stable installs once GitHub can be reached.
+- **The update toast stays until dismissed,** unlike the default 12 seconds, because the app has just started. Its key is ⌥W.
+  It sits in the bottom right corner as the owner asked, while `Toaster.vue` centres every other toast: building it needs
+  a second position.
+
+**Rejected.** A second button for Try again in Settings: Check for updates already is that. Disabling the stream block on
+Windows: a choice that leads nowhere, so it isn't drawn.
+
+### D34
 
 **Any repository GitHub shows the user can be found from the command menu, browsed as if tracked, and tracked from there**
 (owner, 2026-11-04). In the owner's words: "to search GitHub for any repository, enter it and browse it as if it were our

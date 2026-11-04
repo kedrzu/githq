@@ -50,3 +50,7 @@ Append-only. One line per turn that settled something.
 - 2026-11-04: Owner: what runs on GitHub reads GitHub secrets, Bitwarden only manages them (D14). `~/.githq-secrets/updater.key` and its
   password deleted after one more comparison with the store. The secret-store change split into its own pull request, because a
   `docs` pull request can't touch code.
+- 2026-11-04: Update screens drawn in `githq.pen` (frame "Desktop · Updates", U3–U40). Owner decided along the way: a fresh install
+  starts on Stable (D15), Linux installs on Restart (D16). Drawing it raised U19: a fresh Development build takes the older Stable at
+  its first check. Also seen: GitHub's compare call does page (`compare/1e38779...632d28b?per_page=2&page=2` returned 2 of 69), which D3
+  says it doesn't; past 250 not tried, so U32 is drawn as asked.

@@ -145,7 +145,7 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   and at once when a screen showing them opens ({@link pollWorkflowsNow}). What a screen has on screen of a
  *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef}).
  *
- * A row only browsed (`RepositoryHolds`, D33) is asked about by none of them: it is read while a screen shows it, never
+ * A row only browsed (`RepositoryHolds`, D34) is asked about by none of them: it is read while a screen shows it, never
  * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the

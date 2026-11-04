@@ -1,5 +1,7 @@
 import type { PullRequestState, StatusState } from '@githq/github/generated.gen.js';
 
+import type { ItemCheck } from '@/store/ItemDetailTypes.js';
+
 /** The id of the element in a repository's column that the list of branches and tags renders in (git-client D14, CH6). */
 export const COMMIT_REF_LIST_TARGET_ID = 'commit-ref-list-target';
 
@@ -32,6 +34,19 @@ export interface CommitAuthor {
 export interface CommitParent {
     readonly id: string;
     readonly oid: string;
+}
+
+/** The commit whose details are open. */
+export interface OpenedCommit extends CommitParent {
+    /** The ref it was opened from, its commit not loaded (D12). */
+    readonly chosenRef: CommitRef | null;
+}
+
+/** Where a repository's Commits section was left for a run's page, to come back to. */
+export interface CommitGraphPlace {
+    /** `null`: the cursor was on no row. */
+    readonly cursorOid: string | null;
+    readonly opened: OpenedCommit;
 }
 
 /** A repository's branches and tags as last read (git-client D9), compared with a fresh read to tell which moved. */
@@ -89,6 +104,22 @@ export type CommitDetailRead =
           /** Its message below the first line; plain text too. */
           readonly body: string;
       };
+
+/**
+ * What is known of a commit's checks once its details opened, held in memory only. A read under way changes nothing
+ * here, so a re-read leaves the last list on screen. `failed` means no list was ever read.
+ */
+export type CommitChecksRead =
+    | {
+          readonly kind: 'read';
+          /** At most the first 100. */
+          readonly checks: readonly ItemCheck[];
+          /** How many it has in all. */
+          readonly checkCount: number;
+          /** When they were last asked for (epoch ms), a re-read that failed and left them included. */
+          readonly readAt: number;
+      }
+    | { readonly kind: 'failed'; readonly readAt: number };
 
 /**
  * Where a commit stands with the graph: `shown` is one of its rows, `gone` is loaded and no ref reaches it any more (a

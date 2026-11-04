@@ -59,7 +59,7 @@ triage and move things quickly, and don't make me wait."
   - How does the user get from a repository to the projects its issues live in?
   - Show a tracked repository, and also what happens when the user opens an untracked one: the full view, read
     on demand (J5, J6; J7 when GitHub does not show it), which replaces J3 for repositories
-    ([D33](../DECISIONS.md#d33)). An untracked project keeps J4.
+    ([D34](../DECISIONS.md#d34)). An untracked project keeps J4.
 - **A view modified locally, and resetting it.**
 - **A view whose filter is answered by GitHub** rather than locally.
 - **A project with no single-choice field at all,** where there's nothing to group a board by.

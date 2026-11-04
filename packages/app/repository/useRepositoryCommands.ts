@@ -35,7 +35,7 @@ export interface RepositoryCommands {
  * it, its page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is
  * tracked), and tracking it (only while it is not). All are of the `repository` section. The sidebar's menu of a
  * repository offers them by name, all but tracking it; the command menu's group of the repository the screen belongs to
- * is registered by `AppCommands`, with tracking it last (D33) and without no longer tracking it (D32).
+ * is registered by `AppCommands`, with tracking it last (D34) and without no longer tracking it (D32).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {
     const t = useTranslate();

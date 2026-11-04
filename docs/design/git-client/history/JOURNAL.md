@@ -56,3 +56,7 @@ Append-only; one line per turn that settled something.
   newest commit; `Esc` until the next move; on a narrow window under the graph (CH48), on a wide one resizable under their
   own name (D16). The row's pull request number is a link (D18). The graph's pane draws no focus ring: the cursor row shows
   where the keys go.
+- 2026-11-04 — Owner: the pull request number in the branch list is a link too, one that can be copied and opened in a new
+  tab, so the list becomes a combobox with a grid popup (D15). The CI mark opens the details, which list the checks, with
+  the app's run page for Actions, a new tab for anything else or an untracked repository, read on opening alone, and the
+  place remembered across a run's page (D18, D24).

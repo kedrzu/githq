@@ -73,7 +73,7 @@ projects you add yourself, copied in full, so you can browse and triage everythi
 other people's issues. At first sign-in githq offers your own repositories as tracked, so for someone with a
 handful of their own repositories the two parts mostly overlap.
 [Why not simply copy everything](DECISIONS.md#d4). Any other repository can still be browsed: read on demand while
-its screen is open, never in the background, and let go soon after ([D33](DECISIONS.md#d33)).
+its screen is open, never in the background, and let go soon after ([D34](DECISIONS.md#d34)).
 
 ## How the copy stays fresh
 
