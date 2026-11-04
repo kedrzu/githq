@@ -262,13 +262,13 @@ complains about. Accepted cost: a thread deliberately left open keeps its file i
 
 ## D16
 
-**In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
-today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
+**In review, `J` / `K` go through the pull requests of its stack, and past either end on along the list the review was
+reached from, one step per entry as in [stacked-prs D26](../stacked-prs/DECISIONS.md#d26). `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
 and the command palette goes to any of them. Review is a full-screen route of its own, so Back returns; one key
 opens it from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys
 jumps between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on
 the remembered position ([D14](#d14)).** (2026-11-02, owner: `J` / `K` and `[` / `]` for consistency with the pull
-request view; the rest the agent's proposal, confirmed after the rightsize pass)
+request view; the rest the agent's proposal, confirmed after the rightsize pass; through the stack, owner, 2026-11-04)
 
 **Why.** Walking pull requests with `J` / `K` already exists and crosses from one stack into the next
 ([stacked-prs D9](../stacked-prs/DECISIONS.md#d9)); review keeps the same meaning, so the end of a stack is not a
@@ -276,6 +276,8 @@ special case.
 
 **Rejected.**
 
+- `J` / `K` taking a collapsed stack as one step, as in an opened pull request ([history](history/DECISIONS.md#d16)) — going
+  through a stack in a row is what a review is for, and one step per stack would leave only the clicks for it (owner).
 - `J` / `K` for files and `[` / `]` for pull requests in review (agent) — the same key would mean different things
   in the pull request view and in its review (owner).
 - `Shift+J` / `Shift+K` extending the file selection — they belong with `J` / `K`, which here walk pull requests.
@@ -395,8 +397,12 @@ agent does not see them, and cannot post its own replies or comments while the d
 > (`packages/github/src/schema.graphql`); a pending review is visible only to its author, so for the viewer it is
 > exactly "my drafts". The volatile part of a pull request is already re-read by its own query,
 > `PullRequestStatuses` with `PullRequestStatusFields` (`packages/github/src/operations/`), which is where the count
-> would ride. Not checked: whether starting a draft on github.com moves anything the background refresh notices, so a
-> draft begun there may show late; and drafts on pull requests outside githq's copy are not found at all.
+> would ride. Drafts on pull requests outside githq's copy are not found at all.
+
+> **Checked 2026-11-04, live on kedrzu/githq-stack-sandbox#8:** a pending review moves neither `updatedAt`, nor REST's
+> `updated_at`, nor the issue's ETag, so nothing that watches for a change notices one: only reading the review itself
+> does. `reviews(states: [PENDING])` gives its `createdAt` and `comments.totalCount`, and `reviewThreads` returns its
+> threads, their comments with `state: PENDING`.
 
 ## D22
 
@@ -475,7 +481,7 @@ read like the folder icons; the grey count, owner, 2026-11-04: a past discussion
 **A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,
 under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard review… and
 Submit review… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
-an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
+an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state. A collapsed stack's entry carries it too, with a dot on its place (owner, 2026-11-04).
 In the app sidebar, "Draft reviews" with a count at the very top, above My work, only while there is at least one,
 opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
 red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation

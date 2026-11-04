@@ -106,8 +106,8 @@ your filters and expanded context. Leave a pull request halfway and come back, a
 
 ## Moving through a stack
 
-`J` and `K` already walk pull requests in githq — through a stack and on into the next one — and they keep that
-meaning in a review. Files are `[` and `]`. The stack's map sits at the top of the review, one click per pull
+In a review `J` and `K` walk the pull requests of the stack, then on along the list you came from: the next stack, as one
+step. Files are `[` and `]`. The stack's map sits at the top of the review, one click per pull
 request, and the command palette goes to any of them. [The keys](DECISIONS.md#d16).
 
 ## Writing a review

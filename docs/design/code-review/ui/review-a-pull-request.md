@@ -50,8 +50,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
 
    All of these are remembered for every pull request, not per pull request.
 4. **Moving on.** `J` / `K` go to the next and previous pull request. Within a stack that is the next one in the
-   stack; after the last one it continues into the next stack of the list the user came from, exactly as in an
-   opened pull request today. Clicking a pull request in the stack goes there too. Coming back to a pull request
+   stack; after the last one it continues into the next entry of the list the user came from. Clicking a pull request in the stack goes there too. Coming back to a pull request
    returns the user to exactly where they were reading.
 5. **An open draft review** (first step). While the user has an unsubmitted draft review on this pull request, the
    review must say so in a way that is impossible to miss, with how many comments are waiting. Lists of pull
@@ -210,5 +209,3 @@ Still open, not settled by the screens:
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
 - **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
 - **Wording left as it was:** lists still say "Your draft review · 3 comments unsent" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72). The owner has reworded the toolbar and named the sidebar entry "Draft reviews".
-- **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
-  the drafts list (CR34) shows the pull requests themselves.

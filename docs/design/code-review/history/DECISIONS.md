@@ -105,3 +105,15 @@ that the diff shows nothing — gets an entry of its own in the file list and th
 such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
 me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
 pass) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
+
+## D16
+
+Retired 2026-11-04, replaced by the current [D16](../DECISIONS.md#d16): `J` / `K` go through a review's stack first, stacked PRs D26 having made a collapsed stack one step elsewhere.
+
+**In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
+today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
+and the command palette goes to any of them. Review is a full-screen route of its own, so Back returns; one key
+opens it from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys
+jumps between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on
+the remembered position ([D14](#d14)).** (2026-11-02, owner: `J` / `K` and `[` / `]` for consistency with the pull
+request view; the rest the agent's proposal, confirmed after the rightsize pass)
