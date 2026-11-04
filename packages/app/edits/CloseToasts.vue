@@ -1,4 +1,4 @@
-<!-- The toasts of what the user just closed, for a `Toaster` (D29): what closed and Undo (⌘Z takes back the latest, while it shows), which reopens it. A close GitHub refuses leaves only its failure's toast (`EditToasts`). -->
+<!-- The toasts of what the user just closed, for a `Toaster` (D29): what closed and Undo (⌘Z takes back the latest, while it shows), which reopens it and asks the cursor back to it (`ItemNavigation`). A close GitHub refuses leaves only its failure's toast (`EditToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -8,6 +8,7 @@ import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
 
 import * as l from './CloseToasts.loc.js';
 import { ItemEditor } from './ItemEditor.js';
@@ -19,6 +20,7 @@ const UNDO_KEY = 'Mod+Z';
 const UNDO_MS = 10_000;
 
 const editor = useService(ItemEditor);
+const navigation = useService(ItemNavigation);
 const t = useTranslate();
 
 useCommands(() => {
@@ -32,11 +34,15 @@ useCommands(() => {
           key: UNDO_KEY,
           icon: Undo2,
           menu: false,
-          run: () => void editor.undoClose(latest.id),
+          run: () => undo(latest),
         },
       ]
     : [];
 });
+
+function undo({ id, targets }: UndoableClose) {
+  navigation.requestReturn({ ids: targets.map(target => target.itemId), settled: editor.undoClose(id) });
+}
 
 function getTitle({ targets }: UndoableClose) {
   const [first] = targets;
@@ -68,7 +74,7 @@ function onOpenChange(close: UndoableClose, open: boolean) {
         size="sm"
         :kbd="UNDO_KEY"
         :aria-keyshortcuts="formatAriaKeyShortcuts(UNDO_KEY)"
-        @click="editor.undoClose(close.id)"
+        @click="undo(close)"
       >
         {{ t(l.undo) }}
       </Button>

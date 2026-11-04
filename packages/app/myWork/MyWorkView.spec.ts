@@ -328,32 +328,29 @@ test('stacked PRs D12: my stack closing an assigned issue sits under it, whole; 
     await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
 });
 
-test('stacked PRs D23: with an item open, j walks from the issue into its folded stack one by one, k back into it at its last', async () => {
+test('stacked PRs D23: with an item open, j steps from the issue past its folded stack and k back onto it; expanded, each of its pull requests is a step', async () => {
     const view = mount(STACK_UNDER_ISSUE_ITEMS, STACK_UNDER_ISSUE_MEMBERSHIP);
     view.selectedId.value = 'I_12';
     view.openedId.value = 'I_12';
     await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
 
     await userEvent.keyboard('j');
-    expect(view.opened).toEqual(['PR_S_sync_1']);
-    view.openedId.value = 'PR_S_sync_1';
-    await userEvent.keyboard('j');
-    view.openedId.value = 'PR_S_sync_2';
-    await userEvent.keyboard('j');
-    view.openedId.value = 'PR_S_sync_3';
-    expect(view.opened).toEqual(['PR_S_sync_1', 'PR_S_sync_2', 'PR_S_sync_3']);
-    // The issue stays selected while its folded stack is walked.
-    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
-
-    await userEvent.keyboard('j');
     await expect.poll(selectedTitle).toBe('Command palette: jump to issue by number');
     view.openedId.value = 'I_9';
     await userEvent.keyboard('k');
-    view.openedId.value = 'PR_S_sync_3';
-    await userEvent.keyboard('k');
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
+    view.openedId.value = 'I_12';
+    expect(view.opened).toEqual(['I_9', 'I_12']);
+
+    await userEvent.keyboard('{ArrowRight}j');
+    view.openedId.value = 'PR_S_sync_1';
+    await userEvent.keyboard('j');
     view.openedId.value = 'PR_S_sync_2';
-    await userEvent.keyboard('kk');
-    expect(view.opened.slice(3)).toEqual(['I_9', 'PR_S_sync_3', 'PR_S_sync_2', 'PR_S_sync_1', 'I_12']);
+    await userEvent.keyboard('k');
+    view.openedId.value = 'PR_S_sync_1';
+    await userEvent.keyboard('k');
+    expect(view.opened.slice(2)).toEqual(['PR_S_sync_1', 'PR_S_sync_2', 'PR_S_sync_1', 'I_12']);
+    await expect.poll(selectedTitle).toBe('Background sync with conditional requests');
 });
 
 test('stacked PRs D23: two stacks under one issue each get a header one step in, expanded on their own; Enter opens the stack', async () => {

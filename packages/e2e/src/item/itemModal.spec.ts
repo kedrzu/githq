@@ -54,6 +54,29 @@ test("the command menu opens over the modal, and what it opens takes the modal's
     await expect(item.title).toHaveText(OTHER);
 });
 
+test("in the modal J steps through the list, the list's selection following; the arrows leave the opened item where it is", async ({
+    page,
+    github,
+}) => {
+    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(OTHER).click();
+    await item.arrangement('Modal').click();
+    await expect(item.position).toHaveText('2 / 8');
+
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowUp');
+    await expect(item.title).toHaveText(OTHER);
+    await expect(item.position).toHaveText('2 / 8');
+
+    await page.keyboard.press('j');
+    await expect(item.title).toHaveText('Move the sidebar state to the store');
+    await expect(item.position).toHaveText('3 / 8');
+    await page.keyboard.press('Escape');
+    await expect(item.modal).toBeHidden();
+    await expect(myWork.selectedRow).toContainText('Move the sidebar state to the store');
+});
+
 test('the modal is widened and narrowed by dragging either edge, and keeps its width across reloads', async ({
     page,
     github,
