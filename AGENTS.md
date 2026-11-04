@@ -45,6 +45,7 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run dev:desktop` — the Tauri desktop app (`packages/desktop`, D23) against `nuxt dev`; sign-in uses the
   Device Flow of "githq (dev)", which needs no secret (`GITHQ_ENV` picks the app; Device Flow enabled). Needs Rust.
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
+- `bun run build:desktop:signed` — the same with signed updater bundles, the key read from the secret store on any machine after `bun nzyme secrets login`.
 - Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|candidate|stable`)
   works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.
   Steps and one-time setup: `docs/desktop/RELEASING.md`.

@@ -71,7 +71,7 @@ never offered it. Delete the prerelease and its tag once the real version is out
   Sign-in uses the OAuth App "githq (dev)" (`GITHQ_ENV` defaults to `dev`), with Device Flow enabled (below). The updater is off in dev.
 - `bun run build:desktop` — a local installer for this machine, under
   `packages/desktop/src-tauri/target/release/bundle/`. It needs no signing key: the signed updater bundles are
-  switched on only in CI.
+  switched on only in CI and in `bun run build:desktop:signed`.
 
 Both need Rust (`rustup`) and, on Linux, Tauri's
 [prerequisites](https://v2.tauri.app/start/prerequisites/#linux).
@@ -87,13 +87,24 @@ OAuth Apps as the web, but needs only their public client ID and never the secre
 ### Updater key
 
 The updater bundles are signed with a minisign key. Its public half is `plugins.updater.pubkey` in
-`packages/desktop/src-tauri/tauri.conf.json`. The private key and its password were generated into
-`~/.githq-secrets/` (`updater.key`, `updater.key.password`) on the owner's Mac and set as the repository secrets
-`TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+`packages/desktop/src-tauri/tauri.conf.json`. The private key and its password live in the secret store (the `secrets`
+skill), as `GITHQ_TAURI_SIGNING_PRIVATE_KEY_PROD` and `GITHQ_TAURI_SIGNING_PRIVATE_KEY_PASSWORD_PROD`, mapped only with
+`GITHQ_ENV=prod`, so that `bun run dev` never holds them. The store is the only readable copy: GitHub secrets can't be read
+back. If the key is lost, installed apps can never update again: they accept only updates signed by this key, so every
+user would have to reinstall by hand from a build with a new key.
 
-**Back both files up to a password manager.** GitHub secrets can't be read back. If the key is lost, installed
-apps can never update again: they accept only updates signed by this key, so every user would have to reinstall
-by hand from a build with a new key.
+On any machine, once logged in with `bun nzyme secrets login`:
+
+- `bun run build:desktop:signed` builds the app with signed updater bundles, as a release does, reading the key from the
+  store.
+- To set or replace the repository secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, which the
+  Release action signs with:
+
+  ```sh
+  GITHQ_ENV=prod bun nzyme secrets run -- sh -c '
+    printf %s "$TAURI_SIGNING_PRIVATE_KEY" | gh secret set TAURI_SIGNING_PRIVATE_KEY
+    printf %s "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" | gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD'
+  ```
 
 ### Apple signing and notarization (once the Developer ID exists)
 

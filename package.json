@@ -21,6 +21,7 @@
         "preview": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker preview --port 8787",
         "deploy": "bun run build && bun --cwd packages/app build && bun --cwd packages/worker deploy",
         "build:desktop": "bun run build && bun --cwd packages/desktop tauri build",
+        "build:desktop:signed": "bun run build && GITHQ_ENV=prod bun nzyme secrets run -- bun --cwd packages/desktop tauri build --config '{\"bundle\":{\"createUpdaterArtifacts\":true}}'",
         "storybook": "bun --cwd packages/app storybook",
         "lighthouse": "bun --cwd packages/app lighthouse",
         "lint": "oxlint --type-aware --quiet --disable-nested-config --fix . && eslint --fix .",
