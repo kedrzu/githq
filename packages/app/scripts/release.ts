@@ -1,16 +1,19 @@
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 
 import type { ReleaseMode } from './releasePlan.js';
-import { checkTitle, findLastStableTag, planRelease, renderNotes } from './releasePlan.js';
+import { checkTitle, findLastStableTag, hasNoCode, planRelease, renderNotes } from './releasePlan.js';
 
-// The release CLI that .github/workflows/release.yml runs with plain bun, without `bun install`:
-//   release.ts check-title <title>
+// The release CLI that CI runs with plain bun, without `bun install`:
+//   release.ts check-title <title> --files <file>
+//     <file> is the PR's changed paths, the output of `git diff -z --name-only --no-renames`. Outputs `code=true|false`.
 //   release.ts plan --mode <preview|candidate|stable> --notes <file>
-// It reads local git and its arguments only. Git is spawned with an argument array, never through a shell, so a title
-// or a commit subject stays data.
+// It reads local git, its arguments and the file it is given only. Git is spawned with an argument array, never through
+// a shell, so a title or a commit subject stays data.
 
 const MODES: string[] = ['preview', 'candidate', 'stable'];
+const USAGE =
+    'usage: release.ts check-title <title> --files <file> | plan --mode <preview|candidate|stable> --notes <file>';
 
 function git(...args: string[]): string[] {
     const output = execFileSync('git', args, { encoding: 'utf8' });
@@ -81,15 +84,30 @@ function plan(args: string[]) {
 function main(args: string[]) {
     const [command, ...rest] = args;
     if (command === 'check-title') {
-        const [title] = rest;
-        const check = checkTitle(title ?? '');
-        if (!check.valid) {
-            fail(check.reason);
-        }
+        checkTitleCommand(rest);
     } else if (command === 'plan') {
         plan(rest);
     } else {
-        fail('usage: release.ts check-title <title> | plan --mode <preview|candidate|stable> --notes <file>');
+        fail(USAGE);
+    }
+}
+
+function checkTitleCommand([title, ...options]: string[]) {
+    const listFile = option(options, '--files');
+    // A list that was lost must not read as an empty one, which passes.
+    if (!listFile) {
+        fail(USAGE);
+    }
+
+    const files = readFileSync(listFile, 'utf8')
+        .split('\0')
+        .filter(file => file !== '');
+    const check = checkTitle(title ?? '', files);
+    if (!check.valid) {
+        fail(check.reason);
+    }
+    if (process.env.GITHUB_OUTPUT) {
+        appendFileSync(process.env.GITHUB_OUTPUT, `code=${!hasNoCode(files)}\n`);
     }
 }
 

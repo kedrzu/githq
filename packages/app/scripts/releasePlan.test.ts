@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from 'bun:test';
 
-import { checkTitle, findLastStableTag, planRelease, renderNotes } from './releasePlan.js';
+import { checkTitle, findLastStableTag, hasNoCode, planRelease, renderNotes } from './releasePlan.js';
 import type { ReleaseMode } from './releasePlan.js';
 
 function plan(subjects: string[], tags: string[], mode: ReleaseMode = 'stable') {
@@ -17,7 +17,7 @@ describe('checkTitle', () => {
         'refactor!: rename the store',
         'perf: load the list faster',
     ])('accepts %p', title => {
-        expect(checkTitle(title)).toEqual({ valid: true });
+        expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
     });
 
     test.each([
@@ -32,11 +32,57 @@ describe('checkTitle', () => {
         'feat!(web): add the menu',
         'Feat: add the menu',
     ])('rejects %p with a one-line reason', title => {
-        const check = checkTitle(title);
+        const check = checkTitle(title, []);
         expect(check.valid).toBe(false);
         if (!check.valid) {
             expect(check.reason).not.toContain('\n');
         }
+    });
+
+    test.each([
+        { title: 'docs: a', files: ['README.md', 'docs/a.md', 'design/a.pen'] },
+        { title: 'docs: a', files: ['docs/design/shot.png'] },
+        { title: 'docs(web)!: a', files: ['design/a.pen'] },
+        { title: 'chore: a', files: ['README.md'] },
+        { title: 'chore: a', files: ['src/a.ts'] },
+        { title: 'feat: a', files: ['README.md', 'src/a.ts'] },
+        { title: 'feat: a', files: [] },
+        { title: 'docs: a', files: [] },
+    ])('accepts $title with $files', ({ title, files }) => {
+        expect(checkTitle(title, [...files])).toEqual({ valid: true });
+    });
+
+    test.each([
+        { title: 'docs: a', files: ['README.md', 'src/a.ts'] },
+        { title: 'docs(web): a', files: ['src/a.ts'] },
+        { title: 'docs!: a', files: ['src/a.ts'] },
+        { title: 'docs: a', files: ['packages/docs/a.ts'] },
+        { title: 'feat: a', files: ['README.md'] },
+        { title: 'fix: a', files: ['docs/design/shot.png'] },
+        { title: 'perf: a', files: ['design/a.pen'] },
+        { title: 'fix(web)!: a', files: ['README.md'] },
+    ])('rejects $title with $files', ({ title, files }) => {
+        expect(checkTitle(title, [...files]).valid).toBe(false);
+    });
+
+    test('a docs rejection names the first few code paths and stays one line', () => {
+        const check = checkTitle('docs: a', ['README.md', 'a\nb.ts', 'c.ts', 'd.ts', 'e.ts', 'f.ts']);
+        expect(check).toEqual({
+            valid: false,
+            reason: 'a docs PR cannot touch code, but this one changes "a\\nb.ts", "c.ts", "d.ts" and 2 more',
+        });
+    });
+});
+
+describe('hasNoCode', () => {
+    test.each([
+        { files: ['README.md', 'design/a.pen', 'docs/shot.png'], expected: true },
+        { files: ['README.md', 'src/a.ts'], expected: false },
+        { files: ['README.mdx'], expected: false },
+        { files: ['packages/docs/a.ts'], expected: false },
+        { files: [], expected: false },
+    ])('$files gives $expected', ({ files, expected }) => {
+        expect(hasNoCode([...files])).toBe(expected);
     });
 });
 

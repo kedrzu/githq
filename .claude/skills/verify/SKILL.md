@@ -47,9 +47,10 @@ through Storybook; `*.spec.ts` under `packages/e2e` = Playwright; `*.stories.ts`
 
 Once, when all work is believed complete. Every step, in order, nothing skipped; zero errors each.
 
-A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` files
-and `githq.pen`, nothing can break but the format, so `bunx eslint --fix .` (Markdown is formatted by ESLint) alone is
-the full protocol. It still counts: unformatted design docs reaching `main` fail the deploy's Lint step and block every
+A change with no code is the exception: when `git diff --name-only origin/main...HEAD` lists only `.md` and `.pen` files
+and files under `docs/` (`hasNoCode` in `packages/app/scripts/releasePlan.ts`), nothing can break but the format, so
+`bun run lint` and `bun run format` (Markdown is formatted by ESLint) alone are the full protocol, as in CI's `format`
+job. It still counts: unformatted design docs reaching `main` fail the deploy's Lint step and block every
 deploy after them.
 
 |#|Step|Command|Must|
@@ -74,6 +75,13 @@ Rules:
 - `--skip-nx-cache` in steps 3 and 7: a cached green from an earlier tree proves nothing.
 - Changes inside `nzyme/` additionally need `bun run lint:nzyme` and nzyme's own tests
   (`bun run --cwd nzyme test`).
+
+## Where the checks run
+
+Locally, this protocol, before a change is called done. In CI, on Linux, the same set but for the Storybook build
+(`.github/workflows/checks.yml`): on every push to a PR that is ready for review, never on a draft, and again on `main`
+before the deploy. CI does not replace the local run: it starts only once the PR is marked ready, which is the last step
+after this protocol has passed (`git-workflow` → Publish). It catches what only shows off a Mac.
 
 ## E2E
 
