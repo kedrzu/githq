@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { D1_ISSUE_DETAIL, F1_PULL_REQUEST, F3_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
+import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import * as stories from './ItemView.stories.js';
 
@@ -97,6 +98,26 @@ test('J/K step through the list, Esc closes, R puts the cursor in the comment bo
     await expect.element(box).not.toHaveFocus();
     expect(onClose).not.toHaveBeenCalled();
 
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test("a control Tab reached outside the list holds an opened panel's J/K; one Escape gives them back and does not close it", async () => {
+    trackTabFocus();
+    await IssueSplit.run();
+    const { onNext, onClose } = IssueSplit.args;
+
+    await userEvent.tab();
+    expect(document.activeElement?.hasAttribute('data-tab-focus')).toBe(true);
+    await userEvent.keyboard('j');
+    expect(onNext).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(document.body);
+
+    await userEvent.keyboard('j');
+    expect(onNext).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('{Escape}');
     expect(onClose).toHaveBeenCalledTimes(1);
 });
@@ -518,6 +539,21 @@ test('PM38: before the merge options are read, GitHub saying only checks not req
     await PullRequestOptionalFailing.run({ args: { ...PullRequestOptionalFailing.args, mergeChecks: null } });
 
     await expect.element(page.getByRole('heading', { name: /^Ready to merge/ })).toBeVisible();
+});
+
+test('PM38: before the merge options are read, GitHub saying it merges with no review decision reads ready', async () => {
+    const { args } = PullRequestOptionalFailing;
+    await PullRequestOptionalFailing.run({
+        args: {
+            ...args,
+            item: { ...F3_PULL_REQUEST, mergeStateStatus: 'CLEAN', reviewDecision: null },
+            mergeChecks: null,
+        },
+    });
+
+    await expect
+        .element(page.getByRole('heading', { name: /^Ready to merge/ }))
+        .toHaveTextContent('Ready to mergeNo review required · no conflicts');
 });
 
 test('PM38: before the merge options are read, a failing check GitHub holds it for holds the standing', async () => {

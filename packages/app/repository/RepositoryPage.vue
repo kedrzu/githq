@@ -7,7 +7,6 @@ import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
-import { useCommands } from '@/commands/useCommands.js';
 import CommitGraphView from '@/commits/CommitGraphView.vue';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
@@ -44,7 +43,6 @@ import * as l from './RepositoryView.loc.js';
 import { getSectionItemKind, isItemSection } from './RepositorySection.js';
 import type { RepositoryItemSection, RepositorySection } from './RepositorySection.js';
 import { REPOSITORY_GROUPINGS, REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
-import { useRepositoryCommands } from './useRepositoryCommands.js';
 import { LastRepositoryTab } from './LastRepositoryTab.js';
 
 const auth = useService(AuthStore);
@@ -58,7 +56,6 @@ const route = useRoute();
 const router = useRouter();
 const t = useTranslate();
 const list = useItemList();
-const repositoryCommands = useRepositoryCommands();
 const tabs = useService(LastRepositoryTab);
 const workflowPlaces = useService(WorkflowTabPlaces);
 const graphView = useTemplateRef<InstanceType<typeof CommitGraphView>>('graphView');
@@ -216,9 +213,6 @@ const projectLinks = computed(() => {
   return { links: [...links.values()], withoutProject };
 });
 
-// The repository's page on GitHub is in the command menu too, named, as the screen is about it.
-useCommands(() => [{ ...repositoryCommands(nameWithOwner.value).openOnGitHub, detail: nameWithOwner.value }]);
-
 // No longer tracked, here or elsewhere, its Workflows section goes (actions D4): its other sections stay on screen.
 watch(
   () => section.value === 'workflows' && nameWithOwner.value === repositoryName && tracking.loaded && !tracked.value,
@@ -325,6 +319,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :viewer-login="auth.viewer.login"
     :now="list.now"
     :opened-id="list.openedId"
+    :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
     :workflow-count="tracked ? workflowList.count : null"

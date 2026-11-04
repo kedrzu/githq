@@ -25,6 +25,7 @@ import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
+import type { PullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type {
     Item,
@@ -91,6 +92,9 @@ export interface ItemSizeFact {
     readonly deletions: number;
 }
 
+/** Where a pull request stands: its status and, apart from it, that its checks passed. */
+type PullRequestStandingFacts = Pick<ItemFactsViewModel, 'status' | 'checks'>;
+
 /** What a row and a card of an item show, worked out once for both. */
 export interface ItemFactsViewModel {
     readonly kind: ItemKindFact;
@@ -99,6 +103,8 @@ export interface ItemFactsViewModel {
     readonly people: readonly ItemUser[];
     readonly age: string;
     readonly status: ItemStatusFact | null;
+    /** "Checks passed", said before {@link status} unless a green status already says as much. */
+    readonly checks: ItemStatusFact | null;
     /** A pull request's lines added and removed, nested under an issue or not; an issue and a draft have none. */
     readonly size: ItemSizeFact | null;
     readonly projectField: ItemProjectFieldFact | null;
@@ -106,8 +112,8 @@ export interface ItemFactsViewModel {
 
 /**
  * What a row or a card of an issue or a pull request says about it: its kind and state, its reference, people,
- * age, where a pull request stands, its size and the row field of its first project (D12) — the same in a list
- * and on a board.
+ * age, where a pull request stands and whether its checks passed, its size and the row field of its first project
+ * (D12) — the same in a list and on a board.
  */
 export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     const t = useTranslate();
@@ -136,18 +142,20 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         getItemPeople({ item: item.value, shown: peopleShown.value, viewerLogin: viewerLogin.value }),
     );
     const age = computed(() => formatAge(Date.parse(item.value.updatedAt), now.value));
-    const status = computed(() => {
+    const pullRequestFacts = computed((): PullRequestStandingFacts => {
         const listed = item.value;
         if (listed.kind !== 'pullRequest') {
-            return null;
+            return { status: null, checks: null };
         }
 
         if (listed.merged) {
-            return getMergedStatus(listed);
+            return { status: getMergedStatus(listed), checks: null };
         }
 
-        return listed.state === 'OPEN' ? getStatus(listed) : null;
+        return listed.state === 'OPEN' ? getOpenFacts(listed) : { status: null, checks: null };
     });
+    const status = computed(() => pullRequestFacts.value.status);
+    const checks = computed(() => pullRequestFacts.value.checks);
     const size = computed((): ItemSizeFact | null => {
         const listed = item.value;
         return listed.kind === 'pullRequest' ? { additions: listed.additions, deletions: listed.deletions } : null;
@@ -171,7 +179,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         };
     });
 
-    return reactive<ItemFactsViewModel>({ kind, reference, people, age, status, size, projectField });
+    return reactive<ItemFactsViewModel>({ kind, reference, people, age, status, checks, size, projectField });
 
     function getKind(listed: Item): ItemKindFact {
         if (listed.kind === 'issue') {
@@ -246,7 +254,27 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         return { icon: Timer, tone: 'accent', text, readyToMerge: false };
     }
 
-    function getStatus(pr: PullRequestItem): ItemStatusFact | null {
+    /** The two facts of an open pull request, worked out together so they cannot disagree. */
+    function getOpenFacts(pr: PullRequestItem): PullRequestStandingFacts {
+        const merge = getMergeStatus(pr);
+        if (merge) {
+            return { status: merge, checks: null };
+        }
+
+        const standing = getPullRequestStanding(pr);
+        const said = getStandingStatus(pr, standing);
+        // A green status already speaks for the checks.
+        return {
+            status: said,
+            checks:
+                standing.checksPassed && said?.tone !== 'success'
+                    ? { icon: CircleCheck, tone: 'success', text: t(l.checksPassed), readyToMerge: false }
+                    : null,
+        };
+    }
+
+    /** What is under way with its merge, or how the last one ended: it says all there is, with nothing of its checks. */
+    function getMergeStatus(pr: PullRequestItem): ItemStatusFact | null {
         // Merged once GitHub says so (merging D3): until then it stays open, being merged.
         if (pr.merging) {
             return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
@@ -262,11 +290,10 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         }
 
         const end = getMergeEnd(mergeRecord.value, pr, null);
-        if (end) {
-            return getEndStatus(end);
-        }
+        return end ? getEndStatus(end) : null;
+    }
 
-        const standing = getPullRequestStanding(pr);
+    function getStandingStatus(pr: PullRequestItem, standing: PullRequestStanding): ItemStatusFact | null {
         if (standing.needsAuthor) {
             const parts: string[] = [];
             if (standing.checksFailing) {
@@ -296,8 +323,14 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
         }
 
+        // A review asked with no decision required stays "waiting for review", although GitHub would merge it.
+        if (standing.mergesWithoutReview && !standing.waitingForReview && !reviewRequested.value) {
+            return { icon: CircleCheck, tone: 'success', text: t(l.readyToMerge), readyToMerge: true };
+        }
+
         if (standing.approved) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approved), readyToMerge: false };
+            const text = standing.checksPassed ? t(l.approvedChecksPassed) : t(l.approved);
+            return { icon: CircleCheck, tone: 'success', text, readyToMerge: false };
         }
 
         if (reviewRequested.value) {

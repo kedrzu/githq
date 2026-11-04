@@ -9,7 +9,11 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { AppUpdateShape } from '@/services/AppUpdate.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
+import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { PROJECT_PATHS, REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { Browser } from '@/services/Browser.js';
 
 import AppCommands from './AppCommands.vue';
 
@@ -72,6 +76,88 @@ test('"Restart to update" restarts into the update', async () => {
     expect(update.restart).toHaveBeenCalledOnce();
 });
 
+for (const path of ['/', '/settings', '/orgs/acme/projects/1']) {
+    test(`at ${path}, with no repository, the menu has no chip and no group of one`, async () => {
+        const router = mount();
+        await router.push(path);
+
+        await openMenu();
+        const menu = page.getByRole('listbox', { name: 'Command menu' });
+        await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Open on GitHub/ })).not.toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Copy link/ })).not.toBeInTheDocument();
+        await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
+    });
+}
+
+test("an item opened over a list elsewhere names the item's repository, over a repository's screen that screen's", async () => {
+    const router = mount();
+    const pane = '?pane=issue&issue=acme%7Capi%7C1';
+
+    await router.push(`/orgs/acme/projects/1${pane}`);
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('group', { name: 'acme/api' })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    for (const screen of ['/acme/web/issues', '/acme/web/actions/runs/7']) {
+        await router.push(`${screen}${pane}`);
+        await openMenu();
+        await expect.element(menu.getByRole('group', { name: 'acme/web' })).toBeInTheDocument();
+        await expect.element(menu.getByRole('group', { name: 'acme/api' })).not.toBeInTheDocument();
+        await userEvent.keyboard('{Escape}');
+    }
+});
+
+test("off its view the repository's group has its sections, page, link and settings, none of them on a key", async () => {
+    const router = await mount({ tracked: ['acme/web'] });
+    await router.push('/acme/web/actions/runs/7');
+
+    await openMenu();
+    const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
+    for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows', 'Repository settings', 'Copy link']) {
+        await expect.element(group.getByRole('option', { name: title, exact: true })).toBeInTheDocument();
+    }
+    await expect.element(group.getByRole('option', { name: /^Open on GitHub\s*acme\/web$/ })).toBeInTheDocument();
+    for (const option of group.getByRole('option').elements()) {
+        expect(option.querySelector('kbd')).toBeNull();
+    }
+
+    await userEvent.keyboard('commits{Enter}');
+    await expect.poll(() => router.currentRoute.value.path).toBe('/acme/web/commits');
+});
+
+test("on a repository's view the group has only its page, link and settings: its sections are the view's, on keys", async () => {
+    const router = await mount({ tracked: ['acme/web'] });
+    await router.push('/acme/web/issues');
+
+    await openMenu();
+    const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
+    await expect.element(group.getByRole('option', { name: /^Open on GitHub\s*acme\/web$/ })).toBeInTheDocument();
+    await expect.element(group.getByRole('option', { name: 'Repository settings', exact: true })).toBeInTheDocument();
+    for (const title of ['Issues', 'Pull requests', 'Commits', 'Workflows']) {
+        await expect.element(group.getByRole('option', { name: title })).not.toBeInTheDocument();
+    }
+});
+
+test('a repository that is not tracked is offered Commits but neither Workflows nor its settings', async () => {
+    const router = await mount({});
+    await router.push('/acme/web/actions/runs/7');
+
+    await openMenu();
+    const group = page.getByRole('listbox', { name: 'Command menu' }).getByRole('group', { name: 'acme/web' });
+    await expect.element(group.getByRole('option', { name: 'Commits', exact: true })).toBeInTheDocument();
+    await expect.element(group.getByRole('option', { name: 'Workflows' })).not.toBeInTheDocument();
+    await expect
+        .element(group.getByRole('option', { name: 'Repository settings', exact: true }))
+        .not.toBeInTheDocument();
+});
+
+async function openMenu() {
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
+}
+
 /** An update ready to run, hidden by `later` as the desktop app's is. */
 function createUpdate(version: string) {
     const ready = shallowRef<string | null>(version);
@@ -87,8 +173,17 @@ function createUpdate(version: string) {
     return update;
 }
 
+interface MountOptions {
+    /** `owner/name` of the repositories tracked; setting it makes mounting asynchronous. */
+    readonly tracked?: readonly string[];
+}
+
 /** The app's commands in an app of their own; `update` stands in for the desktop app's updates. */
-function mount(update?: AppUpdateShape) {
+function mount(update?: AppUpdateShape): ReturnType<typeof createRouter>;
+function mount(options: MountOptions): Promise<ReturnType<typeof createRouter>>;
+function mount(arg?: AppUpdateShape | MountOptions) {
+    const update = arg && 'restart' in arg ? arg : undefined;
+    const options = arg && !('restart' in arg) ? arg : undefined;
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     setIndexedDbPersistence(container);
@@ -96,9 +191,30 @@ function mount(update?: AppUpdateShape) {
         container.set(AppUpdate, update);
     }
 
+    if (options === undefined) {
+        return render(container);
+    }
+
+    container.set(Browser, createSignedInBrowser());
+    const tracking = container.resolve(TrackingStore);
+    return tracking.ready().then(() => {
+        for (const nameWithOwner of options.tracked ?? []) {
+            tracking.track({ repository: { nameWithOwner, id: `R_${nameWithOwner}` } });
+        }
+
+        return render(container);
+    });
+}
+
+function render(container: ReturnType<typeof createContainer>) {
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/:path(.*)*', component: defineComponent({ render: () => null }) }],
+        routes: [
+            { path: REPOSITORY_PATH, name: 'repository', component: defineComponent({ render: () => null }) },
+            { path: WORKFLOW_RUN_PATH, component: defineComponent({ render: () => null }) },
+            ...PROJECT_PATHS.map(path => ({ path, component: defineComponent({ render: () => null }) })),
+            { path: '/:path(.*)*', component: defineComponent({ render: () => null }) },
+        ],
     });
     const host = document.createElement('div');
     document.body.append(host);

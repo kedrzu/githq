@@ -87,6 +87,33 @@ test('dismissing the toast untracks at once, by its button or by Escape', async 
     expect(tracking.isTracked(api)).toBe(false);
 });
 
+test('a change of screen gives the keys back from what Tab focused; Escape doing so leaves a toast alone', async () => {
+    const { pending, router } = await open();
+    const link = sidebarLink(WEB);
+    await expect.element(link).toBeInTheDocument();
+    const focusByTab = async () => {
+        for (let tabs = 0; tabs < 40 && document.activeElement !== link.element(); tabs++) {
+            await userEvent.tab();
+        }
+
+        expect(link.element().hasAttribute('data-tab-focus')).toBe(true);
+    };
+
+    await focusByTab();
+    await router.push('/somewhere');
+    await expect.element(link).not.toHaveFocus();
+
+    await focusByTab();
+    pending.untrack({ kind: 'repository', nameWithOwner: API }, API);
+    await expect.element(toast()).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(link).not.toHaveFocus();
+    await expect.element(toast()).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(toast()).not.toBeInTheDocument();
+});
+
 test('moving to another screen keeps the toast and Undo', async () => {
     const { pending, router, tracking } = await open();
 

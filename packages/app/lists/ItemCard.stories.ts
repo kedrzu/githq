@@ -109,6 +109,45 @@ export const IssueHasNoSize: Story = {
     },
 };
 
+/** A pull request GitHub would merge with no review decision and no review asked. */
+export const ReadyToMerge: Story = {
+    args: { item: { ...READY, reviewDecision: null, reviewRequests: [] } },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText('ready to merge')).toBeVisible();
+        await expect(canvas.queryByText('checks passed')).toBeNull();
+    },
+};
+
+/** "Checks passed" goes first, before the status. */
+export const ChecksPassedWaiting: Story = {
+    args: { item: { ...READY, reviewDecision: 'REVIEW_REQUIRED', mergeStateStatus: 'BLOCKED' } },
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement).toHaveTextContent(/checks passed.*waiting for review/);
+    },
+};
+
+/** "Checks passed" with no status beside it and nothing else shown: it alone makes the footer. */
+export const ChecksPassedAlone: Story = {
+    args: { item: { ...READY, reviewDecision: null, mergeStateStatus: 'BLOCKED' }, properties: ['status'] },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('checks passed')).toBeVisible();
+    },
+};
+
+/** "Status" off in Display hides "Checks passed" too. */
+export const StatusOff: Story = {
+    args: {
+        item: { ...READY, reviewDecision: 'REVIEW_REQUIRED', mergeStateStatus: 'BLOCKED' },
+        properties: ITEM_PROPERTIES.filter(property => property !== 'status'),
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.queryByText('checks passed')).toBeNull();
+        await expect(canvas.queryByText('waiting for review')).toBeNull();
+    },
+};
+
 /** PM37 on a board: a merge GitHub refused after the user moved on — the same line as the row's. */
 export const MergeRefused: Story = {
     args: { item: READY },
