@@ -147,6 +147,7 @@ function withMerges(
                     ensure: () => Promise.resolve(),
                     readAgain: () => Promise.resolve(),
                     loadOlderComments: () => Promise.resolve(),
+                    loadOlderReviews: () => Promise.resolve(),
                     needsFetch: () => false,
                     fetchDetails: () => Promise.resolve([]),
                     update: () => undefined,

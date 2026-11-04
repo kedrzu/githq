@@ -1457,7 +1457,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
             </p>
           </template>
           <template v-else>
-            <h2 :class="css.listView_groupHeader">
+            <h2
+              v-if="!group.headless"
+              :class="css.listView_groupHeader"
+            >
               <Button
                 variant="link"
                 :icon="collapsed.has(group.key) ? ChevronRight : ChevronDown"

@@ -20,7 +20,8 @@ import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
-import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { getDraftReviews } from '@/myWork/getDraftReviews.js';
+import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
@@ -228,6 +229,16 @@ function getPlaces(): NavigationPlace[] {
       path: BROKEN_WORKFLOWS_PATH,
     },
   ];
+  if (getDraftReviews(items.all).length > 0) {
+    places.unshift({
+      id: 'draftReviews',
+      group: 'goTo',
+      kind: 'draftReviews',
+      title: t(l.draftReviews),
+      path: DRAFT_REVIEWS_PATH,
+    });
+  }
+
   for (const project of pendingUntracks.projects) {
     places.push({
       id: `project:${project.id}`,

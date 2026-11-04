@@ -26,6 +26,8 @@ const config: StorybookConfig = {
         mergeConfig(viteConfig, {
             plugins: [vue(), vueJsx()],
             css: cssOptions,
+            // As in `nuxt.config.ts`: code review's tokenizer loads a language's grammar when first needed.
+            worker: { format: 'es' },
             // `shims.d.ts`: the stories show the web app.
             define: {
                 __LOCAL_BUILD__: 'false',

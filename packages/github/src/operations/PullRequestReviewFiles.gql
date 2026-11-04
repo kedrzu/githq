@@ -1,0 +1,25 @@
+# One page of a pull request's files for its review. GitHub lists at most 3000 of them; `changedFiles` is the true
+# total. No previous paths and no blob oids here: `PullRequestChangedFile` has neither.
+query PullRequestReviewFiles($owner: String!, $name: String!, $number: Int!, $after: String) {
+    repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+            id
+            headRefOid
+            baseRefOid
+            changedFiles
+            files(first: 100, after: $after) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    path
+                    changeType
+                    additions
+                    deletions
+                    viewerViewedState
+                }
+            }
+        }
+    }
+}

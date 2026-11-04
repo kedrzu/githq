@@ -15,16 +15,16 @@ import { computed } from 'vue';
 
 import Kbd from '@/components/Kbd.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import DraftDot from '@/lists/DraftDot.vue';
 import StackPips from '@/lists/StackPips.vue';
 import StackTone from '@/lists/StackTone.vue';
 import type { StackLook, StackStateFact } from '@/lists/useStackFacts.js';
 import { getHeldReason } from '@/lists/utils/getHeldReason.js';
 import { getPullRequestLook } from '@/lists/utils/getPullRequestLook.js';
+import { getStackMemberKind } from '@/lists/utils/getStackMemberKind.js';
 import { getStackRowText } from '@/lists/utils/getStackRowText.js';
 import { getStackStateFact } from '@/lists/utils/getStackStateFact.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
-import { isClosedPullRequest } from '@/store/isClosedPullRequest.js';
-import { isMergedPullRequest } from '@/store/isMergedPullRequest.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import type {
   StackDescription,
@@ -34,6 +34,8 @@ import type {
   StackPullRequestPipKind,
   StackState,
 } from '@/store/stacks/describeStack.js';
+import { getStackMembers } from '@/store/stacks/getStackMembers.js';
+import { getStackPlace } from '@/store/stacks/getStackPlace.js';
 
 import { getStackMapWindow } from './getStackMapWindow.js';
 import type { ItemArrangement } from './itemRoutes.js';
@@ -83,7 +85,7 @@ const t = useTranslate();
 const queueTexts = useMergeQueueTexts();
 const unitList = new Intl.ListFormat(APP_LANGUAGE, { type: 'unit', style: 'short' });
 
-const members = computed(() => props.stack.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'));
+const members = computed(() => getStackMembers(props.stack.pips));
 const rows = computed(() => members.value.map(pip => getRow(pip)));
 const currentIndex = computed(() =>
   Math.max(
@@ -91,10 +93,9 @@ const currentIndex = computed(() =>
     0,
   ),
 );
-const place = computed(() => {
-  const position = members.value[currentIndex.value]?.pullRequest.stack?.position ?? currentIndex.value + 1;
-  return t(l.place, { position, size: props.stack.size });
-});
+const place = computed(() =>
+  t(l.place, { position: getStackPlace(members.value, props.currentId), size: props.stack.size }),
+);
 // D17: a panel's window of at most six lines; a modal and a page show every row.
 const lines = computed((): readonly (StackMapFold | StackMapRow)[] => {
   const all = rows.value;
@@ -125,7 +126,7 @@ const neighbourNumbers = computed(() => ({
 function getRow(pip: StackPullRequestPip): StackMapRow {
   const { pullRequest } = pip;
   const { id } = pullRequest;
-  const kind = getRowKind(pip);
+  const kind = getStackMemberKind(pip);
   return {
     kind: 'row',
     pullRequest,
@@ -134,15 +135,6 @@ function getRow(pip: StackPullRequestPip): StackMapRow {
     current: id === props.currentId,
     key: getKey(id),
   };
-}
-
-/** Its pip's state, but a merged or closed one as it is where its pip is pale while the copy is incomplete (D7). */
-function getRowKind({ kind, pullRequest }: StackPullRequestPip): StackPullRequestPipKind {
-  if (isMergedPullRequest(pullRequest)) {
-    return 'merged';
-  }
-
-  return isClosedPullRequest(pullRequest) ? 'closed' : kind;
 }
 
 function getKey(id: string): 'J' | 'K' | null {
@@ -334,6 +326,7 @@ function openRow(row: StackMapRow) {
             />
             <span :class="css.stackMap_number">#{{ line.pullRequest.number }}</span>
             <span :class="css.stackMap_title">{{ line.pullRequest.title }}</span>
+            <DraftDot v-if="line.pullRequest.pendingReview" />
             <StackTone
               v-if="line.text"
               :look="line"

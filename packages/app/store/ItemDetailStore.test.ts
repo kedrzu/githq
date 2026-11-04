@@ -4,18 +4,19 @@ import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
 
-import type { IssueDetailFieldsFragment } from '@githq/github/generated.gen.js';
+import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from '@githq/github/generated.gen.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import type { Freshness } from '@/sync/Freshness.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
-import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
+import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName } from './IndexedDbPersistence.js';
 import { ItemDetailPersistence } from './ItemDetailPersistence.js';
 import { ItemDetailStore } from './ItemDetailStore.js';
+import type { ItemDetail } from './ItemDetailTypes.js';
 import { ItemPersistence } from './ItemPersistence.js';
 import { ItemStore } from './ItemStore.js';
 import { toItem } from './toItem.js';
@@ -132,6 +133,25 @@ test('another account taking over in another tab: the details leave memory and d
     expect(await databaseNames()).not.toContain(getLocalDatabaseName(alice));
 });
 
+test('older reviews go before the ones read; reading the pull request again keeps them', async () => {
+    const { details, github, session } = setup(uniqueLogin());
+    github.nodes.set('PR_1', { ...samplePullRequestDetailNode('PR_1', MONDAY), reviews: reviewPage(101, 200) });
+    await details.ensure('PR_1');
+
+    await details.loadOlderReviews('PR_1');
+
+    expect(github.requests.at(-1)?.variables).toEqual({ id: 'PR_1', before: 'cursor-101' });
+    expect(readReviewIds(details.get('PR_1'))).toEqual(reviewIds(1, 200));
+
+    // A new review; opened again later, the newest page is read again.
+    github.nodes.set('PR_1', { ...samplePullRequestDetailNode('PR_1', TUESDAY), reviews: reviewPage(102, 201) });
+    await session.clock.advance(2 * 60_000);
+    await details.ensure('PR_1');
+    await session.clock.advance(0);
+
+    expect(readReviewIds(details.get('PR_1'))).toEqual(reviewIds(1, 201));
+});
+
 test('older comments go before the ones read; reading the item again keeps them', async () => {
     const { details, github, session } = setup(uniqueLogin());
     github.nodes.set('I_1', withComments(sampleIssueDetailNode('I_1', MONDAY), 51, 100));
@@ -153,7 +173,7 @@ test('older comments go before the ones read; reading the item again keeps them'
 });
 
 function setup(login: string) {
-    const nodes = new Map<string, IssueDetailFieldsFragment>();
+    const nodes = new Map<string, IssueDetailFieldsFragment | PullRequestDetailFieldsFragment>();
     const session = createTestSession({ login, answer });
     const persistence = createIndexedDbPersistence();
     session.container.set(ItemPersistence, persistence);
@@ -182,6 +202,10 @@ function setup(login: string) {
                 return node
                     ? { data: { node } }
                     : { data: { node: null }, errors: [{ type: 'NOT_FOUND', path: ['node'], message: 'Not found' }] };
+            case 'MoreReviews': {
+                const before = Number(String(request.variables.before).replace('cursor-', ''));
+                return { data: { node: { id, reviews: reviewPage(1, before - 1) } } };
+            }
             case 'MoreComments': {
                 const before = Number(String(request.variables.before).replace('cursor-', ''));
                 return { data: { node: { id, commentPage: commentPage(1, before - 1) } } };
@@ -190,6 +214,28 @@ function setup(login: string) {
                 return undefined;
         }
     }
+}
+
+function reviewPage(from: number, to: number): PullRequestDetailFieldsFragment['reviews'] {
+    return {
+        pageInfo: { hasPreviousPage: from > 1, startCursor: `cursor-${from}` },
+        nodes: reviewIds(from, to).map(id => ({
+            id,
+            url: `https://github.com/acme/web/pull/1#${id}`,
+            author: null,
+            state: 'COMMENTED',
+            bodyHTML: '',
+            submittedAt: MONDAY,
+        })),
+    };
+}
+
+function reviewIds(from: number, to: number) {
+    return Array.from({ length: to - from + 1 }, (_, index) => `PRR_${from + index}`);
+}
+
+function readReviewIds(detail: ItemDetail | undefined) {
+    return detail?.kind === 'pullRequest' ? detail.reviewSummaries.map(review => review.id) : [];
 }
 
 function row(id: string, updatedAt: string) {

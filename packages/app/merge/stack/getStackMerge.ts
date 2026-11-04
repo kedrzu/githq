@@ -1,6 +1,7 @@
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
-import type { StackDescription, StackPullRequestPip } from '@/store/stacks/describeStack.js';
+import type { StackDescription } from '@/store/stacks/describeStack.js';
 import { findStackHolder } from '@/store/stacks/findStackHolder.js';
+import { getStackMembers } from '@/store/stacks/getStackMembers.js';
 import { toStackBlocker } from '@/store/stacks/toStackBlocker.js';
 
 import type { StackMerge, StackMergeBlock, StackRebaseCause } from './StackMergeTypes.js';
@@ -27,7 +28,7 @@ export interface GetStackMergeParams {
  */
 export function getStackMerge(params: GetStackMergeParams): StackMerge {
     const { description } = params;
-    const members = description.pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing');
+    const members = getStackMembers(description.pips);
     const open = members.filter(pip => isOpenPullRequest(pip.pullRequest)).map(pip => pip.pullRequest);
     const going = open.slice(0, getEndIndex() + 1);
     const wholeBlock = getWholeBlock();

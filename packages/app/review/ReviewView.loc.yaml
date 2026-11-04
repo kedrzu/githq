@@ -1,0 +1,78 @@
+previousFile:
+  en: Previous file
+nextFile:
+  en: Next file
+diff:
+  en: Changes
+reading:
+  en: Reading the files of {reference}
+listFailed:
+  en: Couldn't read this pull request's files
+gone:
+  en: GitHub doesn't show this pull request
+goneDetail:
+  en: It may have been deleted, or you may have lost access to its repository. Its code read earlier stays in this browser until you sign out.
+paused:
+  en: Waiting for GitHub's API allowance
+pausedDetail:
+  en: It resets at {time}. The files will load then, without you doing anything.
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
+noChanges:
+  en: No changes
+noChangesDetail:
+  en: '{head} has the same content as {base}. The branch may be waiting for a push, or the changes landed elsewhere.'
+noChangesPlain:
+  en: The branch has the same content as its base. It may be waiting for a push, or the changes landed elsewhere.
+markViewed:
+  en: Mark file viewed
+markNotViewed:
+  en: Mark file not viewed
+collapseFile:
+  en: Collapse file
+expandFile:
+  en: Expand file
+allViewed:
+  en: All {total} files viewed
+allViewedDetail:
+  en: Hidden files stay viewed on GitHub. Show them to read them again.
+showViewed:
+  en: Show viewed files
+noMatch:
+  en: No files match this filter
+noMatchViewedHidden:
+  en: Viewed files are hidden too.
+clearFilter:
+  en: Clear the filter
+focusFilter:
+  en: Filter files
+toggleSelected:
+  en: Select this file
+selectNext:
+  en: Select down to the next file
+selectPrevious:
+  en: Select up to the previous file
+clearSelection:
+  en: Clear the selection
+hideFileList:
+  en: Hide the file list
+showFileList:
+  en: Show the file list
+nextThread:
+  en: Next thread
+previousThread:
+  en: Previous thread
+conversation:
+  en: Conversation
+showConversation:
+  en: Show the conversation
+hideConversation:
+  en: Hide the conversation
+previousPullRequest:
+  en: Previous pull request
+nextPullRequest:
+  en: Next pull request
+goToPullRequest:
+  en: 'Go to #{number} {title}'

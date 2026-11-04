@@ -52,6 +52,11 @@ export class AppShellHarness {
         return this.tracked(name).locator('span').last();
     }
 
+    /** The sidebar's "Draft reviews" with its count, shown only while there is any (code review D28); on the rail too. */
+    get draftReviews(): Locator {
+        return this.sidebar.getByRole('link', { name: /^Draft reviews/u });
+    }
+
     /**
      * The sidebar's "Broken workflows" (actions W1), shown only while a workflow is known broken or its screen is
      * open — on the rail too, named with its count there.

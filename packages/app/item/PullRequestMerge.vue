@@ -19,6 +19,7 @@ import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
+import { getItemReference, getReviewPath } from './itemRoutes.js';
 import * as l from './PullRequestMerge.loc.js';
 import PullRequestVerdictLine from './PullRequestVerdictLine.vue';
 import { usePullRequestConditions } from './usePullRequestConditions.js';
@@ -143,7 +144,7 @@ const head = computed(() => {
   return owner && owner !== pr.repository.owner ? `${owner}:${pr.headRefName}` : pr.headRefName;
 });
 
-const filesUrl = computed(() => `${props.pr.url}/files`);
+const reviewPath = computed(() => getReviewPath(getItemReference(props.pr)));
 
 /** Why GitHub refused it, in a few words: GitHub's own title, or the organisation that has not approved githq (G5). */
 function refusedAside(reason: EditFailureReason) {
@@ -269,11 +270,9 @@ function refusedAside(reason: EditFailureReason) {
         variant="ghost"
         size="sm"
         :icon="FileDiff"
-        :link="filesUrl"
-        kbd="Shift+O"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-keyshortcuts="Shift+O"
+        :link="reviewPath"
+        kbd="D"
+        aria-keyshortcuts="D"
       >
         {{ t(l.reviewFiles) }}
       </Button>

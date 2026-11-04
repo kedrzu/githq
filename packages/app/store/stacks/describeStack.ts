@@ -7,6 +7,7 @@ import type { Item, PullRequestItem, PullRequestQueueEntry } from '@/store/ItemT
 import { mergesWithinRules } from '@/store/mergesWithinRules.js';
 
 import { findStackHolder } from './findStackHolder.js';
+import { getStackMembers } from './getStackMembers.js';
 import type { PullRequestStack } from './groupStacks.js';
 import { toStackBlocker } from './toStackBlocker.js';
 
@@ -260,9 +261,7 @@ export function describeStack(params: DescribeStackParams): StackDescription {
             return { kind: 'closed' };
         }
 
-        const { canLand: readyCount, holder } = findStackHolder(
-            pips.filter((pip): pip is StackPullRequestPip => pip.kind !== 'missing'),
-        );
+        const { canLand: readyCount, holder } = findStackHolder(getStackMembers(pips));
         const blocker = holder ? toStackBlocker(holder) : null;
 
         const requestedCount = open.filter(pr => isReviewRequestedOf(pr, params.viewerLogin)).length;

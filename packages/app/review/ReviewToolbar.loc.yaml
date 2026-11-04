@@ -1,0 +1,40 @@
+back:
+  en: Back
+pullRequest:
+  en: Pull request
+review:
+  en: Review
+viewOptions:
+  en: View options
+split:
+  en: Split
+unified:
+  en: Unified
+whitespaceHidden:
+  en: whitespace hidden
+layout:
+  en: Layout
+hideWhitespace:
+  en: Hide whitespace changes
+keptNote:
+  en: Kept for every pull request on this device.
+openOnGitHub:
+  en: Open on GitHub
+fileList:
+  en: File list
+conversation:
+  en: Conversation
+openPullRequest:
+  en: Open pull request
+draftPullRequest:
+  en: Draft pull request
+donePullRequest:
+  en: Merged pull request
+closedPullRequest:
+  en: Closed pull request
+commentsInCollapsed:
+  en: Comments in collapsed files
+previousPullRequest:
+  en: Previous pull request
+nextPullRequest:
+  en: Next pull request

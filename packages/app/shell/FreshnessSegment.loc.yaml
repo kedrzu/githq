@@ -40,3 +40,36 @@ asking:
   en: Asking GitHub · githq can't check “{term}” itself
 editsStillGo:
   en: edits still go through
+fetching:
+  en: Fetching file contents · {here} of {total} here, the rest as they come
+fetchingListed:
+  en: Fetching file contents · {here} of {total} here, the rest as they come · the list is complete
+fetchingFirst:
+  en: Fetching {name} first, then the other {others}
+fetchingOnly:
+  en: Fetching {name}
+filesPaused:
+  plural: count
+  en:
+    one: API allowance used up · 1 file waits until {time} · edits still go through
+    many: API allowance used up · {formatted} files wait until {time} · edits still go through
+filesCapped:
+  en: GitHub lists only the first {listed} of {total} changed files
+filesUnread:
+  en: GitHub didn't give the list of this pull request's files
+filesSelected:
+  en: x select · \{ \} extend · V mark viewed · Esc clear
+threadsUnread:
+  en: GitHub didn't give this pull request's review threads
+threadsPaused:
+  en: API allowance used up · review threads wait until {time}
+threadPosition:
+  en: Thread {position} of {total}, {open} open · N next · ⇧N previous
+landedFirstFile:
+  en: "First visit: starting at the first file you haven't viewed · {viewed} of {total} viewed"
+landedFirstFileWalked:
+  en: "#{number}, first visit: starting at the first file you haven't viewed · {key} back to #{back}"
+landedLeftLine:
+  en: 'Back in #{number} where you left it: {file}, line {line}'
+landedLeft:
+  en: 'Back in #{number} where you left it: {file}'

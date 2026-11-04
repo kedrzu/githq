@@ -1,0 +1,21 @@
+title:
+  en: Conversation
+close:
+  en: Close the conversation
+ghost:
+  en: ghost
+opened:
+  en: 'opened · {age}'
+showDescription:
+  en: Show the whole description
+showOlder:
+  plural: count
+  en:
+    one: Show 1 older comment
+    many: 'Show {count} older comments'
+showOlderReviews:
+  en: Show older reviews
+reading:
+  en: Reading the conversation…
+empty:
+  en: No comments or reviews yet.

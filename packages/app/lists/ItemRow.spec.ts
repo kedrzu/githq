@@ -34,6 +34,7 @@ const MAY_MERGE: MergeContext = {
 };
 /** A merge sent from the panel, with GitHub's text, naming the head the row shows. */
 const SENT: SentMerge = { request: { method: 'SQUASH' }, edited: null, head: READY.headRefOid };
+const DRAFT = { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' };
 
 const READY_ROWS = [
     { name: 'approved', ready: READY },
@@ -183,6 +184,46 @@ test('with the status off in Display, neither fact shows and nothing follows', a
     mount(NO_REVIEW, MAY_MERGE, { properties });
     expect(readStatuses()).toEqual([]);
     await expect.element(page.getByRole('button', { name: /^Merge/ })).not.toBeInTheDocument();
+});
+
+test('with a draft review the row says so in place of its status, and stays as ready: "Merge" still follows, or "Open on GitHub"', async () => {
+    mount(
+        { ...READY, pendingReview: DRAFT },
+        {
+            canOpen: () => true,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
+    await expect.element(page.getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Merge/ })).toBeVisible();
+});
+
+test('with a draft review on one the viewer may not merge, "Open on GitHub" still follows', async () => {
+    mount(
+        { ...READY, pendingReview: DRAFT },
+        {
+            canOpen: () => false,
+            open: () => undefined,
+            getRecord: () => null,
+            getCommands: () => [],
+            run: () => undefined,
+        },
+    );
+    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).toBeVisible();
+});
+
+test('D21: a list showing no status still marks a draft review, and offers no merge; what else it would say stays hidden', async () => {
+    mount({ ...READY, pendingReview: DRAFT }, null, { properties: [] });
+    await expect.element(page.getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /Open on GitHub/ })).not.toBeInTheDocument();
+
+    mount({ ...READY, id: 'PR_other', title: 'Without a draft' }, null, { properties: [] });
+    await expect.element(page.getByText('Without a draft')).toBeVisible();
+    await expect.element(page.getByText('approved · ready to merge')).not.toBeInTheDocument();
 });
 
 test('PM37: being merged, the row says so where the status sits and keeps the open icon — never merged until GitHub says so', async () => {

@@ -187,6 +187,7 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
                 { requestedReviewer: null },
             ],
         },
+        pendingReviews: { nodes: [{ id: 'PRR_1', createdAt: '2026-10-20T10:00:00Z', comments: { totalCount: 3 } }] },
         latestOpinionatedReviews: {
             nodes: [
                 { author: { login: 'monalisa' }, state: 'CHANGES_REQUESTED' },
@@ -236,6 +237,7 @@ test('a pull request counts its checks by outcome and keeps reviews, review requ
             { kind: 'user', login: 'hubot' },
             { kind: 'team', slug: 'frontend', name: 'Frontend' },
         ],
+        pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-10-20T10:00:00Z' },
         latestReviews: [
             { author: 'monalisa', state: 'CHANGES_REQUESTED' },
             { author: null, state: 'APPROVED' },

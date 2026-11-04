@@ -8,6 +8,7 @@ import type {
     ProjectItemFieldValueFieldsFragment,
     PullRequestDetailFieldsFragment,
     ReactionGroupFieldsFragment,
+    ReviewPageFieldsFragment,
 } from '@githq/github/generated.gen.js';
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -21,6 +22,7 @@ import type {
     ItemDetailProject,
     ItemDetailReview,
     ItemDetailReviewRequest,
+    ItemReviewSummary,
     ItemReaction,
     LinkedIssue,
     LinkedIssues,
@@ -28,6 +30,7 @@ import type {
     ProjectFieldValue,
     PullRequestDetail,
 } from './ItemDetailTypes.js';
+import type { ItemUser } from './ItemTypes.js';
 import { toItem } from './toItem.js';
 import type { GitHubNodes, ReviewRequestNode } from './toItem.js';
 import { toItemCheck } from './toItemCheck.js';
@@ -82,11 +85,15 @@ export function toItemComment(comment: IssueCommentFieldsFragment): ItemComment 
     return {
         id: comment.id,
         url: comment.url,
-        author: comment.author ? { login: comment.author.login, avatarUrl: comment.author.avatarUrl } : null,
+        author: toDetailAuthor(comment.author),
         bodyHtml: comment.bodyHTML,
         createdAt: comment.createdAt,
         lastEditedAt: comment.lastEditedAt,
     };
+}
+
+function toDetailAuthor(author: ItemUser | null | undefined): ItemUser | null {
+    return author ? { login: author.login, avatarUrl: author.avatarUrl } : null;
 }
 
 function toIssueDetail(node: IssueDetailFieldsFragment, fetchedAt: number): IssueDetail | null {
@@ -115,7 +122,7 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         node.latestReviews?.nodes ?? [],
         (review): ItemDetailReview | null =>
             review && {
-                author: review.author ? { login: review.author.login, avatarUrl: review.author.avatarUrl } : null,
+                author: toDetailAuthor(review.author),
                 state: review.state,
                 submittedAt: review.submittedAt,
             },
@@ -129,7 +136,33 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
         checks: mapNotNull(node.statusCheckRollup?.contextPage.nodes ?? [], context => context && toItemCheck(context)),
         checkCount: node.statusCheckRollup?.contextPage.totalCount ?? 0,
         reviews,
+        ...toItemReviewPage(node.reviews),
         reviewRequests: toDetailReviewRequests(node.reviewRequests),
+    };
+}
+
+/**
+ * A page of a pull request's submitted reviews (`ReviewPageFields`) as its detail keeps them.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function toItemReviewPage(
+    page: ReviewPageFieldsFragment | null | undefined,
+): Pick<PullRequestDetail, 'reviewSummaries' | 'olderReviewCursor'> {
+    return {
+        reviewSummaries: mapNotNull(page?.nodes ?? [], (review): ItemReviewSummary | null =>
+            review?.submittedAt && review.state !== 'PENDING'
+                ? {
+                      id: review.id,
+                      url: review.url,
+                      author: toDetailAuthor(review.author),
+                      state: review.state,
+                      bodyHtml: review.bodyHTML,
+                      submittedAt: review.submittedAt,
+                  }
+                : null,
+        ),
+        olderReviewCursor: page?.pageInfo.hasPreviousPage ? page.pageInfo.startCursor : null,
     };
 }
 

@@ -4,7 +4,7 @@ import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka
 
 withDefaults(
   defineProps<{
-    /** The panel's accessible name ("Labels"); it is a dialog. */
+    /** The panel's accessible name ("Labels"), whatever its trigger says; it is a dialog. */
     label: string;
     /** Along the trigger's edge; `start` when not given. */
     align?: 'center' | 'end' | 'start';
@@ -24,6 +24,16 @@ defineSlots<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+
+/**
+ * reka names the panel by its trigger with `aria-labelledby`, which beats `aria-label`, and no prop or attribute reaches
+ * it. The event comes from the wrapper it positions the panel with.
+ */
+function nameByLabel(event: Event) {
+  if (event.target instanceof Element) {
+    event.target.querySelector('[role="dialog"]')?.removeAttribute('aria-labelledby');
+  }
+}
 </script>
 
 <template>
@@ -39,6 +49,7 @@ const open = defineModel<boolean>('open', { default: false });
         :side="side"
         :side-offset="4"
         :collision-padding="8"
+        @open-auto-focus="nameByLabel"
       >
         <slot />
       </PopoverContent>

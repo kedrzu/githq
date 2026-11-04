@@ -107,6 +107,8 @@ export interface ListGroup<T> {
      * untracked repository or project, CH37).
      */
     readonly quietWhenEmpty?: boolean;
+    /** In the list, no header: the screen has only this group, and its own head names it (the draft reviews, CR34). */
+    readonly headless?: boolean;
     /** Entries can be moved into it — dragged on the board, or `⇧←`/`⇧→` — when the entry allows it too. */
     readonly droppable: boolean;
 }

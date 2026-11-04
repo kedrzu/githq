@@ -19,7 +19,7 @@ import type { ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
 import { ItemStore } from './ItemStore.js';
 import type { Item } from './ItemTypes.js';
-import { toItemComments, toItemDetail } from './toItemDetail.js';
+import { toItemComments, toItemDetail, toItemReviewPage } from './toItemDetail.js';
 
 /**
  * How long an opened item's detail is trusted without asking GitHub again. What changes without moving the
@@ -86,6 +86,7 @@ export const ItemDetailStore = defineService({
             ensure,
             readAgain,
             loadOlderComments,
+            loadOlderReviews,
             needsFetch,
             fetchDetails,
             update,
@@ -313,6 +314,42 @@ export const ItemDetailStore = defineService({
         }
 
         /**
+         * Reads the reviews older than those in memory (`MoreReviews`, 100 at a time) and puts them before them. Rejects
+         * when GitHub does not answer.
+         */
+        async function loadOlderReviews(id: string) {
+            const current = session;
+            const known = detailsRef.value.get(id);
+            const cursor = known?.kind === 'pullRequest' ? known.olderReviewCursor : null;
+            if (!current || !cursor) {
+                return;
+            }
+
+            const { node } = await current.account.sdk.MoreReviews({ id, before: cursor });
+            const detail = detailsRef.value.get(id);
+            // Read again meanwhile, from another page: these would not join it.
+            if (!isCurrent(current) || detail?.kind !== 'pullRequest' || detail.olderReviewCursor !== cursor) {
+                return;
+            }
+
+            if (!node || !('reviews' in node)) {
+                logger.warn('Older reviews could not be read', { id });
+                return;
+            }
+
+            const older = toItemReviewPage(node.reviews);
+            const updated: ItemDetail = {
+                ...detail,
+                reviewSummaries: [...older.reviewSummaries, ...detail.reviewSummaries],
+                olderReviewCursor: older.olderReviewCursor,
+            };
+            detailsRef.value.set(id, updated);
+            triggerRef(detailsRef);
+            write(current, [updated]);
+            tabs.publish({ kind: 'details', details: [updated] });
+        }
+
+        /**
          * Takes in the details another tab of the user read or changed — in memory only: that tab writes them. At once,
          * unlike the stores reading their whole copy at sign-in (`createTabInbox`): a kept detail is read later, one
          * at a time, only where memory holds none, and a version received is never replaced by a kept one.
@@ -325,7 +362,7 @@ export const ItemDetailStore = defineService({
 
             const taken = message.details.filter(detail => !isOlder(detail));
             for (const detail of taken) {
-                detailsRef.value.set(detail.id, withOlderComments(detailsRef.value.get(detail.id), detail));
+                detailsRef.value.set(detail.id, withOlderRead(detailsRef.value.get(detail.id), detail));
                 current.versions.set(detail.id, { itemUpdatedAt: detail.item.updatedAt, fetchedAt: detail.fetchedAt });
             }
 
@@ -480,7 +517,7 @@ export const ItemDetailStore = defineService({
                     continue;
                 }
 
-                const detail = withOlderComments(details.get(fresh.id), fresh);
+                const detail = withOlderRead(details.get(fresh.id), fresh);
                 details.set(detail.id, detail);
                 kept.push(detail);
                 current.versions.set(detail.id, { itemUpdatedAt: detail.item.updatedAt, fetchedAt: detail.fetchedAt });
@@ -536,9 +573,36 @@ export const ItemDetailStore = defineService({
 });
 
 /**
- * A detail read again keeps the older comments read before it, when its newest page joins them — so "show
- * older" is not undone by a read in the background.
+ * A detail read again keeps the older comments and reviews read before it, when its newest page joins them — so
+ * "show older" is not undone by a read in the background.
  */
+function withOlderRead(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
+    return withOlderReviews(previous, withOlderComments(previous, fresh));
+}
+
+function withOlderReviews(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
+    const first = fresh.kind === 'pullRequest' ? fresh.reviewSummaries[0] : undefined;
+    if (
+        fresh.kind !== 'pullRequest' ||
+        previous?.kind !== 'pullRequest' ||
+        !first ||
+        fresh.olderReviewCursor === null
+    ) {
+        return fresh;
+    }
+
+    const joinAt = previous.reviewSummaries.findIndex(review => review.id === first.id);
+    if (joinAt <= 0) {
+        return fresh;
+    }
+
+    return {
+        ...fresh,
+        reviewSummaries: [...previous.reviewSummaries.slice(0, joinAt), ...fresh.reviewSummaries],
+        olderReviewCursor: previous.olderReviewCursor,
+    };
+}
+
 function withOlderComments(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
     const first = fresh.comments.nodes[0];
     if (!previous || !first || fresh.comments.olderCursor === null) {
