@@ -30,7 +30,7 @@ const t = useTranslate();
 </script>
 
 <template>
-  <section :class="css.landingHero">
+  <section :class="[css.landingHero, $slots.banner && css.landingHero__banner]">
     <div
       v-if="$slots.banner"
       :class="css.landingHero_banner"
@@ -101,6 +101,15 @@ const t = useTranslate();
   @include landing-mobile {
     gap: 20px;
     padding-top: 32px;
+  }
+}
+
+// The banner takes the room the headline has above it otherwise, so it sits close under the navigation.
+.landingHero__banner {
+  padding-top: 40px;
+
+  @include landing-mobile {
+    padding-top: 20px;
   }
 }
 
