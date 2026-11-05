@@ -1,0 +1,14 @@
+# A review with no comments and no draft: an approval or a word on the pull request, out at once. `commitOID` is the head the
+# reviewer read. Refused while a draft is open, like `AddPullRequestReview`; checked live 2026-11-04 (code review D33).
+mutation SendPullRequestReview(
+    $pullRequestId: ID!
+    $commitOID: GitObjectID!
+    $event: PullRequestReviewEvent!
+    $body: String
+) {
+    addPullRequestReview(input: { pullRequestId: $pullRequestId, commitOID: $commitOID, event: $event, body: $body }) {
+        pullRequestReview {
+            id
+        }
+    }
+}

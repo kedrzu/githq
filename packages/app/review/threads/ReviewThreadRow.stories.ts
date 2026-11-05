@@ -163,3 +163,93 @@ export const InCollapsed: Story = {
 
 /** CR14: in a gone file's block, with the code and the commit. */
 export const Gone: Story = { args: { row: createThreadRowSample({ kind: 'gone', diffHunk: HUNK }) } };
+
+/** CR74: what can be done with it: the field and Resolve. */
+export const WithActions: Story = {
+    args: { onReply: fn(), onSetResolved: fn() },
+    play: async ({ args, canvas }) => {
+        await userEvent.click(canvas.getByRole('button', { name: 'Reply…' }));
+        await expect(args.onReply).toHaveBeenCalledOnce();
+        await userEvent.click(canvas.getByRole('button', { name: 'Resolve' }));
+        await expect(args.onSetResolved).toHaveBeenCalledWith(true);
+    },
+};
+
+/** Focused, `R` is its key, and only then. */
+export const FocusedWithKey: Story = {
+    args: { focused: true },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('button', { name: /Reply…/ })).toHaveAttribute('aria-keyshortcuts', 'R');
+    },
+};
+
+/** CR74: its box open under it, the field gives way and Resolve stays. */
+export const Replying: Story = {
+    args: { replying: true },
+    play: async ({ canvas }) => {
+        await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
+        await expect(canvas.getByRole('button', { name: 'Resolve' })).toBeVisible();
+    },
+};
+
+/** Not for this viewer: nothing offered that GitHub would refuse. */
+export const NothingAllowed: Story = {
+    args: {
+        row: createThreadRowSample({
+            kind: 'onLine',
+            inline: 'right',
+            thread: sampleThread({ viewerCanReply: false, viewerCanResolve: false }),
+        }),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
+        await expect(canvas.queryByRole('button', { name: 'Resolve' })).toBeNull();
+    },
+};
+
+/** Opened, a resolved one can be opened again. */
+export const ResolvedOpened: Story = {
+    args: {
+        open: true,
+        onSetResolved: fn(),
+        row: createThreadRowSample({ kind: 'onLine', inline: 'right', thread: sampleThread({ isResolved: true }) }),
+    },
+    play: async ({ args, canvas }) => {
+        await userEvent.click(canvas.getByRole('button', { name: 'Unresolve' }));
+        await expect(args.onSetResolved).toHaveBeenCalledWith(false);
+    },
+};
+
+/** GitHub refused: back as it was, saying so where it happened. */
+export const ResolveRefused: Story = {
+    args: { resolveFailure: { kind: 'refused', message: 'Must have write access' } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('alert')).toHaveTextContent("Couldn't resolve it: Must have write access");
+    },
+};
+
+/** CR36: a reply in a thread holding a pending comment says where it goes. */
+export const ReplyToDraft: Story = {
+    args: {
+        onSetResolved: fn(),
+        onReply: fn(),
+        row: createThreadRowSample({
+            kind: 'onLine',
+            inline: 'right',
+            thread: sampleThread({
+                comments: sampleThread().comments.map(comment => ({ ...comment, state: 'PENDING' })),
+            }),
+        }),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('button', { name: /Add.to.your.draft…/u })).toBeVisible();
+    },
+};
+
+/** Refused with no words of GitHub's: the reason is the app's. */
+export const ResolveRefusedWithoutWords: Story = {
+    args: { resolveFailure: { kind: 'refused', message: null } },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByRole('alert')).toHaveTextContent('GitHub gave no reason.');
+    },
+};

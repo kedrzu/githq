@@ -1,4 +1,4 @@
-<!-- One choice out of a few, each a card side by side (reka-ui's `RadioGroup`): the repository layout in Settings; or with `stacked`, rows in one box (the update stream). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, each a card side by side (`RadioCards`): the repository layout in Settings; or with `stacked`, rows in one box (the update stream). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
 <script lang="ts">
 /** One option of `ChoiceCards`. */
 export interface ChoiceCardsOption<T extends string> {
@@ -10,11 +10,11 @@ export interface ChoiceCardsOption<T extends string> {
 </script>
 
 <script lang="ts" setup generic="T extends string">
-import type { AcceptableValue } from 'reka-ui';
-import { RadioGroupItem, RadioGroupRoot } from 'reka-ui';
 import { useId } from 'vue';
 
-const props = defineProps<{
+import RadioCards from './RadioCards.vue';
+
+defineProps<{
   options: readonly ChoiceCardsOption<T>[];
   /** The id of the heading naming the group. */
   labelledby: string;
@@ -30,47 +30,23 @@ defineSlots<{
 const model = defineModel<T>({ required: true });
 
 const id = useId();
-
-function choose(value: AcceptableValue | undefined) {
-  const option = props.options.find(candidate => candidate.value === value);
-  if (option) {
-    model.value = option.value;
-  }
-}
-
-// reka-ui chooses on an arrow key only while the key is still held when the focus has moved, which a quick press is
-// not, so the arrow's move chooses here. Only that move: focus coming back with the window lands on a card that may
-// be stale by now, and choosing it would overwrite what was chosen in another tab or on another device; a mouse press
-// moves focus between cards too, and only the click after it chooses.
-function chooseOnArrow(value: T, event: FocusEvent) {
-  const from = event.relatedTarget;
-  const card = event.currentTarget;
-  if (!(card instanceof Element) || !(from instanceof Element) || !card.matches(':focus-visible')) {
-    return;
-  }
-
-  if (from.matches('[role="radio"]') && card.closest('[role="radiogroup"]')?.contains(from)) {
-    choose(value);
-  }
-}
 </script>
 
 <template>
-  <RadioGroupRoot
-    :model-value="model"
+  <RadioCards
+    v-model="model"
+    :options="options"
+    :get-card-attrs="
+      ({ value }) => ({
+        class: css.choiceCards_card,
+        'aria-labelledby': `${id}-${value}`,
+        'aria-describedby': `${id}-${value}-detail`,
+      })
+    "
     :aria-labelledby="labelledby"
     :class="[css.choiceCards, stacked && css.choiceCards_stacked]"
-    @update:model-value="choose"
   >
-    <RadioGroupItem
-      v-for="option in options"
-      :key="option.value"
-      :value="option.value"
-      :aria-labelledby="`${id}-${option.value}`"
-      :aria-describedby="`${id}-${option.value}-detail`"
-      :class="css.choiceCards_card"
-      @focus="chooseOnArrow(option.value, $event)"
-    >
+    <template #default="{ option }">
       <slot :option="option" />
       <span :class="css.choiceCards_head">
         <span :class="css.choiceCards_radio" />
@@ -85,8 +61,8 @@ function chooseOnArrow(value: T, event: FocusEvent) {
         :class="css.choiceCards_detail"
         >{{ option.detail }}</span
       >
-    </RadioGroupItem>
-  </RadioGroupRoot>
+    </template>
+  </RadioCards>
 </template>
 
 <style lang="scss" module="css">

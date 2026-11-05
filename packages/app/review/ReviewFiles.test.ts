@@ -2267,6 +2267,9 @@ function threadOn(path: string, id: string, bodies: readonly string[] = ['<p>Why
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: bodies.map((bodyHTML, index) => ({
             id: `${id}-${index}`,
             author: { login: 'sofiab', avatarUrl: 'https://avatars.example/s' },

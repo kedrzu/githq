@@ -1,0 +1,8 @@
+# Deletes the viewer's draft review with its comments; a review already submitted can't be (code review D17).
+mutation DeletePullRequestReview($pullRequestReviewId: ID!) {
+    deletePullRequestReview(input: { pullRequestReviewId: $pullRequestReviewId }) {
+        pullRequestReview {
+            id
+        }
+    }
+}

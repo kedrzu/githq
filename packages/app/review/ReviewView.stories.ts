@@ -7,6 +7,7 @@ import { defineComponent, h } from 'vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { idleReviewWriting } from '@/testing/idleReviewWriting.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { ReviewFiles } from './ReviewFiles.js';
@@ -68,7 +69,7 @@ export const AllViewed: Story = {
         ),
 };
 
-/** CR63, D15: viewed files hidden, but one with an open thread stays, as its header with the thread and its code; a file gone from the diff has an entry of its own. */
+/** CR63, D15: viewed files hidden, but one with an open thread stays, as its header with the thread and its code, under the block saying all are viewed; a file gone from the diff has an entry of its own. */
 export const ViewedWithOpenThread: Story = {
     render: () =>
         renderView(
@@ -216,5 +217,6 @@ function createFiles(
         getExpandedLines: () => [],
         isExpansionReset: () => false,
         expandLines: () => {},
+        writing: idleReviewWriting,
     };
 }

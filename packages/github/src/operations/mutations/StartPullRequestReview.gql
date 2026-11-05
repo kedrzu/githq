@@ -1,0 +1,10 @@
+# The viewer's draft review with nothing in it yet, for a reply to join (`addPullRequestReviewThreadReply` takes no way to start
+# one). Refused while a draft is open, like `AddPullRequestReview`.
+mutation StartPullRequestReview($pullRequestId: ID!, $commitOID: GitObjectID!) {
+    addPullRequestReview(input: { pullRequestId: $pullRequestId, commitOID: $commitOID }) {
+        pullRequestReview {
+            id
+            createdAt
+        }
+    }
+}

@@ -294,14 +294,20 @@ it was local).
 
 **Why.** Both habits exist and GitHub's screen pushes into a draft as soon as one is started (owner). A pending
 review lives on GitHub, so a draft survives closing githq and is visible on github.com; each pull request of a
-stack has its own. GitHub accepts nothing else from the same user on that pull request while it is open (owner's
+stack has its own. While it is open, GitHub takes no other comment on a line from the same user on that pull request (owner's
 experience: "not even an agent can do it through the API").
 
-> **Checked 2026-11-02:** `AddPullRequestReviewThreadInput` takes either `pullRequestReviewId` (into a pending
-> review) or `pullRequestId`, plus `path`, `line`, `side`, `startLine`, `startSide`, `subjectType`
-> (`packages/github/src/schema.graphql`). A third-party guide claims REST `POST …/pulls/{n}/comments` still posts
-> a standalone comment ([guide](https://www.claudepluginhub.com/skills/mthalman-superpowers/skills%2Fgithub-pr-reviews));
-> the owner's experience says otherwise, and the design follows the owner. Not tried live.
+> **Checked 2026-11-04, live on kedrzu/githq-stack-sandbox#8:** with a draft open, a comment on a line through REST
+> (`POST …/pulls/{n}/comments`) and a review with an event are refused ("can only have one pending review per pull request"),
+> and through GraphQL a thread or a reply silently joins the draft: that is the owner's experience of agents. A comment on
+> the pull request itself and resolving a thread go through at once. With no draft, `addPullRequestReview` with `event:
+> COMMENT` and `threads` posts a single comment in one request, and a reply goes out at once;
+> `addPullRequestReviewThread` always makes or joins a pending review. A submitted review can't be deleted.
+
+So a reply can't be refused the way a comment is: one meant to go out at once first reads the draft again and doesn't go if
+one is there, and what GitHub answers (`pullRequestReview.state`) says what happened in the moment between. A reply joining a
+draft names it, for a draft gone by then to refuse it rather than publish it, and one starting a draft is two requests, an empty
+`addPullRequestReview` and the reply, the empty draft deleted again if the reply is refused. (agent, 2026-11-04; both checked live that day: the empty review is PENDING, and a gone draft's id answers NOT_FOUND with nothing published)
 
 **Rejected.**
 
@@ -319,6 +325,8 @@ commit it to the branch itself.
 
 > **Checked 2026-11-02:** the schema has no mutation for suggestions (no match for "suggest" apart from deprecated
 > topic suggestions); `createCommitOnBranch` exists (`packages/github/src/schema.graphql`).
+
+In the field it is the markdown itself, fences included, as github.com writes it: no tinted block, which would take a second editor over the text area. (owner, 2026-11-04; CR73 redrawn)
 
 **Rejected.**
 
@@ -547,6 +555,10 @@ which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
 submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
+A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
+
+⇧↓ is CR73's: from the diff it takes the next line into the last box written in; in a box only while the box is empty, for with text in it it is the text's own selection. ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
+
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
 
 ## D33
@@ -558,6 +570,18 @@ Request changes on 1 2 3, the pending comments listed — and a refused submissi
 GitHub's reason and keeps everything.** (2026-11-02, agent, CR70–CR76; the dialog's optional comment and place, owner, 2026-11-03)
 
 > **Checked 2026-11-03:** `SubmitPullRequestReviewInput` has `body: String`, the review's own text (`packages/github/src/schema.graphql`). Not tried live.
+
+⇧S and the dialog work with no draft too, an approval or a word with no line comment before it: `addPullRequestReview` with the event, the body and the head read, no threads. (agent, 2026-11-04)
+
+> **Checked live 2026-11-04:** with neither body nor threads COMMENT is refused with type UNPROCESSABLE and an empty message, so the app says so in its own words. Approving and requesting changes on your own pull request are refused with GitHub's words ("Review Can not approve your own pull request", "Review Can not request changes on your own pull request"). With no comments, Comment and Request changes need text before they can be sent; GitHub's docs also require a body for those two.
+
+**A box through a push.** A box remembers the commit it was written against. When the head moves it stays on its line number, with its text and keys, and says the code changed, so a comment can't land on different code unnoticed (CR87). Sending posts to that line on the new head: a draft can't name an older commit. (owner, 2026-11-04)
+
+**How a finish that failed behaves.** (agent, 2026-11-04) D28's "no close button" stays true for CR76: while the draft a review was sent against is open, the red toolbar has Edit review… and Try again. Refused with no draft open now, it also has Dismiss, which keeps the dialog's choice. With a different draft open it has GitHub's reason, Dismiss and Edit review…, and no Try again, because only the dialog, which lists that draft's comments, may submit a draft the reader hasn't seen. With no draft, a send shows the amber toolbar saying "Sending your review…", with no count, note or buttons. The sending row and the Dismiss states have no frame in the mockups.
+
+A failure clears on a read finding no draft only if it was a discard, or the second key's review, whose comment went with the draft, or got no answer while it had a draft: that one almost certainly got there, so the dialog's choice empties too. A review from the dialog refused against a draft since gone stays red, and Try again sends it with no draft, carrying no hidden comments. A draft of the reader's own making clears a failure sent against another; one arriving by a read doesn't, so the refusal is still seen. A submit made while comments were on their way sends nothing if one of them is refused: it says so, and Try again sends it knowingly without that comment.
+
+> **Checked live 2026-11-04:** `submitPullRequestReview` on a review already submitted is refused with type UNPROCESSABLE, "Could not comment pull request review."; nothing is posted.
 
 **Why.** The buttons say what each key does. A line explaining the default broke the layout and repeats what someone who
 chose that setting already knows (owner, 2026-11-03).

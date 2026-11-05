@@ -33,3 +33,18 @@ export function findThreadFromRow({ rows, key, delta }: FindThreadFromRowParams)
     const threads = ahead.filter(row => row.kind === 'thread');
     return threads.find(row => !row.placement.thread.isResolved) ?? threads[0] ?? null;
 }
+
+/**
+ * Where N or ⇧N goes from a thread just resolved, which went to the end of what they walk: on through the open ones from where
+ * it was, round to the other end of them when none lies that way (CR15). `null` with none open.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function findOpenThreadFrom({ rows, key, delta }: FindThreadFromRowParams): ReviewThreadRow | null {
+    const open = rows.filter(row => row.kind === 'thread' && !row.placement.thread.isResolved);
+    const at = rows.findIndex(row => row.key === key);
+    const ahead = delta === 1 ? rows.slice(at + 1) : rows.slice(0, Math.max(at, 0)).toReversed();
+    const next = ahead.find(row => row.kind === 'thread' && !row.placement.thread.isResolved);
+    const found = next ?? (delta === 1 ? open[0] : open.at(-1));
+    return found?.kind === 'thread' ? found : null;
+}

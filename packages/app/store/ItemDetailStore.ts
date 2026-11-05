@@ -183,10 +183,17 @@ export const ItemDetailStore = defineService({
             await fetchDetail(current, id);
         }
 
-        /** Reads the item's detail from GitHub now, however recent the one held; never rejects, as {@link ensure}. */
+        /**
+         * Reads the item's detail from GitHub now, however recent the one held, after one on its way, which may have been
+         * asked before what this one is to find; never rejects, as {@link ensure}.
+         */
         async function readAgain(id: string) {
-            if (session) {
-                await fetchDetail(session, id);
+            const current = session;
+            if (current) {
+                await current.inFlight.get(id);
+                if (isCurrent(current)) {
+                    await fetchDetail(current, id);
+                }
             }
         }
 

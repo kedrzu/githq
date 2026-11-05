@@ -90,3 +90,19 @@ nextPullRequest:
   en: Next pull request
 goToPullRequest:
   en: 'Go to #{number} {title}'
+commentOnLine:
+  en: Comment on the line
+submitReview:
+  en: Submit review
+discardReview:
+  en: Discard review
+replyInThread:
+  en: Reply to the thread
+extendComment:
+  en: Take the next line into the comment
+backToPullRequest:
+  en: Back to the pull request
+lineDown:
+  en: Scroll down a line
+lineUp:
+  en: Scroll up a line

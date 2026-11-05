@@ -47,7 +47,7 @@ export interface ItemReturnRequest {
  * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
  * independent switches) — the list they are opened from, the item opened last, which the list selects
  * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, an Undo of a close asking the cursor back, the item whose comment box takes the cursor
- * once it opens ("Comment" in a list's context menu), and the step a review is being walked by, for the next to say.
+ * once it opens ("Comment" in a list's context menu), the step a review is being walked by, for the next to say, and a review asked to open at its submit dialog.
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
 export const ItemNavigation = defineService({
@@ -63,6 +63,7 @@ export const ItemNavigation = defineService({
         const returnRequestRef = shallowRef<ItemReturnRequest | null>(null);
         const commentRequestRef = shallowRef<string | null>(null);
         let reviewWalk: ReviewWalk | null = null;
+        let reviewToSubmit: string | null = null;
 
         return {
             /** The arrangement an item opens in; reactive. */
@@ -109,6 +110,8 @@ export const ItemNavigation = defineService({
             requestComment,
             noteReviewWalk,
             takeReviewWalk,
+            noteReviewSubmit,
+            takeReviewSubmit,
         };
 
         function setArrangement(arrangement: ItemArrangement) {
@@ -149,6 +152,18 @@ export const ItemNavigation = defineService({
             const walk = reviewWalk?.to === to ? reviewWalk : null;
             reviewWalk = null;
             return walk;
+        }
+
+        /** The review about to open is to open at its submit dialog (CR34); by its reference, as `formatItemReference` writes it. */
+        function noteReviewSubmit(reference: string) {
+            reviewToSubmit = reference;
+        }
+
+        /** Whether the review was opened to submit it, once. */
+        function takeReviewSubmit(reference: string) {
+            const asked = reviewToSubmit === reference;
+            reviewToSubmit = null;
+            return asked;
         }
     },
 });

@@ -1,4 +1,4 @@
-<!-- The pull requests with the viewer's draft review (code review D28, CR34): a head with the count, what a draft means for the others, then the list, the one waiting longest first, each saying how long. `J`/`K`, the selection and its actions are the list engine's (`ListView`); Enter opens the review, where the draft is. The sidebar's entry goes with the last draft, and if the list is what was open it says so. -->
+<!-- The pull requests with the viewer's draft review (code review D28, CR34): a head with the count, what a draft means for the others, then the list, the one waiting longest first, each saying how long. `J`/`K`, the selection and its actions are the list engine's (`ListView`); Enter opens the review, where the draft is, and ⇧S opens it at its submit dialog (CR34). The sidebar's entry goes with the last draft, and if the list is what was open it says so. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleCheck, PencilLine } from 'lucide-vue-next';
@@ -13,6 +13,7 @@ import ItemRow from '@/lists/ItemRow.vue';
 import type { ListContextMenuProps, ListGroup, ListedItems } from '@/lists/ListTypes.js';
 import ListView from '@/lists/ListView.vue';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
+import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 
 import * as l from './DraftReviewsView.loc.js';
 
@@ -114,6 +115,8 @@ const groups = computed((): ListGroup<Item>[] =>
         <p :class="css.draftReviewsView_hint">
           <Kbd keys="Enter" />
           {{ t(l.openReview) }}
+          <Kbd :keys="REVIEW_KEYS.submit" />
+          {{ t(l.submit) }}
         </p>
       </template>
       <template #empty>
@@ -164,7 +167,7 @@ const groups = computed((): ListGroup<Item>[] =>
 
 .draftReviewsView_title {
   margin: 0;
-  font-size: 14px;
+  font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $color-fg;
 }

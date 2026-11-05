@@ -3,19 +3,36 @@
 import { computed } from 'vue';
 
 import DiffCode from './DiffCode.vue';
-import type { DiffUnifiedRow } from './diff/buildDiffRows.js';
+import DiffLineNumber from './DiffLineNumber.vue';
+import type { DiffLineSide, DiffUnifiedRow } from './diff/buildDiffRows.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
+import { isLineCommented } from './utils/isLineCommented.js';
+import type { CommentedLines } from './utils/isLineCommented.js';
 
 const props = defineProps<{
   line: DiffUnifiedRow;
   diff: FileDiff;
   syntax: FileSyntax | null;
+  /** The lines a comment is being written on: tinted. */
+  commented: CommentedLines;
+}>();
+
+const emit = defineEmits<{
+  /** Something happened to a line's number: a comment starts there (D32). */
+  gutter: [event: MouseEvent, side: DiffLineSide, line: number];
 }>();
 
 /** The line's 0-based place in the version it's drawn from, the older only for a deleted line. */
 const lineIndex = computed(() => (props.line.newLine ?? props.line.oldLine ?? 1) - 1);
 const onAfter = computed(() => props.line.newLine !== null);
+const isCommented = computed(() => {
+  const { oldLine, newLine } = props.line;
+  return (
+    (oldLine !== null && isLineCommented(props.commented, 'before', oldLine)) ||
+    (newLine !== null && isLineCommented(props.commented, 'after', newLine))
+  );
+});
 </script>
 
 <template>
@@ -24,10 +41,19 @@ const onAfter = computed(() => props.line.newLine !== null);
       css.diffRowUnified,
       line.sign === '+' && css.diffRowUnified_added,
       line.sign === '-' && css.diffRowUnified_deleted,
+      isCommented && css.diffRowUnified_commented,
     ]"
   >
-    <span :class="css.diffRowUnified_number">{{ line.oldLine }}</span>
-    <span :class="css.diffRowUnified_number">{{ line.newLine }}</span>
+    <DiffLineNumber
+      :class="css.diffRowUnified_number"
+      :line="line.oldLine"
+      @gutter="emit('gutter', $event, 'before', line.oldLine ?? 0)"
+    />
+    <DiffLineNumber
+      :class="css.diffRowUnified_number"
+      :line="line.newLine"
+      @gutter="emit('gutter', $event, 'after', line.newLine ?? 0)"
+    />
     <span :class="css.diffRowUnified_sign">{{ line.sign }}</span>
     <DiffCode
       :text="(onAfter ? diff.after : diff.before)[lineIndex] ?? ''"
@@ -66,16 +92,15 @@ const onAfter = computed(() => props.line.newLine !== null);
   }
 }
 
+.diffRowUnified_commented {
+  background: linear-gradient(rgba($color-accent, 0.14), rgba($color-accent, 0.14)), $color-bg;
+}
+
 .diffRowUnified_number {
   flex: none;
   width: 36px;
   margin-right: $spacing-4;
-  font-family: $font-family-mono;
-  font-size: 11px;
-  line-height: 20px;
   color: $color-fg-dim;
-  text-align: right;
-  user-select: none;
 }
 
 .diffRowUnified_sign {
