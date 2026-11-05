@@ -710,20 +710,23 @@ when the conditional check is free.
 
 ### D35
 
-**The landing page says only what someone needs to choose: `Download app` with "All downloads" under it, and "Sign in with
-GitHub" with "In your browser, nothing to install." under it.** (user, 2026-11-05.) Drawn in `githq.pen`, LP13 and LP15. The
-line under each button no longer depends on the system, so nothing shifts when the page learns it.
+**The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, LP13, LP15 and LP30.
+Two larger buttons, each with a title and a subtitle: `Download app`, "The best experience, in its own window", and "Sign in
+with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
+Nothing stored outside GitHub", the first a link to `/download`.
 
+- **The icon on `Download app` is the logo of the visitor's system,** the plain download icon when the system isn't known or on
+  a phone. It is the only thing that changes with the system, at one size, so nothing shifts.
 - **The permission line leaves the landing page.** This supersedes the first point of [D21](#d21) there: GitHub's consent
   screen comes straight after the click, unexplained. `/download` keeps the line with its "Why?", and the Privacy page keeps
   the explanation.
-- **The landing page says nothing about signatures or the visitor's system.** The Windows warning and "Signed and notarized"
-  are on `/download` only, so one click on Windows meets SmartScreen unwarned.
+- **The Windows warning and "Signed and notarized" are on `/download` only,** so one click on Windows meets SmartScreen
+  unwarned.
 - **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
   opens `/download`.
 
 **Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (LP4–LP12).
-Short lines that change with the system (LP21–LP29): still more than the page needs. They were never committed.
+Lines under the buttons that change with the system (LP21–LP29): more than the page needs. They were never committed.
 
 ## Open questions
 
