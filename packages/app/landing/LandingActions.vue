@@ -43,6 +43,7 @@ const downloadLink = computed(() =>
         <BrandLogo
           v-if="system"
           :class="css.landingActions_icon"
+          :tid="`landing-download-logo-${system}`"
           :logo="LOGOS[system]"
         />
         <Download
