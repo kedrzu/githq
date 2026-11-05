@@ -625,3 +625,22 @@ and types, dimmed comments; the rest is the line's text colour.** (2026-11-03, o
 code; the mockups draw code monochrome)
 
 **Why.** Calm, few colours (AGENTS.md); each is AA over the window and over a deleted or an added line.
+
+## D38
+
+**A file still on its way is drawn as lines of code it might hold: one quiet bar per line, where its code will start,
+in the layout being read; split mirrors context on both sides and keeps added lines right, deleted left; the lengths are
+drawn from the file's path, so they read like text and never reshuffle.** (2026-11-05, owner asked for it, agent's
+design; CR88, CR89; refines D35's "quiet bars")
+
+How the bars are drawn: a PRNG seeded with a hash of the path (e.g. FNV-1a into mulberry32). Per line: a blank one with
+probability 0.1, never two in a row, after which the indent drops to at most 1; otherwise the indent steps −1/0/+1 with
+probabilities 0.2/0.6/0.2 within 0–4 levels of two characters, and the length is normal around 26 characters with σ 12,
+clamped to 3–72. A modified file comes as runs of 2–6 context lines, each followed by 0–4 deleted and 0–4 added lines
+(at least one). Split puts a context line on both sides and pairs deleted with added, leaving the shorter run's rows
+empty on its side; unified lists context, then deleted, then added. As many rows as the file's added plus deleted lines
+(D35's height, unchanged). Bars are 8 px tall on the 20 px line, `$bg-3`, radius 2, clipped at the column's edge.
+
+**Why.** Six fixed lengths repeating read as a pattern, not as code, and a single column under a split view announces a
+different layout from the one that arrives. Seeding by path keeps a file's bars the same when it scrolls out and back,
+and across layouts. No colour and no shimmer: the calm UI, and the status bar already says what's loading.
