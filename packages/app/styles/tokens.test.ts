@@ -93,8 +93,7 @@ test('every other colour is a named exception, an alias, or outside the palette'
             !(token in TAKEN_FROM) &&
             !(token in EXCEPTIONS) &&
             !(token.startsWith('landing-') || token.startsWith('button-light') || token.startsWith('row-stripe')) &&
-            !['control-border', 'graph-line', 'focus'].includes(token) &&
-            token !== 'syntax-name',
+            !['control-border', 'graph-line', 'focus'].includes(token),
     );
     expect(unnamed).toEqual([]);
 });

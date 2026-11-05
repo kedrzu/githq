@@ -98,8 +98,6 @@ $color-syntax-title: #d2a8ff;
 $color-syntax-tag: #7ee787;
 // A built-in and a variable.
 $color-syntax-builtin: #ffa657;
-// Still used by `DiffCode.vue` until it moves to `-title`.
-$color-syntax-name: $color-syntax-title;
 
 // The light button's fill.
 $color-button-light: $color-fg;
