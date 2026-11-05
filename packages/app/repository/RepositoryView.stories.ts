@@ -1,6 +1,6 @@
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { defineComponent, h, shallowRef } from 'vue';
 
 import CommitGraphView from '@/commits/CommitGraphView.vue';
@@ -143,7 +143,8 @@ export const StackOnBoard: Story = {
         // Expanded, the stack's cards list its pull requests inside them: the column's one card stays the share.
         const [expand] = canvas.getAllByRole('button', { name: 'Expand the stack' });
         await userEvent.click(expand ?? canvasElement);
-        await expect(canvas.getByText('Timezones in the picker')).toBeVisible();
+        // Past the first frame of the `Reveal` the members open in.
+        await waitFor(() => expect(canvas.getByText('Timezones in the picker')).toBeVisible());
         const frontend = canvas.getByRole('region', { name: 'frontend' });
         await expect(frontend.querySelectorAll('[data-entry-key]')).toHaveLength(1);
     },
