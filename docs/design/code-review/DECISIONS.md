@@ -452,6 +452,10 @@ as in unified.** (2026-11-02, agent, screens CR1–CR6)
 **Why.** The same shell as an opened pull request on a full page, so nothing moves when D opens the review; the
 status bar already says how fresh things are and serves for loading and the API allowance (CR60, CR68).
 
+**Amended (2026-11-05, owner).** The left column is 300 px by default and resizable: its right edge is dragged, or moved
+with ←/→, from 200 to 480 px, the width kept on this device. It is the same split as a repository's left column
+(`ColumnSplit`): the diff keeps at least 400 px, the column giving way down to its minimum on a narrow window.
+
 ## D25
 
 **The stack sits at the top of the left column, above the file list: a head with its name and "2 of 4", then one row
