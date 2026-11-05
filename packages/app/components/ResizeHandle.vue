@@ -53,4 +53,11 @@ function onDragging(dragging: boolean) {
     background: $color-accent;
   }
 }
+
+// The resize cursor, over the whole page while a handle is hovered (within its hit area, wider than the handle) or
+// dragged. Reka UI sets it from a `<style>` it adds to the page, which the desktop app's content security policy blocks;
+// a rule in the app's own stylesheet it lets through.
+html:has(.resizeHandle[data-state='hover'], .resizeHandle[data-state='drag']) * {
+  cursor: col-resize !important;
+}
 </style>

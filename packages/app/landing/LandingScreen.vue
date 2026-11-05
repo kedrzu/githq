@@ -1,4 +1,4 @@
-<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — downloading the app or signing in with GitHub, straight to its consent screen (D21) — with the banner of a sign-in that didn't finish (G1) above it and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, four features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
+<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — downloading the app or signing in with GitHub, straight to its consent screen (D21) — with the banner of a sign-in that didn't finish (G1) at its top, on its gradient, and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, four features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
 import type { DesktopSystem } from './desktopBuilds.js';
 import LandingComparison from './LandingComparison.vue';
@@ -36,17 +36,16 @@ defineSlots<{
     <LandingNav @sign-in="emit('signIn')" />
 
     <main>
-      <div
-        v-if="$slots.banner"
-        :class="css.landingScreen_banner"
-      >
-        <slot name="banner" />
-      </div>
-
       <LandingHero
         :system="system"
         @sign-in="emit('signIn')"
       >
+        <template
+          v-if="$slots.banner"
+          #banner
+        >
+          <slot name="banner" />
+        </template>
         <template
           v-if="$slots.dev"
           #dev
@@ -85,19 +84,6 @@ defineSlots<{
 
   @include landing-mobile {
     scroll-margin-top: $landing-nav-height-mobile;
-  }
-}
-
-.landingScreen_banner {
-  @include landing-gutter;
-
-  display: flex;
-  justify-content: center;
-  padding-top: $spacing-24;
-
-  > * {
-    width: 100%;
-    max-width: 760px;
   }
 }
 </style>
