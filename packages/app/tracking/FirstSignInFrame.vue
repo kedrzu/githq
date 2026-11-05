@@ -1,13 +1,15 @@
 <!-- The frame of the first sign-in's steps (G2, G6), outside the app's shell: githq's name, where the user is among "Sign in → Choose what to track → First download" — the second step "Load your settings" while saved settings are offered (settings-sync G11) — and who is signed in; the step's screen below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
 import Stepper from '@/components/Stepper.vue';
 import Wordmark from '@/components/Wordmark.vue';
-import { WINDOW_CONTROLS_OVERLAID, WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
+import { WindowControls } from '@/services/WindowControls.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import * as l from './FirstSignInFrame.loc.js';
 
@@ -23,6 +25,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const windowControls = useService(WindowControls);
 
 const steps = computed(() => [
   t(l.signIn),
@@ -38,7 +41,7 @@ const current = computed(() => (props.step === 'download' ? 2 : 1));
       :class="css.firstSignInFrame_top"
       v-bind="WINDOW_DRAG_REGION"
     >
-      <Wordmark :class="WINDOW_CONTROLS_OVERLAID && css.firstSignInFrame_name_clearOfControls" />
+      <Wordmark :class="windowControls.overlaid && css.firstSignInFrame_name_clearOfControls" />
       <Stepper
         :steps="steps"
         :current="current"

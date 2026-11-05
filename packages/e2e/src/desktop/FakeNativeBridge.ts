@@ -80,8 +80,8 @@ interface FakeEventListener {
  * The desktop app's native side for the e2e tests (`packages/desktop/src-tauri`): the commands of the app's
  * `NativeBridge` (`packages/app/desktop/NativeBridge.ts`), answered here in the test through what Tauri injects into
  * its window, `window.__TAURI_INTERNALS__` — the OS credential store a field, the system browser a log of the pages it
- * opened, GitHub's device flow answered when the test says, and the updater's state, `update-state`, sent when the test
- * says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
+ * opened, GitHub's device flow answered when the test says, the updater's state, `update-state`, and the window's full
+ * screen, sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
  */
 export class FakeNativeBridge {
     /** The token in the OS credential store, or `null`. */
@@ -110,6 +110,9 @@ export class FakeNativeBridge {
         checkedAt: null,
         activity: { kind: 'idle' },
     };
+
+    /** What `plugin:window|is_fullscreen` answers; set by {@link setFullscreen}. */
+    private fullscreen = false;
 
     private readonly openedUrls: string[] = [];
     private readonly jobLogReads: unknown[] = [];
@@ -174,15 +177,13 @@ export class FakeNativeBridge {
     /** The updater's state changed: `update_status` answers it, and every page listening hears `update-state`. */
     async sendUpdateState(change: Partial<FakeUpdateState>): Promise<void> {
         this.updateState = { ...this.updateState, ...change };
-        for (const { page, document, event, handler } of this.listeners) {
-            if (event === 'update-state') {
-                await page.evaluate(([to, id, message]) => window.__githqE2eEmit?.(to, id, message), [
-                    document,
-                    handler,
-                    { event, payload: this.updateState },
-                ] as const);
-            }
-        }
+        await this.emit('update-state', this.updateState);
+    }
+
+    /** The window went to or left full screen, which ends with it resizing (`tauri://resize`). */
+    async setFullscreen(fullscreen: boolean): Promise<void> {
+        this.fullscreen = fullscreen;
+        await this.emit('tauri://resize', { width: 1280, height: 800 });
     }
 
     /** Throws when the app ran a command the fake does not know, naming each. */
@@ -191,6 +192,19 @@ export class FakeNativeBridge {
             throw new Error(
                 `The app ran native commands the fake does not know (FakeNativeBridge): ${this.unknownCommands.join(', ')}`,
             );
+        }
+    }
+
+    /** Every page listening to `name` hears it. */
+    private async emit(name: string, payload: unknown): Promise<void> {
+        for (const { page, document, event, handler } of this.listeners) {
+            if (event === name) {
+                await page.evaluate(([to, id, message]) => window.__githqE2eEmit?.(to, id, message), [
+                    document,
+                    handler,
+                    { event, payload },
+                ] as const);
+            }
         }
     }
 
@@ -245,6 +259,8 @@ export class FakeNativeBridge {
                 }
 
                 return { ok: true, value: null };
+            case 'plugin:window|is_fullscreen':
+                return { ok: true, value: this.fullscreen };
             case 'plugin:event|listen': {
                 const handler = isPlainObject(args) && typeof args.handler === 'number' ? args.handler : -1;
                 this.listeners.push({ page, document, event: readString(args, 'event'), handler });

@@ -3,7 +3,6 @@
 import 'fake-indexeddb/auto';
 
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
-import { waitUntil } from '@nzyme/utils/waitUntil.js';
 import { expect, spyOn, test } from 'bun:test';
 import { computed } from 'vue';
 
@@ -13,6 +12,7 @@ import { EDIT_RESERVE } from '@/sync/getAllowancePause.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { waitUntil } from '@/testing/waitUntil.js';
 
 import type { ReviewPosition } from './buildReviewRows.js';
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';

@@ -188,6 +188,8 @@ function createFakeNative(): FakeNative {
             updateStatus: () => Promise.reject(new Error('Not expected')),
             restartToUpdate: () => Promise.reject(new Error('Not expected')),
             readJobLog: () => Promise.reject(new Error('Not expected')),
+            onWindowResized: () => Promise.reject(new Error('Not expected')),
+            isFullscreen: () => Promise.reject(new Error('Not expected')),
         },
         kept: null,
         calls: [],

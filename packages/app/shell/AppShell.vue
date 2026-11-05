@@ -1,7 +1,8 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-vue-next';
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
@@ -12,6 +13,7 @@ import { useCommands } from '@/commands/useCommands.js';
 import ResizeHandle from '@/components/ResizeHandle.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
+import { WindowControls } from '@/services/WindowControls.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
@@ -23,7 +25,6 @@ import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
 import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
-import { WINDOW_CONTROLS_OVERLAID } from './windowControls.js';
 
 const props = defineProps<{
   viewer: Viewer;
@@ -77,8 +78,9 @@ const collapsed = defineModel<boolean>('collapsed', { default: false });
 /** Whether the rail shows: what the user keeps, unless the screen asks for it. */
 const rail = computed(() => props.railForced || collapsed.value);
 
-/** `$sidebar-rail-width`, or room for macOS's window controls over it: the rail is not resized. */
-const SIDEBAR_RAIL_WIDTH = WINDOW_CONTROLS_OVERLAID ? 80 : 56;
+const windowControls = useService(WindowControls);
+/** `$sidebar-rail-width`, or room for macOS's window controls over it; the user does not resize the rail. */
+const sidebarRailWidth = computed(() => (windowControls.overlaid ? 80 : 56));
 /** What is left to the screen (the list), at least, in pixels: the item panel grows as wide as the window allows. */
 const SCREEN_MIN_WIDTH = 400;
 
@@ -97,7 +99,7 @@ const screenMinSize = computed(() => Math.min(100, (SCREEN_MIN_WIDTH / surfacesW
 const panelMaxWidth = computed(() =>
   Math.max(
     panelWidth.min,
-    surfacesWidth.value - (rail.value ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
+    surfacesWidth.value - (rail.value ? sidebarRailWidth.value : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
   ),
 );
 
@@ -144,7 +146,7 @@ async function restoreWidths() {
 }
 
 // A new minimum or maximum lays the panels out anew as well.
-watch([rail, screenMinSize, panelMaxWidth], restoreWidths);
+watch([rail, sidebarRailWidth, screenMinSize, panelMaxWidth], restoreWidths);
 
 // The panels' widths now, in pixels but the screen's: `[sidebar, screen, panel?]`. The rail's is not the sidebar's.
 function onLayout(sizes: number[]) {
@@ -164,7 +166,7 @@ function onLayout(sizes: number[]) {
     :class="css.appShell"
     :style="{
       '--sidebar-width': `${sidebarWidth.current}px`,
-      '--sidebar-rail-width': `${SIDEBAR_RAIL_WIDTH}px`,
+      '--sidebar-rail-width': `${sidebarRailWidth}px`,
       '--item-panel-width': `${panelWidth.current}px`,
     }"
   >
@@ -180,16 +182,16 @@ function onLayout(sizes: number[]) {
         ref="sidebarPanel"
         :order="0"
         size-unit="px"
-        :default-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.stored"
-        :min-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.min"
-        :max-size="rail ? SIDEBAR_RAIL_WIDTH : sidebarWidth.max"
+        :default-size="rail ? sidebarRailWidth : sidebarWidth.stored"
+        :min-size="rail ? sidebarRailWidth : sidebarWidth.min"
+        :max-size="rail ? sidebarRailWidth : sidebarWidth.max"
         :style="rail ? undefined : sidebarWidth.style"
       >
         <Sidebar
           :viewer="viewer"
           :collapsed="rail"
           :rail-forced="railForced"
-          :window-controls="WINDOW_CONTROLS_OVERLAID"
+          :window-controls="windowControls.overlaid"
           :counts="myWorkCounts"
           :tracked="tracked"
           :settings-sync-stopped="settingsSyncStopped"
