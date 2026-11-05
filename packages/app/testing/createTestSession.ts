@@ -11,6 +11,7 @@ import { Clock } from '@/services/Clock.js';
 import { createTestTabs } from './createTestTabs.js';
 import type { TestTabs } from './createTestTabs.js';
 import { fakeOnline } from './fakeOnline.js';
+import { settle } from './settle.js';
 
 /** A GraphQL operation as the fake GitHub received it. */
 export interface TestGraphQLRequest {
@@ -339,15 +340,6 @@ function createTestClock(): TestClock {
             await settle();
         },
     };
-}
-
-/** Lets the promises in flight — fetches, their bodies, IndexedDB — run as far as they can. */
-async function settle() {
-    for (let round = 0; round < 30; round++) {
-        await new Promise(resolve => {
-            setTimeout(resolve, 0);
-        });
-    }
 }
 
 function readRequest(body: unknown, token: string): TestGraphQLRequest {

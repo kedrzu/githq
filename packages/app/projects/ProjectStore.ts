@@ -6,6 +6,7 @@ import { computed, shallowRef, triggerRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -33,7 +34,8 @@ interface Session {
     ready: Promise<void>;
     /** Project items changed in memory since the last write: written when in memory, deleted when not. */
     readonly dirtyIds: Set<string>;
-    timer: ReturnType<typeof setTimeout> | null;
+    /** Cancels the write waiting for its delay. */
+    cancelWrite: (() => void) | null;
     /** The write of project items on its way, until it is done. */
     writing: ProjectItemChanges | null;
     /** Done when the writes asked for so far are: they go one at a time. */
@@ -64,9 +66,10 @@ export const ProjectStore = defineService({
         overlay: ItemOverlay,
         tabs: TabChannel,
         browser: Browser,
+        clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, items, tracking, persistence, overlay, tabs, browser, logger }) {
+    setup({ accounts, items, tracking, persistence, overlay, tabs, browser, clock, logger }) {
         const projectsRef = shallowRef<ReadonlyMap<string, PersistedProject>>(new Map());
         const itemsRef = shallowRef(new Map<string, ProjectItem>());
         const loadedRef = shallowRef(false);
@@ -343,10 +346,8 @@ export const ProjectStore = defineService({
                 return;
             }
 
-            if (current.timer !== null) {
-                clearTimeout(current.timer);
-                current.timer = null;
-            }
+            current.cancelWrite?.();
+            current.cancelWrite = null;
 
             await current.ready;
             if (!isCurrent(current)) {
@@ -498,8 +499,8 @@ export const ProjectStore = defineService({
         }
 
         function scheduleWrite(current: Session) {
-            current.timer ??= setTimeout(() => {
-                current.timer = null;
+            current.cancelWrite ??= clock.schedule(() => {
+                current.cancelWrite = null;
                 void flush();
             }, WRITE_DELAY_MS);
         }
@@ -518,8 +519,8 @@ export const ProjectStore = defineService({
 
         /** Another account signed in, or none: the projects of whoever was before leave memory. */
         function follow(account: Account | null) {
-            if (session?.timer != null) {
-                clearTimeout(session.timer);
+            if (session?.cancelWrite != null) {
+                session.cancelWrite();
             }
 
             session = null;
@@ -534,7 +535,7 @@ export const ProjectStore = defineService({
                 account,
                 ready: Promise.resolve(),
                 dirtyIds: new Set(),
-                timer: null,
+                cancelWrite: null,
                 writing: null,
                 saving: Promise.resolve(),
                 inbox: createTabInbox(takeIn),

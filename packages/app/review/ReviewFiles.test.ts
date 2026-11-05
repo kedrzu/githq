@@ -3,7 +3,8 @@
 import 'fake-indexeddb/auto';
 
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
-import { waitUntil } from '@nzyme/utils/waitUntil.js';
+import { waitUntil as pollUntil } from '@nzyme/utils/waitUntil.js';
+import type { WaitUntilOptions } from '@nzyme/utils/waitUntil.js';
 import { expect, spyOn, test } from 'bun:test';
 import { computed } from 'vue';
 
@@ -13,6 +14,7 @@ import { EDIT_RESERVE } from '@/sync/getAllowancePause.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { settle } from '@/testing/settle.js';
 
 import type { ReviewPosition } from './buildReviewRows.js';
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
@@ -2318,6 +2320,15 @@ function fileRow(path: string, changeType: ReviewFile['changeType']): ReviewFile
 
 function expectStates(model: PullRequestFiles, expected: Record<string, ReviewFileState>) {
     expect(Object.fromEntries(model.files.map(file => [file.path, model.getState(file.path)]))).toEqual(expected);
+}
+
+/**
+ * {@link pollUntil} that looks often, as this file waits hundreds of times for work far shorter than its default, and
+ * then lets what is in flight finish, so that what a test says did not happen had its chance to.
+ */
+async function waitUntil(condition: () => unknown, options?: WaitUntilOptions) {
+    await pollUntil(condition, { intervalMs: 1, ...options });
+    await settle();
 }
 
 /** Waits until no open file has anything left to come. */

@@ -30,6 +30,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { toItem } from '@/store/toItem.js';
+import { settle } from '@/testing/settle.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
 import type { RepositorySyncState, Tracking } from '@/tracking/TrackingTypes.js';
 import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
@@ -1246,15 +1247,6 @@ function fakeClock() {
         },
     };
     return clock;
-}
-
-/** Lets the promises in flight — fetches, their bodies, the polls awaiting them — run as far as they can. */
-async function settle() {
-    for (let round = 0; round < 30; round++) {
-        await new Promise(resolve => {
-            setTimeout(resolve, 0);
-        });
-    }
 }
 
 function viewerOf(login: string) {

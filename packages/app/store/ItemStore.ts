@@ -31,7 +31,8 @@ interface Session {
     readonly dirtyIds: Set<string>;
     membershipDirty: boolean;
     syncDirty: boolean;
-    timer: ReturnType<typeof setTimeout> | null;
+    /** Cancels the write waiting for its delay. */
+    cancelWrite: (() => void) | null;
     /** The write on its way, until it is done. */
     writing: ItemChanges | null;
     /** Done when the writes asked for so far are: they go one at a time. */
@@ -287,10 +288,8 @@ export const ItemStore = defineService({
                 return;
             }
 
-            if (current.timer !== null) {
-                clearTimeout(current.timer);
-                current.timer = null;
-            }
+            current.cancelWrite?.();
+            current.cancelWrite = null;
 
             // Nothing is written over the kept copy before it has been read.
             await loading;
@@ -397,8 +396,8 @@ export const ItemStore = defineService({
             }
 
             if (previous) {
-                if (previous.timer !== null) {
-                    clearTimeout(previous.timer);
+                if (previous.cancelWrite !== null) {
+                    previous.cancelWrite();
                 }
 
                 persistence.destroy(previous.login).catch((error: unknown) => {
@@ -422,7 +421,7 @@ export const ItemStore = defineService({
                 dirtyIds: new Set(),
                 membershipDirty: false,
                 syncDirty: false,
-                timer: null,
+                cancelWrite: null,
                 writing: null,
                 saving: Promise.resolve(),
                 inbox: createTabInbox(takeIn),
@@ -474,8 +473,8 @@ export const ItemStore = defineService({
         }
 
         function scheduleWrite(current: Session) {
-            current.timer ??= setTimeout(() => {
-                current.timer = null;
+            current.cancelWrite ??= clock.schedule(() => {
+                current.cancelWrite = null;
                 void flush();
             }, WRITE_DELAY_MS);
         }
