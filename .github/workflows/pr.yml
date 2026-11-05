@@ -57,12 +57,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-
-      - name: Build
-        run: bash setup.build.sh
+      - uses: ./.github/actions/setup
 
       - name: Lint
         run: bun run lint:check
@@ -76,7 +71,8 @@ jobs:
     uses: ./.github/workflows/checks.yml
 
   # One result under one name, whichever path the run took: this is the check `main`'s ruleset requires. A required
-  # `full / app` could not work, because a skipped caller job never reports the called jobs' names.
+  # `full / static` could not work, because a skipped caller job never reports the called jobs' names. `full` itself
+  # fails when any called job does, each e2e shard included.
   checks:
     needs: [scope, format, full]
     if: ${{ !cancelled() && !github.event.pull_request.draft }}
