@@ -1,10 +1,11 @@
-<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it. The change applies at once; where it is saved shows in the status bar. -->
+<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and under it whether things animate (D36, a `Switch` with its explanation). Both apply at once; where it is saved shows in the status bar. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, useId } from 'vue';
 
 import ChoiceCards from '@/components/ChoiceCards.vue';
 import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
+import Switch from '@/components/Switch.vue';
 
 import * as l from './DisplayView.loc.js';
 import type { RepositoryLayout } from './sync/SettingsDocument.js';
@@ -19,6 +20,7 @@ const SKETCH_SECTIONS = 4;
 const SKETCH_TABS = 2;
 
 const model = defineModel<RepositoryLayout>({ required: true });
+const animations = defineModel<boolean>('animations', { required: true });
 
 const t = useTranslate();
 const id = useId();
@@ -31,61 +33,84 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
 
 <template>
   <div :class="css.displayView">
-    <section :class="css.displayView_column">
-      <h2
-        :id="`${id}-title`"
-        :class="css.displayView_title"
-      >
-        {{ t(l.layoutTitle) }}
-      </h2>
-      <p :class="css.displayView_description">{{ t(l.layoutDescription) }}</p>
-      <ChoiceCards
-        v-model="model"
-        :labelledby="`${id}-title`"
-        :options="options"
-        :class="css.displayView_options"
-      >
-        <template #default="{ option }">
-          <span
-            :class="css.displayView_sketch"
-            aria-hidden="true"
-          >
-            <span :class="css.displayView_sketchSidebar" />
+    <div :class="css.displayView_column">
+      <section>
+        <h2
+          :id="`${id}-title`"
+          :class="css.displayView_title"
+        >
+          {{ t(l.layoutTitle) }}
+        </h2>
+        <p :class="css.displayView_description">{{ t(l.layoutDescription) }}</p>
+        <ChoiceCards
+          v-model="model"
+          :labelledby="`${id}-title`"
+          :options="options"
+          :class="css.displayView_options"
+        >
+          <template #default="{ option }">
             <span
-              v-if="option.value === 'column'"
-              :class="css.displayView_sketchColumn"
+              :class="css.displayView_sketch"
+              aria-hidden="true"
             >
+              <span :class="css.displayView_sketchSidebar" />
               <span
-                v-for="section in SKETCH_SECTIONS"
-                :key="section"
-                :class="[css.displayView_sketchSection, section === 1 && css.displayView_sketchSection_selected]"
-              />
-            </span>
-            <span :class="css.displayView_sketchMain">
-              <span :class="css.displayView_sketchHead">
-                <span :class="css.displayView_sketchName" />
-                <template v-if="option.value === 'tabs'">
-                  <span :class="[css.displayView_sketchTab, css.displayView_sketchTab_selected]" />
-                  <span
-                    v-for="tab in SKETCH_TABS"
-                    :key="tab"
-                    :class="css.displayView_sketchTab"
-                  />
-                </template>
-              </span>
-              <span :class="css.displayView_sketchLines">
+                v-if="option.value === 'column'"
+                :class="css.displayView_sketchColumn"
+              >
                 <span
-                  v-for="(width, index) in SKETCH_LINES"
-                  :key="index"
-                  :class="[css.displayView_sketchLine, index === 0 && css.displayView_sketchLine_selected]"
-                  :style="{ width }"
+                  v-for="section in SKETCH_SECTIONS"
+                  :key="section"
+                  :class="[css.displayView_sketchSection, section === 1 && css.displayView_sketchSection_selected]"
                 />
               </span>
+              <span :class="css.displayView_sketchMain">
+                <span :class="css.displayView_sketchHead">
+                  <span :class="css.displayView_sketchName" />
+                  <template v-if="option.value === 'tabs'">
+                    <span :class="[css.displayView_sketchTab, css.displayView_sketchTab_selected]" />
+                    <span
+                      v-for="tab in SKETCH_TABS"
+                      :key="tab"
+                      :class="css.displayView_sketchTab"
+                    />
+                  </template>
+                </span>
+                <span :class="css.displayView_sketchLines">
+                  <span
+                    v-for="(width, index) in SKETCH_LINES"
+                    :key="index"
+                    :class="[css.displayView_sketchLine, index === 0 && css.displayView_sketchLine_selected]"
+                    :style="{ width }"
+                  />
+                </span>
+              </span>
             </span>
-          </span>
-        </template>
-      </ChoiceCards>
-    </section>
+          </template>
+        </ChoiceCards>
+      </section>
+      <section :class="css.displayView_row">
+        <div :class="css.displayView_text">
+          <h2
+            :id="`${id}-animations`"
+            :class="css.displayView_rowTitle"
+          >
+            {{ t(l.animationsTitle) }}
+          </h2>
+          <p
+            :id="`${id}-animations-description`"
+            :class="css.displayView_rowDescription"
+          >
+            {{ t(l.animationsDescription) }}
+          </p>
+        </div>
+        <Switch
+          v-model="animations"
+          :label="t(l.animationsTitle)"
+          :aria-describedby="`${id}-animations-description`"
+        />
+      </section>
+    </div>
   </div>
 </template>
 
@@ -99,7 +124,33 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
 .displayView_column {
   @include settings-screen-column;
 
+  gap: $spacing-32;
   max-width: 560px;
+}
+
+.displayView_row {
+  display: flex;
+  gap: $spacing-24;
+  align-items: flex-start;
+}
+
+.displayView_text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-6;
+  min-width: 0;
+}
+
+.displayView_rowTitle {
+  font-size: $font-size-row-title;
+  font-weight: $font-weight-medium;
+}
+
+.displayView_rowDescription {
+  font-size: $font-size-sm;
+  line-height: $line-height-normal;
+  color: $color-fg-2;
 }
 
 .displayView_title {

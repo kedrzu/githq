@@ -155,6 +155,14 @@ const t = useTranslate();
   inset: 0;
   z-index: 10;
   background: rgb(0 0 0 / 55%);
+
+  &[data-state='open'] {
+    @include motion {
+      animation-name: global(motion-fade-in);
+      animation-duration: $motion-open;
+      animation-timing-function: ease-out;
+    }
+  }
 }
 
 .dialog {
@@ -174,6 +182,16 @@ const t = useTranslate();
   outline: none;
   box-shadow: 0 16px 48px rgb(0 0 0 / 50%);
   transform: translateX(-50%);
+
+  &[data-state='open'] {
+    --motion-slide-y: #{-$motion-slide-distance};
+
+    @include motion {
+      animation-name: global(motion-slide-in);
+      animation-duration: $motion-open;
+      animation-timing-function: ease-out;
+    }
+  }
 }
 
 .dialog_bare {

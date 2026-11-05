@@ -21,11 +21,11 @@ export function getGitHubColor(color: IssueTypeColor | ProjectV2SingleSelectFiel
         case 'PINK':
             return 'db61a2';
         case 'PURPLE':
-            return 'a57bf5';
+            return 'ab7df8';
         case 'RED':
-            return 'f0545c';
+            return 'f85149';
         case 'YELLOW':
-            return 'd6a23a';
+            return 'd29922';
         default:
             return assertNever(color);
     }

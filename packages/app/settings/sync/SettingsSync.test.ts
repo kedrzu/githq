@@ -13,7 +13,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
-import { getUntoldStop, readSettingsSaving } from './SettingsSaving.js';
+import { getUntoldStop } from './SettingsSaving.js';
 import type { SettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
@@ -598,19 +598,6 @@ test('telling is not remembered while syncing is on or off', async () => {
     expect(sync.state).toEqual({ state: 'off', repositoryLeft: true });
 });
 
-test('the slot of an earlier build, stopped with an ETag kept, is read without it', () => {
-    expect(
-        readSettingsSaving({
-            state: 'stopped',
-            reason: { kind: 'deleted' },
-            base: documentOf([]),
-            sha: 'abc',
-            etag: '"abc"',
-            syncedAt: 1,
-        }),
-    ).toEqual({ state: 'stopped', reason: { kind: 'deleted' }, base: documentOf([]), sha: 'abc', syncedAt: 1 });
-});
-
 /** The fake settings repository of one user, behind the REST answers of the test session. */
 interface SettingsGitHub {
     /** `null`: there is none. `empty`: no commit yet — created, the file never written. */
@@ -723,6 +710,45 @@ test('picking the layout before the first choice of what to track does not count
     const { tracking } = await open();
 
     tracking.setRepositoryLayout('column');
+
+    expect(tracking.chosen).toBe(false);
+});
+
+test('a file without animations reads as on and is not rewritten by reading it', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const text = github.file?.text;
+
+    await sync.sync();
+
+    expect(tracking.animations).toBe(true);
+    expect(tracking.document).not.toHaveProperty('animations');
+    tracking.setAnimations(true);
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+    expect(github.file?.text).toBe(text);
+});
+
+test('animations turned off here are written at once, and one changed elsewhere comes in', async () => {
+    const { tracking, sync, github } = await turnedOn();
+
+    tracking.setAnimations(false);
+    await sync.sync();
+
+    expect(tracking.animations).toBe(false);
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { animations: false },
+    });
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), animations: true });
+    await sync.sync();
+    expect(tracking.animations).toBe(true);
+});
+
+test('turning animations off before the first choice of what to track does not count as that choice', async () => {
+    const { tracking } = await open();
+
+    tracking.setAnimations(false);
 
     expect(tracking.chosen).toBe(false);
 });

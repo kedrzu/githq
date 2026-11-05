@@ -1,5 +1,5 @@
 /** What a token is, by index in a {@link LineTokens}' ranges. Everything else is the normal text colour. */
-export const SYNTAX_KINDS = ['comment', 'keyword', 'string', 'constant', 'name'] as const;
+export const SYNTAX_KINDS = ['comment', 'keyword', 'string', 'constant', 'title', 'tag', 'builtin'] as const;
 
 /** A kind of token: {@link SYNTAX_KINDS}. */
 export type SyntaxKind = (typeof SYNTAX_KINDS)[number];

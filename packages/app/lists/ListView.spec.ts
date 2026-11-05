@@ -272,6 +272,16 @@ test('list: ←/→ move nothing, ↓ crosses into the next group', async () => 
     await expect.poll(selectedCard).toBe('b1');
 });
 
+test('the selected row keeps the brand: the indigo edge on the selection background', async () => {
+    mount(BOARD, 'list');
+
+    await userEvent.keyboard('j');
+    await expect.poll(selectedCard).toBe('a1');
+    const style = getComputedStyle(document.querySelector('[aria-current="true"]')!);
+    expect(style.boxShadow).toBe('rgb(123, 135, 247) 2px 0px 0px 0px inset');
+    expect(style.backgroundColor).toBe('rgb(24, 29, 46)');
+});
+
 test('an item listed in two groups is selected in one place; x adds the item once', async () => {
     const view = mount(
         [

@@ -1,4 +1,4 @@
-<!-- The landing page's third section under the hero (githq.pen "LP1 · All your repositories, no separate tracker", Section 3): why it matters now — even solo, you hand out issues to agents and work through the pull requests they send back —, the screenshot second. -->
+<!-- The landing page's third section under the hero (githq.pen "Landing — githq.dev", Section 3): why it matters now — even solo, you hand out issues to agents and review and merge the pull requests they send back —, the screenshot second. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Bot, CircleDot, GitMerge } from 'lucide-vue-next';

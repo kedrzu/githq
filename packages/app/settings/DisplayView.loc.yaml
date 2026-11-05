@@ -10,3 +10,7 @@ column:
   en: Column
 columnDetail:
   en: "A column of the repository's own beside the sidebar: its sections, its projects, and on Commits its branches and tags."
+animationsTitle:
+  en: Animations
+animationsDescription:
+  en: Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once.

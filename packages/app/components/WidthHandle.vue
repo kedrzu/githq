@@ -136,7 +136,10 @@ function clamp(next: number) {
     width: 2px;
     content: '';
     background: transparent;
-    transition: background-color 0.1s;
+
+    @include motion {
+      transition: background-color 0.1s;
+    }
   }
 
   &:hover::before,

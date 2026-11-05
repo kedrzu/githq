@@ -55,7 +55,15 @@ const spans = computed(() => getLineSpans(props.text, props.tokens, props.line))
   color: $color-syntax-constant;
 }
 
-.diffCode_name {
-  color: $color-syntax-name;
+.diffCode_title {
+  color: $color-syntax-title;
+}
+
+.diffCode_tag {
+  color: $color-syntax-tag;
+}
+
+.diffCode_builtin {
+  color: $color-syntax-builtin;
 }
 </style>

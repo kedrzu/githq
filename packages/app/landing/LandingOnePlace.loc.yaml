@@ -2,11 +2,10 @@ kicker:
   en: One place
 title:
   en: |-
-    Everything that
-    needs you, from
-    every repository.
+    All your repositories,
+    in one place.
 body:
-  en: Reviews waiting on you, your pull requests with their checks, workflows failing on main, the issues assigned to you. One list across every repository you track, instead of a tab per repository.
+  en: 'You work in more repositories than ever, and with agents on the job, all of them are moving at once. GitHub gives each one its own pages. githq gives you one list: what’s waiting for your review, what’s ready to merge, what broke on main and what’s assigned to you.'
 reviews:
   en: Reviews requested from you, front and center
 pullRequests:

@@ -1,21 +1,13 @@
-<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first — under an address bar showing the trick: on load and every 12 s while in view, github.com swaps for githq.dev and the screenshot rises in (`HostSwapLoop`; githq.pen "Landing — motion storyboard"). Under the call to action the development sign-in. -->
-<script lang="ts">
-const LOOP_EVERY = 12_000;
-</script>
-
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first. Under the call to action the development sign-in. -->
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import { ArrowRight, Star } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
 
 import type { DesktopSystem } from './desktopBuilds.js';
-import HostSwapLoop from './HostSwapLoop.vue';
 import LandingActions from './LandingActions.vue';
 import * as l from './LandingHero.loc.js';
 import { REPOSITORY_URL } from './landingLinks.js';
-import { useHostSwap } from './useHostSwap.js';
 
 defineProps<{
   /** The visitor's system, `null` while unknown or when there is nothing to install on it. */
@@ -33,36 +25,6 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
-const swap = useHostSwap();
-// The screenshot steps away while the address is edited and rises back in on Enter; as it came, it has no state.
-const shotState = computed(() => {
-  if (swap.step !== 'githq') {
-    return 'away';
-  }
-  return swap.played ? 'entered' : undefined;
-});
-
-// The loop plays the first time the hero is in view, then every 12 s while it is.
-let inView = false;
-let timer: ReturnType<typeof setInterval> | undefined;
-useIntersectionObserver({
-  element: useTemplateRef<HTMLElement>('stage'),
-  onVisible: () => {
-    inView = true;
-    if (!swap.played) {
-      swap.play();
-    }
-  },
-  onHidden: () => {
-    inView = false;
-  },
-});
-
-onMounted(() => {
-  timer = setInterval(() => inView && swap.play(), LOOP_EVERY);
-});
-
-onBeforeUnmount(() => clearInterval(timer));
 </script>
 
 <template>
@@ -99,24 +61,8 @@ onBeforeUnmount(() => clearInterval(timer));
       <slot name="dev" />
     </div>
 
-    <div
-      ref="stage"
-      :class="css.landingHero_stage"
-    >
-      <!-- Shows what the copy says; the address in it means nothing on its own. -->
-      <p
-        :class="css.landingHero_address"
-        aria-hidden="true"
-      >
-        <HostSwapLoop
-          :step="swap.step"
-          :host="swap.host"
-        />
-      </p>
-      <div
-        :class="css.landingHero_shot"
-        :data-swap="shotState"
-      >
+    <div :class="css.landingHero_stage">
+      <div :class="css.landingHero_shot">
         <NuxtImg
           :class="css.landingHero_image"
           src="/landing/hero-my-work.webp"
@@ -132,8 +78,6 @@ onBeforeUnmount(() => clearInterval(timer));
 </template>
 
 <style lang="scss" module="css">
-$shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
-
 .landingHero {
   @include landing-gutter;
 
@@ -234,23 +178,6 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
   }
 }
 
-// The storyboard's address bar, as wide as its longest address so the swap moves nothing around it.
-.landingHero_address {
-  display: flex;
-  align-items: center;
-  width: min(100%, 264px);
-  padding: $spacing-10 $spacing-12;
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  line-height: 16px;
-  color: $color-fg;
-  text-align: left;
-  white-space: nowrap;
-  background: $color-bg;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-lg;
-}
-
 .landingHero_shot {
   position: relative;
   width: 100%;
@@ -258,7 +185,7 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
   border: 1px solid $color-border-2;
   border-radius: 14px;
   box-shadow:
-    $shot-shadow,
+    0 40px 120px rgb(0 0 0 / 80%),
     0 -10px 90px rgba($color-accent, 0.2);
 
   // The app runs on below the fold: its bottom fades into the page.
@@ -267,22 +194,6 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
     inset: 57% 0 0;
     content: '';
     background: linear-gradient(180deg, rgba($color-bg, 0), $color-bg);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition:
-      opacity $landing-motion-duration ease-out,
-      transform $landing-motion-duration ease-out;
-
-    // Away while the address is edited: dimmed and lowered, so Enter brings githq up into place.
-    &[data-swap='away'] {
-      opacity: 0.4;
-      transform: translateY(16px);
-    }
-
-    &[data-swap='entered'] {
-      animation: hero-glow $landing-motion-duration ease-out;
-    }
   }
 
   @include landing-mobile {
@@ -305,15 +216,6 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
     height: 100%;
     object-fit: cover;
     object-position: left top;
-  }
-}
-
-// The accent glow above the screenshot pulses once as githq comes up.
-@keyframes hero-glow {
-  50% {
-    box-shadow:
-      $shot-shadow,
-      0 -10px 120px rgba($color-accent, 0.45);
   }
 }
 </style>
