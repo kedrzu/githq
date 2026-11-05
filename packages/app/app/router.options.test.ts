@@ -5,6 +5,7 @@ import { createMemoryHistory, createRouter, START_LOCATION } from 'vue-router';
 
 import { TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import { getItemPagePath } from '@/item/itemRoutes.js';
+import { DOWNLOAD_PATH } from '@/landing/desktopBuilds.js';
 import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { REPOSITORY_SECTIONS } from '@/repository/RepositorySection.js';
 import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
@@ -182,7 +183,7 @@ test("Settings' section is its `?tab=`; none, an unknown or an old one is the fi
     }
 
     expect(getSettingsPath('repositories')).toBe('/settings');
-    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'sync', 'account']);
+    expect(SETTINGS_SECTIONS).toEqual(['repositories', 'projects', 'display', 'review', 'sync', 'account']);
     expect(getSettingsPath('display')).toBe('/settings?tab=display');
     expect(readSettingsSection(undefined)).toBe('repositories');
     expect(readSettingsSection('unknown')).toBe('repositories');
@@ -237,11 +238,12 @@ test("a repository's sections are GitHub's addresses of its lists and its commit
     expect(getRepositorySection(router.resolve(getRepositoryPath('acme/web')).params.section)).toBeNull();
 });
 
-test("every address githq makes is GitHub's: under a parameter or a GitHub-reserved first segment", () => {
+test("every address githq makes is GitHub's: under a parameter or a GitHub-reserved first segment, but for /download", () => {
     const reserved = new Set<string>(GITHUB_RESERVED_SEGMENTS);
     const isGitHubPath = (path: string) => {
         const first = path.split('/')[1] ?? '';
-        return path === '/' || first.startsWith(':') || reserved.has(first);
+        // `/download` is the one page about githq itself rather than GitHub's data, and the one that isn't GitHub's.
+        return path === '/' || path === DOWNLOAD_PATH || first.startsWith(':') || reserved.has(first);
     };
 
     for (const route of routes) {

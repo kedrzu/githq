@@ -18,13 +18,124 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
 /** The landing page's headline as the server renders it (as `checkPrerenderedPages` looks for it). */
-const LANDING_HEADING = '>All your repositories';
+const LANDING_HEADING = '>All your repos';
 
 /** The headline's text, as the browser shows it. */
-const LANDING_HEADING_TEXT = 'All your repositories';
+const LANDING_HEADING_TEXT = 'All your repos';
 
 /** The `Cookie` header of a browser holding the hint. */
 const HINT_HEADER = `${SIGNED_IN_HINT_COOKIE.name}=${SIGNED_IN_HINT_COOKIE.value}`;
+
+test('/download is open to everyone: signed out it offers signing in, signed in it opens the app', async ({
+    page,
+    github,
+}) => {
+    await page.goto('/download');
+    const main = page.getByRole('main');
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('Download githq');
+    await expect(main.getByRole('button', { name: 'Sign in with GitHub' })).toBeVisible();
+    await expect(main).toContainText('GitHub will ask for full repository access.');
+
+    await signIn(page, github);
+    await page.goto('/download');
+    await expect(page).toHaveURL('/download');
+    await expect(main.getByRole('link', { name: 'Open githq' })).toHaveAttribute('href', '/');
+    await expect(main.getByRole('button', { name: 'Sign in with GitHub' })).toBeHidden();
+});
+
+/** Where a page's download button and what sits around it are drawn, to compare a page before and after hydration. */
+async function readActionBoxes(page: Page) {
+    const main = page.getByRole('main');
+    return {
+        download: await main.getByRole('link', { name: 'Download the app' }).first().boundingBox(),
+        signIn: await main.getByRole('button', { name: 'Sign in with GitHub' }).first().boundingBox(),
+        allDownloads: await main.getByRole('link', { name: 'All downloads' }).first().boundingBox(),
+    };
+}
+
+for (const { name, userAgent, system, href } of [
+    {
+        name: 'macOS',
+        userAgent:
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
+        system: 'macos',
+        href: 'githq_aarch64.dmg',
+    },
+    {
+        name: 'Windows',
+        userAgent:
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
+        system: 'windows',
+        href: 'githq_x64-setup.exe',
+    },
+    {
+        name: 'Linux',
+        userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
+        system: 'linux',
+        href: 'githq_amd64.AppImage',
+    },
+    {
+        name: 'a phone',
+        userAgent:
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+        system: null,
+        href: null,
+    },
+]) {
+    test.describe(`on ${name}`, () => {
+        test.use({ userAgent });
+
+        test('the prerendered page links to /download, and hydrating swaps the link and the logo without moving anything', async ({
+            page,
+            browser,
+            request,
+        }) => {
+            // As served, whoever asks: the page can't know the system yet.
+            const html = await (await request.get('/', { headers: { 'user-agent': userAgent } })).text();
+            expect(html).not.toContain('releases/latest/download');
+            expect(html).toContain('href="/download"');
+            expect(html).not.toContain('landing-download-logo-');
+
+            // The same page never hydrated, for what it draws before the app runs.
+            const unhydrated = await browser.newContext({
+                baseURL: E2E_BASE_URL,
+                javaScriptEnabled: false,
+                userAgent,
+                viewport: page.viewportSize(),
+            });
+            const unhydratedPage = await unhydrated.newPage();
+            await unhydratedPage.goto('/');
+            await unhydratedPage.waitForLoadState('load');
+            const before = await readActionBoxes(unhydratedPage);
+            await unhydrated.close();
+
+            const errors: string[] = [];
+            page.on('console', message => {
+                if (message.type() === 'error' || /hydrat/i.test(message.text())) {
+                    errors.push(message.text());
+                }
+            });
+            page.on('pageerror', error => errors.push(error.message));
+
+            await page.goto('/');
+            const landing = new LandingHarness(page);
+            if (system && href) {
+                await expect(landing.downloadLogo(system)).toBeVisible();
+                await expect(landing.downloadLink).toHaveAttribute(
+                    'href',
+                    `https://github.com/kedrzu/githq/releases/latest/download/${href}`,
+                );
+            } else {
+                await expect(landing.downloadLink).toHaveAttribute('href', '/download');
+                await expect(landing.root.locator('[tid^="landing-download-logo-"]')).toHaveCount(0);
+            }
+
+            await page.waitForLoadState('load');
+            expect(await readActionBoxes(page)).toEqual(before);
+            expect(errors).toEqual([]);
+        });
+    });
+}
 
 test('without the signed-in hint, / is the prerendered landing page, whatever the query, kept apart from the app in caches', async ({
     request,

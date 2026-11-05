@@ -4,6 +4,8 @@ projects:
   en: Projects
 display:
   en: Display
+review:
+  en: Code review
 sync:
   en: Sync settings
 account:

@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 
 import {
     checkTitle,
+    composeUpdaterManifest,
     developmentVersion,
     findLastStableTag,
     hasNoCode,
@@ -203,5 +204,75 @@ describe('renderNotes', () => {
         const notes = renderNotes({ subjects: ['chore: a'], policyUrl: POLICY });
         expect(notes).not.toContain('##');
         expect(notes).toContain(POLICY);
+    });
+});
+
+describe('composeUpdaterManifest', () => {
+    const DOWNLOAD_URL = 'https://github.com/kedrzu/githq/releases/download/v0.2.0';
+
+    function compose(assets: string[]) {
+        const signatures = Object.fromEntries(
+            assets.filter(name => name.endsWith('.sig')).map(name => [name, `signature of ${name}`]),
+        );
+        return composeUpdaterManifest({
+            version: '0.2.0',
+            pubDate: '2026-11-05T11:21:24.295Z',
+            downloadUrl: DOWNLOAD_URL,
+            assets,
+            signatures,
+        });
+    }
+
+    test('gives each platform the bundle tauri-action gave it, and ignores the files the updater does not read', () => {
+        const result = compose([
+            'githq_0.2.0_aarch64.dmg',
+            'githq_aarch64.app.tar.gz',
+            'githq_aarch64.app.tar.gz.sig',
+            'githq_x64.app.tar.gz',
+            'githq_x64.app.tar.gz.sig',
+            'githq_0.2.0_x64-setup.exe',
+            'githq_0.2.0_x64-setup.exe.sig',
+            'githq_0.2.0_amd64.AppImage',
+            'githq_0.2.0_amd64.AppImage.sig',
+            'githq_0.2.0_amd64.deb',
+            'githq_0.2.0_amd64.deb.sig',
+        ]);
+        if (!result.valid) {
+            throw new Error(result.reason);
+        }
+        expect(result.manifest.version).toBe('0.2.0');
+        expect(result.manifest.pub_date).toBe('2026-11-05T11:21:24.295Z');
+
+        const bundleOf = Object.fromEntries(
+            Object.entries(result.manifest.platforms).map(([platform, { url }]) => [platform, url]),
+        );
+        expect(bundleOf).toEqual({
+            'darwin-aarch64': `${DOWNLOAD_URL}/githq_aarch64.app.tar.gz`,
+            'darwin-aarch64-app': `${DOWNLOAD_URL}/githq_aarch64.app.tar.gz`,
+            'darwin-x86_64': `${DOWNLOAD_URL}/githq_x64.app.tar.gz`,
+            'darwin-x86_64-app': `${DOWNLOAD_URL}/githq_x64.app.tar.gz`,
+            'windows-x86_64': `${DOWNLOAD_URL}/githq_0.2.0_x64-setup.exe`,
+            'windows-x86_64-nsis': `${DOWNLOAD_URL}/githq_0.2.0_x64-setup.exe`,
+            'linux-x86_64': `${DOWNLOAD_URL}/githq_0.2.0_amd64.AppImage`,
+            'linux-x86_64-appimage': `${DOWNLOAD_URL}/githq_0.2.0_amd64.AppImage`,
+            'linux-x86_64-deb': `${DOWNLOAD_URL}/githq_0.2.0_amd64.deb`,
+        });
+        expect(result.manifest.platforms['linux-x86_64-deb']?.signature).toBe('signature of githq_0.2.0_amd64.deb.sig');
+    });
+
+    test('a signature of an unknown bundle is an error, not a platform left out', () => {
+        const result = compose(['githq_arm64.AppImage', 'githq_arm64.AppImage.sig']);
+        expect(result).toEqual({
+            valid: false,
+            reason: 'githq_arm64.AppImage.sig signs no updater bundle this release knows',
+        });
+    });
+
+    test('a signature whose bundle is not on the release is an error', () => {
+        const result = compose(['githq_x64.app.tar.gz.sig']);
+        expect(result).toEqual({
+            valid: false,
+            reason: 'the release has githq_x64.app.tar.gz.sig but no githq_x64.app.tar.gz',
+        });
     });
 });

@@ -9,6 +9,7 @@ import TrackedProjectsSection from '@/tracking/TrackedProjectsSection.vue';
 import TrackedRepositoriesSection from '@/tracking/TrackedRepositoriesSection.vue';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
+import CodeReviewSection from './CodeReviewSection.vue';
 import DisplaySection from './DisplaySection.vue';
 import SavingSection from './SavingSection.vue';
 import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
@@ -48,6 +49,7 @@ const section = computed({
     />
     <AccountSection v-else-if="section === 'account'" />
     <SavingSection v-else-if="section === 'sync'" />
+    <CodeReviewSection v-else-if="section === 'review'" />
     <DisplaySection v-else-if="section === 'display'" />
     <TrackedProjectsSection
       v-else-if="section === 'projects'"
