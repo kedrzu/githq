@@ -1116,10 +1116,6 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
             removeItem: key => {
                 local.delete(key);
             },
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
-            },
         },
         sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
         origin: 'https://githq.test',
