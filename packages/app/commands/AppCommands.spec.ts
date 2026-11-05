@@ -29,7 +29,7 @@ import AppCommands from './AppCommands.vue';
 // The desktop app's sections too: the update commands hang under Updates. On the web they are not, whatever the state.
 vi.mock('@/settings/settingsRoutes.js', async importOriginal => ({
     ...(await importOriginal<typeof settingsRoutes>()),
-    SETTINGS_SECTIONS: ['repositories', 'projects', 'display', 'sync', 'account', 'updates', 'changelog'],
+    SETTINGS_SECTIONS: ['repositories', 'projects', 'display', 'review', 'sync', 'account', 'updates', 'changelog'],
 }));
 
 test('`,` opens Settings; with nothing typed the menu offers it once, with its key, and nothing that hangs under it', async () => {
@@ -45,7 +45,16 @@ test('`,` opens Settings; with nothing typed the menu offers it once, with its k
     await expect.element(settings).toBeInTheDocument();
     expect(settings.elements()).toHaveLength(1);
     await expect.element(settings).toHaveTextContent(',');
-    for (const section of ['Repositories', 'Projects', 'Display', 'Sync settings', 'Account', 'Updates', 'Changelog']) {
+    for (const section of [
+        'Repositories',
+        'Projects',
+        'Display',
+        'Code review',
+        'Sync settings',
+        'Account',
+        'Updates',
+        'Changelog',
+    ]) {
         await expect.element(menu.getByRole('option', { name: section, exact: true })).not.toBeInTheDocument();
     }
 
