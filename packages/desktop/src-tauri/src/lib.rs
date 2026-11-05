@@ -85,7 +85,17 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         .traffic_light_position(tauri::LogicalPosition::new(10.0, 20.0));
 
     #[cfg(target_os = "macos")]
-    keep_keyboard_on_webview(&window.build()?);
+    {
+        let window = window.build()?;
+        keep_keyboard_on_webview(&window);
+
+        // Tauri has no option for it, and the webview's default is off. Besides a trackpad's swipe, it is what a
+        // mouse's back button sends when its driver turns the button into macOS's gesture, as Logi Options+ does.
+        window.with_webview(|webview| unsafe {
+            let view: &objc2_web_kit::WKWebView = &*webview.inner().cast();
+            view.setAllowsBackForwardNavigationGestures(true);
+        })?;
+    }
     #[cfg(not(target_os = "macos"))]
     window.build()?;
 
