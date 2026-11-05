@@ -181,7 +181,8 @@ test('the repository layout chosen with saving on is written to the file, and is
 
     await page.goto('/settings?tab=display');
     const settings = new SettingsScreenHarness(page);
-    await expect(settings.repositoryLayoutKept(`Saved with your settings in ${LOGIN}/githq-settings`)).toBeVisible();
+    const shell = new AppShellHarness(page);
+    await expect(shell.statusBar).toContainText(`Up to date · settings saved in ${LOGIN}/githq-settings`);
     await expect(settings.repositoryLayout('Tabs')).toBeChecked();
     await settings.repositoryLayout('Tabs').focus();
     await page.keyboard.press('ArrowRight');

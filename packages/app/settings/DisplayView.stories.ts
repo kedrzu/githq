@@ -6,8 +6,6 @@ import DisplayView from './DisplayView.vue';
 const meta = {
     component: DisplayView,
     args: {
-        login: 'mlaine',
-        saving: 'on',
         modelValue: 'tabs',
         'onUpdate:modelValue': fn(),
     },
@@ -18,17 +16,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** CH43: tabs chosen, saved with the settings. */
+/** CH43: tabs chosen. */
 export const TabsChosen: Story = {};
 
 /** CH43, the other card chosen. */
 export const ColumnChosen: Story = { args: { modelValue: 'column' } };
-
-/** Saving is off: the choice stays on this device. */
-export const SavingOff: Story = { args: { saving: 'off' } };
-
-/** Syncing stopped: the choice stays on this device until it is fixed. */
-export const SyncStopped: Story = { args: { saving: 'stopped', modelValue: 'column' } };
 
 /** A narrow window: the cards stay side by side. */
 export const NarrowWindow: Story = {

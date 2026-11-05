@@ -83,9 +83,9 @@ creates a worktree it runs `setup.sh` (`paseo.json`): it merges `origin/main` in
 fast-forwards the local `main`, copies files that live outside git from the main checkout (`CLAUDE.local.md`,
 `.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
 
-**Without asking** (standing permission): name the branch and the workspace once the task is known; at the
-end of every turn that changed files — commit, catch up with `main`, push, then open the PR as a draft or update its
-description when the scope grew. Keep the branch current with `main` by merging,
+**Without asking** (standing permission): once the task is known, name the branch and the workspace and open the PR
+as a draft, before any work on it; at the end of every turn that changed files — commit, catch up with `main`, push,
+and update the PR's description when the scope grew. Keep the branch current with `main` by merging,
 never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
 Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 

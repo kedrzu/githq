@@ -26,6 +26,32 @@ type Story = StoryObj<typeof meta>;
 /** Most of the time: dim "Up to date". */
 export const Fresh: Story = {};
 
+/** On a screen of Settings, saving on: where the settings are saved (githq D26). */
+export const SettingsSaved: Story = {
+    args: {
+        freshness: { kind: 'settingsSaved', checkedAt: AT_14_06, saving: 'on', repository: 'mlaine/githq-settings' },
+    },
+};
+
+/** On a screen of Settings, saving off: they stay on this device. */
+export const SettingsSavingOff: Story = {
+    args: {
+        freshness: { kind: 'settingsSaved', checkedAt: AT_14_06, saving: 'off', repository: 'mlaine/githq-settings' },
+    },
+};
+
+/** On a screen of Settings, syncing stopped: they stay on this device until it is fixed. */
+export const SettingsSyncStopped: Story = {
+    args: {
+        freshness: {
+            kind: 'settingsSaved',
+            checkedAt: AT_14_06,
+            saving: 'stopped',
+            repository: 'mlaine/githq-settings',
+        },
+    },
+};
+
 /** A check running after the last one went out of date. */
 export const Checking: Story = { args: { freshness: { kind: 'checking', since: AT_14_06 } } };
 

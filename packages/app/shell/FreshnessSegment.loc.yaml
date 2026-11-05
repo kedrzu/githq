@@ -1,5 +1,11 @@
 upToDate:
   en: Up to date
+settingsSavedIn:
+  en: Up to date · settings saved in {repository}
+settingsSavingOff:
+  en: Up to date · saving is off, settings stay on this device
+settingsSyncStopped:
+  en: Up to date · syncing stopped, settings stay on this device until it's fixed
 checking:
   en: Checking…
 readingLog:

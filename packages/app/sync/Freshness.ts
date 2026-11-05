@@ -1,3 +1,5 @@
+import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
+
 /**
  * How current what a surface shows is (D15), for its segment of the status bar. Times are epoch ms.
  *
@@ -29,7 +31,9 @@
  *   fresh it is, but what the segment says then (CR15);
  * - `landing`: a review has just opened and hasn't been moved yet, on its first file not viewed or where it was left: not
  *   how fresh it is, but what the segment says then (CR20, CR25, CR26). `backTo` is the pull request a walk came from;
- * - `filesSelected`: files of a review are selected together: not how fresh it is, but what the segment says then (CR23).
+ * - `filesSelected`: files of a review are selected together: not how fresh it is, but what the segment says then (CR23);
+ * - `settingsSaved`: up to date on a screen of Settings, which also says where the settings are saved: in `repository`, or
+ *   by `saving` not there (githq D26).
  *
  * The user's own edits on the way, or one GitHub rejected, are said over it in the segment (`FreshnessSegment`).
  */
@@ -78,7 +82,13 @@ export type Freshness =
           readonly file: string;
           readonly line: number | null;
       }
-    | { readonly kind: 'filesSelected' };
+    | { readonly kind: 'filesSelected' }
+    | {
+          readonly kind: 'settingsSaved';
+          readonly checkedAt: number;
+          readonly saving: SettingsSaving['state'];
+          readonly repository: string;
+      };
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {
