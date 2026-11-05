@@ -12,5 +12,9 @@ repository:
   en: kedrzu/githq
 signIn:
   en: Sign in
+openGithq:
+  en: Open githq
+download:
+  en: Download
 menu:
   en: Menu

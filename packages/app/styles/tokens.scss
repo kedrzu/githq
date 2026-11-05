@@ -1,85 +1,106 @@
 // Design tokens: SCSS variables and mixins only — nothing here may emit CSS, because this partial is
 // injected into every SCSS block of `packages/` (see `viteShared.ts`).
 //
-// The values come from `githq.pen` (Direction D, D9). The app is dark only. Names say what a token is for,
-// not what it looks like.
+// The values come from GitHub's Primer dark palette, whose proportions of lightness and colour are proven readable;
+// indigo (`$color-accent`) is the brand and the only colour that is ours. A value that differs from Primer is a named
+// exception, commented where it is set and listed in `tokens.test.ts`. See the colour decision in
+// `docs/design/githq/DECISIONS.md`. The app is dark only. Names say what a token is for, not what it looks like.
 
 // ---------------------------------------------------------------------------------------------------
 // Colors — surfaces and lines
 // ---------------------------------------------------------------------------------------------------
 
-// The window: the list, the landing page, fields set into the sidebar.
-$color-bg: #0e1013;
+// The window: the list, the landing page, fields set into the sidebar. Primer's bgColor-default.
+$color-bg: #0d1117;
 // The sidebar, the status bar, boxes on the landing page.
-$color-bg-2: #131519;
+// Primer's bgColor-muted.
+$color-bg-2: #151b23;
 // A hovered or current row in the sidebar, keyboard hints.
-$color-bg-3: #1a1d22;
+// Exception: Primer's control-bgColor-rest (`#212830`) would fail red (4.44:1) and fg-3 (2.81:1) on it.
+$color-bg-3: #1c2128;
 // The selected row of a list.
-$color-sel: #1c2030;
+// Accent at 10.2% over the window, as Primer's bgColor-accent-muted is over GitHub's.
+$color-sel: #181d2e;
 // Every other row of the commit graph: a very faint stripe carrying the eye from a dot far left to its row.
 $color-row-stripe: rgb(255 255 255 / 2%);
 // Lines between surfaces and around boxes.
-$color-border: #22262d;
+// Primer's borderColor-muted (`#3D444DB3`) over the window.
+$color-border: #2f353d;
 // Stronger outlines: keyboard hints, a notice.
-$color-border-2: #2e333b;
+// Primer's borderColor-default.
+$color-border-2: #3d444d;
 // Scrollbars: a thumb that sits back from the content on a track that isn't drawn.
-$color-scrollbar-thumb: #2a2e35;
-$color-scrollbar-thumb-hover: #3a3f48;
+// The same two steps as the borders.
+$color-scrollbar-thumb: #2f353d;
+$color-scrollbar-thumb-hover: #3d444d;
 
 // ---------------------------------------------------------------------------------------------------
 // Colors — text and icons
 // ---------------------------------------------------------------------------------------------------
 
-// Main text.
-$color-fg: #e4e6ea;
-// Secondary text, idle navigation, icons.
-$color-fg-2: #9aa0a9;
+// Main text. Primer's fgColor-default.
+$color-fg: #f0f6fc;
+// Secondary text, idle navigation, icons. Primer's fgColor-muted.
+$color-fg-2: #9198a1;
 // Dim icons and decoration only (a chevron, the "+" of a section). On the window's background it reads 3.5:1, under
-// WCAG AA for text: dim text is `$color-fg-dim`.
-$color-fg-3: #646b75;
+// WCAG AA for text: dim text is `$color-fg-dim`. Primer's fgColor-disabled.
+$color-fg-3: #656c76;
 // The outline of what the user fills in or ticks: a field, a checkbox, a radio. Reaches 3:1 on every surface (D30), where
 // `$color-border-2` wouldn't.
 $color-control-border: $color-fg-3;
 // Dim text: counts, section headers, the status bar, footers, details. The closest step up from
 // `$color-fg-3` that passes AA (4.5:1) on every surface it sits on, up to `$color-sel` (a selected row).
-$color-fg-dim: #838992;
+// Exception: Primer has two levels of text, we have three.
+$color-fg-dim: #8b929b;
 // The lines of a commit graph; the default branch's stands out from the rest.
-$color-graph-line: #646b75;
-$color-graph-line-main: #7a818c;
+$color-graph-line: $color-fg-3;
+// Exception: the default branch's line stays brighter than the rest.
+$color-graph-line-main: #8b929b;
 // Text on the light button ("Sign in with GitHub") and on the accent.
-$color-on-light: #0e1013;
+$color-on-light: #0d1117;
 
 // ---------------------------------------------------------------------------------------------------
 // Colors — accent and states
 // ---------------------------------------------------------------------------------------------------
 
+// The brand, not Primer's.
 $color-accent: #7b87f7;
+// Primer's fgColor-success.
 $color-green: #3fb950;
 // The lines a pull request adds and removes (`PullRequestSize`): paler than the status green and red, because a size
-// is data, not an alarm.
-$color-diff-added: #7ccb92;
-$color-diff-removed: #e98b8f;
-$color-red: #f0545c;
+// is data, not an alarm. Primer's paler green and red (the diff's text colours).
+$color-diff-added: #7ee787;
+$color-diff-removed: #ffa198;
+// Primer's fgColor-danger.
+$color-red: #f85149;
 // A failure that isn't news (actions): a workflow broken for over a day, a run on a ref that doesn't count. Marks
-// only, never text.
+// only, never text. Exception: Primer's `#B62324` reads 2.93:1 on the window.
 $color-red-quiet: #ac4d52;
-$color-amber: #d6a23a;
-$color-purple: #a57bf5;
+// Primer's fgColor-attention.
+$color-amber: #d29922;
+// Primer's fgColor-done.
+$color-purple: #ab7df8;
 
-// A deleted and an added line of a diff: its background (9%, `#3FB95017` in the design).
-$color-diff-bg-deleted: rgba($color-red, 0.09);
-$color-diff-bg-added: rgba($color-green, 0.09);
+// A deleted and an added line of a diff: its background. Primer's bgColor-danger-muted (`#F85149` at 10%) and
+// bgColor-success-muted (`#2EA043` at 15%, not derived from `$color-green`).
+$color-diff-bg-deleted: rgba(#f85149, 0.1);
+$color-diff-bg-added: rgba(#2ea043, 0.15);
 
-// Code. Muted, each AA (4.5:1) over the window and over a deleted or an added line. `githq.pen` has no syntax colours
-// (its code is monochrome): these are the agent's, for the owner to confirm. The rest of the code is the line's own colour.
-$color-syntax-comment: $color-fg-dim;
-$color-syntax-keyword: #b0a8e6;
-$color-syntax-string: #9cc2a5;
-$color-syntax-constant: #d4b078;
-$color-syntax-name: #8fb8d8;
+// Code: GitHub's `prettylights-syntax-*` colours in Primer dark, each AA (4.5:1) over every surface and over a deleted
+// or an added line. The rest of the code is the line's own colour.
+$color-syntax-comment: #9198a1;
+$color-syntax-keyword: #ff7b72;
+$color-syntax-string: #a5d6ff;
+$color-syntax-constant: #79c0ff;
+// A function's or a type's name.
+$color-syntax-title: #d2a8ff;
+// A tag in markup.
+$color-syntax-tag: #7ee787;
+// A built-in and a variable.
+$color-syntax-builtin: #ffa657;
 
 // The light button's fill.
-$color-button-light: #e4e6ea;
+$color-button-light: $color-fg;
 $color-button-light-hover: #ffffff;
 
 // The keyboard focus ring.
@@ -89,9 +110,9 @@ $color-focus: $color-accent;
 // Type
 // ---------------------------------------------------------------------------------------------------
 
-$font-family-sans: 'Inter', system-ui, sans-serif;
-$font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
-$font-family-brand: 'Geist', $font-family-sans;
+$font-family-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
+$font-family-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, monospace;
+$font-family-brand: 'Geist', 'Geist Fallback', $font-family-sans;
 
 $font-size-3xs: 11px;
 // A keyboard hint's key, a tag beside a name.
@@ -188,8 +209,8 @@ $workflow-run-indent: 41px;
 // ---------------------------------------------------------------------------------------------------
 
 // The hero's headline is lit from below: a vertical gradient from the top to the bottom of the text.
-$color-landing-headline-top: #8a919b;
-$color-landing-headline-bottom: #f5f6f8;
+$color-landing-headline-top: $color-fg-2;
+$color-landing-headline-bottom: $color-fg;
 // The widest the page's content gets; the design's frame is 1440 wide with 120 on each side.
 $landing-content-width: 1200px;
 // The pinned navigation's height without its bottom border (`LandingNav`).

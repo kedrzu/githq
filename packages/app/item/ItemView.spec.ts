@@ -75,6 +75,8 @@ test("the body and comments show GitHub's rendering only, never the markdown as 
         const link = page.getByRole('link', { name, exact: true });
         await expect.element(link).toHaveAttribute('target', '_blank');
         await expect.element(link).toHaveAttribute('rel', 'noopener noreferrer');
+        // A link in GitHub's rendering is the brand's indigo.
+        expect(getComputedStyle(link.element()).color).toBe('rgb(123, 135, 247)');
     }
 });
 

@@ -1,4 +1,4 @@
-/** The repository on GitHub: "Star on GitHub", the navigation's "kedrzu/githq" and every other way out to GitHub. */
+/** The repository on GitHub: "Star on GitHub", the navigation's GitHub mark and every other way out to GitHub. */
 export const REPOSITORY_URL = 'https://github.com/kedrzu/githq';
 
 /** Why githq asks for what it does — the design's "What githq keeps in your browser", until a page of its own. */
@@ -28,6 +28,5 @@ export const LandingSectionId = {
     compare: 'compare',
     keyboard: 'keyboard',
     howItWorks: 'how-it-works',
-    install: 'install',
     openSource: 'open-source',
 } as const;

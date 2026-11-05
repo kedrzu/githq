@@ -68,7 +68,7 @@ const isCommented = computed(() => {
   display: flex;
   min-height: 20px;
   padding-right: $spacing-10;
-  color: $color-fg-2;
+  color: $color-fg;
   background: $color-bg;
 }
 

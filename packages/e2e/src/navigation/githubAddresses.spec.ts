@@ -25,13 +25,9 @@ const OTHER_PULL_REQUEST = 'Add rate limit headers to the API';
 /** Where the app remembers the arrangement items open in (`LocalPreferences`). */
 const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 
-test("GitHub's dashboard lists open my work narrowed to their group, and an item's GitHub addresses open its page and settle on its own", async ({
-    page,
-    github,
-}) => {
+test("GitHub's dashboard lists open my work narrowed to their group", async ({ page, github }) => {
     await openMyWork(page, github, createSampleMyWork().world);
     const myWork = new MyWorkScreenHarness(page);
-    const item = new ItemViewHarness(page);
 
     const lists: readonly (readonly [string, MyWorkGroupName])[] = [
         ['/pulls/review-requested', 'Review requested'],
@@ -51,6 +47,12 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
     await page.goto('/');
     await expect(myWork.groups).toHaveCount(4);
     await expect(page).toHaveURL('/');
+});
+
+test("an item's GitHub addresses open its page and settle on its own", async ({ page, github }) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    const myWork = new MyWorkScreenHarness(page);
+    const item = new ItemViewHarness(page);
 
     // [visited, where the address settles, the item's title]
     const items: readonly (readonly [string, string, string])[] = [
@@ -71,6 +73,13 @@ test("GitHub's dashboard lists open my work narrowed to their group, and an item
         await expect(myWork.groups).toHaveCount(0);
         await expect(page).toHaveURL(settled);
     }
+});
+
+test("an untracked repository's GitHub addresses open its lists, and its Actions pages are GitHub's", async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
 
     // An untracked repository's lists, and an old githq address shaped like a repository, which is one on GitHub.
     const repository = new RepositoryScreenHarness(page);

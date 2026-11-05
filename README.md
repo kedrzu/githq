@@ -2,7 +2,7 @@
 
 <a href="https://githq.dev"><img src="docs/assets/readme/wordmark.svg" alt="githq" height="80"></a>
 
-All your repositories in one place. No separate tracker.
+All your repos at the speed of thought.
 
 [githq.dev](https://githq.dev) · [Design](docs/design/githq/README.md) · [Issues](https://github.com/kedrzu/githq/issues)
 

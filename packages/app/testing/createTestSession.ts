@@ -107,10 +107,6 @@ export function createTestSession(params: CreateTestSessionParams) {
             removeItem: key => {
                 local.delete(key);
             },
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
-            },
         },
         sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
         origin: 'https://githq.test',

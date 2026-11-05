@@ -191,6 +191,28 @@ test('the open pull requests of my work get their status re-read, without the re
     expect(items.get('PR_1')).toMatchObject({ kind: 'pullRequest', reviewDecision: 'APPROVED', updatedAt: MONDAY });
 });
 
+test('a pull request removed while its status is on its way does not come back, and the others still get theirs', async () => {
+    const github = fakeGitHub();
+    github.found.authored = [pullRequestNode('PR_gone', MONDAY), pullRequestNode('PR_1', MONDAY)];
+    const { items, clock } = await setup(github, 'alice');
+
+    const held = createPromise();
+    github.hold = held.promise;
+    github.statuses.set('PR_1', { ...pullRequestNode('PR_1', MONDAY), reviewDecision: 'APPROVED' });
+    await clock.advance(60_000);
+    expect(github.graphql('PullRequestStatuses').at(-1)).toEqual(['PR_gone', 'PR_1']);
+
+    // Another loop or tab found it gone meanwhile.
+    items.remove(['PR_gone']);
+    github.hold = null;
+    held.resolve();
+    await clock.advance(0);
+
+    expect(items.get('PR_gone')).toBeUndefined();
+    expect(items.get('PR_1')).toMatchObject({ reviewDecision: 'APPROVED' });
+    expect(items.getSyncState('pullRequestStatuses').lastError).toBeNull();
+});
+
 test('a pull request closed with a draft review stays and is re-read while the draft does; with the draft gone it goes, unless something else keeps it', async () => {
     const github = fakeGitHub();
     const pendingReviews = { nodes: [{ id: 'PRR_1', createdAt: MONDAY, comments: { totalCount: 2 } }] };
@@ -545,6 +567,10 @@ test("an answer for a session that has ended — another account took over in an
     await clock.advance(0);
 
     held.resolve();
+    // Looked at before Bob's next poll, whose clean-up would take it away again.
+    await clock.advance(0);
+    expect(items.get('I_alice')).toBeUndefined();
+
     await clock.advance(10 * 60_000);
 
     expect(items.get('I_alice')).toBeUndefined();
@@ -1090,10 +1116,6 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
             },
             removeItem: key => {
                 local.delete(key);
-            },
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
             },
         },
         sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },

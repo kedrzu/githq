@@ -56,19 +56,13 @@ test('two tabs change the options of different lists: neither undoes the other, 
     expect(store.get('myWork')).toEqual({ sort: 'updated' });
 });
 
-test('what an older githq kept per list, for every user, is deleted; a kept value that is not JSON is ignored', () => {
+test('a kept value that is not JSON is ignored, and the next change writes over it', () => {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const storage = session.container.resolve(Browser).localStorage;
-    storage.setItem('githq.listView.myWork', JSON.stringify({ sort: 'title' }));
-    storage.setItem('githq.listView.repository:acme/api', JSON.stringify({ layout: 'board' }));
     storage.setItem('githq.listViews.octocat', '{not json');
-    storage.setItem('githq.sidebarCollapsed', 'true');
 
     const store = session.container.resolve(ListViewOptionsStore);
 
-    expect(storage.getItem('githq.listView.myWork')).toBeNull();
-    expect(storage.getItem('githq.listView.repository:acme/api')).toBeNull();
-    expect(storage.getItem('githq.sidebarCollapsed')).toBe('true');
     expect(store.has('myWork')).toBe(false);
 
     store.set('myWork', { sort: 'title' });
