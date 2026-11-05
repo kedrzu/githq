@@ -1,4 +1,4 @@
-<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column). -->
+<!-- One choice out of a few, side by side (reka-ui's single `ToggleGroup`): my work's filter "All / Needs me / Waiting on others", the List / Board layout, the merge panel's methods with their keys shown. Each option is a toggle button (`aria-pressed`); Tab reaches the chosen one and the arrow keys move between them. The choice can't be cleared, only changed. `orientation="vertical"`: one above the other as navigation rows with their keys shown, ↑/↓ moving (a repository's sections in its column; `roomy`, Settings' sections). -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -39,6 +39,8 @@ const props = withDefaults(
     showKeys?: boolean;
     /** `vertical`: rows, each with its icon, label, count and key, moved through by ↑/↓. Unset: side by side. */
     orientation?: 'vertical';
+    /** With `orientation="vertical"`: taller rows, comfortable to click (Settings' sections). */
+    roomy?: boolean;
   }>(),
   { variant: 'plain', wrap: false, showKeys: false },
 );
@@ -65,6 +67,7 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
       css[`segmentedTabs_${variant}`],
       wrap && css.segmentedTabs_wrap,
       orientation === 'vertical' && css.segmentedTabs_vertical,
+      roomy && css.segmentedTabs_roomy,
     ]"
     @update:model-value="choose"
   >
@@ -144,6 +147,10 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
   align-items: stretch;
 }
 
+.segmentedTabs_roomy {
+  gap: $spacing-2;
+}
+
 .segmentedTabs_item {
   @include focus-ring;
 
@@ -191,6 +198,12 @@ function choose(value: AcceptableValue | AcceptableValue[] | undefined) {
     &[data-state='on'] {
       @include nav-row-current;
     }
+  }
+
+  .segmentedTabs_roomy & {
+    gap: $spacing-10;
+    padding: $spacing-10 $spacing-8 $spacing-10 $spacing-10;
+    border-radius: 7px;
   }
 }
 

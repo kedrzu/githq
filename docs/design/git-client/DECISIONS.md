@@ -442,9 +442,6 @@ actions can grow without crowding the row.
 once; where it is saved shows in the status bar.** (2026-11-02, owner asked for the setting in "a
 tab like General or Display"; the section's name and place are the design agent's; CH43)
 
-Until the Settings column and that status bar are built, a line under the cards says where the choice is saved, so a
-synced setting never looks unsaved (owner, 2026-11-03).
-
 **Why.** Display is where a layout is looked for, and it leaves room for later preferences of the same kind; General
 would collect anything.
 
