@@ -32,6 +32,9 @@ export const Projects: Story = { args: { section: 'projects' } };
 /** CH43: on Display. */
 export const Display: Story = { args: { section: 'display' } };
 
+/** CR77: on Code review. */
+export const CodeReview: Story = { args: { section: 'review' } };
+
 /** T4: on a section with no count. */
 export const SyncSettings: Story = { args: { section: 'sync' } };
 

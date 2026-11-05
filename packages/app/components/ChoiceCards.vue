@@ -1,4 +1,4 @@
-<!-- One choice out of a few, each a card side by side (`RadioCards`): the repository layout in Settings; or with `stacked`, rows in one box (the update stream). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
+<!-- One choice out of a few, each a card side by side (`RadioCards`): the repository layout in Settings; with `stacked`, rows in one box (the update stream); or with `rows`, cards one above the other (a code review's comments). A card holds what the caller's slot draws of the option, a radio with its label, and a line of detail. Tab reaches the chosen one and the arrow keys move between them, choosing as they go; focus arriving from anywhere else (the window refocused on a stale card) chooses nothing. The choice can't be cleared, only changed. -->
 <script lang="ts">
 /** One option of `ChoiceCards`. */
 export interface ChoiceCardsOption<T extends string> {
@@ -20,6 +20,8 @@ defineProps<{
   labelledby: string;
   /** One above the other in one box, the line of detail under the label, for options with no picture to compare. */
   stacked?: boolean;
+  /** One above the other, each a card of its own, the radio beside its label and detail. */
+  rows?: boolean;
 }>();
 
 defineSlots<{
@@ -44,7 +46,7 @@ const id = useId();
       })
     "
     :aria-labelledby="labelledby"
-    :class="[css.choiceCards, stacked && css.choiceCards_stacked]"
+    :class="[css.choiceCards, stacked && css.choiceCards_stacked, rows && css.choiceCards_rows]"
   >
     <template #default="{ option }">
       <slot :option="option" />
@@ -124,6 +126,29 @@ const id = useId();
 
   .choiceCards_detail {
     padding-left: 24px;
+  }
+}
+
+.choiceCards_rows {
+  grid-auto-flow: row;
+
+  .choiceCards_card {
+    gap: 3px;
+    padding: $spacing-12 $spacing-14;
+    border-radius: $radius-lg;
+  }
+
+  .choiceCards_head {
+    gap: $spacing-12;
+  }
+
+  .choiceCards_label {
+    font-size: $font-size-sm;
+  }
+
+  .choiceCards_detail {
+    padding-left: 26px;
+    font-size: $font-size-xs;
   }
 }
 
