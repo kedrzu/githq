@@ -19,7 +19,7 @@ const meta = {
     render: args => ({
         components: { MergeCondition },
         setup: () => ({ args }),
-        template: '<div style="width: 640px; background: #16181c"><MergeCondition v-bind="args" /></div>',
+        template: '<div style="width: 640px; background: #151b23"><MergeCondition v-bind="args" /></div>',
     }),
 } satisfies Meta<typeof MergeCondition>;
 
@@ -66,7 +66,7 @@ export const WithChevron: Story = {
     render: args => ({
         components: { MergeCondition, ChevronRight },
         setup: () => ({ args }),
-        template: `<div style="width: 640px; background: #16181c">
+        template: `<div style="width: 640px; background: #151b23">
             <MergeCondition v-bind="args"><ChevronRight aria-hidden="true" style="width: 13px; height: 13px" /></MergeCondition>
         </div>`,
     }),
