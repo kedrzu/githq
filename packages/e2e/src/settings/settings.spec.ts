@@ -39,9 +39,11 @@ test('`1` to `5` and the tabs switch the sections, kept in the address', async (
     await expect(page).toHaveURL('/settings?tab=display');
     await expect(settings.section('Display')).toHaveAttribute('aria-pressed', 'true');
     await expect(settings.repositoryLayout('Tabs')).toBeChecked();
+    await expect(shell.statusBar).toContainText('Up to date · saving is off');
 
     await page.keyboard.press('4');
     await expect(page).toHaveURL('/settings?tab=sync');
+    await expect(shell.statusBar).not.toContainText('saving is off');
     await expect(settings.section('Sync settings')).toHaveAttribute('aria-pressed', 'true');
     await expect(saving.choice).toBeVisible();
     await expect(tracking.openButton).toHaveCount(0);

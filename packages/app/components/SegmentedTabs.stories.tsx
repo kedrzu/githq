@@ -94,6 +94,31 @@ export const Gallery: Story = {
                                     ]}
                                 />
                             </div>
+                            <div style={{ width: '220px' }}>
+                                <SegmentedTabs
+                                    modelValue={section.value}
+                                    onUpdate:modelValue={value => (section.value = value)}
+                                    label="Roomy rows"
+                                    orientation="vertical"
+                                    roomy
+                                    options={[
+                                        {
+                                            value: 'issues',
+                                            label: 'Issues',
+                                            icon: CircleDot,
+                                            keyshortcuts: '1',
+                                            count: 5,
+                                        },
+                                        {
+                                            value: 'commits',
+                                            label: 'Commits',
+                                            icon: GitCommitHorizontal,
+                                            keyshortcuts: '2',
+                                            attention: 'Needs you',
+                                        },
+                                    ]}
+                                />
+                            </div>
                             <span tid="section">Section: {section.value}</span>
                         </StorySection>
                     </StoryPage>

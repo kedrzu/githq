@@ -21,6 +21,7 @@ import GitHubHtml from '@/item/GitHubHtml.vue';
 import type { ChangeGroupKind } from '@/scripts/releasePlan.js';
 
 import { RELEASES_URL } from '@/landing/landingLinks.js';
+import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import { getPullRequestUrl } from './buildChangelog.js';
 import type { ChangelogDevelopment, ChangelogVersion } from './buildChangelog.js';
@@ -189,7 +190,10 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
 
 <template>
   <div :class="css.changelogView">
-    <header :class="css.changelogView_header">
+    <header
+      :class="css.changelogView_header"
+      v-bind="WINDOW_DRAG_REGION"
+    >
       <h2 :class="css.changelogView_title">{{ t(sectionLabels.changelog) }}</h2>
       <span :class="css.changelogView_hint">
         <Kbd keys="ArrowUp ArrowDown" />
@@ -399,7 +403,6 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
 
 .changelogView_column {
   max-width: $settings-column-width;
-  margin: 0 auto;
 }
 
 .changelogView_list {

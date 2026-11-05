@@ -23,22 +23,25 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** G8: the title, and the tabs with what is tracked counted. */
+/** G8: the column with what is tracked counted, the page's header holding the section's name. */
 export const Repositories: Story = {};
 
-/** G8: on Projects. */
+/** T17: on Projects. */
 export const Projects: Story = { args: { section: 'projects' } };
 
-/** D22: on Display. */
+/** CH43: on Display. */
 export const Display: Story = { args: { section: 'display' } };
 
 /** T4: on a section with no count. */
 export const SyncSettings: Story = { args: { section: 'sync' } };
 
-/** T7: syncing stopped, the tab says so with an amber dot. */
+/** T7: syncing stopped, its row says so with an amber dot. */
 export const SyncStopped: Story = { args: { section: 'sync', savingStopped: true } };
 
-/** A narrow window: the tabs keep the room. */
+/** G9: on Account. */
+export const Account: Story = { args: { section: 'account' } };
+
+/** A narrow window: the column keeps its width, the page gives way. */
 export const NarrowWindow: Story = {
     decorators: [() => ({ template: '<div style="width: 560px"><story /></div>' })],
 };

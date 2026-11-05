@@ -5,22 +5,36 @@ import { page, userEvent } from 'vitest/browser';
 import { getSettingsPath, readSettingsSection } from './settingsRoutes.js';
 import * as stories from './SettingsView.stories.js';
 
-const { Repositories, SyncStopped } = composeStories(stories);
+const { Repositories, Display, SyncStopped } = composeStories(stories);
 
-test('the title and the five tabs, with tracked repositories and tracked projects counted apart', async () => {
+test('the column: its title and five sections, each on its key, with tracked repositories and projects counted apart', async () => {
     await Repositories.run();
 
     await expect.element(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument();
-    const tabs = page.getByRole('group', { name: 'Settings sections' });
-    await expect.element(tabs.getByRole('button', { name: 'Repositories 15' })).toHaveAttribute('aria-pressed', 'true');
-    await expect.element(tabs.getByRole('button', { name: 'Projects 2' })).toHaveAttribute('aria-keyshortcuts', '2');
-    await expect.element(tabs.getByRole('button', { name: 'Display' })).toHaveAttribute('aria-keyshortcuts', '3');
-    await expect.element(tabs.getByRole('button', { name: 'Sync settings' })).toHaveAttribute('aria-keyshortcuts', '4');
-    await expect.element(tabs.getByRole('button', { name: 'Account' })).toHaveAttribute('aria-keyshortcuts', '5');
-    expect(tabs.getByRole('button').elements()).toHaveLength(5);
+    const sections = page.getByRole('group', { name: 'Settings sections' });
+    await expect
+        .element(sections.getByRole('button', { name: 'Repositories 15' }))
+        .toHaveAttribute('aria-pressed', 'true');
+    await expect
+        .element(sections.getByRole('button', { name: 'Projects 2' }))
+        .toHaveAttribute('aria-keyshortcuts', '2');
+    await expect.element(sections.getByRole('button', { name: 'Display' })).toHaveAttribute('aria-keyshortcuts', '3');
+    await expect
+        .element(sections.getByRole('button', { name: 'Sync settings' }))
+        .toHaveAttribute('aria-keyshortcuts', '4');
+    await expect.element(sections.getByRole('button', { name: 'Account' })).toHaveAttribute('aria-keyshortcuts', '5');
+    expect(sections.getByRole('button').elements()).toHaveLength(5);
 });
 
-test('`1` to `5` and the tabs choose the section', async () => {
+test("the page's header holds the section's name, and only that", async () => {
+    await Display.run();
+
+    const header = page.getByRole('banner');
+    await expect.element(header.getByRole('heading', { name: 'Display', level: 2 })).toBeVisible();
+    await expect.element(header).toHaveTextContent(/^Display$/u);
+});
+
+test('`1` to `5` and the rows choose the section', async () => {
     const onUpdateSection = vi.fn();
     await Repositories.run({ args: { ...Repositories.args, 'onUpdate:section': onUpdateSection } });
 
@@ -37,6 +51,17 @@ test('`1` to `5` and the tabs choose the section', async () => {
 
     await userEvent.click(page.getByRole('button', { name: 'Account' }));
     expect(onUpdateSection).toHaveBeenLastCalledWith('account');
+});
+
+test('Tab lands on the open section and ↑/↓ move through the column', async () => {
+    await Repositories.run();
+
+    await userEvent.tab();
+    await expect.element(page.getByRole('button', { name: 'Repositories 15' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('button', { name: 'Projects 2' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect.element(page.getByRole('button', { name: 'Repositories 15' })).toHaveFocus();
 });
 
 test('on the web Updates is not a section: its `?tab=` falls back as an unknown one does, and `6` does nothing', async () => {
