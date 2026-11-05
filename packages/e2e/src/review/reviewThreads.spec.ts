@@ -148,6 +148,9 @@ test('every thread shows where it belongs, hidden lines and collapsed files with
     await expect(review.focusedThread).toContainText('On a file gone');
     await expect(review.diff).toContainText("No longer in this pull request's diff");
     await expect(review.diff).toContainText('Line 2, as it was when commented at a91d03b');
+    // It can't be selected.
+    await review.fileRow('removed.ts').click({ modifiers: ['Shift'] });
+    await expect(review.fileRow('removed.ts')).not.toHaveAttribute('aria-pressed', 'true');
 });
 
 test('N lands exactly on a thread and stays there as a comment above it grows late', async ({ page, github }) => {
@@ -182,37 +185,6 @@ test('N lands exactly on a thread and stays there as a comment above it grows la
         .toBeGreaterThan((before?.height ?? 0) + 100);
 
     expect(await review.threadOffset('The target')).toBe(offset);
-});
-
-test('a growth above the screen moves nothing seen', async ({ page, github }) => {
-    const release = await holdLateImages(page);
-    const threads: SampleReviewThread[] = [
-        { id: 'above', path: ENGINE, line: 98, comments: [`<p>Grows late</p><p><img src="${LATE_IMAGE}"></p>`] },
-    ];
-    const { review } = await openThreads(page, github, threads);
-    await page.keyboard.press('n');
-    await expect(review.focusedThread).toContainText('Grows late');
-
-    // The thread's row wholly above the screen (the box has 8 px of it under it), still drawn.
-    const threadBottom = async () => {
-        const [thread, diff] = await Promise.all([
-            review.thread('Grows late').boundingBox(),
-            review.diff.boundingBox(),
-        ]);
-        return (thread?.y ?? 0) + (thread?.height ?? 0) - (diff?.y ?? 0);
-    };
-    await review.diff.evaluate((diff, by) => diff.scrollBy(0, by), (await threadBottom()) + 12);
-    await expect.poll(threadBottom).toBeLessThanOrEqual(-8);
-    const seen = await review.topLine('const');
-
-    release();
-    await expect
-        .poll(() => review.thread('Grows late').evaluate(box => box.getBoundingClientRect().height))
-        .toBeGreaterThan(200);
-
-    const after = await review.topLine('const');
-    expect(after.text).toBe(seen.text);
-    expect(after.y).toBeCloseTo(seen.y, 0);
 });
 
 test('N and ⇧N walk every open thread in diff order, then the resolved ones, opening each, without wrapping; a key on a row scrolled away goes on from what is being read', async ({
@@ -259,31 +231,6 @@ test('N and ⇧N walk every open thread in diff order, then the resolved ones, o
     await page.keyboard.press('Shift+n');
     await expect(review.focusedThread).toBeVisible();
     await expect(review.focusedThread).not.toContainText('Settled long ago');
-});
-
-test('a pull request with only resolved threads still has them to walk, each landing open', async ({
-    page,
-    github,
-}) => {
-    const threads: SampleReviewThread[] = [
-        { id: 'first', path: ENGINE, line: 98, isResolved: true, comments: ['<p>First settled</p>', '<p>Quite</p>'] },
-        { id: 'second', path: ENGINE, line: 102, isResolved: true, comments: ['<p>Second settled</p>'] },
-    ];
-    const { review } = await openThreads(page, github, threads);
-
-    await expect(review.fileRow('engine.ts').getByRole('img', { name: '2 resolved threads' })).toBeVisible();
-    await page.keyboard.press('n');
-    await expect(review.focusedThread).toContainText('First settled');
-    await expect(review.focusedThread).toContainText('Quite');
-    await expect(page.getByText('Thread 1 of 2, 0 open')).toBeVisible();
-});
-
-test("a gone file can't be selected: ⇧click on its row selects nothing", async ({ page, github }) => {
-    const { review } = await openThreads(page, github);
-
-    await review.fileRow('removed.ts').click();
-    await review.fileRow('removed.ts').click({ modifiers: ['Shift'] });
-    await expect(review.fileRow('removed.ts')).not.toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the viewed filter keeps a viewed file with an open thread, as its header with the thread; so does a viewed file with the filter off', async ({

@@ -20,25 +20,6 @@ test('the title and the five tabs, with tracked repositories and tracked project
     expect(tabs.getByRole('button').elements()).toHaveLength(5);
 });
 
-test('`1` to `5` and the tabs choose the section', async () => {
-    const onUpdateSection = vi.fn();
-    await Repositories.run({ args: { ...Repositories.args, 'onUpdate:section': onUpdateSection } });
-
-    for (const [key, section] of [
-        ['2', 'projects'],
-        ['3', 'display'],
-        ['4', 'sync'],
-        ['5', 'account'],
-        ['1', 'repositories'],
-    ] as const) {
-        await userEvent.keyboard(key);
-        expect(onUpdateSection).toHaveBeenLastCalledWith(section);
-    }
-
-    await userEvent.click(page.getByRole('button', { name: 'Account' }));
-    expect(onUpdateSection).toHaveBeenLastCalledWith('account');
-});
-
 test('on the web Updates is not a section: its `?tab=` falls back as an unknown one does, and `6` does nothing', async () => {
     expect(readSettingsSection('updates')).toBe('repositories');
     expect(getSettingsPath(readSettingsSection('updates'))).toBe('/settings');

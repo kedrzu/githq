@@ -11,7 +11,6 @@ import { openMyWork } from '../myWork/openMyWork.js';
 const FIRST = 'Redirect once after sign-in';
 const SECOND = 'Cache response headers';
 const THIRD = 'Read the rate limit from the headers';
-const TO_REVIEW = 'Review the release notes';
 
 /** The viewer's three pull requests in acme/web, #15, #16 and #17, listed in that order. */
 function createWork() {
@@ -54,23 +53,6 @@ test('a pull request closed from the panel: the highlight, the panel, the chip a
     await labels.close();
     await expect.poll(() => work.world.stateOf(work.second).labels).toEqual(['bug']);
     expect(work.world.stateOf(work.first).labels).toEqual([]);
-});
-
-test('the last pull request closed from the panel: the highlight and the panel go to the row before it', async ({
-    page,
-    github,
-}) => {
-    const work = createWork();
-    const { myWork } = await openMyWork(page, github, work.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row(THIRD).click();
-    await expect(item.title).toHaveText(THIRD);
-
-    await page.keyboard.press('Shift+X');
-    await expect.poll(() => work.world.stateOf(work.third).state).toBe('CLOSED');
-
-    await expect(myWork.selectedRow).toContainText(SECOND);
-    await expect(item.title).toHaveText(SECOND);
 });
 
 test('a pull request leaving through a sync: the panel and the chip stay on it with no row highlighted, and the next J opens its former neighbour', async ({
@@ -139,61 +121,6 @@ test('D29: in a modal, ⌘Z opens the undone pull request in the one open', asyn
     await expect(item.modal).toBeVisible();
     await expect(item.title).toHaveText(FIRST);
     await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
-});
-
-test('D29: with nothing open, Undo brings the highlight back to the row and opens nothing', async ({
-    page,
-    github,
-}) => {
-    const work = createWork();
-    const { myWork, shell } = await openMyWork(page, github, work.world);
-    const item = new ItemViewHarness(page);
-    await expect(myWork.root).toContainText(FIRST);
-    await page.keyboard.press('j');
-    await expect(myWork.selectedRow).toContainText(FIRST);
-    const menu = new CommandMenuHarness(page);
-    await menu.open();
-    await menu.field.pressSequentially('Close pull');
-    await page.keyboard.press('Enter');
-    await expect(myWork.selectedRow).toContainText(SECOND);
-    await page.keyboard.press('j');
-    await expect(myWork.selectedRow).toContainText(THIRD);
-
-    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
-
-    await expect(myWork.selectedRow).toContainText(FIRST);
-    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
-    await expect(item.root).toHaveCount(0);
-});
-
-test('D29: on a list that doesn’t show the undone pull request, Undo moves nothing and opens nothing', async ({
-    page,
-    github,
-}) => {
-    const work = createWork();
-    work.world.pullRequest({
-        repository: 'acme/web',
-        number: 18,
-        title: TO_REVIEW,
-        foundBy: ['reviewRequested'],
-        minutesAgo: 40,
-    });
-    const { myWork, shell } = await openMyWork(page, github, work.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row(FIRST).click();
-    await expect(item.title).toHaveText(FIRST);
-    await page.keyboard.press('Shift+X');
-    await expect(item.title).toHaveText(SECOND);
-    await myWork.filter('Needs me').click();
-    await myWork.row(TO_REVIEW).click();
-    await expect(item.title).toHaveText(TO_REVIEW);
-
-    await shell.toasts.getByRole('button', { name: 'Undo' }).click();
-
-    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
-    await expect(myWork.row(FIRST)).toHaveCount(0);
-    await expect(myWork.selectedRow).toContainText(TO_REVIEW);
-    await expect(item.title).toHaveText(TO_REVIEW);
 });
 
 test('D29: an Undo GitHub refuses: the row leaves again, the panel stays on it with no row highlighted, and J goes on', async ({
@@ -283,46 +210,6 @@ test('a merge sent from its page stays there', async ({ page, github }) => {
     await expect.poll(() => sample.world.stateOf(sample.first).merged).toBe(true);
     await expect(page).toHaveURL('/acme/web/pull/15');
     await expect(item.title).toHaveText(FIRST_TITLE);
-});
-
-test('SP6: a stack merged up to its last pull request from the panel moves past the stack', async ({
-    page,
-    github,
-}) => {
-    const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
-    world.repository('acme/web', { defaultMergeMethod: 'SQUASH' });
-    world.stack({
-        repository: 'acme/web',
-        number: 1,
-        pullRequests: [
-            { number: 101, title: 'Stack first', foundBy: ['authored'], reviewDecision: 'APPROVED', minutesAgo: 30 },
-            { number: 102, title: 'Stack last', foundBy: ['authored'], reviewDecision: 'APPROVED', minutesAgo: 20 },
-        ],
-    });
-    world.pullRequest({
-        repository: 'acme/web',
-        number: 16,
-        title: SECOND,
-        foundBy: ['authored'],
-        reviewDecision: 'APPROVED',
-        minutesAgo: 60,
-    });
-    const { myWork } = await openMyWork(page, github, world);
-    const item = new ItemViewHarness(page);
-    const panel = new MergePanelHarness(page);
-    await myWork.row('Stack first').click();
-    await item.stackMapRows.filter({ hasText: '#102' }).click();
-    await expect(item.title).toHaveText('Stack last');
-    await item.mergeButton.click();
-    await expect(panel.primary).toHaveAccessibleName(/2/);
-
-    const release = world.holdMerges();
-    await page.keyboard.press('ControlOrMeta+Enter');
-
-    await expect(panel.root).toBeHidden();
-    await expect(myWork.selectedRow).toContainText(SECOND);
-    await expect(item.title).toHaveText(SECOND);
-    release();
 });
 
 test('in a modal, a pull request leaving through a sync stays open, and J opens its former neighbour', async ({

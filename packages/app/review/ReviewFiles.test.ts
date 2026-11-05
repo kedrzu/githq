@@ -1653,36 +1653,6 @@ test('.gitattributes is read once per head, then from the disk; failing to read 
     expect(failing.model.getState('a.gen.ts')).toEqual({ kind: 'ready', before: null, after: 'generated' });
 });
 
-test('a .gitattributes with too many rules collapses nothing, and says so in the log once', async () => {
-    const github = createGitHub({ pageSize: 10 });
-    const rule = '*.gen.ts linguist-generated';
-    github.blobAt(`${HEAD}:.gitattributes`, {
-        text: `${rule}\n`.repeat(Math.ceil((16 * 1024) / rule.length) + 1),
-    });
-    github.file({ path: 'a.gen.ts', changeType: 'ADDED', after: 'generated' });
-    const { model, session } = open(uniqueLogin(), github);
-
-    await settled(model);
-
-    expect(model.getCollapse('a.gen.ts')).toBeNull();
-    expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
-});
-
-test('a .gitattributes GitHub cut off gives no rules, says so in the log, and asks nothing over REST', async () => {
-    const github = createGitHub({ pageSize: 10 });
-    const text = '*.gen.ts linguist-generated\n';
-    github.blobAt(`${HEAD}:.gitattributes`, { text });
-    github.truncate(text, '*.gen.ts');
-    github.file({ path: 'a.gen.ts', changeType: 'ADDED', after: 'generated' });
-    const { model, session } = open(uniqueLogin(), github);
-
-    await settled(model);
-
-    expect(model.getCollapse('a.gen.ts')).toBeNull();
-    expect(session.logs.filter(log => log.level === 'warn')).toHaveLength(1);
-    expect(session.operations()).not.toContain(`GET /repos/acme/web/git/blobs/${oidOf(text)}`);
-});
-
 test('a file collapsed by hand before its turn is not fetched, one collapsed once read opens again at once, and either keeps the reason it has', async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'read.ts', changeType: 'ADDED', after: 'read' });

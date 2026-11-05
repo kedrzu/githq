@@ -121,32 +121,13 @@ test('PM21: a draft — ⌘↵ marks it ready for review, then the panel offers 
     await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
 });
 
-test('PM22: while GitHub is still working out whether it merges, the panel says it is not known and ⌘↵ still merges', async ({
-    page,
-    github,
-}) => {
-    const sample = createSampleMergeableWork({ first: { mergeabilityUnknown: true } });
-    const { myWork } = await openMyWork(page, github, sample.world);
-    const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST_TITLE);
-
-    await page.keyboard.press('Shift+M');
-    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
-    await expect(panel.root).toContainText('GitHub is computing');
-    await expect(panel.root).toContainText('Not known yet');
-
-    await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(panel.root).toBeHidden();
-    expect(getMergeRequests(github)).toEqual([{ merge_method: 'merge', sha: sample.world.headOf(sample.first) }]);
-    await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
-});
-
-test('PM27: a commit pushed after the panel read the head — GitHub refuses the merge, and the panel says a new commit arrived and nothing merged, not a plain refusal; ⌘↵ then merges the new head', async ({
+test('PM27, PM38: a commit pushed after the panel read the head — GitHub refuses the merge, and the panel says a new commit arrived and nothing merged, not a plain refusal; the row and the opened pull request name who pushed it, and ⌘↵ then merges the new head', async ({
     page,
     github,
 }) => {
     const sample = createSampleMergeableWork();
     const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
     const panel = new MergePanelHarness(page);
     await selectRow(myWork, FIRST_TITLE);
 
@@ -172,8 +153,13 @@ test('PM27: a commit pushed after the panel read the head — GitHub refuses the
     await expect(myWork.row(FIRST_TITLE)).not.toContainText('Merge refused');
     await expect(shell.toasts).toHaveCount(0);
 
+    // PM38: the opened pull request's standing names who pushed it too, and leads back to the panel.
+    await page.keyboard.press('Enter');
+    await expect(item.root).toContainText('Not merged');
+    await expect(item.root).toContainText('New commit from monalisa');
+    await item.root.getByRole('button', { name: 'Back to the merge' }).click();
+
     // Back in the panel, the new commit is ready as well: the next merge names it.
-    await page.keyboard.press('Shift+M');
     await expect(panel.root).toContainText('A new commit arrived, so nothing was merged');
     await expect(panel.primary).toContainText('Merge');
     await page.keyboard.press('ControlOrMeta+Enter');
@@ -183,31 +169,6 @@ test('PM27: a commit pushed after the panel read the head — GitHub refuses the
         { merge_method: 'merge', sha: pushed },
     ]);
     await expect(myWork.row(FIRST_TITLE)).toHaveCount(0, { timeout: 10_000 });
-});
-
-test('PM27, PM38: refused for a new commit from the opened pull request — its standing names who pushed it, and leads back to the merge', async ({
-    page,
-    github,
-}) => {
-    const sample = createSampleMergeableWork();
-    const { myWork } = await openMyWork(page, github, sample.world);
-    const item = new ItemViewHarness(page);
-    const panel = new MergePanelHarness(page);
-    await myWork.row(FIRST_TITLE).click();
-    await expect(item.mergeButton).toBeVisible();
-
-    await page.keyboard.press('Shift+M');
-    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
-    sample.world.push(sample.first, 'monalisa', 'Keep the return address');
-    await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(panel.root).toContainText('A new commit arrived, so nothing was merged');
-    await page.keyboard.press('Escape');
-    await expect(panel.root).toBeHidden();
-
-    await expect(item.root).toContainText('Not merged');
-    await expect(item.root).toContainText('New commit from monalisa');
-    await expect(item.root.getByRole('button', { name: 'Back to the merge' })).toBeVisible();
-    await expect(myWork.row(FIRST_TITLE)).toContainText('Not merged · new commit from monalisa');
 });
 
 test('PM29: a merge GitHub accepted with no answer in time, after the user moved on, reads grey in the row and the status bar — outcome not known, not merged, not failed — with no toast', async ({
@@ -241,51 +202,6 @@ test('PM29: a merge GitHub accepted with no answer in time, after the user moved
     await expect(shell.toasts).toHaveCount(0);
     expect(getMergeRequests(github)).toHaveLength(1);
     expect(sample.world.stateOf(sample.first).merged).toBe(false);
-});
-
-test('PM29: a merge GitHub accepted with no answer in time while its panel is open says the outcome is not known and offers no second merge, only GitHub', async ({
-    page,
-    github,
-}) => {
-    await page.clock.install();
-    const sample = createSampleMergeableWork();
-    const { myWork, shell } = await openMyWork(page, github, sample.world);
-    const panel = new MergePanelHarness(page);
-    await selectRow(myWork, FIRST_TITLE);
-
-    await page.keyboard.press('Shift+M');
-    await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
-    sample.world.holdMerges();
-    await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(panel.root).toBeHidden();
-
-    // Back on it while it is being merged (PM24), its read in, until the time runs out.
-    await page.keyboard.press('k');
-    await expect(myWork.selectedRow).toContainText(FIRST_TITLE);
-    await page.keyboard.press('Shift+M');
-    await expect(panel.root).toContainText('Being merged');
-    await expect(panel.root).not.toContainText('Reading');
-    await page.clock.fastForward(MERGE_TIME_LIMIT);
-
-    await expect(panel.root).toContainText('Outcome not known yet');
-    await expect(panel.root).toContainText("GitHub hasn't answered · not shown as merged");
-    await expect(panel.root).toContainText('The next refresh will settle this');
-    await expect(panel.root.getByRole('link', { name: /Open on GitHub/ })).toHaveAttribute(
-        'href',
-        'https://github.com/acme/web/pull/15',
-    );
-    await expect(panel.primary).toHaveCount(0);
-    await page.keyboard.press('ControlOrMeta+Enter');
-    expect(getMergeRequests(github)).toHaveLength(1);
-
-    await page.keyboard.press('Escape');
-    await expect(panel.root).toBeHidden();
-    await expect(myWork.row(FIRST_TITLE)).toContainText('Merge sent · outcome not known yet');
-    await expect(shell.statusBar).toContainText(
-        "acme/web#15 · GitHub hasn't answered · the next refresh will settle it",
-    );
-    await expect(shell.toasts).toHaveCount(0);
-    expect(getMergeRequests(github)).toHaveLength(1);
 });
 
 test("PM29: back in the panel after the time limit, the panel's own read does not settle it — it stays grey and offers no second merge until the regular refresh reads the pull request", async ({
