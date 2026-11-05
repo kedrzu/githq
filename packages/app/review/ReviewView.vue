@@ -85,6 +85,7 @@ import {
   getDistanceLinesToShow,
   getGapLinesToShow,
   getReviewAllViewedKey,
+  getReviewHeadKey,
   getReviewCommentKey,
   getReviewHeaderKey,
   getReviewPlacePath,
@@ -384,9 +385,14 @@ const allViewedShown = computed(
 );
 const rows = computed((): readonly ReviewRow[] => {
   const [first] = ordered.value;
-  return allViewedShown.value && first && fileRows.value.length > 0
+  if (!first || fileRows.value.length === 0) {
+    return fileRows.value;
+  }
+
+  // What says all is viewed has room of its own over it; otherwise the first file gets what the others have between them.
+  return allViewedShown.value
     ? [{ kind: 'allViewed', key: getReviewAllViewedKey(first.path) }, ...fileRows.value]
-    : fileRows.value;
+    : [{ kind: 'head', key: getReviewHeadKey(first.path) }, ...fileRows.value];
 });
 useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, arrival });
 const githubUrl = computed(() => {
@@ -590,7 +596,8 @@ watch(rows, (next, previous) => {
   // What says all is viewed comes in above the rows: it shows to a reader at their very top, or whose file went with it (CR63).
   const allViewed = next[0]?.kind === 'allViewed' && previous[0]?.kind !== 'allViewed' ? next[0] : null;
   const fileGone = anchor && replacement && getReviewRowPath(replacement.row.key) !== getReviewRowPath(anchor.key);
-  if (allViewed && (fileGone || (anchor?.key === next[1]?.key && anchor?.offset === 0))) {
+  const atTop = anchor?.offset === 0 && (anchor.key === next[1]?.key || anchor.key === previous[0]?.key);
+  if (allViewed && (fileGone || atTop)) {
     void nextTick(() => list.value?.jumpTo(allViewed.key, 0));
   } else if (replacement) {
     void nextTick(() => list.value?.jumpTo(replacement.row.key, replacement.offset));
@@ -1661,6 +1668,7 @@ function readAgain() {
                 :thread-replying="row.kind === 'thread' && isThreadReplying(row.placement.thread.id)"
                 :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
                 :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
+                :layout="layout"
                 @expand="expandGap"
                 @expand-to-thread="expandToThread"
                 @expand-to-file-end="expandToFileEnd"

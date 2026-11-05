@@ -32,6 +32,8 @@ const THREAD_FRAME_HEIGHT = 42;
 const THREAD_LINE_HEIGHT = 48;
 /** The label and the lines of the code a thread shows in a box. */
 const THREAD_CODE_HEIGHT = 110;
+/** The room over the first file: what `.reviewDiffRow_end` leaves under each file. */
+const HEAD_HEIGHT = 12;
 /** What says all files are viewed, and the room around it. */
 const ALL_VIEWED_HEIGHT = 170;
 /** A comment box with one line of text. */
@@ -173,6 +175,12 @@ export interface ReviewTailRow {
     readonly key: string;
 }
 
+/** Room over the first file, as files have between them, so its block doesn't touch the top of the diff. */
+export interface ReviewHeadRow {
+    readonly kind: 'head';
+    readonly key: string;
+}
+
 /** Over what is left when every file is viewed and those hidden (CR63). */
 export interface ReviewAllViewedRow {
     readonly kind: 'allViewed';
@@ -188,6 +196,7 @@ export type ReviewRow =
     | ReviewFailedRow
     | ReviewFileEndRow
     | ReviewGapRow
+    | ReviewHeadRow
     | ReviewHeaderRow
     | ReviewLineRow
     | ReviewNoticeRow
@@ -691,6 +700,15 @@ export function getReviewHeaderKey(path: string) {
 }
 
 /**
+ * The key of the room over the first file, the file named.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewHeadKey(path: string) {
+    return path + KEY_SEPARATOR + 'head';
+}
+
+/**
  * The key of the row saying all files are viewed, over the file named: it is at that file's place, to whatever asks.
  *
  * @__NO_SIDE_EFFECTS__
@@ -738,6 +756,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
             return 58;
         case 'end':
             return row.collapsed ? 12 : 16;
+        case 'head':
+            return HEAD_HEIGHT;
         case 'tail':
             return 600;
         case 'allViewed':
