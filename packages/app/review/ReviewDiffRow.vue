@@ -147,11 +147,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 
 <template>
   <div
-    v-if="row.kind === 'head'"
-    :class="css.reviewDiffRow_head"
-  />
-  <div
-    v-else-if="row.kind === 'tail'"
+    v-if="row.kind === 'tail'"
     :class="css.reviewDiffRow_tail"
   />
   <div
@@ -405,11 +401,6 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 }
 
 .reviewDiffRow_endCollapsed {
-  height: $spacing-12;
-}
-
-// Over the first file, what the end of each file leaves under it.
-.reviewDiffRow_head {
   height: $spacing-12;
 }
 

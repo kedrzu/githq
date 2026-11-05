@@ -86,7 +86,6 @@ import {
   getDistanceLinesToShow,
   getGapLinesToShow,
   getReviewAllViewedKey,
-  getReviewHeadKey,
   getReviewCommentKey,
   getReviewHeaderKey,
   getReviewPlacePath,
@@ -388,14 +387,9 @@ const allViewedShown = computed(
 );
 const rows = computed((): readonly ReviewRow[] => {
   const [first] = ordered.value;
-  if (!first || fileRows.value.length === 0) {
-    return fileRows.value;
-  }
-
-  // What says all is viewed has room of its own over it; otherwise the first file gets what the others have between them.
-  return allViewedShown.value
+  return allViewedShown.value && first && fileRows.value.length > 0
     ? [{ kind: 'allViewed', key: getReviewAllViewedKey(first.path) }, ...fileRows.value]
-    : [{ kind: 'head', key: getReviewHeadKey(first.path) }, ...fileRows.value];
+    : fileRows.value;
 });
 useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, arrival });
 const githubUrl = computed(() => {
@@ -599,8 +593,7 @@ watch(rows, (next, previous) => {
   // What says all is viewed comes in above the rows: it shows to a reader at their very top, or whose file went with it (CR63).
   const allViewed = next[0]?.kind === 'allViewed' && previous[0]?.kind !== 'allViewed' ? next[0] : null;
   const fileGone = anchor && replacement && getReviewRowPath(replacement.row.key) !== getReviewRowPath(anchor.key);
-  const atTop = anchor?.offset === 0 && (anchor.key === next[1]?.key || anchor.key === previous[0]?.key);
-  if (allViewed && (fileGone || atTop)) {
+  if (allViewed && (fileGone || (anchor?.key === next[1]?.key && anchor?.offset === 0))) {
     void nextTick(() => list.value?.jumpTo(allViewed.key, 0));
   } else if (replacement) {
     void nextTick(() => list.value?.jumpTo(replacement.row.key, replacement.offset));
@@ -1935,12 +1928,15 @@ function readAgain() {
   visibility: hidden;
 }
 
+// Room over the list, as the files have between them, so the first file's block and a pinned header don't touch the
+// toolbar: outside the scroller, whose offsets start at its rows, and outside what measures the screen of rows.
 .reviewView_diffColumn {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  padding-top: $spacing-12;
 }
 
 .reviewView_diff {
