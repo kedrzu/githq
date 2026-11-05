@@ -1,4 +1,4 @@
-<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph, the list staying and the graph keeping at least 240 px of the pane, the details giving up width for it; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. A branch's pull request number in the list opens it as any item opens, the list giving way (D15). Left for a run's page with the details open, the section comes back to the same commit under the cursor and in the details (D24). -->
+<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); a first open with nothing kept yet is a quiet line until the first rows arrive. `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph in a column of their own width (`ColumnSplit`, 440 px by default, at least 320), the list staying and the graph keeping 240 px of the pane, the details giving up width for it down to their least; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. A branch's pull request number in the list opens it as any item opens, the list giving way (D15). Left for a run's page with the details open, the section comes back to the same commit under the cursor and in the details (D24). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -10,6 +10,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import { useCommands } from '@/commands/useCommands.js';
+import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { getOpenedItemRoute, parseItemUrl } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
@@ -49,8 +50,10 @@ const OVERSCAN = 8;
 const GRAPH_PANEL = 'commitGraph';
 /** How often the ages move on. */
 const AGE_TICK_MS = 30_000;
-/** The least the graph keeps of the pane, the details giving up width for it. */
+/** The least the graph keeps of the pane, the details giving up width for it down to their own least. */
 const GRAPH_MIN_WIDTH = 240;
+/** The details' width beside the graph, kept under its own name. */
+const DETAILS_WIDTH = { key: 'commitDetails', default: 440, min: 320 };
 /** The window's width below which the list of branches and tags folds away (D15). */
 const REF_LIST_MIN_WINDOW_WIDTH = 1200;
 /** How long the details rest on a commit they moved to before it is read: holding `J` reads only where it stops. */
@@ -69,14 +72,11 @@ const keptShare = useService(LocalPreferences).getPanelShare(GRAPH_PANEL);
 const refListBesideId = useId();
 const refListOverId = useId();
 
-const root = useTemplateRef<HTMLElement>('root');
 const scroller = useTemplateRef<HTMLElement>('scroller');
 const refList = useTemplateRef<InstanceType<typeof CommitRefList>>('refList');
 const scrollTop = ref(0);
 const viewportHeight = ref(0);
 const paneWidth = ref(0);
-/** The graph's and the details' room together. */
-const rootWidth = ref(0);
 /** The share while the divider is dragged; kept when it is let go. */
 const draggedShare = ref<number | null>(null);
 /** The arrow keys changed the width and the divider still has focus: its label stays up as while dragging. */
@@ -134,6 +134,10 @@ const hasRefs = computed(() => (refs.value?.branches.length ?? 0) + (refs.value?
 const count = computed(() => commits.value.length);
 /** An item is opened over the section (D16, CH29): the keys are its own, and it shows in the details' place. */
 const itemOpened = computed(() => getOpenedItemRoute(route) !== null);
+/** The details right of the graph, in a column of their own width (D16). */
+const detailsBeside = computed(() => opened.value !== null && !itemOpened.value && !narrowWindow.value);
+/** The details under the graph, below about 1,200 px of window (D16). */
+const detailsUnder = computed(() => opened.value !== null && !itemOpened.value && narrowWindow.value);
 const openedUrl = computed(() =>
   opened.value ? `https://github.com/${props.nameWithOwner}/commit/${opened.value.oid}` : '',
 );
@@ -437,7 +441,6 @@ onMounted(() => {
   }
 
   observer = new ResizeObserver(() => {
-    rootWidth.value = root.value?.clientWidth ?? 0;
     const before = { top: element.scrollTop, height: viewportHeight.value };
     measure(element);
     // The details docking below the graph shortens the pane: a cursor row that was in view stays in view.
@@ -446,10 +449,6 @@ onMounted(() => {
     }
   });
   observer.observe(element);
-  if (root.value) {
-    rootWidth.value = root.value.clientWidth;
-    observer.observe(root.value);
-  }
 });
 
 onBeforeUnmount(() => {
@@ -737,171 +736,191 @@ function resetShare() {
         :class="css.commitGraphView_refListBeside"
       />
     </template>
-    <div
-      ref="root"
-      :class="[css.commitGraphView, narrowWindow && css.commitGraphView_narrow]"
-    >
-      <div :class="css.commitGraphView_main">
-        <div
-          ref="scroller"
-          :class="css.commitGraphView_pane"
-          tabindex="0"
-          data-screen-keys
-          :aria-label="t(l.commitsOf, { name: nameWithOwner })"
-          role="region"
-          @scroll.passive="onScroll"
-          @pointerdown="leaveFoldedRefList"
-        >
-          <p
-            v-if="shown === 'loading'"
-            :class="css.commitGraphView_note"
-          >
-            <LoaderCircle
-              :class="css.commitGraphView_noteIcon"
-              aria-hidden="true"
-            />
-            {{ t(l.loading) }}
-          </p>
-          <p
-            v-else-if="shown === 'unavailable'"
-            :class="css.commitGraphView_note"
-          >
-            {{ t(l.unavailable) }}
-          </p>
-          <EmptyState
-            v-else-if="shown === 'empty'"
-            :icon="GitCommitHorizontal"
-            :title="t(l.emptyTitle)"
-            :detail="t(l.emptyDetail, { name: nameWithOwner })"
+    <div :class="[css.commitGraphView, narrowWindow && css.commitGraphView_narrow]">
+      <ColumnSplit
+        side="right"
+        :shown="detailsBeside"
+        :width="DETAILS_WIDTH"
+        :pane-min="GRAPH_MIN_WIDTH"
+        :label="t(l.resizeDetails)"
+      >
+        <template #column>
+          <CommitDetails
+            v-if="opened && detailsBeside"
+            docked="side"
+            :name-with-owner="nameWithOwner"
+            :oid="opened.oid"
+            :refs="refsByOid.get(opened.oid) ?? []"
+            :chosen-ref="opened.chosenRef"
+            :url="openedUrl"
+            :now="now"
+            @close="closeDetails"
+            @step="cursor.step"
+            @open-parent="goToCommit"
+            @open-pull-request="openPullRequest"
           />
-          <template v-else>
-            <div
-              :class="css.commitGraphView_graph"
-              :style="{ '--commit-graph-width': `${fit.width}px` }"
-            >
-              <ul
-                :class="css.commitGraphView_rows"
-                :style="{ height: `${count * COMMIT_ROW_HEIGHT}px` }"
-              >
-                <li
-                  v-for="row in drawn"
-                  :key="row.commit.oid"
-                  :class="[
-                    css.commitGraphView_row,
-                    row.index % 2 === 1 && css.commitGraphView_row_odd,
-                    cursorDrawn && row.commit.oid === cursor.selectedKey && css.commitGraphView_row_cursor,
-                  ]"
-                  :style="{ top: `${row.index * COMMIT_ROW_HEIGHT}px`, height: `${COMMIT_ROW_HEIGHT}px` }"
-                  :aria-current="row.commit.oid === cursor.selectedKey ? 'true' : undefined"
-                  :aria-posinset="row.index + 1"
-                  :aria-setsize="graph?.endReached ? count : -1"
-                  @click="onRowClick(row.commit)"
-                >
-                  <CommitRow
-                    :commit="row.commit"
-                    :graph-row="row.graphRow"
-                    :lanes="fit.lanes"
-                    :folded="fit.lanes < totalLanes"
-                    :main-lane="graph?.layout.hasMainLane ?? false"
-                    :refs="refsByOid.get(row.commit.oid) ?? []"
-                    :state="store.getState(nameWithOwner, row.commit.oid)"
-                    :now="now"
-                    @open-pull-request="openItemReference($event, 'pullRequest')"
-                  />
-                </li>
-              </ul>
-              <div
-                :class="css.commitGraphView_divider"
-                role="separator"
-                aria-orientation="vertical"
-                :aria-label="t(l.resizeGraph)"
-                :aria-valuenow="fit.lanes"
-                :aria-valuemin="getMinLanes(fit.maxLanes)"
-                :aria-valuemax="fit.maxLanes"
-                :aria-valuetext="lanesFitLabel"
-                tabindex="0"
-                :data-state="draggedShare === null ? undefined : 'drag'"
-                @pointerdown="onDividerPointerDown"
-                @pointermove="onDividerPointerMove"
-                @pointerup="onDividerPointerUp"
-                @pointercancel="onDividerPointerUp"
-                @dblclick="resetShare"
-                @keydown="onDividerKeydown"
-                @blur="resizedByKey = false"
-              >
-                <div :class="css.commitGraphView_dividerMiddle">
-                  <span :class="css.commitGraphView_grip" />
-                  <span
-                    v-if="draggedShare !== null || resizedByKey"
-                    :class="css.commitGraphView_lanesFit"
-                  >
-                    <MoveHorizontal
-                      :class="css.commitGraphView_noteIcon"
-                      aria-hidden="true"
-                    />
-                    {{ lanesFitLabel }}
-                  </span>
-                </div>
-              </div>
-            </div>
+        </template>
+        <div :class="css.commitGraphView_main">
+          <div
+            ref="scroller"
+            :class="css.commitGraphView_pane"
+            tabindex="0"
+            data-screen-keys
+            :aria-label="t(l.commitsOf, { name: nameWithOwner })"
+            role="region"
+            @scroll.passive="onScroll"
+            @pointerdown="leaveFoldedRefList"
+          >
             <p
-              v-if="graph?.loadingMore"
+              v-if="shown === 'loading'"
               :class="css.commitGraphView_note"
             >
               <LoaderCircle
                 :class="css.commitGraphView_noteIcon"
                 aria-hidden="true"
               />
-              {{ t(l.loadingMore) }}
+              {{ t(l.loading) }}
             </p>
             <p
-              v-else-if="graph?.endReached"
+              v-else-if="shown === 'unavailable'"
               :class="css.commitGraphView_note"
             >
-              <Flag
-                :class="css.commitGraphView_noteIcon"
-                aria-hidden="true"
-              />
-              {{ t(l.beginning, { name: nameWithOwner }) }}
+              {{ t(l.unavailable) }}
             </p>
-            <p
-              v-else-if="offline"
-              :class="css.commitGraphView_note"
-            >
-              <CloudOff
-                :class="css.commitGraphView_noteIcon"
-                aria-hidden="true"
-              />
-              {{ t(l.olderWhenOnline) }}
-            </p>
-          </template>
+            <EmptyState
+              v-else-if="shown === 'empty'"
+              :icon="GitCommitHorizontal"
+              :title="t(l.emptyTitle)"
+              :detail="t(l.emptyDetail, { name: nameWithOwner })"
+            />
+            <template v-else>
+              <div
+                :class="css.commitGraphView_graph"
+                :style="{ '--commit-graph-width': `${fit.width}px` }"
+              >
+                <ul
+                  :class="css.commitGraphView_rows"
+                  :style="{ height: `${count * COMMIT_ROW_HEIGHT}px` }"
+                >
+                  <li
+                    v-for="row in drawn"
+                    :key="row.commit.oid"
+                    :class="[
+                      css.commitGraphView_row,
+                      row.index % 2 === 1 && css.commitGraphView_row_odd,
+                      cursorDrawn && row.commit.oid === cursor.selectedKey && css.commitGraphView_row_cursor,
+                    ]"
+                    :style="{ top: `${row.index * COMMIT_ROW_HEIGHT}px`, height: `${COMMIT_ROW_HEIGHT}px` }"
+                    :aria-current="row.commit.oid === cursor.selectedKey ? 'true' : undefined"
+                    :aria-posinset="row.index + 1"
+                    :aria-setsize="graph?.endReached ? count : -1"
+                    @click="onRowClick(row.commit)"
+                  >
+                    <CommitRow
+                      :commit="row.commit"
+                      :graph-row="row.graphRow"
+                      :lanes="fit.lanes"
+                      :folded="fit.lanes < totalLanes"
+                      :main-lane="graph?.layout.hasMainLane ?? false"
+                      :refs="refsByOid.get(row.commit.oid) ?? []"
+                      :state="store.getState(nameWithOwner, row.commit.oid)"
+                      :now="now"
+                      @open-pull-request="openItemReference($event, 'pullRequest')"
+                    />
+                  </li>
+                </ul>
+                <div
+                  :class="css.commitGraphView_divider"
+                  role="separator"
+                  aria-orientation="vertical"
+                  :aria-label="t(l.resizeGraph)"
+                  :aria-valuenow="fit.lanes"
+                  :aria-valuemin="getMinLanes(fit.maxLanes)"
+                  :aria-valuemax="fit.maxLanes"
+                  :aria-valuetext="lanesFitLabel"
+                  tabindex="0"
+                  :data-state="draggedShare === null ? undefined : 'drag'"
+                  @pointerdown="onDividerPointerDown"
+                  @pointermove="onDividerPointerMove"
+                  @pointerup="onDividerPointerUp"
+                  @pointercancel="onDividerPointerUp"
+                  @dblclick="resetShare"
+                  @keydown="onDividerKeydown"
+                  @blur="resizedByKey = false"
+                >
+                  <div :class="css.commitGraphView_dividerMiddle">
+                    <span :class="css.commitGraphView_grip" />
+                    <span
+                      v-if="draggedShare !== null || resizedByKey"
+                      :class="css.commitGraphView_lanesFit"
+                    >
+                      <MoveHorizontal
+                        :class="css.commitGraphView_noteIcon"
+                        aria-hidden="true"
+                      />
+                      {{ lanesFitLabel }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p
+                v-if="graph?.loadingMore"
+                :class="css.commitGraphView_note"
+              >
+                <LoaderCircle
+                  :class="css.commitGraphView_noteIcon"
+                  aria-hidden="true"
+                />
+                {{ t(l.loadingMore) }}
+              </p>
+              <p
+                v-else-if="graph?.endReached"
+                :class="css.commitGraphView_note"
+              >
+                <Flag
+                  :class="css.commitGraphView_noteIcon"
+                  aria-hidden="true"
+                />
+                {{ t(l.beginning, { name: nameWithOwner }) }}
+              </p>
+              <p
+                v-else-if="offline"
+                :class="css.commitGraphView_note"
+              >
+                <CloudOff
+                  :class="css.commitGraphView_noteIcon"
+                  aria-hidden="true"
+                />
+                {{ t(l.olderWhenOnline) }}
+              </p>
+            </template>
+          </div>
+          <div
+            :id="refListOverId"
+            :class="css.commitGraphView_refListOverPlace"
+          />
         </div>
-        <div
-          :id="refListOverId"
-          :class="css.commitGraphView_refListOverPlace"
-        />
-      </div>
-      <Teleport
-        v-if="refs && refListShown"
-        :to="refListTarget"
-        defer
-      >
-        <CommitRefList
-          ref="refList"
-          :key="nameWithOwner"
-          :class="refListFolded && css.commitGraphView_refListOver"
-          :name-with-owner="nameWithOwner"
-          :refs="refs"
-          :now="now"
-          @choose="onRefChosen"
-          @leave="onRefListLeft"
-          @open-pull-request="onRefListPullRequest"
-        />
-      </Teleport>
+        <Teleport
+          v-if="refs && refListShown"
+          :to="refListTarget"
+          defer
+        >
+          <CommitRefList
+            ref="refList"
+            :key="nameWithOwner"
+            :class="refListFolded && css.commitGraphView_refListOver"
+            :name-with-owner="nameWithOwner"
+            :refs="refs"
+            :now="now"
+            @choose="onRefChosen"
+            @leave="onRefListLeft"
+            @open-pull-request="onRefListPullRequest"
+          />
+        </Teleport>
+      </ColumnSplit>
       <CommitDetails
-        v-if="opened && !itemOpened"
-        :docked="narrowWindow ? 'bottom' : 'side'"
-        :max-width="rootWidth - GRAPH_MIN_WIDTH"
+        v-if="opened && detailsUnder"
+        docked="bottom"
         :name-with-owner="nameWithOwner"
         :oid="opened.oid"
         :refs="refsByOid.get(opened.oid) ?? []"
@@ -919,6 +938,9 @@ function resetShare() {
 
 <style lang="scss" module="css">
 .commitGraphView {
+  // The repository column's width, for the folded list: the details' split inside redefines `--column-split-width`.
+  --commit-graph-ref-list-width: var(--column-split-width);
+
   position: relative;
   display: flex;
   flex: 1;
@@ -931,24 +953,20 @@ function resetShare() {
   position: relative;
   display: flex;
   flex: 1;
-  min-width: 240px;
+  min-width: 0;
   min-height: 0;
 }
 
 // Below about 1,200 px the details dock under the graph, not beside it.
 .commitGraphView_narrow {
   flex-direction: column;
-
-  .commitGraphView_main {
-    min-width: 0;
-  }
 }
 
 .commitGraphView_pane {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-width: 240px;
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
   // Focused, it draws nothing: the cursor row shows where the keys go.
@@ -980,7 +998,7 @@ function resetShare() {
 
 .commitGraphView_refListOver {
   left: 0;
-  width: var(--column-split-width);
+  width: var(--commit-graph-ref-list-width);
   border-right: 1px solid $color-border;
 }
 
