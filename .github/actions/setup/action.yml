@@ -1,0 +1,15 @@
+# What every job that runs the repo's code does after its checkout, which has to come first and with submodules:
+# a local action is read from the checkout.
+name: Set up the repo
+description: Installs bun and runs setup.build.sh (dependencies, generated code, TypeScript, the test browser).
+
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: package.json
+
+    - name: Build
+      shell: bash
+      run: bash setup.build.sh
