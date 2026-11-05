@@ -537,7 +537,7 @@ A pull request's **size shows everywhere, on by default**: my work, a repository
 an issue or in a stack, on a row or a board's card. It stays a property in Display (D4), so a choice kept on a device
 still holds.
 
-The numbers are **green and red, in colours of their own**: `diff-added` `#7CCB92`, `diff-removed` `#E98B8F`, paler than
+The numbers are **green and red, in colours of their own**: `diff-added` and `diff-removed` (`#7EE787` and `#FFA198` since [D37](#d37)), paler than
 the states `green` and `red`. They are data, not an alarm, and shouldn't read as a failing check or a passing one. Every
 +/− counter uses them; the tints behind a diff's rows stay.
 
@@ -570,7 +570,7 @@ every close, to guard against a rare slip that Undo already covers.
 
 ### D30
 
-**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays.
+**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays; superseded by [D37](#d37), which replaces the palette and keeps this rule. Values below are from before it.
 Text already passed everywhere it was measured, except in the two states below; what fell short was the graphics. Fields
 and checkboxes get an outline of 3:1 (`control-border`, the value of `fg-3`), commit graph lines too (`graph-line`,
 `#646B75`, the default branch's line staying brighter), and `red-quiet` moves to `#AC4D52`. Dim rows lose their opacity
@@ -771,6 +771,37 @@ requests".
 
 **Left out:** drill-in on items and on the results of "Search repositories…"; the reversed order ("pull web"); restoring the
 typed text on stepping back; clicking the chevron to enter, since a click still does what the row does.
+
+### D37
+
+**The app takes GitHub's colours, for how readable they are, not for how they look; indigo stays as the brand.** (user, 2026-11-05, #172.) Quoting the owner: "GitHub is very readable because of how carefully the proportions between colours and lightness are chosen, and that's why I wanted to copy it, not because I want to copy GitHub's branding." So every neutral, status and code colour comes from Primer's dark theme (`@primer/primitives` 11.10.0), and `#7B87F7` stays in the brand's places: the accent, the selected row, focus, links, its tints, the landing page's glows. D30's rule stands; only "the palette stays" is superseded.
+
+**Why.** Reading code in a review took effort. Unchanged lines were drawn in `fg-2` (7.2:1 against GitHub's 17.4:1), and five muted syntax colours of one lightness barely told tokens apart.
+
+- **Code is GitHub's whole:** seven syntax colours, grouped as in highlight.js's `github-dark` theme, unchanged lines at full brightness, GitHub's backgrounds on added and deleted lines. `section` and `bullet` take `constant` and `builtin`, because the theme's `#1F6FEB` fails AA on the window.
+- **Exceptions to Primer, each kept by `packages/app/styles/tokens.test.ts`:**
+  - `bg-3` `#1C2128`: Primer's `#212830` gives red 4.44:1 and `fg-3` 2.81:1.
+  - `sel` `#181D2E`: the accent at Primer's accent-muted strength.
+  - `fg-dim` `#8B929B`: Primer has two levels of text and we have three.
+  - `graph-line-main` `#8B929B`: the default branch's line stays brighter.
+  - `red-quiet` `#AC4D52`: Primer's `#B62324` reads 2.93:1.
+- **The accent stays as it is:** at 5.99:1 on the window it already has the lightness of GitHub's `#4493F8`, 6.11:1.
+
+**Known cost.** Code is much more colourful than the calm around it, and lines between surfaces are brighter. The landing hero, share image and README picture wait for #178, having no frame in the design to export from. Code samples in `githq.pen` stay one colour a line, each line being one text node. The app icons keep their old tile, a difference nobody could see.
+
+**Rejected.** Tilting the neutrals towards indigo at the same lightness (seen side by side: kept within 0.13:1 of Primer, but the owner preferred the brand in its own places). Primer's blue accent: the app would read as a GitHub skin, and links would blur into blue code. Keeping our syntax colours and brightening unchanged lines only: not a proven scheme. One Dark: made for a lighter background.
+
+### D38
+
+**Short animations where something appears, all of them off with one switch.** (user, 2026-11-05.) Drawn in `githq.pen`, CH43 and CH49.
+Overlays open with a fade and a small slide in about 150 ms, tooltips with a fade only, and content that folds unfolds through `Reveal`.
+Everything closes at once: focus and the layer stay with an overlay until it leaves the page, so an Escape during a fade would be lost, and
+every caller unmounts its toast on closing. Moving between screens or along a list is instant, and spinners run regardless, because they report status.
+"Animations" in Display is on by default, syncs with the settings, and the system's reduce motion wins over it. The motion is opt-in CSS with
+no Transition components, so a screen never knows about the switch.
+
+**Rejected.** Own transition components reading the setting from a provider: reka-ui's `Presence` already follows CSS animations, so they
+would add a wrapper at every overlay for nothing. Animating closing everywhere: keys typed during the close would reach the closing input.
 
 ## Open questions
 

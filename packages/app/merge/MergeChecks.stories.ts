@@ -28,7 +28,7 @@ const meta = {
     render: args => ({
         components: { MergeChecks },
         setup: () => ({ args }),
-        template: '<div style="width: 640px; background: #16181c"><MergeChecks v-bind="args" /></div>',
+        template: '<div style="width: 640px; background: #151b23"><MergeChecks v-bind="args" /></div>',
     }),
 } satisfies Meta<typeof MergeChecks>;
 

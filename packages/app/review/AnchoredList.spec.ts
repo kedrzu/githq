@@ -235,6 +235,8 @@ test('focused by its owner it scrolls by the keys at once, moved nowhere and wit
     await frames(1);
     expect(document.activeElement).toBe(list);
     expect(getComputedStyle(list).outlineStyle).toBe('solid');
+    // The focus ring is the brand's indigo.
+    expect(getComputedStyle(list).outlineColor).toBe('rgb(123, 135, 247)');
 });
 
 /** The main thread's work per scrolled frame: the scroll event, Vue, then layout, measuring and paint. */

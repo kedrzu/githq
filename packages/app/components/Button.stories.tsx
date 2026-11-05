@@ -110,7 +110,7 @@ export const Gallery: Story = {
                 </StoryRow>
             </StorySection>
             <StorySection title="Inline — link">
-                <p style={{ fontSize: '12.5px', color: '#838992' }}>
+                <p style={{ fontSize: '12.5px', color: '#8b929b' }}>
                     GitHub will ask for access to your repositories. <Button variant="link">Why?</Button>
                 </p>
             </StorySection>
@@ -136,7 +136,7 @@ export const Gallery: Story = {
                 </div>
             </StorySection>
             <StorySection title="A row's meta line — small link with its key">
-                <p style={{ fontSize: '12px', color: '#838992' }}>
+                <p style={{ fontSize: '12px', color: '#8b929b' }}>
                     approved · ready to merge{' '}
                     <Button
                         variant="link"
