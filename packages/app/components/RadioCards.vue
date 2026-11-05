@@ -48,11 +48,21 @@ function chooseOnArrow(value: O['value'], event: FocusEvent) {
     choose(value);
   }
 }
+
+// The only click here that no person made is reka-ui's own: a timer set when a card takes the focus, which clicks that
+// card if an arrow key is down by the time it runs. On a busy main thread the focus may have moved on, and it takes the
+// choice back to the card just left. The arrow's move has already chosen, above.
+function stopScriptedClick(event: MouseEvent) {
+  if (!event.isTrusted) {
+    event.stopPropagation();
+  }
+}
 </script>
 
 <template>
   <RadioGroupRoot
     :model-value="model"
+    @click.capture="stopScriptedClick"
     @update:model-value="choose"
   >
     <RadioGroupItem
