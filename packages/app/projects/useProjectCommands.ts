@@ -32,7 +32,8 @@ export interface ProjectCommandsTarget extends ProjectAddress {
 /**
  * The actions of a project: going to its view or one of its saved views, a new issue in it (where the user may add
  * one), its page on GitHub and the link to it, its settings (T17) and no longer tracking it (both only while it is tracked). The sidebar's
- * menu of a project offers them all; the project's view offers its page on GitHub in the command menu.
+ * menu of a project offers them all; the project's view offers its page on GitHub in the command menu, and the menu's
+ * level under a tracked project (D35) a new issue, the page, the link and the settings.
  */
 export function useProjectCommands(): (target: ProjectCommandsTarget) => ProjectCommands {
     const t = useTranslate();
