@@ -711,7 +711,7 @@ when the conditional check is free.
 ### D35
 
 **The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, LP13, LP15 and LP30.
-Two larger buttons, each with a title and a subtitle: "Download the app", "The best experience, in its own window", and "Sign in
+Two larger buttons, each with a title and a subtitle: "Download the app", "Best experience, in its own window", and "Sign in
 with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
 Nothing stored outside GitHub", the first a link to `/download`.
 
