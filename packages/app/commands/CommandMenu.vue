@@ -1,4 +1,4 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ← or ⌫ in an empty field steps back out of a submenu (← only there), ⌫ then takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back out of a submenu, or closes. -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and what lies deeper directly, shown with its whole way there (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — or opens a picker, or a level with nothing to run — and Tab or → enter what the line holds, a level of rows or a picker, the way there drawn as crumbs after the chip (hidden inside a place or a repository, which it is not about). ← or ⌫ in an empty field steps back one level (← only there), at the top ⌫ takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back one level, or closes. -->
 <script lang="ts" setup>
 import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -6,20 +6,13 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   BookMarked,
-  CircleArrowDown,
-  CircleUser,
   Check,
   ChevronRight,
   CircleDot,
-  CloudUpload,
-  Eye,
-  FileDiff,
   GitPullRequest,
   Inbox,
   Layers,
-  PanelsTopLeft,
   PencilLine,
-  ScrollText,
   Settings,
   SquareKanban,
   Workflow,
@@ -38,8 +31,8 @@ import Kbd from '@/components/Kbd.vue';
 import MatchedText from '@/components/MatchedText.vue';
 import { formatShortReference } from '@/item/itemRoutes.js';
 
-import { buildCommandMenu } from './buildCommandMenu.js';
-import type { CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
+import { buildCommandMenu, resolveMenuPath } from './buildCommandMenu.js';
+import type { CommandMenuAncestor, CommandMenuEntry, CommandMenuGroupKey } from './buildCommandMenu.js';
 import * as l from './CommandMenu.loc.js';
 import type { Command, CommandOption, CommandSubject } from './CommandTypes.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
@@ -72,8 +65,8 @@ const open = defineModel<boolean>('open', { default: false });
 interface Row extends FilterListRow {
   readonly icon: LucideIcon | null;
   readonly title: string;
-  /** In a found option: the action it is of ("Set status"), before an arrow. */
-  readonly lead?: string;
+  /** In a line found deeper: the levels above it ("Set status"), each before an arrow. */
+  readonly ancestors?: readonly CommandMenuAncestor[];
   readonly detail?: string;
   /** Dim text at the line's end. */
   readonly aside?: string;
@@ -82,11 +75,13 @@ interface Row extends FilterListRow {
   readonly color?: string;
   readonly avatarUrl?: string;
   readonly keys?: readonly string[];
-  readonly submenu?: boolean;
   readonly chosen?: boolean;
   /** What typed text matched on the line: drawn marked, a `hidden` word only because of it. */
   readonly match?: CommandMenuMatch | null;
+  /** Enter. */
   activate(): void;
+  /** Tab or →, on a line with a submenu. */
+  enter?: () => void;
 }
 
 const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
@@ -94,17 +89,8 @@ const PLACE_ICONS: Readonly<Record<NavigationPlace['kind'], LucideIcon>> = {
   myWork: Inbox,
   workflows: Workflow,
   project: SquareKanban,
-  view: Eye,
   repository: BookMarked,
   settings: Settings,
-  repositories: BookMarked,
-  projects: SquareKanban,
-  display: PanelsTopLeft,
-  review: FileDiff,
-  sync: CloudUpload,
-  account: CircleUser,
-  updates: CircleArrowDown,
-  changelog: ScrollText,
 };
 
 /** The most options a submenu draws: one may offer every item of the local copy; typing finds the rest. */
@@ -114,22 +100,36 @@ const t = useTranslate();
 const query = ref('');
 const subjectRemoved = ref(false);
 const repositoryRemoved = ref(false);
-const submenuId = shallowRef<string | null>(null);
+/** The ids of the levels entered, from the top. */
+const path = shallowRef<readonly string[]>([]);
 const highlighted = shallowRef<string | null>(null);
 
 /** What the actions act on: `null` once the user took it out (⌫). */
 const subject = computed(() => (subjectRemoved.value ? null : props.subject));
 /** The repository the actions belong to: `null` once the user took it out (⌫). */
 const repository = computed(() => (repositoryRemoved.value ? null : props.repository));
-/** What the chip names: the subject, else the repository. */
-const chip = computed(() =>
-  subject.value
-    ? { icon: subject.value.kind === 'item' ? CircleDot : Layers, label: subject.value.label }
-    : repository.value
-      ? { icon: BookMarked, label: repository.value }
-      : null,
+const steps = computed(() =>
+  resolveMenuPath({ path: path.value, commands: props.commands, navigation: props.navigation }),
 );
-const submenu = computed(() => props.commands.find(command => command.id === submenuId.value) ?? null);
+/** The level shown; `null` at the top. */
+const step = computed(() => steps.value.at(-1) ?? null);
+/** What the chip names: the subject, else the repository; nothing inside a place or a repository, which it is not about. */
+const chip = computed(() => {
+  if (steps.value[0]?.command === null) {
+    return null;
+  }
+
+  if (subject.value) {
+    return { icon: subject.value.kind === 'item' ? CircleDot : Layers, label: subject.value.label };
+  }
+
+  return repository.value ? { icon: BookMarked, label: repository.value } : null;
+});
+/** The action whose picker is shown; a level of rows has none. */
+const submenu = computed(() => {
+  const command = step.value?.command;
+  return command?.options ? command : null;
+});
 const submenuOptions = computed(() => submenu.value?.options?.() ?? null);
 /** The action being searched in, while the menu is open: only it is told what is typed. */
 const searching = computed(() => (open.value && submenu.value?.search ? submenu.value : null));
@@ -149,6 +149,7 @@ const groups = computed((): FilterListGroup<Row>[] => {
     subject: subject.value,
     repository: repository.value,
     navigation: props.navigation,
+    level: step.value,
   }).map(group => ({
     key: group.key,
     heading: getHeading(group.key),
@@ -156,6 +157,7 @@ const groups = computed((): FilterListGroup<Row>[] => {
   }));
 });
 const rows = computed(() => groups.value.flatMap(group => group.rows));
+const highlightedRow = computed(() => rows.value.find(row => row.value === highlighted.value) ?? null);
 const placeholder = computed(() =>
   submenu.value ? (submenuOptions.value?.placeholder ?? t(l.filterOptions)) : t(l.placeholder),
 );
@@ -168,11 +170,11 @@ const message = computed(() => {
   return options?.message ?? (options?.loading ? t(l.loading) : t(l.noMatch));
 });
 const hints = computed((): FilterListHint[] => {
+  const leaving: FilterListHint[] = [
+    { keys: 'ArrowLeft', label: t(l.back) },
+    { keys: 'Escape', label: t(l.close) },
+  ];
   if (submenu.value) {
-    const leaving: FilterListHint[] = [
-      { keys: 'ArrowLeft', label: t(l.back) },
-      { keys: 'Escape', label: t(l.close) },
-    ];
     if (!submenu.value.search) {
       return [{ keys: 'Enter', label: t(l.set) }, ...leaving];
     }
@@ -181,11 +183,16 @@ const hints = computed((): FilterListHint[] => {
     return rows.value.length > 0 ? [{ keys: 'Enter', label: t(l.open) }, ...leaving] : leaving;
   }
 
-  const shown: FilterListHint[] = [
-    { keys: 'Enter', label: t(l.run) },
-    { keys: 'ArrowRight', label: t(l.openSubmenu) },
-    { keys: '>', label: t(l.commandsOnly) },
-  ];
+  const running: FilterListHint[] = [{ keys: 'Enter', label: t(l.run) }];
+  if (highlightedRow.value?.enter) {
+    running.push({ keys: 'ArrowRight', label: t(l.openSubmenu) });
+  }
+
+  if (step.value) {
+    return [...running, ...leaving];
+  }
+
+  const shown: FilterListHint[] = [...running, { keys: '>', label: t(l.commandsOnly) }];
   if (chip.value) {
     shown.push({ keys: 'Backspace', label: t(l.removeContext) });
   }
@@ -200,9 +207,9 @@ watch(
       query.value = '';
       subjectRemoved.value = false;
       repositoryRemoved.value = false;
-      submenuId.value = null;
+      path.value = [];
       if (props.startCommandId) {
-        enter(props.startCommandId);
+        enterLevel([props.startCommandId]);
       }
     }
   },
@@ -245,15 +252,17 @@ function toRow(entry: CommandMenuEntry): Row {
   switch (entry.kind) {
     case 'command': {
       const { command } = entry;
+      const enter = command.options || command.children ? () => enterLevel(entry.path) : undefined;
       return {
         value: entry.id,
         icon: command.icon ?? Zap,
         title: command.title,
         detail: command.detail,
         keys: command.key?.split('+'),
-        submenu: command.options !== undefined,
+        ancestors: entry.ancestors,
         match: entry.match,
-        activate: () => runCommand(command),
+        activate: enter && (command.options || !command.run) ? enter : () => runCommand(command),
+        enter,
       };
     }
     case 'option': {
@@ -261,7 +270,7 @@ function toRow(entry: CommandMenuEntry): Row {
       return {
         value: entry.id,
         icon: command.icon ?? Zap,
-        lead: command.title.replace(/…$/u, ''),
+        ancestors: entry.ancestors,
         title: option.label,
         // Which project's: two projects may offer one value.
         detail: [option.group, option.detail].filter(text => text !== undefined).join(' · ') || undefined,
@@ -273,7 +282,10 @@ function toRow(entry: CommandMenuEntry): Row {
       };
     }
     case 'navigation':
-      return toNavigationRow(entry.id, entry.result);
+      return {
+        ...toNavigationRow(entry.id, entry.result),
+        enter: entry.path.length > 0 ? () => enterLevel(entry.path) : undefined,
+      };
     default:
       return assertNever(entry);
   }
@@ -366,12 +378,11 @@ function getRanges(row: Row, field: CommandMenuMatch['field']) {
   return row.match?.field === field ? row.match.ranges : null;
 }
 
-function runCommand(command: Command) {
-  if (command.options) {
-    enter(command.id);
-    return;
-  }
+function withoutEllipsis(title: string) {
+  return title.replace(/…$/u, '');
+}
 
+function runCommand(command: Command) {
   open.value = false;
   command.run?.();
 }
@@ -384,19 +395,15 @@ function pick(option: CommandOption) {
   option.pick();
 }
 
-function enter(commandId: string) {
-  const command = props.commands.find(candidate => candidate.id === commandId);
-  if (!command?.options) {
-    return;
-  }
-
-  command.prepare?.();
-  submenuId.value = command.id;
+function enterLevel(target: readonly string[]) {
+  path.value = target;
   query.value = '';
+  step.value?.command?.prepare?.();
 }
 
+/** One level up, from the level shown: ids of levels no longer there go with it. */
 function back() {
-  submenuId.value = null;
+  path.value = steps.value.at(-2)?.path ?? [];
   query.value = '';
 }
 
@@ -405,17 +412,17 @@ function activate(value: AcceptableValue | AcceptableValue[]) {
   rows.value.find(row => row.value === value)?.activate();
 }
 
-/** Tab or → at the end of the text opens the highlighted action's submenu; ← or ⌫ in an empty field steps back out of it (← only there: with text it moves the caret, and the top level's chip stays ⌫'s). */
+/** Tab or → at the end of the text enters the highlighted line's submenu; ← or ⌫ in an empty field steps back one level (← only there: with text it moves the caret, and the top level's chip stays ⌫'s). */
 function onFilterKeydown(event: KeyboardEvent) {
   const input = event.target instanceof HTMLInputElement ? event.target : null;
   switch (event.key) {
     case 'Tab':
     case 'ArrowRight': {
       const atEnd = input === null || input.selectionStart === input.value.length;
-      const row = rows.value.find(candidate => candidate.value === highlighted.value);
-      if (row?.submenu && (event.key === 'Tab' || atEnd)) {
+      const row = highlightedRow.value;
+      if (row?.enter && (event.key === 'Tab' || atEnd)) {
         event.preventDefault();
-        row.activate();
+        row.enter();
       } else if (event.key === 'Tab') {
         // Focus stays in the field: the list is moved through with the arrows.
         event.preventDefault();
@@ -424,7 +431,7 @@ function onFilterKeydown(event: KeyboardEvent) {
       return;
     }
     case 'ArrowLeft':
-      if (query.value === '' && submenu.value) {
+      if (query.value === '' && step.value) {
         event.preventDefault();
         back();
       }
@@ -435,7 +442,7 @@ function onFilterKeydown(event: KeyboardEvent) {
         return;
       }
 
-      if (submenu.value) {
+      if (step.value) {
         event.preventDefault();
         back();
       } else if (subject.value) {
@@ -449,7 +456,7 @@ function onFilterKeydown(event: KeyboardEvent) {
 }
 
 function onEscape(event: KeyboardEvent) {
-  if (submenu.value) {
+  if (step.value) {
     event.preventDefault();
     back();
   }
@@ -469,7 +476,7 @@ function onEscape(event: KeyboardEvent) {
       v-model:query="query"
       v-model:highlighted="highlighted"
       :model-value="null"
-      :label="submenu ? submenu.title : t(l.title)"
+      :label="step ? step.title : t(l.title)"
       :groups="groups"
       :placeholder="placeholder"
       :message="message"
@@ -492,20 +499,23 @@ function onEscape(event: KeyboardEvent) {
           />
           {{ chip.label }}
         </span>
-        <template v-if="submenu">
+        <template
+          v-for="(crumb, index) in steps"
+          :key="crumb.path.at(-1)"
+        >
           <ChevronRight
-            v-if="subject || !submenu.search"
+            v-if="index > 0 || (chip && (subject || !crumb.command?.search))"
             :class="css.commandMenu_crumb"
             aria-hidden="true"
           />
           <span :class="css.commandMenu_chip">
             <component
-              :is="submenu.icon"
-              v-if="submenu.search && submenu.icon"
+              :is="crumb.command.icon"
+              v-if="crumb.command?.search && crumb.command.icon"
               :class="css.commandMenu_chipSearchIcon"
               aria-hidden="true"
             />
-            {{ submenu.title.replace(/…$/u, '') }}
+            {{ withoutEllipsis(crumb.title) }}
           </span>
         </template>
       </template>
@@ -530,7 +540,14 @@ function onEscape(event: KeyboardEvent) {
           decorative
         />
         <span :class="css.commandMenu_title">
-          <template v-if="row.lead">{{ row.lead }} → </template
+          <template
+            v-for="(ancestor, index) in row.ancestors ?? []"
+            :key="index"
+            ><MatchedText
+              :text="withoutEllipsis(ancestor.title)"
+              :ranges="ancestor.ranges"
+            />
+            → </template
           ><MatchedText
             :text="row.title"
             :ranges="getRanges(row, 'title')"
@@ -580,7 +597,7 @@ function onEscape(event: KeyboardEvent) {
           :keys="key"
         />
         <ChevronRight
-          v-if="row.submenu"
+          v-if="row.enter"
           :class="css.commandMenu_more"
           aria-hidden="true"
         />

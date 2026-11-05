@@ -22,6 +22,16 @@ export class LandingHarness {
         return this.root.getByRole('button', { name: 'Sign in with GitHub' }).first();
     }
 
+    /** The hero's "Download the app", the first of the page's two (the other closes the page). */
+    get downloadLink(): Locator {
+        return this.root.getByRole('link', { name: 'Download the app' }).first();
+    }
+
+    /** The logo of the visitor's system on {@link downloadLink}, there only once the page knows the system. */
+    downloadLogo(system: string): Locator {
+        return this.downloadLink.getByTestId(`landing-download-logo-${system}`);
+    }
+
     /** Why the visitor is back from a sign-in (G1): cancelled, failed, signed out. */
     get banner(): Locator {
         return this.root.getByRole('status');

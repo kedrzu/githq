@@ -1,4 +1,4 @@
-<!-- The landing page's hero (githq.pen "Landing — githq.dev", Hero): what githq is, "Sign in with GitHub" straight to GitHub's consent screen (D21), "Star on GitHub", what GitHub will ask for and why, over a screenshot of the app — the one image the page loads first — under an address bar showing the trick: on load and every 12 s while in view, github.com swaps for githq.dev and the screenshot rises in (`HostSwapLoop`; githq.pen "Landing — motion storyboard"). Under the call to action the development sign-in. -->
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first — under an address bar showing the trick: on load and every 12 s while in view, github.com swaps for githq.dev and the screenshot rises in (`HostSwapLoop`; githq.pen "Landing — motion storyboard"). Under the call to action the development sign-in. -->
 <script lang="ts">
 const LOOP_EVERY = 12_000;
 </script>
@@ -7,13 +7,20 @@ const LOOP_EVERY = 12_000;
 import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
+import { ArrowRight, Star } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
 
+import type { DesktopSystem } from './desktopBuilds.js';
 import HostSwapLoop from './HostSwapLoop.vue';
 import LandingActions from './LandingActions.vue';
 import * as l from './LandingHero.loc.js';
-import LandingPermission from './LandingPermission.vue';
+import { REPOSITORY_URL } from './landingLinks.js';
 import { useHostSwap } from './useHostSwap.js';
+
+defineProps<{
+  /** The visitor's system, `null` while unknown or when there is nothing to install on it. */
+  system: DesktopSystem | null;
+}>();
 
 const emit = defineEmits<{
   /** "Sign in with GitHub". */
@@ -60,18 +67,30 @@ onBeforeUnmount(() => clearInterval(timer));
 
 <template>
   <section :class="css.landingHero">
+    <a
+      :class="css.landingHero_star"
+      :href="REPOSITORY_URL"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Star
+        :class="css.landingHero_starIcon"
+        aria-hidden="true"
+      />
+      {{ t(l.star) }}
+      <ArrowRight
+        :class="css.landingHero_starArrow"
+        aria-hidden="true"
+      />
+    </a>
+
     <h1 :class="css.landingHero_headline">{{ t(l.headline) }}</h1>
     <p :class="css.landingHero_subhead">{{ t(l.subhead) }}</p>
 
-    <LandingActions @sign-in="emit('signIn')" />
-
-    <div :class="css.landingHero_finePrint">
-      <p :class="css.landingHero_reassurance">
-        <span>{{ t(l.reassuranceSetup) }}</span>
-        <span :class="css.landingHero_reassuranceRest">{{ t(l.reassuranceStorage) }}</span>
-      </p>
-      <LandingPermission />
-    </div>
+    <LandingActions
+      :system="system"
+      @sign-in="emit('signIn')"
+    />
 
     <div
       v-if="$slots.dev"
@@ -122,14 +141,47 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
   flex-direction: column;
   gap: 28px;
   align-items: center;
-  padding-top: 120px;
+  padding-top: 88px;
   text-align: center;
   background: radial-gradient(ellipse 55% 35% at 50% 18%, rgba($color-accent, 0.18), rgba($color-accent, 0));
 
   @include landing-mobile {
     gap: 20px;
-    padding-top: 56px;
+    padding-top: 32px;
   }
+}
+
+.landingHero_star {
+  @include focus-ring;
+
+  display: inline-flex;
+  gap: $spacing-8;
+  align-items: center;
+  padding: 7px 14px;
+  font-size: $font-size-md;
+  color: $color-fg;
+  text-decoration: none;
+  background: $color-bg-2;
+  border: 1px solid $color-border-2;
+  border-radius: 999px;
+
+  &:hover {
+    background: $color-bg-3;
+  }
+}
+
+.landingHero_starIcon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-amber;
+}
+
+.landingHero_starArrow {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: $color-fg-3;
 }
 
 .landingHero_headline {
@@ -140,6 +192,7 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
   line-height: 1.03;
   color: $color-landing-headline-bottom;
   letter-spacing: -0.04em;
+  text-wrap: balance;
   white-space: pre-line;
   background: linear-gradient(0deg, $color-landing-headline-bottom 35%, $color-landing-headline-top 100%);
   background-clip: text;
@@ -159,35 +212,6 @@ $shot-shadow: 0 40px 120px rgb(0 0 0 / 80%);
 
   @include landing-mobile {
     font-size: 17px;
-  }
-}
-
-.landingHero_finePrint {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-10;
-  align-items: center;
-}
-
-// "No install · No new tracker · Nothing stored outside GitHub": one line, two on a phone.
-.landingHero_reassurance {
-  font-family: $font-family-mono;
-  font-size: $font-size-xs;
-  line-height: 1.6;
-  color: $color-fg-dim;
-  letter-spacing: 0.2px;
-
-  @include landing-mobile {
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-.landingHero_reassuranceRest::before {
-  content: ' · ' / '';
-
-  @include landing-mobile {
-    content: none;
   }
 }
 

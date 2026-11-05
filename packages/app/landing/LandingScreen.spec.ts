@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './LandingScreen.stories.js';
 
-const { Landing, Phone, SignInCancelled } = composeStories(stories);
+const { Landing, OnLinux, OnWindows, Phone, SignInCancelled, SystemNotKnown } = composeStories(stories);
 
 const REPOSITORY_URL = 'https://github.com/kedrzu/githq';
 
@@ -38,26 +38,51 @@ test('every "Sign in" signs in: the navigation, the hero, the last call to actio
     expect(onSignIn).toHaveBeenCalledTimes(4);
 });
 
-test('"Star on GitHub" and "Why?" open the repository on GitHub, in a tab of their own', async () => {
+test('"Star on GitHub" opens the repository on GitHub, in a tab of its own', async () => {
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    // The hero, the open source card and the last call to action.
+    // The pill above the headline and the open source card.
     const stars = page.getByRole('link', { name: 'Star on GitHub' }).elements();
-    expect(stars).toHaveLength(3);
+    expect(stars).toHaveLength(2);
     for (const star of stars) {
         expect(star.getAttribute('href')).toBe(REPOSITORY_URL);
         expect(star.getAttribute('target')).toBe('_blank');
     }
-    // The hero and the last call to action.
-    const whys = page.getByRole('link', { name: 'Why?' }).elements();
-    expect(whys).toHaveLength(2);
-    for (const why of whys) {
-        expect(why.getAttribute('href')).toBe(
-            `${REPOSITORY_URL}/blob/main/docs/design/githq/README.md#what-githq-keeps-in-your-browser`,
-        );
-        expect(why.getAttribute('target')).toBe('_blank');
-    }
+});
+
+test('"Download the app" downloads the build for the system, or opens /download with none to install on', async () => {
+    const downloadLinks = () => page.getByRole('main').getByRole('link', { name: 'Download the app' }).elements();
+    const installer = (name: string) => `${REPOSITORY_URL}/releases/latest/download/${name}`;
+    const expectEvery = (href: string) => {
+        // The hero and the last call to action.
+        expect(downloadLinks().map(link => link.getAttribute('href'))).toEqual([href, href]);
+    };
+
+    await Landing.run();
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expectEvery(installer('githq_aarch64.dmg'));
+
+    await OnWindows.run();
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expectEvery(installer('githq_x64-setup.exe'));
+
+    await OnLinux.run();
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expectEvery(installer('githq_amd64.AppImage'));
+
+    await SystemNotKnown.run();
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expectEvery('/download');
+});
+
+test('the page says nothing of the signatures or the permissions: /download does', async () => {
+    await OnWindows.run();
+
+    const main = page.getByRole('main');
+    await expect.element(main).toHaveTextContent('In your browser, nothing to install');
+    await expect.element(main).not.toHaveTextContent('SmartScreen');
+    await expect.element(main).not.toHaveTextContent('GitHub will ask for full repository access');
 });
 
 test('every way off the page goes to githq on GitHub, and every link within it lands on a section', async () => {
@@ -66,22 +91,14 @@ test('every way off the page goes to githq on GitHub, and every link within it l
 
     const root = landingPage();
     const links = [...root.querySelectorAll('a')].map(link => link.getAttribute('href') ?? '');
-    const outside = links.filter(href => !href.startsWith('#'));
+    const outside = links.filter(href => !href.startsWith('#') && href !== '/download');
     expect(outside).toContain(REPOSITORY_URL);
     expect(outside.filter(href => !href.startsWith(REPOSITORY_URL))).toEqual([]);
     expect(root.textContent).not.toContain('mlaine');
 
     // The navigation's, then the footer's.
     const sections = links.filter(href => href.startsWith('#'));
-    expect(sections).toEqual([
-        '#features',
-        '#compare',
-        '#how-it-works',
-        '#open-source',
-        '#features',
-        '#keyboard',
-        '#install',
-    ]);
+    expect(sections).toEqual(['#features', '#compare', '#how-it-works', '#open-source', '#features', '#keyboard']);
     for (const href of sections) {
         expect(root.querySelector(href)).not.toBeNull();
     }

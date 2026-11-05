@@ -1,13 +1,10 @@
 headline:
   en: |-
-    All your repositories
-    in one place.
-    No separate tracker.
+    All your repos
+    at the speed of thought
 subhead:
   en: githq puts GitHub Issues, Projects, pull requests and Actions from every repository on one fast screen. The issue tracker you would pay for is already in your GitHub.
-reassuranceSetup:
-  en: No install · No new tracker
-reassuranceStorage:
-  en: Nothing stored outside GitHub
+star:
+  en: Open source. Star on GitHub
 heroAlt:
   en: githq’s “My work” across every repository, with the sidebar marking the repositories whose workflows are broken.

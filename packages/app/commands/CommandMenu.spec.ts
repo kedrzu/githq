@@ -17,6 +17,9 @@ const {
     SearchResults,
     SearchAsking,
     SearchNothingFound,
+    Levels,
+    LevelsOnOpenItem,
+    FoundInRepository,
 } = composeStories(stories);
 
 /** The texts a line draws marked, in order. */
@@ -354,3 +357,191 @@ test('↑ on the first line wraps to the last, in the menu and in a submenu', as
     await userEvent.keyboard('{ArrowUp}');
     await expect.element(options.last()).toHaveAttribute('data-highlighted');
 });
+
+test("→ enters a repository's level without going there; Enter on the same line goes there", async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('skyline-labs/portal{ArrowRight}');
+    const level = page.getByRole('listbox', { name: 'skyline-labs/portal' });
+    await expect.element(level.getByRole('option', { name: 'Pull requests' })).toBeInTheDocument();
+    await expect.element(level.getByRole('option', { name: 'Workflows' })).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox')).toHaveValue('');
+    await expect.element(page.getByTestId('went')).toHaveTextContent('Nowhere');
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Pull requests');
+    await expect.element(level).not.toBeInTheDocument();
+    await expect.element(page.getByTestId('went')).toHaveTextContent('Nowhere');
+
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}skyline-labs/portal{Enter}');
+    await expect.element(page.getByTestId('went')).toHaveTextContent('/skyline-labs/portal');
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).not.toBeInTheDocument();
+});
+
+for (const key of ['ArrowLeft', 'Backspace', 'Escape']) {
+    test(`{${key}} steps back one level at a time, with both levels in the crumbs and the field empty after each`, async () => {
+        await runWithPointerAway(Levels);
+        const firstCrumb = page.getByText('skyline-labs/portal', { exact: true });
+
+        await userEvent.keyboard('skyline-labs/portal{ArrowRight}work{ArrowRight}');
+        const deep = page.getByRole('listbox', { name: 'Workflows' });
+        await expect.element(deep.getByRole('option', { name: 'Deploy' })).toBeInTheDocument();
+        await expect.element(firstCrumb).toBeInTheDocument();
+        await expect.element(page.getByText('Workflows', { exact: true })).toBeInTheDocument();
+
+        await userEvent.keyboard(`{${key}}`);
+        const first = page.getByRole('listbox', { name: 'skyline-labs/portal' });
+        await expect.element(first.getByRole('option', { name: 'Pull requests' })).toBeInTheDocument();
+        await expect.element(firstCrumb).toBeInTheDocument();
+        await expect.element(page.getByRole('textbox')).toHaveValue('');
+
+        await userEvent.keyboard(`{${key}}`);
+        await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
+        await expect.element(page.getByText('Back')).not.toBeInTheDocument();
+    });
+}
+
+test('in a level ← with text moves the caret, and Esc with text steps back and empties the field', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('skyline-labs/portal{ArrowRight}pu{ArrowLeft}X');
+    const level = page.getByRole('listbox', { name: 'skyline-labs/portal' });
+    await expect.element(level).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox')).toHaveValue('pXu');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox')).toHaveValue('');
+});
+
+test('Enter runs a line that has both something to run and a level', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('skyline-labs/portal{ArrowRight}work{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Workflows');
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+});
+
+test('Enter enters a level with nothing to run; a picker under it steps back to it', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('appearance{Enter}');
+    const level = page.getByRole('listbox', { name: 'Appearance' });
+    await expect.element(level.getByRole('option', { name: /^Theme/u })).toBeInTheDocument();
+
+    await userEvent.keyboard('theme{Enter}');
+    await expect.element(page.getByRole('listbox', { name: 'Theme…' }).getByRole('option')).toHaveLength(2);
+    await expect.element(page.getByText('Theme', { exact: true })).toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(level).toBeInTheDocument();
+});
+
+test("the chip stays over an action's picker and leaves in a place's level", async () => {
+    await runWithPointerAway(LevelsOnOpenItem);
+    // First: at the top the item is also a line of the list.
+    const chip = page.getByText('portal#1187', { exact: true }).first();
+    await expect.element(chip).toBeInTheDocument();
+
+    await userEvent.keyboard('skyline-labs/portal{ArrowRight}');
+    await expect.element(page.getByRole('listbox', { name: 'skyline-labs/portal' })).toBeInTheDocument();
+    await expect.element(chip).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Backspace}');
+    await expect.element(chip).toBeInTheDocument();
+
+    await userEvent.keyboard('label{ArrowRight}');
+    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels…' })).toBeInTheDocument();
+    await expect.element(chip).toBeInTheDocument();
+});
+
+test('the → hint is there only on a line with a submenu', async () => {
+    await runWithPointerAway(Levels);
+    const hint = page.getByText('Open submenu');
+
+    await userEvent.keyboard('skyline-labs/portal');
+    await expect.element(hint).toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.element(page.getByRole('option', { name: 'Pull requests' })).toHaveAttribute('data-highlighted');
+    await expect.element(hint).not.toBeInTheDocument();
+    await expect.element(page.getByText('Back')).toBeInTheDocument();
+
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.element(page.getByRole('option', { name: 'Workflows' })).toHaveAttribute('data-highlighted');
+    await expect.element(hint).toBeInTheDocument();
+});
+
+test('a line found deeper shows its whole way there and marks the level the text named', async () => {
+    await runWithPointerAway(FoundInRepository);
+
+    const named = page.getByRole('option').first();
+    await expect.element(named).toHaveTextContent('skyline-labs/portal → Pull requests');
+    expect(getMarks(named)).toEqual(['portal', 'Pull']);
+
+    await userEvent.clear(page.getByRole('textbox'));
+    await userEvent.keyboard('platform current');
+    const unnamed = page.getByRole('option', { name: /Current iteration/u });
+    await expect.element(unnamed).toHaveTextContent('Platform Q4 → Iterations → Current iteration');
+});
+
+test('→ on a line found deeper enters its level, with the whole way in the crumbs', async () => {
+    await runWithPointerAway(FoundInRepository);
+
+    await userEvent.clear(page.getByRole('textbox'));
+    await userEvent.keyboard('portal work{ArrowRight}');
+    await expect.element(page.getByRole('listbox', { name: 'Workflows' })).toBeInTheDocument();
+    await expect.element(page.getByText('skyline-labs/portal', { exact: true })).toBeInTheDocument();
+    await expect.element(page.getByRole('textbox')).toHaveValue('');
+});
+
+test('an option found under a level is picked and closes the menu', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('graphite');
+    const found = page.getByRole('option').first();
+    await expect.element(found).toHaveTextContent('Appearance → Theme → Graphite');
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Graphite');
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+});
+
+test('a picker of several stays open after each pick', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('follow{Enter}');
+    const several = page.getByRole('listbox', { name: 'Follow people…' });
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Ada');
+    await expect.element(several).toBeInTheDocument();
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Grace');
+    await expect.element(several).toBeInTheDocument();
+});
+
+test("a search reached through a level is told what is typed, and '' on leaving", async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('appearance{ArrowRight}find{ArrowRight}x');
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Searched "x"');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(page.getByRole('listbox', { name: 'Appearance' })).toBeInTheDocument();
+    await expect.element(page.getByTestId('asked')).toHaveTextContent('Searched ""');
+});
+
+test('a repository not tracked has its level on →', async () => {
+    await runWithPointerAway(Levels);
+
+    await userEvent.keyboard('acme/tools{ArrowRight}');
+    const level = page.getByRole('listbox', { name: 'acme/tools' });
+    await expect.element(level.getByRole('option', { name: 'Pull requests of acme/tools' })).toBeInTheDocument();
+    await expect.element(page.getByTestId('went')).toHaveTextContent('Nowhere');
+});
+
+/** A row under a pointer left still by an earlier test takes the highlight, so the keys here start from the field. */
+async function runWithPointerAway(story: { run(): Promise<void> }) {
+    await story.run();
+    await userEvent.hover(page.getByRole('textbox'));
+}
