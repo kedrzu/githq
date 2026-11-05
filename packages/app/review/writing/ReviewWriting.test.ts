@@ -2,7 +2,6 @@
 // IndexedDB for bun; a browser has its own. Every test uses its own logins, so their databases never meet.
 import 'fake-indexeddb/auto';
 
-import { waitUntil } from '@nzyme/utils/waitUntil.js';
 import { expect, test } from 'bun:test';
 import { watch } from 'vue';
 
@@ -13,6 +12,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { waitUntil } from '@/testing/waitUntil.js';
 
 import { ReviewBlobStore } from '../ReviewBlobStore.js';
 import { ReviewFiles } from '../ReviewFiles.js';

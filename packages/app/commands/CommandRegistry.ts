@@ -33,7 +33,8 @@ const WRITING = 'textarea, [contenteditable]:not([contenteditable="false"])';
  * The app's actions (D9): every component registers the ones it offers while it is shown (`useCommands`), and
  * this one registry feeds the command menu (⌘K), the keys and the help sheet (`?`). It runs an action's key
  * itself: outside fields for a single key, also in a one-line field for a `Mod` key; never while the menu or the help
- * is open. Two actions on one key: the one whose section comes first ({@link COMMAND_SECTIONS}) runs.
+ * is open, except that the menu's own key closes it. Two actions on one key: the one whose section comes first
+ * ({@link COMMAND_SECTIONS}) runs.
  */
 export type CommandRegistry = Resolved<typeof CommandRegistry>;
 export const CommandRegistry = defineService({
@@ -132,14 +133,30 @@ export const CommandRegistry = defineService({
         }
 
         function onKeydown(event: KeyboardEvent) {
-            if (event.defaultPrevented || menuRef.value || helpRef.value) {
+            if (event.defaultPrevented) {
+                return;
+            }
+
+            if (menuRef.value && matchesCommandKey(event, APP_KEYS.commandMenu)) {
+                event.preventDefault();
+                if (!event.repeat) {
+                    closeMenu();
+                }
+
+                return;
+            }
+
+            if (menuRef.value || helpRef.value) {
                 return;
             }
 
             const command = findCommand(event);
             if (command) {
                 event.preventDefault();
-                run(command);
+                // ⌘K held down opens or closes the menu once, rather than flickering it.
+                if (!event.repeat || command.key !== APP_KEYS.commandMenu) {
+                    run(command);
+                }
             }
         }
 

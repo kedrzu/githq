@@ -391,6 +391,8 @@ function focusConfirmButton(event: Event) {
 <style lang="scss" module="css">
 .updatesView {
   @include settings-screen;
+
+  padding-block: 28px;
 }
 
 .updatesView_column {

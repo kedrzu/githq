@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** Playwright harness for the Settings screen's own header (`SettingsView.vue`, D15). */
+/** Playwright harness for the Settings screen's own column (`SettingsView.vue`, D26). */
 export class SettingsScreenHarness {
     readonly page: Page;
     readonly root: Locator;
@@ -15,7 +15,7 @@ export class SettingsScreenHarness {
         return this.root.getByRole('heading', { name: 'Settings', level: 1 });
     }
 
-    /** A section's tab, by the start of its name (a count may follow it). */
+    /** A section's row in the column, by the start of its name (a count may follow it). */
     section(
         name: 'Account' | 'Display' | 'Projects' | 'Repositories' | 'Sync settings' | 'Updates' | 'Changelog',
     ): Locator {
@@ -27,10 +27,5 @@ export class SettingsScreenHarness {
     /** A card of the Display section's repository layout. */
     repositoryLayout(name: 'Column' | 'Tabs'): Locator {
         return this.root.getByRole('radiogroup', { name: 'Repository layout' }).getByRole('radio', { name });
-    }
-
-    /** The line under the repository layout's cards saying where the choice is kept, by its text. */
-    repositoryLayoutKept(text: string): Locator {
-        return this.root.getByText(text);
     }
 }

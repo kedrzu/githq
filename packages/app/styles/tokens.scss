@@ -381,7 +381,7 @@ $landing-reveal-stagger: 80ms;
     }
 }
 
-// A screen of Settings, scrolling under its header, and the column its content keeps to.
+// A screen of Settings, scrolling under its header, and the column its content keeps to, from the left.
 @mixin settings-screen {
     flex: 1;
     min-height: 0;
@@ -393,7 +393,6 @@ $landing-reveal-stagger: 80ms;
     display: flex;
     flex-direction: column;
     max-width: $settings-column-width;
-    margin: 0 auto;
 }
 
 // Text for screen readers only: out of sight, still in the accessibility tree.

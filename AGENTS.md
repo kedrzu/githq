@@ -47,7 +47,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
 - `bun run build:desktop:signed` — the same with signed updater bundles, the key read from the secret store on any machine after `bun nzyme secrets login`.
 - Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|stable`)
-  works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.
+  works out the version from PR titles, tags `main` and fills a draft release. The owner's word to release covers
+  everything through publishing: the `release` skill does it all and asks only about what really needs them.
   Every push to `main` also builds the Development stream (`development.yml`).
   Steps and one-time setup: `docs/desktop/RELEASING.md`.
 - `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`
@@ -83,9 +84,9 @@ creates a worktree it runs `setup.sh` (`paseo.json`): it merges `origin/main` in
 fast-forwards the local `main`, copies files that live outside git from the main checkout (`CLAUDE.local.md`,
 `.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
 
-**Without asking** (standing permission): name the branch and the workspace once the task is known; at the
-end of every turn that changed files — commit, catch up with `main`, push, then open the PR as a draft or update its
-description when the scope grew. Keep the branch current with `main` by merging,
+**Without asking** (standing permission): once the task is known, name the branch and the workspace and open the PR
+as a draft, before any work on it; at the end of every turn that changed files — commit, catch up with `main`, push,
+and update the PR's description when the scope grew. Keep the branch current with `main` by merging,
 never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
 Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 

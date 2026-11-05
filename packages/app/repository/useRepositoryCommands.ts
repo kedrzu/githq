@@ -35,7 +35,7 @@ export interface RepositoryCommands {
  * it, its page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is
  * tracked), and tracking it (only while it is not). All are of the `repository` section. The sidebar's menu of a
  * repository offers them by name, all but tracking it. In the command menu `AppCommands` makes of them the group of the
- * repository the screen belongs to and the level under any repository (D35), both with tracking it last (D34) and without
+ * repository the screen belongs to and the level under any repository (D36), both with tracking it last (D34) and without
  * no longer tracking it (D32); the group, unlike the level, has no new issue (`C` starts one there).
  */
 export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCommands {

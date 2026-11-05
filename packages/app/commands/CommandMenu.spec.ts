@@ -169,6 +169,30 @@ test('⌘K opens the menu; a single key typed in it is text, not its action', as
     await expect.element(page.getByTestId('sidebar')).toHaveTextContent('expanded');
 });
 
+test('⌘K closes the open menu and opens it again; held down it does either once', async () => {
+    await Closed.run();
+    const field = page.getByRole('textbox', { name: 'Type a command or search…' });
+
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(field).toHaveFocus();
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(field).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{ControlOrMeta>}{k>2/}{/ControlOrMeta}');
+    await expect.element(field).toHaveFocus();
+    await userEvent.keyboard('{ControlOrMeta>}{k>2/}{/ControlOrMeta}');
+    await expect.element(field).not.toBeInTheDocument();
+});
+
+test('⌘K in a submenu closes the whole menu, where Escape only steps back', async () => {
+    await OnOpenItem.run();
+
+    await userEvent.keyboard('label{ArrowRight}');
+    await expect.element(page.getByRole('listbox', { name: 'Add or remove labels…' })).toBeInTheDocument();
+    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await expect.element(page.getByRole('dialog', { name: 'Command menu' })).not.toBeInTheDocument();
+});
+
 test('E3: places and items from the local copy by name and number; an untracked owner/name opens its repository', async () => {
     await Typing.run();
 
