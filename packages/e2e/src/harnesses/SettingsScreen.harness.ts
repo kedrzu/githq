@@ -37,6 +37,11 @@ export class SettingsScreenHarness {
         return this.root.getByRole('radiogroup', { name: 'Repository layout' }).getByRole('radio', { name });
     }
 
+    /** The Display section's switch for animations. */
+    get animationsSwitch(): Locator {
+        return this.root.getByRole('switch', { name: 'Animations' });
+    }
+
     /** A card of the Code review section's comments. */
     reviewComment(name: 'Add it to a draft review' | 'Send it at once'): Locator {
         return this.root.getByRole('radiogroup', { name: 'Comments' }).getByRole('radio', { name });

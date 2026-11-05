@@ -68,5 +68,14 @@ defineSlots<{
   border: 1px solid $color-border-2;
   border-radius: $radius-md;
   box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
+
+  // Not on `instant-open`: moving between triggers, it is already there.
+  &[data-state='delayed-open'] {
+    @include motion {
+      animation-name: global(motion-fade-in);
+      animation-duration: $motion-open;
+      animation-timing-function: ease-out;
+    }
+  }
 }
 </style>

@@ -19,6 +19,7 @@ import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
+    readAnimations,
     readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
@@ -177,6 +178,10 @@ export const TrackingStore = defineService({
             get repositoryLayout() {
                 return readRepositoryLayout(keptRef.value.document);
             },
+            /** Whether the short UI animations play; reactive. */
+            get animations() {
+                return readAnimations(keptRef.value.document);
+            },
             /** How a code review's comment goes out with no draft open (code-review D34); reactive. */
             get reviewCommentChoice() {
                 return readReviewCommentChoice(keptRef.value.document);
@@ -201,6 +206,7 @@ export const TrackingStore = defineService({
             replaceDocument,
             setWorkflowSettings,
             setRepositoryLayout,
+            setAnimations,
             setReviewCommentChoice,
             onUntrack,
             onLocalChange,
@@ -319,6 +325,18 @@ export const TrackingStore = defineService({
                 readRepositoryLayout(kept.document) === layout
                     ? null
                     : { ...kept, document: { ...kept.document, repositoryLayout: layout } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /** The user's choice of whether animations play. Nothing when it reads as that already (absent reads as on). */
+        function setAnimations(on: boolean) {
+            const written = write(kept =>
+                readAnimations(kept.document) === on
+                    ? null
+                    : { ...kept, document: { ...kept.document, animations: on } },
             );
             if (written) {
                 changedHere();
