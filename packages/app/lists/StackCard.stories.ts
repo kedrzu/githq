@@ -26,7 +26,7 @@ const meta = {
     render: args => ({
         components: { StackCard },
         setup: () => ({ args }),
-        template: `<div style="width: 268px; background: #1a1d22; border: 1px solid #22262d; border-radius: 8px">
+        template: `<div style="width: 268px; background: #1c2128; border: 1px solid #2f353d; border-radius: 8px">
             <StackCard v-bind="args" />
         </div>`,
     }),
