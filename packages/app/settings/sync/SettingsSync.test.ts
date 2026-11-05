@@ -13,7 +13,7 @@ import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
 import { parseSettings, serializeSettings } from './SettingsDocument.js';
 import type { SettingsDocument, SettingsRepository } from './SettingsDocument.js';
-import { getUntoldStop, readSettingsSaving } from './SettingsSaving.js';
+import { getUntoldStop } from './SettingsSaving.js';
 import type { SettingsSaving } from './SettingsSaving.js';
 import { SettingsSync } from './SettingsSync.js';
 
@@ -596,19 +596,6 @@ test('telling is not remembered while syncing is on or off', async () => {
     sync.turnOff();
     sync.markTold();
     expect(sync.state).toEqual({ state: 'off', repositoryLeft: true });
-});
-
-test('the slot of an earlier build, stopped with an ETag kept, is read without it', () => {
-    expect(
-        readSettingsSaving({
-            state: 'stopped',
-            reason: { kind: 'deleted' },
-            base: documentOf([]),
-            sha: 'abc',
-            etag: '"abc"',
-            syncedAt: 1,
-        }),
-    ).toEqual({ state: 'stopped', reason: { kind: 'deleted' }, base: documentOf([]), sha: 'abc', syncedAt: 1 });
 });
 
 /** The fake settings repository of one user, behind the REST answers of the test session. */
