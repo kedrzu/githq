@@ -77,6 +77,13 @@ const NAVIGATION: NavigationData = {
             path: '/settings?tab=projects',
         },
         {
+            id: 'settings:display',
+            group: 'goTo',
+            kind: 'display',
+            title: 'Settings: Display',
+            path: '/settings?tab=display',
+        },
+        {
             id: 'settings:sync',
             group: 'goTo',
             kind: 'sync',

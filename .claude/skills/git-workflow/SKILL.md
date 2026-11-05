@@ -4,7 +4,7 @@ description: >-
     How a change moves in githq — one task, one Paseo worktree, one branch, one PR; kept up to date
     with main by merging, squash-merged on the owner's word; GitHub Issues as the tracker, stacked PRs
     through GitHub's native stacks — all through git and `gh`. The dev pipeline (/dev:*) relies on it;
-    reach for it whenever you open a branch, commit, push, catch up with main, resolve a merge
+    reach for it whenever a task becomes known, you open a branch, commit, push, catch up with main, resolve a merge
     conflict, open or describe a PR, comment on an issue, build a PR stack or merge, watch a PR's checks
     until green, or deal with a failure the PR did not cause.
 ---
@@ -103,7 +103,15 @@ the pinned nzyme (and, once the workspace exists, built everything).
    shows its title; `mcp__paseo__rename_workspace` without `workspaceId` renames the current one. A few
    Polish words the owner recognises the task by („Lista My work”). Rename a generated name
    (`somber-rabbit`, `null`, `githq`); leave a meaningful one. No Paseo tools → skip.
-3. No PR yet at the start: it opens as a draft at the first push (Publish).
+3. Open the PR as a draft now, before the work, so that work under way is visible on GitHub rather than only in a
+   worktree. GitHub refuses a branch with no commits ahead of `main`, so start it with an empty commit. It needs no
+   `verify`, vanishes in the squash, and the title check accepts an empty diff whatever the type:
+   ```bash
+   git commit --allow-empty -m "<type>[(scope)]: <description>"
+   git push -u origin HEAD
+   ```
+   Then Publish, with a body saying what the task is going to do. If the task ends with nothing to change:
+   `gh pr close --delete-branch`.
 
 Not in a fresh worktree: `git fetch origin main` and `git switch -c <type>/<N>-<slug> origin/main --no-track`
 (otherwise the branch tracks `origin/main` until its first push).
@@ -171,7 +179,7 @@ git push -u origin HEAD     # Paseo creates branches without upstream; later jus
 
 ## Publish
 
-PRs open as drafts at the first push of the branch, and leave draft when the work is finished. Publish means the PR
+PRs open as drafts when the task is known (Start), and leave draft when the work is finished. Publish means the PR
 exists and its title and description are current. The pipeline supplies the texts.
 
 - **No PR for the branch** (`gh pr view` fails):
@@ -185,8 +193,6 @@ exists and its title and description are current. The pipeline supplies the text
   EOF
   ```
   `Closes #<N>` only when the branch has an issue; keep that line whenever the body is rewritten.
-  GitHub refuses a PR with no diff from `main`. When the owner wants it open before there is anything
-  to commit, one `git commit --allow-empty` gives it a diff; the commit vanishes in the squash.
 - **PR exists:** read the body with `gh pr view --json body --jq .body`, write the new one with
   `gh pr edit --body-file - <<'EOF' … EOF`; `gh pr edit --title "…"` when the scope changed. A title edit re-runs `title` only. If the old title
   failed `checks`, push to restart it, an empty commit if there is nothing else: a re-run reads the old title.

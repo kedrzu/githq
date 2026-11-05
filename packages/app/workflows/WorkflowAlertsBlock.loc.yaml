@@ -69,4 +69,4 @@ removeSelected:
 addPattern:
   en: Add a branch or tag pattern
 matchesNote:
-  en: 'Matches: branches and tags githq has seen runs on'
+  en: 'Matches: branches and tags with runs'

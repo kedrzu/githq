@@ -1,9 +1,6 @@
-<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it, and a quiet line saying where the choice is kept. The change applies at once. -->
+<!-- The Display section of Settings (git-client D22, CH43): the repository layout of D14 as two cards (`ChoiceCards`), each with a sketch of it. The change applies at once; where it is saved shows in the status bar. -->
 <script lang="ts" setup>
-import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Cloud, CloudOff } from 'lucide-vue-next';
 import { computed, useId } from 'vue';
 
 import ChoiceCards from '@/components/ChoiceCards.vue';
@@ -11,7 +8,6 @@ import type { ChoiceCardsOption } from '@/components/ChoiceCards.vue';
 
 import * as l from './DisplayView.loc.js';
 import type { RepositoryLayout } from './sync/SettingsDocument.js';
-import type { SettingsSaving } from './sync/SettingsSaving.js';
 
 /** The list's rows in a sketch, by how far each reaches; the first is the one selected. */
 const SKETCH_LINES = ['70%', '50%', '45%', '72%', '60%', '50%', '75%', '55%'];
@@ -22,13 +18,6 @@ const SKETCH_SECTIONS = 4;
 /** The tabs of a sketch's top line, after the one selected. */
 const SKETCH_TABS = 2;
 
-const props = defineProps<{
-  /** The signed-in user, whose settings repository it names. */
-  login: string;
-  /** Whether the settings are synced, which says where the choice is kept. */
-  saving: SettingsSaving['state'];
-}>();
-
 const model = defineModel<RepositoryLayout>({ required: true });
 
 const t = useTranslate();
@@ -38,19 +27,6 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
   { value: 'tabs', label: t(l.tabs), detail: t(l.tabsDetail) },
   { value: 'column', label: t(l.column), detail: t(l.columnDetail) },
 ]);
-
-const kept = computed(() => {
-  switch (props.saving) {
-    case 'on':
-      return { icon: Cloud, text: t(l.savedOn, { repository: getSettingsNameWithOwner(props.login) }) };
-    case 'off':
-      return { icon: CloudOff, text: t(l.savedOff) };
-    case 'stopped':
-      return { icon: CloudOff, text: t(l.savedStopped) };
-    default:
-      return assertNever(props.saving);
-  }
-});
 </script>
 
 <template>
@@ -109,14 +85,6 @@ const kept = computed(() => {
           </span>
         </template>
       </ChoiceCards>
-      <p :class="css.displayView_kept">
-        <component
-          :is="kept.icon"
-          :class="css.displayView_keptIcon"
-          aria-hidden="true"
-        />
-        {{ kept.text }}
-      </p>
     </section>
   </div>
 </template>
@@ -124,10 +92,14 @@ const kept = computed(() => {
 <style lang="scss" module="css">
 .displayView {
   @include settings-screen;
+
+  padding-block: 28px;
 }
 
 .displayView_column {
   @include settings-screen-column;
+
+  max-width: 560px;
 }
 
 .displayView_title {
@@ -234,20 +206,5 @@ const kept = computed(() => {
 
 .displayView_sketchLine_selected {
   background: rgba($color-accent, 0.6);
-}
-
-.displayView_kept {
-  display: flex;
-  gap: $spacing-6;
-  align-items: center;
-  margin-top: $spacing-12;
-  font-size: $font-size-sm;
-  color: $color-fg-dim;
-}
-
-.displayView_keptIcon {
-  flex: none;
-  width: 13px;
-  height: 13px;
 }
 </style>

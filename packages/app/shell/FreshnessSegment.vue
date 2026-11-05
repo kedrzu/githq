@@ -1,4 +1,4 @@
-<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, or on a run's page what its log is doing (W4e, W4i, W4j); amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), or the review threads it didn't give, or they waiting for the allowance, and with files selected the keys that act on them (CR23); on a thread, which of them it is and the keys that walk them (CR15); just opened and not moved yet, why it starts where it does (CR20, CR25, CR26). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
+<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, on Settings' screens with where the settings are saved (githq D26), or on a run's page what its log is doing (W4e, W4i, W4j); amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), or the review threads it didn't give, or they waiting for the allowance, and with files selected the keys that act on them (CR23); on a thread, which of them it is and the keys that walk them (CR15); just opened and not moved yet, why it starts where it does (CR20, CR25, CR26). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -9,6 +9,7 @@ import {
   CircleHelp,
   CircleX,
   Cloud,
+  CloudOff,
   History,
   LoaderCircle,
   MessageSquare,
@@ -55,7 +56,7 @@ interface SegmentLook {
 const TICK_MS = 1000;
 
 const t = useTranslate();
-const now = useNow(TICK_MS, () => props.freshness.kind === 'fresh' || props.freshness.kind === 'statusChecked');
+const now = useNow(TICK_MS, () => ['fresh', 'settingsSaved', 'statusChecked'].includes(props.freshness.kind));
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 const look = computed((): SegmentLook => {
@@ -76,6 +77,17 @@ const look = computed((): SegmentLook => {
   switch (freshness.kind) {
     case 'fresh':
       return { icon: Check, tone: 'dim', text: t(l.upToDate) };
+    case 'settingsSaved':
+      switch (freshness.saving) {
+        case 'on':
+          return { icon: Cloud, tone: 'dim', text: t(l.settingsSavedIn, { repository: freshness.repository }) };
+        case 'off':
+          return { icon: CloudOff, tone: 'dim', text: t(l.settingsSavingOff) };
+        case 'stopped':
+          return { icon: CloudOff, tone: 'dim', text: t(l.settingsSyncStopped) };
+        default:
+          return assertNever(freshness.saving);
+      }
     case 'checking':
       return { icon: RefreshCw, tone: 'dim', text: t(l.checking) };
     case 'partial':
@@ -231,7 +243,7 @@ function getFetchingText({ here, total, first, listComplete }: Extract<Freshness
 // The hover of "Up to date" (D15).
 const checked = computed(() => {
   const { freshness } = props;
-  if (freshness.kind !== 'fresh' || props.edits) {
+  if ((freshness.kind !== 'fresh' && freshness.kind !== 'settingsSaved') || props.edits) {
     return null;
   }
 

@@ -66,7 +66,7 @@ const titleId = useId();
 
 .settingsBlock_content {
   display: flex;
-  flex: 0 1 640px;
+  flex: 1 1 640px;
   flex-direction: column;
   min-width: 0;
 }
