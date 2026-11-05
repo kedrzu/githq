@@ -107,6 +107,13 @@ export interface NativeBridgeShape {
      * reports how that goes. Does nothing while checking, downloading or installing.
      */
     restartToUpdate(): Promise<void>;
+    /**
+     * Calls `listener` each time the window resizes (Tauri's `tauri://resize`), the last time after a change to or from
+     * full screen has ended; resolves once it listens.
+     */
+    onWindowResized(listener: () => void): Promise<void>;
+    /** Tauri's `is_fullscreen`: whether the window is in full screen or on its way there. */
+    isFullscreen(): Promise<boolean>;
 }
 
 /**
@@ -165,6 +172,8 @@ function createTauriBridge(): NativeBridgeShape {
         restartToUpdate: async () => {
             await tauri.invoke<null>('update_restart');
         },
+        onWindowResized: listener => listen('tauri://resize', () => listener()),
+        isFullscreen: () => tauri.invoke<boolean>('plugin:window|is_fullscreen'),
     };
 
     /** Calls `handler` with the payload of each `event` the native side emits; resolves once it listens. */

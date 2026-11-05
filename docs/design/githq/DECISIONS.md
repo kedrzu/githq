@@ -380,8 +380,9 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   36px strip along the top of the sidebar, and the rail is 80px there, not 56px, to hold them (owner, 2026-11-01).
   With no title bar the page says what moves the window (`shell/windowControls.ts`): that strip, each screen's top
   header except what is clickable in it, and the same on the two screens with no sidebar. Windows and Linux keep their
-  title bars. Accepted: in full screen, where macOS hides the controls, the strip stays empty (removing it needs native
-  window events), and an unfocused window only activates on the first press, as Tauri documents for this style.
+  title bars. In full screen, where macOS hides the controls, the strip goes, the rail is 56px and the first sign-in's name moves back to the edge (owner, 2026-11-05): the
+  window's resize events say when to ask, `desktop/DesktopWindowControls.ts`. Zoomed, the window keeps both, as the
+  controls stay. Accepted: an unfocused window only activates on the first press, as Tauri documents for this style.
   Rejected: `accept_first_mouse`, which would drag at once but also send that first press to every control in the app;
   a 56px rail, with the controls spilling over the screen's header.
 - **The window stays on the app.** Every address outside the app opens in the system browser: the page
@@ -707,6 +708,28 @@ adds rows on screen, so that a short list doesn't read the whole repository into
 edits in the shared store (2026-11-04), so a browsed row behaves like any other. Reading a whole section at once: a large
 repository would cost its whole allowance for a look. A refresh with no poll: rows on screen would go stale in silence,
 when the conditional check is free.
+
+### D35
+
+**The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, "Landing — githq.dev" and its mobile frame, with LP30; `/download` in "Landing · Download page" (LP17–LP19).
+Two larger buttons, each with a title and a subtitle: "Download the app", "Best experience, in its own window", and "Sign in
+with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
+Nothing stored outside GitHub", the first a link to `/download`.
+
+- **The icon on "Download the app" is the logo of the visitor's system,** the plain download icon when the system isn't known or on
+  a phone. It is the only thing that changes with the system, at one size, so nothing shifts.
+- **The permission line leaves the landing page.** This supersedes the first point of [D21](#d21) there: GitHub's consent
+  screen comes straight after the click, unexplained. `/download` keeps the line with its "Why?", and the Privacy page keeps
+  the explanation.
+- **The Windows warning and "Signed and notarized" are on `/download` only,** so one click on Windows meets SmartScreen
+  unwarned.
+- **On `/download`, someone signed in sees "Open githq"** in place of Sign in, in the toolbar and in the browser path, with no
+  permission line, because nothing is being asked (LP19).
+- **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
+  opens `/download`.
+
+**Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (never committed).
+Lines under the buttons that change with the system: more than the page needs.
 
 ## Open questions
 
