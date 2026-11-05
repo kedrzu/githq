@@ -3,7 +3,7 @@ import { defineComponent, h } from 'vue';
 
 import HostSwapLoop from './HostSwapLoop.vue';
 
-// The address bar the hero draws around the loop (githq.pen "Landing — motion storyboard"): its parts are the bar's
+// The address bar the details' card draws around the loop (githq.pen "Landing — motion storyboard"): its parts are the bar's
 // flex items.
 const inAddressBar: Decorator = story => {
     const Story = story();

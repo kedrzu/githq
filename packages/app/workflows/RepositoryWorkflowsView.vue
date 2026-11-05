@@ -3,6 +3,7 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
 import { CircleDashed, Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
@@ -367,17 +368,20 @@ function describeGroup(group: RepositoryWorkflowGroup) {
             :expanded="row.workflow.state === 'broken' ? null : unfolded?.key === row.key"
             @open="openRow(row)"
           />
-          <UnfoldedWorkflowRuns
-            v-if="unfolded?.key === row.key"
-            :name="row.workflow.workflow.name"
-            :unfolded="unfolded"
-            :now="now"
-            :selected-key="selection.selectedKey"
-            :retry-key="RETRY_KEY"
-            @filter="emit('filter', $event)"
-            @open-run="openLine"
-            @read-more="emit('readMore')"
-          />
+          <Reveal>
+            <UnfoldedWorkflowRuns
+              v-if="unfolded?.key === row.key"
+              key="runs"
+              :name="row.workflow.workflow.name"
+              :unfolded="unfolded"
+              :now="now"
+              :selected-key="selection.selectedKey"
+              :retry-key="RETRY_KEY"
+              @filter="emit('filter', $event)"
+              @open-run="openLine"
+              @read-more="emit('readMore')"
+            />
+          </Reveal>
         </template>
       </section>
     </div>

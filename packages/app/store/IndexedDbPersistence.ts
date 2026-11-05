@@ -1,8 +1,6 @@
 import { deleteDB, openDB } from 'idb';
 import type { DBSchema } from 'idb';
 
-import { assertNever } from '@nzyme/utils/assertNever.js';
-
 import type { CommitPersistenceShape, PersistedCommits } from '@/commits/CommitPersistence.js';
 import type { KeptCommit, KeptCommitRefs } from '@/commits/CommitTypes.js';
 import type {
@@ -15,8 +13,8 @@ import type { ProjectItem } from '@/projects/ProjectTypes.js';
 import type { PersistedRepositories, RepositoryPersistenceShape } from '@/repos/RepositoryPersistence.js';
 import type { RepositoryMetadata, ViewerProjects } from '@/repos/RepositoryTypes.js';
 import { getReviewBlobDatabaseName } from '@/review/ReviewBlobStore.js';
-import type { PersistedTracking, TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
-import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import type { TrackingPersistenceShape } from '@/tracking/TrackingPersistence.js';
+import type { TrackedSyncState } from '@/tracking/TrackingTypes.js';
 import { getTrackedKey } from '@/tracking/utils/getTrackedKey.js';
 import { createDatabaseConnections } from '@/utils/createDatabaseConnections.js';
 import type { WorkflowPersistenceShape } from '@/workflows/WorkflowPersistence.js';
@@ -56,9 +54,7 @@ export type IndexedDbPersistence = ItemPersistenceShape &
 type MetaRecord =
     | { readonly key: 'membership'; readonly value: Partial<Record<MyWorkGroup, readonly string[]>> }
     | { readonly key: 'sync'; readonly value: Partial<Record<SyncLoop, SyncLoopState>> }
-    | { readonly key: 'viewerProjects'; readonly value: ViewerProjects }
-    /** The tracking choice of an older githq: read only to take it over into `localStorage` (`TrackingStore`). */
-    | { readonly key: 'tracking'; readonly value: Tracking };
+    | { readonly key: 'viewerProjects'; readonly value: ViewerProjects };
 
 /** A tracked repository's or project's sync state, by `repository:<owner/name>` or `project:<id>`. */
 interface SyncStateRecord {
@@ -86,7 +82,7 @@ interface LocalDatabase extends DBSchema {
 
 /**
  * The local copy in IndexedDB: a database per login (`githq-<login>`) with the stores `items` (by id), `meta`
- * (memberships, sync state, the viewer's projects, an older githq's tracking choice), `details` (by item id), `repositories`
+ * (memberships, sync state, the viewer's projects), `details` (by item id), `repositories`
  * (by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
  * repository's and project's sync state), `workflows` (each tracked repository's, by `owner/name`), `commits` (by
  * `[repository, oid]`, kept for good) and `commitRefs` (each repository's branches and tags, by `owner/name`). One object for the interfaces it is set as: they share the
@@ -121,7 +117,7 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         loadRepositories,
         saveRepository,
         saveViewerProjects,
-        loadTracking,
+        loadSyncStates,
         saveSyncState,
         deleteSyncState,
         loadProjects,
@@ -151,11 +147,9 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
                 case 'sync':
                     sync = record.value;
                     break;
-                case 'viewerProjects':
-                case 'tracking':
-                    break;
                 default:
-                    assertNever(record);
+                    // Read on its own (`viewerProjects`), or left behind by an earlier build: not an error.
+                    break;
             }
         }
 
@@ -251,18 +245,10 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         await db.put('meta', { key: 'viewerProjects', value: projects });
     }
 
-    async function loadTracking(login: string): Promise<PersistedTracking> {
+    async function loadSyncStates(login: string) {
         const db = await getOpen(login);
-        const tx = db.transaction(['meta', 'trackedSync']);
-        const [tracking, syncStates] = await Promise.all([
-            tx.objectStore('meta').get('tracking'),
-            tx.objectStore('trackedSync').getAll(),
-        ]);
-
-        return {
-            tracking: tracking?.key === 'tracking' ? tracking.value : null,
-            syncStates: syncStates.map(record => record.state),
-        };
+        const records = await db.getAll('trackedSync');
+        return records.map(record => record.state);
     }
 
     async function saveSyncState(login: string, state: TrackedSyncState) {

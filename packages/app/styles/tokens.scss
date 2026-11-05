@@ -286,6 +286,51 @@ $landing-reveal-stagger: 80ms;
     }
 }
 
+// The app's short animations (the switch in Settings → Display): quick, and only where something appears: focus and
+// the layer stay with an overlay until it leaves the page, so a closing animation would lose keys.
+$motion-open: 150ms;
+// What an overlay slides in by, towards where it rests (`@keyframes motion-slide-in`, `main.scss`).
+$motion-slide-distance: 4px;
+
+// Motion in the app, opt-in: it plays only under the attribute the shell sets while the switch is on
+// (`layouts/shell.vue`), and never for a user who asked for reduced motion. So stories, the landing page and screens
+// outside the shell have none, and no screen knows about the switch.
+@mixin motion {
+    @media (prefers-reduced-motion: no-preference) {
+        :global(html[data-motion='on']) & {
+            @content;
+        }
+    }
+}
+
+// A menu or a popover coming out of its trigger, by the side reka actually placed it on (`data-side`), which a collision
+// may have flipped. Only while open: closed, with no animation, reka unmounts it at once (`usePresence`).
+@mixin motion-popper {
+    &[data-state='open'] {
+        @include motion {
+            animation-name: global(motion-slide-in);
+            animation-duration: $motion-open;
+            animation-timing-function: ease-out;
+        }
+    }
+
+    &[data-side='top'] {
+        --motion-slide-y: #{$motion-slide-distance};
+    }
+
+    &[data-side='bottom'] {
+        --motion-slide-y: #{-$motion-slide-distance};
+    }
+
+    &[data-side='left'] {
+        --motion-slide-x: #{$motion-slide-distance};
+    }
+
+    &[data-side='right'] {
+        --motion-slide-x: #{-$motion-slide-distance};
+    }
+}
+
 // The focus ring for keyboard users only.
 @mixin focus-ring {
     &:focus-visible {

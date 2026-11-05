@@ -194,9 +194,13 @@ const downloadLink = computed(() =>
   @include focus-ring;
 
   color: $color-fg;
-  text-decoration: underline;
+  text-decoration: none;
   text-underline-offset: 2px;
   border-radius: $radius-sm;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .landingActions_reassurance::before,

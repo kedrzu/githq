@@ -11,6 +11,15 @@ import type { Page } from '@playwright/test';
  * popover): only it is checked then. The page behind it has its own state in the walk.
  */
 export async function expectAccessible(page: Page, state: string, within?: string): Promise<void> {
+    // An overlay still fading in has a colour mixed with what is behind it, which is not the one it rests on.
+    await page.evaluate(() =>
+        Promise.all(
+            document
+                .getAnimations()
+                .filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity)
+                .map(animation => animation.finished.catch(() => undefined)),
+        ),
+    );
     const axe = new AxeBuilder({ page }).withTags(ACCESSIBILITY_TAGS);
     if (within !== undefined) {
         axe.include(within);

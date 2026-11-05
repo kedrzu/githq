@@ -5,12 +5,12 @@ title:
     Even solo, you are
     leading a team.
 body:
-  en: Agents open pull requests in ten repositories while you hand out the next issue. The issues are what you hand out; pull requests, checks and broken deploys are what comes back. githq is where you see it all, and merge it.
+  en: Agents open pull requests in ten repositories while you hand out the next issue. The issues are what you hand out; pull requests, checks and broken deploys are what comes back. githq is where you see it all, review it and merge it.
 handOut:
   en: Hand out work as ordinary GitHub issues
 sentBack:
   en: See what every agent sent back, in one list
 merge:
-  en: Merge the green ones, open the red one
+  en: Review and merge the green ones, open the red one
 alt:
   en: A list in githq of pull requests opened by agents across five repositories, most with passing checks and one with a failing deploy preview, then the issues handed out to agents.

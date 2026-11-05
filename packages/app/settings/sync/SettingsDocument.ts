@@ -24,6 +24,11 @@ export interface SettingsDocument {
      */
     readonly repositoryLayout?: unknown;
     /**
+     * Whether the short UI animations play, as written in the file: read it with {@link readAnimations}, which treats
+     * absent or unknown as on.
+     */
+    readonly animations?: unknown;
+    /**
      * What the first key of a code review's comment box does with no draft open (code-review D17, D34), as written in
      * the file: a newer build's value is kept until the user changes it, so read it with {@link readReviewCommentChoice}.
      */
@@ -136,7 +141,7 @@ export function parseSettings(text: string): ParsedSettings {
  * @__NO_SIDE_EFFECTS__
  */
 export function serializeSettings(document: SettingsDocument): string {
-    const { version, repositories, projects, repositoryLayout, reviewCommentChoice, ...rest } = document;
+    const { version, repositories, projects, repositoryLayout, reviewCommentChoice, animations, ...rest } = document;
     const ordered: SettingsDocument = {
         version,
         repositories: repositories.map(({ nameWithOwner, id, tracking, ...unknown }) => ({
@@ -156,6 +161,7 @@ export function serializeSettings(document: SettingsDocument): string {
         })),
         repositoryLayout,
         reviewCommentChoice,
+        animations,
         ...rest,
     };
     return `${JSON.stringify(ordered, null, 2)}\n`;
@@ -238,6 +244,14 @@ export function writeWorkflowSettings(params: WriteWorkflowSettingsParams): Sett
  */
 export function readRepositoryLayout(document: SettingsDocument): RepositoryLayout {
     return document.repositoryLayout === 'column' ? 'column' : 'tabs';
+}
+
+/**
+ * Whether animations play; on unless the document says exactly `false` (absent or a newer build's value reads as on).
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readAnimations(document: SettingsDocument): boolean {
+    return document.animations !== false;
 }
 
 /**
