@@ -41,7 +41,10 @@ function onDragging(dragging: boolean) {
     inset: 0 -1px;
     content: '';
     background: transparent;
-    transition: background-color 0.1s;
+
+    @include motion {
+      transition: background-color 0.1s;
+    }
   }
 
   &[data-state='hover']::before,

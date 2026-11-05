@@ -1,3 +1,19 @@
+reviewKicker:
+  en: Code review
+reviewTitle:
+  en: |-
+    Review the code
+    right where you work.
+reviewBody:
+  en: The pull requests keep coming, so reviewing them shouldn’t fight you. Read the diff, comment on a line, suggest a change and approve, all in githq. Lock files and generated code stay collapsed, and everything you write is an ordinary GitHub review.
+reviewComments:
+  en: Comments on lines, suggested changes, approvals
+reviewStacks:
+  en: J and K through a stack, back to the line you left
+reviewOnGitHub:
+  en: An ordinary GitHub review, on github.com at once
+reviewAlt:
+  en: A pull request under review in githq, with the rest of its stack and the changed files on the left and the diff with a resolved comment on the right.
 instantKicker:
   en: Instant
 instantTitle:
@@ -5,7 +21,7 @@ instantTitle:
     Instant isn’t a feature.
     It’s the whole point.
 instantBody:
-  en: githq keeps a copy of your GitHub work in the browser and refreshes it in the background. Screens open from that copy and edits land before GitHub even answers. There is no spinner between you and the next issue.
+  en: githq keeps a copy of your GitHub work on your machine and refreshes it in the background. Screens open from that copy and edits land before GitHub even answers. There is no spinner between you and the next issue.
 instantLocalCopy:
   en: Every screen opens from a local copy
 instantEdits:
@@ -23,7 +39,7 @@ keyboardTitle:
     Your hands never
     leave the keyboard.
 keyboardBody:
-  en: ⌘K finds any issue, repository or action. A single key sets the status, assignee or labels of whatever is selected — one item or twenty. Another opens it on github.com when it’s time to read the diff.
+  en: ⌘K finds any issue, repository or action. A single key sets the status, assignee or labels of whatever is selected — one item or twenty. Another opens the review when it’s time to read the diff.
 keyboardKeys:
   en: Shortcuts
 keyCommandMenu:

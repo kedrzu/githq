@@ -32,7 +32,7 @@ import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { toItem } from '@/store/toItem.js';
 import { settle } from '@/testing/settle.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
-import type { RepositorySyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import type { RepositorySyncState } from '@/tracking/TrackingTypes.js';
 import { WorkflowPersistence } from '@/workflows/WorkflowPersistence.js';
 
 import type { Freshness } from './Freshness.js';
@@ -54,11 +54,11 @@ const REPOSITORY: IssueFieldsFragment['repository'] = {
     owner: { login: 'acme' },
 };
 
-const TRACKING: Tracking = {
+/** The kept settings of a user who tracks `acme/web`, as `TrackingStore` keeps them in `localStorage`. */
+const TRACKING_SLOT = JSON.stringify({
     chosen: true,
-    repositories: [{ nameWithOwner: 'acme/web', id: 'R_1' }],
-    projects: [],
-};
+    document: { version: 1, repositories: [{ nameWithOwner: 'acme/web', id: 'R_1', tracking: true }], projects: [] },
+});
 
 const TRACKED_SYNC_STATE: RepositorySyncState = {
     kind: 'repository',
@@ -1098,6 +1098,7 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
     const local = new Map<string, string>([
         [TOKEN_KEY, `gho_${login}`],
         [VIEWER_KEY, JSON.stringify(viewerOf(login))],
+        ...(tracked.length > 0 ? ([[`githq.settings.${login}`, TRACKING_SLOT]] as const) : []),
     ]);
     const storageListeners: ((key: string | null) => void)[] = [];
     const visibilityListeners: (() => void)[] = [];
@@ -1115,10 +1116,6 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
             },
             removeItem: key => {
                 local.delete(key);
-            },
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
             },
         },
         sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
@@ -1163,12 +1160,7 @@ async function setup(github: FakeGitHub, login: string, options: SetupOptions = 
     });
     // Nothing tracked unless told: the loops of tracked repositories and projects have nothing to ask.
     container.set(TrackingPersistence, {
-        loadTracking: () =>
-            Promise.resolve(
-                tracked.length > 0
-                    ? { tracking: TRACKING, syncStates: [TRACKED_SYNC_STATE] }
-                    : { tracking: null, syncStates: [] },
-            ),
+        loadSyncStates: () => Promise.resolve(tracked.length > 0 ? [TRACKED_SYNC_STATE] : []),
         saveSyncState: async () => {},
         deleteSyncState: async () => {},
     });

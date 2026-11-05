@@ -19,6 +19,7 @@ import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
+    readAnimations,
     readRepositoryLayout,
     readReviewCommentChoice,
     readSettingsDocument,
@@ -41,7 +42,6 @@ import type { TabMessage } from '@/sync/TabChannel.js';
 import type { WorkflowRefSettings } from '@/workflows/WorkflowTypes.js';
 
 import { TrackingPersistence } from './TrackingPersistence.js';
-import type { PersistedTracking } from './TrackingPersistence.js';
 import { REPOSITORY_DOWNLOAD_PHASES } from './TrackingTypes.js';
 import { getTrackedKey } from './utils/getTrackedKey.js';
 import type { TrackingReference } from './utils/parseTrackingReference.js';
@@ -105,8 +105,7 @@ interface Session {
  * and its polling, written by the sync). The choice is kept in this browser's `localStorage` as a settings
  * document ({@link SettingsDocument}, settings-sync D8, D13): every repository and project ever tracked, the tracked
  * ones flagged — what it exposes is those, in the document's order. It survives a new cache database and is
- * deleted at sign-out. A choice kept by an older githq in the local copy is taken over from there once. The sync
- * states stay in the local copy. What the tracking screens offer ({@link loadCandidates}) is read from GitHub when
+ * deleted at sign-out. The sync states stay in the local copy. What the tracking screens offer ({@link loadCandidates}) is read from GitHub when
  * asked and kept in memory only.
  *
  * It follows the signed-in user like the item store: their choice leaves memory when they sign out, and an answer
@@ -144,7 +143,7 @@ export const TrackingStore = defineService({
             keyPrefix: KEY_PREFIX,
             parse: readStoredSettings,
             follow: () => {
-                // Read once the item store opened the local copy (`readKept`): an older choice is taken over from it.
+                // Read once the item store opened the local copy (`readKept`), which holds the sync states.
             },
         });
 
@@ -179,6 +178,10 @@ export const TrackingStore = defineService({
             get repositoryLayout() {
                 return readRepositoryLayout(keptRef.value.document);
             },
+            /** Whether the short UI animations play; reactive. */
+            get animations() {
+                return readAnimations(keptRef.value.document);
+            },
             /** How a code review's comment goes out with no draft open (code-review D34); reactive. */
             get reviewCommentChoice() {
                 return readReviewCommentChoice(keptRef.value.document);
@@ -203,6 +206,7 @@ export const TrackingStore = defineService({
             replaceDocument,
             setWorkflowSettings,
             setRepositoryLayout,
+            setAnimations,
             setReviewCommentChoice,
             onUntrack,
             onLocalChange,
@@ -321,6 +325,18 @@ export const TrackingStore = defineService({
                 readRepositoryLayout(kept.document) === layout
                     ? null
                     : { ...kept, document: { ...kept.document, repositoryLayout: layout } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /** The user's choice of whether animations play. Nothing when it reads as that already (absent reads as on). */
+        function setAnimations(on: boolean) {
+            const written = write(kept =>
+                readAnimations(kept.document) === on
+                    ? null
+                    : { ...kept, document: { ...kept.document, animations: on } },
             );
             if (written) {
                 changedHere();
@@ -736,8 +752,8 @@ export const TrackingStore = defineService({
             switch (message.kind) {
                 case 'tracking': {
                     // The sending tab saved its document before it sent: read it, as it holds what the message cannot
-                    // (the untracked entries and their places). A slot that does not hold it yet — a tab of an older
-                    // githq sent it — takes the message's tracking in, as a choice of exactly these would.
+                    // (the untracked entries and their places). A slot this build does not understand takes the
+                    // message's tracking in, as a choice of exactly these would.
                     const stored = slot.read();
                     const base = stored ?? keptRef.value;
                     keptRef.value = {
@@ -788,9 +804,8 @@ export const TrackingStore = defineService({
         }
 
         /**
-         * Puts the kept choice and the sync states into memory once the item store opened the local copy. With
-         * nothing kept in `localStorage`, a choice an older githq kept in the local copy is taken over (all of it
-         * tracked); something kept there that this build does not understand is not replaced.
+         * Puts the kept choice and the sync states into memory once the item store opened the local copy. Something
+         * kept in `localStorage` that this build does not understand is not replaced.
          */
         async function readKept(current: Session) {
             await items.ready();
@@ -798,9 +813,9 @@ export const TrackingStore = defineService({
                 return;
             }
 
-            let persisted: PersistedTracking | null = null;
+            let syncStates: readonly TrackedSyncState[] = [];
             try {
-                persisted = await persistence.loadTracking(current.account.login);
+                syncStates = await persistence.loadSyncStates(current.account.login);
             } catch (error) {
                 if (isCurrent(current)) {
                     logger.warn('Could not read the sync states of the tracked copies; starting from none', { error });
@@ -814,14 +829,11 @@ export const TrackingStore = defineService({
             const stored = slot.read();
             if (stored) {
                 keptRef.value = { chosen: stored.chosen, document: stored.document };
-            } else if (browser.localStorage.getItem(KEY_PREFIX + current.account.login) === null) {
-                keptRef.value = takeOver(persisted?.tracking ?? null);
             }
 
             // A slot this build does not understand — a newer githq's — is left as it is: nothing is in memory, and
             // only a change the user makes here writes over it.
             savingRef.value = stored?.saving ?? SETTINGS_SAVING_OFF;
-            const syncStates = persisted?.syncStates ?? [];
             const understood =
                 stored !== null || browser.localStorage.getItem(KEY_PREFIX + current.account.login) === null;
             const kept = understood ? syncStates.filter(state => isTracked(state)) : syncStates;
@@ -840,20 +852,6 @@ export const TrackingStore = defineService({
 
             loadedRef.value = true;
             current.inbox.open();
-        }
-
-        /** The choice an older githq kept in the local copy, kept in `localStorage` from now on. */
-        function takeOver(tracking: Tracking | null) {
-            if (!tracking) {
-                return NOTHING_KEPT;
-            }
-
-            const kept: KeptSettings = {
-                chosen: tracking.chosen,
-                document: applyChoice(EMPTY_SETTINGS_DOCUMENT, tracking),
-            };
-            slot.save({ ...kept, saving: SETTINGS_SAVING_OFF });
-            return kept;
         }
 
         /** Whether `current` is still the session — here and in the store every request was authorised by. */

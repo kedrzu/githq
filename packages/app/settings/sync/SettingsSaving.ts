@@ -58,8 +58,7 @@ export type SettingsSaving =
 export const SETTINGS_SAVING_OFF: SettingsSaving = { state: 'off' };
 
 /**
- * The saving state kept in the slot; off when there is none or it is not understood — the slot of an older githq
- * has none.
+ * The saving state kept in the slot; off when there is none or it is not understood.
  * @__NO_SIDE_EFFECTS__
  */
 export function readSettingsSaving(stored: unknown): SettingsSaving {
@@ -88,7 +87,6 @@ export function readSettingsSaving(stored: unknown): SettingsSaving {
                 return SETTINGS_SAVING_OFF;
             }
 
-            // The slot of an earlier build keeps an `etag` here too, unused.
             const base = readSettingsDocument(stored.base);
             const { sha } = stored;
             const syncedAt = typeof stored.syncedAt === 'number' ? stored.syncedAt : null;

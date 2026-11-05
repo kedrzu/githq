@@ -40,7 +40,10 @@ const percent = computed(() => (props.value === null ? null : Math.round(Math.mi
   height: 100%;
   background: $color-accent;
   border-radius: 2px;
-  transition: width 0.3s ease;
+
+  @include motion {
+    transition: width 0.3s ease;
+  }
 }
 
 .progressBar_fill_done {

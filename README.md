@@ -31,8 +31,9 @@ once.
   mentions, from every repository, including other people's.
 - **Your tracker, on GitHub** — tracked repositories and GitHub Projects as lists or boards, with the fields,
   views and iterations each project defines.
-- **Stacked pull requests** — a stack shows as one entry in your lists, and you walk through it in order.
-  Merging is next.
+- **Code review** — read the diff, comment on a line, suggest a change and approve, in githq. It's an ordinary GitHub
+  review, on github.com at once.
+- **Stacked pull requests** — a stack shows as one entry in your lists, and you walk through it in order and merge it.
 - **Actions and workflows** — a red marker on any tracked repository with a broken workflow, one list of what is
   broken across all of them, and one key from a failure to its log.
 - **Keyboard first** — a command menu (<kbd>⌘</kbd> <kbd>K</kbd>) and single-key actions on the selected

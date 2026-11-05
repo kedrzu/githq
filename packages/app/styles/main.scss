@@ -25,6 +25,36 @@ html {
     text-size-adjust: 100%;
 }
 
+// `Reveal` (`@nzyme/vue`) animates by this. By hand, not through the `motion` mixin, which can't target `html` itself. Off,
+// it opens at once; on, 100 ms because `Reveal` delays its fade by half its duration, which makes 150 ms in total
+// (`$motion-open`).
+html {
+    --reveal-duration: 0s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    html[data-motion='on'] {
+        --reveal-duration: 100ms;
+    }
+}
+
+// Global, for every component's `@include motion` to name as `global(motion-fade-in)`: in a CSS module's `@keyframes` the
+// name would be hashed per file.
+@keyframes motion-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+// From the side a wrapper names in `--motion-slide-x` and `--motion-slide-y`. The independent `translate`, never
+// `transform`: a dialog centres itself with `transform`, which keyframes would override.
+@keyframes motion-slide-in {
+    from {
+        opacity: 0;
+        translate: var(--motion-slide-x, 0) var(--motion-slide-y, 0);
+    }
+}
+
 // Thin, dim scrollbars everywhere. `scrollbar-width` does not inherit, so it goes on every element.
 * {
     scrollbar-width: thin;

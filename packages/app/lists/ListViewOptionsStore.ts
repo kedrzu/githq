@@ -6,12 +6,9 @@ import { shallowRef } from 'vue';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
-import type { BrowserLocalStorage } from '@/services/Browser.js';
 
 /** Where the options are kept, per user: `githq.listViews.<login>`. */
 const KEY_PREFIX = 'githq.listViews.';
-/** Where an older githq kept them, per list and for every user (`githq.listView.myWork`): cleared. */
-const LEGACY_KEY_PREFIX = 'githq.listView.';
 
 /**
  * What the signed-in user changed of each list's view options (D9, D13), by list (`myWork`,
@@ -30,7 +27,6 @@ export const ListViewOptionsStore = defineService({
     },
     setup({ accounts, browser }) {
         const keptRef = shallowRef<Readonly<Record<string, unknown>>>({});
-        deleteLegacyKeys(browser.localStorage);
         const slot = createAccountSlot({
             accounts,
             browser,
@@ -65,17 +61,3 @@ export const ListViewOptionsStore = defineService({
         };
     },
 });
-
-function deleteLegacyKeys(storage: BrowserLocalStorage) {
-    const legacy: string[] = [];
-    for (let index = 0; index < storage.length; index++) {
-        const key = storage.key(index);
-        if (key?.startsWith(LEGACY_KEY_PREFIX)) {
-            legacy.push(key);
-        }
-    }
-
-    for (const key of legacy) {
-        storage.removeItem(key);
-    }
-}
