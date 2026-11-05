@@ -733,6 +733,18 @@ Lines under the buttons that change with the system: more than the page needs.
 
 ## Open questions
 
+### D36
+
+**Short animations where something appears, all of them off with one switch.** (user, 2026-11-05.) Drawn in `githq.pen`, CH43 and CH49.
+Overlays open with a fade and a small slide in about 150 ms, tooltips with a fade only, and content that folds unfolds through `Reveal`.
+Everything closes at once: focus and the layer stay with an overlay until it leaves the page, so an Escape during a fade would be lost, and
+every caller unmounts its toast on closing. Moving between screens or along a list is instant, and spinners run regardless, because they report status.
+"Animations" in Display is on by default, syncs with the settings, and the system's reduce motion wins over it. The motion is opt-in CSS with
+no Transition components, so a screen never knows about the switch.
+
+**Rejected.** Own transition components reading the setting from a provider: reka-ui's `Presence` already follows CSS animations, so they
+would add a wrapper at every overlay for nothing. Animating closing everywhere: keys typed during the close would reach the closing input.
+
 ### D26
 
 Settings is **a column of sections**, as the repository's column layout, rather than tabs along the top (owner,
