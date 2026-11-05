@@ -537,7 +537,7 @@ A pull request's **size shows everywhere, on by default**: my work, a repository
 an issue or in a stack, on a row or a board's card. It stays a property in Display (D4), so a choice kept on a device
 still holds.
 
-The numbers are **green and red, in colours of their own**: `diff-added` `#7CCB92`, `diff-removed` `#E98B8F`, paler than
+The numbers are **green and red, in colours of their own**: `diff-added` and `diff-removed` (`#7EE787` and `#FFA198` since [D37](#d37)), paler than
 the states `green` and `red`. They are data, not an alarm, and shouldn't read as a failing check or a passing one. Every
 +/− counter uses them; the tints behind a diff's rows stay.
 
@@ -570,7 +570,7 @@ every close, to guard against a rare slip that Undo already covers.
 
 ### D30
 
-**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays.
+**What a control or a state needs to be seen reaches WCAG AA** (owner, 2026-11-04, issue #119). The dark, calm palette stays; superseded by [D37](#d37), which replaces the palette and keeps this rule. Values below are from before it.
 Text already passed everywhere it was measured, except in the two states below; what fell short was the graphics. Fields
 and checkboxes get an outline of 3:1 (`control-border`, the value of `fg-3`), commit graph lines too (`graph-line`,
 `#646B75`, the default branch's line staying brighter), and `red-quiet` moves to `#AC4D52`. Dim rows lose their opacity
@@ -631,6 +631,9 @@ the way there.
 
 **Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
 already starts in the screen's repository.
+
+[D36](#d36) changes two of these: any repository's sections are now reached from elsewhere, by its level or by typing its
+name, and a repository walked into offers New issue. The screen's own group still has no New issue.
 
 **"Settings" stays the app's** (owner, 2026-11-04): a repository is in context nearly always, so the repository's line is
 "Repository settings", and "settings" + Enter opens the app's Settings there too. Rejected: "Settings" in the group, which
@@ -731,9 +734,64 @@ Nothing stored outside GitHub", the first a link to `/download`.
 **Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (never committed).
 Lines under the buttons that change with the system: more than the page needs.
 
-## Open questions
-
 ### D36
+
+**The command menu is a tree with a rule for its top** (owner, 2026-11-05). The top holds the current context (the
+actions of the subject, the screen and the screen's repository), what the sidebar shows and what the app proposes now.
+Everything else hangs under a parent.
+
+- **Go to:** the draft reviews, my work and its groups, the broken workflows, and Settings, which holds its sections; Account
+  holds Sign out, and in the desktop app Updates holds Check for updates and the switch of stream.
+- **Projects:** every tracked project, holding its saved views, New issue, Open on GitHub, Copy link and Settings.
+- **Repositories:** every tracked repository and a typed `owner/name`, holding its sections, New issue, Open on GitHub, Copy
+  link, Settings and, last, Track.
+- **App:** New issue, Keyboard shortcuts, Search repositories…, and Restart to update, Try again and Update later while
+  they can run.
+
+**Drill-in.** A row with a level has a chevron. Enter does what the row does, so a repository, a project or a section of
+Settings goes to its screen; → (at the end of the text) or Tab enters the level without going anywhere; ←, ⌫ in an empty
+field and Esc step back one level, the field empty. Crumbs show the way. The context's chip stays while the path starts at
+one of the context's commands and hides inside a place, which it is not about. The other repositories, projects and places
+stay at the top under any chip, without ⌫ first.
+
+**Scoring by the path.** A nested row's score is its own match times a factor for every level above it.
+
+- A level the text names, words from its start in path order, costs `(1 + m) / 2`, with `m` its match on a 0 to 1 scale: "api
+  pull" finds "acme/api → Pull requests". A match of at least 40 counts as naming it, so scattered letters don't.
+- A level the text does not name costs a weight: 0.8 over the options of the subject's actions, so that "in prog" on an item
+  still finds its status, and 0.6 over the rest.
+- The children of repositories and a project's actions are found only with their parent named, or "pull" and "copy" would
+  list them once per repository and project. A project's saved views are found alone.
+- A nested row needs an own match of at least 50 and a score of at least 20, or it is not shown. Rows of the top are not cut.
+- Leaving the context costs ×0.9 for everything outside it, nested rows too. It only orders: the 20 is checked before it.
+
+**Why.** All of Settings' sections, Switch to Stable and Sign out lay at the top, a repository's sections could not be
+reached from elsewhere, and a deep option outranked a place: "pull" put "Show properties → Pull request status" above "My pull
+requests".
+
+**Left out:** drill-in on items and on the results of "Search repositories…"; the reversed order ("pull web"); restoring the
+typed text on stepping back; clicking the chevron to enter, since a click still does what the row does.
+
+### D37
+
+**The app takes GitHub's colours, for how readable they are, not for how they look; indigo stays as the brand.** (user, 2026-11-05, #172.) Quoting the owner: "GitHub is very readable because of how carefully the proportions between colours and lightness are chosen, and that's why I wanted to copy it, not because I want to copy GitHub's branding." So every neutral, status and code colour comes from Primer's dark theme (`@primer/primitives` 11.10.0), and `#7B87F7` stays in the brand's places: the accent, the selected row, focus, links, its tints, the landing page's glows. D30's rule stands; only "the palette stays" is superseded.
+
+**Why.** Reading code in a review took effort. Unchanged lines were drawn in `fg-2` (7.2:1 against GitHub's 17.4:1), and five muted syntax colours of one lightness barely told tokens apart.
+
+- **Code is GitHub's whole:** seven syntax colours, grouped as in highlight.js's `github-dark` theme, unchanged lines at full brightness, GitHub's backgrounds on added and deleted lines. `section` and `bullet` take `constant` and `builtin`, because the theme's `#1F6FEB` fails AA on the window.
+- **Exceptions to Primer, each kept by `packages/app/styles/tokens.test.ts`:**
+  - `bg-3` `#1C2128`: Primer's `#212830` gives red 4.44:1 and `fg-3` 2.81:1.
+  - `sel` `#181D2E`: the accent at Primer's accent-muted strength.
+  - `fg-dim` `#8B929B`: Primer has two levels of text and we have three.
+  - `graph-line-main` `#8B929B`: the default branch's line stays brighter.
+  - `red-quiet` `#AC4D52`: Primer's `#B62324` reads 2.93:1.
+- **The accent stays as it is:** at 5.99:1 on the window it already has the lightness of GitHub's `#4493F8`, 6.11:1.
+
+**Known cost.** Code is much more colourful than the calm around it, and lines between surfaces are brighter. The landing hero, share image and README picture wait for #178, having no frame in the design to export from. Code samples in `githq.pen` stay one colour a line, each line being one text node. The app icons keep their old tile, a difference nobody could see.
+
+**Rejected.** Tilting the neutrals towards indigo at the same lightness (seen side by side: kept within 0.13:1 of Primer, but the owner preferred the brand in its own places). Primer's blue accent: the app would read as a GitHub skin, and links would blur into blue code. Keeping our syntax colours and brightening unchanged lines only: not a proven scheme. One Dark: made for a lighter background.
+
+### D38
 
 **Short animations where something appears, all of them off with one switch.** (user, 2026-11-05.) Drawn in `githq.pen`, CH43 and CH49.
 Overlays open with a fade and a small slide in about 150 ms, tooltips with a fade only, and content that folds unfolds through `Reveal`.
@@ -744,6 +802,8 @@ no Transition components, so a screen never knows about the switch.
 
 **Rejected.** Own transition components reading the setting from a provider: reka-ui's `Presence` already follows CSS animations, so they
 would add a wrapper at every overlay for nothing. Animating closing everywhere: keys typed during the close would reach the closing input.
+
+## Open questions
 
 ### D26
 

@@ -14,44 +14,124 @@ import type { AppUpdateShape, UpdateNotice, UpdateState } from '@/services/AppUp
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
+import { ProjectStore } from '@/projects/ProjectStore.js';
+import type { Project } from '@/projects/ProjectTypes.js';
+import type * as settingsRoutes from '@/settings/settingsRoutes.js';
 import { CONFIRM_STABLE_PATH } from '@/settings/settingsRoutes.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
+import { SAMPLE_PROJECT, SAMPLE_VIEW_BOARD } from '@/testing/sampleProject.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
-import { PROJECT_PATHS, REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
+import { getProjectPath, PROJECT_PATHS, REPOSITORY_PATH, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import AppCommands from './AppCommands.vue';
 
-test('`,` opens Settings; the command menu offers it once, under "Go to" with its key, and its sections', async () => {
-    const router = mount();
+// The desktop app's sections too: the update commands hang under Updates. On the web they are not, whatever the state.
+vi.mock('@/settings/settingsRoutes.js', async importOriginal => ({
+    ...(await importOriginal<typeof settingsRoutes>()),
+    SETTINGS_SECTIONS: ['repositories', 'projects', 'display', 'review', 'sync', 'account', 'updates', 'changelog'],
+}));
+
+test('`,` opens Settings; with nothing typed the menu offers it once, with its key, and nothing that hangs under it', async () => {
+    const router = mount(createFakeUpdate({ canChoose: true }));
 
     await userEvent.keyboard(',');
     await expect.poll(() => router.currentRoute.value.path).toBe('/settings');
 
     await router.push('/');
-    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     const settings = menu.getByRole('option', { name: 'Settings', exact: true });
     await expect.element(settings).toBeInTheDocument();
     expect(settings.elements()).toHaveLength(1);
     await expect.element(settings).toHaveTextContent(',');
-    for (const section of ['Repositories', 'Projects', 'Display', 'Sync settings', 'Account']) {
-        await expect.element(menu.getByRole('option', { name: `Settings: ${section}` })).toBeInTheDocument();
+    for (const section of [
+        'Repositories',
+        'Projects',
+        'Display',
+        'Code review',
+        'Sync settings',
+        'Account',
+        'Updates',
+        'Changelog',
+    ]) {
+        await expect.element(menu.getByRole('option', { name: section, exact: true })).not.toBeInTheDocument();
     }
 
-    await userEvent.keyboard('settings: sync{Enter}');
+    await expect.element(menu.getByRole('option', { name: /Check for updates/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /Sign out/ })).not.toBeInTheDocument();
+});
+
+test('"settings sync" and Enter opens that section', async () => {
+    const router = mount();
+
+    await openMenu();
+    await userEvent.keyboard('settings sync');
+    await expect.element(page.getByRole('option', { name: /^Settings\s*→\s*Sync settings/u })).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+
     await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=sync');
 });
 
-test('on the web the command menu offers no update', async () => {
+test('"sign out" and Enter signs out', async () => {
+    const { container } = mountSigned(() => Promise.resolve(Response.json({ message: 'Bad' }, { status: 502 })));
+    const auth = container.resolve(AuthStore);
+    expect(auth.signedIn).toBe(true);
+
+    await openMenu();
+    await userEvent.keyboard('sign out');
+    await expect
+        .element(page.getByRole('option', { name: /^Settings\s*→\s*Account\s*→\s*Sign out/u }))
+        .toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(() => auth.signedIn).toBe(false);
+});
+
+test('Settings → Updates →: Enter on a section goes there, → walks into its commands', async () => {
+    const update = createFakeUpdate({ stream: 'stable' });
+    const router = mount(update);
+
+    await openMenu();
+    await userEvent.keyboard('settings{ArrowRight}');
+    const settings = page.getByRole('listbox', { name: 'Settings' });
+    await expect.element(settings.getByRole('option', { name: 'Display', exact: true })).toBeInTheDocument();
+    await userEvent.keyboard('updates{ArrowRight}');
+    const updates = page.getByRole('listbox', { name: 'Updates' });
+    await expect.element(updates.getByRole('option', { name: 'Switch to Development' })).toBeInTheDocument();
+    expect(router.currentRoute.value.fullPath).toBe('/');
+
+    await userEvent.keyboard('check{Enter}');
+    expect(update.check).toHaveBeenCalledOnce();
+
+    await openMenu();
+    await userEvent.keyboard('settings updates');
+    await expect.element(page.getByRole('option', { name: /^Settings\s*→\s*Updates$/u })).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => router.currentRoute.value.fullPath).toBe('/settings?tab=updates');
+});
+
+test('on the web the command menu offers no update: nothing at the top, nothing typed finds one, its level is empty', async () => {
     mount();
 
-    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
+    await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
-    await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Keyboard shortcuts/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Update later/ })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('settings{ArrowRight}updates{ArrowRight}');
+    const updates = page.getByRole('listbox', { name: 'Updates' });
+    await expect.element(updates).toBeInTheDocument();
+    await expect.element(updates.getByRole('option')).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}{Escape}check for updates');
     await expect.element(menu.getByRole('option', { name: /Check for updates/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await openMenu();
+    await userEvent.keyboard('switch to');
     await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
 });
 
@@ -62,6 +142,7 @@ test('while an update is ready the menu offers "Restart to update" and "Update l
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
     await expect.element(menu.getByRole('option', { name: /^Restart to update\s*githq 1\.4\.0$/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /^Update later/ })).toBeInTheDocument();
     expect(update.restart).not.toHaveBeenCalled();
 
     await userEvent.keyboard('update later{Enter}');
@@ -83,28 +164,34 @@ test('"Restart to update" restarts into the update', async () => {
     expect(update.restart).toHaveBeenCalledOnce();
 });
 
-test('"Check for updates" is always there in the desktop app, and is the only update command at rest on Windows', async () => {
+test('"Check for updates" is found by typing in the desktop app, and is the only update command at rest on Windows', async () => {
     const update = createFakeUpdate({ canChoose: false });
     mount(update);
 
     await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
-    await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Restart to update/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Try again/ })).not.toBeInTheDocument();
 
+    await userEvent.keyboard('switch to');
+    await expect.element(menu.getByRole('option', { name: /Switch to/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await openMenu();
     await userEvent.keyboard('check for updates{Enter}');
     expect(update.check).toHaveBeenCalledOnce();
 });
 
-test('the menu offers only the stream not chosen; a stable version switches at once', async () => {
+test('the menu finds only the stream not chosen; a stable version switches at once', async () => {
     const development = createFakeUpdate({ version: '0.2.0', stream: 'development' });
     const router = mount(development);
 
     await openMenu();
+    await userEvent.keyboard('switch to');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /Switch to Stable/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Switch to Development/ })).not.toBeInTheDocument();
-    await userEvent.keyboard('switch to stable{Enter}');
+    await userEvent.keyboard(' stable{Enter}');
     expect(development.setStream).toHaveBeenCalledExactlyOnceWith('stable');
     expect(router.currentRoute.value.fullPath).toBe('/');
 });
@@ -114,9 +201,11 @@ test('from a stable version to Development runs at once', async () => {
     mount(stable);
 
     await openMenu();
+    await userEvent.keyboard('switch to');
     const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /Switch to Development/ })).toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /Switch to Stable/ })).not.toBeInTheDocument();
-    await userEvent.keyboard('switch to development{Enter}');
+    await userEvent.keyboard(' development{Enter}');
     expect(stable.setStream).toHaveBeenCalledExactlyOnceWith('development');
 });
 
@@ -242,7 +331,7 @@ for (const path of ['/', '/settings', '/orgs/acme/projects/1']) {
 
         await openMenu();
         const menu = page.getByRole('listbox', { name: 'Command menu' });
-        await expect.element(menu.getByRole('option', { name: /^Sign out/ })).toBeInTheDocument();
+        await expect.element(menu.getByRole('option', { name: /^Keyboard shortcuts/ })).toBeInTheDocument();
         await expect.element(menu.getByRole('option', { name: /^Open on GitHub/ })).not.toBeInTheDocument();
         await expect.element(menu.getByRole('option', { name: /^Copy link/ })).not.toBeInTheDocument();
         await expect.element(page.getByText('Remove context')).not.toBeInTheDocument();
@@ -333,6 +422,128 @@ test('a tracked repository is offered neither "Track repository" nor "Stop track
     await expect.element(menu.getByRole('option', { name: /^Track repository/ })).not.toBeInTheDocument();
     await expect.element(menu.getByRole('option', { name: /^Stop tracking/ })).not.toBeInTheDocument();
 });
+
+for (const screen of ['/acme/web/issues', '/acme/web/issues?pane=issue&issue=acme%7Cweb%7C1']) {
+    test(`at ${screen}, with its chip, another tracked repository is found, gone to on Enter and walked into on →`, async () => {
+        const router = await mount({ tracked: ['acme/web', 'acme/api'] });
+        await router.push(screen);
+        const top = page.getByRole('listbox', { name: 'Command menu' });
+        const level = page.getByRole('listbox', { name: 'acme/api' });
+
+        await openOtherRepository();
+        await expect.element(page.getByText('Remove context')).toBeInTheDocument();
+        await userEvent.keyboard('{Enter}');
+        await expect.poll(() => router.currentRoute.value.path).toMatch(/^\/acme\/api/u);
+
+        await router.push(screen);
+        await openOtherRepository();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect.element(level.getByRole('option', { name: 'Pull requests', exact: true })).toBeInTheDocument();
+        expect(router.currentRoute.value.fullPath).toBe(screen);
+        await expect.element(level.getByRole('option', { name: /^Stop tracking/ })).not.toBeInTheDocument();
+
+        for (const stepBack of ['{ArrowLeft}', '{Backspace}', '{Escape}']) {
+            await userEvent.keyboard(stepBack);
+            await expect.element(top).toBeInTheDocument();
+            await expect.element(page.getByText('Remove context')).toBeInTheDocument();
+            await userEvent.keyboard('acme/api');
+            await expect.element(top.getByRole('option', { name: /^acme\/api/u })).toBeInTheDocument();
+            await userEvent.keyboard('{ArrowRight}');
+            await expect.element(level).toBeInTheDocument();
+        }
+
+        await userEvent.keyboard('pull requests{Enter}');
+        await expect.poll(() => router.currentRoute.value.path).toBe('/acme/api/pulls');
+    });
+}
+
+test('"api pull" finds the repository\'s Pull requests; "pull" alone no row of any repository\'s level', async () => {
+    await mount({ tracked: ['acme/api'] });
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await userEvent.keyboard('pull');
+    await expect.element(menu.getByRole('option', { name: /^My pull requests/ })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: /→ Pull requests/ })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    await openMenu();
+    await userEvent.keyboard('api pull');
+    await expect.element(menu.getByRole('option', { name: /^acme\/api\s*→\s*Pull requests/u })).toBeInTheDocument();
+});
+
+test('an `owner/name` not tracked is walked into too: Track is its last row, with no Workflows and no Stop tracking', async () => {
+    const router = await mount({});
+
+    await openMenu();
+    await userEvent.keyboard('acme/web');
+    await expect.element(page.getByRole('option', { name: /^acme\/web/u })).toBeInTheDocument();
+    await userEvent.keyboard('{ArrowRight}');
+
+    const level = page.getByRole('listbox', { name: 'acme/web' });
+    await expect.element(level.getByRole('option', { name: 'Pull requests', exact: true })).toBeInTheDocument();
+    expect(router.currentRoute.value.fullPath).toBe('/');
+    expect(level.getByRole('option').elements().at(-1)?.textContent).toMatch(/^Track repository/);
+    await expect.element(level.getByRole('option', { name: 'Workflows' })).not.toBeInTheDocument();
+    await expect.element(level.getByRole('option', { name: /^Stop tracking/ })).not.toBeInTheDocument();
+});
+
+test('a project: Enter goes to it, → shows its saved views and actions', async () => {
+    const router = await mount({ projects: [SAMPLE_PROJECT] });
+
+    await openProject();
+    await userEvent.keyboard('{Enter}');
+    await expect.poll(() => router.currentRoute.value.path).toBe(getProjectPath(SAMPLE_PROJECT));
+
+    await router.push('/');
+    await openProject();
+    await userEvent.keyboard('{ArrowRight}');
+    const level = page.getByRole('listbox', { name: SAMPLE_PROJECT.title });
+    for (const title of [SAMPLE_VIEW_BOARD.name, 'New issue', 'Open on GitHub', 'Copy link', 'Settings']) {
+        await expect.element(level.getByRole('option', { name: new RegExp(`^${title}`, 'u') })).toBeInTheDocument();
+    }
+
+    expect(router.currentRoute.value.fullPath).toBe('/');
+});
+
+test("a project's saved view is found by typing its name, not listed with nothing typed; its actions only with its name", async () => {
+    const router = await mount({ projects: [SAMPLE_PROJECT] });
+    const board = new RegExp(`^${SAMPLE_PROJECT.title}\\s*→\\s*${SAMPLE_VIEW_BOARD.name}`, 'u');
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    await expect.element(menu.getByRole('option', { name: /^Platform Q4/u })).toBeInTheDocument();
+    await expect.element(menu.getByRole('option', { name: board })).not.toBeInTheDocument();
+
+    await userEvent.keyboard('copy');
+    await expect.element(menu.getByRole('option', { name: /Copy link/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await openMenu();
+    await userEvent.keyboard('q4 copy');
+    await expect.element(menu.getByRole('option', { name: /→ Copy link/ })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+
+    await openMenu();
+    await userEvent.keyboard(SAMPLE_VIEW_BOARD.name);
+    await expect.element(menu.getByRole('option', { name: board })).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+    await expect
+        .poll(() => router.currentRoute.value.path)
+        .toBe(getProjectPath(SAMPLE_PROJECT, SAMPLE_VIEW_BOARD.number));
+});
+
+async function openOtherRepository() {
+    await openMenu();
+    await userEvent.keyboard('acme/api');
+    await expect.element(page.getByRole('option', { name: /^acme\/api/u })).toBeInTheDocument();
+}
+
+async function openProject() {
+    await openMenu();
+    await userEvent.keyboard(SAMPLE_PROJECT.title);
+    await expect.element(page.getByRole('option', { name: /^Platform Q4/u })).toBeInTheDocument();
+}
 
 async function openMenu() {
     await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
@@ -435,6 +646,8 @@ function mountSigned(fetch: BrowserShape['fetch']) {
 interface MountOptions {
     /** `owner/name` of the repositories tracked; setting it makes mounting asynchronous. */
     readonly tracked?: readonly string[];
+    /** The projects tracked, with what was read of them. */
+    readonly projects?: readonly Project[];
 }
 
 /** The app's commands in an app of their own; `update` stands in for the desktop app's updates. */
@@ -457,6 +670,11 @@ function mount(arg?: AppUpdateShape | MountOptions) {
     return tracking.ready().then(() => {
         for (const nameWithOwner of options.tracked ?? []) {
             tracking.track({ repository: { nameWithOwner, id: `R_${nameWithOwner}` } });
+        }
+
+        for (const project of options.projects ?? []) {
+            tracking.track({ project });
+            container.resolve(ProjectStore).setProject(project);
         }
 
         return render(container);

@@ -48,7 +48,7 @@ cite screens by code. So a screen's name says which screen it is, and whether a 
 - **Something else for the owner to settle,** an open question or a guess the brief didn't cover, puts
   `Question ·` before the title (`K10 · Question · Who sees a hidden repository`) and the question in the caption.
 - **Both are amber, so they show from far away:** the `Variants · …` frame, or the slot of a question, gets the fill
-  `#D6A23A1A`, the stroke `#D6A23A` at 2 px and 24 px of padding. No other frame around screens is amber, so an
+  `#D299221A`, the stroke `#D29922` at 2 px and 24 px of padding. No other frame around screens is amber, so an
   amber frame always means "the owner decides here".
 - **Once the owner picks,** delete the rejected variants (git history and `DECISIONS.md` keep them), move the
   chosen screens out of the `Variants` frame, delete that frame, and drop `Variant A ·` from their titles. The codes

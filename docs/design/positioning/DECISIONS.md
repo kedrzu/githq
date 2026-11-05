@@ -74,6 +74,8 @@ is the owner's preferred phrase for the name's idea.
 
 ## D6
 
+The headline is superseded by [D7](#d7); the three sections stand.
+
 **The landing page opens with "All your repositories in one place. No separate tracker.", followed by three
 sections: everything that needs you from every repository; your tracker is already on GitHub, with the
 comparison; even solo, you are leading a team.** (2026-11-02, owner)
@@ -88,3 +90,14 @@ pay for"), which [D2](#d2) allows: Linear stays in the comparison.
   under it is read; kept for one-line places such as the share image (owner chose `LP1`).
 - "Ten repositories. One place to manage them." (`LP3`) — someone with two repositories may feel it is not for
   them (owner chose `LP1`).
+
+## D7
+
+**The landing page opens with "All your repos at the speed of thought".** (2026-11-05, owner) The subhead stays and carries "no
+separate tracker" on its own, so [D4](#d4)'s two promises still come together, in the first two lines rather than in the headline.
+The page's title and the README follow it; the footer's tagline keeps "All your repositories in one place."
+([D35](../githq/DECISIONS.md#d35), `githq.pen`).
+
+**Rejected.**
+
+- "All your repositories in one place. No separate tracker." ([D6](#d6)) as the headline: the owner chose the new one.

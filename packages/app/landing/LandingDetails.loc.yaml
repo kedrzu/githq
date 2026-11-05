@@ -25,9 +25,9 @@ limitTitle:
 limitBody:
   en: Change checks use GitHub’s conditional requests. When nothing changed, they don’t count against your hourly allowance.
 installTitle:
-  en: Installs like an app
+  en: Pin the website
 installBody:
-  en: Add githq to your dock or home screen. It opens straight into your work, in its own window.
+  en: Staying in the browser? Add githq.dev to your dock or home screen. It opens straight into your work, in its own window.
 anywhereTitle:
   en: Anywhere on GitHub
 anywhereBody:

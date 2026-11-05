@@ -15,13 +15,12 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
-test('signed out, home is the landing page, saying what GitHub will ask for', async ({ page }) => {
+test('signed out, home is the landing page', async ({ page }) => {
     await page.goto('/');
 
     await expect(page).toHaveURL('/');
     const landing = new LandingHarness(page);
-    await expect(landing.root.getByRole('heading', { level: 1 })).toContainText('All your repositories');
-    await expect(landing.root).toContainText('GitHub will ask for full repository access.');
+    await expect(landing.root.getByRole('heading', { level: 1 })).toContainText('All your repos');
     await expect(landing.signInButton).toBeVisible();
     await expect(landing.banner).toBeHidden();
 });

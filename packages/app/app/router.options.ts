@@ -6,6 +6,7 @@ import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 
 import { HOME_PATH, SIGN_IN_PATH, TRACKING_CHOICE_PATH } from '@/auth/routeAccess.js';
 import HomePage from '@/home/HomePage.vue';
+import { DOWNLOAD_PATH } from '@/landing/desktopBuilds.js';
 import { ITEM_PAGE_PATHS, REVIEW_PAGE_ALIAS, REVIEW_PAGE_PATH } from '@/item/itemRoutes.js';
 import { DRAFT_REVIEWS_PATH, MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
@@ -27,7 +28,7 @@ import {
 // the build if any exist). Who may open each one is its `meta.auth` (`auth/routeAccess.ts`); the app's screens
 // sit in the shell (`meta.layout: 'shell'`, `layouts/shell.vue`).
 //
-// Every address is GitHub's: swap the host and the same thing opens on github.com, and the other way round. The
+// Every address but `/download` is GitHub's: swap the host and the same thing opens on github.com, and the other way round. The
 // app's own pages sit under first segments GitHub reserves (`/settings/…`), so none is ever an owner's
 // or a repository's address, and an address githq does not show is handed off to github.com
 // (`shell/GitHubHandOffPage.vue`). A static first segment outranks a parameter, so `/orgs/acme` is never taken
@@ -198,6 +199,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path: `/${segment}/:rest(.*)*`,
             name: `github-${segment}`,
             component: () => import('@/shell/GitHubHandOffPage.vue'),
+        };
+    }
+    // Every desktop build, for anyone, signed in or not. The desktop app has no use for it.
+    if (!__DESKTOP__) {
+        yield {
+            path: DOWNLOAD_PATH,
+            name: 'download',
+            component: () => import('@/landing/DownloadPage.vue'),
         };
     }
     yield {

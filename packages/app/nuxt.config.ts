@@ -65,7 +65,7 @@ export default defineNuxtConfig({
         head: {
             title: 'githq',
             htmlAttrs: { lang: 'en' },
-            meta: [{ name: 'theme-color', content: '#0e1013' }],
+            meta: [{ name: 'theme-color', content: '#0d1117' }],
             // The icons are written by `scripts/generateIcons.ts`; the manifest makes githq installable.
             link: [
                 { rel: 'manifest', href: '/manifest.webmanifest' },
@@ -154,6 +154,32 @@ export default defineNuxtConfig({
 });
 
 /**
+ * Faces of fonts every system has, scaled to take the room of the page's own fonts (`$font-family-*` in `tokens.scss`),
+ * so that nothing moves on the prerendered page when those arrive. Measured in Chromium against the `@fontsource`
+ * files, on the page's own words: `size-adjust` is the ratio of the widths, the other two the font's ascent and descent
+ * over it. A system without Arial falls to the next font in the stack, as it did before.
+ */
+const FONT_FALLBACKS = [
+    { family: 'Inter Fallback', local: 'Arial', weight: '400 500', size: 107.35, ascent: 90.36, descent: 22.36 },
+    { family: 'Inter Fallback', local: 'Arial Bold', weight: '600 700', size: 100.65, ascent: 96.37, descent: 23.84 },
+    { family: 'Geist Fallback', local: 'Arial', weight: '400 500', size: 104.99, ascent: 96.2, descent: 27.62 },
+    { family: 'Geist Fallback', local: 'Arial Bold', weight: '600 700', size: 100.31, ascent: 100.69, descent: 28.91 },
+    {
+        family: 'JetBrains Mono Fallback',
+        local: 'Courier New',
+        weight: '400 700',
+        size: 99.98,
+        ascent: 102.02,
+        descent: 30,
+    },
+]
+    .map(
+        face =>
+            `@font-face{font-family:'${face.family}';src:local('${face.local}');font-weight:${face.weight};size-adjust:${face.size}%;ascent-override:${face.ascent}%;descent-override:${face.descent}%;line-gap-override:0%}`,
+    )
+    .join('');
+
+/**
  * Inlines the CSS `html` uses (Beasties, the maintained fork of Critters). While Nitro prerenders, the client's
  * files are not in the output yet: the stylesheets are read from the folder Nitro serves `/_nuxt` from.
  */
@@ -171,7 +197,8 @@ async function inlineCriticalCss(html: string, publicAssets: readonly { baseURL?
         preloadFonts: false,
         logLevel: 'warn',
     });
-    return await beasties.process(html);
+    // After Beasties, which drops every `@font-face` from what it inlines.
+    return (await beasties.process(html)).replace('</head>', `<style>${FONT_FALLBACKS}</style></head>`);
 }
 
 function readTarget(value: string | undefined): 'desktop' | 'local' | 'production' {

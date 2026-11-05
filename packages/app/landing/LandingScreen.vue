@@ -1,5 +1,6 @@
-<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — "Sign in with GitHub" straight to GitHub's consent screen (D21) — with the banner of a sign-in that didn't finish (G1) above it and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, three features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
+<!-- The landing page at `/` for a signed-out visitor (githq.pen "Landing — githq.dev"), its sections top to bottom: the navigation, the hero — downloading the app or signing in with GitHub, straight to its consent screen (D21) — with the banner of a sign-in that didn't finish (G1) above it and the development sign-in under its call to action, its two promises and why they matter now — every repository in one place, no separate tracker with the comparison, leading a team of agents —, the GitHub concepts githq is built on, three features, the details, open source, the last call to action, and the footer. Every "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
+import type { DesktopSystem } from './desktopBuilds.js';
 import LandingComparison from './LandingComparison.vue';
 import LandingDetails from './LandingDetails.vue';
 import LandingFeatures from './LandingFeatures.vue';
@@ -11,6 +12,11 @@ import LandingOnePlace from './LandingOnePlace.vue';
 import LandingOpenSource from './LandingOpenSource.vue';
 import LandingStrip from './LandingStrip.vue';
 import LandingWhyNow from './LandingWhyNow.vue';
+
+defineProps<{
+  /** The visitor's system, `null` while unknown or when there is nothing to install on it. */
+  system: DesktopSystem | null;
+}>();
 
 const emit = defineEmits<{
   /** "Sign in" in the navigation and the footer, "Sign in with GitHub" in the hero and the last call to action. */
@@ -37,7 +43,10 @@ defineSlots<{
         <slot name="banner" />
       </div>
 
-      <LandingHero @sign-in="emit('signIn')">
+      <LandingHero
+        :system="system"
+        @sign-in="emit('signIn')"
+      >
         <template
           v-if="$slots.dev"
           #dev
@@ -52,7 +61,10 @@ defineSlots<{
       <LandingFeatures />
       <LandingDetails />
       <LandingOpenSource />
-      <LandingFinalCta @sign-in="emit('signIn')" />
+      <LandingFinalCta
+        :system="system"
+        @sign-in="emit('signIn')"
+      />
     </main>
 
     <LandingFooter @sign-in="emit('signIn')" />
