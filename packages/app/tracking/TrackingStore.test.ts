@@ -3,13 +3,9 @@
 import 'fake-indexeddb/auto';
 
 import { expect, test } from 'bun:test';
-import { deleteDB, openDB } from 'idb';
+import { deleteDB } from 'idb';
 
-import {
-    createIndexedDbPersistence,
-    getLocalDatabaseName,
-    LOCAL_DATABASE_VERSION,
-} from '@/store/IndexedDbPersistence.js';
+import { getLocalDatabaseName } from '@/store/IndexedDbPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { SettingsDocument } from '@/settings/sync/SettingsDocument.js';
 import { createTestSession } from '@/testing/createTestSession.js';
@@ -19,7 +15,7 @@ import type { TestTabs } from '@/testing/createTestTabs.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import { TrackingStore } from './TrackingStore.js';
-import type { TrackedProject, TrackedRepository, TrackedTarget, Tracking } from './TrackingTypes.js';
+import type { TrackedProject, TrackedRepository, TrackedTarget } from './TrackingTypes.js';
 
 const WEB: TrackedRepository = { nameWithOwner: 'acme/web', id: 'R_web' };
 const API: TrackedRepository = { nameWithOwner: 'acme/api', id: 'R_api' };
@@ -90,33 +86,16 @@ test('untracking drops the sync state and the copy, also when the document is re
     expect(tracking.chosen).toBe(true);
 });
 
-test('a choice an older githq kept in the local copy is taken over, in its order, and survives a new cache database', async () => {
+test('the choice survives a new cache database, in its order', async () => {
     const login = `user-${crypto.randomUUID()}`;
-    const older: Tracking = { chosen: true, repositories: [API, WEB], projects: [ROADMAP] };
-    await keepOlderChoice(login, older);
-
     const first = await open({ login });
-    expect(first.tracking.chosen).toBe(true);
-    expect(first.tracking.repositories).toEqual([API, WEB]);
-    expect(first.tracking.projects).toEqual([ROADMAP]);
+    first.tracking.choose({ repositories: [API, WEB], projects: [ROADMAP] });
 
-    // A new cache database drops the local copy and the older choice in it: the one in localStorage stays.
     await deleteDB(getLocalDatabaseName(login));
     const second = await open({ login, localStorage: first.localStorage });
     expect(second.tracking.chosen).toBe(true);
     expect(second.tracking.repositories).toEqual([API, WEB]);
     expect(second.tracking.projects).toEqual([ROADMAP]);
-});
-
-test('what localStorage keeps wins over an older choice still in the local copy', async () => {
-    const login = `user-${crypto.randomUUID()}`;
-    await keepOlderChoice(login, { chosen: true, repositories: [WEB], projects: [] });
-    const first = await open({ login });
-    first.tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/web' });
-
-    const second = await open({ login, localStorage: first.localStorage });
-    expect(second.tracking.repositories).toEqual([]);
-    expect(second.tracking.document.repositories).toEqual([{ ...WEB, tracking: false }]);
 });
 
 test('a sync state left by an untrack the closing page cut off goes when the settings are read, so tracking it again downloads it', async () => {
@@ -155,9 +134,8 @@ test('a sync state left by an untrack the closing page cut off goes when the set
     expect(third.tracking.getSyncState(target)).toBeUndefined();
 });
 
-test('a slot this build does not understand is not replaced by an older choice in the local copy', async () => {
+test('a slot this build does not understand is left as it is until the user changes something here', async () => {
     const login = `user-${crypto.randomUUID()}`;
-    await keepOlderChoice(login, { chosen: true, repositories: [WEB], projects: [] });
     const key = `githq.settings.${login}`;
     const newer = JSON.stringify({ chosen: true, document: { version: 2, repositories: [], projects: [] } });
     const localStorage = new Map([[key, newer]]);
@@ -400,15 +378,6 @@ async function open(options: OpenOptions = {}) {
     const tracking = session.container.resolve(TrackingStore);
     await tracking.ready();
     return { session, tracking, login, localStorage: session.localStorage };
-}
-
-/** Writes `tracking` where githq kept it before it moved to localStorage: the local copy's `meta` store. */
-async function keepOlderChoice(login: string, tracking: Tracking) {
-    // Creates the local copy at this version.
-    await createIndexedDbPersistence().load(login);
-    const db = await openDB(getLocalDatabaseName(login), LOCAL_DATABASE_VERSION);
-    await db.put('meta', { key: 'tracking', value: tracking });
-    db.close();
 }
 
 function pageOf(names: readonly string[]) {
