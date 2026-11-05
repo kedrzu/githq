@@ -1,7 +1,7 @@
-<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, pinning the website, anywhere on GitHub, a stack of pull requests as one entry — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here. -->
+<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, the desktop app, no server, gentle on the API limit, anywhere on GitHub, a stack of pull requests as one entry — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { AppWindow, BadgeDollarSign, Gauge, Globe, Layers, Link, Lock, ServerOff } from 'lucide-vue-next';
+import { BadgeDollarSign, Gauge, Globe, Laptop, Layers, Link, Lock, ServerOff } from 'lucide-vue-next';
 import { useId, useTemplateRef, watch } from 'vue';
 
 import * as l from './LandingDetails.loc.js';
@@ -78,6 +78,12 @@ watch(reveal, state => state === 'revealed' && swap.play());
 
       <LandingDetail
         :class="css.landingDetails_third"
+        :icon="Laptop"
+        :title="t(l.installTitle)"
+        :body="t(l.installBody)"
+      />
+      <LandingDetail
+        :class="css.landingDetails_third"
         :icon="ServerOff"
         :title="t(l.serverTitle)"
         :body="t(l.serverBody)"
@@ -87,12 +93,6 @@ watch(reveal, state => state === 'revealed' && swap.play());
         :icon="Gauge"
         :title="t(l.limitTitle)"
         :body="t(l.limitBody)"
-      />
-      <LandingDetail
-        :class="css.landingDetails_third"
-        :icon="AppWindow"
-        :title="t(l.installTitle)"
-        :body="t(l.installBody)"
       />
 
       <LandingDetail

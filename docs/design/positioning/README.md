@@ -42,19 +42,19 @@ requests, checks and broken deploys are what comes back. [Proposed, not yet conf
 ## What the landing page says
 
 It opens with *All your repos at the speed of thought*, the subhead carrying "no separate tracker" on its own
-([D35](../githq/DECISIONS.md#d35) has what the page offers), then shows the first promise with My
-work across repositories, the second with the comparison against github.com and a dedicated tracker, and ends
-the opening with why it matters now. The older sections follow, numbered on from there: the GitHub concepts, Instant,
-Keyboard and Faithful to GitHub (04–06), the details, open source and the last call to action. What repeated the
-opening is gone: the "Not another tracker" statement and the separate My work feature. "Reviews stay where diffs
-belong" gave its card to stacks of pull requests, and the last call to action speaks of every repository, not
-only issues. The variants it was chosen from are in [headlines.md](headlines.md);
-[the owner's pick](DECISIONS.md#d6).
+([D35](../githq/DECISIONS.md#d35) has what the page offers). The first section under it carries the first promise,
+*All your repositories, in one place*, with My work across repositories and the agents that make it matter. Then the
+second promise with the comparison against github.com and a dedicated tracker, and why it matters now. The older
+sections follow, numbered on from there: the GitHub concepts, code review, Instant, Keyboard and Faithful to GitHub
+(04–07), the details, open source and the last call to action. What repeated the opening is gone: the "Not another
+tracker" statement and the separate My work feature. Reviewing is githq's own now, so it has a section, and the native
+app takes the card that spoke of pinning the website ([the owner's call](DECISIONS.md#d8)). The openings it was chosen
+from are in [headlines.md](headlines.md).
 
 ## What is still open
 
 - The page and the README describe failing workflows across repositories ahead of the code, because that work is
-  about to land. The page also promises merging, which is not built; the README calls it "next".
+  about to land.
 - The sign-in screen that shows the landing and the share images in `githq.pen` still carry the old headline.
 - The repository's description on GitHub still says "task manager"; the open source card on the page already
   uses the README's line.

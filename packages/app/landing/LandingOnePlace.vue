@@ -1,4 +1,4 @@
-<!-- The landing page's first section under the hero (githq.pen "LP1 · All your repositories, no separate tracker", Section 1): the "one place" promise — reviews, pull requests with their checks, workflows failing on main and assigned issues from every repository in one list —, the screenshot first. The navigation's and the footer's "Features" land here. -->
+<!-- The landing page's first section under the hero (githq.pen "Landing — githq.dev", Section 1): the "one place" promise — reviews, pull requests with their checks, workflows failing on main and assigned issues from every repository in one list —, the screenshot first. The navigation's and the footer's "Features" land here. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleDot, Eye, GitPullRequest, OctagonX } from 'lucide-vue-next';
