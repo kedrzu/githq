@@ -114,6 +114,7 @@ function createFakeNative(): FakeNative {
                 native.calls.push('isFullscreen');
                 return native.answers.shift()?.() ?? Promise.resolve(native.fullscreen);
             },
+            onScrollPhase: notExpected,
         },
     };
 

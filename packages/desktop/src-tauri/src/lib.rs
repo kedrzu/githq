@@ -15,6 +15,10 @@ use credentials::Credentials;
 use device_flow::DeviceFlow;
 use job_logs::JobLogs;
 
+/// The event telling the page a trackpad scroll's phases (`report_scroll_phases`).
+#[cfg(target_os = "macos")]
+const SCROLL_PHASE_EVENT: &str = "scroll-phase";
+
 /// The address `nuxt dev` serves the app on, which `tauri dev` loads (`build.devUrl` in `tauri.conf.json`).
 const DEV_SERVER_PORT: u16 = 8787;
 
@@ -89,6 +93,7 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         let window = window.build()?;
         keep_keyboard_on_webview(&window);
         go_back_and_forward_on_swipes(&window);
+        report_scroll_phases(&window);
     }
     #[cfg(not(target_os = "macos"))]
     window.build()?;
@@ -146,6 +151,46 @@ fn go_back_and_forward_on_swipes(window: &WebviewWindow) {
     // SAFETY: the handler hands back the event it was given, a valid pointer.
     let monitor = unsafe {
         NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::Swipe, &handler)
+    };
+    std::mem::forget(monitor);
+}
+
+/// Tells the page when the fingers come down on the trackpad to scroll, lift off, or the system takes the scroll away
+/// (the `scroll-phase` event: `began`, `ended`, `cancelled`), which a wheel event does not say: the page's swipe through
+/// the history (`desktop/useHistorySwipe.ts`) goes when the fingers lift, not when they rest. The scrolling that
+/// coasts on after them is not told, nor a mouse's wheel, which has no phases.
+#[cfg(target_os = "macos")]
+fn report_scroll_phases(window: &WebviewWindow) {
+    use std::ptr::NonNull;
+
+    use objc2_app_kit::{NSEvent, NSEventMask, NSEventPhase};
+    use tauri::Emitter;
+
+    let window = window.clone();
+    let handler = block2::RcBlock::new(move |event: NonNull<NSEvent>| -> *mut NSEvent {
+        let scroll = unsafe { event.as_ref() };
+        let phase = scroll.phase();
+        let reported = if scroll.momentumPhase() != NSEventPhase::None {
+            None
+        } else if phase.contains(NSEventPhase::Began) {
+            Some("began")
+        } else if phase.contains(NSEventPhase::Ended) {
+            Some("ended")
+        } else if phase.contains(NSEventPhase::Cancelled) {
+            Some("cancelled")
+        } else {
+            None
+        };
+        if let Some(reported) = reported {
+            let _ = window.emit(SCROLL_PHASE_EVENT, reported);
+        }
+
+        event.as_ptr()
+    });
+
+    // SAFETY: the handler hands back the event it was given, a valid pointer.
+    let monitor = unsafe {
+        NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::ScrollWheel, &handler)
     };
     std::mem::forget(monitor);
 }

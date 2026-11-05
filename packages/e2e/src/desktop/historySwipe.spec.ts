@@ -4,6 +4,7 @@ import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 
 import { expect, test } from './desktopFixtures.js';
 import { signInOnDesktop } from './desktopSession.js';
+import type { FakeNativeBridge } from './FakeNativeBridge.js';
 
 const ACCOUNT = '/settings?tab=account';
 
@@ -14,49 +15,75 @@ test.beforeEach(async ({ page, github, native }) => {
     const shell = await signInOnDesktop({ page, github, native });
     await shell.openAccount(SAMPLE_VIEWER.viewer.login);
     await expect(page).toHaveURL(ACCOUNT);
+    await expect.poll(() => native.isListening('scroll-phase')).toBe(true);
     await page.mouse.move(400, 300);
 });
 
-test('on a Mac a two-finger swipe to the right goes back, with an arrow from the left edge, and to the left forward', async ({
+test('on a Mac a two-finger swipe to the right goes back as the fingers lift, not while they rest, with an arrow from the left edge; to the left it goes forward', async ({
     page,
+    native,
 }) => {
     const arrow = page.locator('[class*="historySwipe"]');
 
-    await page.mouse.wheel(-60, 0);
+    await native.sendScrollPhase('began');
+    await wheel(page, -60);
     await expect(arrow).toBeVisible();
-    await page.mouse.wheel(-100, 0);
-    await expect(page).not.toHaveURL(ACCOUNT);
+    await wheel(page, -100);
+    // Resting, far enough.
+    await page.waitForTimeout(400);
+    await expect(page).toHaveURL(ACCOUNT);
+
+    await native.sendScrollPhase('ended');
+    await expect(page).not.toHaveURL(ACCOUNT, { timeout: 200 });
     await expect(arrow).toBeHidden();
 
-    await swipeAfterQuiet(page, 160);
+    await swipe(page, native, 160);
     await expect(page).toHaveURL(ACCOUNT);
 });
 
-test('a short swipe, a vertical scroll and a swipe over something that scrolls sideways stay where they are', async ({
+test('a short swipe, a vertical scroll, a swipe over something that scrolls sideways, a cancelled one and scrolling with no fingers down stay where they are', async ({
     page,
+    native,
 }) => {
-    await swipeAfterQuiet(page, -30);
-    await expect(page).toHaveURL(ACCOUNT);
+    await swipe(page, native, -30);
+    await swipe(page, native, 0, -200);
 
-    await swipeAfterQuiet(page, 0, -200);
-    await expect(page).toHaveURL(ACCOUNT);
+    await native.sendScrollPhase('began');
+    await wheel(page, -200);
+    await native.sendScrollPhase('cancelled');
+
+    // Coasting on after a swipe, or a mouse's wheel: no phases.
+    await wheel(page, -200);
 
     // Scrolled to the middle of its content, it can scroll either way.
     await page.evaluate(() => {
         const scroller = document.createElement('div');
-        scroller.id = 'scroller';
         scroller.style.cssText = 'position: fixed; inset: 0; z-index: 1000; overflow-x: auto';
         scroller.innerHTML = '<div style="width: 400vw; height: 10px"></div>';
         document.body.append(scroller);
         scroller.scrollLeft = 500;
     });
-    await swipeAfterQuiet(page, -200);
+    await swipe(page, native, -200);
+
+    await page.waitForTimeout(300);
     await expect(page).toHaveURL(ACCOUNT);
 });
 
-/** A swipe once the last one is over, as the fingers come down again: `-x` goes back. */
-async function swipeAfterQuiet(page: Page, x: number, y = 0) {
-    await page.waitForTimeout(300);
+/** Fingers down, a scroll by `x` and `y` (`-x` goes back), fingers up. */
+async function swipe(page: Page, native: FakeNativeBridge, x: number, y = 0) {
+    await native.sendScrollPhase('began');
+    await wheel(page, x, y);
+    await native.sendScrollPhase('ended');
+}
+
+/** Scrolls by `x` and `y` and waits for the page to see it: the browser dispatches a wheel event after `wheel` resolves. */
+async function wheel(page: Page, x: number, y = 0) {
+    const seen = page.evaluate(
+        () =>
+            new Promise<void>(resolve => {
+                window.addEventListener('wheel', () => resolve(), { once: true });
+            }),
+    );
     await page.mouse.wheel(x, y);
-    await page.waitForTimeout(300);
+    await seen;
 }
