@@ -88,13 +88,7 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
     {
         let window = window.build()?;
         keep_keyboard_on_webview(&window);
-
-        // Tauri has no option for it, and the webview's default is off. Besides a trackpad's swipe, it is what a
-        // mouse's back button sends when its driver turns the button into macOS's gesture, as Logi Options+ does.
-        window.with_webview(|webview| unsafe {
-            let view: &objc2_web_kit::WKWebView = &*webview.inner().cast();
-            view.setAllowsBackForwardNavigationGestures(true);
-        })?;
+        go_back_and_forward_on_swipes(&window);
     }
     #[cfg(not(target_os = "macos"))]
     window.build()?;
@@ -119,6 +113,41 @@ fn keep_keyboard_on_webview(window: &WebviewWindow) {
             });
         }
     });
+}
+
+/// Goes back or forward on macOS's swipe event: what a mouse's back and forward buttons send when their driver turns
+/// them into macOS's gesture, as Logi Options+ does. The webview's own back-forward gestures stay off, as they slide a
+/// picture of the whole page; the page draws its own for a trackpad's two-finger swipe (`desktop/useHistorySwipe.ts`).
+/// The monitor sees only the app's own events and lasts as long as the app.
+#[cfg(target_os = "macos")]
+fn go_back_and_forward_on_swipes(window: &WebviewWindow) {
+    use std::ptr::NonNull;
+
+    use objc2_app_kit::{NSEvent, NSEventMask};
+
+    let window = window.clone();
+    let handler = block2::RcBlock::new(move |event: NonNull<NSEvent>| -> *mut NSEvent {
+        // As WebKit reads it: a positive delta goes back.
+        let delta = unsafe { event.as_ref() }.deltaX();
+        let script = if delta > 0.0 {
+            Some("history.back()")
+        } else if delta < 0.0 {
+            Some("history.forward()")
+        } else {
+            None
+        };
+        if let Some(script) = script {
+            let _ = window.eval(script);
+        }
+
+        event.as_ptr()
+    });
+
+    // SAFETY: the handler hands back the event it was given, a valid pointer.
+    let monitor = unsafe {
+        NSEvent::addLocalMonitorForEventsMatchingMask_handler(NSEventMask::Swipe, &handler)
+    };
+    std::mem::forget(monitor);
 }
 
 /// Whether the address is the app's own: the origin Tauri serves the built app from — `tauri://localhost`, or
