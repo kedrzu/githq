@@ -27,10 +27,6 @@ export function createSignedInBrowser(fetch?: BrowserShape['fetch']): BrowserSha
             removeItem: key => {
                 stored.delete(key);
             },
-            key: index => [...stored.keys()][index] ?? null,
-            get length() {
-                return stored.size;
-            },
         },
         writeCookie: () => {},
         fetch: fetch ?? (() => Promise.resolve(Response.json({ message: 'Server Error' }, { status: 502 }))),
