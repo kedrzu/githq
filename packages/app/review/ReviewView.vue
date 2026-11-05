@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ go line by line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen, or else the first line on screen. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box under the thread (CR74), `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until the reader moves on from it (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's Show 20 and Show all hold the line under it where it is, the lines coming above it (D6, D7). Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ go line by line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen, or else the first line on screen. Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box under the thread (CR74), `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until the reader moves on from it (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -50,6 +50,7 @@ import type { Command } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
+import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
@@ -151,6 +152,8 @@ const NO_FILES: ReadonlySet<string> = new Set();
 /** A jump to a thread never lands higher than this under the top: the pinned header and a little air. */
 const THREAD_MIN_OFFSET = 46;
 const NO_TARGETS: readonly ReviewCommentTarget[] = [];
+/** The stack's and the files' column: 300 px by default, dragged from 200 to 480 px (D24). */
+const FILE_LIST_WIDTH = { key: 'reviewFileList', default: 300, min: 200, max: 480 };
 
 const t = useTranslate();
 const accounts = useService(AccountSession);
@@ -1579,292 +1582,299 @@ function readAgain() {
       @show-only="showOnlyLostViewed"
       @dismiss="files?.dismissLostViewedNotice()"
     />
-    <div :class="css.reviewView_body">
-      <div
-        v-if="!fileListHidden"
-        ref="leftColumn"
-        :class="[css.reviewView_left, stack && opened.id !== null && css.reviewView_left_stacked]"
-        @scroll.passive="leftScrolled = (leftColumn?.scrollTop ?? 0) > 0"
-      >
-        <template v-if="stack && opened.id !== null">
-          <ReviewStackStrip
-            :class="!leftScrolled && css.reviewView_strip_hidden"
-            :stack="stack"
-            :current-id="opened.id"
-          />
-          <ReviewStack
-            :stack="stack"
-            :current-id="opened.id"
-          />
-        </template>
-        <ReviewFileList
-          ref="fileList"
-          v-model:hide-viewed="hideViewed"
-          v-model:filter-pattern="filterPattern"
-          v-model:filter-regex="filterRegex"
-          :groups="listGroups"
-          :files="allFiles"
-          :get-state="getState"
-          :get-collapse="getCollapse"
-          :get-collapse-reason="path => files?.getCollapseReason(path) ?? null"
-          :current-path="currentPath"
-          :changed-files="files?.changedFiles ?? null"
-          :list-complete="files?.listComplete ?? false"
-          :matched="filterOn ? matchedFiles.length : null"
-          :filter-invalid="typedFilter.kind === 'invalid'"
-          :selected="selected"
-          :lost-viewed="lostViewed"
-          :open-threads="openThreads"
-          :resolved-threads="resolvedThreads"
-          @select="selectFile"
-          @select-threads="jumpToFileThreads"
-          @select-range="selectRange"
-          @toggle-selected="toggleSelected"
-          @mark-selected="markSelected"
-          @clear-selection="clearSelection"
-          @leave-filter="list?.focus()"
-        />
-      </div>
-      <div :class="css.reviewView_diffColumn">
+    <ColumnSplit
+      :shown="!fileListHidden"
+      :width="FILE_LIST_WIDTH"
+      :label="t(l.resizeFileList)"
+    >
+      <template #column>
         <div
-          ref="diffColumn"
-          :class="css.reviewView_diff"
+          ref="leftColumn"
+          :class="[css.reviewView_left, stack && opened.id !== null && css.reviewView_left_stacked]"
+          @scroll.passive="leftScrolled = (leftColumn?.scrollTop ?? 0) > 0"
         >
-          <AnchoredList
-            v-if="files?.list.kind === 'ready' && (ordered.length > 0 || filterOn)"
-            ref="list"
-            :rows="rows"
-            :estimate-height="estimateReviewRowHeight"
-            :is-pinned="isPinned"
-            :label="t(l.diff)"
-            @user-scroll="stopLanding"
-            @row-focus-lost="onRowFocusLost"
-          >
-            <template #default="{ row }">
-              <ReviewAllViewed
-                v-if="row.kind === 'allViewed'"
-                :total="allFiles.length"
-                :thread-count="openThreadCount"
-                :thread-file-count="openThreads.size"
-                :next-number="nextNumber"
-                :sending="finish.kind === 'sending'"
-                @submit="submitOpen = true"
-                @next="stepPullRequest(nextPullRequest, 'K')"
-              />
-              <ReviewDiffRow
-                v-else
-                :row="row"
-                :github-url="githubUrl"
-                :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
-                :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"
-                :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
-                :thread-replying="row.kind === 'thread' && isThreadReplying(row.placement.thread.id)"
-                :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
-                :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
-                @expand="expandGap"
-                @expand-to-thread="expandToThread"
-                @expand-to-file-end="expandToFileEnd"
-                @show-whitespace="hideWhitespace = false"
-                @toggle-thread="toggleThread"
-                @reply-in-thread="startReply"
-                @set-thread-resolved="setThreadResolved"
-                @retry="path => files?.retry(path)"
-                @toggle-collapsed="toggleCollapsed"
-                @toggle-viewed="toggleViewed"
-                @gutter="(event, side, line) => onGutter(row, event, side, line)"
-              >
-                <template #comment="{ row: commentRow }">
-                  <ReviewCommentRow
-                    :row="commentRow"
-                    :text="writing?.getText(commentRow.target.id)"
-                    :status="writing?.getStatus(commentRow.target.id) ?? { kind: 'editing' }"
-                    :draft-open="writing?.draftOpen ?? false"
-                    :draft-count="writing?.draftCount ?? 0"
-                    :draft-first="tracking.reviewCommentChoice === 'draft'"
-                    :focused="focusedBox === commentRow.target.id"
-                    :author="auth.viewer ?? null"
-                    :reply-to="getReplyTo(commentRow.target)"
-                    :suggestion="getSuggestion(commentRow.target)"
-                    :code-changed="writing?.hasCodeChanged(commentRow.target.id)"
-                    @extend="extendBox(commentRow.target)"
-                    @update:text="writing?.setText(commentRow.target.id, $event)"
-                    @send="way => sendComment(commentRow.target.id, way)"
-                    @leave="leaveComment(commentRow.target.id)"
-                    @focus="focusedBox = commentRow.target.id"
-                    @blur="onCommentBlur(commentRow.target.id)"
-                  />
-                </template>
-              </ReviewDiffRow>
-            </template>
-          </AnchoredList>
-          <!-- Over the list, not instead of it: a pattern passing through no match keeps the place being read (D7). -->
-          <div
-            v-if="ordered.length === 0 || files?.list.kind !== 'ready'"
-            :class="css.reviewView_state"
-          >
-            <EmptyState
-              v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
-              :icon="CircleAlert"
-              :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
-              :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
-            >
-              <template #action>
-                <div :class="css.reviewView_actions">
-                  <Button
-                    size="sm"
-                    @click="readAgain"
-                  >
-                    {{ t(l.tryAgain) }}
-                  </Button>
-                  <Button
-                    size="sm"
-                    :link="githubUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {{ t(l.openOnGitHub) }}
-                  </Button>
-                </div>
-              </template>
-            </EmptyState>
-            <EmptyState
-              v-else-if="files?.list.kind === 'paused'"
-              :icon="Pause"
-              :title="t(l.paused)"
-              :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
-            >
-              <template #action>
-                <Button
-                  size="sm"
-                  :link="githubUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ t(l.openOnGitHub) }}
-                </Button>
-              </template>
-            </EmptyState>
-            <EmptyState
-              v-else-if="files?.list.kind === 'ready' && filterOn"
-              :icon="FileSearch"
-              :title="t(l.noMatch)"
-              :detail="hideViewed && matchedFiles.length > 0 ? t(l.noMatchViewedHidden) : undefined"
-            >
-              <template #action>
-                <Button
-                  size="sm"
-                  @click="filterPattern = ''"
-                >
-                  {{ t(l.clearFilter) }}
-                </Button>
-              </template>
-            </EmptyState>
-            <EmptyState
-              v-else-if="files?.list.kind === 'ready' && allFiles.length > 0"
-              :icon="CircleCheck"
-              :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
-              :detail="t(l.allViewedDetail)"
-            >
-              <template #action>
-                <div :class="css.reviewView_actions">
-                  <Button
-                    size="sm"
-                    variant="light"
-                    :kbd="REVIEW_KEYS.submit"
-                    :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
-                    :busy="finish.kind === 'sending'"
-                    @click="submitOpen = true"
-                  >
-                    {{ t(allViewedLoc.submit) }}
-                  </Button>
-                  <Button
-                    v-if="nextNumber !== null"
-                    size="sm"
-                    :kbd="REVIEW_KEYS.nextPullRequest"
-                    :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
-                    @click="stepPullRequest(nextPullRequest, 'K')"
-                  >
-                    {{ t(allViewedLoc.next, { number: nextNumber }) }}
-                  </Button>
-                  <Button
-                    size="sm"
-                    @click="hideViewed = false"
-                  >
-                    {{ t(l.showViewed) }}
-                  </Button>
-                </div>
-              </template>
-            </EmptyState>
-            <EmptyState
-              v-else-if="files?.list.kind === 'ready'"
-              :icon="Equal"
-              :title="t(l.noChanges)"
-              :detail="
-                branches
-                  ? t(l.noChangesDetail, { head: branches.headRefName, base: branches.baseRefName })
-                  : t(l.noChangesPlain)
-              "
-            >
-              <template #action>
-                <div :class="css.reviewView_actions">
-                  <Button
-                    v-if="!conversationShown"
-                    size="sm"
-                    @click="conversationShown = true"
-                  >
-                    {{ t(l.conversation) }}
-                    <Kbd :keys="REVIEW_KEYS.conversation" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    :link="githubUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {{ t(l.openOnGitHub) }}
-                  </Button>
-                </div>
-              </template>
-            </EmptyState>
-            <EmptyState
-              v-else
-              :icon="FileSearch"
-              :title="t(l.reading, { reference: formatItemReference(reference) })"
+          <template v-if="stack && opened.id !== null">
+            <ReviewStackStrip
+              :class="!leftScrolled && css.reviewView_strip_hidden"
+              :stack="stack"
+              :current-id="opened.id"
             />
-          </div>
+            <ReviewStack
+              :stack="stack"
+              :current-id="opened.id"
+            />
+          </template>
+          <ReviewFileList
+            ref="fileList"
+            v-model:hide-viewed="hideViewed"
+            v-model:filter-pattern="filterPattern"
+            v-model:filter-regex="filterRegex"
+            :groups="listGroups"
+            :files="allFiles"
+            :get-state="getState"
+            :get-collapse="getCollapse"
+            :get-collapse-reason="path => files?.getCollapseReason(path) ?? null"
+            :current-path="currentPath"
+            :changed-files="files?.changedFiles ?? null"
+            :list-complete="files?.listComplete ?? false"
+            :matched="filterOn ? matchedFiles.length : null"
+            :filter-invalid="typedFilter.kind === 'invalid'"
+            :selected="selected"
+            :lost-viewed="lostViewed"
+            :open-threads="openThreads"
+            :resolved-threads="resolvedThreads"
+            @select="selectFile"
+            @select-threads="jumpToFileThreads"
+            @select-range="selectRange"
+            @toggle-selected="toggleSelected"
+            @mark-selected="markSelected"
+            @clear-selection="clearSelection"
+            @leave-filter="list?.focus()"
+          />
         </div>
-        <ReviewPendingToolbar
-          v-if="pendingReview || finish.kind !== 'idle'"
-          :comment-count="pendingReview?.commentCount ?? 0"
-          :has-draft="pendingReview !== null"
-          :finish="finish"
-          :can-retry="writing?.canRetry ?? false"
-          :can-dismiss="writing?.canDismiss ?? false"
-          @discard="discardOpen = true"
-          @submit="submitOpen = true"
-          @retry="retryFinish"
-          @dismiss="dismissFinish"
-        />
+      </template>
+      <div :class="css.reviewView_main">
+        <div :class="css.reviewView_diffColumn">
+          <div
+            ref="diffColumn"
+            :class="css.reviewView_diff"
+          >
+            <AnchoredList
+              v-if="files?.list.kind === 'ready' && (ordered.length > 0 || filterOn)"
+              ref="list"
+              :rows="rows"
+              :estimate-height="estimateReviewRowHeight"
+              :is-pinned="isPinned"
+              :label="t(l.diff)"
+              @user-scroll="stopLanding"
+              @row-focus-lost="onRowFocusLost"
+            >
+              <template #default="{ row }">
+                <ReviewAllViewed
+                  v-if="row.kind === 'allViewed'"
+                  :total="allFiles.length"
+                  :thread-count="openThreadCount"
+                  :thread-file-count="openThreads.size"
+                  :next-number="nextNumber"
+                  :sending="finish.kind === 'sending'"
+                  @submit="submitOpen = true"
+                  @next="stepPullRequest(nextPullRequest, 'K')"
+                />
+                <ReviewDiffRow
+                  v-else
+                  :row="row"
+                  :github-url="githubUrl"
+                  :changed-since="row.kind === 'header' && lostViewed.has(row.file.path)"
+                  :thread-open="row.kind === 'thread' && isThreadOpen(row.placement.thread.id)"
+                  :thread-focused="row.kind === 'thread' && focusedThread === row.placement.thread.id"
+                  :thread-replying="row.kind === 'thread' && isThreadReplying(row.placement.thread.id)"
+                  :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
+                  :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
+                  @expand="expandGap"
+                  @expand-to-thread="expandToThread"
+                  @expand-to-file-end="expandToFileEnd"
+                  @show-whitespace="hideWhitespace = false"
+                  @toggle-thread="toggleThread"
+                  @reply-in-thread="startReply"
+                  @set-thread-resolved="setThreadResolved"
+                  @retry="path => files?.retry(path)"
+                  @toggle-collapsed="toggleCollapsed"
+                  @toggle-viewed="toggleViewed"
+                  @gutter="(event, side, line) => onGutter(row, event, side, line)"
+                >
+                  <template #comment="{ row: commentRow }">
+                    <ReviewCommentRow
+                      :row="commentRow"
+                      :text="writing?.getText(commentRow.target.id)"
+                      :status="writing?.getStatus(commentRow.target.id) ?? { kind: 'editing' }"
+                      :draft-open="writing?.draftOpen ?? false"
+                      :draft-count="writing?.draftCount ?? 0"
+                      :draft-first="tracking.reviewCommentChoice === 'draft'"
+                      :focused="focusedBox === commentRow.target.id"
+                      :author="auth.viewer ?? null"
+                      :reply-to="getReplyTo(commentRow.target)"
+                      :suggestion="getSuggestion(commentRow.target)"
+                      :code-changed="writing?.hasCodeChanged(commentRow.target.id)"
+                      @extend="extendBox(commentRow.target)"
+                      @update:text="writing?.setText(commentRow.target.id, $event)"
+                      @send="way => sendComment(commentRow.target.id, way)"
+                      @leave="leaveComment(commentRow.target.id)"
+                      @focus="focusedBox = commentRow.target.id"
+                      @blur="onCommentBlur(commentRow.target.id)"
+                    />
+                  </template>
+                </ReviewDiffRow>
+              </template>
+            </AnchoredList>
+            <!-- Over the list, not instead of it: a pattern passing through no match keeps the place being read (D7). -->
+            <div
+              v-if="ordered.length === 0 || files?.list.kind !== 'ready'"
+              :class="css.reviewView_state"
+            >
+              <EmptyState
+                v-if="files?.list.kind === 'failed' || files?.list.kind === 'gone'"
+                :icon="CircleAlert"
+                :title="files.list.kind === 'gone' ? t(l.gone) : t(l.listFailed)"
+                :detail="files.list.kind === 'gone' ? t(l.goneDetail) : getFailureText(files.list.error)"
+              >
+                <template #action>
+                  <div :class="css.reviewView_actions">
+                    <Button
+                      size="sm"
+                      @click="readAgain"
+                    >
+                      {{ t(l.tryAgain) }}
+                    </Button>
+                    <Button
+                      size="sm"
+                      :link="githubUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ t(l.openOnGitHub) }}
+                    </Button>
+                  </div>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else-if="files?.list.kind === 'paused'"
+                :icon="Pause"
+                :title="t(l.paused)"
+                :detail="t(l.pausedDetail, { time: formatTime(files.list.until) })"
+              >
+                <template #action>
+                  <Button
+                    size="sm"
+                    :link="githubUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ t(l.openOnGitHub) }}
+                  </Button>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else-if="files?.list.kind === 'ready' && filterOn"
+                :icon="FileSearch"
+                :title="t(l.noMatch)"
+                :detail="hideViewed && matchedFiles.length > 0 ? t(l.noMatchViewedHidden) : undefined"
+              >
+                <template #action>
+                  <Button
+                    size="sm"
+                    @click="filterPattern = ''"
+                  >
+                    {{ t(l.clearFilter) }}
+                  </Button>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else-if="files?.list.kind === 'ready' && allFiles.length > 0"
+                :icon="CircleCheck"
+                :title="t(l.allViewed, { total: numbers.format(allFiles.length) })"
+                :detail="t(l.allViewedDetail)"
+              >
+                <template #action>
+                  <div :class="css.reviewView_actions">
+                    <Button
+                      size="sm"
+                      variant="light"
+                      :kbd="REVIEW_KEYS.submit"
+                      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+                      :busy="finish.kind === 'sending'"
+                      @click="submitOpen = true"
+                    >
+                      {{ t(allViewedLoc.submit) }}
+                    </Button>
+                    <Button
+                      v-if="nextNumber !== null"
+                      size="sm"
+                      :kbd="REVIEW_KEYS.nextPullRequest"
+                      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+                      @click="stepPullRequest(nextPullRequest, 'K')"
+                    >
+                      {{ t(allViewedLoc.next, { number: nextNumber }) }}
+                    </Button>
+                    <Button
+                      size="sm"
+                      @click="hideViewed = false"
+                    >
+                      {{ t(l.showViewed) }}
+                    </Button>
+                  </div>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else-if="files?.list.kind === 'ready'"
+                :icon="Equal"
+                :title="t(l.noChanges)"
+                :detail="
+                  branches
+                    ? t(l.noChangesDetail, { head: branches.headRefName, base: branches.baseRefName })
+                    : t(l.noChangesPlain)
+                "
+              >
+                <template #action>
+                  <div :class="css.reviewView_actions">
+                    <Button
+                      v-if="!conversationShown"
+                      size="sm"
+                      @click="conversationShown = true"
+                    >
+                      {{ t(l.conversation) }}
+                      <Kbd :keys="REVIEW_KEYS.conversation" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      :link="githubUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ t(l.openOnGitHub) }}
+                    </Button>
+                  </div>
+                </template>
+              </EmptyState>
+              <EmptyState
+                v-else
+                :icon="FileSearch"
+                :title="t(l.reading, { reference: formatItemReference(reference) })"
+              />
+            </div>
+          </div>
+          <ReviewPendingToolbar
+            v-if="pendingReview || finish.kind !== 'idle'"
+            :comment-count="pendingReview?.commentCount ?? 0"
+            :has-draft="pendingReview !== null"
+            :finish="finish"
+            :can-retry="writing?.canRetry ?? false"
+            :can-dismiss="writing?.canDismiss ?? false"
+            @discard="discardOpen = true"
+            @submit="submitOpen = true"
+            @retry="retryFinish"
+            @dismiss="dismissFinish"
+          />
+        </div>
+        <div
+          v-if="conversationShown"
+          :class="css.reviewView_conversation"
+        >
+          <ReviewConversation
+            v-model:comment-draft="commentDraft"
+            :item="opened.item"
+            :detail="detail"
+            :review-threads="reviewThreads"
+            :load-older="opened.loadAllComments"
+            :load-older-reviews="opened.loadAllReviews"
+            :draft-open="writing?.draftOpen ?? false"
+            :comment-disabled="opened.item ? !editor.getPermissions(opened.item).comment : true"
+            @comment="commentOnPullRequest"
+            @close="conversationShown = false"
+            @jump-to-threads="jumpToReviewThreads"
+          />
+        </div>
       </div>
-      <div
-        v-if="conversationShown"
-        :class="css.reviewView_conversation"
-      >
-        <ReviewConversation
-          v-model:comment-draft="commentDraft"
-          :item="opened.item"
-          :detail="detail"
-          :review-threads="reviewThreads"
-          :load-older="opened.loadAllComments"
-          :load-older-reviews="opened.loadAllReviews"
-          :draft-open="writing?.draftOpen ?? false"
-          :comment-disabled="opened.item ? !editor.getPermissions(opened.item).comment : true"
-          @comment="commentOnPullRequest"
-          @close="conversationShown = false"
-          @jump-to-threads="jumpToReviewThreads"
-        />
-      </div>
-    </div>
+    </ColumnSplit>
     <ReviewSubmitDialog
       v-model:open="submitOpen"
       v-model:choice="submission"
@@ -1892,7 +1902,7 @@ function readAgain() {
   background: $color-bg;
 }
 
-.reviewView_body {
+.reviewView_main {
   display: flex;
   flex: 1;
   min-height: 0;
@@ -1902,13 +1912,11 @@ function readAgain() {
 // No browser's own anchoring: where the files stay when a stack arrives is `ReviewView`'s, in the desktop app's too.
 .reviewView_left {
   display: flex;
-  flex: none;
+  flex: 1;
   flex-direction: column;
-  width: $review-file-list-width;
   min-height: 0;
   overflow-y: auto;
   overflow-anchor: none;
-  border-right: 1px solid $color-border;
 }
 
 .reviewView_left_stacked {
