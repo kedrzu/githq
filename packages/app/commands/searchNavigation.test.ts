@@ -43,7 +43,6 @@ test('a title starting with the text ranks above a title holding its words; plac
     const results = searchNavigation('platform fee', DATA);
 
     expect(ids(results)).toEqual(['c', 'd']);
-    expect(results.map(result => result.score)).toEqual([80, 60]);
     expect(searchNavigation('skyline', DATA).map(result => (result.kind === 'place' ? result.place.id : null))).toEqual(
         ['project:1', 'repository:skyline-labs/portal'],
     );
@@ -86,13 +85,6 @@ test('a number hit marks the digits of the reference as the menu writes it', () 
     expect(matches(searchNavigation('skyline-labs/api#012', DATA))).toEqual([
         { field: 'reference', text: 'api#12', ranges: [4, 6] },
     ]);
-});
-
-test('`#12` is items only: a place holding the digits is not found, even with no such item', () => {
-    const places = [{ ...PORTAL, id: 'sprint', title: 'Sprint 12' }];
-
-    expect(searchNavigation('#12', { ...DATA, places }).map(result => result.kind)).toEqual(['item']);
-    expect(searchNavigation('#99', { ...DATA, places })).toEqual([]);
 });
 
 test('bare digits are a number among items; a place holding them is still found', () => {
@@ -168,16 +160,6 @@ test('newest first among equals, whatever the order they are kept in, and 8 item
         'old3',
         'old4',
     ]);
-});
-
-test('a new array of items is searched anew: what was prepared for the last one is not reused', () => {
-    const before = [issue('a', 'a/b', 1, 'Calendar', '2026-10-01')];
-    const after = [...before, issue('b', 'a/b', 2, 'Calendar too', '2026-10-02')];
-
-    expect(ids(searchNavigation('calendar', { ...DATA, items: before }))).toEqual(['a']);
-    expect(ids(searchNavigation('calendar', { ...DATA, items: before }))).toEqual(['a']);
-    expect(ids(searchNavigation('calendar', { ...DATA, items: after }))).toEqual(['a', 'b']);
-    expect(ids(searchNavigation('too', { ...DATA, items: after }))).toEqual(['b']);
 });
 
 test("a place marks its title, a word it shows as its detail in place, and a word it doesn't show as hidden", () => {

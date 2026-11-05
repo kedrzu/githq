@@ -4,8 +4,9 @@ description: >-
     How a change moves in githq — one task, one Paseo worktree, one branch, one PR; kept up to date
     with main by merging, squash-merged on the owner's word; GitHub Issues as the tracker, stacked PRs
     through GitHub's native stacks — all through git and `gh`. The dev pipeline (/dev:*) relies on it;
-    reach for it whenever you open a branch, commit, push, catch up with main, resolve a merge
-    conflict, open or describe a PR, comment on an issue, build a PR stack or merge.
+    reach for it whenever a task becomes known, you open a branch, commit, push, catch up with main, resolve a merge
+    conflict, open or describe a PR, comment on an issue, build a PR stack or merge, watch a PR's checks
+    until green, or deal with a failure the PR did not cause.
 ---
 
 # git-workflow — githq
@@ -102,7 +103,15 @@ the pinned nzyme (and, once the workspace exists, built everything).
    shows its title; `mcp__paseo__rename_workspace` without `workspaceId` renames the current one. A few
    Polish words the owner recognises the task by („Lista My work”). Rename a generated name
    (`somber-rabbit`, `null`, `githq`); leave a meaningful one. No Paseo tools → skip.
-3. No PR yet at the start: it opens as a draft at the first push (Publish).
+3. Open the PR as a draft now, before the work, so that work under way is visible on GitHub rather than only in a
+   worktree. GitHub refuses a branch with no commits ahead of `main`, so start it with an empty commit. It needs no
+   `verify`, vanishes in the squash, and the title check accepts an empty diff whatever the type:
+   ```bash
+   git commit --allow-empty -m "<type>[(scope)]: <description>"
+   git push -u origin HEAD
+   ```
+   Then Publish, with a body saying what the task is going to do. If the task ends with nothing to change:
+   `gh pr close --delete-branch`.
 
 Not in a fresh worktree: `git fetch origin main` and `git switch -c <type>/<N>-<slug> origin/main --no-track`
 (otherwise the branch tracks `origin/main` until its first push).
@@ -170,7 +179,7 @@ git push -u origin HEAD     # Paseo creates branches without upstream; later jus
 
 ## Publish
 
-PRs open as drafts at the first push of the branch, and leave draft when the work is finished. Publish means the PR
+PRs open as drafts when the task is known (Start), and leave draft when the work is finished. Publish means the PR
 exists and its title and description are current. The pipeline supplies the texts.
 
 - **No PR for the branch** (`gh pr view` fails):
@@ -184,20 +193,52 @@ exists and its title and description are current. The pipeline supplies the text
   EOF
   ```
   `Closes #<N>` only when the branch has an issue; keep that line whenever the body is rewritten.
-  GitHub refuses a PR with no diff from `main`. When the owner wants it open before there is anything
-  to commit, one `git commit --allow-empty` gives it a diff; the commit vanishes in the squash.
 - **PR exists:** read the body with `gh pr view --json body --jq .body`, write the new one with
   `gh pr edit --body-file - <<'EOF' … EOF`; `gh pr edit --title "…"` when the scope changed. A title edit re-runs `title` only. If the old title
   failed `checks`, push to restart it, an empty commit if there is nothing else: a re-run reads the old title.
 - **The work is finished** (the task is done, the full `verify` is green, everything is pushed and the description is
-  current): `gh pr ready`, as the last step, also on a PR created just now. Until then it stays a draft, whatever the
+  current): `gh pr ready`, also on a PR created just now, and then Green. Until then it stays a draft, whatever the
   number of pushes and turns. It says nothing about merging (Land).
 - **A follow-up on a ready PR:** finished within one turn, push it once verified, and the PR stays ready while the checks
-  restart. Longer than that, `gh pr ready --undo` first, which cancels the run, and `gh pr ready` at the end.
+  restart. Longer than that, `gh pr ready --undo` first, which cancels the run, and `gh pr ready` at the end. Either way,
+  Green follows.
 - **Issue:** the number in the branch name (`<type>/<N>-<slug>`) and in `Closes #<N>`;
   `gh issue comment <N> --body-file <file>` posts the summary. No issue → no comment, say so in the
   hand-off.
 - End with the PR URL: `gh pr view --json url,isDraft --jq .url`.
+
+## Green
+
+A ready PR is yours until every check passes on its last commit, in a stack on every node: the owner merges by hand and
+should find nothing left to do.
+
+A full run takes about 9 minutes, so wait as a background command, which wakes you when it exits:
+
+```bash
+gh pr checks <PR> --watch --interval 30
+gh pr checks <PR> --json name,bucket --jq '.[] | select(.name == "checks") | .bucket'   # must print pass
+```
+
+`skipping` or nothing printed means the run has not started, so wait and ask again: right after `gh pr ready` the draft's
+skipped result still shows, and GitHub counts a skipped check as passed, so neither `--watch` nor the ruleset would stop
+this.
+
+**A red your change caused:** fix it, push and watch again.
+
+**A red your change did not cause.** Prove it before you call it that: the failing test has nothing to do with your diff,
+it passes locally, or the same failure shows on other PRs (`gh run list --workflow pr.yml --status failure`). When only
+the infrastructure failed (a lost runner, a network error during install), rerun and carry on. A failing test also gets a
+tracked fix, even if a rerun turns it green, because otherwise it keeps hitting every other PR:
+
+1. **The issue.** `gh issue list --state open --search "<spec file> in:title"`. Found: comment with the run's URL and the
+   error. None: `gh issue create --title "Flaky test: <spec file> > <test>"` with the same.
+2. **The fixer, unless one is on it.** It is if `mcp__paseo__list_agents` shows a live agent titled `Fix #<N>: …`, or an
+   open PR's branch starts with `fix/<N>-`. Otherwise `mcp__paseo__create_workspace` (`isolation: worktree`,
+   `baseBranch: main`, `branchName: fix/<N>-<slug>`), then `mcp__paseo__create_agent` with that `workspaceId` (without it
+   the agent becomes your own subagent in your workspace), the title `Fix #<N>: <test>`, `notifyOnFinish: false` and the
+   prompt `/dev:fix #<N>`. No Paseo tools: say so in the hand-off.
+3. **Your PR.** `gh run rerun <run> --failed`, at most twice, and watch again. Still red: end the turn with the PR ready
+   and say that it is red only because of #<N>, with the fix in PR #<M>. Once that fix lands on `main`, Sync and push.
 
 ## Stack
 
@@ -243,14 +284,7 @@ Node 1 is the task branch; node `k` is `<branch>-<k>` (`feat/30-my-work-list-2`)
 Only on the owner's word („mergujemy”, „merge it”) — it is irreversible and lands on `main`.
 
 1. Sync, the full `verify` (it says what a change with no code needs), push; the PR must be out of draft.
-2. Wait for the checks (in a stack, on each PR) and confirm that `checks` ran on this commit:
-   ```bash
-   gh pr checks <PR> --watch --interval 30
-   gh pr checks <PR> --json name,bucket --jq '.[] | select(.name == "checks") | .bucket'   # must print pass
-   ```
-   A red check stops the merge. `skipping` or nothing printed means the run has not started, so wait and ask again: right
-   after `gh pr ready` the draft's skipped result still shows, and GitHub counts a skipped check as passed, so neither
-   `--watch` nor the ruleset would stop this.
+2. Green, on this commit. A red check stops the merge.
 3. Merge:
    - **One PR:** `gh pr merge <PR> --squash --match-head-commit "$(git rev-parse HEAD)"` — the PR
      title becomes the commit on `main`; the branch is deleted on merge.
@@ -273,7 +307,7 @@ bypass this ruleset):
   previous result. Watch again.
 - **`title` failed.** Fix the title with `gh pr edit --title`, or the diff if that is what broke its promise (Titles).
   Then push, so `checks` runs against it, and watch again.
-- **`checks` failed.** Every red is yours (`verify`): fix it, push and watch again.
+- **`checks` failed.** Green says what to do.
 - **A review thread is unresolved.** List them:
   ```bash
   gh api graphql -f query='{repository(owner:"kedrzu",name:"githq"){pullRequest(number:<PR>){reviewThreads(first:100){nodes{isResolved path line comments(first:1){nodes{body}}}}}}}' \

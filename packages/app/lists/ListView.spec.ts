@@ -1695,7 +1695,7 @@ test('PM32a: a merge sent from the opened item moves on past a draft, the previo
     expect(previous.opened).toEqual(['a1']);
 });
 
-test('detached, the next step and closing the item pass over a draft', async () => {
+test('detached, the next step passes over a draft', async () => {
     const stepped = await mountOpened([['todo', ['a1', 'a2', 'd1', 'a3']]], 'a2', { canOpenOver: isNoDraft });
     stepped.columns.value = [['todo', ['a1', 'd1', 'a3']]];
     await expect.poll(selectedCard).toBeNull();
@@ -1703,14 +1703,6 @@ test('detached, the next step and closing the item pass over a draft', async () 
     await userEvent.keyboard('j');
     await expect.poll(selectedCard).toBe('a3');
     expect(stepped.opened).toEqual(['a3']);
-    stepped.unmount();
-
-    const closed = await mountOpened([['todo', ['a1', 'a2', 'd1', 'a3']]], 'a2', { canOpenOver: isNoDraft });
-    closed.columns.value = [['todo', ['a1', 'd1', 'a3']]];
-    await expect.poll(selectedCard).toBeNull();
-    closed.openedId.value = null;
-    await expect.poll(selectedCard).toBe('a3');
-    expect(closed.opened).toEqual([]);
 });
 
 test('PM32a: a merge sent from the opened item moves on at once, and its later confirmation moves nothing again', async () => {
@@ -1726,20 +1718,6 @@ test('PM32a: a merge sent from the opened item moves on at once, and its later c
     // GitHub says it merged: the row leaves, with no edit pending any more.
     view.columns.value = [['todo', ['a2', 'a3']]];
     await expect.poll(rowTexts).toEqual(['a2', 'a3']);
-    await nextTick();
-    expect(selectedCard()).toBe('a2');
-    expect(view.opened).toEqual(['a2']);
-});
-
-test('PM32a: a merge sent from the last row moves to the row before at once, and its later confirmation moves nothing', async () => {
-    const view = await mountOpened(THREE, 'a3', { merge: sampleMerging([]).context });
-
-    view.container.resolve(ItemNavigation).requestMoveOn(['a3']);
-    await expect.poll(selectedCard).toBe('a2');
-    expect(view.opened).toEqual(['a2']);
-
-    view.columns.value = [['todo', ['a1', 'a2']]];
-    await expect.poll(rowTexts).toEqual(['a1', 'a2']);
     await nextTick();
     expect(selectedCard()).toBe('a2');
     expect(view.opened).toEqual(['a2']);

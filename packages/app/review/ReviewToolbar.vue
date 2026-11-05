@@ -29,6 +29,7 @@ import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import ReviewToggle from './ReviewToggle.vue';
 import * as l from './ReviewToolbar.loc.js';
+import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   reference: ItemReference;
@@ -156,7 +157,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         <label :class="css.reviewToolbar_switch">
           {{ t(l.fileList) }}
           <span :class="css.reviewToolbar_switchEnd">
-            <Kbd keys="Mod+B" />
+            <Kbd :keys="REVIEW_KEYS.fileList" />
             <Switch
               v-model="fileListShown"
               :label="t(l.fileList)"
@@ -166,7 +167,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         <label :class="css.reviewToolbar_switch">
           {{ t(l.conversation) }}
           <span :class="css.reviewToolbar_switchEnd">
-            <Kbd keys="Alt+Mod+B" />
+            <Kbd :keys="REVIEW_KEYS.conversation" />
             <Switch
               v-model="conversationShown"
               :label="t(l.conversation)"
@@ -181,7 +182,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         :icon="PanelLeft"
         :label="t(l.fileList)"
         :pressed="fileListShown"
-        kbd="Mod+B"
+        :kbd="REVIEW_KEYS.fileList"
         panel
         @click="fileListShown = !fileListShown"
       />
@@ -189,7 +190,7 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
         :icon="PanelRight"
         :label="t(l.conversation)"
         :pressed="conversationShown"
-        kbd="Alt+Mod+B"
+        :kbd="REVIEW_KEYS.conversation"
         panel
         @click="conversationShown = !conversationShown"
       />

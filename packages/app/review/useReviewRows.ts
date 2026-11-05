@@ -1,3 +1,4 @@
+import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onScopeDispose, shallowRef, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter, ShallowRef } from 'vue';
@@ -15,6 +16,7 @@ import type { FileVersions } from './syntax/createFileSyntax.js';
 import { groupThreadsByFile, listGoneEntries, placeThreads } from './threads/placeThreads.js';
 import type { ThreadFileView, ThreadPlacement } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
+import type { ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 /** Options of {@link useReviewRows}. */
 export interface UseReviewRowsOptions {
@@ -27,6 +29,8 @@ export interface UseReviewRowsOptions {
     currentPath: MaybeRefOrGetter<string | null>;
     /** Whether a collapsed file shows its threads under its header (D13). */
     threadsInCollapsed: MaybeRefOrGetter<boolean>;
+    /** The comment boxes open: rows are built of where they sit, never of what is typed in them. */
+    commentTargets: MaybeRefOrGetter<readonly ReviewCommentTarget[]>;
 }
 
 /** Where the review threads show, as a new object whenever that changes. */
@@ -54,6 +58,7 @@ interface BuiltLines {
     readonly expanded: readonly DiffLineRange[];
     readonly expansionReset: boolean;
     readonly threads: readonly ThreadPlacement[] | undefined;
+    readonly comments: readonly ReviewCommentTarget[] | undefined;
     readonly content: LinesContent;
 }
 
@@ -107,6 +112,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     let builtPlacements = threadPlacements.value;
     let builtThreadsInCollapsed = toValue(options.threadsInCollapsed);
     let threadsByFile = new Map<string, readonly ReviewThread[]>();
+    let builtTargets: readonly ReviewCommentTarget[] = [];
+    let commentsByFile: ReadonlyMap<string, readonly ReviewCommentTarget[]> = new Map();
 
     watch(
         [
@@ -117,6 +124,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             () => toValue(options.files)?.files,
             () => toValue(options.files)?.listEnd,
             () => toValue(options.threadsInCollapsed),
+            () => toValue(options.commentTargets),
         ],
         () => {
             rebuild();
@@ -148,6 +156,11 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
 
     function rebuild() {
         placeAllThreads();
+        const targets = toValue(options.commentTargets);
+        if (targets !== builtTargets) {
+            commentsByFile = groupComments(targets);
+        }
+
         const files = toValue(options.ordered);
         const next = files.map(getContent);
         const reasons = files.map(getCollapseReason);
@@ -155,6 +168,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         if (
             files === builtFiles &&
             threadPlacements.value === builtPlacements &&
+            targets === builtTargets &&
             toValue(options.threadsInCollapsed) === builtThreadsInCollapsed &&
             next.length === builtFrom.length &&
             next.every((c, i) => c === builtFrom[i]) &&
@@ -165,6 +179,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
 
         builtFiles = files;
         builtPlacements = threadPlacements.value;
+        builtTargets = targets;
         builtThreadsInCollapsed = toValue(options.threadsInCollapsed);
         builtFrom = next;
         builtReasons = reasons;
@@ -174,6 +189,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             getContent,
             getCollapseReason,
             getThreads: file => threadPlacements.value.byFile.get(file.path),
+            getComments: file => commentsByFile.get(file.path),
             threadsInCollapsed: builtThreadsInCollapsed,
         });
     }
@@ -237,8 +253,14 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         const expanded = toValue(options.files)?.getExpandedLines(file.path) ?? [];
         const expansionReset = toValue(options.files)?.isExpansionReset(file.path) ?? false;
         const threads = threadPlacements.value.byFile.get(file.path);
+        const comments = commentsByFile.get(file.path);
         const built = byLayout[layout];
-        if (built?.expanded === expanded && built.expansionReset === expansionReset && built.threads === threads) {
+        if (
+            built?.expanded === expanded &&
+            built.expansionReset === expansionReset &&
+            built.threads === threads &&
+            built.comments === comments
+        ) {
             return built.content;
         }
 
@@ -252,10 +274,23 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
                 expanded,
                 expansionReset,
                 threads,
+                comments,
             }),
         };
-        byLayout[layout] = { expanded, expansionReset, threads, content };
+        byLayout[layout] = { expanded, expansionReset, threads, comments, content };
         return content;
+    }
+
+    /** The same array for a file whose boxes stayed the same: its rows are kept by that. */
+    function groupComments(targets: readonly ReviewCommentTarget[]) {
+        const grouped = new Map<string, readonly ReviewCommentTarget[]>();
+        for (const [path, inFile] of groupByToMap(targets, target => target.path)) {
+            const held = commentsByFile.get(path);
+            const same = held?.length === inFile.length && inFile.every((target, i) => target === held[i]);
+            grouped.set(path, same ? held : inFile);
+        }
+
+        return grouped;
     }
 
     function placeAllThreads() {

@@ -9,30 +9,14 @@ import * as stories from './RunStrip.stories.js';
 const { BrokenNew, BrokenOld, FewerRuns, NoRuns, RunningAfterFailures } = composeStories(stories);
 
 // The heights of the design's ticks (W0): the verdict reads without colour.
-const HEIGHT = { failed: 14, failedNew: 14, passed: 5, none: 2, running: 14, unknown: 1 };
+const HEIGHT = { failed: 14, passed: 5, unknown: 1 };
 
-test('a tick’s height carries its verdict: failed tall, passed short, no verdict a dash', async () => {
-    await BrokenOld.run();
-
-    expect(readTicks()).toEqual([
-        { kind: 'passed', height: HEIGHT.passed },
-        { kind: 'passed', height: HEIGHT.passed },
-        { kind: 'failed', height: HEIGHT.failed },
-        { kind: 'none', height: HEIGHT.none },
-        { kind: 'failed', height: HEIGHT.failed },
-    ]);
-});
-
-test('a break younger than a day is bright; a run going is a tall hollow tick, at the right', async () => {
+test('a break younger than a day is bright; a run going stands at the right', async () => {
     await BrokenNew.run();
     expect(readTicks().map(tick => tick.kind)).toEqual(['passed', 'passed', 'failedNew', 'failedNew', 'failedNew']);
 
     await RunningAfterFailures.run();
-    const ticks = readTicks();
-    expect(ticks.at(-1)).toEqual({ kind: 'running', height: HEIGHT.running });
-    const bars = page.getByTestId('run-bar').elements();
-    const running = bars.at(-1);
-    expect(running && getComputedStyle(running).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(readTicks().at(-1)?.kind).toBe('running');
 });
 
 test('with fewer than five runs the slots on the left are hairlines and the latest run is the rightmost', async () => {

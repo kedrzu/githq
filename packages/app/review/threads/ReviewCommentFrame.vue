@@ -13,7 +13,8 @@ import * as l from './ReviewCommentFrame.loc.js';
 const props = defineProps<{
   /** `null` for an account that no longer exists. */
   author: ItemUser | null;
-  url: string;
+  /** On GitHub; none for one on its way there. */
+  url?: string;
   createdAt: string;
   /** A little more room under the head, as a review summary has. */
   spaced?: boolean;
@@ -38,7 +39,14 @@ const age = computed(() => formatAge(Date.parse(props.createdAt), now.value));
       <p :class="css.reviewCommentFrame_meta">
         <span :class="css.reviewCommentFrame_author">{{ author?.login ?? t(l.ghost) }}</span>
         <slot name="verdict" />
+        <time
+          v-if="url === undefined"
+          :class="css.reviewCommentFrame_age"
+          :datetime="createdAt"
+          >{{ age }}</time
+        >
         <a
+          v-else
           :class="css.reviewCommentFrame_age"
           :href="url"
           target="_blank"

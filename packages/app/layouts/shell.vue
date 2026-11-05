@@ -1,5 +1,6 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
+import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { computed, defineAsyncComponent, watch } from 'vue';
@@ -31,6 +32,7 @@ import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { BrowsedRepositories } from '@/repos/BrowsedRepositories.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import RepositoryContextMenu from '@/repository/RepositoryContextMenu.vue';
+import { saysWhereSettingsAreSaved } from '@/settings/settingsRoutes.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
 import SyncStoppedToast from '@/settings/SyncStoppedToast.vue';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
@@ -232,6 +234,19 @@ const screenFreshness = computed((): Freshness => {
   return sync.myWorkFreshness;
 });
 
+// Settings' screens say where the settings are saved next to "Up to date" (githq D26).
+const shownFreshness = computed((): Freshness => {
+  const freshness = screenFreshness.value;
+  return freshness.kind === 'fresh' && auth.viewer && saysWhereSettingsAreSaved(route)
+    ? {
+        kind: 'settingsSaved',
+        checkedAt: freshness.checkedAt,
+        saving: settingsSync.state.state,
+        repository: getSettingsNameWithOwner(auth.viewer.login),
+      }
+    : freshness;
+});
+
 const opened = computed(() => getOpenedItemRoute(route));
 /** How the item opened over the screen's list shows; `null` with none, or on the item's own page. */
 const overList = computed(() => (opened.value && !opened.value.onPage ? navigation.listArrangement : null));
@@ -339,7 +354,7 @@ function showLastFailure() {
     :rate-limit="rateLimits.get('graphql')"
     :notice="sync.notice"
     :last-refreshed-at="items.getSyncState('myWork').lastSuccessAt"
-    :freshness="opened?.onPage ? (itemFreshness ?? screenFreshness) : screenFreshness"
+    :freshness="opened?.onPage ? (itemFreshness ?? shownFreshness) : shownFreshness"
     :item-freshness="opened?.onPage ? null : itemFreshness"
     :my-work-counts="myWorkCounts"
     :tracked="tracked"

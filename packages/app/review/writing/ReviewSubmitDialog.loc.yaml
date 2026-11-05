@@ -1,0 +1,29 @@
+title:
+  en: 'Submit your review of #{number}'
+commentLabel:
+  en: Comment on the pull request
+optional:
+  en: optional
+placeholder:
+  en: Goes on the pull request itself, not on a file…
+kind:
+  en: What the review is
+comment:
+  en: Comment
+approve:
+  en: Approve
+requestChanges:
+  en: Request changes
+submitReview:
+  en: Submit review
+needsComment:
+  en: Write a comment first
+needsChanges:
+  en: Say what to change first
+pendingGo:
+  plural: count
+  en:
+    one: 1 pending comment goes with it
+    many: '{count} pending comments go with it'
+note:
+  en: Everyone sees it once it's submitted.

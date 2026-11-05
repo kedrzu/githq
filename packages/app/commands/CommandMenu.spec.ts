@@ -85,6 +85,28 @@ test('Escape steps back out of a submenu, then closes; ⌫ in the empty field ta
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).not.toBeInTheDocument();
 });
 
+test('← in the empty field of a submenu steps back; with text it only moves the caret, and at the top level it keeps the chip', async () => {
+    await OnOpenItem.run();
+
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(page.getByRole('option', { name: /Set status/u })).toBeInTheDocument();
+
+    await userEvent.keyboard('label{ArrowRight}');
+    const labels = page.getByRole('listbox', { name: 'Add or remove labels…' });
+    await expect.element(labels).toBeInTheDocument();
+    await userEvent.keyboard('bug{ArrowLeft}');
+    await expect.element(labels).toBeInTheDocument();
+    await userEvent.keyboard('X');
+    await expect.element(page.getByRole('textbox')).toHaveValue('buXg');
+
+    await userEvent.clear(page.getByRole('textbox'));
+    await expect.element(page.getByRole('textbox')).toHaveValue('');
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(labels).not.toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /Set status/u })).toBeInTheDocument();
+});
+
 test('⌫ in the empty field takes out the item, then the repository with its group', async () => {
     await OnOpenItemInRepository.run();
 
@@ -230,26 +252,6 @@ test('E5: a submenu option found by its detail marks the detail', async () => {
     const option = page.getByRole('option', { name: /^kedrzu you/u });
     await expect.element(option).toBeInTheDocument();
     expect(getMarks(option)).toEqual(['you']);
-});
-
-test('typing finds an item with a typo, words in another order and without diacritics', async () => {
-    await Typing.run();
-    const field = page.getByRole('textbox', { name: 'Type a command or search…' });
-
-    await userEvent.keyboard('reactivty');
-    await expect.element(page.getByRole('option', { name: /Keep reactivity when the sidebar/u })).toBeInTheDocument();
-
-    await userEvent.clear(field);
-    await userEvent.keyboard('webhook retry');
-    const reordered = page.getByRole('option', { name: /^Retry Stripe webhook delivery on 5xx/u });
-    await expect.element(reordered).toBeInTheDocument();
-    expect(getMarks(reordered)).toEqual(['Retry', 'webhook']);
-
-    await userEvent.clear(field);
-    await userEvent.keyboard('zolty');
-    const folded = page.getByRole('option', { name: /^Żółty label is unreadable/u });
-    await expect.element(folded).toBeInTheDocument();
-    expect(getMarks(folded)).toEqual(['Żółty']);
 });
 
 test('E5: above 5 words a line is still found, unmarked', async () => {

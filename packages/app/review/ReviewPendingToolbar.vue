@@ -1,66 +1,181 @@
-<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the way out. Writing comes later (D23), and with it Discard review… and Submit review… (⇧S): until then the one way out is finishing on GitHub. -->
+<!-- The toolbar at the foot of the diff while the viewer has a draft review on the pull request (D28, `Review / Pending toolbar`, CR35, CR36): how many comments wait, what that means, and the ways out, neither of them one click: Discard review… and Submit review… (⇧S) each open their dialog. A refused submission turns it red with GitHub's reason (`· failed`, CR76), everything kept: Edit review… goes back to the dialog, Try again sends the same again. A review with no draft shows here too, on its way and when refused, though no draft keeps the toolbar otherwise. A failure not about the draft open now can be dismissed, and a different draft than it was sent against takes Try again away: only the dialog, which lists its comments, can submit that one (D33). -->
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ArrowUpRight, PencilLine } from 'lucide-vue-next';
+import { CircleAlert, PencilLine } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import Button from '@/components/Button.vue';
 
 import * as l from './ReviewPendingToolbar.loc.js';
+import { REVIEW_KEYS } from './useReviewKeySheet.js';
+import type { ReviewFinishState } from './writing/ReviewWriting.js';
 
-defineProps<{
+const props = defineProps<{
   commentCount: number;
-  /** The pull request's files on GitHub, where the draft is finished. */
-  githubUrl: string;
+  /** A draft is open, even one with no comments yet, which the count can't say. */
+  hasDraft: boolean;
+  /** How finishing the draft is going. */
+  finish: ReviewFinishState;
+  canRetry: boolean;
+  canDismiss: boolean;
+}>();
+
+const emit = defineEmits<{
+  /** Discard review… */
+  discard: [];
+  /** Submit review… or Edit review… */
+  submit: [];
+  retry: [];
+  dismiss: [];
 }>();
 
 const t = useTranslate();
+
+const failed = computed(() => (props.finish.kind === 'failed' ? props.finish : null));
+const sending = computed(() => props.finish.kind === 'sending');
+const failureText = computed(() => {
+  const failure = failed.value?.failure;
+  switch (failure?.kind) {
+    case undefined:
+      return null;
+    case 'refused':
+      return failure.message === null ? t(l.refusedNoReason) : t(l.refused, { reason: failure.message });
+    case 'notReached':
+      return t(l.notReached);
+    case 'commentRefused':
+      return t(l.commentRefused);
+    default:
+      return assertNever(failure);
+  }
+});
 </script>
 
 <template>
   <section
-    :class="css.reviewPendingToolbar"
+    :class="[css.reviewPendingToolbar, failed && css.reviewPendingToolbar_failed]"
     :aria-label="t(l.label)"
   >
-    <PencilLine
-      :class="css.reviewPendingToolbar_icon"
-      aria-hidden="true"
-    />
-    <span :class="css.reviewPendingToolbar_title">
-      <strong :class="css.reviewPendingToolbar_count">{{ commentCount }}</strong>
-      {{ t(l.pendingComments, { count: commentCount }) }}
-    </span>
-    <span :class="css.reviewPendingToolbar_note">{{ t(l.note) }}</span>
-    <Button
-      :class="css.reviewPendingToolbar_finish"
-      size="sm"
-      :icon="ArrowUpRight"
-      :link="githubUrl"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {{ t(l.finishOnGitHub) }}
-    </Button>
+    <template v-if="failed">
+      <CircleAlert
+        :class="css.reviewPendingToolbar_icon"
+        aria-hidden="true"
+      />
+      <span
+        :class="css.reviewPendingToolbar_title"
+        role="alert"
+      >
+        {{ failed.finish.kind === 'discard' ? t(l.discardFailed) : t(l.sendFailed) }}
+      </span>
+      <span
+        :class="css.reviewPendingToolbar_note"
+        :title="failureText ?? undefined"
+        >{{ failureText }}</span
+      >
+      <Button
+        v-if="canDismiss"
+        :class="css.reviewPendingToolbar_quiet"
+        size="sm"
+        variant="ghost"
+        @click="emit('dismiss')"
+      >
+        {{ t(l.dismiss) }}
+      </Button>
+      <Button
+        :class="css.reviewPendingToolbar_quiet"
+        size="sm"
+        variant="ghost"
+        @click="failed?.finish.kind === 'discard' ? emit('discard') : emit('submit')"
+      >
+        {{ t(l.edit) }}
+      </Button>
+      <Button
+        v-if="canRetry"
+        :class="css.reviewPendingToolbar_main"
+        size="sm"
+        variant="light"
+        @click="emit('retry')"
+      >
+        {{ t(l.tryAgain) }}
+      </Button>
+    </template>
+    <template v-else-if="sending && !hasDraft">
+      <PencilLine
+        :class="css.reviewPendingToolbar_icon"
+        aria-hidden="true"
+      />
+      <span
+        :class="css.reviewPendingToolbar_title"
+        role="status"
+      >
+        {{ t(l.sending) }}
+      </span>
+    </template>
+    <template v-else>
+      <PencilLine
+        :class="css.reviewPendingToolbar_icon"
+        aria-hidden="true"
+      />
+      <span :class="css.reviewPendingToolbar_title">
+        <strong :class="css.reviewPendingToolbar_count">{{ commentCount }}</strong>
+        {{ t(l.pendingComments, { count: commentCount }) }}
+      </span>
+      <span :class="css.reviewPendingToolbar_note">{{ t(l.note, { count: commentCount }) }}</span>
+      <Button
+        :class="css.reviewPendingToolbar_quiet"
+        size="sm"
+        variant="ghost"
+        :disabled="sending"
+        @click="emit('discard')"
+      >
+        {{ t(l.discard) }}
+      </Button>
+      <Button
+        :class="css.reviewPendingToolbar_main"
+        size="sm"
+        variant="light"
+        :kbd="REVIEW_KEYS.submit"
+        :aria-keyshortcuts="REVIEW_KEYS.submit"
+        :busy="sending"
+        @click="emit('submit')"
+      >
+        {{ t(l.submit) }}
+      </Button>
+    </template>
   </section>
 </template>
 
 <style lang="scss" module="css">
 .reviewPendingToolbar {
+  --review-pending-tone: #{$color-amber};
+
   display: flex;
   flex: none;
   gap: $spacing-10;
   align-items: center;
   height: 44px;
-  padding: 0 $spacing-8 0 14px;
+  padding: 0 $spacing-8 0 $spacing-14;
   white-space: nowrap;
   background: rgba($color-amber, 0.1);
   border-top: 1px solid rgba($color-amber, 0.35);
+}
+
+.reviewPendingToolbar_failed {
+  --review-pending-tone: #{$color-red};
+
+  background: rgba($color-red, 0.1);
+  border-top-color: rgba($color-red, 0.35);
+
+  .reviewPendingToolbar_title {
+    color: $color-red;
+  }
 }
 
 .reviewPendingToolbar_icon {
   flex: none;
   width: 14px;
   height: 14px;
-  color: $color-amber;
+  color: var(--review-pending-tone);
 }
 
 .reviewPendingToolbar_title {
@@ -85,11 +200,16 @@ const t = useTranslate();
   text-overflow: ellipsis;
 }
 
+.reviewPendingToolbar .reviewPendingToolbar_quiet {
+  flex: none;
+  color: $color-fg-2;
+}
+
 // Twice the class: the button's own look comes from a stylesheet that may load after this one.
-.reviewPendingToolbar .reviewPendingToolbar_finish {
+.reviewPendingToolbar .reviewPendingToolbar_main {
   flex: none;
   color: $color-on-light;
-  background: $color-amber;
-  border-color: $color-amber;
+  background: var(--review-pending-tone);
+  border-color: var(--review-pending-tone);
 }
 </style>

@@ -83,18 +83,19 @@ creates a worktree it runs `setup.sh` (`paseo.json`): it merges `origin/main` in
 fast-forwards the local `main`, copies files that live outside git from the main checkout (`CLAUDE.local.md`,
 `.claude/settings.local.json`, `.env*`, `packages/*/.dev.vars`) and checks out the pinned nzyme.
 
-**Without asking** (standing permission): name the branch and the workspace once the task is known; at the
-end of every turn that changed files — commit, catch up with `main`, push, then open the PR as a draft or update its
-description when the scope grew. Keep the branch current with `main` by merging,
+**Without asking** (standing permission): once the task is known, name the branch and the workspace and open the PR
+as a draft, before any work on it; at the end of every turn that changed files — commit, catch up with `main`, push,
+and update the PR's description when the scope grew. Keep the branch current with `main` by merging,
 never rebase or force-push; resolve conflicts yourself. End with the PR link. PR titles are Conventional
 Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 
 **Drafts.** A PR stays a draft until its work is finished, because the checks (`.github/workflows/pr.yml`) run on every
 push to a PR that is ready. Pushing to a draft mid-work is fine, and a turn that ends with work left or a question for
 the owner leaves it a draft. Finished means the task is done, the full `verify` is green, everything is pushed and the
-description is current; `gh pr ready` is then the last step, done without asking. A follow-up on a ready PR: finished
-within one turn, push it once verified, the PR stays ready and the checks restart; longer than that, `gh pr ready --undo`
-first and `gh pr ready` again at the end.
+description is current; `gh pr ready` follows, done without asking. The agent then takes the PR to green
+(`git-workflow` → Green), so that the owner can merge it by hand; a failure the PR did not cause gets a tracked issue and
+a fixer agent of its own. A follow-up on a ready PR: finished within one turn, push it once verified, the PR stays ready
+and the checks restart; longer than that, `gh pr ready --undo` first and `gh pr ready` again at the end. It too ends green.
 
 **Only on the owner's word** ("mergujemy", "merge it"): the squash merge, of a stack too. Never push to `main` — the `git`
 plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an

@@ -31,6 +31,29 @@ test('hovering "Up to date" tells how long ago it was checked, and the time move
     await expect.element(tooltip('Checked 1m ago')).toBeVisible();
 });
 
+test('on Settings: where the settings are saved, with saving off or stopped that they stay on this device, and hover still tells the check', async () => {
+    const settingsSaved = (saving: 'off' | 'on' | 'stopped'): Freshness => ({
+        kind: 'settingsSaved',
+        checkedAt: NOW,
+        saving,
+        repository: 'mlaine/githq-settings',
+    });
+
+    mount(settingsSaved('on'));
+    const saved = page.getByText('Up to date · settings saved in mlaine/githq-settings');
+    await expect.element(saved).toBeVisible();
+    await userEvent.hover(saved);
+    await expect.element(tooltip('Checked 0s ago')).toBeVisible();
+
+    mount(settingsSaved('off'));
+    await expect.element(page.getByText('Up to date · saving is off, settings stay on this device')).toBeVisible();
+
+    mount(settingsSaved('stopped'));
+    await expect
+        .element(page.getByText("Up to date · syncing stopped, settings stay on this device until it's fixed"))
+        .toBeVisible();
+});
+
 test('W4j: while a job runs it says when GitHub was last asked, and the time moves on', async () => {
     const clock = mount({ kind: 'statusChecked', checkedAt: NOW - 20_000 });
 

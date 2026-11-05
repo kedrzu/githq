@@ -16,6 +16,9 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: [
             {
                 id: 'C_1',

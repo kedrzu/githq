@@ -1557,6 +1557,7 @@ dependencies = [
 name = "githq"
 version = "0.1.0"
 dependencies = [
+ "dispatch2",
  "keyring",
  "reqwest",
  "semver",

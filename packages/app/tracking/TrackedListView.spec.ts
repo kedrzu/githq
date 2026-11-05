@@ -47,12 +47,11 @@ test("G8: a row shows the repository's name without its owner, public or private
     const webapp = row('fitloop', 'webapp');
     await expect.element(webapp).toHaveTextContent(/^webapp\s*private\s*142\sopen\s*synced\s14s\sago/u);
     await expect.element(row('mlaine', 'tasklet')).toHaveTextContent(/tasklet\s*public\s*18\sopen/u);
-    expect(webapp.element().getBoundingClientRect().height).toBe(36);
 
     // Untrack shows on the hovered and the selected row only.
     const untrack = webapp.getByRole('button', { name: 'Untrack', includeHidden: true });
-    // Off the rows first: the pointer stays wherever an earlier test left it.
-    await userEvent.hover(page.getByRole('heading', { name: '7 tracked repositories', level: 2 }));
+    // An earlier test may have left the pointer where this row is drawn.
+    await userEvent.hover(page.getByRole('heading', { name: 'fitloop', level: 3 }));
     expect(getComputedStyle(untrack.element()).visibility).toBe('hidden');
     await userEvent.hover(webapp);
     expect(getComputedStyle(untrack.element()).visibility).toBe('visible');

@@ -139,7 +139,7 @@ test('Workflow alerts on the default: the default branch as GitHub names it, the
     expect(patternField().element().getAttribute('placeholder')).toMatch(
         like('^Add a branch or tag pattern, such as release/\\* or v\\*$'),
     );
-    await expect.element(page.getByText('Matches: branches and tags githq has seen runs on')).toBeVisible();
+    await expect.element(page.getByText('Matches: branches and tags with runs')).toBeVisible();
 });
 
 test('W7: a pattern shows its matches, branches first, "+n" for the rest, what runs on them, an amber flag for a branch among tags, and its broken count', async () => {

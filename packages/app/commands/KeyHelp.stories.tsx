@@ -1,5 +1,6 @@
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { expect, within } from 'storybook/test';
 import { defineComponent, ref } from 'vue';
 
 import ItemView from '@/item/ItemView.vue';
@@ -8,6 +9,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import type { Command, CommandKeySheet } from './CommandTypes.js';
 import KeyHelp from './KeyHelp.vue';
 import { useCommands } from './useCommands.js';
 
@@ -73,3 +75,36 @@ export const OverOpenItem: Story = {};
 
 /** Closed: `?` opens it. */
 export const Closed: Story = { args: { startOpen: false } };
+
+/** CR29: a screen's own sheet, in place of the actions that can run now: a row may speak of two keys, and it shows whatever can run. */
+export const ScreenSheet: StoryObj<typeof KeyHelp> = {
+    render: () => ({
+        components: { KeyHelp },
+        setup: () => ({
+            commands: [
+                { id: 'newIssue', title: 'New issue', section: 'app', key: 'C', run: () => {} },
+            ] satisfies Command[],
+            sheet: {
+                title: 'Keys in a review',
+                columns: [
+                    { title: 'Moving', rows: [{ keys: [']', '['], label: 'Next and previous file' }] },
+                    { title: 'Files', rows: [{ keys: ['Space'], label: 'Collapse or expand the file' }] },
+                    {
+                        title: 'Writing',
+                        rows: [{ keys: ['Mod+Enter', 'Mod+Shift+Enter'], label: 'Your default, and the other' }],
+                    },
+                ],
+                footer: [{ keys: ['Alt+Mod+B'], label: 'Conversation' }],
+            } satisfies CommandKeySheet,
+        }),
+        template: `<KeyHelp :open="true" :commands="commands" :sheet="sheet" />`,
+    }),
+    play: async () => {
+        const help = within(document.body);
+        await expect(help.getByRole('dialog', { name: 'Keys in a review' })).toBeVisible();
+        await expect(help.getByRole('region', { name: 'Moving' })).toBeVisible();
+        await expect(help.getByText('Next and previous file')).toBeVisible();
+        await expect(help.getByText('Conversation')).toBeVisible();
+        await expect(help.queryByText('New issue')).toBeNull();
+    },
+};

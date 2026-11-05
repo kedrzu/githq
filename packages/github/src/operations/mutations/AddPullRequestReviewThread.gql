@@ -1,0 +1,26 @@
+# A thread joining the viewer's open draft review (code review D17).
+mutation AddPullRequestReviewThread(
+    $pullRequestReviewId: ID!
+    $path: String!
+    $line: Int!
+    $side: DiffSide!
+    $startLine: Int
+    $startSide: DiffSide
+    $body: String!
+) {
+    addPullRequestReviewThread(
+        input: {
+            pullRequestReviewId: $pullRequestReviewId
+            path: $path
+            line: $line
+            side: $side
+            startLine: $startLine
+            startSide: $startSide
+            body: $body
+        }
+    ) {
+        thread {
+            id
+        }
+    }
+}
