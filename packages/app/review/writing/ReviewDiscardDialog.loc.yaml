@@ -1,0 +1,14 @@
+title:
+  en: 'Discard your pending review of #{number}?'
+detail:
+  plural: count
+  en:
+    one: This comment will be deleted, here and on GitHub. Nobody has seen it, and it can't be brought back.
+    many: These {count} comments will be deleted, here and on GitHub. Nobody has seen them, and they can't be brought back.
+cancel:
+  en: Cancel
+discard:
+  plural: count
+  en:
+    one: Discard 1 comment
+    many: Discard {count} comments

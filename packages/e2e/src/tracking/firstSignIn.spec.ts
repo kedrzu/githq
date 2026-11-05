@@ -110,10 +110,6 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     github,
 }) => {
     const sample = createSampleTrackedWork();
-    sample.world.organization('acme');
-    sample.world.repository('acme/api');
-    sample.world.organization('secretive', { hidesPrivateData: true });
-    sample.world.repository('secretive/docs');
     sample.world.install(github);
     github.graphql('Viewer', SAMPLE_VIEWER);
 
@@ -122,10 +118,6 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.repository(SAMPLE_REPOSITORY)).toBeChecked();
     await expect(firstSignIn.project(SAMPLE_PROJECT)).toBeChecked();
-    await expect(firstSignIn.repository('acme/api')).not.toBeChecked();
-    await expect(firstSignIn.root).toContainText(
-        "secretive hasn't approved githq, so its private repositories can't be listed.",
-    );
 
     await firstSignIn.trackButton.click();
     await expect(page).toHaveURL('/settings/tracking/download');

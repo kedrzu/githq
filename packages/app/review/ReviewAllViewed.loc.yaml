@@ -1,0 +1,26 @@
+title:
+  en: All {total} files viewed
+threads:
+  plural: count
+  en:
+    one: 1 thread is
+    many: '{count} threads are'
+files:
+  plural: count
+  en:
+    one: 1 file
+    many: '{count} files'
+stillOpen:
+  en: '{threads} still open on {files}, shown below.'
+thenNext:
+  en: Answer or resolve them, then send your review or move on to #{number}.
+thenSubmit:
+  en: Answer or resolve them, then send your review.
+submitOrNext:
+  en: 'Send your review or move on to #{number}.'
+submitOnly:
+  en: Send your review.
+submit:
+  en: Submit review…
+next:
+  en: 'Next: #{number}'

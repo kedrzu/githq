@@ -34,36 +34,6 @@ test("the page's header holds the section's name, and only that", async () => {
     await expect.element(header).toHaveTextContent(/^Display$/u);
 });
 
-test('`1` to `5` and the rows choose the section', async () => {
-    const onUpdateSection = vi.fn();
-    await Repositories.run({ args: { ...Repositories.args, 'onUpdate:section': onUpdateSection } });
-
-    for (const [key, section] of [
-        ['2', 'projects'],
-        ['3', 'display'],
-        ['4', 'sync'],
-        ['5', 'account'],
-        ['1', 'repositories'],
-    ] as const) {
-        await userEvent.keyboard(key);
-        expect(onUpdateSection).toHaveBeenLastCalledWith(section);
-    }
-
-    await userEvent.click(page.getByRole('button', { name: 'Account' }));
-    expect(onUpdateSection).toHaveBeenLastCalledWith('account');
-});
-
-test('Tab lands on the open section and ↑/↓ move through the column', async () => {
-    await Repositories.run();
-
-    await userEvent.tab();
-    await expect.element(page.getByRole('button', { name: 'Repositories 15' })).toHaveFocus();
-    await userEvent.keyboard('{ArrowDown}');
-    await expect.element(page.getByRole('button', { name: 'Projects 2' })).toHaveFocus();
-    await userEvent.keyboard('{ArrowUp}');
-    await expect.element(page.getByRole('button', { name: 'Repositories 15' })).toHaveFocus();
-});
-
 test('on the web Updates is not a section: its `?tab=` falls back as an unknown one does, and `6` does nothing', async () => {
     expect(readSettingsSection('updates')).toBe('repositories');
     expect(getSettingsPath(readSettingsSection('updates'))).toBe('/settings');

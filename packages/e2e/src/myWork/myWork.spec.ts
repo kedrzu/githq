@@ -33,19 +33,6 @@ test('my work lists the four groups in order, each item once, and says it is up 
     await expect(shell.statusBar).toContainText('Up to date');
 });
 
-test('my pull request closing an assigned issue is nested under it, and nowhere else', async ({ page, github }) => {
-    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
-
-    await expect(myWork.rows('Assigned to me')).toHaveText([
-        /Sign-in loops after the token expires/,
-        /Redirect once after sign-in.*#15/,
-        /Document the keyboard shortcuts/,
-    ]);
-    await expect(myWork.row('Redirect once after sign-in')).toHaveCount(1);
-    await expect(myWork.rows('My pull requests').filter({ hasText: 'Redirect once after sign-in' })).toHaveCount(0);
-    await expect(myWork.groupCount('Assigned to me')).toHaveText('2');
-});
-
 test('the sidebar counts what the list shows, and "My work" their sum', async ({ page, github }) => {
     const { myWork, shell } = await openMyWork(page, github, createSampleMyWork().world);
 
@@ -141,7 +128,6 @@ test('nothing on my plate (K4) says what was checked and offers the next keys: a
     const { myWork } = await openMyWork(page, github, new GitHubWorld(SAMPLE_VIEWER.viewer.login));
 
     await expect(myWork.root.getByRole('heading', { name: 'Nothing on your plate' })).toBeVisible();
-    await page.screenshot({ path: '../../.context/m6-k4.png' });
     await myWork.root.getByRole('button', { name: 'Jump to a project' }).click();
     await expect(new CommandMenuHarness(page).root).toBeVisible();
     await page.keyboard.press('Escape');

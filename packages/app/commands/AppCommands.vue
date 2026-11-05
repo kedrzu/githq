@@ -389,6 +389,7 @@ function navigate(result: NavigationResult) {
   <KeyHelp
     v-model:open="helpOpen"
     :commands="enabledCommands"
+    :sheet="registry.keySheet"
   />
   <NewIssue />
   <MergePanelHost />

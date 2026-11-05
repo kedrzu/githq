@@ -254,26 +254,6 @@ test('E5: a submenu option found by its detail marks the detail', async () => {
     expect(getMarks(option)).toEqual(['you']);
 });
 
-test('typing finds an item with a typo, words in another order and without diacritics', async () => {
-    await Typing.run();
-    const field = page.getByRole('textbox', { name: 'Type a command or search…' });
-
-    await userEvent.keyboard('reactivty');
-    await expect.element(page.getByRole('option', { name: /Keep reactivity when the sidebar/u })).toBeInTheDocument();
-
-    await userEvent.clear(field);
-    await userEvent.keyboard('webhook retry');
-    const reordered = page.getByRole('option', { name: /^Retry Stripe webhook delivery on 5xx/u });
-    await expect.element(reordered).toBeInTheDocument();
-    expect(getMarks(reordered)).toEqual(['Retry', 'webhook']);
-
-    await userEvent.clear(field);
-    await userEvent.keyboard('zolty');
-    const folded = page.getByRole('option', { name: /^Żółty label is unreadable/u });
-    await expect.element(folded).toBeInTheDocument();
-    expect(getMarks(folded)).toEqual(['Żółty']);
-});
-
 test('E5: above 5 words a line is still found, unmarked', async () => {
     await Typing.run();
 

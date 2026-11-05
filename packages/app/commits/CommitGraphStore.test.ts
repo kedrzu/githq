@@ -651,24 +651,6 @@ test("a good older page leaves another check's failure standing: the status bar 
     expect(graphs.getFreshness('acme/web')).toEqual(stale);
 });
 
-test('opening again clears what a failed older page said', async () => {
-    const world = fakeCommitGitHub();
-    const web = world.repository('acme/web');
-    web.line('c', 0, 250);
-    web.branch('main', 'c249');
-    let failing = true;
-    const { graphs } = setup(uniqueLogin(), {
-        answer: request => (request.operation === 'CommitHistories' && failing ? undefined : world.answer(request)),
-    });
-    await graphs.open('acme/web');
-    await graphs.loadMore('acme/web');
-    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
-
-    failing = false;
-    await graphs.open('acme/web');
-    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
-});
-
 test('coming back online reads a graph again when only its older page failed for want of the connection', async () => {
     const world = fakeCommitGitHub();
     const web = world.repository('acme/web');

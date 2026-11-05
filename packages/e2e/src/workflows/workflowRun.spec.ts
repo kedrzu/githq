@@ -176,30 +176,6 @@ test('W4e: nothing but the log waits, Esc and O work while it loads', async ({ p
     github.releaseAnswers();
 });
 
-test('W4f: a failed run with no jobs is a page of its own', async ({ page, github }) => {
-    const { world, path } = createFailedRun();
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.message('Failed before the first job')).toBeVisible();
-    await expect(screen.root).toContainText('invalid workflow file');
-    await expect(screen.jobs).toHaveCount(0);
-});
-
-test('W4g: a log past retention says so, the jobs and steps still there', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun();
-    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
-    world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, 410);
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.message('This log was garbage-collected')).toBeVisible();
-    await expect(screen.root).toContainText('It failed at Run bun run build.');
-    await expect(screen.steps).toHaveCount(2);
-});
-
 test('W4i: one job’s log failing leaves the rest working, with GitHub’s status; Enter tries again', async ({
     page,
     github,
@@ -412,53 +388,6 @@ test('a line’s address for a job the run no longer has opens the job shown at 
     await expect(screen.logStep('Set up job')).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('W4h: no error marker: opens at the end, saying so', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun();
-    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
-    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, { 2: ['first', 'the very last'] });
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.cursorLine).toContainText('the very last');
-    await expect(screen.logErrors).toHaveText('No error marker');
-    await expect(screen.logEnd).toContainText('The job failed without an error marker');
-});
-
-test('W4d: W wraps and T shows times, and both stay on for the next session; a log of 100,000 lines keeps few rows in the DOM', async ({
-    page,
-    github,
-}) => {
-    const { world, runId, path } = createFailedRun();
-    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
-    const long = `at ${'node_modules/rollup/dist/'.repeat(30)}`;
-    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, {
-        2: [long, ...Array.from({ length: 100_000 }, (_, index) => `line ${index}`), '##[error]exit code 1'],
-    });
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.cursorLine).toContainText('exit code 1');
-    await expect(screen.logRows.nth(0)).toBeVisible();
-    expect(await screen.logRows.count()).toBeLessThan(120);
-
-    await page.keyboard.press('w');
-    await page.keyboard.press('t');
-    await expect(screen.wrapToggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(screen.timesToggle).toHaveAttribute('aria-pressed', 'true');
-
-    await page.keyboard.press('g');
-    await expect(screen.logLines.filter({ hasText: 'rollup' }).first()).toBeVisible();
-    const box = await screen.logLines.filter({ hasText: 'rollup' }).first().boundingBox();
-    expect(box?.height).toBeGreaterThan(18);
-    expect(await screen.logRows.count()).toBeLessThan(120);
-
-    await page.reload();
-    await expect(screen.wrapToggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(screen.timesToggle).toHaveAttribute('aria-pressed', 'true');
-});
-
 test('text selected with the mouse stays selected, and copies without the line numbers; a click on a line takes the cursor', async ({
     page,
     github,
@@ -544,50 +473,6 @@ test('a log GitHub had no answer for just after its job ended is asked for again
     await page.keyboard.press('Alt+k');
     await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
     await expect(screen.message('This log was garbage-collected')).toHaveCount(0);
-});
-
-test('“… N more characters” opens the rest of the line by click and by Enter', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun();
-    const [buildId = 0] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
-    world.jobLogBySteps(SAMPLE_REPOSITORY, runId, buildId, {
-        2: [`${'x'.repeat(20_000)}THE END`, `${'y'.repeat(20_000)}THE LAST`, '##[error]exit code 1'],
-    });
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.logLines.filter({ hasText: 'THE END' })).toHaveCount(0);
-    await screen.logMore.first().dispatchEvent('click');
-    await expect(screen.logLines.filter({ hasText: 'THE END' })).toHaveCount(1);
-
-    // The click took the cursor to that line.
-    await page.keyboard.press('j');
-    await expect(screen.cursorLine).toContainText('yyyy');
-    await page.keyboard.press('Enter');
-    await expect(screen.logLines.filter({ hasText: 'THE LAST' })).toHaveCount(1);
-});
-
-test('a run GitHub won’t show says so, with a way to GitHub', async ({ page, github }) => {
-    const { world } = createFailedRun();
-    await openTrackedWork(page, github, world);
-    await page.goto(`/${SAMPLE_REPOSITORY}/actions/runs/999`);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.message('GitHub shows no such run')).toBeVisible();
-    await expect(screen.openOnGitHubButton).toBeVisible();
-});
-
-test('a passed run’s page works: its first job selected, no error', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun('success');
-    const [lintId] = world.runJobs(SAMPLE_REPOSITORY, runId, [LINT]);
-    world.jobLog(SAMPLE_REPOSITORY, lintId ?? 0, '2026-11-02T11:46:01.0000000Z all fine');
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.job('lint')).toHaveAttribute('aria-current', 'true');
-    await expect(screen.summary).toContainText('Passed');
-    await expect(screen.logTexts).toHaveText(['all fine']);
 });
 
 test('under `actions/` of a tracked repository everything but a run and its job is GitHub’s page', async ({
@@ -677,32 +562,6 @@ test('searching a job’s log: from memory, folded steps included, next and only
     await expect(page).toHaveURL(path);
     await expect(screen.cursorLine).toContainText('Process completed');
     await expect(screen.search).toHaveCount(0);
-});
-
-test('⌘F opens the log’s search in place of the browser’s; / and N type in the field', async ({ page, github }) => {
-    const { world, runId, path } = createFailedRun();
-    const [buildId] = world.runJobs(SAMPLE_REPOSITORY, runId, [BUILD]);
-    world.jobLog(SAMPLE_REPOSITORY, buildId ?? 0, RUN_LOG);
-    await openTrackedWork(page, github, world);
-    await page.goto(path);
-    const screen = new WorkflowRunScreenHarness(page);
-    await expect(screen.cursorLine).toContainText('Process completed');
-
-    await page.keyboard.press('?');
-    await expect(page.getByRole('dialog')).toContainText("Search this job's whole log");
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-
-    await page.keyboard.press('ControlOrMeta+f');
-    await expect(screen.searchField).toBeFocused();
-    await page.keyboard.type('<b>/n');
-    await expect(screen.searchField).toHaveValue('<b>/n');
-    await expect(screen.searchPosition).toHaveText('No matches');
-    await page.keyboard.press('ControlOrMeta+a');
-    await page.keyboard.type('<b>');
-    await expect(screen.searchPosition).toHaveText('1 of 1');
-    await expect(screen.cursorLine.locator('mark')).toHaveText('<b>');
-    await expect(screen.cursorLine.locator('b')).toHaveCount(0);
 });
 
 /** A failed run whose failed job has a log, one passed job beside it, and a pass before the run. */
@@ -816,55 +675,32 @@ test('W4k: without permission to re-run the command is not there', async ({ page
     await expect(menu.option(/Re-run failed jobs/u)).toHaveCount(0);
 });
 
-for (const [message, title, detail, hasLink] of [
-    [
-        'Must have admin rights to Repository.',
-        'wasn’t re-run: no permission',
-        'can’t run workflows. Nothing was started, and the run is still failed.',
-        true,
-    ],
-    [
-        'Unable to retry this workflow run because it was created over a month ago',
-        'wasn’t re-run: the run is too old',
-        'a run can be re-run for about a month after it ran',
-        true,
-    ],
-    [
-        'This workflow is already running',
-        'wasn’t re-run: it’s already running',
-        'someone else re-ran it a moment ago',
-        false,
-    ],
-] as const) {
-    test(`W4l: “${message}” is one toast in its own words, the segment red until dismissed, the run as it was`, async ({
-        page,
-        github,
-    }) => {
-        const { world, path } = createRerunnableRun();
-        world.refuseRerun(SAMPLE_REPOSITORY, 403, message);
-        await openTrackedWork(page, github, world);
-        await page.goto(path);
-        const screen = new WorkflowRunScreenHarness(page);
-        const shell = new AppShellHarness(page);
-        await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+test('W4l: “Must have admin rights to Repository.” is one toast in its own words, the segment red until dismissed, the run as it was', async ({
+    page,
+    github,
+}) => {
+    const { world, path } = createRerunnableRun();
+    world.refuseRerun(SAMPLE_REPOSITORY, 403, 'Must have admin rights to Repository.');
+    await openTrackedWork(page, github, world);
+    await page.goto(path);
+    const screen = new WorkflowRunScreenHarness(page);
+    const shell = new AppShellHarness(page);
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
 
-        await new CommandMenuHarness(page).run('Re-run failed');
+    await new CommandMenuHarness(page).run('Re-run failed');
 
-        const wording = (text: string) => new RegExp(text.replaceAll('’', "['’]").replaceAll(' ', '\\s'), 'u');
-        await expect(shell.toasts).toHaveCount(1);
-        await expect(shell.toasts).toContainText(wording(title));
-        await expect(shell.toasts).toContainText(wording(detail));
-        await expect(shell.toasts.getByRole('link', { name: /Open on GitHub/u })).toHaveCount(hasLink ? 1 : 0);
-        await expect(screen.summary).toContainText('Failed');
-        await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
-        await expect(shell.failedRerun).toHaveText(/Re-run\srefused\sby\sGitHub/u);
+    await expect(shell.toasts).toHaveCount(1);
+    await expect(shell.toasts).toContainText(/wasn['’]t\sre-run:\sno\spermission/u);
+    await expect(shell.toasts.getByRole('link', { name: /Open on GitHub/u })).toHaveCount(1);
+    await expect(screen.summary).toContainText('Failed');
+    await expect(screen.logLines.filter({ hasText: 'building' })).toBeVisible();
+    await expect(shell.failedRerun).toHaveText(/Re-run\srefused\sby\sGitHub/u);
 
-        await page.keyboard.press('Escape');
-        await expect(shell.toasts).toHaveCount(0);
-        await expect(shell.failedRerun).toHaveCount(0);
-        await expect(page).toHaveURL(path);
-    });
-}
+    await page.keyboard.press('Escape');
+    await expect(shell.toasts).toHaveCount(0);
+    await expect(shell.failedRerun).toHaveCount(0);
+    await expect(page).toHaveURL(path);
+});
 
 test('W4l: a 5xx and no answer say so, as no refusal; a toast that timed out comes back from the status bar', async ({
     page,

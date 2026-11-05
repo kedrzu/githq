@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test';
 import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
 
 import type { ReviewRow } from '../buildReviewRows.js';
-import { findThreadFromRow, listWalkedThreads } from './walkThreads.js';
+import { findOpenThreadFrom, findThreadFromRow, listWalkedThreads } from './walkThreads.js';
 
 const OPEN_1 = threadRow('open1');
 const SETTLED_1 = threadRow('settled1', true);
@@ -14,6 +14,14 @@ const ROWS: readonly ReviewRow[] = [OPEN_1, SETTLED_1, MIDDLE, SETTLED_2, OPEN_2
 
 test('the walk is every open thread in diff order, then every resolved one', () => {
     expect(listWalkedThreads(ROWS)).toEqual([OPEN_1, OPEN_2, SETTLED_1, SETTLED_2]);
+});
+
+test('from a thread just resolved it goes on to the next open one that way, round to the other end, and to none with none open', () => {
+    expect(findOpenThreadFrom({ rows: ROWS, key: SETTLED_1.key, delta: 1 })).toBe(OPEN_2);
+    expect(findOpenThreadFrom({ rows: ROWS, key: SETTLED_1.key, delta: -1 })).toBe(OPEN_1);
+    expect(findOpenThreadFrom({ rows: ROWS, key: OPEN_2.key, delta: 1 })).toBe(OPEN_1);
+    expect(findOpenThreadFrom({ rows: ROWS, key: OPEN_1.key, delta: -1 })).toBe(OPEN_2);
+    expect(findOpenThreadFrom({ rows: [SETTLED_1, SETTLED_2], key: SETTLED_1.key, delta: 1 })).toBeNull();
 });
 
 test('from a row being read an open thread comes first, however far, then a resolved one; the row itself counts as above', () => {

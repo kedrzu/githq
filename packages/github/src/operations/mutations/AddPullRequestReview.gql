@@ -1,0 +1,20 @@
+# A review with its first thread, in one request: with `event` it is out at once, a single comment; without, it is the viewer's
+# draft. GitHub refuses either while a draft is open: "User can only have one pending review per pull request" (code review D17).
+mutation AddPullRequestReview(
+    $pullRequestId: ID!
+    $commitOID: GitObjectID!
+    $event: PullRequestReviewEvent
+    $thread: DraftPullRequestReviewThread!
+) {
+    addPullRequestReview(
+        input: { pullRequestId: $pullRequestId, commitOID: $commitOID, event: $event, threads: [$thread] }
+    ) {
+        pullRequestReview {
+            id
+            createdAt
+            comments {
+                totalCount
+            }
+        }
+    }
+}

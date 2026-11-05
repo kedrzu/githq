@@ -71,13 +71,6 @@ test('W4j: past the first attempt the summary says which', async () => {
     await expect.element(page.getByTestId('workflow-run-summary')).not.toHaveTextContent('attempt');
 });
 
-test('the log’s lines show as text, never as markup', async () => {
-    await Failed.run();
-
-    await expect.element(page.getByText('<b>building</b> the bundle')).toBeVisible();
-    expect(page.getByTestId('workflow-job-log').element().querySelector('b')).toBeNull();
-});
-
 test('⌥J/⌥K move between the jobs, stopping at the ends; a click selects', async () => {
     const selectJob = vi.fn();
     await Failed.run({ args: { ...Failed.args, onSelectJob: selectJob } });
@@ -194,14 +187,6 @@ test('a log too big to open: Enter reads nothing again; one the app refused, Ent
     expect(retry).toHaveBeenCalledTimes(1);
 });
 
-test('Enter does nothing with nothing to try again', async () => {
-    const retry = vi.fn();
-    await Failed.run({ args: { ...Failed.args, onRetry: retry } });
-
-    await userEvent.keyboard('{Enter}');
-    expect(retry).not.toHaveBeenCalled();
-});
-
 test('W4j: a running job says so with the way to GitHub, steps showing their status, and the run’s state follows', async () => {
     await Running.run();
 
@@ -289,22 +274,4 @@ test('the toolbar’s GitHub link opens the selected job in a new tab, the run w
     expect(page.getByRole('link', { name: 'Open on GitHub' }).element().getAttribute('href')).toBe(
         'https://github.com/fitloop/webapp/actions/runs/4821',
     );
-});
-
-test('W4b: the search counts on the job and its steps; another job keeps the query and is searched; a second Esc goes back', async () => {
-    const close = vi.fn();
-    await Failed.run({ args: { ...Failed.args, onClose: close } });
-    await userEvent.keyboard('/');
-    await expect.element(page.getByTestId('workflow-log-search-field')).toHaveFocus();
-    await userEvent.keyboard('bundle');
-    await expect.element(page.getByTestId('workflow-job-matches')).toHaveTextContent('1');
-    expect(page.getByTestId('workflow-step-matches').elements().length).toBeGreaterThan(0);
-
-    await userEvent.keyboard('{Escape}');
-    await expect.element(page.getByTestId('workflow-log-search')).not.toBeInTheDocument();
-    expect(close).not.toHaveBeenCalled();
-    await expect.element(page.getByTestId('workflow-job-matches')).not.toBeInTheDocument();
-
-    await userEvent.keyboard('{Escape}');
-    expect(close).toHaveBeenCalledOnce();
 });

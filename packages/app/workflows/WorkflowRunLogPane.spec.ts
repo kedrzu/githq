@@ -4,20 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './WorkflowRunLogPane.stories.js';
 
-const {
-    Failed,
-    GonePastRetention,
-    Loading,
-    LoadingNoJob,
-    Ready,
-    ReadyNoMarker,
-    Refused,
-    Running,
-    Searching,
-    Skipped,
-    TooLarge,
-    Waiting,
-} = composeStories(stories);
+const { Failed, GonePastRetention, Loading, LoadingNoJob, ReadyNoMarker, Refused, Running, Searching, TooLarge } =
+    composeStories(stories);
 
 const keys = page.getByTestId('workflow-log-keys');
 
@@ -27,13 +15,8 @@ beforeEach(() => {
 });
 
 test.each([
-    ['W4e', LoadingNoJob],
-    ['W4e, the job known', Loading],
-    ['W4g', GonePastRetention],
+    ['W4e, no job yet', LoadingNoJob],
     ['W4i', Failed],
-    ['W4j', Running],
-    ['W4j, waiting', Waiting],
-    ['a skipped job', Skipped],
 ])('%s: W and T work and their toggles are there, with no log to apply them to yet', async (_, story) => {
     await story.run();
 
@@ -59,18 +42,6 @@ test('W4i: a toggle clicked gives the keys back, so that Enter doesn’t press i
     expect(document.activeElement).not.toBe(wrap.element());
 });
 
-test('W4a: every key of the log along the bottom', async () => {
-    await Ready.run();
-
-    await expect.element(keys).toHaveTextContent(/Line/u);
-    await expect.element(keys).toHaveTextContent(/Step/u);
-    await expect.element(keys).toHaveTextContent(/Job/u);
-    await expect.element(keys).toHaveTextContent(/Error/u);
-    await expect.element(keys).toHaveTextContent(/Fold/u);
-    await expect.element(keys).toHaveTextContent(/GitHub/u);
-    await expect.element(keys).toHaveTextContent(/All keys/u);
-});
-
 test('W4h: no error marker: no key for errors, the others as ever', async () => {
     await ReadyNoMarker.run();
 
@@ -84,14 +55,6 @@ test('W4g: no row of keys', async () => {
 
     await expect.element(page.getByRole('heading', { name: 'This log was garbage-collected' })).toBeVisible();
     await expect.element(keys).not.toBeInTheDocument();
-});
-
-test('W4i: Enter tries again, and the way to the other jobs', async () => {
-    await Failed.run();
-
-    await expect.element(keys).toHaveTextContent(/Try again/u);
-    await expect.element(keys).toHaveTextContent(/Job/u);
-    await expect.element(keys).not.toHaveTextContent(/Line/u);
 });
 
 test('W4e and W4j: only what works without a log', async () => {

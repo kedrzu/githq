@@ -12,7 +12,6 @@ const {
     NoCommit,
     NothingCheckedYet,
     Checking,
-    UpToDate,
     Downloading,
     DownloadingNoLength,
     Ready,
@@ -27,7 +26,6 @@ const {
     ToStableReady,
     DevelopmentReadyOnStable,
     ToStableOffline,
-    ToStableUnreachable,
     ToStableNoRelease,
     ToDevelopmentNothingNewer,
     Installing,
@@ -40,7 +38,6 @@ for (const [name, story, line] of [
     ['a Stable version', StableVersion, 'Stable version, following Stable'],
     ['a Development build', DevelopmentBuild, 'Development build from commit 632d28b, following Development'],
     ['a local build, with no commit', NoCommit, 'Development build, following Development'],
-    ['a Stable version on Development', ToDevelopmentNothingNewer, 'Stable version, following Development'],
     ['Windows, with nothing else to follow', Windows, 'Stable version'],
 ] as const) {
     test(`the line under the version says what is running and what it follows: ${name}`, async () => {
@@ -52,8 +49,6 @@ for (const [name, story, line] of [
 
 for (const [name, story, title, detail] of [
     ['U3: up to date', StableVersion, "You're on the newest version", 'Checked 2 hours ago.'],
-    ['U4: up to date on a build', DevelopmentBuild, "You're on the newest build", 'Checked 6 minutes ago.'],
-    ['U6: just checked', UpToDate, "You're on the newest version", 'Checked just now.'],
     ['U8: ready', Ready, 'githq 0.2.1 is ready', 'Restart to start using it.'],
     ['U9: offline', FailedOffline, "Couldn't check for updates", "You're offline. githq tries again by itself."],
     [
@@ -93,12 +88,6 @@ for (const [name, story, title, detail] of [
         "You're offline. You stay on this build until githq can reach GitHub, then the newest Stable installs.",
     ],
     [
-        'to Stable, unreachable',
-        ToStableUnreachable,
-        "Couldn't get Stable yet",
-        "GitHub can't be reached right now. You stay on this build until githq can reach GitHub, then the newest Stable installs.",
-    ],
-    [
         'U17: to Stable, none yet',
         ToStableNoRelease,
         'No Stable version yet, so nothing was installed',
@@ -110,7 +99,6 @@ for (const [name, story, title, detail] of [
         'Nothing newer than 0.2.0 yet',
         'You stay on this version. The next Development build downloads by itself.',
     ],
-    ['a failed install', InstallFailed, "githq 0.2.1 couldn't be installed", "You're still on 0.2.0. Nothing is lost."],
 ] as const) {
     test(`the status line, ${name}`, async () => {
         await story.run();

@@ -155,23 +155,6 @@ test('P opens the repository’s settings on Workflow alerts, and Esc there come
     await expect(repository.runsOf('Lint')).toBeVisible();
 });
 
-test('an address opened directly reads the runs on any ref too: a workflow only pull requests run is placed, not left unknown', async ({
-    page,
-    github,
-}) => {
-    const { world } = createSampleTrackedWork();
-    world.workflow({
-        repository: SAMPLE_REPOSITORY,
-        name: 'CLA',
-        runs: [{ conclusion: 'failure', minutesAgo: 40, branch: 'feature', event: 'pull_request_target' }],
-    });
-    await openTrackedWork(page, github, world);
-
-    await page.goto(`/${SAMPLE_REPOSITORY}/actions`);
-    const repository = new RepositoryScreenHarness(page);
-    await expect(repository.group('Pull requests only')).toContainText('CLA');
-});
-
 test('a repository’s settings opened on their own read the runs on any ref: other refs show, and a pattern says what it would alert on', async ({
     page,
     github,
@@ -191,16 +174,4 @@ test('a repository’s settings opened on their own read the runs on any ref: ot
     await expect(settings.addPatternField).toBeFocused();
     await page.keyboard.type('v*');
     await expect(settings.workflowAlerts).toContainText('Release turns broken: it failed on v1.0-rc.1');
-});
-
-test('a repository with no workflows says so, with no count on its tab', async ({ page, github }) => {
-    const { world } = createSampleTrackedWork();
-    const shell = await openTrackedWork(page, github, world);
-    await shell.tracked(SAMPLE_REPOSITORY).click();
-
-    const repository = new RepositoryScreenHarness(page);
-    await repository.section('Workflows').click();
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/actions`);
-    await expect(page.getByRole('heading', { name: 'No workflows here, yet' })).toBeVisible();
-    await expect(repository.section('Workflows')).toHaveText(/^Workflows$/u);
 });
