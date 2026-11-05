@@ -1,4 +1,4 @@
-<!-- The landing page's hero (githq.pen "Landing · Getting the app", LP13, LP15): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first — under an address bar showing the trick: on load and every 12 s while in view, github.com swaps for githq.dev and the screenshot rises in (`HostSwapLoop`; githq.pen "Landing — motion storyboard"). Under the call to action the development sign-in. -->
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first — under an address bar showing the trick: on load and every 12 s while in view, github.com swaps for githq.dev and the screenshot rises in (`HostSwapLoop`; githq.pen "Landing — motion storyboard"). Under the call to action the development sign-in. -->
 <script lang="ts">
 const LOOP_EVERY = 12_000;
 </script>

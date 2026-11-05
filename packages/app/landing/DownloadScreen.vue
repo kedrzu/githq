@@ -1,4 +1,4 @@
-<!-- `/download` (githq.pen "Landing · Getting the app", LP17–LP19): every desktop build, one row each, the visitor's system highlighted without changing any size; what the landing page leaves out lives here — the Windows warnings and, under "Sign in with GitHub", what GitHub will ask for (D35). Then What's new, one link to the Development stream and the browser path, which comes first on a phone, where nothing installs. Someone signed in gets "Open githq" in place of signing in. -->
+<!-- `/download` (githq.pen "Landing · Download page", LP17–LP19): every desktop build, one row each, the visitor's system highlighted without changing any size; what the landing page leaves out lives here — the Windows warnings and, under "Sign in with GitHub", what GitHub will ask for (D35). Then What's new, one link to the Development stream and the browser path, which comes first on a phone, where nothing installs. Someone signed in gets "Open githq" in place of signing in. -->
 <script lang="ts">
 const BUILDS = [
   { id: 'macosSilicon', logo: 'apple', name: l.macosSilicon, note: l.macosSiliconNote },

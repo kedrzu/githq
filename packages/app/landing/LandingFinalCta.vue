@@ -1,4 +1,4 @@
-<!-- The landing page's last call to action (githq.pen "Landing · Getting the app", LP13, LP15): the sygnet, "Every repository you work in" and the call to action (`LandingActions`), over a violet glow from below. -->
+<!-- The landing page's last call to action (githq.pen "Landing — githq.dev"): the sygnet, "Every repository you work in" and the call to action (`LandingActions`), over a violet glow from below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useId, useTemplateRef } from 'vue';

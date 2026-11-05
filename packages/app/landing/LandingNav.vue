@@ -1,4 +1,4 @@
-<!-- The landing page's top bar (githq.pen "Landing · Getting the app", LP13, LP15), pinned to the top as the page scrolls: the wordmark, links to the page's sections, the GitHub mark, "Sign in" and a small "Download", which opens `/download` because no warning can sit beside it on Windows. On a narrow page the links fold into a menu behind a button, on a phone the mark and "Download" too. `/download` shows it too (`elsewhere`), without its own link. -->
+<!-- The landing page's top bar (githq.pen "Landing — githq.dev"), pinned to the top as the page scrolls: the wordmark, links to the page's sections, the GitHub mark, "Sign in" and a small "Download", which opens `/download` because no warning can sit beside it on Windows. On a narrow page the links fold into a menu behind a button, on a phone the mark and "Download" too. `/download` shows it too (`elsewhere`), without its own link. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Download, Github, Menu, X } from 'lucide-vue-next';

@@ -1,4 +1,4 @@
-<!-- What GitHub will ask for when the visitor signs in, and a "Why?" that explains it (githq.pen "Landing · Getting the app", LP17): under "Sign in with GitHub" on `/download` (D35); one run of text, starting at its shield. -->
+<!-- What GitHub will ask for when the visitor signs in, and a "Why?" that explains it (githq.pen "Landing — githq.dev"): under "Sign in with GitHub" on `/download` (D35); one run of text, starting at its shield. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ShieldCheck } from 'lucide-vue-next';

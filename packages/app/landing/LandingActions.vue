@@ -1,4 +1,4 @@
-<!-- The landing page's call to action (githq.pen "Landing · Getting the app", LP13, LP15, LP30; D35), in the hero and the Final CTA: "Download the app" with the logo of the visitor's system, which downloads its build at once (with no system to install on, it opens `/download`), and "Sign in with GitHub", straight to GitHub's consent screen (D21); under them one line of fine print, starting with the link to every build. Stacked on a phone. -->
+<!-- The landing page's call to action (githq.pen "Landing — githq.dev"; D35), in the hero and the Final CTA: "Download the app" with the logo of the visitor's system, which downloads its build at once (with no system to install on, it opens `/download`), and "Sign in with GitHub", straight to GitHub's consent screen (D21); under them one line of fine print, starting with the link to every build. Stacked on a phone. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Download } from 'lucide-vue-next';
