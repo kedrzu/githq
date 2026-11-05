@@ -43,8 +43,17 @@ test('/download is open to everyone: signed out it offers signing in, signed in 
     await expect(main.getByRole('button', { name: 'Sign in with GitHub' })).toBeHidden();
 });
 
-/** Where a page's download button and what sits around it are drawn, to compare a page before and after hydration. */
+/**
+ * Where a page's download button and what sits around it are drawn, to compare a page before and after hydration.
+ * Measured with the page's own fonts: `load` does not wait for a font the browser asks for only once it lays the page
+ * out, which under load can come after it, and the fallback faces are wider by a fraction of a pixel (#196).
+ */
 async function readActionBoxes(page: Page) {
+    // Laying the page out asks for every font it uses; `ready` then waits for them.
+    await page.evaluate(async () => {
+        document.body.getBoundingClientRect();
+        await document.fonts.ready;
+    });
     const main = page.getByRole('main');
     return {
         download: await main.getByRole('link', { name: 'Download the app' }).first().boundingBox(),
