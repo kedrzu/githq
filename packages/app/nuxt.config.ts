@@ -65,7 +65,7 @@ export default defineNuxtConfig({
         head: {
             title: 'githq',
             htmlAttrs: { lang: 'en' },
-            meta: [{ name: 'theme-color', content: '#0e1013' }],
+            meta: [{ name: 'theme-color', content: '#0d1117' }],
             // The icons are written by `scripts/generateIcons.ts`; the manifest makes githq installable.
             link: [
                 { rel: 'manifest', href: '/manifest.webmanifest' },
