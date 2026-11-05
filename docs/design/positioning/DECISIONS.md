@@ -101,3 +101,22 @@ The page's title and the README follow it; the footer's tagline keeps "All your 
 **Rejected.**
 
 - "All your repositories in one place. No separate tracker." ([D6](#d6)) as the headline: the owner chose the new one.
+
+## D8
+
+**Below the hero, the page and `githq.pen` tell one story: all your repositories in one place first, with agents as the
+reason, then no separate tracker, then why now; code review gets a section of its own; the desktop app replaces any
+mention of pinning the website.** (2026-11-05, owner)
+
+**Why.** Owner: "what is deployed is better than the design", and the first section has to say that githq manages all
+your projects, of which you have many, above all when working with agents. The hero no longer says "one place", so
+this section does. Reviews and merging are built, so nothing may send a reader to github.com for them.
+
+**Rejected.**
+
+- "Everything that needs you, from every repository." as the title — reads oddly, "like Yoda" (owner).
+- "Not another tracker. A faster way to work the one you already have." as the first section — sells only a tracker
+  (owner).
+- Code review as a card in the details — it is too strong an argument for a card (owner).
+- The address bar in the hero, with the screenshot moving under it — dropped by the owner. The loop stays in the "Swap
+  the host" card.

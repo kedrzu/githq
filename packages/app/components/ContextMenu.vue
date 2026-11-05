@@ -48,5 +48,7 @@ const open = defineModel<boolean>('open', { default: false });
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
   box-shadow: $shadow-popover;
+
+  @include motion-popper;
 }
 </style>

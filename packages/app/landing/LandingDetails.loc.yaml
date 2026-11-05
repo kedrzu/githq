@@ -19,15 +19,15 @@ freeBody:
 serverTitle:
   en: No server holds your work
 serverBody:
-  en: You sign in with GitHub and that’s it. Your work lives on GitHub and in your browser — githq has no database of its own.
+  en: You sign in with GitHub and that’s it. Your work lives on GitHub and on your machine — githq has no database of its own.
 limitTitle:
   en: Gentle on your API limit
 limitBody:
   en: Change checks use GitHub’s conditional requests. When nothing changed, they don’t count against your hourly allowance.
 installTitle:
-  en: Pin the website
+  en: A real desktop app
 installBody:
-  en: Staying in the browser? Add githq.dev to your dock or home screen. It opens straight into your work, in its own window.
+  en: macOS, Windows and Linux. githq in its own window, your token in the system keychain, and updates that install themselves.
 anywhereTitle:
   en: Anywhere on GitHub
 anywhereBody:

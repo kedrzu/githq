@@ -147,7 +147,7 @@ test('the hero screenshot loads first; the rest wait for the reader, with their 
     expect(hero?.getAttribute('src')).toBe('/landing/hero-my-work.webp');
     expect(hero?.getAttribute('fetchpriority')).toBe('high');
     expect(hero?.getAttribute('loading')).toBeNull();
-    expect(rest).toHaveLength(6);
+    expect(rest).toHaveLength(7);
     for (const image of rest) {
         expect(image.getAttribute('loading')).toBe('lazy');
         expect(image.getAttribute('decoding')).toBe('async');
@@ -183,18 +183,6 @@ test('the banner of a sign-in that did not finish sits above the hero', async ()
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
-test('the hero swaps github.com for githq.dev on load, and its screenshot rises in on Enter', async () => {
-    await Landing.run();
-
-    const address = heroAddress();
-    // The page as it came: githq's address and the screenshot in place.
-    await expect.poll(() => address.getAttribute('data-step'), { timeout: 2000 }).toBe('selected');
-    expect(heroShot().getAttribute('data-swap')).toBe('away');
-
-    await expect.poll(() => address.getAttribute('data-step'), { timeout: 3000 }).toBe('githq');
-    expect(heroShot().getAttribute('data-swap')).toBe('entered');
-});
-
 test('a section waits hidden only if it is below the viewport after mount, and reveals once as it scrolls in', async () => {
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -214,7 +202,7 @@ test('a section waits hidden only if it is below the viewport after mount, and r
     expect(comparison.getAttribute('data-reveal')).toBe('revealed');
 });
 
-test('under reduced motion nothing hides or moves: no section waits, the addresses stay githq’s', async () => {
+test('under reduced motion nothing hides or moves: no section waits, the address stays githq’s', async () => {
     const matchMedia = window.matchMedia.bind(window);
     // A query the browser always matches stands in for the visitor's setting.
     const spy = vi
@@ -233,9 +221,8 @@ test('under reduced motion nothing hides or moves: no section waits, the address
 
     const root = landingPage();
     expect(root.querySelectorAll('[data-reveal]')).toHaveLength(0);
-    expect(root.querySelectorAll('[data-swap]')).toHaveLength(0);
     const steps = [...root.querySelectorAll('[data-step]')].map(loop => loop.getAttribute('data-step'));
-    expect(steps).toEqual(['githq', 'githq']);
+    expect(steps).toEqual(['githq']);
 });
 
 /** The landing section an element is in. */
@@ -245,22 +232,4 @@ function sectionOf(element: Element): HTMLElement {
         throw new Error('The element is not in a section');
     }
     return section;
-}
-
-/** The hero's "swap the host" loop: its step is in `data-step`. */
-function heroAddress(): Element {
-    const loop = sectionOf(page.getByRole('heading', { level: 1 }).element()).querySelector('[data-step]');
-    if (!loop) {
-        throw new Error('The hero has no address');
-    }
-    return loop;
-}
-
-/** The hero's screenshot: how it moves with the loop is in `data-swap`. */
-function heroShot(): Element {
-    const image = page.getByRole('img', { name: /across every repository/ }).element().parentElement;
-    if (!image) {
-        throw new Error('The hero has no screenshot');
-    }
-    return image;
 }

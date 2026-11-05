@@ -95,10 +95,6 @@ function setup(options: SetupOptions) {
         fetch: fetchViewer,
         localStorage: {
             ...mapStorage(local),
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
-            },
         },
         sessionStorage: mapStorage(session),
         origin: 'tauri://localhost',

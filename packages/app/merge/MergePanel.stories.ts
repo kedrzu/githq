@@ -424,7 +424,8 @@ export const ChecksOpen: Story = {
     args: RequiredFailed.args,
     play: async () => {
         await openPanelKey('c');
-        await expect(await screen.findByText('Required · 5')).toBeVisible();
+        // The list opens through `Reveal`: found at once, visible after a frame.
+        await waitFor(async () => expect(await screen.findByText('Required · 5')).toBeVisible());
     },
 };
 

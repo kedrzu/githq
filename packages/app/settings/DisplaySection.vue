@@ -1,4 +1,4 @@
-<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps the repository layout with the rest of the settings. -->
+<!-- The Display section of Settings (git-client D22), wired to `TrackingStore`, which keeps the repository layout and whether things animate with the rest of the settings. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed } from 'vue';
@@ -13,8 +13,16 @@ const layout = computed({
   get: () => tracking.repositoryLayout,
   set: value => tracking.setRepositoryLayout(value),
 });
+
+const animations = computed({
+  get: () => tracking.animations,
+  set: value => tracking.setAnimations(value),
+});
 </script>
 
 <template>
-  <DisplayView v-model="layout" />
+  <DisplayView
+    v-model="layout"
+    v-model:animations="animations"
+  />
 </template>
