@@ -20,11 +20,13 @@ import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
     readRepositoryLayout,
+    readReviewCommentChoice,
     readSettingsDocument,
     writeWorkflowSettings,
 } from '@/settings/sync/SettingsDocument.js';
 import type {
     RepositoryLayout,
+    ReviewCommentChoice,
     SettingsDocument,
     SettingsProject,
     SettingsRepository,
@@ -177,6 +179,10 @@ export const TrackingStore = defineService({
             get repositoryLayout() {
                 return readRepositoryLayout(keptRef.value.document);
             },
+            /** How a code review's comment goes out with no draft open (code-review D34); reactive. */
+            get reviewCommentChoice() {
+                return readReviewCommentChoice(keptRef.value.document);
+            },
             /**
              * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
              * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
@@ -197,6 +203,7 @@ export const TrackingStore = defineService({
             replaceDocument,
             setWorkflowSettings,
             setRepositoryLayout,
+            setReviewCommentChoice,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -321,6 +328,22 @@ export const TrackingStore = defineService({
         }
 
         /**
+         * The user's choice of how a code review's comment goes out, in the settings as the slot holds them now. Nothing
+         * when it reads as that already: a value of a newer build, which reads as single, stays until the user picks the
+         * other.
+         */
+        function setReviewCommentChoice(choice: ReviewCommentChoice) {
+            const written = write(kept =>
+                readReviewCommentChoice(kept.document) === choice
+                    ? null
+                    : { ...kept, document: { ...kept.document, reviewCommentChoice: choice } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /**
          * Tracks exactly the choice `change` makes of what is tracked now, as {@link choose} does, without counting as
          * the user's choice; nothing when it makes none.
          */
@@ -341,8 +364,8 @@ export const TrackingStore = defineService({
 
         /**
          * Calls `listener` after the user changed their settings in this tab — chose, tracked or untracked, picked the
-         * repository layout or set a repository's workflows — not when another tab did, nor when the document was
-         * replaced.
+         * repository layout or the way of a review's comment, or set a repository's workflows — not when another tab
+         * did, nor when the document was replaced.
          */
         function onLocalChange(listener: () => void) {
             changeListeners.push(listener);

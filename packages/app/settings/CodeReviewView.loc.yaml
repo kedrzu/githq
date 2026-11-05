@@ -1,0 +1,12 @@
+commentsTitle:
+  en: Comments
+commentsDescription:
+  en: What {first} does with a comment while you have no draft on that pull request. {second} always does the other. While a draft is open, comments join it either way.
+single:
+  en: Send it at once
+singleDetail:
+  en: Each comment goes out as a single comment and reaches the author right away.
+draft:
+  en: Add it to a draft review
+draftDetail:
+  en: Comments collect in a draft that only you see, and go out together when you submit it.

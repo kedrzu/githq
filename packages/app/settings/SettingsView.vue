@@ -1,7 +1,16 @@
 <!-- The Settings screen (githq D26, `Settings / Sections column`): a column of the sections beside the page, as a repository's column layout has its own (`SegmentedTabs`, vertical). Each row has its icon, how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and its key, by its place in `SETTINGS_SECTIONS`, which switches to it while the screen is shown (the command menu goes to them as places). The page's header holds only the section's name; the section itself in the default slot, Changelog bringing a header of its own (`Changelog / Pane`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { BookMarked, CircleArrowDown, Cloud, PanelsTopLeft, ScrollText, SquareKanban, User } from 'lucide-vue-next';
+import {
+  BookMarked,
+  CircleArrowDown,
+  Cloud,
+  FileDiff,
+  PanelsTopLeft,
+  ScrollText,
+  SquareKanban,
+  User,
+} from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -19,6 +28,7 @@ const SECTION_ICONS: Readonly<Record<SettingsSection, LucideIcon>> = {
   repositories: BookMarked,
   projects: SquareKanban,
   display: PanelsTopLeft,
+  review: FileDiff,
   sync: Cloud,
   account: User,
   updates: CircleArrowDown,
