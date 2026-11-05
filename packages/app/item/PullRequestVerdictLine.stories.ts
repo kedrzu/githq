@@ -16,7 +16,7 @@ const meta = {
     render: args => ({
         components: { PullRequestVerdictLine },
         setup: () => ({ args }),
-        template: '<div style="width: 560px; background: #16181c"><PullRequestVerdictLine v-bind="args" /></div>',
+        template: '<div style="width: 560px; background: #151b23"><PullRequestVerdictLine v-bind="args" /></div>',
     }),
 } satisfies Meta<typeof PullRequestVerdictLine>;
 

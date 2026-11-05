@@ -40,7 +40,7 @@ const Demo = defineComponent({
         let inserted = 0;
 
         return () => (
-            <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', color: '#e4e6ea' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', color: '#f0f6fc' }}>
                 <div style={{ display: 'flex', gap: '8px', padding: '8px' }}>
                     <Button onClick={() => list.value?.jumpTo(props.jumpKey, props.jumpOffset)}>Jump</Button>
                     <Button onClick={growRowAbove}>Grow above</Button>
@@ -73,7 +73,7 @@ const Demo = defineComponent({
                                                 row.height === undefined
                                                     ? undefined
                                                     : `${row.height + (grownBy.get(row.key) ?? 0)}px`,
-                                            background: row.pinned ? '#1a1d22' : undefined,
+                                            background: row.pinned ? '#1c2128' : undefined,
                                             overflow: 'hidden',
                                         }}
                                     >

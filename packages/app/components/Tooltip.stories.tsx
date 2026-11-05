@@ -20,7 +20,7 @@ export const ShortStatus: Story = {
                 text="4,812 of 5,000 left this hour"
                 side="top"
             >
-                <span style={{ fontSize: '11.5px', color: '#838992' }}>4.8k</span>
+                <span style={{ fontSize: '11.5px', color: '#8b929b' }}>4.8k</span>
             </Tooltip>
         </StoryPage>
     ),
