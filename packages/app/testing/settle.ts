@@ -6,13 +6,12 @@ const QUIET_TURNS = 30;
 /** Every `setImmediate` asked for so far, which is how IndexedDB's work (fake-indexeddb) moves on. */
 let scheduled = 0;
 
-globalThis.setImmediate = Object.assign(
-    (...args: Parameters<typeof setImmediate>) => {
+globalThis.setImmediate = new Proxy(realSetImmediate, {
+    apply: (target, self, args: Parameters<typeof setImmediate>) => {
         scheduled++;
-        return realSetImmediate(...args);
+        return Reflect.apply(target, self, args);
     },
-    { __promisify__: realSetImmediate.__promisify__ },
-);
+});
 
 /**
  * Lets the promises in flight — fetches, their bodies, IndexedDB — run as far as they can, however many turns of the
