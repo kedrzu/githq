@@ -191,6 +191,19 @@ test('a project item written after its project was untracked keeps nothing in th
     expect(projects.holdsContent('I_1')).toBe(false);
 });
 
+test('a project or an item landing after signing out keeps nothing', async () => {
+    const { session, projects } = await setup();
+    const project = assertValue(projects.get('PVT_1'));
+    const stored = assertValue(projects.getStoredItem('PVTI_1'));
+
+    session.signOutFromAnotherTab();
+    projects.setProject(project);
+    projects.upsertItems([stored]);
+
+    expect(projects.get('PVT_1')).toBeUndefined();
+    expect(projects.getStoredItem('PVTI_1')).toBeUndefined();
+});
+
 test('a tab opening before another wrote a project item it changed gets it from it', async () => {
     const tabs = createTestTabs();
     const login = `user-${crypto.randomUUID()}`;

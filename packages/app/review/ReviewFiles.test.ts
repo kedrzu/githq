@@ -104,7 +104,7 @@ test('a file GitHub fails to answer for fails alone, and comes when retried', as
     github.file({ path: 'good.ts', changeType: 'ADDED', after: 'good' });
     github.file({ path: 'bad.ts', changeType: 'ADDED', after: 'bad' });
     github.failExpression(`${HEAD}:bad.ts`);
-    const { model } = open(uniqueLogin(), github);
+    const { model, session } = open(uniqueLogin(), github);
 
     await settled(model);
 
@@ -112,7 +112,15 @@ test('a file GitHub fails to answer for fails alone, and comes when retried', as
     const bad = model.getState('bad.ts');
     expect(bad.kind === 'failed' && bad.error.message).toContain('Try later');
 
+    // Collapsed and opened again it stays as it ended, nothing asked: asking again is what retrying is for.
     github.failExpression(null);
+    const asked = session.github.requests.length;
+    model.setCollapsed('bad.ts', true);
+    model.setCollapsed('bad.ts', false);
+    await settled(model);
+    expect(model.getState('bad.ts').kind).toBe('failed');
+    expect(session.github.requests).toHaveLength(asked);
+
     model.retry('bad.ts');
     await settled(model);
 

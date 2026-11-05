@@ -182,6 +182,33 @@ test("⌘K on an untracked repository's view has neither Workflows nor Settings 
     await expect(group.getByRole('option', { name: /^Repository settings/u })).toHaveCount(0);
 });
 
+test("⌘K on one repository's screen walks into another's level without going there, and its Pull requests go there", async ({
+    page,
+    github,
+}) => {
+    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    await page.goto('/acme/web');
+    await expect(new RepositoryScreenHarness(page).notTrackedChip).toBeVisible();
+    const screen = page.url();
+    const menu = new CommandMenuHarness(page);
+
+    await menu.open();
+    await expect(menu.chip('acme/web')).toBeVisible();
+    await menu.field.pressSequentially(SAMPLE_REPOSITORY);
+    await expect(menu.option(new RegExp(`^${SAMPLE_REPOSITORY}`, 'u'))).toBeVisible();
+    await page.keyboard.press('ArrowRight');
+
+    await expect(menu.chip(SAMPLE_REPOSITORY)).toBeVisible();
+    await expect(menu.chip('acme/web')).toHaveCount(0);
+    await expect(menu.option(/^Workflows/u)).toBeVisible();
+    expect(page.url()).toBe(screen);
+
+    await menu.field.pressSequentially('pull requests');
+    await page.keyboard.press('Enter');
+    await expect(menu.root).toBeHidden();
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
+});
+
 test('⌘K with an item opened over a repository’s list runs a section without closing the item', async ({
     page,
     github,
