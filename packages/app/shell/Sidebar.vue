@@ -83,7 +83,7 @@ const props = defineProps<{
   collapsed?: boolean;
   /** The screen wants the rail (a code review): there is nothing to expand it with. */
   railForced?: boolean;
-  /** Keep the top free for macOS's window controls, which sit over it (`WINDOW_CONTROLS_OVERLAID`). */
+  /** Keep the top free for macOS's window controls, while they sit over it (`WindowControls`). */
   windowControls?: boolean;
   /** The rows of each "my work" group, as its list counts them; `null` until the first download. */
   counts?: MyWorkCounts | null;

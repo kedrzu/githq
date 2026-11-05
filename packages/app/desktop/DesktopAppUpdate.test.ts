@@ -364,6 +364,8 @@ function createFakeNative(): FakeNative {
             startDeviceSignIn: notExpected,
             finishDeviceSignIn: notExpected,
             readJobLog: notExpected,
+            onWindowResized: notExpected,
+            isFullscreen: notExpected,
             onUpdateState: listener => {
                 native.calls.push('listen');
                 if (native.listenFails) {
