@@ -1,4 +1,14 @@
+download:
+  en: Download the app
+downloadSubtitle:
+  en: Best experience, in its own window
 signIn:
   en: Sign in with GitHub
-star:
-  en: Star on GitHub
+signInSubtitle:
+  en: In your browser, nothing to install
+allDownloads:
+  en: All downloads
+noTracker:
+  en: No new tracker
+nothingStored:
+  en: Nothing stored outside GitHub

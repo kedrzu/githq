@@ -1,6 +1,6 @@
 # Openings for the landing page
 
-The owner picked the third, *All your repositories in one place* ([D6](DECISIONS.md#d6)); it is built.
+The owner picked the third, *All your repositories in one place* ([D6](DECISIONS.md#d6)); it is built. The owner later replaced it with *All your repos at the speed of thought* ([D7](DECISIONS.md#d7)).
 
 What a visitor to githq.dev sees before scrolling far. Every option carries both promises together: one place
 to manage all your repositories, and no separate tracker for them because GitHub's issues and Projects are the

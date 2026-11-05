@@ -13,6 +13,7 @@ import { readSignInFailure, readSignInReturnPath } from '@/auth/routeAccess.js';
 import * as l from './LandingPage.loc.js';
 import LandingScreen from './LandingScreen.vue';
 import SignInBanner from './SignInBanner.vue';
+import { useDesktopSystem } from './useDesktopSystem.js';
 
 // The development sign-in exists under `nuxt dev` and in the local build (`__LOCAL_BUILD__`) only. The
 // production build replaces both with `false`, which drops this import and the form's whole chunk —
@@ -28,6 +29,7 @@ const container = useContainer();
 const route = useRoute();
 const router = useRouter();
 const t = useTranslate();
+const system = useDesktopSystem();
 
 useSeoMeta({
   title: () => t(l.title),
@@ -73,7 +75,10 @@ async function dismissFailure() {
 </script>
 
 <template>
-  <LandingScreen @sign-in="signIn">
+  <LandingScreen
+    :system="system"
+    @sign-in="signIn"
+  >
     <template
       v-if="failure"
       #banner
