@@ -21,7 +21,7 @@ const phone = pageOfWidth(390);
 
 const meta = {
     component: LandingScreen,
-    args: { onSignIn: fn() },
+    args: { system: 'macos', onSignIn: fn() },
 } satisfies Meta<typeof LandingScreen>;
 
 export default meta;
@@ -30,6 +30,15 @@ type Story = StoryObj<typeof meta>;
 
 /** A first visit on a wide screen: the navigation, the hero, one place, the comparison, why now, the GitHub concepts, the features, the details, open source, the last call to action and the footer. */
 export const Landing: Story = { decorators: [wide] };
+
+/** On Windows: its logo, and one click downloads its build. */
+export const OnWindows: Story = { decorators: [wide], args: { system: 'windows' } };
+
+/** On Linux: its logo, and one click downloads the `.AppImage`. */
+export const OnLinux: Story = { decorators: [wide], args: { system: 'linux' } };
+
+/** Before the system is known, or with nothing to install on it: "Download the app" opens `/download`. */
+export const SystemNotKnown: Story = { decorators: [wide], args: { system: null } };
 
 /** G1: back from GitHub after "Cancel" on its consent screen, the banner above the hero. */
 export const SignInCancelled: Story = {
@@ -42,7 +51,7 @@ export const SignInCancelled: Story = {
 };
 
 /** On a phone: the navigation folds into a menu, the features, the details and the footer stack, the screenshots are cropped to their top left. */
-export const Phone: Story = { decorators: [phone] };
+export const Phone: Story = { decorators: [phone], args: { system: null } };
 
 /** On a phone, the navigation's menu open. */
 export const PhoneMenuOpen: Story = {

@@ -446,6 +446,40 @@ test('a page on its way when its repository or project is untracked brings nothi
     expect(items.get('I_other')).toBeUndefined();
 });
 
+test('a poll’s read on its way when its repository or project is untracked brings nothing back and fails nothing', async () => {
+    const world = sampleWorld();
+    const { session, tracking, items, projects } = await setup(world);
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+
+    // I_web_2 changed, and its re-read is on its way when acme/web is untracked.
+    const reread = createPromise();
+    session.github.holdIf = request => (request.operation === 'ItemsByIds' ? reread.promise : null);
+    world.items.set('I_web_2', { ...nodeOf(world, 'I_web_2'), title: 'Renamed', updatedAt: FRIDAY });
+    await session.clock.advance(60_000);
+    expect(graphql(session.github.requests).at(-1)).toBe('ItemsByIds I_web_2');
+
+    tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/web' });
+    reread.resolve();
+    await session.clock.advance(0);
+    expect(items.get('I_web_2')).toBeUndefined();
+
+    // An item left the project, and the read of all of them is on its way when the project is untracked.
+    const whole = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'ProjectItems' && request.variables.query === '' ? whole.promise : null;
+    world.project.items = world.project.items.filter(item => item.id !== 'PVTI_2');
+    world.project.etag = '"p2"';
+    await session.clock.advance(60_000);
+    expect(graphql(session.github.requests).at(-1)).toBe('ProjectItems PVT_1');
+
+    tracking.untrack({ kind: 'project', id: 'PVT_1' });
+    whole.resolve();
+    await session.clock.advance(0);
+    expect(projects.getStoredItems('PVT_1')).toEqual([]);
+    expect(items.getSyncState('projects').lastError).toBeNull();
+});
+
 test('a stack a tracked project holds one pull request of is copied whole, and goes whole when the project is untracked', async () => {
     const world = sampleWorld();
     const stack = { id: 'ST_lib', number: 1, size: 2 };

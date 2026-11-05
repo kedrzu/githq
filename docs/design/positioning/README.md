@@ -41,7 +41,8 @@ requests, checks and broken deploys are what comes back. [Proposed, not yet conf
 
 ## What the landing page says
 
-It opens with *All your repositories in one place. No separate tracker.*, then shows the first promise with My
+It opens with *All your repos at the speed of thought*, the subhead carrying "no separate tracker" on its own
+([D35](../githq/DECISIONS.md#d35) has what the page offers), then shows the first promise with My
 work across repositories, the second with the comparison against github.com and a dedicated tracker, and ends
 the opening with why it matters now. The older sections follow, numbered on from there: the GitHub concepts, Instant,
 Keyboard and Faithful to GitHub (04–06), the details, open source and the last call to action. What repeated the

@@ -943,7 +943,7 @@ test('an untracked repository is not polled, and its workflows go — here and i
     ]);
 });
 
-test('an answer on its way when the session ends, or its repository is untracked, is dropped, never written', async () => {
+test('an answer on its way when the session ends, or its repository is untracked, is dropped: nothing written, nothing more asked', async () => {
     const world = sampleWorld();
     const { session, tracking, workflows, workflowSync, context } = await setupWithoutEngine(world);
     tracking.choose(TRACK_BOTH);
@@ -960,18 +960,53 @@ test('an answer on its way when the session ends, or its repository is untracked
     expect(workflows.get('acme/web')).toBeUndefined();
     expect(actionsRequests(session.github.requests)).toEqual(['GET /repos/acme/web/actions/runs per_page=10']);
 
-    // Untracked while Deploy's runs are on their way: nothing of it is kept, the other repository is read.
+    // The session ends while GitHub's refusal is on its way: it says nothing of the repository, for whoever is next.
+    world.actions.repository('acme/web').refusal = 403;
+    const refusal = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'GET /repos/acme/web/actions/runs' ? refusal.promise : null;
+    const refused = workflowSync.poll(context.ending(), () => new Set());
+    await session.clock.advance(0);
+    context.end();
+    refusal.resolve();
+    await refused;
+    expect(workflows.get('acme/web')).toBeUndefined();
+    world.actions.repository('acme/web').refusal = null;
+
+    // Untracked while Deploy's runs are on their way: nothing of it is kept or asked, the other repository is read.
     const runs = createPromise();
     session.github.holdIf = request =>
         request.operation === `GET /repos/acme/web/actions/workflows/${DEPLOY}/runs` ? runs.promise : null;
     const untracked = workflowSync.poll(context.ending(), () => new Set());
     await session.clock.advance(0);
+    session.github.requests.length = 0;
     tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/web' });
     runs.resolve();
     await untracked;
     await session.clock.advance(0);
     expect(workflows.get('acme/web')).toBeUndefined();
     expect(workflows.getState('acme/api').status).toBe('read');
+    expect(actionsRequests(session.github.requests).filter(request => request.includes('acme/web'))).toEqual([]);
+
+    // Untracked while an older page of runs is on its way: the page after it is not asked for.
+    const api = world.actions.repository('acme/api');
+    api.workflows.push({ id: RELEASE, name: 'Release', state: 'active' });
+    for (let id = 300; id < 330; id++) {
+        api.runs.push(run(id, RELEASE, 'skipped', `2026-10-29T${String(id - 300).padStart(2, '0')}:00:00Z`));
+    }
+
+    const older = createPromise();
+    session.github.holdIf = request =>
+        request.operation === `GET /repos/acme/api/actions/workflows/${RELEASE}/runs` && request.variables.page === '2'
+            ? older.promise
+            : null;
+    const paging = workflowSync.poll(context.ending(), () => new Set());
+    await session.clock.advance(0);
+    session.github.requests.length = 0;
+    tracking.untrack({ kind: 'repository', nameWithOwner: 'acme/api' });
+    older.resolve();
+    await paging;
+    expect(actionsRequests(session.github.requests)).toEqual([]);
 });
 
 /** The world of these tests: acme/web with a broken Deploy, a passing CI and a retired workflow; acme/api with none. */

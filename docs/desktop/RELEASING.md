@@ -47,7 +47,8 @@ to its users.
      (`.sig`) and uploads them;
    - `updater-manifest` runs after every build and composes the release's `latest.json` from what they uploaded;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
-     update.
+     update. It also copies each installer to a name without the version (`githq_aarch64.dmg`), which is where the
+     landing page and `/download` link: `releases/latest/download/` needs a name that stays the same.
 
 4. Check the draft under [Releases](https://github.com/kedrzu/githq/releases):
    - the installers for every platform, each updater bundle with its `.sig`;

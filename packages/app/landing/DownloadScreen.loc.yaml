@@ -1,0 +1,58 @@
+pageTitle:
+  en: Download githq
+pageDescription:
+  en: The githq desktop app for macOS, Windows and Linux, or githq in your browser with nothing to install.
+title:
+  en: Download githq
+sub:
+  en: The desktop app for macOS, Windows and Linux. Updates itself once it's installed.
+subPhone:
+  en: The app is for macOS, Windows and Linux. On this phone, use githq in your browser.
+whatsNew:
+  en: What's new
+macosSilicon:
+  en: macOS, Apple Silicon
+macosSiliconNote:
+  en: Macs with an M chip. Signed and notarized.
+macosIntel:
+  en: macOS, Intel
+macosIntelNote:
+  en: Older Macs with an Intel chip. Signed and notarized.
+windows:
+  en: Windows x64
+windowsNote:
+  en: 'SmartScreen warns about an unrecognised app. To continue: More info → Run anyway.'
+windowsSmartAppControl:
+  en: With Smart App Control turned on, Windows 11 blocks unsigned apps outright. The only way past is turning Smart App Control off.
+linux:
+  en: Linux x64
+linuxAppImageNote:
+  en: Works on most distributions.
+linuxDebNote:
+  en: Asks for the system password when an update installs.
+yourSystem:
+  en: Your system
+unsigned:
+  en: Unsigned
+download:
+  en: Download
+downloadBuild:
+  en: Download {build}
+development:
+  en: Development builds
+developmentNote:
+  en: A build of every push to main, for macOS and Linux only. May have bugs.
+browserTitle:
+  en: Or use it in your browser
+browserTitlePhone:
+  en: Use it in your browser
+browserSub:
+  en: No install needed. Works on any computer or phone.
+browserOpenTitle:
+  en: Open it in your browser
+browserOpenSub:
+  en: You're signed in on this browser, so your work is one click away.
+openGithq:
+  en: Open githq
+signIn:
+  en: Sign in with GitHub

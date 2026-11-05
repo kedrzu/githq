@@ -23,6 +23,8 @@ const NOT_SIGNED_IN = new Map<string, RouteAuth | undefined>([
     // Home: the landing page signed out.
     ['/', 'home'],
     ['/auth/callback', undefined],
+    // Every desktop build, for anyone.
+    ['/download', undefined],
     // The hand-off to github.com: nothing of the user's is shown, so signed out too.
     ['/:path(.*)*', undefined],
     ...GITHUB_RESERVED_SEGMENTS.map(segment => [`/${segment}/:rest(.*)*`, undefined] as const),
