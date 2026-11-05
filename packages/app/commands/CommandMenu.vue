@@ -1,4 +1,4 @@
-<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ⌫ in an empty field steps back out of a submenu, then takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back out of a submenu, or closes. -->
+<!-- The command menu (⌘K, E1–E4): one list mixing the actions of what is opened or selected — named by the chip at the left of the field, taken out with ⌫ — the screen's, its repository's and the app's, and places to go and items from the local copy (instant, nothing asked of GitHub). Typing finds them, and the options of the actions' submenus directly (E4: "in prog" → "Set Status → In progress"). ↑/↓ move, Enter runs — an action with a submenu opens it, as Tab and → do (E2) — ← or ⌫ in an empty field steps back out of a submenu (← only there), ⌫ then takes out the subject, then the repository (the screen's repository, whose actions sit under its name, shows as the chip when there is no subject); Esc steps back out of a submenu, or closes. -->
 <script lang="ts" setup>
 import { assert } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -168,7 +168,7 @@ const message = computed(() => {
 const hints = computed((): FilterListHint[] => {
   if (submenu.value) {
     const leaving: FilterListHint[] = [
-      { keys: 'Backspace', label: t(l.back) },
+      { keys: 'ArrowLeft', label: t(l.back) },
       { keys: 'Escape', label: t(l.close) },
     ];
     if (!submenu.value.search) {
@@ -403,7 +403,7 @@ function activate(value: AcceptableValue | AcceptableValue[]) {
   rows.value.find(row => row.value === value)?.activate();
 }
 
-/** Tab or → at the end of the text opens the highlighted action's submenu; ⌫ in an empty field steps back. */
+/** Tab or → at the end of the text opens the highlighted action's submenu; ← or ⌫ in an empty field steps back out of it (← only there: with text it moves the caret, and the top level's chip stays ⌫'s). */
 function onFilterKeydown(event: KeyboardEvent) {
   const input = event.target instanceof HTMLInputElement ? event.target : null;
   switch (event.key) {
@@ -421,6 +421,13 @@ function onFilterKeydown(event: KeyboardEvent) {
 
       return;
     }
+    case 'ArrowLeft':
+      if (query.value === '' && submenu.value) {
+        event.preventDefault();
+        back();
+      }
+
+      return;
     case 'Backspace':
       if (query.value !== '') {
         return;
