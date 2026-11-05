@@ -27,6 +27,7 @@ import { shallowRef } from 'vue';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
+import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatItemReference } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { Clock } from '@/services/Clock.js';
@@ -56,6 +57,8 @@ import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
+import { ReviewWritingFactory } from './writing/ReviewWritingFactory.js';
+import type { ReviewWriting } from './writing/ReviewWriting.js';
 
 /** A file of a pull request, as its list shows it. */
 export interface ReviewFile {
@@ -222,6 +225,8 @@ export interface PullRequestFiles {
     isExpansionReset(path: string): boolean;
     /** Shows more of the file, at once. */
     expandLines(path: string, lines: DiffLineRange): void;
+    /** The comment boxes and the draft on their way to GitHub. */
+    readonly writing: ReviewWriting;
 }
 
 /** How far the files' contents are: see {@link PullRequestFiles.progress}. */
@@ -363,8 +368,8 @@ interface Model {
     readonly files: PullRequestFiles;
     reopen(): void;
     drop(): void;
-    /** Viewed marks are on their way to GitHub: dropping the model would lose them. */
-    isSendingMarks(): boolean;
+    /** Viewed marks or comments are on their way to GitHub: dropping the model would forget how they end. */
+    isSending(): boolean;
 }
 
 type FileListPage = NonNullable<NonNullable<PullRequestReviewFilesQuery['repository']>['pullRequest']>;
@@ -401,8 +406,21 @@ export const ReviewFiles = defineService({
         rateLimits: GitHubRateLimitStore,
         clock: Clock,
         logger: Logger,
+        resolver: ItemResolver,
+        createWriting: ReviewWritingFactory,
     },
-    setup({ accounts, blobs, viewedFailures, createRequester, createRest, rateLimits, clock, logger }) {
+    setup({
+        accounts,
+        blobs,
+        viewedFailures,
+        createRequester,
+        createRest,
+        rateLimits,
+        clock,
+        logger,
+        resolver,
+        createWriting,
+    }) {
         let session: Session | null = null;
 
         accounts.onChange(follow);
@@ -434,7 +452,7 @@ export const ReviewFiles = defineService({
         function dropOldestModels(current: Session) {
             let excess = current.models.size - MAX_MODELS_HELD;
             for (const [key, model] of [...current.models].slice(0, -1)) {
-                if (excess > 0 && !model.isSendingMarks()) {
+                if (excess > 0 && !model.isSending()) {
                     model.drop();
                     current.models.delete(key);
                     excess--;
@@ -509,6 +527,17 @@ export const ReviewFiles = defineService({
             const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
             const threadsReader = createSingleRunner({ handler: readThreads });
+            const writing = createWriting({
+                sdk: current.account.sdk,
+                login,
+                listKey,
+                // A draft is known by the item, before any page of the list.
+                getPullRequestId: () => runRef.value?.id ?? resolver.peek(reference) ?? null,
+                getHeadRefOid: () => runRef.value?.headRefOid ?? null,
+                readThreadsAgain,
+                getThreads: () => threadsRef.value,
+                keepSubmission: submission => keepState({ submission }),
+            });
 
             void load();
 
@@ -521,7 +550,7 @@ export const ReviewFiles = defineService({
                         return filesRef.value;
                     },
                     get threads() {
-                        return threadsRef.value;
+                        return writing.threads;
                     },
                     get threadsState() {
                         return threadsStateRef.value;
@@ -623,10 +652,11 @@ export const ReviewFiles = defineService({
                     getExpandedLines,
                     isExpansionReset,
                     expandLines,
+                    writing: writing.writing,
                 },
                 reopen,
                 drop,
-                isSendingMarks: () => [...viewedMarks.values()].some(mark => mark.pending),
+                isSending: () => writing.isSending() || [...viewedMarks.values()].some(mark => mark.pending),
             };
 
             function getState(path: string): ReviewFileState {
@@ -1013,6 +1043,7 @@ export const ReviewFiles = defineService({
              */
             function drop() {
                 dropped = true;
+                writing.drop();
                 listAskedAgain = false;
                 unsentMarks.clear();
                 viewedMarks.clear();
@@ -1044,6 +1075,7 @@ export const ReviewFiles = defineService({
             async function load() {
                 listRef.value = LOADING;
                 void loadThreads();
+                void writing.restoreBoxes();
                 const [kept] = await Promise.all([
                     readFromDisk(() => blobs.readFileList(login, listKey)),
                     stateRead ? null : loadState(),
@@ -1071,6 +1103,7 @@ export const ReviewFiles = defineService({
                 if (kept) {
                     positionRef.value = kept.position;
                     hideViewedRef.value ||= kept.hideViewed;
+                    writing.restoreSubmission(kept.submission);
                     for (const [path, choice] of kept.collapseChoices) {
                         collapseChoices.set(path, choice);
                     }
@@ -1134,6 +1167,17 @@ export const ReviewFiles = defineService({
                 await threadsReader.execute();
             }
 
+            /** After one on its way, which may have been asked before what this one is to find. */
+            async function readThreadsAgain() {
+                await threadsReader.promise;
+                if (dropped) {
+                    return false;
+                }
+
+                await threadsReader.execute();
+                return threadsStateRef.value.kind === 'ready';
+            }
+
             async function readThreads() {
                 try {
                     const threads = await readReviewThreads({
@@ -1153,7 +1197,7 @@ export const ReviewFiles = defineService({
 
                     threadsRef.value = threads;
                     threadsStateRef.value = THREADS_READY;
-                    keepOnDisk(() => blobs.writeThreads(login, listKey, threads));
+                    keepOnDisk(() => blobs.writeThreads(login, listKey, writing.withoutDiscarded(threads)));
                 } catch (error) {
                     if (dropped) {
                         return;

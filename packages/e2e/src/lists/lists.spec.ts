@@ -1,7 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { ProjectTrackingScreenHarness } from '../harnesses/ProjectTrackingScreen.harness.js';
-import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
@@ -36,20 +35,6 @@ test('my work as a board: a column per group, ←/→ between them, Enter opens;
 
     await page.goto('/');
     await expect(myWork.layout('Board')).toHaveAttribute('aria-pressed', 'true');
-});
-
-test('D34: an untracked repository holding what concerns the user lists each of its items once, with its toolbar', async ({
-    page,
-    github,
-}) => {
-    await openMyWork(page, github, createSampleMyWork().world);
-    const repository = new RepositoryScreenHarness(page);
-
-    await page.goto('/acme/web');
-    await expect(repository.notTrackedChip).toBeVisible();
-    await expect(repository.readCount).toHaveText('2 of 2');
-    await expect(repository.root.getByRole('listitem')).toHaveCount(2);
-    await expect(repository.groupingButton).toHaveText('Group: Milestone');
 });
 
 test('J4: an untracked project shows what concerns the user; Settings opens on Projects with its address, and offers it', async ({

@@ -76,6 +76,24 @@ export interface Command {
     readonly search?: (text: string) => void;
 }
 
+/** A row of a {@link CommandKeySheet}. */
+export interface CommandKeyRow {
+    /** The keys it is about, each as {@link Command.key} writes it. */
+    readonly keys: readonly string[];
+    readonly label: string;
+}
+
+/**
+ * What the help sheet (`?`) shows in place of the actions that can run now, on a screen with more keys than a list holds (CR29):
+ * written out by the screen, so that every row shows in every state and one row can speak of two keys.
+ */
+export interface CommandKeySheet {
+    readonly title: string;
+    readonly columns: readonly { readonly title: string; readonly rows: readonly CommandKeyRow[] }[];
+    /** The keys that fit no column, along the bottom. */
+    readonly footer: readonly CommandKeyRow[];
+}
+
 /** A submenu: what an action offers to pick. */
 export interface CommandOptions {
     readonly options: readonly CommandOption[];

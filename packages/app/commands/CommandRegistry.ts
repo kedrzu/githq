@@ -4,7 +4,7 @@ import { computed, shallowRef } from 'vue';
 
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
-import type { Command, CommandSubject } from './CommandTypes.js';
+import type { Command, CommandKeySheet, CommandSubject } from './CommandTypes.js';
 import { COMMAND_SECTIONS } from './CommandTypes.js';
 import { matchesCommandKey } from './matchesCommandKey.js';
 
@@ -42,6 +42,7 @@ export const CommandRegistry = defineService({
         const sourcesRef = shallowRef<readonly CommandSource[]>([]);
         const menuRef = shallowRef<CommandMenuRequest | null>(null);
         const helpRef = shallowRef(false);
+        const keySheetRef = shallowRef<(() => CommandKeySheet) | null>(null);
 
         const commands = computed(() => sourcesRef.value.flatMap(source => source.commands));
         const subject = computed(() => {
@@ -66,7 +67,12 @@ export const CommandRegistry = defineService({
             get helpOpen() {
                 return helpRef.value;
             },
+            /** The screen's own help sheet, `null` for the list of what can run now; reactive. */
+            get keySheet(): CommandKeySheet | null {
+                return keySheetRef.value?.() ?? null;
+            },
             register,
+            showKeySheet,
             isEnabled,
             run,
             openMenu,
@@ -86,6 +92,16 @@ export const CommandRegistry = defineService({
                 sourcesRef.value = sourcesRef.value.filter(candidate => candidate !== source);
                 if (sourcesRef.value.length === 0) {
                     window.removeEventListener('keydown', onKeydown);
+                }
+            };
+        }
+
+        /** Has the help sheet show this while the screen is shown; returns what takes it away again. */
+        function showKeySheet(sheet: () => CommandKeySheet) {
+            keySheetRef.value = sheet;
+            return () => {
+                if (keySheetRef.value === sheet) {
+                    keySheetRef.value = null;
                 }
             };
         }

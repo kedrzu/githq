@@ -33,7 +33,6 @@ test('K3: with the API allowance used up refresh pauses, saying until when and w
     await expect(shell.pausedExplanation).toContainText('Background refresh is');
     await expect(shell.pausedExplanation).toContainText(/your edits still go\sthrough/);
     await expect(shell.pausedExplanation).toContainText(/100 of\s5,000 this hour/);
-    await page.screenshot({ path: '../../.context/m6-k3.png' });
     await page.keyboard.press('Escape');
     await expect(shell.pausedExplanation).toBeHidden();
 

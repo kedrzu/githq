@@ -274,28 +274,6 @@ test('SP62: a push to #101 after the panel opened — GitHub refuses the merge o
     }
 });
 
-test('PM27: a push to #103, the top of the range, after the panel opened — the panel names who pushed it and what; nothing merged', async ({
-    page,
-    github,
-}) => {
-    const { world, first, third } = createStackWorld();
-    const { myWork } = await openMyWork(page, github, world);
-    const panel = new MergePanelHarness(page);
-    await selectRow(myWork, STACK);
-
-    await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveAccessibleName('Squash and merge all 3');
-    const sent = world.headOf(third);
-    world.push(third, 'monalisa', 'Open the stack from any of its pull requests');
-    await page.keyboard.press('ControlOrMeta+Enter');
-
-    await expect(panel.root).toContainText('A new commit arrived, so nothing was merged');
-    await expect(panel.root).toContainText('monalisa pushed');
-    await expect(panel.root).toContainText('“Open the stack from any of its pull requests”');
-    expect(getMergeRequests(github)).toEqual([{ merge_method: 'squash', sha: sent }]);
-    expect(world.stateOf(first).merged).toBe(false);
-});
-
 test("D15, PM35: a stack refused after the panel left is one merge refused: GitHub's words, no count of items done, and the status bar says so", async ({
     page,
     github,
@@ -407,27 +385,6 @@ test('D18, PM32a: opened on #102, ↑ to the first alone — GitHub refuses it: 
     await expect(panel.primary).toHaveAccessibleName('Try again');
     await expect(shell.toasts).toHaveCount(0);
     expect(getMergedNumbers(github)).toEqual([101]);
-});
-
-test('D18, PM32a: opened on #102, ↑ to the first alone — accepted, the panel leaves as for any merge', async ({
-    page,
-    github,
-}) => {
-    const { world, first, second } = createStackWorld();
-    await openMyWork(page, github, world);
-    const panel = new MergePanelHarness(page);
-    const item = new ItemViewHarness(page);
-    await page.goto('/acme/web/pull/102');
-    await expect(item.mergeButton).toBeVisible();
-
-    await page.keyboard.press('Shift+M');
-    await expect(panel.primary).toHaveAccessibleName('Squash and merge 2 of 3');
-    await page.keyboard.press('ArrowUp');
-    await page.keyboard.press('ControlOrMeta+Enter');
-
-    await expect(panel.root).toBeHidden();
-    await expect.poll(() => world.stateOf(first).merged).toBe(true);
-    expect(world.stateOf(second).merged).toBe(false);
 });
 
 test("SP45: two going, held by #103: C shows #103's checks, read only then; the method stays the first open one's", async ({

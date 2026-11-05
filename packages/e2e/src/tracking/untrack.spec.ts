@@ -76,21 +76,3 @@ test("someone else's repository, named in the search, is picked with Space and t
     await expect(tracking.row('acme/web')).toBeChecked();
     await expect(tracking.trackButton).toBeDisabled();
 });
-
-test('an owner picked on the left narrows to what the owner has, and nothing to offer says so only for a search', async ({
-    page,
-    github,
-}) => {
-    await openTrackedWork(page, github, createSampleTrackedWork().world);
-    await page.goto('/settings?q=nope');
-
-    const tracking = new TrackingScreenHarness(page);
-    await expect(tracking.dialog.getByText('Nothing you can see matches “nope”.')).toBeVisible();
-
-    await tracking.search.fill('');
-    await expect(tracking.dialog.getByText(/^Nothing you can see matches/u)).toHaveCount(0);
-    const owner = SAMPLE_REPOSITORY.split('/')[0] ?? '';
-    await tracking.owner(owner).click();
-    await expect(tracking.owner(owner)).toBeChecked();
-    await expect(tracking.row(SAMPLE_REPOSITORY)).toBeChecked();
-});

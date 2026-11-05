@@ -1,0 +1,8 @@
+# Sends the viewer's draft review as one review; `body` goes on the pull request itself (code review D33).
+mutation SubmitPullRequestReview($pullRequestReviewId: ID!, $event: PullRequestReviewEvent!, $body: String) {
+    submitPullRequestReview(input: { pullRequestReviewId: $pullRequestReviewId, event: $event, body: $body }) {
+        pullRequestReview {
+            id
+        }
+    }
+}

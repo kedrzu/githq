@@ -23,6 +23,9 @@ export interface ReviewThread {
     readonly isOutdated: boolean;
     readonly isResolved: boolean;
     readonly subjectType: PullRequestReviewThreadSubjectType;
+    readonly viewerCanReply: boolean;
+    readonly viewerCanResolve: boolean;
+    readonly viewerCanUnresolve: boolean;
     /** All of them, oldest first. They share the code they were written on: the first's `diffHunk` and `originalCommit`. */
     readonly comments: readonly ReviewThreadComment[];
 }

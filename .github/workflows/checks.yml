@@ -51,24 +51,17 @@ jobs:
       - name: Tests
         run: cargo test
 
-  app:
+  # Everything but the test runs. The last two steps are what the deploy builds and bundles: a red there would block it
+  # just like a red test.
+  static:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-
-      - name: Build
-        run: bash setup.build.sh
-
-      # The system libraries Chromium needs, for the component tests and e2e.
-      - name: Install Chromium dependencies
-        run: bunx playwright install-deps chromium
+      - uses: ./.github/actions/setup
 
       - name: Codegen is up to date
         run: |
@@ -84,28 +77,72 @@ jobs:
       - name: Format
         run: bun run format:check
 
-      - name: Tests
-        run: bun run tests
-
-      - name: Component tests
-        run: bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
-
-      # Both projects: `web` against the local build, `desktop` against the desktop app's SPA (no Rust).
-      - name: E2E
-        run: bun run e2e
-
-      - name: Upload e2e results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-results
-          path: packages/e2e/test-results/
-          if-no-files-found: ignore
-
-      # What the deploy builds and bundles: a red here would block it just like a red test. E2E builds the local app
-      # into its own directory, so this comes after it.
       - name: Build the app
         run: bun --cwd packages/app build
 
       - name: Bundle the Worker
         run: bun --cwd packages/worker bundle
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup
+
+      - name: Tests
+        run: bun run tests
+
+  component-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup
+
+      # The system libraries Chromium needs.
+      - name: Install Chromium dependencies
+        run: bunx playwright install-deps chromium
+
+      - name: Component tests
+        run: bun nx run-many -t test:stories --exclude='@nzyme/*' --skip-nx-cache
+
+  # Shards rather than more workers on one machine: `retries` is 0 on purpose, and a loaded machine invites flaky tests.
+  # Each shard builds the app itself (`webServer` in `packages/e2e/playwright.config.ts`): a build job the shards wait for
+  # would use fewer runner minutes but add its time to the end-to-end time.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      # One red shard must not hide what the others would have found.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/setup
+
+      # The system libraries Chromium needs.
+      - name: Install Chromium dependencies
+        run: bunx playwright install-deps chromium
+
+      # Both projects: `web` against the local build, `desktop` against the desktop app's SPA (no Rust).
+      - name: E2E
+        run: bun run e2e --shard=${{ matrix.shard }}/3
+
+      - name: Upload e2e results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.shard }}
+          path: packages/e2e/test-results/
+          if-no-files-found: ignore

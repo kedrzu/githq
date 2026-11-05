@@ -10,6 +10,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { EyeOff, Folder, ListFilter, Regex } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
 import SearchField from '@/components/SearchField.vue';
@@ -20,6 +21,7 @@ import * as l from './ReviewFileList.loc.js';
 import ReviewFileRow from './ReviewFileRow.vue';
 import type { ReviewFile, ReviewFileCollapse, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import ReviewToggle from './ReviewToggle.vue';
+import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   /** What shows: without the viewed files when those are hidden. */
@@ -283,8 +285,8 @@ function onFilterKeydown(event: KeyboardEvent) {
         <Button
           variant="light"
           size="sm"
-          kbd="V"
-          aria-keyshortcuts="V"
+          :kbd="REVIEW_KEYS.viewed"
+          :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
           @click="emit('markSelected')"
         >
           {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}

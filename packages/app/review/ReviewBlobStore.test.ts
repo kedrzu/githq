@@ -41,6 +41,9 @@ const THREADS: readonly ReviewThread[] = [
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: [],
     },
 ];
@@ -51,6 +54,7 @@ const STATE: ReviewKeptState = {
     filter: { pattern: 'secret', regex: false },
     hideViewed: true,
     expandedLines: new Map([['secret.ts', { oid: 'o1', lines: [{ start: 0, end: 20 }] }]]),
+    submission: { event: 'APPROVE', body: 'Looks right' },
 };
 
 test('what is written is read back by another tab; a login reads nothing of another login', async () => {

@@ -1,8 +1,11 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
+import type { CommentedLines } from './utils/isLineCommented.js';
+
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
+const NO_LINES: CommentedLines = [];
 </script>
 
 <script lang="ts" setup>
@@ -15,7 +18,17 @@ import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight } from './buildReviewRows.js';
-import type { ReviewDistanceRow as DistanceRow, ReviewFileEndRow, ReviewGapRow, ReviewRow } from './buildReviewRows.js';
+import type {
+  ReviewCommentRow,
+  ReviewDistanceRow as DistanceRow,
+  ReviewFileEndRow,
+  ReviewGapRow,
+  ReviewAllViewedRow,
+  ReviewRow,
+  ReviewThreadRow as ReviewThreadRowData,
+} from './buildReviewRows.js';
+import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
+import type { DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
@@ -27,16 +40,31 @@ import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
 
-const props = defineProps<{
-  row: ReviewRow;
-  /** Where the pull request's files are on github.com. */
-  githubUrl: string;
-  /** GitHub took the file's viewed mark off since the last visit (D35). */
-  changedSince?: boolean;
-  /** A resolved thread on this row shows whole. */
-  threadOpen?: boolean;
-  /** The thread on this row is the one N and ⇧N are at. */
-  threadFocused?: boolean;
+const props = withDefaults(
+  defineProps<{
+    /** The block over what is left when all is viewed draws itself. */
+    row: Exclude<ReviewRow, ReviewAllViewedRow>;
+    /** Where the pull request's files are on github.com. */
+    githubUrl: string;
+    /** GitHub took the file's viewed mark off since the last visit (D35). */
+    changedSince?: boolean;
+    /** A resolved thread on this row shows whole. */
+    threadOpen?: boolean;
+    /** The thread on this row is the one N and ⇧N are at. */
+    threadFocused?: boolean;
+    /** The thread on this row has its reply box open under it. */
+    threadReplying?: boolean;
+    /** Why resolving the thread on this row or opening it again didn't go through. */
+    threadFailure?: ReviewWriteFailure | null;
+    /** The lines of the file a comment is being written on. */
+    commented?: CommentedLines;
+  }>(),
+  { commented: () => NO_LINES },
+);
+
+defineSlots<{
+  /** A comment being written, which the review draws. */
+  comment?(props: { row: ReviewCommentRow }): unknown;
 }>();
 
 const emit = defineEmits<{
@@ -49,9 +77,13 @@ const emit = defineEmits<{
   /** "Show it" of a file whose only changes are in hidden whitespace. */
   showWhitespace: [];
   toggleThread: [threadId: string];
+  replyInThread: [row: ReviewThreadRowData];
+  setThreadResolved: [row: ReviewThreadRowData, resolved: boolean];
   retry: [path: string];
   toggleCollapsed: [path: string];
   toggleViewed: [path: string];
+  /** Something happened to a line's number: a comment starts there (D32). */
+  gutter: [event: MouseEvent, side: DiffLineSide, line: number];
 }>();
 
 const t = useTranslate();
@@ -133,20 +165,33 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           :line="row.line"
           :diff="row.diff"
           :syntax="row.syntax"
+          :commented="commented"
+          @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
         <DiffRowUnified
           v-else
           :line="row.line"
           :diff="row.diff"
           :syntax="row.syntax"
+          :commented="commented"
+          @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
       </template>
+      <slot
+        v-else-if="row.kind === 'comment'"
+        name="comment"
+        :row="row"
+      />
       <ReviewThreadRow
         v-else-if="row.kind === 'thread'"
         :row="row"
         :open="threadOpen"
         :focused="threadFocused"
+        :replying="threadReplying"
+        :resolve-failure="threadFailure"
         @toggle="emit('toggleThread', row.placement.thread.id)"
+        @reply="emit('replyInThread', row)"
+        @set-resolved="emit('setThreadResolved', row, $event)"
       />
       <ReviewDistanceRow
         v-else-if="row.kind === 'distance'"
@@ -418,7 +463,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   align-items: center;
   height: 40px;
   padding: 0 $spacing-14;
-  font-size: 12.5px;
+  font-size: $font-size-sm;
   color: $color-fg-2;
 }
 

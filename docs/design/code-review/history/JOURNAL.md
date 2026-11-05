@@ -66,3 +66,4 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
 - 2026-11-04 — Owner: a gone file says only that, no commits → D30. A file simply deleted keeps its diff, as on GitHub; only one created and deleted again is an entry of threads alone → D12. A file with only resolved threads shows their count in grey → D27, CR46 and CR14 updated in the design file.
 - 2026-11-04 — Owner at milestone 5's checkpoint: `J` / `K` go through a review's stack → D16; a collapsed stack's entry carries the draft mark → D28. Live check: a pending review moves nothing a poll watches → D21.
 - 2026-11-04 — Owner: a separate light query looks for drafts on tracked pull requests, every 5 minutes and on focus; 1 point per 100 → D21.
+- 2026-11-04 — Reading landed in #102. Live check before writing: what a draft refuses, joins and lets through → D17. A leftover empty review with the body "." stays on the sandbox's #8, as a submitted review can't be deleted.

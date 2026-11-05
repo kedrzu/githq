@@ -82,6 +82,25 @@ export type DiffSide =
     /** The right side of the diff. */
     | 'RIGHT';
 
+/** Specifies a review comment thread to be left with a Pull Request Review. */
+export type DraftPullRequestReviewThread = {
+    /** Body of the comment to leave. */
+    body: string;
+    /**
+     * The line of the blob to which the thread refers. The end of the line range for
+     * multi-line comments. Required if not using positioning.
+     */
+    line?: number | null | undefined;
+    /** Path to the file being commented on. Required if not using positioning. */
+    path?: string | null | undefined;
+    /** The side of the diff on which the line resides. For multi-line comments, this is the side for the end of the line range. */
+    side?: DiffSide | null | undefined;
+    /** The first line of the range to which the comment refers. */
+    startLine?: number | null | undefined;
+    /** The side of the diff on which the start line resides. */
+    startSide?: DiffSide | null | undefined;
+};
+
 /** The possible viewed states of a file . */
 export type FileViewedState =
     /** The file has new changes since last viewed. */
@@ -349,6 +368,17 @@ export type PullRequestReviewDecision =
     | 'CHANGES_REQUESTED'
     /** A review is required before the pull request can be merged. */
     | 'REVIEW_REQUIRED';
+
+/** The possible events to perform on a pull request review. */
+export type PullRequestReviewEvent =
+    /** Submit feedback and approve merging these changes. */
+    | 'APPROVE'
+    /** Submit general feedback without explicit approval. */
+    | 'COMMENT'
+    /** Dismiss review so it now longer effects merging. */
+    | 'DISMISS'
+    /** Submit feedback that must be addressed before merging. */
+    | 'REQUEST_CHANGES';
 
 /** The possible states of a pull request review. */
 export type PullRequestReviewState =
@@ -3015,6 +3045,9 @@ export type PullRequestReviewThreadsQuery = {
                     isOutdated: boolean;
                     isResolved: boolean;
                     subjectType: PullRequestReviewThreadSubjectType;
+                    viewerCanReply: boolean;
+                    viewerCanResolve: boolean;
+                    viewerCanUnresolve: boolean;
                     comments: {
                         pageInfo: { hasNextPage: boolean; endCursor: string | null };
                         nodes: Array<{
@@ -6109,6 +6142,45 @@ export type AddLabelsMutation = {
     } | null;
 };
 
+export type AddPullRequestReviewMutationVariables = Exact<{
+    pullRequestId: string;
+    commitOID: string;
+    event?: PullRequestReviewEvent | null | undefined;
+    thread: DraftPullRequestReviewThread;
+}>;
+
+export type AddPullRequestReviewMutation = {
+    addPullRequestReview: {
+        pullRequestReview: { id: string; createdAt: string; comments: { totalCount: number } } | null;
+    } | null;
+};
+
+export type AddPullRequestReviewThreadMutationVariables = Exact<{
+    pullRequestReviewId: string;
+    path: string;
+    line: number;
+    side: DiffSide;
+    startLine?: number | null | undefined;
+    startSide?: DiffSide | null | undefined;
+    body: string;
+}>;
+
+export type AddPullRequestReviewThreadMutation = {
+    addPullRequestReviewThread: { thread: { id: string } | null } | null;
+};
+
+export type AddPullRequestReviewThreadReplyMutationVariables = Exact<{
+    pullRequestReviewThreadId: string;
+    body: string;
+    pullRequestReviewId?: string | null | undefined;
+}>;
+
+export type AddPullRequestReviewThreadReplyMutation = {
+    addPullRequestReviewThreadReply: {
+        comment: { pullRequestReview: { id: string; state: PullRequestReviewState } | null } | null;
+    } | null;
+};
+
 export type AddToProjectMutationVariables = Exact<{
     projectId: string;
     contentId: string;
@@ -6403,6 +6475,14 @@ export type CreateRefMutationVariables = Exact<{
 }>;
 
 export type CreateRefMutation = { createRef: { ref: { id: string } | null } | null };
+
+export type DeletePullRequestReviewMutationVariables = Exact<{
+    pullRequestReviewId: string;
+}>;
+
+export type DeletePullRequestReviewMutation = {
+    deletePullRequestReview: { pullRequestReview: { id: string } | null } | null;
+};
 
 export type DeleteRefMutationVariables = Exact<{
     refId: string;
@@ -6731,12 +6811,29 @@ export type RequestReviewsMutation = {
     } | null;
 };
 
+export type ResolveReviewThreadMutationVariables = Exact<{
+    threadId: string;
+}>;
+
+export type ResolveReviewThreadMutation = { resolveReviewThread: { thread: { id: string } | null } | null };
+
 export type RevertPullRequestMutationVariables = Exact<{
     pullRequestId: string;
 }>;
 
 export type RevertPullRequestMutation = {
     revertPullRequest: { revertPullRequest: { number: number; url: string } | null } | null;
+};
+
+export type SendPullRequestReviewMutationVariables = Exact<{
+    pullRequestId: string;
+    commitOID: string;
+    event: PullRequestReviewEvent;
+    body?: string | null | undefined;
+}>;
+
+export type SendPullRequestReviewMutation = {
+    addPullRequestReview: { pullRequestReview: { id: string } | null } | null;
 };
 
 export type SetProjectFieldValueMutationVariables = Exact<{
@@ -6799,6 +6896,31 @@ export type SetProjectFieldValueMutation = {
         } | null;
     } | null;
 };
+
+export type StartPullRequestReviewMutationVariables = Exact<{
+    pullRequestId: string;
+    commitOID: string;
+}>;
+
+export type StartPullRequestReviewMutation = {
+    addPullRequestReview: { pullRequestReview: { id: string; createdAt: string } | null } | null;
+};
+
+export type SubmitPullRequestReviewMutationVariables = Exact<{
+    pullRequestReviewId: string;
+    event: PullRequestReviewEvent;
+    body?: string | null | undefined;
+}>;
+
+export type SubmitPullRequestReviewMutation = {
+    submitPullRequestReview: { pullRequestReview: { id: string } | null } | null;
+};
+
+export type UnresolveReviewThreadMutationVariables = Exact<{
+    threadId: string;
+}>;
+
+export type UnresolveReviewThreadMutation = { unresolveReviewThread: { thread: { id: string } | null } | null };
 
 export type UpdateIssueMilestoneMutationVariables = Exact<{
     id: string;
@@ -12149,6 +12271,9 @@ export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
           isOutdated
           isResolved
           subjectType
+          viewerCanReply
+          viewerCanResolve
+          viewerCanUnresolve
           comments(first: 50) {
             pageInfo {
               hasNextPage
@@ -13702,6 +13827,46 @@ export const AddLabelsDocument = new TypedDocumentString(`
     }
   }
 }`);
+export const AddPullRequestReviewDocument = new TypedDocumentString(`
+    mutation AddPullRequestReview($pullRequestId: ID!, $commitOID: GitObjectID!, $event: PullRequestReviewEvent, $thread: DraftPullRequestReviewThread!) {
+  addPullRequestReview(
+    input: {pullRequestId: $pullRequestId, commitOID: $commitOID, event: $event, threads: [$thread]}
+  ) {
+    pullRequestReview {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+    `);
+export const AddPullRequestReviewThreadDocument = new TypedDocumentString(`
+    mutation AddPullRequestReviewThread($pullRequestReviewId: ID!, $path: String!, $line: Int!, $side: DiffSide!, $startLine: Int, $startSide: DiffSide, $body: String!) {
+  addPullRequestReviewThread(
+    input: {pullRequestReviewId: $pullRequestReviewId, path: $path, line: $line, side: $side, startLine: $startLine, startSide: $startSide, body: $body}
+  ) {
+    thread {
+      id
+    }
+  }
+}
+    `);
+export const AddPullRequestReviewThreadReplyDocument = new TypedDocumentString(`
+    mutation AddPullRequestReviewThreadReply($pullRequestReviewThreadId: ID!, $body: String!, $pullRequestReviewId: ID) {
+  addPullRequestReviewThreadReply(
+    input: {pullRequestReviewThreadId: $pullRequestReviewThreadId, body: $body, pullRequestReviewId: $pullRequestReviewId}
+  ) {
+    comment {
+      pullRequestReview {
+        id
+        state
+      }
+    }
+  }
+}
+    `);
 export const AddToProjectDocument = new TypedDocumentString(`
     mutation AddToProject($projectId: ID!, $contentId: ID!) {
   addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
@@ -14048,6 +14213,15 @@ export const CreateRefDocument = new TypedDocumentString(`
     mutation CreateRef($repositoryId: ID!, $name: String!, $oid: GitObjectID!) {
   createRef(input: {repositoryId: $repositoryId, name: $name, oid: $oid}) {
     ref {
+      id
+    }
+  }
+}
+    `);
+export const DeletePullRequestReviewDocument = new TypedDocumentString(`
+    mutation DeletePullRequestReview($pullRequestReviewId: ID!) {
+  deletePullRequestReview(input: {pullRequestReviewId: $pullRequestReviewId}) {
+    pullRequestReview {
       id
     }
   }
@@ -14432,12 +14606,32 @@ export const RequestReviewsDocument = new TypedDocumentString(`
   }
 }
     `);
+export const ResolveReviewThreadDocument = new TypedDocumentString(`
+    mutation ResolveReviewThread($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+    }
+  }
+}
+    `);
 export const RevertPullRequestDocument = new TypedDocumentString(`
     mutation RevertPullRequest($pullRequestId: ID!) {
   revertPullRequest(input: {pullRequestId: $pullRequestId}) {
     revertPullRequest {
       number
       url
+    }
+  }
+}
+    `);
+export const SendPullRequestReviewDocument = new TypedDocumentString(`
+    mutation SendPullRequestReview($pullRequestId: ID!, $commitOID: GitObjectID!, $event: PullRequestReviewEvent!, $body: String) {
+  addPullRequestReview(
+    input: {pullRequestId: $pullRequestId, commitOID: $commitOID, event: $event, body: $body}
+  ) {
+    pullRequestReview {
+      id
     }
   }
 }
@@ -14512,6 +14706,38 @@ fragment ProjectItemFieldValueFields on ProjectV2ItemFieldValue {
     duration
   }
 }`);
+export const StartPullRequestReviewDocument = new TypedDocumentString(`
+    mutation StartPullRequestReview($pullRequestId: ID!, $commitOID: GitObjectID!) {
+  addPullRequestReview(
+    input: {pullRequestId: $pullRequestId, commitOID: $commitOID}
+  ) {
+    pullRequestReview {
+      id
+      createdAt
+    }
+  }
+}
+    `);
+export const SubmitPullRequestReviewDocument = new TypedDocumentString(`
+    mutation SubmitPullRequestReview($pullRequestReviewId: ID!, $event: PullRequestReviewEvent!, $body: String) {
+  submitPullRequestReview(
+    input: {pullRequestReviewId: $pullRequestReviewId, event: $event, body: $body}
+  ) {
+    pullRequestReview {
+      id
+    }
+  }
+}
+    `);
+export const UnresolveReviewThreadDocument = new TypedDocumentString(`
+    mutation UnresolveReviewThread($threadId: ID!) {
+  unresolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+    }
+  }
+}
+    `);
 export const UpdateIssueMilestoneDocument = new TypedDocumentString(`
     mutation UpdateIssueMilestone($id: ID!, $milestoneId: ID) {
   updateIssue(input: {id: $id, milestoneId: $milestoneId}) {
@@ -14951,6 +15177,36 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<AddLabelsMutation>;
         },
+        AddPullRequestReview(
+            variables: AddPullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<AddPullRequestReviewMutation> {
+            return requester<AddPullRequestReviewMutation, AddPullRequestReviewMutationVariables>(
+                AddPullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<AddPullRequestReviewMutation>;
+        },
+        AddPullRequestReviewThread(
+            variables: AddPullRequestReviewThreadMutationVariables,
+            options?: C,
+        ): Promise<AddPullRequestReviewThreadMutation> {
+            return requester<AddPullRequestReviewThreadMutation, AddPullRequestReviewThreadMutationVariables>(
+                AddPullRequestReviewThreadDocument,
+                variables,
+                options,
+            ) as Promise<AddPullRequestReviewThreadMutation>;
+        },
+        AddPullRequestReviewThreadReply(
+            variables: AddPullRequestReviewThreadReplyMutationVariables,
+            options?: C,
+        ): Promise<AddPullRequestReviewThreadReplyMutation> {
+            return requester<AddPullRequestReviewThreadReplyMutation, AddPullRequestReviewThreadReplyMutationVariables>(
+                AddPullRequestReviewThreadReplyDocument,
+                variables,
+                options,
+            ) as Promise<AddPullRequestReviewThreadReplyMutation>;
+        },
         AddToProject(variables: AddToProjectMutationVariables, options?: C): Promise<AddToProjectMutation> {
             return requester<AddToProjectMutation, AddToProjectMutationVariables>(
                 AddToProjectDocument,
@@ -15002,6 +15258,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<CreateRefMutation>;
+        },
+        DeletePullRequestReview(
+            variables: DeletePullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<DeletePullRequestReviewMutation> {
+            return requester<DeletePullRequestReviewMutation, DeletePullRequestReviewMutationVariables>(
+                DeletePullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<DeletePullRequestReviewMutation>;
         },
         DeleteRef(variables: DeleteRefMutationVariables, options?: C): Promise<DeleteRefMutation> {
             return requester<DeleteRefMutation, DeleteRefMutationVariables>(
@@ -15105,6 +15371,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RequestReviewsMutation>;
         },
+        ResolveReviewThread(
+            variables: ResolveReviewThreadMutationVariables,
+            options?: C,
+        ): Promise<ResolveReviewThreadMutation> {
+            return requester<ResolveReviewThreadMutation, ResolveReviewThreadMutationVariables>(
+                ResolveReviewThreadDocument,
+                variables,
+                options,
+            ) as Promise<ResolveReviewThreadMutation>;
+        },
         RevertPullRequest(
             variables: RevertPullRequestMutationVariables,
             options?: C,
@@ -15115,6 +15391,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RevertPullRequestMutation>;
         },
+        SendPullRequestReview(
+            variables: SendPullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<SendPullRequestReviewMutation> {
+            return requester<SendPullRequestReviewMutation, SendPullRequestReviewMutationVariables>(
+                SendPullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<SendPullRequestReviewMutation>;
+        },
         SetProjectFieldValue(
             variables: SetProjectFieldValueMutationVariables,
             options?: C,
@@ -15124,6 +15410,36 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<SetProjectFieldValueMutation>;
+        },
+        StartPullRequestReview(
+            variables: StartPullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<StartPullRequestReviewMutation> {
+            return requester<StartPullRequestReviewMutation, StartPullRequestReviewMutationVariables>(
+                StartPullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<StartPullRequestReviewMutation>;
+        },
+        SubmitPullRequestReview(
+            variables: SubmitPullRequestReviewMutationVariables,
+            options?: C,
+        ): Promise<SubmitPullRequestReviewMutation> {
+            return requester<SubmitPullRequestReviewMutation, SubmitPullRequestReviewMutationVariables>(
+                SubmitPullRequestReviewDocument,
+                variables,
+                options,
+            ) as Promise<SubmitPullRequestReviewMutation>;
+        },
+        UnresolveReviewThread(
+            variables: UnresolveReviewThreadMutationVariables,
+            options?: C,
+        ): Promise<UnresolveReviewThreadMutation> {
+            return requester<UnresolveReviewThreadMutation, UnresolveReviewThreadMutationVariables>(
+                UnresolveReviewThreadDocument,
+                variables,
+                options,
+            ) as Promise<UnresolveReviewThreadMutation>;
         },
         UpdateIssueMilestone(
             variables: UpdateIssueMilestoneMutationVariables,

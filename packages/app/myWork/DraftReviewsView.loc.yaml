@@ -4,6 +4,8 @@ explainer:
   en: Only you can see these comments. Until you submit, the authors don't get them and can't reply on these pull requests.
 openReview:
   en: Open the review
+submit:
+  en: Submit…
 empty:
   en: No draft reviews
 emptyDetail:

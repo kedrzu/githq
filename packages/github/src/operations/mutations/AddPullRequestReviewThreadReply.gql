@@ -1,0 +1,19 @@
+# A reply in a thread. With no draft open it goes out at once; with one it joins that draft, even on a published thread and
+# even with no `pullRequestReviewId` (code review D17), and the review's `state` says which of the two it did. With the id
+# of a draft that is gone it is refused rather than going out.
+mutation AddPullRequestReviewThreadReply($pullRequestReviewThreadId: ID!, $body: String!, $pullRequestReviewId: ID) {
+    addPullRequestReviewThreadReply(
+        input: {
+            pullRequestReviewThreadId: $pullRequestReviewThreadId
+            body: $body
+            pullRequestReviewId: $pullRequestReviewId
+        }
+    ) {
+        comment {
+            pullRequestReview {
+                id
+                state
+            }
+        }
+    }
+}

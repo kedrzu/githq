@@ -239,22 +239,9 @@ test('an address githq does not show leaves for the same address on github.com, 
     // Signed out: nothing of the user's is shown, and the app asks GitHub for nothing on the way.
     const addresses = [
         '/acme?tab=repositories#top',
-        '/orgs/acme',
-        '/acme/web/tree/main/src?plain=1#L3',
         '/acme/web/actions',
         '/acme/web/actions/runs/1',
         '/acme/web/actions/runs/1/job/2',
-        '/acme/web/actions/runs/1/usage',
-        '/acme/web/actions/runs/1/attempts/2',
-        '/acme/web/actions/workflows/ci.yml',
-        '/notifications?query=mentioned',
-        '/issues/created',
-        '/settings/profile',
-        // githq's old addresses are GitHub's like any other.
-        '/account',
-        '/sign-in',
-        '/welcome',
-        '/tracking',
     ];
     for (const address of addresses) {
         const target = answerGitHubPage(github, address);

@@ -206,7 +206,7 @@ exists and its title and description are current. The pipeline supplies the text
 A ready PR is yours until every check passes on its last commit, in a stack on every node: the owner merges by hand and
 should find nothing left to do.
 
-A full run takes about 25 minutes, so wait as a background command, which wakes you when it exits:
+A full run takes about 9 minutes, so wait as a background command, which wakes you when it exits:
 
 ```bash
 gh pr checks <PR> --watch --interval 30

@@ -4,6 +4,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronRight, FileX, MessageSquare, Square, SquareCheckBig } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
 import IconButton from '@/components/IconButton.vue';
 import PullRequestSize from '@/lists/PullRequestSize.vue';
@@ -14,6 +15,7 @@ import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { ThreadCounts } from './threads/countThreads.js';
+import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
 const props = defineProps<{
   file: ReviewFile;
@@ -78,8 +80,8 @@ function onClick(event: MouseEvent) {
       v-if="!file.gone"
       :icon="collapsed ? ChevronRight : ChevronDown"
       :label="collapsed ? t(l.expand) : t(l.collapse)"
-      kbd="Space"
-      aria-keyshortcuts="Space"
+      :kbd="REVIEW_KEYS.collapse"
+      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.collapse)"
       @click="emit('toggleCollapsed')"
     />
     <ReviewChange
@@ -142,8 +144,8 @@ function onClick(event: MouseEvent) {
       variant="outline"
       size="sm"
       :icon="viewed ? SquareCheckBig : Square"
-      kbd="V"
-      aria-keyshortcuts="V"
+      :kbd="REVIEW_KEYS.viewed"
+      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
       :aria-pressed="viewed"
       @click="emit('toggleViewed')"
     >
