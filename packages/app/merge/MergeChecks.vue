@@ -1,6 +1,7 @@
 <!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, the chevron in its place but inactive while the read is on its way. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -140,35 +141,38 @@ function describeCounts(): CheckSummary {
       />
     </MergeCondition>
 
-    <div
-      v-if="open"
-      :class="css.mergeChecks_list"
-    >
-      <section
-        v-for="group in groups"
-        :key="group.key"
-        :class="css.mergeChecks_group"
-        :aria-label="group.heading ?? label ?? t(l.checks)"
+    <Reveal>
+      <div
+        v-if="open"
+        key="all"
+        :class="css.mergeChecks_list"
       >
-        <h3
-          v-if="group.heading"
-          :class="css.mergeChecks_heading"
+        <section
+          v-for="group in groups"
+          :key="group.key"
+          :class="css.mergeChecks_group"
+          :aria-label="group.heading ?? label ?? t(l.checks)"
         >
-          {{ group.heading }}
-        </h3>
-        <ul :class="css.mergeChecks_rows">
-          <MergeCheckRow
-            v-for="check in group.checks"
-            :key="check.id"
-            :check="check"
-            :now="now"
-          />
-        </ul>
-      </section>
-    </div>
+          <h3
+            v-if="group.heading"
+            :class="css.mergeChecks_heading"
+          >
+            {{ group.heading }}
+          </h3>
+          <ul :class="css.mergeChecks_rows">
+            <MergeCheckRow
+              v-for="check in group.checks"
+              :key="check.id"
+              :check="check"
+              :now="now"
+            />
+          </ul>
+        </section>
+      </div>
+    </Reveal>
 
     <div
-      v-else-if="attention.length > 0"
+      v-if="!open && attention.length > 0"
       :class="css.mergeChecks_list"
     >
       <ul :class="css.mergeChecks_rows">

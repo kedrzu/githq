@@ -42,7 +42,10 @@ const on = defineModel<boolean>({ required: true });
   height: 12px;
   background: $color-fg-2;
   border-radius: 50%;
-  transition: transform 0.12s ease;
+
+  @include motion {
+    transition: transform 0.12s ease;
+  }
 }
 
 .switch_on {

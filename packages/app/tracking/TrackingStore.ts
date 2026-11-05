@@ -19,6 +19,7 @@ import { createAccountSlot } from '@/auth/createAccountSlot.js';
 import { Browser } from '@/services/Browser.js';
 import {
     EMPTY_SETTINGS_DOCUMENT,
+    readAnimations,
     readRepositoryLayout,
     readSettingsDocument,
     writeWorkflowSettings,
@@ -177,6 +178,10 @@ export const TrackingStore = defineService({
             get repositoryLayout() {
                 return readRepositoryLayout(keptRef.value.document);
             },
+            /** Whether the short UI animations play; reactive. */
+            get animations() {
+                return readAnimations(keptRef.value.document);
+            },
             /**
              * Whether and how the settings are synced with the settings repository, as this tab last read it; reactive.
              * Kept here, in the settings' slot, for `SettingsSync`, its only writer.
@@ -197,6 +202,7 @@ export const TrackingStore = defineService({
             replaceDocument,
             setWorkflowSettings,
             setRepositoryLayout,
+            setAnimations,
             onUntrack,
             onLocalChange,
             readSaving,
@@ -314,6 +320,18 @@ export const TrackingStore = defineService({
                 readRepositoryLayout(kept.document) === layout
                     ? null
                     : { ...kept, document: { ...kept.document, repositoryLayout: layout } },
+            );
+            if (written) {
+                changedHere();
+            }
+        }
+
+        /** The user's choice of whether animations play. Nothing when it reads as that already (absent reads as on). */
+        function setAnimations(on: boolean) {
+            const written = write(kept =>
+                readAnimations(kept.document) === on
+                    ? null
+                    : { ...kept, document: { ...kept.document, animations: on } },
             );
             if (written) {
                 changedHere();

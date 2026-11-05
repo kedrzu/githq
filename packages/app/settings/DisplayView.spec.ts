@@ -6,7 +6,7 @@ import { matchText } from '@/testing/matchText.js';
 
 import * as stories from './DisplayView.stories.js';
 
-const { TabsChosen, ColumnChosen } = composeStories(stories);
+const { TabsChosen, ColumnChosen, AnimationsOff } = composeStories(stories);
 
 test('the chosen layout is the checked card of a named group, each card described by its line', async () => {
     await ColumnChosen.run();
@@ -42,4 +42,26 @@ test('Tab lands on the chosen card without changing anything; arrows and a click
     onUpdate.mockClear();
     await userEvent.click(page.getByRole('radio', { name: 'Column' }));
     expect(onUpdate).toHaveBeenLastCalledWith('column');
+});
+
+test('the animations switch is named, described by its text, shows the model and flips on click and Space', async () => {
+    const onUpdate = vi.fn();
+    await AnimationsOff.run({ args: { ...AnimationsOff.args, 'onUpdate:animations': onUpdate } });
+
+    const animations = page.getByRole('switch', { name: 'Animations' });
+    await expect.element(animations).not.toBeChecked();
+    await expect
+        .element(animations)
+        .toHaveAccessibleDescription(
+            matchText(
+                "Short fades and slides show where a menu or window comes from, so the screen doesn't jump. Turn them off and everything appears at once.",
+            ),
+        );
+
+    await userEvent.click(animations);
+    expect(onUpdate).toHaveBeenLastCalledWith(true);
+
+    await expect.element(animations).toHaveFocus();
+    await userEvent.keyboard(' ');
+    expect(onUpdate).toHaveBeenCalledTimes(2);
 });

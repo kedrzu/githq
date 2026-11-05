@@ -28,4 +28,9 @@ export class SettingsScreenHarness {
     repositoryLayout(name: 'Column' | 'Tabs'): Locator {
         return this.root.getByRole('radiogroup', { name: 'Repository layout' }).getByRole('radio', { name });
     }
+
+    /** The Display section's switch for animations. */
+    get animationsSwitch(): Locator {
+        return this.root.getByRole('switch', { name: 'Animations' });
+    }
 }

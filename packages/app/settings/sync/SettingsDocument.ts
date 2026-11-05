@@ -23,6 +23,11 @@ export interface SettingsDocument {
      * until the user changes it, so read it with {@link readRepositoryLayout}.
      */
     readonly repositoryLayout?: unknown;
+    /**
+     * Whether the short UI animations play, as written in the file: read it with {@link readAnimations}, which treats
+     * absent or unknown as on.
+     */
+    readonly animations?: unknown;
     readonly [field: string]: unknown;
 }
 
@@ -128,7 +133,7 @@ export function parseSettings(text: string): ParsedSettings {
  * @__NO_SIDE_EFFECTS__
  */
 export function serializeSettings(document: SettingsDocument): string {
-    const { version, repositories, projects, repositoryLayout, ...rest } = document;
+    const { version, repositories, projects, repositoryLayout, animations, ...rest } = document;
     const ordered: SettingsDocument = {
         version,
         repositories: repositories.map(({ nameWithOwner, id, tracking, ...unknown }) => ({
@@ -147,6 +152,7 @@ export function serializeSettings(document: SettingsDocument): string {
             ...unknown,
         })),
         repositoryLayout,
+        animations,
         ...rest,
     };
     return `${JSON.stringify(ordered, null, 2)}\n`;
@@ -229,6 +235,14 @@ export function writeWorkflowSettings(params: WriteWorkflowSettingsParams): Sett
  */
 export function readRepositoryLayout(document: SettingsDocument): RepositoryLayout {
     return document.repositoryLayout === 'column' ? 'column' : 'tabs';
+}
+
+/**
+ * Whether animations play; on unless the document says exactly `false` (absent or a newer build's value reads as on).
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readAnimations(document: SettingsDocument): boolean {
+    return document.animations !== false;
 }
 
 function hasDuplicates(keys: readonly string[]) {

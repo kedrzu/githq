@@ -438,7 +438,10 @@ function open(issue: LinkedIssue) {
   font-size: $font-size-xs;
   line-height: 17px;
   color: $color-fg-dim;
-  transition: color 0.2s;
+
+  @include motion {
+    transition: color 0.2s;
+  }
 }
 
 .itemProperties_restricted_hinted {

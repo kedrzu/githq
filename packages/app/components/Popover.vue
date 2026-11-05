@@ -70,6 +70,8 @@ function nameByLabel(event: Event) {
   border-radius: $radius-lg;
   outline: none;
   box-shadow: $shadow-popover;
+
+  @include motion-popper;
 }
 
 .popover_flush {

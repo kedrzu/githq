@@ -727,6 +727,45 @@ test('picking the layout before the first choice of what to track does not count
     expect(tracking.chosen).toBe(false);
 });
 
+test('a file without animations reads as on and is not rewritten by reading it', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const text = github.file?.text;
+
+    await sync.sync();
+
+    expect(tracking.animations).toBe(true);
+    expect(tracking.document).not.toHaveProperty('animations');
+    tracking.setAnimations(true);
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+    expect(github.file?.text).toBe(text);
+});
+
+test('animations turned off here are written at once, and one changed elsewhere comes in', async () => {
+    const { tracking, sync, github } = await turnedOn();
+
+    tracking.setAnimations(false);
+    await sync.sync();
+
+    expect(tracking.animations).toBe(false);
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { animations: false },
+    });
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), animations: true });
+    await sync.sync();
+    expect(tracking.animations).toBe(true);
+});
+
+test('turning animations off before the first choice of what to track does not count as that choice', async () => {
+    const { tracking } = await open();
+
+    tracking.setAnimations(false);
+
+    expect(tracking.chosen).toBe(false);
+});
+
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
 async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);

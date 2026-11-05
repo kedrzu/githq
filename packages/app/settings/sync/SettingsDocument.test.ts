@@ -4,6 +4,7 @@ import { expect, test } from 'bun:test';
 import {
     DEFAULT_WORKFLOW_SETTINGS,
     parseSettings,
+    readAnimations,
     readRepositoryLayout,
     readWorkflowSettings,
     serializeSettings,
@@ -198,4 +199,19 @@ test.each<[unknown, RepositoryLayout]>([
 
     expect(readRepositoryLayout(parsed.document)).toBe(reads);
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, repositoryLayout: written });
+});
+
+test.each<[unknown, boolean]>([
+    [false, false],
+    [true, true],
+    ['a newer build’s value', true],
+    [0, true],
+])('a file with animations %j is readable, reads as %s and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, animations: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readAnimations(parsed.document)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, animations: written });
 });

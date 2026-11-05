@@ -1,9 +1,9 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
-import { computed, defineAsyncComponent, watch } from 'vue';
+import { computed, defineAsyncComponent, watch, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
@@ -104,6 +104,16 @@ const route = useRoute();
 const editor = useService(ItemEditor);
 const mergePanel = useService(MergePanelStore);
 const pullRequestCommands = useService(PullRequestCommands);
+
+// Motion plays under this attribute (the `motion` mixin, `styles/tokens.scss`); leaving the shell takes it away. Not
+// `useHead`: `nuxt/app` doesn't resolve in the component tests that mount this layout, and the shell is never prerendered.
+watchEffect(onCleanup => {
+  if (tracking.animations) {
+    const root = document.documentElement;
+    root.dataset.motion = 'on';
+    onCleanup(() => delete root.dataset.motion);
+  }
+});
 
 useTabFocus();
 // Another screen: the keys are its list's again, whatever Tab focused on the last one.

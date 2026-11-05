@@ -1,6 +1,7 @@
 <!-- The content of a stack's card on a board (D16, SP26, SP27; the board draws the card, its selection and its handlers), as tall as an item's card and no more decorated: on its first line the stack icon — the selection's mark when all its pull requests are selected, a half mark when some are (D20, SP28) — the repository when the list spans several and how many pull requests it holds — "2 of 4" for a share of the stack's open ones, the others in other columns; "1 of 4 matches" under a filter matching some (D3, SP25) — the people on the right and a chevron that expands it; then the stack's name; then the pips — a share's own drawn in their state, the others hollow, the one opened over the list tall (D14) — and the state in words, with the summed size of its pull requests beside it (worked out as for a list's row, `useStackFacts`). Expanded, it lists its pull requests inside it, first to last, each in its own state with its number and title, the one selected in it highlighted, those the filter does not match de-emphasised; a click opens one. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
 import { Check, ChevronDown, ChevronRight, Layers, Minus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -138,32 +139,35 @@ const nameWithOwner = computed(() => {
       v-if="stackFacts.draft"
       :status="stackFacts.draft"
     />
-    <ul
-      v-if="expanded"
-      :class="css.stackCard_members"
-    >
-      <li
-        v-for="member in stackFacts.members"
-        :key="member.pullRequest.id"
+    <Reveal :class="css.stackCard_reveal">
+      <ul
+        v-if="expanded"
+        key="members"
+        :class="css.stackCard_members"
       >
-        <button
-          type="button"
-          tabindex="-1"
-          :class="[
-            css.stackCard_member,
-            member.pullRequest.id === selectedMember && css.stackCard_member_selected,
-            stack.unmatched?.has(member.pullRequest.id) && css.stackCard_member_unmatched,
-          ]"
-          :aria-current="member.pullRequest.id === selectedMember ? 'true' : undefined"
-          @mousedown.prevent
-          @click.stop="emit('open', member.pullRequest.id)"
+        <li
+          v-for="member in stackFacts.members"
+          :key="member.pullRequest.id"
         >
-          <StackTone :look="member" />
-          <span :class="css.stackCard_number">#{{ member.pullRequest.number }}</span>
-          <span :class="css.stackCard_memberTitle">{{ member.pullRequest.title }}</span>
-        </button>
-      </li>
-    </ul>
+          <button
+            type="button"
+            tabindex="-1"
+            :class="[
+              css.stackCard_member,
+              member.pullRequest.id === selectedMember && css.stackCard_member_selected,
+              stack.unmatched?.has(member.pullRequest.id) && css.stackCard_member_unmatched,
+            ]"
+            :aria-current="member.pullRequest.id === selectedMember ? 'true' : undefined"
+            @mousedown.prevent
+            @click.stop="emit('open', member.pullRequest.id)"
+          >
+            <StackTone :look="member" />
+            <span :class="css.stackCard_number">#{{ member.pullRequest.number }}</span>
+            <span :class="css.stackCard_memberTitle">{{ member.pullRequest.title }}</span>
+          </button>
+        </li>
+      </ul>
+    </Reveal>
   </div>
 </template>
 
@@ -266,12 +270,17 @@ const nameWithOwner = computed(() => {
   -webkit-box-orient: vertical;
 }
 
+// An empty `Reveal` is still a flex item of the card: its margin takes back the card's gap, the list's own margin puts it back.
+.stackCard_reveal {
+  margin-top: -$spacing-8;
+}
+
 .stackCard_members {
   display: flex;
   flex-direction: column;
   gap: $spacing-2;
   padding: $spacing-8 0 0;
-  margin: 0;
+  margin: $spacing-8 0 0;
   list-style: none;
   border-top: 1px solid $color-border;
 }

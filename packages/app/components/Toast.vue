@@ -144,6 +144,16 @@ function onOpenChange(value: boolean) {
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
   box-shadow: 0 12px 32px rgb(0 0 0 / 45%);
+
+  &[data-state='open'] {
+    --motion-slide-x: #{$motion-slide-distance};
+
+    @include motion {
+      animation-name: global(motion-slide-in);
+      animation-duration: $motion-open;
+      animation-timing-function: ease-out;
+    }
+  }
 }
 
 .toast_icon {
