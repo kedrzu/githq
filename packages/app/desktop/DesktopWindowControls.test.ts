@@ -42,7 +42,10 @@ test('an older answer arriving after a newer one does not count', async () => {
 
     const older = createPromise<boolean>();
     const newer = createPromise<boolean>();
-    native.answers.push(() => older.promise, () => newer.promise);
+    native.answers.push(
+        () => older.promise,
+        () => newer.promise,
+    );
     native.resize();
     native.resize();
 
