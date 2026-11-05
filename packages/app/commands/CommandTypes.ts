@@ -74,6 +74,13 @@ export interface Command {
      * through them, so nothing is asked of anyone until the submenu is open.
      */
     readonly search?: (text: string) => void;
+    /**
+     * The rows under it, a level the menu walks into. They do not go through the registry: no keys, not in the help
+     * sheet. `options` is the other kind of submenu, a picker, which ends the path.
+     */
+    readonly children?: () => readonly Command[];
+    /** The rows found when the text does not name it; leaving it out means `children`. */
+    readonly foundAlone?: () => readonly Command[];
 }
 
 /** A row of a {@link CommandKeySheet}. */

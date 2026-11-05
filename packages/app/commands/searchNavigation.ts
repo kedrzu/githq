@@ -1,30 +1,22 @@
 import { formatShortReference } from '@/item/itemRoutes.js';
-import type { SettingsSection } from '@/settings/settingsRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { parseTrackingReference } from '@/tracking/utils/parseTrackingReference.js';
 import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import type { PreparedMatchTexts } from '@/utils/findMatches.js';
 
+import type { Command } from './CommandTypes.js';
 import { findMenuRows } from './findMenuRows.js';
 import type { CommandMenuMatch } from './findMenuRows.js';
 
 /** Where the command menu lists a place: its heading (E1 "Go to", E3 "Projects", "Repositories"). */
 export type NavigationGroup = 'goTo' | 'projects' | 'repositories' | 'items';
 
-/** A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken workflows, a tracked project or saved view, a repository, Settings and its sections. */
+/** A screen of the app the menu jumps to: the draft reviews while there are any, my work and its groups, the broken workflows, a tracked project, a repository, Settings. */
 export interface NavigationPlace {
     readonly id: string;
     readonly group: Exclude<NavigationGroup, 'items'>;
-    readonly kind:
-        | 'draftReviews'
-        | 'myWork'
-        | 'workflows'
-        | 'project'
-        | 'view'
-        | 'repository'
-        | 'settings'
-        | SettingsSection;
+    readonly kind: 'draftReviews' | 'myWork' | 'workflows' | 'project' | 'repository' | 'settings';
     readonly title: string;
     readonly detail?: string;
     /** Other words it is found by (a project's owner). */
@@ -33,6 +25,10 @@ export interface NavigationPlace {
     readonly key?: string;
     /** The app's address of it. */
     readonly path: string;
+    /** The rows under it, a level the menu walks into. */
+    readonly children?: () => readonly Command[];
+    /** The rows found when the text does not name it; leaving it out means `children`. */
+    readonly foundAlone?: () => readonly Command[];
 }
 
 /** What the menu finds places and items in: the local copy, nothing read from GitHub (instant). */
@@ -41,6 +37,8 @@ export interface NavigationData {
     /** The tracked repositories (`owner/name`): one typed that is not opens its own screen (J5). */
     readonly trackedRepositories: readonly string[];
     readonly items: readonly Item[];
+    /** The rows under a repository not tracked: found only with the repository named. */
+    repositoryChildren?(nameWithOwner: string): readonly Command[];
 }
 
 /** A place or an item the typed text finds. */
@@ -96,12 +94,9 @@ export function searchNavigation(query: string, data: NavigationData): Navigatio
     const number = ITEM_NUMBER.exec(typed);
     results.push(...findItems(typed, number, data.items));
 
-    const repository = number ? null : parseTrackingReference(typed);
-    if (repository?.kind === 'repository') {
-        const nameWithOwner = `${repository.owner}/${repository.name}`;
-        if (!data.trackedRepositories.some(name => name.toLowerCase() === nameWithOwner.toLowerCase())) {
-            results.push({ kind: 'repository', score: 100, nameWithOwner });
-        }
+    const nameWithOwner = number ? null : findUntrackedRepository(typed, data);
+    if (nameWithOwner !== null) {
+        results.push({ kind: 'repository', score: 100, nameWithOwner });
     }
 
     return results.toSorted((a, b) => b.score - a.score);
@@ -114,6 +109,22 @@ export function searchNavigation(query: string, data: NavigationData): Navigatio
  */
 export function isOnlyItemNumber(typed: string) {
     return ONLY_ITEM_NUMBER.test(typed);
+}
+
+/**
+ * The `owner/name` typed text names, or its address, when that repository is not tracked; else `null`.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function findUntrackedRepository(typed: string, data: NavigationData) {
+    const repository = parseTrackingReference(typed);
+    if (repository?.kind !== 'repository') {
+        return null;
+    }
+
+    const nameWithOwner = `${repository.owner}/${repository.name}`;
+    const tracked = data.trackedRepositories.some(name => name.toLowerCase() === nameWithOwner.toLowerCase());
+    return tracked ? null : nameWithOwner;
 }
 
 function findItems(typed: string, number: RegExpExecArray | null, items: readonly Item[]): NavigationResult[] {
