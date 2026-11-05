@@ -84,6 +84,13 @@ const NAVIGATION: NavigationData = {
             path: '/settings?tab=display',
         },
         {
+            id: 'settings:review',
+            group: 'goTo',
+            kind: 'review',
+            title: 'Settings: Code review',
+            path: '/settings?tab=review',
+        },
+        {
             id: 'settings:sync',
             group: 'goTo',
             kind: 'sync',
