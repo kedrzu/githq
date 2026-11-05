@@ -72,10 +72,6 @@ function mount() {
             removeItem: key => {
                 stored.delete(key);
             },
-            key: index => [...stored.keys()][index] ?? null,
-            get length() {
-                return stored.size;
-            },
         },
         openInNewTab: url => {
             opened.push(url);

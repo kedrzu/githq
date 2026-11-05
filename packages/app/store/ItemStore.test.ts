@@ -215,10 +215,6 @@ function setup(login: string | null, persistence = recordingPersistence(), tabs 
             removeItem: key => {
                 local.delete(key);
             },
-            key: index => [...local.keys()][index] ?? null,
-            get length() {
-                return local.size;
-            },
         },
         sessionStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
         origin: 'https://githq.test',

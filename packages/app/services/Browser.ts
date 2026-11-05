@@ -4,9 +4,6 @@ import type { Fetch } from '@nzyme/types/Fetch.js';
 /** The part of `Storage` the app uses. */
 export type BrowserStorage = Pick<Storage, 'getItem' | 'removeItem' | 'setItem'>;
 
-/** The part of `localStorage` the app uses: its keys can be listed too, to clear what an older githq left. */
-export type BrowserLocalStorage = BrowserStorage & Pick<Storage, 'key' | 'length'>;
-
 /** A `BroadcastChannel` this tab opened: what it posts reaches the app's other tabs on the channel, not this one. */
 export interface BrowserChannel {
     /** Posts `message` (structured-cloned) to the other tabs. */
@@ -30,7 +27,7 @@ export type PageLifecycleEvent = 'pagehide' | 'freeze' | 'resume';
 export interface BrowserShape {
     readonly fetch: Fetch;
     /** Kept across tabs and restarts: the token and the signed-in user. */
-    readonly localStorage: BrowserLocalStorage;
+    readonly localStorage: BrowserStorage;
     /** Kept by this tab only: the sign-in's `state` while the user is on GitHub. */
     readonly sessionStorage: BrowserStorage;
     /** The app's origin, e.g. `https://githq.dev`. */
