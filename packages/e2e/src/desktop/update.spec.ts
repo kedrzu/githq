@@ -270,6 +270,8 @@ test('after an update the toast says so once and What changed leads to the Chang
     await page.reload();
     const toast = shell.toasts.filter({ hasText: 'Updated to githq 1.4.0' });
     await expect(toast).toContainText('You were on 1.3.0.');
+    // Where it rests, not a few pixels short of it while it slides in.
+    await toast.evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
     const corner = await toast.boundingBox();
     const window = page.viewportSize();
     expect((corner?.x ?? 0) + (corner?.width ?? 0)).toBe((window?.width ?? 0) - 16);
