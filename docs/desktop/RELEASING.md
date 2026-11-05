@@ -42,7 +42,8 @@ to its users.
      (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
      (`.sig`) and adds itself to the release's `latest.json`;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
-     update.
+     update. It also copies each installer to a name without the version (`githq_aarch64.dmg`), which is where the
+     landing page and `/download` link: `releases/latest/download/` needs a name that stays the same.
 
 4. Check the draft under [Releases](https://github.com/kedrzu/githq/releases):
    - the installers for every platform, each updater bundle with its `.sig`;

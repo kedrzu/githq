@@ -1,4 +1,4 @@
-<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, installable, anywhere on GitHub, a stack of pull requests as one entry — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here, the footer's "Install the app" on its card. -->
+<!-- The landing page's details bento (githq.pen "Landing — githq.dev", Details bento): seven cards of the small things — swapping github.com for githq.dev in an address, free, no server, gentle on the API limit, pinning the website, anywhere on GitHub, a stack of pull requests as one entry — in rows of two, three and two; one under another on a phone. In "Swap the host" githq's address types its host over GitHub's (`HostSwapLoop`) when the bento first scrolls into view and whenever the pointer comes over the card. The navigation's "How it works" lands here. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { AppWindow, BadgeDollarSign, Gauge, Globe, Layers, Link, Lock, ServerOff } from 'lucide-vue-next';
@@ -89,7 +89,6 @@ watch(reveal, state => state === 'revealed' && swap.play());
         :body="t(l.limitBody)"
       />
       <LandingDetail
-        :id="LandingSectionId.install"
         :class="css.landingDetails_third"
         :icon="AppWindow"
         :title="t(l.installTitle)"

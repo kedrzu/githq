@@ -1,14 +1,19 @@
-<!-- The landing page's last call to action (githq.pen "Landing — githq.dev", Final CTA): the sygnet, "Every repository you work in", "Sign in with GitHub" — straight to GitHub's consent screen (D21) — and "Star on GitHub", and what GitHub will ask for and why, over a violet glow from below. -->
+<!-- The landing page's last call to action (githq.pen "Landing · Getting the app", LP13, LP15): the sygnet, "Every repository you work in" and the call to action (`LandingActions`), over a violet glow from below. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useId, useTemplateRef } from 'vue';
 
 import Sygnet from '@/components/Sygnet.vue';
 
+import type { DesktopSystem } from './desktopBuilds.js';
 import LandingActions from './LandingActions.vue';
 import * as l from './LandingFinalCta.loc.js';
-import LandingPermission from './LandingPermission.vue';
 import { useReveal } from './useReveal.js';
+
+defineProps<{
+  /** The visitor's system, `null` while unknown or when there is nothing to install on it. */
+  system: DesktopSystem | null;
+}>();
 
 const emit = defineEmits<{
   /** "Sign in with GitHub". */
@@ -37,9 +42,9 @@ const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
     <p :class="css.landingFinalCta_sub">{{ t(l.sub) }}</p>
     <LandingActions
       :class="css.landingFinalCta_actions"
+      :system="system"
       @sign-in="emit('signIn')"
     />
-    <LandingPermission :class="css.landingFinalCta_actions" />
   </section>
 </template>
 
@@ -89,7 +94,7 @@ const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
 .landingFinalCta_sub {
   @include landing-reveal;
 
-  max-width: 700px;
+  max-width: 760px;
   font-size: 19px;
   line-height: 1.5;
   color: $color-fg-2;
@@ -99,7 +104,7 @@ const reveal = useReveal(useTemplateRef<HTMLElement>('section'));
   }
 }
 
-// "Sign in with GitHub" and what GitHub will ask for, after the text.
+// The call to action, after the text.
 .landingFinalCta_actions {
   @include landing-reveal($landing-reveal-stagger);
 }

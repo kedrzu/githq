@@ -1,7 +1,7 @@
 import type { BuiltFile } from './readBuiltFiles.js';
 
 /** The landing page's heading, as the server renders it (`landing/LandingScreen.loc.yaml`). */
-const LANDING_HEADING = '>All your repositories';
+const LANDING_HEADING = '>All your repos';
 
 /** The app's styles, linked by both pages (`features.inlineStyles` in `nuxt.config.ts`). */
 const STYLESHEET = '<link rel="stylesheet" href="/_nuxt/entry.';

@@ -18,13 +18,30 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
 /** The landing page's headline as the server renders it (as `checkPrerenderedPages` looks for it). */
-const LANDING_HEADING = '>All your repositories';
+const LANDING_HEADING = '>All your repos';
 
 /** The headline's text, as the browser shows it. */
-const LANDING_HEADING_TEXT = 'All your repositories';
+const LANDING_HEADING_TEXT = 'All your repos';
 
 /** The `Cookie` header of a browser holding the hint. */
 const HINT_HEADER = `${SIGNED_IN_HINT_COOKIE.name}=${SIGNED_IN_HINT_COOKIE.value}`;
+
+test('/download is open to everyone: signed out it offers signing in, signed in it opens the app', async ({
+    page,
+    github,
+}) => {
+    await page.goto('/download');
+    const main = page.getByRole('main');
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('Download githq');
+    await expect(main.getByRole('button', { name: 'Sign in with GitHub' })).toBeVisible();
+    await expect(main).toContainText('GitHub will ask for full repository access.');
+
+    await signIn(page, github);
+    await page.goto('/download');
+    await expect(page).toHaveURL('/download');
+    await expect(main.getByRole('link', { name: 'Open githq' })).toHaveAttribute('href', '/');
+    await expect(main.getByRole('button', { name: 'Sign in with GitHub' })).toBeHidden();
+});
 
 test('without the signed-in hint, / is the prerendered landing page, whatever the query, kept apart from the app in caches', async ({
     request,

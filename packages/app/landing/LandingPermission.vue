@@ -1,4 +1,4 @@
-<!-- What GitHub will ask for when the visitor signs in, and a "Why?" that explains it (githq.pen "Landing — githq.dev", Hero and Final CTA): under each "Sign in with GitHub"; one line on a wide page, centred under its shield on a phone. -->
+<!-- What GitHub will ask for when the visitor signs in, and a "Why?" that explains it (githq.pen "Landing · Getting the app", LP17): under "Sign in with GitHub" on `/download` (D35); one run of text, starting at its shield. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ShieldCheck } from 'lucide-vue-next';
@@ -27,30 +27,26 @@ const t = useTranslate();
 </template>
 
 <style lang="scss" module="css">
+// One run of text: the shield and "Why?" stay with its first and last words, however it wraps.
 .landingPermission {
-  display: flex;
-  gap: $spacing-6;
-  align-items: center;
   font-size: $font-size-md;
   line-height: 1.45;
   color: $color-fg-dim;
-
-  @include landing-mobile {
-    flex-direction: column;
-    padding-inline: $spacing-12;
-    padding-top: $spacing-4;
-  }
+  text-align: left;
 }
 
 .landingPermission_shield {
-  flex: none;
+  display: inline;
   width: 13px;
   height: 13px;
+  margin-right: $spacing-6;
+  vertical-align: -2px;
 }
 
 .landingPermission_why {
   @include focus-ring;
 
+  margin-left: $spacing-6;
   font-weight: $font-weight-medium;
   color: $color-fg-2;
   text-decoration: underline;
