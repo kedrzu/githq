@@ -197,6 +197,30 @@ export class ReviewScreenHarness {
         return this.page.getByRole('button', { name: 'File list', exact: true });
     }
 
+    /** The left column's right edge, which resizes it. */
+    get fileListEdge(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize the file list' });
+    }
+
+    /** How far the left column's edge is from the window's. */
+    async fileListEdgeX(): Promise<number> {
+        const box = await this.fileListEdge.boundingBox();
+        if (!box) {
+            throw new Error("The file list's edge is not on screen");
+        }
+
+        return Math.round(box.x);
+    }
+
+    /** Drags the left column's edge by `by` pixels with the mouse. */
+    async dragFileListEdge(by: number): Promise<void> {
+        const x = await this.fileListEdgeX();
+        await this.page.mouse.move(x, 300);
+        await this.page.mouse.down();
+        await this.page.mouse.move(x + by, 300, { steps: 5 });
+        await this.page.mouse.up();
+    }
+
     /** The conversation's toggle in the toolbar. */
     get conversationToggle(): Locator {
         return this.page.getByRole('button', { name: 'Conversation', exact: true });
