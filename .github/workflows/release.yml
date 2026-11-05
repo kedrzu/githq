@@ -3,9 +3,10 @@
 # releases nothing; `stable` (`v0.2.0`) does. The version and the notes come from the Conventional Commits since the
 # last stable tag (`packages/app/scripts/release.ts`). A release creates the tag on the commit it ran on and a draft
 # GitHub release, builds macOS (Apple Silicon and Intel), Windows and Linux (`desktop-build.yml`), and uploads the
-# installers, the signed updater bundles and the updater's `latest.json` to the draft. Publishing the draft is done by
-# hand; apps on the Stable stream look for updates at `releases/latest/download/latest.json`, so a release reaches them
-# once it is published and GitHub's "latest". Builds from main are `development.yml`.
+# installers, the signed updater bundles and the updater's `latest.json` to the draft. Publishing the draft is a separate
+# step (`docs/desktop/RELEASING.md`); apps on the Stable stream look for updates at
+# `releases/latest/download/latest.json`, so a release reaches them once it is published and GitHub's "latest". Builds
+# from main are `development.yml`.
 #
 # Secrets: `desktop-build.yml`.
 name: Release
@@ -117,8 +118,7 @@ jobs:
           {"runner": "ubuntu-22.04", "target": "x86_64-unknown-linux-gnu", "args": "--bundles deb,appimage"}
         ]
 
-  # Each platform adds itself to the release's `latest.json`; two finishing at once could drop one. An app on a
-  # platform missing there would never update, so the release fails instead.
+  # An app on a platform missing from `latest.json` would never update, so the release fails instead.
   updater-json:
     needs: [prepare, build]
     runs-on: ubuntu-latest

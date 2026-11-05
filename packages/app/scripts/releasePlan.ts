@@ -1,6 +1,6 @@
 // The release rules of the desktop app, pure: PR titles and commit subjects are Conventional Commits, a title's type
 // agrees with the paths the PR changes, and the next version and the release notes are computed from the subjects
-// since the last stable tag. CI runs this with bun and without `bun install`, so it imports nothing.
+// since the last stable tag; the updater's manifest is composed from a release's files. CI runs this with bun and without `bun install`, so it imports nothing.
 
 const TYPES = ['feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'build', 'ci', 'chore'];
 // Scopes of work that never reaches the desktop app's users.
@@ -22,6 +22,16 @@ const GROUP_TITLES: Record<ChangeGroupKind, string> = {
     fixes: 'Fixes',
     performance: 'Performance',
 };
+// The updater bundles Tauri names `<anything><ending>` and the platform keys each is the manifest's entry for, as
+// tauri-action wrote them: `<os>-<arch>` is what an app without a known installer reads, so on Linux it is the AppImage.
+const UPDATER_BUNDLES = [
+    { ending: '_aarch64.app.tar.gz', platforms: ['darwin-aarch64', 'darwin-aarch64-app'] },
+    { ending: '_x64.app.tar.gz', platforms: ['darwin-x86_64', 'darwin-x86_64-app'] },
+    { ending: '_x64-setup.exe', platforms: ['windows-x86_64', 'windows-x86_64-nsis'] },
+    { ending: '_amd64.AppImage', platforms: ['linux-x86_64', 'linux-x86_64-appimage'] },
+    { ending: '_amd64.deb', platforms: ['linux-x86_64-deb'] },
+];
+const SIGNATURE_SUFFIX = '.sig';
 
 export type ReleaseMode = 'preview' | 'stable';
 
@@ -47,6 +57,27 @@ export interface RenderNotesParams {
     subjects: string[];
     policyUrl: string;
 }
+
+export interface ComposeUpdaterManifestParams {
+    version: string;
+    /** When the manifest was written, as RFC 3339. */
+    pubDate: string;
+    /** Where the release's files download from, without the trailing slash. */
+    downloadUrl: string;
+    /** The names of every file on the release. */
+    assets: string[];
+    /** The content of each `.sig` file on the release, by its name. */
+    signatures: Record<string, string>;
+}
+
+export interface UpdaterManifest {
+    version: string;
+    notes: string;
+    pub_date: string;
+    platforms: Record<string, { signature: string; url: string }>;
+}
+
+export type UpdaterManifestResult = { valid: true; manifest: UpdaterManifest } | { valid: false; reason: string };
 
 type Bump = 'patch' | 'minor' | 'major';
 
@@ -194,6 +225,34 @@ export function renderNotes({ subjects, policyUrl }: RenderNotesParams): string 
         `Installers for macOS, Windows and Linux. How builds are signed, and what the app talks to: [Code signing policy](${policyUrl}).`,
     );
     return `${sections.join('\n\n')}\n`;
+}
+
+/**
+ * The updater's `latest.json` from what a release's builds uploaded. A signature it cannot place is an error rather than
+ * a platform left out, because an app on that platform would never update and nothing would say why.
+ */
+export function composeUpdaterManifest({
+    version,
+    pubDate,
+    downloadUrl,
+    assets,
+    signatures,
+}: ComposeUpdaterManifestParams): UpdaterManifestResult {
+    const platforms: UpdaterManifest['platforms'] = {};
+    for (const [signatureName, signature] of Object.entries(signatures)) {
+        const name = signatureName.slice(0, -SIGNATURE_SUFFIX.length);
+        const bundle = UPDATER_BUNDLES.find(({ ending }) => name.endsWith(ending));
+        if (!bundle) {
+            return { valid: false, reason: `${signatureName} signs no updater bundle this release knows` };
+        }
+        if (!assets.includes(name)) {
+            return { valid: false, reason: `the release has ${signatureName} but no ${name}` };
+        }
+        for (const platform of bundle.platforms) {
+            platforms[platform] = { signature, url: `${downloadUrl}/${name}` };
+        }
+    }
+    return { valid: true, manifest: { version, notes: '', pub_date: pubDate, platforms } };
 }
 
 function isCodePath(file: string): boolean {
