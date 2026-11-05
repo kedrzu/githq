@@ -44,7 +44,8 @@ to its users.
    - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with `GITHQ_ENV=prod`);
    - `bundle` builds on GitHub-hosted runners: macOS Apple Silicon and Intel (`.dmg`, `.app.tar.gz`), Windows x64
      (NSIS `-setup.exe` only), and Linux x64 (`.AppImage`, `.deb`). Each build signs its updater bundles
-     (`.sig`) and adds itself to the release's `latest.json`;
+     (`.sig`) and uploads them;
+   - `updater-manifest` runs after every build and composes the release's `latest.json` from what they uploaded;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
      update.
 

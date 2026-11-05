@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -232,5 +232,35 @@ describe('development-plan', () => {
         expectOneError(result.status, result.stdout);
         expect(result.stdout).toContain('usage:');
         expect(existsSync(output)).toBe(false);
+    });
+});
+
+describe('updater-manifest', () => {
+    test('writes the manifest from the listed assets and the signature files', () => {
+        const signature = 'githq_x64.app.tar.gz.sig';
+        const assets = path.join(dir, 'assets.json');
+        const signatures = path.join(dir, 'signatures');
+        const out = path.join(dir, 'latest.json');
+        writeFileSync(assets, JSON.stringify([{ name: 'githq_x64.app.tar.gz' }, { name: signature }]));
+        mkdirSync(signatures);
+        writeFileSync(path.join(signatures, signature), 'the signature');
+        const result = run([
+            'updater-manifest',
+            '--version',
+            '0.2.0',
+            '--download-url',
+            'https://example.com/v0.2.0',
+            '--assets',
+            assets,
+            '--signatures',
+            signatures,
+            '--out',
+            out,
+        ]);
+        expect(result.status).toBe(0);
+        expect(JSON.parse(readFileSync(out, 'utf8')).platforms['darwin-x86_64']).toEqual({
+            signature: 'the signature',
+            url: 'https://example.com/v0.2.0/githq_x64.app.tar.gz',
+        });
     });
 });
