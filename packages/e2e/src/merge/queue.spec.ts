@@ -131,8 +131,9 @@ test('PM15: ⇧Q takes it out of the queue: the row stops saying so and it can b
     await page.keyboard.press('Shift+Q');
 
     await expect(panel.primary).toHaveAccessibleName('Add to queue');
-    expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: sample.first }]);
-    expect(sample.world.queuePositionOf(sample.first)).toBeNull();
+    // It is drawn out at once, before GitHub is asked.
+    await expect.poll(() => getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: sample.first }]);
+    await expect.poll(() => sample.world.queuePositionOf(sample.first)).toBeNull();
     await page.keyboard.press('Escape');
     await expect(panel.root).toBeHidden();
     await expect(myWork.row(FIRST_TITLE)).not.toContainText('in queue');
@@ -192,8 +193,9 @@ test('SP54: taken out from the panel, a stack goes through its first one, whole,
 
     await expect(panel.primary).toHaveAccessibleName('Add all 2 to the queue');
     await expect(panel.stackMembers).not.toHaveText([/1st/, /2nd/]);
-    expect(getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: first }]);
-    expect(getOperationCalls(github, 'PullRequestStacks').length).toBeGreaterThan(readsBefore);
+    // It is drawn out at once, before GitHub is asked, and the stack is read only after GitHub answered.
+    await expect.poll(() => getOperationCalls(github, 'DequeuePullRequest')).toEqual([{ id: first }]);
+    await expect.poll(() => getOperationCalls(github, 'PullRequestStacks').length).toBeGreaterThan(readsBefore);
     expect(world.queuePositionOf(first)).toBeNull();
     expect(world.queuePositionOf(top)).toBeNull();
 

@@ -3,11 +3,14 @@ import { expect, test } from 'bun:test';
 import {
     buildFileLineRows,
     buildReviewRows,
+    clampCommentRange,
     estimateReviewRowHeight,
+    findCommentLine,
     findReplacementRow,
     findReviewPositionRow,
     getDistanceLinesToShow,
     getGapLinesToShow,
+    getReviewCommentKey,
     getReviewHeaderKey,
     getReviewPosition,
     getReviewRowPath,
@@ -40,6 +43,9 @@ function threadOnLine(line: number, overrides: Partial<ReviewThread> = {}): Revi
         isOutdated: false,
         isResolved: false,
         subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: true,
         comments: [],
         ...overrides,
     };
@@ -698,4 +704,96 @@ test('a place inside a resolved thread lands at its top: it comes back as one li
 
     expect(found?.row.kind).toBe('thread');
     expect(found?.offset).toBe(0);
+});
+
+function commentOn(line: number, side: 'before' | 'after' = 'after', startLine: number | null = null) {
+    return { id: `box${line}`, path: A.path, side, line, startLine, threadId: null };
+}
+
+function commentRow(rows: readonly ReviewRow[], id: string) {
+    const index = rows.findIndex(row => row.key === getReviewCommentKey(A.path, id));
+    return { index, row: rows[index], above: rows[index - 1] };
+}
+
+test('a comment box sits under its line and what is under that, on its own half in split, under one key in both layouts', () => {
+    const threads = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [threadOnLine(19)]);
+    const split = buildFileLineRows({
+        path: A.path,
+        diff: DIFF,
+        layout: 'split',
+        threads,
+        comments: [commentOn(19), commentOn(19, 'before')],
+    });
+    const unified = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'unified', comments: [commentOn(19)] });
+
+    const onRight = commentRow(split, 'box19');
+    expect(onRight.row).toMatchObject({ kind: 'comment', inline: 'right' });
+    expect(onRight.above?.kind).toBe('thread');
+    expect(commentRow(unified, 'box19').row).toMatchObject({ kind: 'comment', inline: 'unified' });
+    expect(commentRow(unified, 'box19').above).toMatchObject({ kind: 'line', line: { newLine: 19 } });
+});
+
+test('a reply sits right under its thread, on its half; with its thread not shown, first, for its text to stay in sight', () => {
+    const thread = threadOnLine(19);
+    const threads = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [thread]);
+    const reply = { ...commentOn(19), id: 'reply', threadId: thread.id };
+
+    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads, comments: [reply] });
+    expect(commentRow(rows, 'reply').row).toMatchObject({ inline: 'right' });
+    expect(commentRow(rows, 'reply').above?.kind).toBe('thread');
+
+    const alone = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [reply] });
+    expect(alone[0]).toMatchObject({ kind: 'comment', inline: null });
+});
+
+test("a comment box whose line isn't shown stays in sight at the top of its file, and under a collapsed file's header", () => {
+    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [commentOn(2)] });
+    expect(rows[0]).toMatchObject({ kind: 'comment', inline: null });
+
+    const collapsed = buildReviewRows({
+        files: [A],
+        getContent: () => ({ kind: 'collapsed' }),
+        threadsInCollapsed: false,
+        getComments: () => [commentOn(2)],
+    });
+    expect(collapsed.map(row => row.kind)).toEqual(['header', 'comment', 'end', 'tail']);
+    expect(collapsed[0]).toMatchObject({ threadsUnder: true });
+});
+
+test('a box gone from the rows it was held at gives way to its line, not to the top of its file', () => {
+    const withBox = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [commentOn(21)] });
+    const without = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
+    const replacement = findReplacementRow({
+        key: getReviewCommentKey(A.path, 'box21'),
+        offset: 40,
+        previous: buildReviewRows({ files: [A], getContent: () => ({ kind: 'lines', rows: withBox }) }),
+        next: buildReviewRows({ files: [A], getContent: () => ({ kind: 'lines', rows: without }) }),
+    });
+
+    expect(replacement?.offset).toBe(40);
+    expect(replacement?.row).toMatchObject({ kind: 'line', line: { right: { line: 21 } } });
+});
+
+test('C takes the first line from the row at the top: past what is not a line, on its newer side unless it has none', () => {
+    const rows = buildReviewRows({
+        files: [A],
+        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) }),
+    });
+
+    expect(findCommentLine(rows, getReviewHeaderKey(A.path))).toMatchObject({ path: A.path, side: 'after', line: 17 });
+    expect(findCommentLine([], null)).toBeNull();
+});
+
+test('a range reaches as far as the lines go on together, and stops at what hides lines', () => {
+    const rows = buildReviewRows({
+        files: [A],
+        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) }),
+    });
+    const params = { rows, path: A.path, side: 'after' as const, line: 19 };
+
+    expect(clampCommentRange({ ...params, to: 22 })).toBe(22);
+    expect(clampCommentRange({ ...params, to: 18 })).toBe(18);
+    // Three lines of context either side of the change: past them the gap.
+    expect(clampCommentRange({ ...params, to: 40 })).toBe(24);
+    expect(clampCommentRange({ ...params, to: 2 })).toBe(17);
 });

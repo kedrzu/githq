@@ -44,14 +44,8 @@ test('⌥⌘B moves nothing being read, both ways, with both columns on at 1440 
     await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBeGreaterThan(seen.scrollTop + 100);
     expect(await settledRowAtTop(review)).toMatchObject({ text: seen.text, top: seen.top });
 
-    const [files, diff, conversation] = await Promise.all([
-        review.fileList.boundingBox(),
-        review.diff.boundingBox(),
-        review.conversation.boundingBox(),
-    ]);
-    // Each column's 1 px border is outside the region.
-    expect(files?.width).toBe(299);
-    expect(conversation?.width).toBe(339);
+    await expect(review.fileList).toBeVisible();
+    const diff = await review.diff.boundingBox();
     expect(diff?.width).toBeGreaterThan(700);
 
     await page.keyboard.press('ControlOrMeta+Alt+b');

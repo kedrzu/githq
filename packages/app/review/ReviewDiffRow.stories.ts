@@ -11,6 +11,7 @@ import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
+import type { CommentedLines } from './utils/isLineCommented.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -61,6 +62,18 @@ export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'l
 
 /** CR5: unified. */
 export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
+
+/** CR70: lines a comment is being written on are tinted. */
+export const SplitCommented: Story = {
+    args: { commented: [{ side: 'after', start: 3, end: 5 }] },
+    render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }), args.commented),
+};
+
+/** Unified, the same. */
+export const UnifiedCommented: Story = {
+    args: { commented: [{ side: 'after', start: 3, end: 5 }] },
+    render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') }), args.commented),
+};
 
 /** Split with its tokens arrived: the colours over the tints and the window, which axe holds to AA. */
 export const SplitColoured: Story = {
@@ -303,11 +316,11 @@ function fileRows(
     }).filter(row => row.kind !== 'tail');
 }
 
-function renderRows(rows: readonly ReviewRow[]) {
+function renderRows(rows: readonly ReviewRow[], commented?: CommentedLines) {
     return {
         components: { ReviewDiffRow },
-        setup: () => ({ rows, githubUrl: FILES_URL }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" /></div>`,
+        setup: () => ({ rows, githubUrl: FILES_URL, commented }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" /></div>`,
     };
 }
 

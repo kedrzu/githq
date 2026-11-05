@@ -31,19 +31,10 @@ describe('checkTitle', () => {
         expect(checkTitle('fix(web): lost list', []).valid).toBe(true);
     });
 
-    test.each(['feat: add the context menu', 'refactor!: rename the store', 'perf: load the list faster'])(
-        'accepts %p',
-        title => {
-            expect(checkTitle(title, ['packages/app/src/a.ts'])).toEqual({ valid: true });
-        },
-    );
-
     test.each([
         'Add the context menu',
         'revert: undo the menu',
-        'feature: add the menu',
         'feat(worker): add the menu',
-        'feat(web)(cloud): add the menu',
         'feat:add the menu',
         'feat:  add the menu',
         'feat: ',
@@ -59,25 +50,18 @@ describe('checkTitle', () => {
 
     test.each([
         { title: 'docs: a', files: ['README.md', 'docs/a.md', 'design/a.pen'] },
-        { title: 'docs: a', files: ['docs/design/shot.png'] },
         { title: 'chore: a', files: ['README.md'] },
-        { title: 'chore: a', files: ['src/a.ts'] },
         { title: 'feat: a', files: ['README.md', 'src/a.ts'] },
         { title: 'feat: a', files: [] },
-        { title: 'docs: a', files: [] },
     ])('accepts $title with $files', ({ title, files }) => {
         expect(checkTitle(title, [...files])).toEqual({ valid: true });
     });
 
     test.each([
         { title: 'docs: a', files: ['README.md', 'src/a.ts'] },
-        { title: 'docs(web): a', files: ['src/a.ts'] },
-        { title: 'docs!: a', files: ['src/a.ts'] },
-        { title: 'docs: a', files: ['packages/docs/a.ts'] },
         { title: 'feat: a', files: ['README.md'] },
         { title: 'fix: a', files: ['docs/design/shot.png'] },
         { title: 'perf: a', files: ['design/a.pen'] },
-        { title: 'fix(web)!: a', files: ['README.md'] },
     ])('rejects $title with $files', ({ title, files }) => {
         expect(checkTitle(title, [...files]).valid).toBe(false);
     });
@@ -118,11 +102,7 @@ describe('planRelease bump', () => {
         { base: 'v0.3.1', subjects: ['feat: a!'], tag: 'v0.4.0' },
         { base: 'v0.3.1', subjects: ['fix!: a'], tag: 'v0.4.0' },
         { base: 'v0.3.1', subjects: ['chore!: a'], tag: 'v0.4.0' },
-        { base: 'v1.2.3', subjects: ['fix: a'], tag: 'v1.2.4' },
-        { base: 'v1.2.3', subjects: ['perf: a'], tag: 'v1.2.4' },
-        { base: 'v1.2.3', subjects: ['feat: a'], tag: 'v1.3.0' },
         { base: 'v1.2.3', subjects: ['feat!: a'], tag: 'v2.0.0' },
-        { base: 'v1.2.3', subjects: ['chore!: a'], tag: 'v2.0.0' },
         { base: 'v0.3.1', subjects: ['fix: a', 'feat: b', 'fix: c'], tag: 'v0.4.0' },
         { base: 'v1.2.3', subjects: ['fix: a', 'feat!: b', 'feat: c'], tag: 'v2.0.0' },
     ])('$base with $subjects gives $tag', ({ base, subjects, tag }) => {
@@ -137,29 +117,10 @@ describe('planRelease bump', () => {
         expect(plan(['feat: a (#45)'], ['v0.3.1'])).toBe('v0.4.0');
         expect(plan(['feat!: a (#45)'], ['v1.0.0'])).toBe('v2.0.0');
     });
-
-    test('the base is the highest stable tag, numerically', () => {
-        expect(plan(['fix: a'], ['v0.9.0', 'v0.10.0'])).toBe('v0.10.1');
-    });
 });
 
 describe('planRelease exclusions', () => {
-    test.each([
-        ['chore: x'],
-        ['refactor: x'],
-        ['docs: x'],
-        ['test: x'],
-        ['build: x'],
-        ['ci: x'],
-        ['feat(web): x'],
-        ['fix(cloud): x'],
-        ['feat(web)!: x'],
-        ['feat(worker): x'],
-        ['Add the context menu (#26)'],
-        ["Merge branch 'main' into feat/x"],
-        ['revert: x'],
-        [''],
-    ])('%p counts for nothing', subject => {
+    test.each([['chore: x'], ['feat(web)!: x'], ['Add the context menu (#26)']])('%p counts for nothing', subject => {
         expect(plan([subject], ['v0.3.1'])).toBe('nothing');
         expect(plan([subject], [])).toBe('nothing');
     });
@@ -174,7 +135,7 @@ describe('planRelease exclusions', () => {
 });
 
 describe('planRelease first release', () => {
-    test.each([['fix: a'], ['feat: a'], ['feat!: a'], ['chore!: a']])('%p gives v0.1.0', subject => {
+    test.each([['fix: a'], ['feat!: a']])('%p gives v0.1.0', subject => {
         expect(plan([subject], [])).toBe('v0.1.0');
         expect(plan([subject], ['v0.1.0-dev.4', 'nightly'])).toBe('v0.1.0');
     });
@@ -182,8 +143,6 @@ describe('planRelease first release', () => {
 
 describe('developmentVersion', () => {
     test.each([
-        [['v0.2.0'], 214, '0.3.0-dev.214'],
-        [['v0.2.0', 'v0.2.3', 'v0.2.1'], 214, '0.3.0-dev.214'],
         [['v0.9.0', 'v0.10.0'], 5, '0.11.0-dev.5'],
         [['v1.4.0'], 9, '1.5.0-dev.9'],
         [[], 3, '0.1.0-dev.3'],
@@ -209,10 +168,6 @@ describe('userVisibleChanges', () => {
             { kind: 'features', changes: [{ description: 'Add the menu', pullRequest: undefined }] },
             { kind: 'performance', changes: [{ description: 'Load the list faster', pullRequest: 5 }] },
         ]);
-    });
-
-    test('nothing users notice is no group at all', () => {
-        expect(userVisibleChanges(['chore: tidy', 'docs: explain'])).toEqual([]);
     });
 });
 

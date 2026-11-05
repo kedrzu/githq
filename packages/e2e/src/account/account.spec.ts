@@ -47,7 +47,6 @@ test('the Account section shows an organisation hiding its private data, and rem
     await account.requestApproval('secretive').click();
     await expect((await popup).locator('body')).toHaveText("githq's OAuth App on GitHub");
     await expect(account.organization('secretive')).toContainText(/You requested approval on\s\w{3} \d+\./);
-    await page.screenshot({ path: '../../.context/m6-account.png' });
 
     await page.reload();
     await expect(account.organization('secretive')).toContainText('You requested approval on');

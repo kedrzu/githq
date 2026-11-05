@@ -6,6 +6,31 @@ pendingComments:
     one: pending comment
     many: pending comments
 note:
-  en: Others can't see them until you submit.
-finishOnGitHub:
-  en: Finish on GitHub
+  plural: count
+  en:
+    one: Others can't see it until you submit.
+    many: Others can't see them until you submit.
+discard:
+  en: Discard review…
+submit:
+  en: Submit review…
+sending:
+  en: Sending your review…
+sendFailed:
+  en: Couldn't send your review
+discardFailed:
+  en: Couldn't discard your review
+refused:
+  en: 'GitHub refused it: "{reason}". Everything is kept.'
+refusedNoReason:
+  en: GitHub refused it and gave no reason. Everything is kept.
+notReached:
+  en: GitHub wasn't reached. Everything is kept.
+commentRefused:
+  en: A comment ahead of it didn't go, so this wasn't sent. Everything is kept.
+dismiss:
+  en: Dismiss
+edit:
+  en: Edit review…
+tryAgain:
+  en: Try again

@@ -16,6 +16,8 @@ export interface AnchoredListExposed {
    * keyboard, whatever the browser concludes from the last key pressed. Tabbing back to it shows the ring as usual.
    */
   focus(): void;
+  /** Scrolls by so many pixels, down if positive, as the user's own scroll would. */
+  scrollBy(distance: number): void;
   /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
   getRowOffset(key: string): number | null;
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
@@ -72,6 +74,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
   userScroll: [];
+  /** A row with the focus inside it left the window, or the list: the list took the focus, for whoever wants it back. */
+  rowFocusLost: [key: string];
 }>();
 
 const slots = defineSlots<{
@@ -108,6 +112,7 @@ const vMeasured: ObjectDirective<HTMLElement, string> = {
     // A row scrolled out takes its focus with it: the keys stay with the list instead of falling to the page.
     if (element.contains(document.activeElement)) {
       focus();
+      emit('rowFocusLost', measuredKeys.get(element) ?? '');
     }
 
     rowsToObserve.delete(element);
@@ -130,7 +135,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, getRowOffset, anchor, firstVisibleKey });
+defineExpose({ jumpTo, focus, scrollBy, getRowOffset, anchor, firstVisibleKey });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -149,6 +154,10 @@ function jumpTo(key: string, offset = 0) {
     anchor.value = model.anchor;
     applyLayout();
   }
+}
+
+function scrollBy(distance: number) {
+  scroller.value?.scrollBy({ top: distance, behavior: 'instant' });
 }
 
 function getRowOffset(key: string) {

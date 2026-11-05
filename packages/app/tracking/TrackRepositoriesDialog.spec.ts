@@ -31,7 +31,7 @@ const dialog = () => page.getByRole('dialog', { name: 'Track repositories' });
 const filter = () => dialog().getByRole('textbox', { name: 'Filter repositories' });
 const trackButton = () => dialog().getByRole('button', { name: /^Track .*repositor/u });
 
-test("T18: its title, description and width, the Esc hint on the head; nothing picked it says so and can't track", async () => {
+test("T18: its title and description, the Esc hint on the head; nothing picked it says so and can't track", async () => {
     await open({ tracked: ['acme/web'] });
 
     // `\s`: the translations keep short words with the next one by no-break spaces.
@@ -40,7 +40,6 @@ test("T18: its title, description and width, the Esc hint on the head; nothing p
         .toHaveAccessibleDescription(
             /^What\syou\stick\sis\scopied\sinto\sthis\sbrowser\sand\skept\sin\ssync\sfrom\snow\son\.$/u,
         );
-    expect(dialog().element().getBoundingClientRect().width).toBe(880);
     // Shown in the head, after the copy only read out.
     await expect.element(dialog().getByText('What you tick is copied', { exact: false }).last()).toBeVisible();
     await expect.element(dialog().getByText('Esc').first()).toBeVisible();

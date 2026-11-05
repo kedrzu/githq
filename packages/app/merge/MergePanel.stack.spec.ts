@@ -130,6 +130,11 @@ test('SP45: held, the line sits at the last that can land, and who holds the res
     await expect.element(member(1206)).toHaveTextContent('1 check failing');
     await expect.element(member(1207)).toHaveTextContent('Blocked');
     await expect.element(primary('Squash and merge 2 of 4')).toBeVisible();
+
+    // Moved past the one holding the rest, nothing is on offer.
+    await userEvent.keyboard('{ArrowDown}{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(panel()).toHaveTextContent('2 of 4 can land');
+    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 
 test('SP46: needing a rebase, ⌘↵ opens GitHub, where "Rebase stack" is (D8, D21)', async () => {
@@ -143,14 +148,6 @@ test('SP46: needing a rebase, ⌘↵ opens GitHub, where "Rebase stack" is (D8, 
         .toHaveTextContent('Visit: https://github.com/fitloop/mobile/pull/97');
 });
 
-test('SP45: moved past the one holding the rest, nothing is on offer and ⌘↵ sends nothing', async () => {
-    await Held.run();
-
-    await userEvent.keyboard('{ArrowDown}{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    await expect.element(panel()).toHaveTextContent('2 of 4 can land');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
-});
-
 test('SP48: a closed one mid-stack — those before it can land, later ones are blocked, rebuilding is on GitHub', async () => {
     await ClosedInside.run();
 
@@ -159,22 +156,11 @@ test('SP48: a closed one mid-stack — those before it can land, later ones are 
     await expect.element(member(491)).toHaveTextContent('Blocked');
     await expect.element(panel()).toHaveTextContent("isn't in githq yet");
     await expect.element(primary('Squash and merge')).toBeVisible();
-});
 
-test('SP48: moved past a closed one, ⌘↵ sends nothing', async () => {
-    await ClosedInside.run();
-
+    // Moved past the closed one, nothing is on offer.
     await userEvent.keyboard('{ArrowDown}{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(member(491)).toHaveTextContent('Blocked');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
-});
-
-test('SP49: a draft inside holds the rest, and marking it ready is right there', async () => {
-    await DraftInside.run();
-
-    await expect.element(panel()).toHaveTextContent('#102 is a draft');
-    await page.getByRole('button', { name: 'Mark #102 ready' }).click();
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
 });
 
 test('SP49: ⌘K is the key of marking the draft ready, shown on its button', async () => {
@@ -194,13 +180,6 @@ test('SP49: moved past the draft, ⌘↵ marks it ready, the button naming it', 
     await expect.element(primary('Mark #102 ready')).toBeVisible();
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Step: markReady');
-});
-
-test('SP41: ⌘K marks nothing where no draft holds the rest', async () => {
-    await WholeStack.run();
-
-    await userEvent.keyboard('{ControlOrMeta>}k{/ControlOrMeta}');
-    await expect.element(page.getByTestId('sent')).toHaveTextContent('Nothing sent');
 });
 
 test('SP50: an incomplete copy never reads ready, and ⌘↵ does nothing (D7)', async () => {

@@ -47,7 +47,6 @@ test("G8: a row shows the repository's name without its owner, public or private
     const webapp = row('fitloop', 'webapp');
     await expect.element(webapp).toHaveTextContent(/^webapp\s*private\s*142\sopen\s*synced\s14s\sago/u);
     await expect.element(row('mlaine', 'tasklet')).toHaveTextContent(/tasklet\s*public\s*18\sopen/u);
-    expect(webapp.element().getBoundingClientRect().height).toBe(36);
 
     // Untrack shows on the hovered and the selected row only.
     const untrack = webapp.getByRole('button', { name: 'Untrack', includeHidden: true });

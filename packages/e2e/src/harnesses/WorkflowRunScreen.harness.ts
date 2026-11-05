@@ -58,11 +58,6 @@ export class WorkflowRunScreenHarness {
         return this.root.getByTestId('workflow-log-placeholder');
     }
 
-    /** Every row of the log in the DOM, of whatever kind: only the ones around the view are there. */
-    get logRows(): Locator {
-        return this.log.getByRole('listitem');
-    }
-
     /** The lines of the log in view: not its steps' heads, nor its folded steps' lines. */
     get logLines(): Locator {
         return this.log.getByTestId('workflow-log-line');
@@ -71,11 +66,6 @@ export class WorkflowRunScreenHarness {
     /** The text of those lines, without their numbers. */
     get logTexts(): Locator {
         return this.log.getByTestId('workflow-log-text');
-    }
-
-    /** "… N more characters" at the end of the lines cut short. */
-    get logMore(): Locator {
-        return this.log.getByTestId('workflow-log-more');
     }
 
     /** The line the cursor is on, while it isn't folded away. */
@@ -91,21 +81,6 @@ export class WorkflowRunScreenHarness {
     /** "Error 1 of 2", or that there is no marker. */
     get logErrors(): Locator {
         return this.root.getByTestId('workflow-log-errors');
-    }
-
-    /** What the log says at its end when the job failed with no error marker. */
-    get logEnd(): Locator {
-        return this.log.getByTestId('workflow-log-end');
-    }
-
-    /** The toolbar's toggle for wrapping the log's lines. */
-    get wrapToggle(): Locator {
-        return this.root.getByTestId('workflow-log-wrap');
-    }
-
-    /** The toolbar's toggle for showing the log's times. */
-    get timesToggle(): Locator {
-        return this.root.getByTestId('workflow-log-times');
     }
 
     /** The search bar, in the toolbar's place while a search is open. */
@@ -136,11 +111,6 @@ export class WorkflowRunScreenHarness {
     /** The rows standing for lines left out among only a search's matches. */
     get logGaps(): Locator {
         return this.log.getByTestId('workflow-log-gap');
-    }
-
-    /** The way to GitHub offered by what stands in for the log or for the columns. */
-    get openOnGitHubButton(): Locator {
-        return this.root.getByRole('button', { name: /Open on GitHub/u });
     }
 
     /** The heading of what stands in for the log or for the columns. */

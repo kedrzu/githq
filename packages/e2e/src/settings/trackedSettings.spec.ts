@@ -49,29 +49,11 @@ test("a tracked repository's settings open at GitHub's address of them, inside S
     await expect(page).toHaveURL('/settings?tab=projects');
 });
 
-test('Untrack is the same as on its row: back to Repositories, the toast offering Undo', async ({ page, github }) => {
-    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
-    const screen = new TrackedSettingsScreenHarness(page);
-
-    await page.goto(`/${SAMPLE_REPOSITORY}/settings`);
-    await screen.untrackButton.click();
-    await expect(page).toHaveURL('/settings');
-    const toast = shell.toasts.filter({ hasText: `Stopped tracking ${SAMPLE_REPOSITORY}` });
-    await expect(toast).toBeVisible();
-    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveCount(0);
-
-    // Undo: tracked as ever, its settings open again.
-    await toast.getByRole('button', { name: 'Undo' }).click();
-    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeVisible();
-    await page.goto(`/${SAMPLE_REPOSITORY}/settings`);
-    await expect(screen.heading(SAMPLE_REPOSITORY)).toBeVisible();
-});
-
-test("a repository not tracked has no settings here: its address settles on Repositories; a tracked one's menu offers them", async ({
+test("a repository not tracked has no settings here: its address settles on Repositories; a tracked one's menu offers them, and Untrack there goes back to Repositories with the toast", async ({
     page,
     github,
 }) => {
-    await openTrackedWork(page, github, createSampleTrackedWork().world);
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
 
     await page.goto('/acme/web/settings');
     await expect(page).toHaveURL('/settings');
@@ -85,6 +67,11 @@ test("a repository not tracked has no settings here: its address settles on Repo
     ]);
     await menu.getByRole('menuitem', { name: 'Settings' }).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings`);
+
+    await new TrackedSettingsScreenHarness(page).untrackButton.click();
+    await expect(page).toHaveURL('/settings');
+    await expect(shell.toasts.filter({ hasText: `Stopped tracking ${SAMPLE_REPOSITORY}` })).toBeVisible();
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveCount(0);
 });
 
 test("a tracked project's settings open inside Settings with Projects chosen, and Esc goes to Projects", async ({

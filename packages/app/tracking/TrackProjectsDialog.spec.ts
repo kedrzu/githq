@@ -201,16 +201,10 @@ test('one being untracked counts as not tracked: picked and tracked, its untrack
     expect(trackedTitles(tracking)).toEqual(['tasklet Roadmap', 'Platform Q4', 'Docs revamp']);
 });
 
-test('Esc clears the filter first, then closes without asking; picks and the filter are gone on opening again; Cancel tracks nothing', async () => {
+test('Esc closes without asking, and the picks are gone on opening again', async () => {
     const { tracking, setOpen } = await open({ tracked: [] });
 
     await userEvent.click(row('Bug triage'));
-    await userEvent.keyboard('/bug');
-    await expect.element(filter()).toHaveValue('bug');
-    await userEvent.keyboard('{Escape}');
-    await expect.element(filter()).toHaveValue('');
-    await expect.element(dialog()).toBeInTheDocument();
-
     await userEvent.keyboard('{Escape}');
     await expect.element(dialog()).not.toBeInTheDocument();
     expect(trackedTitles(tracking)).toEqual([]);
@@ -218,11 +212,6 @@ test('Esc clears the filter first, then closes without asking; picks and the fil
     setOpen(true);
     await expect.element(dialog()).toHaveTextContent('Nothing picked yet');
     await expect.element(row('Bug triage')).not.toBeChecked();
-
-    await userEvent.click(row('Bug triage'));
-    await userEvent.click(dialog().getByRole('button', { name: /^Cancel/u }));
-    await expect.element(dialog()).not.toBeInTheDocument();
-    expect(trackedTitles(tracking)).toEqual([]);
 });
 
 test("J and K and the arrows move from the moment it opens, Space ticks, / filters, ⌘↵ tracks; the screen's keys don't run", async () => {

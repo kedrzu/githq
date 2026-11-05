@@ -42,27 +42,10 @@ test("Repositories lists what is tracked by owner; ⌫ untracks the selected row
     await expect(list.heading).toHaveText(/^1\stracked\srepository$/u);
 });
 
-test("Enter on a row opens the repository's settings, and Esc returns to the list", async ({ page, github }) => {
-    await openTrackedWork(page, github, createSampleTrackedWork().world);
-    await page.goto('/settings');
-
-    const list = new TrackedListScreenHarness(page);
-    await expect(list.row(LOGIN, REPOSITORY_NAME)).toBeVisible();
-    await page.keyboard.press('j');
-    await page.keyboard.press('Enter');
-
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings`);
-    await expect(new TrackedSettingsScreenHarness(page).heading(SAMPLE_REPOSITORY)).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page).toHaveURL('/settings');
-    await expect(list.row(LOGIN, REPOSITORY_NAME)).toBeVisible();
-
-    // A click opens it too.
-    await list.row(LOGIN, REPOSITORY_NAME).click();
-    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/settings`);
-});
-
-test('A opens the picker, and tracking a repository there adds its row', async ({ page, github }) => {
+test('A opens the picker, tracking a repository there adds its row, and the row opens its settings', async ({
+    page,
+    github,
+}) => {
     const { world } = createSampleTrackedWork();
     await openTrackedWork(page, github, world);
     // Created after the first sign-in chose what to track: not tracked.
@@ -82,6 +65,12 @@ test('A opens the picker, and tracking a repository there adds its row', async (
     await expect(list.heading).toHaveText(/^2\stracked\srepositories$/u);
     // All of the user's own tracked: nothing more to track of them.
     await expect(list.groupHeader(LOGIN)).toHaveText(/your\srepositories\s·\s2\sof\s2\stracked$/u);
+
+    await list.row(LOGIN, 'docs').click();
+    await expect(page).toHaveURL(`/${LOGIN}/docs/settings`);
+    await expect(new TrackedSettingsScreenHarness(page).heading(`${LOGIN}/docs`)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL('/settings');
 });
 
 test("Projects says where a project's items come from and how many it holds; Enter opens its settings", async ({
