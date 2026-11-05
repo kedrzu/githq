@@ -51,6 +51,8 @@ test("G8: a row shows the repository's name without its owner, public or private
 
     // Untrack shows on the hovered and the selected row only.
     const untrack = webapp.getByRole('button', { name: 'Untrack', includeHidden: true });
+    // An earlier test may have left the pointer where this row is drawn.
+    await userEvent.hover(page.getByRole('heading', { name: 'fitloop', level: 3 }));
     expect(getComputedStyle(untrack.element()).visibility).toBe('hidden');
     await userEvent.hover(webapp);
     expect(getComputedStyle(untrack.element()).visibility).toBe('visible');
