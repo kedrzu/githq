@@ -1,4 +1,4 @@
-<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first. Under the call to action the development sign-in. -->
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first, which rises in once as the page opens. Under the call to action the development sign-in. -->
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -196,6 +196,12 @@ const t = useTranslate();
     background: linear-gradient(180deg, rgba($color-bg, 0), $color-bg);
   }
 
+  // Once, as the page opens: no state and no script, so the prerendered page plays it too, and where it does not
+  // play the screenshot simply stands in place. Starts visible, so the page's first image is painted at once.
+  @media (prefers-reduced-motion: no-preference) {
+    animation: hero-rise-in $landing-motion-duration ease-out;
+  }
+
   @include landing-mobile {
     aspect-ratio: 350 / 292;
     border-radius: 12px;
@@ -216,6 +222,13 @@ const t = useTranslate();
     height: 100%;
     object-fit: cover;
     object-position: left top;
+  }
+}
+
+@keyframes hero-rise-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(16px);
   }
 }
 </style>
