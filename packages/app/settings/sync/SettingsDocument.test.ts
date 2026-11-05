@@ -6,11 +6,17 @@ import {
     parseSettings,
     readAnimations,
     readRepositoryLayout,
+    readReviewCommentChoice,
     readWorkflowSettings,
     serializeSettings,
     writeWorkflowSettings,
 } from './SettingsDocument.js';
-import type { RepositoryLayout, SettingsDocument, SettingsRepository } from './SettingsDocument.js';
+import type {
+    RepositoryLayout,
+    ReviewCommentChoice,
+    SettingsDocument,
+    SettingsRepository,
+} from './SettingsDocument.js';
 
 const DOCUMENT: SettingsDocument = {
     version: 1,
@@ -214,4 +220,18 @@ test.each<[unknown, boolean]>([
 
     expect(readAnimations(parsed.document)).toBe(reads);
     expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, animations: written });
+});
+
+test.each<[unknown, ReviewCommentChoice]>([
+    ['draft', 'draft'],
+    ['a newer build’s way', 'single'],
+    [7, 'single'],
+])('a file with the comment choice %j is readable, reads as %s and keeps what it holds', (written, reads) => {
+    const parsed = parseSettings(JSON.stringify({ ...DOCUMENT, reviewCommentChoice: written }));
+    if (parsed.kind !== 'ok') {
+        throw new Error(`Not read: ${parsed.kind}`);
+    }
+
+    expect(readReviewCommentChoice(parsed.document)).toBe(reads);
+    expect(JSON.parse(serializeSettings(parsed.document))).toEqual({ ...DOCUMENT, reviewCommentChoice: written });
 });

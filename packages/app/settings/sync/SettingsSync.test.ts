@@ -766,6 +766,46 @@ test('turning animations off before the first choice of what to track does not c
     expect(tracking.chosen).toBe(false);
 });
 
+test('a file without the comment choice reads as single and is not rewritten; one chosen here is written, one chosen elsewhere comes in', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    const text = github.file?.text;
+
+    await sync.sync();
+    expect(tracking.reviewCommentChoice).toBe('single');
+    expect(writes(session.operations())).toEqual([]);
+    expect(github.file?.text).toBe(text);
+
+    tracking.setReviewCommentChoice('draft');
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { reviewCommentChoice: 'draft' },
+    });
+
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), reviewCommentChoice: 'single' });
+    await sync.sync();
+    expect(tracking.reviewCommentChoice).toBe('single');
+});
+
+test('a comment choice of a newer build reads as single and stays in the file until the user picks another', async () => {
+    const { session, tracking, sync, github } = await turnedOn();
+    github.writeFile({ ...documentOf([{ ...WEB, tracking: true }]), reviewCommentChoice: 'batch' });
+    await sync.sync();
+    expect(tracking.reviewCommentChoice).toBe('single');
+
+    session.github.requests.length = 0;
+    tracking.setReviewCommentChoice('single');
+    await sync.sync();
+    expect(writes(session.operations())).toEqual([]);
+
+    tracking.setReviewCommentChoice('draft');
+    await sync.sync();
+    expect(github.file && parseSettings(github.file.text)).toMatchObject({
+        kind: 'ok',
+        document: { reviewCommentChoice: 'draft' },
+    });
+});
+
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
 async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);

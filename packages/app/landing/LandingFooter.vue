@@ -1,13 +1,15 @@
-<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections and "Sign in", to the project on GitHub and to how githq works, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
+<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections, `/download` and "Sign in", to the project on GitHub and to how githq works, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Github, Rss } from 'lucide-vue-next';
-import { useId } from 'vue';
+import { computed, useId } from 'vue';
 
+import { HOME_PATH } from '@/auth/routeAccess.js';
 import Button from '@/components/Button.vue';
 import Wordmark from '@/components/Wordmark.vue';
 
+import { DOWNLOAD_PATH } from './desktopBuilds.js';
 import * as l from './LandingFooter.loc.js';
 import {
   API_LIMITS_URL,
@@ -27,6 +29,13 @@ interface FooterLink {
   href: string;
 }
 
+const props = defineProps<{
+  /** On a page other than the landing page: the sections are on the way back to it. */
+  elsewhere?: boolean;
+  /** Holds a session, so "Sign in" opens the app instead. */
+  signedIn?: boolean;
+}>();
+
 const emit = defineEmits<{
   /** "Sign in". */
   signIn: [];
@@ -37,11 +46,11 @@ const productId = useId();
 const projectId = useId();
 const resourcesId = useId();
 
-const product: FooterLink[] = [
-  { label: l.features, href: `#${LandingSectionId.features}` },
-  { label: l.keyboard, href: `#${LandingSectionId.keyboard}` },
-  { label: l.install, href: `#${LandingSectionId.install}` },
-];
+const product = computed<FooterLink[]>(() => [
+  { label: l.features, href: `${props.elsewhere ? HOME_PATH : ''}#${LandingSectionId.features}` },
+  { label: l.keyboard, href: `${props.elsewhere ? HOME_PATH : ''}#${LandingSectionId.keyboard}` },
+  { label: l.download, href: DOWNLOAD_PATH },
+]);
 const project: FooterLink[] = [
   { label: l.github, href: REPOSITORY_URL },
   { label: l.issues, href: ISSUES_URL },
@@ -95,7 +104,14 @@ const social = [
               >
             </li>
             <li>
+              <a
+                v-if="signedIn"
+                :class="css.landingFooter_link"
+                :href="HOME_PATH"
+                >{{ t(l.openGithq) }}</a
+              >
               <Button
+                v-else
                 :class="css.landingFooter_link"
                 variant="link"
                 @click="emit('signIn')"

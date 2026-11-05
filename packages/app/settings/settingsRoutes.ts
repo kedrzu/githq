@@ -10,7 +10,15 @@ export const SETTINGS_PATH = '/settings';
 export const CONFIRM_STABLE_PATH = `${SETTINGS_PATH}?tab=updates&confirm=stable`;
 
 /** A section of Settings. */
-export type SettingsSection = 'account' | 'display' | 'projects' | 'repositories' | 'sync' | 'updates' | 'changelog';
+export type SettingsSection =
+    | 'account'
+    | 'display'
+    | 'projects'
+    | 'repositories'
+    | 'review'
+    | 'sync'
+    | 'updates'
+    | 'changelog';
 
 /**
  * The sections of Settings, in the order of its column, each one's key following from its place; each one's `?tab=`, but the first, which has none. Updates and
@@ -21,6 +29,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSection[] = [
     'repositories',
     'projects',
     'display',
+    'review',
     'sync',
     'account',
     ...(__DESKTOP__ ? (['updates', 'changelog'] as const) : []),

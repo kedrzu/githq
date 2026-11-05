@@ -4,9 +4,13 @@ import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
+import { SavingScreenHarness } from '../harnesses/SavingScreen.harness.js';
+import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
+import { answerSettingsRepository } from '../settings/answerSettingsRepository.js';
 
 import { answerReview } from './answerReview.js';
 import type { AnsweredReview, SampleReviewThread } from './answerReview.js';
@@ -201,6 +205,8 @@ async function openWriting(
     await page.goto(ADDRESS);
     const review = new ReviewScreenHarness(page);
     await expect(review.code(CHANGED_LINE)).toBeVisible();
+    // Tokens split a line into spans, each rounded on its own, so its width can change by 1/64 px when they arrive.
+    await expect(review.codeToken(CHANGED_LINE).first()).toBeVisible();
     return { review, writes, threads, refused, setDraft, world, id, answered };
 }
 
@@ -273,6 +279,94 @@ test('the second key starts a draft: the toolbar comes, and the comment says it 
     await expect(review.pendingToolbar).toContainText('1 pending comment');
     await expect(review.thread('First of many')).toContainText('Pending · in your draft');
     expect(writes).toHaveLength(1);
+    expect(writes[0]?.variables).not.toHaveProperty('event');
+});
+
+test('"Add it to a draft review" in Settings swaps the buttons, the first key starts a draft, and it is written to the settings repository', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github);
+    const repository = answerSettingsRepository(github, { exists: false, file: null });
+    await page.goto('/settings?tab=sync');
+    const saving = new SavingScreenHarness(page);
+    await saving.choice.click();
+    await expect(saving.on).toBeVisible();
+
+    await page.goto('/settings?tab=review');
+    const settings = new SettingsScreenHarness(page);
+    await expect(new AppShellHarness(page).statusBar).toContainText(
+        `settings saved in ${SAMPLE_VIEWER.viewer.login}/githq-settings`,
+    );
+    await settings.reviewComment('Add it to a draft review').click();
+    await expect
+        .poll((): unknown => repository.file && JSON.parse(repository.file.text))
+        .toMatchObject({ reviewCommentChoice: 'draft' });
+
+    await page.goto(ADDRESS);
+    await expect(review.code(CHANGED_LINE)).toBeVisible();
+    await review.lineNumber(20).click();
+    const box = review.commentBox();
+    await expect(box.getByRole('button', { name: 'Start a review' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Comment now' })).toBeVisible();
+
+    await page.keyboard.type('First of many');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.pendingToolbar).toContainText('1 pending comment');
+    expect(writes.map(write => write.name)).toEqual(['AddPullRequestReview']);
+    expect(writes[0]?.variables).not.toHaveProperty('event');
+});
+
+test('with the draft chosen a reply starts a draft on the first key and goes at once on the second', async ({
+    page,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github, { threads: OPEN_THREADS });
+    await page.goto('/settings?tab=review');
+    await new SettingsScreenHarness(page).reviewComment('Add it to a draft review').click();
+    await page.goto(ADDRESS);
+    await expect(review.code(CHANGED_LINE)).toBeVisible();
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    await page.keyboard.press('r');
+    const box = review.commentBox('Reply to sofiab');
+    await expect(box.getByRole('button', { name: 'Start a review' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Reply now' })).toBeVisible();
+
+    await page.keyboard.type('nrC Agreed');
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.pendingToolbar).toContainText('1 pending comment');
+    expect(writes.map(write => write.name)).toEqual(['StartPullRequestReview', 'AddPullRequestReviewThreadReply']);
+});
+
+test('changed in another tab, an open box says the other thing at once and its key does what it now says, its text staying', async ({
+    page,
+    context,
+    github,
+}) => {
+    const { review, writes } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    const box = review.commentBox();
+    await page.keyboard.type('Half written');
+    await expect(box.getByRole('button', { name: 'Comment', exact: true })).toBeVisible();
+
+    const other = await context.newPage();
+    await other.goto('/settings?tab=review');
+    await new SettingsScreenHarness(other).reviewComment('Add it to a draft review').click();
+
+    await expect(box.getByRole('button', { name: 'Comment now' })).toBeVisible();
+    await expect(box.getByRole('button', { name: 'Start a review' })).toBeVisible();
+    await expect(review.commentField()).toHaveValue('Half written');
+
+    await page.bringToFront();
+    await review.commentField().focus();
+    await page.keyboard.press(FIRST_KEY);
+
+    await expect(review.pendingToolbar).toContainText('1 pending comment');
+    expect(writes.map(write => write.name)).toEqual(['AddPullRequestReview']);
     expect(writes[0]?.variables).not.toHaveProperty('event');
 });
 

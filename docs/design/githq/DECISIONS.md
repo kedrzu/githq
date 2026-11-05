@@ -632,6 +632,9 @@ the way there.
 **Left out:** Stop tracking, because an Enter would stop tracking: it stays in the sidebar's menu. New issue, because `C`
 already starts in the screen's repository.
 
+[D36](#d36) changes two of these: any repository's sections are now reached from elsewhere, by its level or by typing its
+name, and a repository walked into offers New issue. The screen's own group still has no New issue.
+
 **"Settings" stays the app's** (owner, 2026-11-04): a repository is in context nearly always, so the repository's line is
 "Repository settings", and "settings" + Enter opens the app's Settings there too. Rejected: "Settings" in the group, which
 took that Enter and made the app's screen harder to reach.
@@ -730,6 +733,44 @@ Nothing stored outside GitHub", the first a link to `/download`.
 
 **Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (never committed).
 Lines under the buttons that change with the system: more than the page needs.
+
+### D36
+
+**The command menu is a tree with a rule for its top** (owner, 2026-11-05). The top holds the current context (the
+actions of the subject, the screen and the screen's repository), what the sidebar shows and what the app proposes now.
+Everything else hangs under a parent.
+
+- **Go to:** the draft reviews, my work and its groups, the broken workflows, and Settings, which holds its sections; Account
+  holds Sign out, and in the desktop app Updates holds Check for updates and the switch of stream.
+- **Projects:** every tracked project, holding its saved views, New issue, Open on GitHub, Copy link and Settings.
+- **Repositories:** every tracked repository and a typed `owner/name`, holding its sections, New issue, Open on GitHub, Copy
+  link, Settings and, last, Track.
+- **App:** New issue, Keyboard shortcuts, Search repositories…, and Restart to update, Try again and Update later while
+  they can run.
+
+**Drill-in.** A row with a level has a chevron. Enter does what the row does, so a repository, a project or a section of
+Settings goes to its screen; → (at the end of the text) or Tab enters the level without going anywhere; ←, ⌫ in an empty
+field and Esc step back one level, the field empty. Crumbs show the way. The context's chip stays while the path starts at
+one of the context's commands and hides inside a place, which it is not about. The other repositories, projects and places
+stay at the top under any chip, without ⌫ first.
+
+**Scoring by the path.** A nested row's score is its own match times a factor for every level above it.
+
+- A level the text names, words from its start in path order, costs `(1 + m) / 2`, with `m` its match on a 0 to 1 scale: "api
+  pull" finds "acme/api → Pull requests". A match of at least 40 counts as naming it, so scattered letters don't.
+- A level the text does not name costs a weight: 0.8 over the options of the subject's actions, so that "in prog" on an item
+  still finds its status, and 0.6 over the rest.
+- The children of repositories and a project's actions are found only with their parent named, or "pull" and "copy" would
+  list them once per repository and project. A project's saved views are found alone.
+- A nested row needs an own match of at least 50 and a score of at least 20, or it is not shown. Rows of the top are not cut.
+- Leaving the context costs ×0.9 for everything outside it, nested rows too. It only orders: the 20 is checked before it.
+
+**Why.** All of Settings' sections, Switch to Stable and Sign out lay at the top, a repository's sections could not be
+reached from elsewhere, and a deep option outranked a place: "pull" put "Show properties → Pull request status" above "My pull
+requests".
+
+**Left out:** drill-in on items and on the results of "Search repositories…"; the reversed order ("pull web"); restoring the
+typed text on stepping back; clicking the chevron to enter, since a click still does what the row does.
 
 ## Open questions
 

@@ -85,7 +85,7 @@ In doubt, ask: "would someone using the desktop app want this line in the releas
 The web deploys and the Development stream builds on every push to `main` whatever the title (`development.yml`); the title
 only decides the Stable release.
 Releasing is `gh workflow run release.yml -f mode=<preview|stable>`. `preview` is harmless;
-`stable` only on the owner's word, like Land. Details: `docs/desktop/RELEASING.md`.
+`stable` only on the owner's word, like Land; that word carries it through to published (the `release` skill). Details: `docs/desktop/RELEASING.md`.
 
 ## Start
 

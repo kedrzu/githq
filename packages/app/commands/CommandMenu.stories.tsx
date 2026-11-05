@@ -27,6 +27,7 @@ import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 
 import CommandMenu from './CommandMenu.vue';
 import { APP_KEYS, CommandRegistry } from './CommandRegistry.js';
+import type { Command } from './CommandTypes.js';
 import type { NavigationData, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
 import { useEditCommands } from './useEditCommands.js';
@@ -62,41 +63,6 @@ const NAVIGATION: NavigationData = {
             path: '/skyline-labs/portal',
         },
         { id: 'settings', group: 'goTo', kind: 'settings', title: 'Settings', key: ',', path: '/settings' },
-        {
-            id: 'settings:repositories',
-            group: 'goTo',
-            kind: 'repositories',
-            title: 'Settings: Repositories',
-            path: '/settings',
-        },
-        {
-            id: 'settings:projects',
-            group: 'goTo',
-            kind: 'projects',
-            title: 'Settings: Projects',
-            path: '/settings?tab=projects',
-        },
-        {
-            id: 'settings:display',
-            group: 'goTo',
-            kind: 'display',
-            title: 'Settings: Display',
-            path: '/settings?tab=display',
-        },
-        {
-            id: 'settings:sync',
-            group: 'goTo',
-            kind: 'sync',
-            title: 'Settings: Sync settings',
-            path: '/settings?tab=sync',
-        },
-        {
-            id: 'settings:account',
-            group: 'goTo',
-            kind: 'account',
-            title: 'Settings: Account',
-            path: '/settings?tab=account',
-        },
     ],
     trackedRepositories: ['skyline-labs/portal'],
     items: [
@@ -152,6 +118,8 @@ const Harness = defineComponent({
         /** "Search repositories…" as the app has it, with GitHub answering this; left out it is not offered. */
         github: { type: Function as PropType<() => Promise<RepositoryBrowseSearchQuery>>, default: undefined },
         repository: { type: String as PropType<string | null>, default: null },
+        /** Levels to walk into, under places, repositories and actions; what their rows do is written in `asked`. */
+        levels: { type: Boolean, default: false },
     },
     setup(props) {
         if (props.github) {
@@ -163,6 +131,11 @@ const Harness = defineComponent({
         const asked = ref('Nothing asked');
         const went = ref('Nowhere');
         const sidebar = ref('expanded');
+        const navigation = props.levels ? createLevelNavigation(say) : NAVIGATION;
+
+        if (props.levels) {
+            useCommands(() => createLevelCommands(say));
+        }
 
         useCommands(() => [
             {
@@ -267,12 +240,16 @@ const Harness = defineComponent({
                     commands={registry.commands}
                     subject={registry.subject}
                     repository={props.repository}
-                    navigation={NAVIGATION}
+                    navigation={navigation}
                     startCommandId={registry.menu?.commandId ?? null}
                     onNavigate={navigate}
                 />
             </div>
         );
+
+        function say(text: string) {
+            asked.value = text;
+        }
 
         function edit(request: EditRequest) {
             asked.value = JSON.stringify(request);
@@ -386,6 +363,20 @@ export const InRepository: Story = { args: { subject: 'none', repository: 'skyli
 /** Closed: the keys open it (⌘K), or an action's submenu where nothing else runs it. */
 export const Closed: Story = { args: { subject: 'selection', startOpen: false } };
 
+/** Levels under a repository, a project, a repository not tracked and an action: → walks in, ← walks out. */
+export const Levels: Story = { args: { subject: 'none', levels: true } };
+
+/** The same on an open item: its chip stays over its own actions' pickers, and leaves in a place's level. */
+export const LevelsOnOpenItem: Story = { args: { levels: true } };
+
+/** A row found deeper: its whole way there, with the letters of the repository the text named marked. */
+export const FoundInRepository: Story = {
+    args: { subject: 'none', levels: true },
+    play: async () => {
+        await userEvent.keyboard('portal pull');
+    },
+};
+
 /** Signs a user in whose GitHub answers the search with `answer`, and registers the command. */
 function useRepositorySearchStory(answer: () => Promise<RepositoryBrowseSearchQuery>) {
     const container = useContainer();
@@ -416,4 +407,91 @@ function selectedIssue(
         title,
         repository: { ...base.repository, nameWithOwner, viewerPermission: permission },
     };
+}
+
+function createLevelNavigation(say: (text: string) => void): NavigationData {
+    return {
+        ...NAVIGATION,
+        places: NAVIGATION.places.map(place => {
+            switch (place.id) {
+                case 'repository:portal':
+                    return {
+                        ...place,
+                        children: () => [
+                            levelRow('pulls', 'Pull requests', say),
+                            {
+                                ...levelRow('workflows', 'Workflows', say),
+                                children: () => [
+                                    levelRow('deploy', 'Deploy', say),
+                                    levelRow('nightly', 'Nightly', say),
+                                ],
+                            },
+                        ],
+                        foundAlone: () => [],
+                    };
+                case 'project:q4':
+                    return {
+                        ...place,
+                        children: () => [
+                            levelRow('board', 'Board', say),
+                            {
+                                id: 'iterations',
+                                title: 'Iterations',
+                                section: 'app',
+                                children: () => [levelRow('current', 'Current iteration', say)],
+                            },
+                        ],
+                    };
+                default:
+                    return place;
+            }
+        }),
+        repositoryChildren: nameWithOwner => [levelRow('pulls', `Pull requests of ${nameWithOwner}`, say)],
+    };
+}
+
+function createLevelCommands(say: (text: string) => void): Command[] {
+    return [
+        {
+            id: 'app.appearance',
+            title: 'Appearance',
+            section: 'app',
+            children: () => [
+                {
+                    id: 'theme',
+                    title: 'Theme…',
+                    section: 'app',
+                    options: () => ({
+                        options: [
+                            { value: 'graphite', label: 'Graphite', pick: () => say('Graphite') },
+                            { value: 'paper', label: 'Paper', pick: () => say('Paper') },
+                        ],
+                    }),
+                },
+                {
+                    id: 'find',
+                    title: 'Find a theme…',
+                    section: 'app',
+                    search: text => say(`Searched "${text}"`),
+                    options: () => ({ options: [] }),
+                },
+            ],
+        },
+        {
+            id: 'app.follow',
+            title: 'Follow people…',
+            section: 'app',
+            options: () => ({
+                several: true,
+                options: [
+                    { value: 'ada', label: 'Ada', pick: () => say('Ada') },
+                    { value: 'grace', label: 'Grace', pick: () => say('Grace') },
+                ],
+            }),
+        },
+    ];
+}
+
+function levelRow(id: string, title: string, say: (text: string) => void): Command {
+    return { id, title, section: 'app', run: () => say(title) };
 }

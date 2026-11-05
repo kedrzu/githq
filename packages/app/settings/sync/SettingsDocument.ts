@@ -28,11 +28,19 @@ export interface SettingsDocument {
      * absent or unknown as on.
      */
     readonly animations?: unknown;
+    /**
+     * What the first key of a code review's comment box does with no draft open (code-review D17, D34), as written in
+     * the file: a newer build's value is kept until the user changes it, so read it with {@link readReviewCommentChoice}.
+     */
+    readonly reviewCommentChoice?: unknown;
     readonly [field: string]: unknown;
 }
 
 /** How a repository's sections are laid out: tabs beside its name, or a column of its own (git-client D14). */
 export type RepositoryLayout = 'tabs' | 'column';
+
+/** How a code review's comment goes out with no draft open: as a single comment, or into a draft review (code-review D17). */
+export type ReviewCommentChoice = 'single' | 'draft';
 
 /** A repository of {@link SettingsDocument}, named by `nameWithOwner`. */
 export interface SettingsRepository extends TrackedRepository {
@@ -133,7 +141,7 @@ export function parseSettings(text: string): ParsedSettings {
  * @__NO_SIDE_EFFECTS__
  */
 export function serializeSettings(document: SettingsDocument): string {
-    const { version, repositories, projects, repositoryLayout, animations, ...rest } = document;
+    const { version, repositories, projects, repositoryLayout, reviewCommentChoice, animations, ...rest } = document;
     const ordered: SettingsDocument = {
         version,
         repositories: repositories.map(({ nameWithOwner, id, tracking, ...unknown }) => ({
@@ -152,6 +160,7 @@ export function serializeSettings(document: SettingsDocument): string {
             ...unknown,
         })),
         repositoryLayout,
+        reviewCommentChoice,
         animations,
         ...rest,
     };
@@ -243,6 +252,14 @@ export function readRepositoryLayout(document: SettingsDocument): RepositoryLayo
  */
 export function readAnimations(document: SettingsDocument): boolean {
     return document.animations !== false;
+}
+
+/**
+ * The way the document chooses for a code review's comment; absent or not known to this build (a newer one's), single.
+ * @__NO_SIDE_EFFECTS__
+ */
+export function readReviewCommentChoice(document: SettingsDocument): ReviewCommentChoice {
+    return document.reviewCommentChoice === 'draft' ? 'draft' : 'single';
 }
 
 function hasDuplicates(keys: readonly string[]) {

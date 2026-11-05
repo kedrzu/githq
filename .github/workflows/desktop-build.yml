@@ -1,6 +1,6 @@
 # Builds the desktop app (packages/desktop) into a draft release that already exists: the SPA once, then each platform,
-# which uploads its installers and signed updater bundles and adds itself to the release's `latest.json`. Called by
-# `release.yml` and `development.yml`.
+# which uploads its installers and signed updater bundles, then the release's `latest.json` from what they uploaded. Called
+# by `release.yml` and `development.yml`.
 #
 # The actions in `bundle` that hold the secrets are pinned by commit, because a moved tag would reach the key every update
 # is trusted by.
@@ -165,8 +165,55 @@ jobs:
           tauriScript: npx --yes @tauri-apps/cli@${{ steps.configure.outputs.cli }}
           args: ${{ matrix.args }}
           releaseId: ${{ inputs.release-id }}
-          # Names the release in `latest.json`'s download URLs.
-          tagName: ${{ inputs.tag }}
           releaseDraft: true
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
+          # `updater-manifest` writes it: tauri-action reads the file, deletes it and uploads its own, so builds finishing at
+          # once lose each other's platforms or fail (#173).
+          includeUpdaterJson: false
+
+  # After every platform, so it is the only writer. A failed build skips it, and "Re-run failed jobs" runs it then.
+  updater-manifest:
+    needs: bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Drafts are visible only with write access.
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ID: ${{ inputs.release-id }}
+      TAG: ${{ inputs.tag }}
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      # By asset ID: a draft can't be downloaded by its tag, which `development` shares with the published release.
+      - name: Compose latest.json from the uploaded bundles and signatures
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate > "$RUNNER_TEMP/assets.json"
+          mkdir "$RUNNER_TEMP/signatures"
+          jq -r '.[] | select(.name | endswith(".sig")) | "\(.id) \(.name)"' "$RUNNER_TEMP/assets.json" |
+            while read -r id name; do
+              gh api -H 'Accept: application/octet-stream' "repos/$GITHUB_REPOSITORY/releases/assets/$id" > "$RUNNER_TEMP/signatures/$name"
+            done
+          bun packages/app/scripts/release.ts updater-manifest \
+            --version "$VERSION" \
+            --download-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG" \
+            --assets "$RUNNER_TEMP/assets.json" \
+            --signatures "$RUNNER_TEMP/signatures" \
+            --out "$RUNNER_TEMP/latest.json"
+
+      # A re-run replaces the one the last attempt left.
+      - name: Upload latest.json
+        run: |
+          asset_id=$(jq -r '.[] | select(.name == "latest.json") | .id' "$RUNNER_TEMP/assets.json")
+          if [ -n "$asset_id" ]; then
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id"
+          fi
+          gh api --method POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=latest.json" \
+            -H 'Content-Type: application/json' --input "$RUNNER_TEMP/latest.json" --jq .name

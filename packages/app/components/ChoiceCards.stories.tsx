@@ -14,6 +14,36 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+/** `rows`: one above the other, each a card of its own. */
+export const Rows: Story = {
+    render: () =>
+        defineComponent({
+            setup() {
+                const density = ref<'comfortable' | 'compact'>('comfortable');
+
+                return () => (
+                    <StoryPage>
+                        <StorySection title="Density">
+                            <h3 id="density-rows-title">Row density</h3>
+                            <div style={{ width: '560px' }}>
+                                <ChoiceCards
+                                    modelValue={density.value}
+                                    onUpdate:modelValue={value => (density.value = value)}
+                                    rows
+                                    labelledby="density-rows-title"
+                                    options={[
+                                        { value: 'comfortable', label: 'Comfortable', detail: 'Two lines to a row.' },
+                                        { value: 'compact', label: 'Compact', detail: 'One line, with its facts.' },
+                                    ]}
+                                />
+                            </div>
+                        </StorySection>
+                    </StoryPage>
+                );
+            },
+        }),
+};
+
 /** Three cards, the caller drawing a part of each; the button changes the choice as another tab or device would. */
 export const Gallery: Story = {
     render: () =>
