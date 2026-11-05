@@ -318,7 +318,7 @@ function isApproved(organization: AccountOrganization) {
 .accountView_body {
   flex: 1;
   min-height: 0;
-  padding: 36px 20px;
+  padding: $spacing-32 $spacing-20;
   overflow-y: auto;
 }
 

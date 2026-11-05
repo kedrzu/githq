@@ -10,9 +10,3 @@ column:
   en: Column
 columnDetail:
   en: "A column of the repository's own beside the sidebar: its sections, its projects, and on Commits its branches and tags."
-savedOn:
-  en: Saved with your settings in {repository}, so your other devices use it too.
-savedOff:
-  en: Saving is off, so this stays on this device.
-savedStopped:
-  en: Syncing stopped, so this stays on this device until it's fixed.
