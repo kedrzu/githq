@@ -17,7 +17,15 @@ export class SettingsScreenHarness {
 
     /** A section's row in the column, by the start of its name (a count may follow it). */
     section(
-        name: 'Account' | 'Display' | 'Projects' | 'Repositories' | 'Sync settings' | 'Updates' | 'Changelog',
+        name:
+            | 'Account'
+            | 'Code review'
+            | 'Display'
+            | 'Projects'
+            | 'Repositories'
+            | 'Sync settings'
+            | 'Updates'
+            | 'Changelog',
     ): Locator {
         return this.root
             .getByRole('group', { name: 'Settings sections' })
@@ -27,5 +35,10 @@ export class SettingsScreenHarness {
     /** A card of the Display section's repository layout. */
     repositoryLayout(name: 'Column' | 'Tabs'): Locator {
         return this.root.getByRole('radiogroup', { name: 'Repository layout' }).getByRole('radio', { name });
+    }
+
+    /** A card of the Code review section's comments. */
+    reviewComment(name: 'Add it to a draft review' | 'Send it at once'): Locator {
+        return this.root.getByRole('radiogroup', { name: 'Comments' }).getByRole('radio', { name });
     }
 }

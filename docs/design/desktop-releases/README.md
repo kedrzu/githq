@@ -30,14 +30,14 @@ them: in Settings, you pick Stable or Development, and from then on updates come
 
 Most of the machinery is built, so this design is about what is missing rather than a new pipeline. A manually started
 GitHub Action works out the version from pull request titles, tags `main`, and builds every platform into a draft
-release that the owner publishes by hand. The app checks for updates at launch and every four hours, verifies their
+release that an agent publishes on the owner's word to release. The app checks for updates at launch and every four hours, verifies their
 signature, downloads them in the background and offers a restart. [How to run it](../../desktop/RELEASING.md).
 
 Missing: the Apple signature, the builds from `main`, the choice in Settings, and showing what changed.
 
 ## Two streams of updates
 
-Stable is what the owner releases by hand when a release is worth it. Development is everything else: every push to
+Stable is what the owner releases, when a release is worth it. Development is everything else: every push to
 `main` that passes the checks and changes more than documentation builds it, minutes later it is there, and each build
 replaces the last in a single prerelease on GitHub. That keeps the Releases page readable, and it means
 [yesterday's build is gone](DECISIONS.md#d4): a broken one is fixed by the next, or left by switching to Stable.
@@ -65,7 +65,7 @@ signature arrives, those installs keep updating, because updates are verified wi
 
 The app says it updated with a toast in a corner, and it leads to Changelog, a section of Settings. Every version has its own fold
 there, newest first, the first open: on Stable its plain-language summary and formal list, so skipping two versions loses nothing. The
-owner gets that summary from an agent they run on the draft release before publishing it.
+agent that takes a release through writes that summary on the draft before publishing it.
 
 On Development there is no description to read, because the release is replaced by each build, so the app asks GitHub for the commits
 and lists what users would notice. [Everything is read from GitHub when needed](DECISIONS.md#d10), because the owner corrects

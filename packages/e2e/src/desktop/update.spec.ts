@@ -145,7 +145,7 @@ test('a Development build goes to Stable only through the confirmation; Developm
     await expect.poll(() => native.streamChanges).toEqual(['development']);
 });
 
-test('Settings has Updates in the desktop app: the sixth tab, on `6` and in the command menu', async ({
+test('Settings has Updates in the desktop app: the seventh tab, on `7` and in the command menu', async ({
     page,
     github,
     native,
@@ -161,12 +161,12 @@ test('Settings has Updates in the desktop app: the sixth tab, on `6` and in the 
 
     const settings = new SettingsScreenHarness(page);
     await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
-    await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '6');
+    await expect(settings.section('Updates')).toHaveAttribute('aria-keyshortcuts', '7');
     await expect(page.getByText('githq 1.3.0', { exact: true })).toBeVisible();
 
-    await page.keyboard.press('5');
-    await expect(settings.section('Account')).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('6');
+    await expect(settings.section('Account')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('7');
     await expect(settings.section('Updates')).toHaveAttribute('aria-pressed', 'true');
 
     await page.keyboard.press('u');
@@ -286,7 +286,7 @@ test('after an update the toast says so once and What changed leads to the Chang
 
     const settings = new SettingsScreenHarness(page);
     await expect(settings.section('Changelog')).toHaveAttribute('aria-pressed', 'true');
-    await expect(settings.section('Changelog')).toHaveAttribute('aria-keyshortcuts', '7');
+    await expect(settings.section('Changelog')).toHaveAttribute('aria-keyshortcuts', '8');
     const latest = page.getByRole('button', { name: /^githq 1\.4\.0/ });
     await expect(latest).toHaveAttribute('aria-expanded', 'true');
     await expect(latest).toContainText(/New\s*Running/);
