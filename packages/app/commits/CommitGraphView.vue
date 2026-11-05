@@ -980,7 +980,7 @@ function resetShare() {
 
 .commitGraphView_refListOver {
   left: 0;
-  width: var(--repository-column-width);
+  width: var(--column-split-width);
   border-right: 1px solid $color-border;
 }
 

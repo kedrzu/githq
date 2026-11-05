@@ -106,3 +106,5 @@ lineDown:
   en: Scroll down a line
 lineUp:
   en: Scroll up a line
+resizeFileList:
+  en: Resize the file list
