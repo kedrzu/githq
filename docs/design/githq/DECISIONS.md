@@ -723,7 +723,7 @@ Nothing stored outside GitHub", the first a link to `/download`.
 - **The Windows warning and "Signed and notarized" are on `/download` only,** so one click on Windows meets SmartScreen
   unwarned.
 - **On `/download`, someone signed in sees "Open githq"** in place of Sign in, in the toolbar and in the browser path, with no
-  permission line, because nothing is being asked (LP19). `/download` reads the hint cookie `githq_signed_in` before first paint.
+  permission line, because nothing is being asked (LP19).
 - **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
   opens `/download`.
 
