@@ -8,13 +8,15 @@ import type { VNode } from 'vue';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
-import RepositoryColumnSplit from './RepositoryColumnSplit.vue';
+import ColumnSplit from './ColumnSplit.vue';
 
-const WIDTH_KEY = 'githq.panelWidth.repositoryColumn';
+const WIDTH = { key: 'testColumn', default: 280, min: 200, max: 480 };
+const WIDTH_KEY = 'githq.panelWidth.testColumn';
+const LABEL = 'Resize the left column';
 /** Beside the split on the window, as the app's sidebar is: the split does not have all of the window. */
 const SIDEBAR_WIDTH = 236;
 
-const edge = page.getByRole('separator', { name: 'Resize the left column' });
+const edge = page.getByRole('separator', { name: LABEL });
 
 test('by default 280 px, left of the pane, which has the rest, with the line on the column', async () => {
     const view = await mount({ window: 1400 });
@@ -190,8 +192,8 @@ test('a split inside the pane of another, one column shown: the same width, and 
         kept: '320',
         pane: () =>
             h(
-                RepositoryColumnSplit,
-                { shown: true },
+                ColumnSplit,
+                { shown: true, width: WIDTH, label: LABEL },
                 { column: () => h('p', { tid: 'inner' }), default: () => h('p', 'Inner pane') },
             ),
     });
@@ -232,8 +234,8 @@ async function mount({ window: windowWidth, shown: firstShown = true, kept: kept
         setup: () => () => [
             h('div', { style: { flex: 'none', width: `${SIDEBAR_WIDTH}px` } }),
             h(
-                RepositoryColumnSplit,
-                { shown: shown.value },
+                ColumnSplit,
+                { shown: shown.value, width: WIDTH, label: LABEL },
                 {
                     column: () => h('button', { tid: 'column', style: { flex: 1 } }, 'In the column'),
                     default: () =>
@@ -264,7 +266,7 @@ async function mount({ window: windowWidth, shown: firstShown = true, kept: kept
         columnWidth: () => column().parentElement?.getBoundingClientRect().width,
         paneWidth: () => paneElement().parentElement?.getBoundingClientRect().width,
         /** What follows the width in the pane reads. */
-        width: () => Number.parseFloat(getComputedStyle(paneElement()).getPropertyValue('--repository-column-width')),
+        width: () => Number.parseFloat(getComputedStyle(paneElement()).getPropertyValue('--column-split-width')),
     };
 }
 

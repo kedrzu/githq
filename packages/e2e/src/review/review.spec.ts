@@ -836,6 +836,41 @@ test('⌘B hides the file list and remembers it, the toggle and the view options
     await expect(review.fileList).toBeHidden();
 });
 
+test('D24: the file list is 300 px by default; its edge drags it from 200 to 480 px, kept across a reload and while hidden, and the arrow keys move it', async ({
+    page,
+    github,
+}) => {
+    await page.setViewportSize({ width: 1500, height: 800 });
+    const review = await openReview(page, github);
+    await expect
+        .poll(() => review.leftColumn.evaluate(element => element.parentElement?.getBoundingClientRect().width))
+        .toBe(300);
+    const start = await review.fileListEdgeX();
+
+    await review.dragFileListEdge(60);
+    await expect.poll(() => review.fileListEdgeX()).toBe(start + 60);
+
+    await page.reload();
+    await expect(review.fileRow('client.ts')).toBeVisible();
+    await expect.poll(() => review.fileListEdgeX()).toBe(start + 60);
+
+    // Past each limit it stops there: 300 + 60 less 400 is under the 200, and plus 400 is over the 480.
+    await review.dragFileListEdge(-400);
+    await expect.poll(() => review.fileListEdgeX()).toBe(start - 100);
+    await review.dragFileListEdge(600);
+    await expect.poll(() => review.fileListEdgeX()).toBe(start + 180);
+
+    await review.fileListEdge.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => review.fileListEdgeX()).toBeLessThan(start + 180);
+    const byKey = await review.fileListEdgeX();
+
+    await review.fileListToggle.click();
+    await expect(review.fileListEdge).toBeHidden();
+    await review.fileListToggle.click();
+    await expect.poll(() => review.fileListEdgeX()).toBe(byKey);
+});
+
 /** Signs in and opens the review of the sample's pull request at its address. */
 async function openReview(page: Parameters<typeof openMyWork>[0], github: Parameters<typeof openMyWork>[1]) {
     await openMyWork(page, github, createSampleMyWork().world);
