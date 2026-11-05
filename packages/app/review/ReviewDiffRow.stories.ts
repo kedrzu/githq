@@ -7,6 +7,7 @@ import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
+import DiffCode from './DiffCode.vue';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
@@ -85,6 +86,16 @@ export const SplitColoured: Story = {
 export const UnifiedColoured: Story = {
     loaders: [loadTokens],
     render: (_args, { loaded }) => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified', loaded.syntax) })),
+};
+
+/** Each kind of token in its own colour: the title, tag and built-in kinds, which the TypeScript sample has no scopes for. */
+export const CodeKinds: Story = {
+    loaders: [loadKindSamples],
+    render: (_args, { loaded }) => ({
+        components: { DiffCode },
+        setup: () => ({ samples: loaded.samples }),
+        template: `<div><DiffCode v-for="sample in samples" :key="sample.text" :text="sample.text" :tokens="sample.tokens" :line="0" /></div>`,
+    }),
 };
 
 /** A renamed file says where it came from. */
@@ -301,6 +312,20 @@ async function loadTokens() {
         after: shallowRef(tokenizeLines('typescript', DIFF.after)),
     };
     return { syntax };
+}
+
+async function loadKindSamples() {
+    const samples = [];
+    for (const [language, text] of [
+        ['typescript', 'export class Engine { run() {} } // done'],
+        ['python', 'print(len(x), None)'],
+        ['xml', '<div a="b">x</div>'],
+    ] as const) {
+        await loadGrammar(language);
+        samples.push({ text, tokens: tokenizeLines(language, [text]) });
+    }
+
+    return { samples };
 }
 
 /** The rows the diff would draw for the file, without the room left under the last one. */

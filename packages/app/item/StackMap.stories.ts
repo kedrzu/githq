@@ -44,7 +44,7 @@ const meta = {
     render: args => ({
         components: { StackMap },
         setup: () => ({ args }),
-        template: `<div :style="{ width: args.arrangement === 'panel' ? '560px' : '320px', height: args.arrangement === 'page' ? '600px' : 'auto', display: 'flex', background: '#16181c' }"><StackMap v-bind="args" style="flex: 1" /></div>`,
+        template: `<div :style="{ width: args.arrangement === 'panel' ? '560px' : '320px', height: args.arrangement === 'page' ? '600px' : 'auto', display: 'flex', background: '#151b23' }"><StackMap v-bind="args" style="flex: 1" /></div>`,
     }),
 } satisfies Meta<typeof StackMap>;
 

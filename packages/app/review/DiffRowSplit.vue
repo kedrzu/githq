@@ -84,7 +84,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
   gap: $spacing-12;
   min-width: 0;
   padding-right: $spacing-10;
-  color: $color-fg-2;
+  color: $color-fg;
 
   & + & {
     border-left: 1px solid $color-border;

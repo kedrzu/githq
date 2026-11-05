@@ -311,7 +311,7 @@ test('on the rail the strip reaches across it, for all of the top to move the wi
     expect(strip?.getBoundingClientRect().height).toBe(36);
 });
 
-const RED = 'rgb(240, 84, 92)';
+const RED = 'rgb(248, 81, 73)';
 const RED_QUIET = 'rgb(172, 77, 82)';
 
 const brokenWorkflows = () => page.getByRole('link', { name: /^Broken workflows/u });

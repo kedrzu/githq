@@ -65,7 +65,7 @@ export const Gallery: Story = {
                             keys="Mod+Enter"
                         />
                     </span>
-                    <span style={{ padding: '6px 12px', background: '#e4e6ea', borderRadius: '7px' }}>
+                    <span style={{ padding: '6px 12px', background: '#f0f6fc', borderRadius: '7px' }}>
                         <Kbd
                             tone="onFill"
                             keys="Enter"

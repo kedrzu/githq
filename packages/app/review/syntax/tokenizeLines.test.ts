@@ -87,6 +87,20 @@ test('`<script lang="ts">` of a Vue file is TypeScript, and markup a line holds 
     expect(getSpans(lines[2], tokens, 2).find(span => span.text.includes('img'))?.text).toBe('"<img src=x>"');
 });
 
+test.each([
+    ['python', 'print(1)', 'print', 'builtin'],
+    ['xml', '<div>x</div>', 'div', 'tag'],
+    ['typescript', 'class A {}', 'A', 'title'],
+    ['typescript', 'let a = this;', 'this', 'keyword'],
+    ['typescript', 'let a = 1;', 'a', null],
+] as const)('%s: in `%s`, %s is %s', async (language, line, word, kind) => {
+    await loadGrammar(language);
+
+    const spans = getSpans(line, tokenizeLines(language, [line]), 0);
+
+    expect(spans.find(span => span.text === word)?.kind ?? null).toBe(kind);
+});
+
 test('a grammar not there is no error: the file has no tokens', () => {
     expect(tokenizeLines('swift', ['let a = 1'])).toBeNull();
 });

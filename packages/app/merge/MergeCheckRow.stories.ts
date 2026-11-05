@@ -15,7 +15,7 @@ const meta = {
         components: { MergeCheckRow },
         setup: () => ({ args }),
         template:
-            '<ul style="width: 640px; margin: 0; padding: 0; list-style: none; background: #16181c"><MergeCheckRow v-bind="args" /></ul>',
+            '<ul style="width: 640px; margin: 0; padding: 0; list-style: none; background: #151b23"><MergeCheckRow v-bind="args" /></ul>',
     }),
 } satisfies Meta<typeof MergeCheckRow>;
 
