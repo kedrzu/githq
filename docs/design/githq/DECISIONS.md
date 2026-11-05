@@ -711,17 +711,19 @@ when the conditional check is free.
 ### D35
 
 **The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, LP13, LP15 and LP30.
-Two larger buttons, each with a title and a subtitle: `Download app`, "The best experience, in its own window", and "Sign in
+Two larger buttons, each with a title and a subtitle: "Download the app", "The best experience, in its own window", and "Sign in
 with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
 Nothing stored outside GitHub", the first a link to `/download`.
 
-- **The icon on `Download app` is the logo of the visitor's system,** the plain download icon when the system isn't known or on
+- **The icon on "Download the app" is the logo of the visitor's system,** the plain download icon when the system isn't known or on
   a phone. It is the only thing that changes with the system, at one size, so nothing shifts.
 - **The permission line leaves the landing page.** This supersedes the first point of [D21](#d21) there: GitHub's consent
   screen comes straight after the click, unexplained. `/download` keeps the line with its "Why?", and the Privacy page keeps
   the explanation.
 - **The Windows warning and "Signed and notarized" are on `/download` only,** so one click on Windows meets SmartScreen
   unwarned.
+- **On `/download`, someone signed in sees "Open githq"** in place of Sign in, in the toolbar and in the browser path, with no
+  permission line, because nothing is being asked (LP19). `/download` reads the hint cookie `githq_signed_in` before first paint.
 - **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
   opens `/download`.
 
