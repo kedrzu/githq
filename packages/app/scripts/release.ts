@@ -1,9 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
 import type { ReleaseMode } from './releasePlan.js';
 import {
     checkTitle,
+    composeUpdaterManifest,
     developmentVersion,
     findLastStableTag,
     hasNoCode,
@@ -18,12 +20,14 @@ import {
 //   release.ts development-plan --files <file>
 //     <file> is as for check-title. Outputs `version=<version>` of the Development build, and `build=true|false`, false
 //     only when the changed paths are all documentation.
-// It reads local git, its arguments and the file it is given only. Git is spawned with an argument array, never through
+//   release.ts updater-manifest --version <version> --download-url <url> --assets <file> --signatures <dir> --out <file>
+//     <file> is the release's assets as GitHub lists them, <dir> holds its `.sig` files. Writes `latest.json` to --out.
+// It reads local git, its arguments and the files it is given only. Git is spawned with an argument array, never through
 // a shell, so a title or a commit subject stays data.
 
 const MODES: string[] = ['preview', 'stable'];
 const USAGE =
-    'usage: release.ts check-title <title> --files <file> | plan --mode <preview|stable> --notes <file> | development-plan --files <file>';
+    'usage: release.ts check-title <title> --files <file> | plan --mode <preview|stable> --notes <file> | development-plan --files <file> | updater-manifest --version <version> --download-url <url> --assets <file> --signatures <dir> --out <file>';
 
 function git(...args: string[]): string[] {
     const output = execFileSync('git', args, { encoding: 'utf8' });
@@ -97,6 +101,8 @@ function main(args: string[]) {
         plan(rest);
     } else if (command === 'development-plan') {
         developmentPlan(rest);
+    } else if (command === 'updater-manifest') {
+        updaterManifest(rest);
     } else {
         fail(USAGE);
     }
@@ -128,6 +134,33 @@ function developmentPlan(args: string[]) {
     if (process.env.GITHUB_OUTPUT) {
         appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nbuild=${build}\n`);
     }
+}
+
+function updaterManifest(args: string[]) {
+    const version = option(args, '--version');
+    const downloadUrl = option(args, '--download-url');
+    const assetsFile = option(args, '--assets');
+    const signaturesDir = option(args, '--signatures');
+    const out = option(args, '--out');
+    if (!version || !downloadUrl || !assetsFile || !signaturesDir || !out) {
+        fail(USAGE);
+    }
+
+    const assets = JSON.parse(readFileSync(assetsFile, 'utf8')) as { name: string }[];
+    const signatures = Object.fromEntries(
+        readdirSync(signaturesDir).map(name => [name, readFileSync(path.join(signaturesDir, name), 'utf8')]),
+    );
+    const result = composeUpdaterManifest({
+        version,
+        pubDate: new Date().toISOString(),
+        downloadUrl,
+        assets: assets.map(asset => asset.name),
+        signatures,
+    });
+    if (!result.valid) {
+        fail(result.reason);
+    }
+    writeFileSync(out, JSON.stringify(result.manifest, null, 2));
 }
 
 function checkTitleCommand([title, ...options]: string[]) {
