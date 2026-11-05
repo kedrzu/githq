@@ -1,4 +1,4 @@
-<!-- The landing page's hero (githq.pen "Landing — githq.dev"): "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first, which rises in once as the page opens. Under the call to action the development sign-in. -->
+<!-- The landing page's hero (githq.pen "Landing — githq.dev"): at its top, on its gradient, the banner of a sign-in that didn't finish, then "Star on GitHub" as a pill above the headline, what githq is, the call to action (`LandingActions`), over a screenshot of the app — the one image the page loads first, which rises in once as the page opens. Under the call to action the development sign-in. -->
 <script lang="ts" setup>
 import { NuxtImg } from '#components';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -20,6 +20,8 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
+  /** Why the visitor is back from a sign-in (`SignInBanner`). */
+  banner?(): unknown;
   /** The development sign-in (`DevTokenForm`), under `nuxt dev` and in the local build only. */
   dev?(): unknown;
 }>();
@@ -28,7 +30,14 @@ const t = useTranslate();
 </script>
 
 <template>
-  <section :class="css.landingHero">
+  <section :class="[css.landingHero, $slots.banner && css.landingHero__banner]">
+    <div
+      v-if="$slots.banner"
+      :class="css.landingHero_banner"
+    >
+      <slot name="banner" />
+    </div>
+
     <a
       :class="css.landingHero_star"
       :href="REPOSITORY_URL"
@@ -93,6 +102,22 @@ const t = useTranslate();
     gap: 20px;
     padding-top: 32px;
   }
+}
+
+// The banner takes the room the headline has above it otherwise, so it sits close under the navigation.
+.landingHero__banner {
+  padding-top: 40px;
+
+  @include landing-mobile {
+    padding-top: 20px;
+  }
+}
+
+.landingHero_banner {
+  width: 100%;
+  max-width: 760px;
+  margin-bottom: $spacing-16;
+  text-align: left;
 }
 
 .landingHero_star {
