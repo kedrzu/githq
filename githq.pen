@@ -322741,7 +322741,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Five muted hues over the window and over a deleted or an added line, each AA on all three: comments dimmed, keywords lavender, strings sage, numbers amber, functions and types blue; the rest the line's own colour. Only colour changes, so no line's height does. Variables syntax-*. D37.",
+                      "content": "GitHub's seven syntax colours, grouped as in highlight.js's github-dark theme, each AA over the window and over a deleted or an added line: comments grey, keywords red, strings light blue, constants blue, titles purple, tags green, built-ins orange; the rest the line's own colour. Only colour changes, so no line's height does. Variables syntax-*. D37.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
