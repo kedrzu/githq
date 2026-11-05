@@ -8,6 +8,8 @@ mod updater;
 
 use tauri::webview::NewWindowResponse;
 use tauri::{AppHandle, Url, WebviewUrl, WebviewWindowBuilder};
+#[cfg(target_os = "macos")]
+use tauri::{Webview, WebviewWindow, WindowEvent};
 
 use credentials::Credentials;
 use device_flow::DeviceFlow;
@@ -82,9 +84,31 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         .hidden_title(true)
         .traffic_light_position(tauri::LogicalPosition::new(10.0, 20.0));
 
-    window.build()?;
+    let window = window.build()?;
+
+    #[cfg(target_os = "macos")]
+    keep_keyboard_on_webview(&window);
 
     Ok(())
+}
+
+/// Gives the keyboard back to the webview whenever the native side may have taken it. Leaving full screen hands it to
+/// tao's own view, which wry has already taken out of the window, so the window ends up holding the keyboard: the page
+/// gets no key until a click, even after coming back to the window from another Space. Tao queues that change on the
+/// main queue before it reports the resize, so queueing this behind it runs it after; run straight away, it loses
+/// the race now and then. It only moves the keyboard inside the window and never activates the app.
+#[cfg(target_os = "macos")]
+fn keep_keyboard_on_webview(window: &WebviewWindow) {
+    let webview: Webview = window.as_ref().clone();
+
+    window.on_window_event(move |event| {
+        if matches!(event, WindowEvent::Focused(true) | WindowEvent::Resized(_)) {
+            let webview = webview.clone();
+            dispatch2::DispatchQueue::main().exec_async(move || {
+                let _ = webview.set_focus();
+            });
+        }
+    });
 }
 
 /// Whether the address is the app's own: the origin Tauri serves the built app from — `tauri://localhost`, or
