@@ -47,7 +47,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 - `bun run build:desktop` — a local desktop installer (unsigned, no updater key needed).
 - `bun run build:desktop:signed` — the same with signed updater bundles, the key read from the secret store on any machine after `bun nzyme secrets login`.
 - Desktop releases: the manually dispatched action `release.yml` (`gh workflow run release.yml -f mode=preview|stable`)
-  works out the version from PR titles, tags `main` and fills a draft release that the owner publishes by hand.
+  works out the version from PR titles, tags `main` and fills a draft release. The owner's word to release covers
+  everything through publishing: the `release` skill does it all and asks only about what really needs them.
   Every push to `main` also builds the Development stream (`development.yml`).
   Steps and one-time setup: `docs/desktop/RELEASING.md`.
 - `bun run codegen` — translations, tsconfigs, and the GitHub GraphQL SDK from `packages/github/src/operations/*.gql`

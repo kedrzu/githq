@@ -1,4 +1,4 @@
-<!-- A line's code: its text as it is, coloured by its tokens once they arrive. The colours are all a token changes, not the line's width or where it wraps (D7). -->
+<!-- A line's code: its text as it is, coloured by its tokens once they arrive. The colours are all a token changes that can be seen: its spans round the line's width differently, by 1/64 px at most per span (D7). -->
 <script lang="ts" setup>
 import { computed } from 'vue';
 
