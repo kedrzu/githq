@@ -165,11 +165,11 @@ test('Search repositories: asks once typing pauses, nothing under two characters
     const field = page.getByRole('textbox', { name: 'Search GitHub for a repository…' });
     await expect.element(field).toHaveFocus();
 
-    await userEvent.keyboard('v');
-    await wait(400);
+    await typeThenPause('v');
+    await flushAnswers();
     expect(github.asked).toEqual([]);
 
-    await userEvent.keyboard('ite org:vitejs');
+    await typeThenPause('ite org:vitejs');
     await expect.poll(() => github.asked).toEqual(['vite org:vitejs']);
     github.answer('vite org:vitejs', ['vitejs/vite']);
 
@@ -184,9 +184,9 @@ test('Search repositories: an answer for older text is dropped', async () => {
     mountSigned(github.fetch);
     await openRepositorySearch();
 
-    await userEvent.keyboard('vite');
+    await typeThenPause('vite');
     await expect.poll(() => github.asked).toEqual(['vite']);
-    await userEvent.keyboard('st');
+    await typeThenPause('st');
     await expect.poll(() => github.asked).toEqual(['vite', 'vitest']);
 
     github.answer('vitest', ['vitest-dev/vitest']);
@@ -203,7 +203,7 @@ test('Search repositories: an answer for an ended session is dropped', async () 
     const { container } = mountSigned(github.fetch);
     await openRepositorySearch();
 
-    await userEvent.keyboard('vite');
+    await typeThenPause('vite');
     await expect.poll(() => github.asked).toEqual(['vite']);
     container.resolve(AuthStore).signOut();
     github.answer('vite', ['vitejs/vite']);
@@ -217,9 +217,9 @@ test('Search repositories: leaving the submenu inside the pause asks nothing, an
     mountSigned(github.fetch);
     await openRepositorySearch();
 
-    await userEvent.keyboard('vite{Escape}');
+    await typeThenPause('vite{Escape}');
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
-    await wait(400);
+    await flushAnswers();
     expect(github.asked).toEqual([]);
 
     await userEvent.keyboard('search repositories{Enter}');
@@ -414,14 +414,24 @@ async function openRepositorySearch() {
     await expect.element(page.getByRole('textbox', { name: 'Search GitHub for a repository…' })).toHaveFocus();
 }
 
-/** Long enough for an answer told to arrive to be drawn, were it kept. */
-async function flushAnswers() {
-    await wait(50);
+/**
+ * Presses `keys` and then lets the search's pause pass. The clock stands still meanwhile: under load keys can go
+ * further apart than the pause, which would ask GitHub for the text so far.
+ */
+async function typeThenPause(keys: string) {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    onTestFinished(() => {
+        vi.useRealTimers();
+    });
+    await userEvent.keyboard(keys);
+    vi.advanceTimersByTime(400);
+    vi.useRealTimers();
 }
 
-function wait(ms: number) {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
+/** Long enough for an answer told to arrive to be drawn, were it kept. */
+async function flushAnswers() {
+    await new Promise(resolve => {
+        setTimeout(resolve, 50);
     });
 }
 
