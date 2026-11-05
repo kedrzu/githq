@@ -84,10 +84,10 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         .hidden_title(true)
         .traffic_light_position(tauri::LogicalPosition::new(10.0, 20.0));
 
-    let window = window.build()?;
-
     #[cfg(target_os = "macos")]
-    keep_keyboard_on_webview(&window);
+    keep_keyboard_on_webview(&window.build()?);
+    #[cfg(not(target_os = "macos"))]
+    window.build()?;
 
     Ok(())
 }
