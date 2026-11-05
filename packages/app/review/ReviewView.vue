@@ -68,6 +68,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { Item, PullRequestItem } from '@/store/ItemTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { ReloadHolds } from '@/sync/ReloadHolds.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatList } from '@/utils/formatList.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
@@ -150,8 +151,6 @@ const NO_FILES: ReadonlySet<string> = new Set();
 /** A jump to a thread never lands higher than this under the top: the pinned header and a little air. */
 const THREAD_MIN_OFFSET = 46;
 const NO_TARGETS: readonly ReviewCommentTarget[] = [];
-/** Whether `⌘↵` of a comment box starts a draft with none open, rather than sends at once (D17). The setting comes with M7. */
-const COMMENT_DRAFT_FIRST = false;
 
 const t = useTranslate();
 const accounts = useService(AccountSession);
@@ -167,6 +166,7 @@ const editor = useService(ItemEditor);
 const commentDrafts = useService(CommentDrafts);
 const registry = useService(CommandRegistry);
 const browser = useService(Browser);
+const tracking = useService(TrackingStore);
 const router = useRouter();
 
 const opened = useOpenedItem({ reference: () => props.reference });
@@ -1680,7 +1680,7 @@ function readAgain() {
                     :status="writing?.getStatus(commentRow.target.id) ?? { kind: 'editing' }"
                     :draft-open="writing?.draftOpen ?? false"
                     :draft-count="writing?.draftCount ?? 0"
-                    :draft-first="COMMENT_DRAFT_FIRST"
+                    :draft-first="tracking.reviewCommentChoice === 'draft'"
                     :focused="focusedBox === commentRow.target.id"
                     :author="auth.viewer ?? null"
                     :reply-to="getReplyTo(commentRow.target)"
