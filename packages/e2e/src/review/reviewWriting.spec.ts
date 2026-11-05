@@ -201,6 +201,8 @@ async function openWriting(
     await page.goto(ADDRESS);
     const review = new ReviewScreenHarness(page);
     await expect(review.code(CHANGED_LINE)).toBeVisible();
+    // Tokens split a line into spans, each rounded on its own, so its width can change by 1/64 px when they arrive.
+    await expect(review.codeToken(CHANGED_LINE).first()).toBeVisible();
     return { review, writes, threads, refused, setDraft, world, id, answered };
 }
 
