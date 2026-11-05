@@ -81,7 +81,8 @@ Rules:
 Locally, this protocol, before a change is called done. In CI, on Linux, the same set but for the Storybook build
 (`.github/workflows/checks.yml`): on every push to a PR that is ready for review, never on a draft, and again on `main`
 before the deploy. CI does not replace the local run: it starts only once the PR is marked ready, which is the last step
-after this protocol has passed (`git-workflow` → Publish). It catches what only shows off a Mac.
+after this protocol has passed (`git-workflow` → Publish). It catches what only shows off a Mac. A red there, yours or
+not, goes through `git-workflow` → Green.
 
 ## E2E
 

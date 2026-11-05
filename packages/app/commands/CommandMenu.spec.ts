@@ -85,6 +85,28 @@ test('Escape steps back out of a submenu, then closes; ⌫ in the empty field ta
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).not.toBeInTheDocument();
 });
 
+test('← in the empty field of a submenu steps back; with text it only moves the caret, and at the top level it keeps the chip', async () => {
+    await OnOpenItem.run();
+
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(page.getByRole('option', { name: /Set status/u })).toBeInTheDocument();
+
+    await userEvent.keyboard('label{ArrowRight}');
+    const labels = page.getByRole('listbox', { name: 'Add or remove labels…' });
+    await expect.element(labels).toBeInTheDocument();
+    await userEvent.keyboard('bug{ArrowLeft}');
+    await expect.element(labels).toBeInTheDocument();
+    await userEvent.keyboard('X');
+    await expect.element(page.getByRole('textbox')).toHaveValue('buXg');
+
+    await userEvent.clear(page.getByRole('textbox'));
+    await expect.element(page.getByRole('textbox')).toHaveValue('');
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.element(labels).not.toBeInTheDocument();
+    await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: /Set status/u })).toBeInTheDocument();
+});
+
 test('⌫ in the empty field takes out the item, then the repository with its group', async () => {
     await OnOpenItemInRepository.run();
 

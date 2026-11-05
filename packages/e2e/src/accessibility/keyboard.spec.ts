@@ -32,6 +32,25 @@ test('Tab walks the screens in order: never stuck, and every stop shows it has t
     await test.step('Settings', () => expectWalk(page));
 });
 
+test('Escape stays in the app: left to the system, it would take a window out of full screen', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    await openTrackedWork(page, github, sample.world);
+    const escapes = await page.evaluateHandle(() => {
+        const seen: KeyboardEvent[] = [];
+        window.addEventListener('keydown', event => seen.push(event), { capture: true });
+        return seen;
+    });
+
+    await page.keyboard.press('Escape');
+
+    expect(await escapes.evaluate(seen => seen.map(event => [event.key, event.defaultPrevented]))).toEqual([
+        ['Escape', true],
+    ]);
+});
+
 test('the command menu takes the focus, keeps it in, and hands it back when it closes', async ({ page, github }) => {
     const sample = createSampleTrackedWork();
     const shell = await openTrackedWork(page, github, sample.world);

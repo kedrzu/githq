@@ -92,9 +92,10 @@ Commits (`feat: …`, `fix(web): …`): see the `git-workflow` skill.
 **Drafts.** A PR stays a draft until its work is finished, because the checks (`.github/workflows/pr.yml`) run on every
 push to a PR that is ready. Pushing to a draft mid-work is fine, and a turn that ends with work left or a question for
 the owner leaves it a draft. Finished means the task is done, the full `verify` is green, everything is pushed and the
-description is current; `gh pr ready` is then the last step, done without asking. A follow-up on a ready PR: finished
-within one turn, push it once verified, the PR stays ready and the checks restart; longer than that, `gh pr ready --undo`
-first and `gh pr ready` again at the end.
+description is current; `gh pr ready` follows, done without asking. The agent then takes the PR to green
+(`git-workflow` → Green), so that the owner can merge it by hand; a failure the PR did not cause gets a tracked issue and
+a fixer agent of its own. A follow-up on a ready PR: finished within one turn, push it once verified, the PR stays ready
+and the checks restart; longer than that, `gh pr ready --undo` first and `gh pr ready` again at the end. It too ends green.
 
 **Only on the owner's word** ("mergujemy", "merge it"): the squash merge, of a stack too. Never push to `main` — the `git`
 plugin's hook blocks it (`.claude/git.json`). Skip the commit and PR only when told not to commit, or for an
