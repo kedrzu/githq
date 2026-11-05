@@ -710,7 +710,7 @@ when the conditional check is free.
 
 ### D35
 
-**The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, LP13, LP15 and LP30.
+**The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, "Landing — githq.dev" and its mobile frame, with LP30; `/download` in "Landing · Download page" (LP17–LP19).
 Two larger buttons, each with a title and a subtitle: "Download the app", "Best experience, in its own window", and "Sign in
 with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
 Nothing stored outside GitHub", the first a link to `/download`.
@@ -727,8 +727,8 @@ Nothing stored outside GitHub", the first a link to `/download`.
 - **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
   opens `/download`.
 
-**Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (LP4–LP12).
-Lines under the buttons that change with the system (LP21–LP29): more than the page needs. They were never committed.
+**Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (never committed).
+Lines under the buttons that change with the system: more than the page needs.
 
 ## Open questions
 
