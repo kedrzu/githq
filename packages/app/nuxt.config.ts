@@ -140,6 +140,8 @@ export default defineNuxtConfig({
         clearScreen: false,
         logLevel: 'warn',
         css: cssOptions,
+        // Code review's tokenizer loads a language's grammar when first needed, which only a module worker can.
+        worker: { format: 'es' },
         define: {
             // `shims.d.ts`: a literal in the built code, so the production build drops what it guards.
             __LOCAL_BUILD__: JSON.stringify(LOCAL_BUILD),

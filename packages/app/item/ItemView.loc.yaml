@@ -4,8 +4,6 @@ previous:
   en: Previous item
 next:
   en: Next item
-position:
-  en: '{index} / {count}'
 arrangement:
   en: Arrangement
 panel:
@@ -64,6 +62,8 @@ requestReviewers:
   en: Request reviewers…
 addToProject:
   en: Add to project…
+review:
+  en: Review files
 openFiles:
   en: Open changed files on GitHub
 copyLink:

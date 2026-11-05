@@ -1,0 +1,11 @@
+label:
+  en: Your draft review
+pendingComments:
+  plural: count
+  en:
+    one: pending comment
+    many: pending comments
+note:
+  en: Others can't see them until you submit.
+finishOnGitHub:
+  en: Finish on GitHub

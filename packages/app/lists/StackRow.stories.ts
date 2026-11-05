@@ -284,6 +284,31 @@ function sampleProject(title: string, status: string): ItemProject {
     };
 }
 
+/** Not drawn in the design: collapsed, the entry says so itself and a pip carries the dot (code review D28). */
+export const DraftReview: Story = {
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map((pr, index) =>
+                index === 1
+                    ? { ...pr, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+                    : pr,
+            ),
+        ),
+    },
+};
+
+/** Two of its pull requests with one each: counted together. */
+export const DraftReviews: Story = {
+    args: {
+        stack: sampleListStack(
+            SAMPLE_STACKS.ready.map(pr => ({
+                ...pr,
+                pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' },
+            })),
+        ),
+    },
+};
+
 /** The heights of the pips drawn, first to last. */
 function getPipHeights(canvasElement: HTMLElement) {
     const pips = canvasElement.querySelector('[aria-hidden="true"]:has(> span)')?.children ?? [];

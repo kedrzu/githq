@@ -75,6 +75,22 @@ export type CheckStatusState =
     /** The check suite or run is in waiting state. */
     | 'WAITING';
 
+/** The possible sides of a diff. */
+export type DiffSide =
+    /** The left side of the diff. */
+    | 'LEFT'
+    /** The right side of the diff. */
+    | 'RIGHT';
+
+/** The possible viewed states of a file . */
+export type FileViewedState =
+    /** The file has new changes since last viewed. */
+    | 'DISMISSED'
+    /** The file has not been marked as viewed. */
+    | 'UNVIEWED'
+    /** The file has been marked as viewed. */
+    | 'VIEWED';
+
 /** The possible state reasons of a closed issue. */
 export type IssueClosedStateReason =
     /** An issue that has been closed as completed */
@@ -177,6 +193,21 @@ export type OrderDirection =
     | 'ASC'
     /** Specifies a descending order for a given `orderBy` argument. */
     | 'DESC';
+
+/** The possible types of patch statuses. */
+export type PatchStatus =
+    /** The file was added. Git status 'A'. */
+    | 'ADDED'
+    /** The file's type was changed. Git status 'T'. */
+    | 'CHANGED'
+    /** The file was copied. Git status 'C'. */
+    | 'COPIED'
+    /** The file was deleted. Git status 'D'. */
+    | 'DELETED'
+    /** The file's contents were changed. Git status 'M'. */
+    | 'MODIFIED'
+    /** The file was renamed. Git status 'R'. */
+    | 'RENAMED';
 
 /** The type of a project field. */
 export type ProjectV2FieldType =
@@ -303,6 +334,13 @@ export type PullRequestMergeMethod =
     /** Combine all commits from the head branch into a single commit in the base branch. */
     | 'SQUASH';
 
+/** The possible states of a pull request review comment. */
+export type PullRequestReviewCommentState =
+    /** A comment that is part of a pending review */
+    | 'PENDING'
+    /** A comment that is part of a submitted review */
+    | 'SUBMITTED';
+
 /** The review status of a pull request. */
 export type PullRequestReviewDecision =
     /** The pull request has received an approving review. */
@@ -324,6 +362,13 @@ export type PullRequestReviewState =
     | 'DISMISSED'
     /** A review that has not yet been submitted. */
     | 'PENDING';
+
+/** The possible subject types of a pull request review comment. */
+export type PullRequestReviewThreadSubjectType =
+    /** A comment that has been made against the file of a pull request */
+    | 'FILE'
+    /** A comment that has been made against the line of a pull request */
+    | 'LINE';
 
 /** The possible states of a pull request. */
 export type PullRequestState =
@@ -587,6 +632,27 @@ export type CommitStatesQuery = {
         | Record<PropertyKey, never>
         | null
     >;
+};
+
+export type CommitSubjectsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    from: string;
+    after?: string | null | undefined;
+}>;
+
+export type CommitSubjectsQuery = {
+    repository: {
+        object:
+            | {
+                  history: {
+                      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                      nodes: Array<{ oid: string; message: string } | null> | null;
+                  };
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
 };
 
 export type ItemByNumberQueryVariables = Exact<{
@@ -919,6 +985,23 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              reviews: {
+                  pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      state: PullRequestReviewState;
+                      bodyHTML: string;
+                      submittedAt: string | null;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              } | null;
               reviewRequests: {
                   nodes: Array<{
                       requestedReviewer:
@@ -1103,6 +1186,9 @@ export type ItemDetailQuery = {
                           | { login: string }
                           | null;
                   } | null> | null;
+              } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
               } | null;
           }
         | Record<PropertyKey, never>
@@ -1431,6 +1517,23 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              reviews: {
+                  pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      state: PullRequestReviewState;
+                      bodyHTML: string;
+                      submittedAt: string | null;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              } | null;
               reviewRequests: {
                   nodes: Array<{
                       requestedReviewer:
@@ -1616,6 +1719,9 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null
@@ -1790,6 +1896,9 @@ export type ItemsByIdsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null
@@ -1844,6 +1953,37 @@ export type MoreCommentsQuery = {
                           | null;
                   } | null> | null;
               };
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
+export type MoreReviewsQueryVariables = Exact<{
+    id: string;
+    before: string;
+}>;
+
+export type MoreReviewsQuery = {
+    node:
+        | {
+              id: string;
+              reviews: {
+                  pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      state: PullRequestReviewState;
+                      bodyHTML: string;
+                      submittedAt: string | null;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null;
@@ -2211,6 +2351,13 @@ export type ProjectFullQuery = {
                                             | null;
                                     } | null> | null;
                                 } | null;
+                                pendingReviews: {
+                                    nodes: Array<{
+                                        id: string;
+                                        createdAt: string;
+                                        comments: { totalCount: number };
+                                    } | null> | null;
+                                } | null;
                             }
                           | null;
                       fieldValues: {
@@ -2473,6 +2620,13 @@ export type ProjectItemsQuery = {
                                             | { login: string }
                                             | { login: string }
                                             | null;
+                                    } | null> | null;
+                                } | null;
+                                pendingReviews: {
+                                    nodes: Array<{
+                                        id: string;
+                                        createdAt: string;
+                                        comments: { totalCount: number };
                                     } | null> | null;
                                 } | null;
                             }
@@ -2785,9 +2939,107 @@ export type PullRequestMergeOptionsQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null;
+};
+
+export type PullRequestPendingReviewsQueryVariables = Exact<{
+    ids: Array<string> | string;
+}>;
+
+export type PullRequestPendingReviewsQuery = {
+    nodes: Array<
+        | {
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
+          }
+        | Record<PropertyKey, never>
+        | null
+    >;
+};
+
+export type PullRequestReviewFilesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    number: number;
+    after?: string | null | undefined;
+}>;
+
+export type PullRequestReviewFilesQuery = {
+    repository: {
+        pullRequest: {
+            id: string;
+            headRefOid: string;
+            baseRefOid: string;
+            changedFiles: number;
+            files: {
+                pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                nodes: Array<{
+                    path: string;
+                    changeType: PatchStatus;
+                    additions: number;
+                    deletions: number;
+                    viewerViewedState: FileViewedState;
+                } | null> | null;
+            } | null;
+        } | null;
+    } | null;
+};
+
+export type PullRequestReviewThreadsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    number: number;
+    after?: string | null | undefined;
+}>;
+
+export type PullRequestReviewThreadsQuery = {
+    repository: {
+        pullRequest: {
+            reviewThreads: {
+                pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                nodes: Array<{
+                    id: string;
+                    path: string;
+                    line: number | null;
+                    startLine: number | null;
+                    originalLine: number | null;
+                    originalStartLine: number | null;
+                    diffSide: DiffSide;
+                    startDiffSide: DiffSide | null;
+                    isOutdated: boolean;
+                    isResolved: boolean;
+                    subjectType: PullRequestReviewThreadSubjectType;
+                    comments: {
+                        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                        nodes: Array<{
+                            id: string;
+                            bodyHTML: string;
+                            createdAt: string;
+                            url: string;
+                            diffHunk: string;
+                            outdated: boolean;
+                            state: PullRequestReviewCommentState;
+                            author:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            originalCommit: { oid: string; abbreviatedOid: string } | null;
+                            pullRequestReview: { id: string } | null;
+                        } | null> | null;
+                    };
+                } | null> | null;
+            };
+        } | null;
+    } | null;
 };
 
 export type PullRequestStacksQueryVariables = Exact<{
@@ -2919,6 +3171,13 @@ export type PullRequestStacksQuery = {
                                       | null;
                               } | null> | null;
                           } | null;
+                          pendingReviews: {
+                              nodes: Array<{
+                                  id: string;
+                                  createdAt: string;
+                                  comments: { totalCount: number };
+                              } | null> | null;
+                          } | null;
                       } | null;
                   } | null> | null;
               };
@@ -3005,6 +3264,9 @@ export type PullRequestStatusesQuery = {
                           | null;
                   } | null> | null;
               } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+              } | null;
           }
         | Record<PropertyKey, never>
         | null
@@ -3024,6 +3286,20 @@ export type RepositoryAssignableUsersQuery = {
             nodes: Array<{ id: string; login: string; name: string | null; avatarUrl: string } | null> | null;
         };
     } | null;
+};
+
+export type RepositoryBrowseSearchQueryVariables = Exact<{
+    query: string;
+}>;
+
+export type RepositoryBrowseSearchQuery = {
+    search: {
+        nodes: Array<
+            | { nameWithOwner: string; description: string | null; isPrivate: boolean }
+            | Record<PropertyKey, never>
+            | null
+        > | null;
+    };
 };
 
 export type RepositoryCommitRefsQueryVariables = Exact<{
@@ -3143,6 +3419,7 @@ export type RepositoryIssuesQueryVariables = Exact<{
 
 export type RepositoryIssuesQuery = {
     repository: {
+        nameWithOwner: string;
         issues: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -3266,15 +3543,6 @@ export type RepositoryMetadataQuery = {
     } | null;
 };
 
-export type RepositoryOpenCountsQueryVariables = Exact<{
-    owner: string;
-    name: string;
-}>;
-
-export type RepositoryOpenCountsQuery = {
-    repository: { issues: { totalCount: number }; pullRequests: { totalCount: number } } | null;
-};
-
 export type RepositoryPullRequestsQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -3285,6 +3553,7 @@ export type RepositoryPullRequestsQueryVariables = Exact<{
 
 export type RepositoryPullRequestsQuery = {
     repository: {
+        nameWithOwner: string;
         pullRequests: {
             totalCount: number;
             pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -3405,6 +3674,31 @@ export type RepositoryPullRequestsQuery = {
                             | null;
                     } | null> | null;
                 } | null;
+                pendingReviews: {
+                    nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+                } | null;
+            } | null> | null;
+        };
+    } | null;
+};
+
+export type RepositoryReleasesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    after?: string | null | undefined;
+}>;
+
+export type RepositoryReleasesQuery = {
+    repository: {
+        releases: {
+            pageInfo: { hasNextPage: boolean; endCursor: string | null };
+            nodes: Array<{
+                tagName: string;
+                isDraft: boolean;
+                isPrerelease: boolean;
+                publishedAt: string | null;
+                descriptionHTML: string | null;
+                tagCommit: { oid: string } | null;
             } | null> | null;
         };
     } | null;
@@ -3429,6 +3723,40 @@ export type RepositorySearchQuery = {
             | null
         > | null;
     };
+};
+
+export type ReviewThreadCommentsQueryVariables = Exact<{
+    id: string;
+    after: string;
+}>;
+
+export type ReviewThreadCommentsQuery = {
+    node:
+        | {
+              comments: {
+                  pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      bodyHTML: string;
+                      createdAt: string;
+                      url: string;
+                      diffHunk: string;
+                      outdated: boolean;
+                      state: PullRequestReviewCommentState;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                      originalCommit: { oid: string; abbreviatedOid: string } | null;
+                      pullRequestReview: { id: string } | null;
+                  } | null> | null;
+              };
+          }
+        | Record<PropertyKey, never>
+        | null;
 };
 
 export type TrackingCandidatesQueryVariables = Exact<{ [key: string]: never }>;
@@ -4460,6 +4788,9 @@ export type ProjectItemPageFieldsFragment = {
                               | null;
                       } | null> | null;
                   } | null;
+                  pendingReviews: {
+                      nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+                  } | null;
               }
             | null;
         fieldValues: {
@@ -4695,6 +5026,9 @@ export type ProjectItemRowFieldsFragment = {
                           | { login: string }
                           | null;
                   } | null> | null;
+              } | null;
+              pendingReviews: {
+                  nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
               } | null;
           }
         | null;
@@ -4968,6 +5302,23 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    reviews: {
+        pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+        nodes: Array<{
+            id: string;
+            url: string;
+            state: PullRequestReviewState;
+            bodyHTML: string;
+            submittedAt: string | null;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+        } | null> | null;
+    } | null;
     reviewRequests: {
         nodes: Array<{
             requestedReviewer:
@@ -5139,6 +5490,9 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
 };
 
 export type PullRequestFieldsFragment = {
@@ -5243,6 +5597,15 @@ export type PullRequestFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
+};
+
+export type PullRequestPendingReviewFieldsFragment = {
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
 };
 
 export type PullRequestStateResultFieldsFragment = {
@@ -5315,6 +5678,9 @@ export type PullRequestStatusFieldsFragment = {
                 | null;
         } | null> | null;
     } | null;
+    pendingReviews: {
+        nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+    } | null;
 };
 
 export type ReactionGroupFieldsFragment = {
@@ -5326,6 +5692,43 @@ export type ReactionGroupFieldsFragment = {
 export type RepositoryLabelFieldsFragment = { id: string; name: string; color: string; description: string | null };
 
 export type RepositoryUserFieldsFragment = { id: string; login: string; name: string | null; avatarUrl: string };
+
+export type ReviewPageFieldsFragment = {
+    pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+    nodes: Array<{
+        id: string;
+        url: string;
+        state: PullRequestReviewState;
+        bodyHTML: string;
+        submittedAt: string | null;
+        author:
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | null;
+    } | null> | null;
+};
+
+export type ReviewThreadCommentFieldsFragment = {
+    id: string;
+    bodyHTML: string;
+    createdAt: string;
+    url: string;
+    diffHunk: string;
+    outdated: boolean;
+    state: PullRequestReviewCommentState;
+    author:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    originalCommit: { oid: string; abbreviatedOid: string } | null;
+    pullRequestReview: { id: string } | null;
+};
 
 export type TrackingProjectFieldsFragment = {
     id: string;
@@ -5615,6 +6018,13 @@ export type AddDraftIssueMutation = {
                                   | { login: string }
                                   | { login: string }
                                   | null;
+                          } | null> | null;
+                      } | null;
+                      pendingReviews: {
+                          nodes: Array<{
+                              id: string;
+                              createdAt: string;
+                              comments: { totalCount: number };
                           } | null> | null;
                       } | null;
                   }
@@ -6083,6 +6493,9 @@ export type DisablePullRequestAutoMergeMutation = {
                         | null;
                 } | null> | null;
             } | null;
+            pendingReviews: {
+                nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
+            } | null;
         } | null;
     } | null;
 };
@@ -6167,6 +6580,9 @@ export type EnablePullRequestAutoMergeMutation = {
                         | { login: string }
                         | null;
                 } | null> | null;
+            } | null;
+            pendingReviews: {
+                nodes: Array<{ id: string; createdAt: string; comments: { totalCount: number } } | null> | null;
             } | null;
         } | null;
     } | null;
@@ -7403,6 +7819,22 @@ fragment ProjectItemFieldValueFields on ProjectV2ItemFieldValue {
 }`,
     { fragmentName: 'ProjectItemFieldResultFields' },
 );
+export const PullRequestPendingReviewFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+    `,
+    { fragmentName: 'PullRequestPendingReviewFields' },
+);
 export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment PullRequestStatusFields on PullRequest {
@@ -7487,8 +7919,19 @@ export const PullRequestStatusFieldsFragmentDoc = new TypedDocumentString(
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }
-    `,
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}`,
     { fragmentName: 'PullRequestStatusFields' },
 );
 export const PullRequestFieldsFragmentDoc = new TypedDocumentString(
@@ -7566,6 +8009,17 @@ fragment ItemRepositoryFields on Repository {
   viewerPermission
   owner {
     login
+  }
+}
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
   }
 }
 fragment PullRequestStatusFields on PullRequest {
@@ -7650,6 +8104,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'PullRequestFields' },
 );
@@ -7900,6 +8355,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -7982,6 +8448,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'ProjectItemRowFields' },
 );
@@ -8219,6 +8686,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -8301,6 +8779,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`,
     { fragmentName: 'ProjectItemPageFields' },
 );
@@ -8387,6 +8866,28 @@ export const PullRequestCheckFieldsFragmentDoc = new TypedDocumentString(
     `,
     { fragmentName: 'PullRequestCheckFields' },
 );
+export const ReviewPageFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment ReviewPageFields on PullRequestReviewConnection {
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    id
+    url
+    author {
+      login
+      avatarUrl
+    }
+    state
+    bodyHTML
+    submittedAt
+  }
+}
+    `,
+    { fragmentName: 'ReviewPageFields' },
+);
 export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment PullRequestDetailFields on PullRequest {
@@ -8422,6 +8923,9 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
       state
       submittedAt
     }
+  }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    ...ReviewPageFields
   }
   reviewRequests(first: 10) {
     nodes {
@@ -8672,6 +9176,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -8754,12 +9269,30 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
   viewerHasReacted
   reactors {
     totalCount
+  }
+}
+fragment ReviewPageFields on PullRequestReviewConnection {
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    id
+    url
+    author {
+      login
+      avatarUrl
+    }
+    state
+    bodyHTML
+    submittedAt
   }
 }`,
     { fragmentName: 'PullRequestDetailFields' },
@@ -8797,6 +9330,31 @@ export const RepositoryUserFieldsFragmentDoc = new TypedDocumentString(
 }
     `,
     { fragmentName: 'RepositoryUserFields' },
+);
+export const ReviewThreadCommentFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment ReviewThreadCommentFields on PullRequestReviewComment {
+  id
+  author {
+    login
+    avatarUrl
+  }
+  bodyHTML
+  createdAt
+  url
+  diffHunk
+  outdated
+  state
+  originalCommit {
+    oid
+    abbreviatedOid
+  }
+  pullRequestReview {
+    id
+  }
+}
+    `,
+    { fragmentName: 'ReviewThreadCommentFields' },
 );
 export const TrackingProjectFieldsFragmentDoc = new TypedDocumentString(
     `
@@ -9005,6 +9563,26 @@ export const CommitStatesDocument = new TypedDocumentString(`
       }
       statusCheckRollup {
         state
+      }
+    }
+  }
+}
+    `);
+export const CommitSubjectsDocument = new TypedDocumentString(`
+    query CommitSubjects($owner: String!, $name: String!, $from: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    object(expression: $from) {
+      ... on Commit {
+        history(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            oid
+            message
+          }
+        }
       }
     }
   }
@@ -9353,6 +9931,9 @@ fragment PullRequestDetailFields on PullRequest {
       submittedAt
     }
   }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    ...ReviewPageFields
+  }
   reviewRequests(first: 10) {
     nodes {
       requestedReviewer {
@@ -9414,6 +9995,17 @@ fragment PullRequestFields on PullRequest {
   projectItems(first: 10) {
     nodes {
       ...ItemProjectItemFields
+    }
+  }
+}
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }
@@ -9499,12 +10091,30 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
   viewerHasReacted
   reactors {
     totalCount
+  }
+}
+fragment ReviewPageFields on PullRequestReviewConnection {
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    id
+    url
+    author {
+      login
+      avatarUrl
+    }
+    state
+    bodyHTML
+    submittedAt
   }
 }`);
 export const ItemDetailsDocument = new TypedDocumentString(`
@@ -9836,6 +10446,9 @@ fragment PullRequestDetailFields on PullRequest {
       submittedAt
     }
   }
+  reviews(last: 100, states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]) {
+    ...ReviewPageFields
+  }
   reviewRequests(first: 10) {
     nodes {
       requestedReviewer {
@@ -9897,6 +10510,17 @@ fragment PullRequestFields on PullRequest {
   projectItems(first: 10) {
     nodes {
       ...ItemProjectItemFields
+    }
+  }
+}
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
     }
   }
 }
@@ -9982,12 +10606,30 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }
 fragment ReactionGroupFields on ReactionGroup {
   content
   viewerHasReacted
   reactors {
     totalCount
+  }
+}
+fragment ReviewPageFields on PullRequestReviewConnection {
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    id
+    url
+    author {
+      login
+      avatarUrl
+    }
+    state
+    bodyHTML
+    submittedAt
   }
 }`);
 export const ItemsByIdsDocument = new TypedDocumentString(`
@@ -10127,6 +10769,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -10209,6 +10862,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const MoreCommentsDocument = new TypedDocumentString(`
     query MoreComments($id: ID!, $before: String!) {
@@ -10247,6 +10901,38 @@ fragment IssueCommentFields on IssueComment {
     avatarUrl
   }
   bodyHTML
+}`);
+export const MoreReviewsDocument = new TypedDocumentString(`
+    query MoreReviews($id: ID!, $before: String!) {
+  node(id: $id) {
+    ... on PullRequest {
+      id
+      reviews(
+        last: 100
+        before: $before
+        states: [APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED]
+      ) {
+        ...ReviewPageFields
+      }
+    }
+  }
+}
+    fragment ReviewPageFields on PullRequestReviewConnection {
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    id
+    url
+    author {
+      login
+      avatarUrl
+    }
+    state
+    bodyHTML
+    submittedAt
+  }
 }`);
 export const OrganizationRepositoriesDocument = new TypedDocumentString(`
     query OrganizationRepositories($login: String!, $after: String) {
@@ -10658,6 +11344,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -10740,6 +11437,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const ProjectItemsDocument = new TypedDocumentString(`
     query ProjectItems($id: ID!, $query: String!, $first: Int!, $after: String) {
@@ -10983,6 +11681,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11065,6 +11774,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const ProjectSchemaDocument = new TypedDocumentString(`
     query ProjectSchema($id: ID!) {
@@ -11279,6 +11989,17 @@ export const PullRequestMergeOptionsDocument = new TypedDocumentString(`
     createdAt
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11360,6 +12081,106 @@ fragment PullRequestStatusFields on PullRequest {
       }
       state
     }
+  }
+  ...PullRequestPendingReviewFields
+}`);
+export const PullRequestPendingReviewsDocument = new TypedDocumentString(`
+    query PullRequestPendingReviews($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ... on PullRequest {
+      ...PullRequestPendingReviewFields
+    }
+  }
+}
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}`);
+export const PullRequestReviewFilesDocument = new TypedDocumentString(`
+    query PullRequestReviewFiles($owner: String!, $name: String!, $number: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      id
+      headRefOid
+      baseRefOid
+      changedFiles
+      files(first: 100, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          path
+          changeType
+          additions
+          deletions
+          viewerViewedState
+        }
+      }
+    }
+  }
+}
+    `);
+export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
+    query PullRequestReviewThreads($owner: String!, $name: String!, $number: Int!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          path
+          line
+          startLine
+          originalLine
+          originalStartLine
+          diffSide
+          startDiffSide
+          isOutdated
+          isResolved
+          subjectType
+          comments(first: 50) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              ...ReviewThreadCommentFields
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    fragment ReviewThreadCommentFields on PullRequestReviewComment {
+  id
+  author {
+    login
+    avatarUrl
+  }
+  bodyHTML
+  createdAt
+  url
+  diffHunk
+  outdated
+  state
+  originalCommit {
+    oid
+    abbreviatedOid
+  }
+  pullRequestReview {
+    id
   }
 }`);
 export const PullRequestStacksDocument = new TypedDocumentString(`
@@ -11453,6 +12274,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -11535,6 +12367,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const PullRequestStatusesDocument = new TypedDocumentString(`
     query PullRequestStatuses($ids: [ID!]!) {
@@ -11544,7 +12377,18 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -11626,6 +12470,7 @@ export const PullRequestStatusesDocument = new TypedDocumentString(`
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
     query RepositoryAssignableUsers($owner: String!, $name: String!, $after: String!) {
@@ -11647,6 +12492,19 @@ export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
   name
   avatarUrl
 }`);
+export const RepositoryBrowseSearchDocument = new TypedDocumentString(`
+    query RepositoryBrowseSearch($query: String!) {
+  search(query: $query, type: REPOSITORY, first: 20) {
+    nodes {
+      ... on Repository {
+        nameWithOwner
+        description
+        isPrivate
+      }
+    }
+  }
+}
+    `);
 export const RepositoryCommitRefsDocument = new TypedDocumentString(`
     query RepositoryCommitRefs($owner: String!, $name: String!, $withHistory: Boolean!, $withBranches: Boolean!, $withTags: Boolean!, $branchesAfter: String, $tagsAfter: String) {
   repository(owner: $owner, name: $name) {
@@ -11794,6 +12652,7 @@ export const RepositoryIssueTemplatesDocument = new TypedDocumentString(`
 export const RepositoryIssuesDocument = new TypedDocumentString(`
     query RepositoryIssues($owner: String!, $name: String!, $states: [IssueState!]!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     issues(
       first: 100
       after: $after
@@ -11987,21 +12846,10 @@ fragment RepositoryUserFields on User {
   name
   avatarUrl
 }`);
-export const RepositoryOpenCountsDocument = new TypedDocumentString(`
-    query RepositoryOpenCounts($owner: String!, $name: String!) {
-  repository(owner: $owner, name: $name) {
-    issues(states: OPEN) {
-      totalCount
-    }
-    pullRequests(states: OPEN) {
-      totalCount
-    }
-  }
-}
-    `);
 export const RepositoryPullRequestsDocument = new TypedDocumentString(`
     query RepositoryPullRequests($owner: String!, $name: String!, $states: [PullRequestState!]!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
+    nameWithOwner
     pullRequests(
       first: $first
       after: $after
@@ -12094,6 +12942,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -12176,7 +13035,30 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
+export const RepositoryReleasesDocument = new TypedDocumentString(`
+    query RepositoryReleases($owner: String!, $name: String!, $after: String) {
+  repository(owner: $owner, name: $name) {
+    releases(first: 100, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        tagName
+        isDraft
+        isPrerelease
+        publishedAt
+        descriptionHTML
+        tagCommit {
+          oid
+        }
+      }
+    }
+  }
+}
+    `);
 export const RepositorySearchDocument = new TypedDocumentString(`
     query RepositorySearch($query: String!) {
   search(query: $query, type: REPOSITORY, first: 10) {
@@ -12193,6 +13075,42 @@ export const RepositorySearchDocument = new TypedDocumentString(`
   }
 }
     `);
+export const ReviewThreadCommentsDocument = new TypedDocumentString(`
+    query ReviewThreadComments($id: ID!, $after: String!) {
+  node(id: $id) {
+    ... on PullRequestReviewThread {
+      comments(first: 100, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          ...ReviewThreadCommentFields
+        }
+      }
+    }
+  }
+}
+    fragment ReviewThreadCommentFields on PullRequestReviewComment {
+  id
+  author {
+    login
+    avatarUrl
+  }
+  bodyHTML
+  createdAt
+  url
+  diffHunk
+  outdated
+  state
+  originalCommit {
+    oid
+    abbreviatedOid
+  }
+  pullRequestReview {
+    id
+  }
+}`);
 export const TrackingCandidatesDocument = new TypedDocumentString(`
     query TrackingCandidates {
   viewer {
@@ -12662,6 +13580,17 @@ fragment PullRequestFields on PullRequest {
     }
   }
 }
+fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
 fragment PullRequestStatusFields on PullRequest {
   __typename
   id
@@ -12744,6 +13673,7 @@ fragment PullRequestStatusFields on PullRequest {
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const AddLabelsDocument = new TypedDocumentString(`
     mutation AddLabels($labelableId: ID!, $labelIds: [ID!]!) {
@@ -13145,7 +14075,18 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -13227,6 +14168,7 @@ export const DisablePullRequestAutoMergeDocument = new TypedDocumentString(`
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     mutation EnablePullRequestAutoMerge($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String, $commitBody: String, $expectedHeadOid: GitObjectID!) {
@@ -13238,7 +14180,18 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
     }
   }
 }
-    fragment PullRequestStatusFields on PullRequest {
+    fragment PullRequestPendingReviewFields on PullRequest {
+  pendingReviews: reviews(states: [PENDING], first: 1) {
+    nodes {
+      id
+      createdAt
+      comments {
+        totalCount
+      }
+    }
+  }
+}
+fragment PullRequestStatusFields on PullRequest {
   __typename
   id
   updatedAt
@@ -13320,6 +14273,7 @@ export const EnablePullRequestAutoMergeDocument = new TypedDocumentString(`
       state
     }
   }
+  ...PullRequestPendingReviewFields
 }`);
 export const EnqueuePullRequestDocument = new TypedDocumentString(`
     mutation EnqueuePullRequest($pullRequestId: ID!, $expectedHeadOid: GitObjectID!) {
@@ -13651,6 +14605,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CommitStatesQuery>;
         },
+        CommitSubjects(variables: CommitSubjectsQueryVariables, options?: C): Promise<CommitSubjectsQuery> {
+            return requester<CommitSubjectsQuery, CommitSubjectsQueryVariables>(
+                CommitSubjectsDocument,
+                variables,
+                options,
+            ) as Promise<CommitSubjectsQuery>;
+        },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(
                 ItemByNumberDocument,
@@ -13685,6 +14646,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<MoreCommentsQuery>;
+        },
+        MoreReviews(variables: MoreReviewsQueryVariables, options?: C): Promise<MoreReviewsQuery> {
+            return requester<MoreReviewsQuery, MoreReviewsQueryVariables>(
+                MoreReviewsDocument,
+                variables,
+                options,
+            ) as Promise<MoreReviewsQuery>;
         },
         OrganizationRepositories(
             variables: OrganizationRepositoriesQueryVariables,
@@ -13751,6 +14719,36 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<PullRequestMergeOptionsQuery>;
         },
+        PullRequestPendingReviews(
+            variables: PullRequestPendingReviewsQueryVariables,
+            options?: C,
+        ): Promise<PullRequestPendingReviewsQuery> {
+            return requester<PullRequestPendingReviewsQuery, PullRequestPendingReviewsQueryVariables>(
+                PullRequestPendingReviewsDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestPendingReviewsQuery>;
+        },
+        PullRequestReviewFiles(
+            variables: PullRequestReviewFilesQueryVariables,
+            options?: C,
+        ): Promise<PullRequestReviewFilesQuery> {
+            return requester<PullRequestReviewFilesQuery, PullRequestReviewFilesQueryVariables>(
+                PullRequestReviewFilesDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestReviewFilesQuery>;
+        },
+        PullRequestReviewThreads(
+            variables: PullRequestReviewThreadsQueryVariables,
+            options?: C,
+        ): Promise<PullRequestReviewThreadsQuery> {
+            return requester<PullRequestReviewThreadsQuery, PullRequestReviewThreadsQueryVariables>(
+                PullRequestReviewThreadsDocument,
+                variables,
+                options,
+            ) as Promise<PullRequestReviewThreadsQuery>;
+        },
         PullRequestStacks(variables: PullRequestStacksQueryVariables, options?: C): Promise<PullRequestStacksQuery> {
             return requester<PullRequestStacksQuery, PullRequestStacksQueryVariables>(
                 PullRequestStacksDocument,
@@ -13777,6 +14775,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<RepositoryAssignableUsersQuery>;
+        },
+        RepositoryBrowseSearch(
+            variables: RepositoryBrowseSearchQueryVariables,
+            options?: C,
+        ): Promise<RepositoryBrowseSearchQuery> {
+            return requester<RepositoryBrowseSearchQuery, RepositoryBrowseSearchQueryVariables>(
+                RepositoryBrowseSearchDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryBrowseSearchQuery>;
         },
         RepositoryCommitRefs(
             variables: RepositoryCommitRefsQueryVariables,
@@ -13836,16 +14844,6 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RepositoryMetadataQuery>;
         },
-        RepositoryOpenCounts(
-            variables: RepositoryOpenCountsQueryVariables,
-            options?: C,
-        ): Promise<RepositoryOpenCountsQuery> {
-            return requester<RepositoryOpenCountsQuery, RepositoryOpenCountsQueryVariables>(
-                RepositoryOpenCountsDocument,
-                variables,
-                options,
-            ) as Promise<RepositoryOpenCountsQuery>;
-        },
         RepositoryPullRequests(
             variables: RepositoryPullRequestsQueryVariables,
             options?: C,
@@ -13856,12 +14854,29 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<RepositoryPullRequestsQuery>;
         },
+        RepositoryReleases(variables: RepositoryReleasesQueryVariables, options?: C): Promise<RepositoryReleasesQuery> {
+            return requester<RepositoryReleasesQuery, RepositoryReleasesQueryVariables>(
+                RepositoryReleasesDocument,
+                variables,
+                options,
+            ) as Promise<RepositoryReleasesQuery>;
+        },
         RepositorySearch(variables: RepositorySearchQueryVariables, options?: C): Promise<RepositorySearchQuery> {
             return requester<RepositorySearchQuery, RepositorySearchQueryVariables>(
                 RepositorySearchDocument,
                 variables,
                 options,
             ) as Promise<RepositorySearchQuery>;
+        },
+        ReviewThreadComments(
+            variables: ReviewThreadCommentsQueryVariables,
+            options?: C,
+        ): Promise<ReviewThreadCommentsQuery> {
+            return requester<ReviewThreadCommentsQuery, ReviewThreadCommentsQueryVariables>(
+                ReviewThreadCommentsDocument,
+                variables,
+                options,
+            ) as Promise<ReviewThreadCommentsQuery>;
         },
         TrackingCandidates(
             variables?: TrackingCandidatesQueryVariables,

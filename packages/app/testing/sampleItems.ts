@@ -59,6 +59,7 @@ export function samplePullRequest(id: string): PullRequestItem {
         checks: null,
         reviewRequests: [],
         latestReviews: [],
+        pendingReview: null,
         stack: null,
         behindBase: false,
         headRefId: `REF_${id}`,

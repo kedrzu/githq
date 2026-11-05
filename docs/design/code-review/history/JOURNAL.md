@@ -60,3 +60,9 @@ Append-only. One line per turn that produced a decision, a rejection or an answe
   expanded context when a file changes (D14). README updated. Nothing open; proposing to close.
 - 2026-11-02 — Owner closed the design. Next on the owner's word: a UI brief for the design agent, then /dev:deliver.
 - 2026-11-02 — Owner asked for the UI brief and the merge: ui/review-a-pull-request.md and ui/design-agent-prompt.md written.
+- 2026-11-03 — Owner at milestone 1's checkpoint: public privacy statements say githq reads the code pull requests change and keeps it until sign-out; `NOT_FOUND` hides kept code → D19; the diff stays on the main thread, a worker is measured with highlighting → D20; keys confirmed → D32; no ligatures in a diff → D36.
+- 2026-11-03 — Owner at milestone 2's checkpoint: the syntax palette stays → D37; square brackets stay literal in the filter → D11.
+- 2026-11-04 — Owner simplified the gone file: it says only that it's no longer in the diff, no commits named → D30.
+- 2026-11-04 — Owner: a gone file says only that, no commits → D30. A file simply deleted keeps its diff, as on GitHub; only one created and deleted again is an entry of threads alone → D12. A file with only resolved threads shows their count in grey → D27, CR46 and CR14 updated in the design file.
+- 2026-11-04 — Owner at milestone 5's checkpoint: `J` / `K` go through a review's stack → D16; a collapsed stack's entry carries the draft mark → D28. Live check: a pending review moves nothing a poll watches → D21.
+- 2026-11-04 — Owner: a separate light query looks for drafts on tracked pull requests, every 5 minutes and on focus; 1 point per 100 → D21.

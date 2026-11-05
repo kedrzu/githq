@@ -14,6 +14,7 @@ import * as stories from './StatusBar.stories.js';
 
 // The translations keep short words with the next one (a no-break space): `\s` matches either.
 const SEGMENT = /^Paused until\s14:32 · 100 left$/;
+const EXPLANATION = /^Background refresh is\spaused$/;
 
 const { Exhausted, Paused, PausedCollapsed } = composeStories(stories);
 
@@ -23,10 +24,9 @@ test('refresh paused (K3): the segment opens why — editing still works, other 
     const segment = page.getByRole('button', { name: SEGMENT });
     await userEvent.click(segment);
 
-    // Named by the segment that opened it, as a popover is.
-    const explanation = page.getByRole('dialog', { name: SEGMENT });
+    const explanation = page.getByRole('dialog', { name: EXPLANATION });
     await expect.element(explanation).toBeVisible();
-    await expect.element(explanation.getByRole('heading', { name: /^Background refresh is\spaused$/ })).toBeVisible();
+    await expect.element(explanation.getByRole('heading', { name: EXPLANATION })).toBeVisible();
     await expect.element(explanation.getByText(/your edits still go\sthrough/)).toBeVisible();
     await expect.element(explanation.getByText(/^100 of\s5,000 this hour$/)).toBeVisible();
     await expect.element(explanation.getByText(/^14:32 · in\s\d+ min$/)).toBeVisible();
@@ -41,7 +41,7 @@ test('under the rail the paused segment is its icon, named by the whole sentence
     await PausedCollapsed.run();
 
     await userEvent.click(page.getByRole('button', { name: SEGMENT }));
-    await expect.element(page.getByRole('dialog', { name: SEGMENT })).toBeVisible();
+    await expect.element(page.getByRole('dialog', { name: EXPLANATION })).toBeVisible();
 });
 
 test('the allowance used up to the last point, by other apps too, says edits may be refused until the reset', async () => {
@@ -56,7 +56,26 @@ test('on the web the bar never offers an update, even one said to be ready', asy
     const restart = vi.fn();
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
-    container.set(AppUpdate, { readyVersion: '1.4.0', restart, later: () => {} });
+    container.set(AppUpdate, {
+        state: {
+            version: '1.3.0',
+            commit: null,
+            stream: 'stable',
+            canChoose: true,
+            manual: false,
+            checkedAt: null,
+            activity: { kind: 'ready', version: '1.4.0' },
+        },
+        notice: { kind: 'ready', version: '1.4.0' },
+        check: () => {},
+        setStream: () => {},
+        restart,
+        later: () => {},
+        dismiss: () => {},
+        previousVersion: null,
+        untoldChange: null,
+        markUpdateTold: () => {},
+    });
     const host = document.createElement('div');
     document.body.append(host);
     const app = createApp({ setup: () => () => h(StatusBar, { rateLimit: null }) });

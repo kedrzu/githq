@@ -16,6 +16,20 @@ export interface FakeJobLogAnswer {
     readonly text: string;
 }
 
+/** What the updater is doing, as the native side's `UpdateState` says (`packages/desktop/src-tauri/src/updater.rs`). */
+export type FakeUpdateActivity = { readonly kind: string } & Readonly<Record<string, unknown>>;
+
+/** The updater's state, sent whole (`update-state`) and answered by `update_status`. */
+export interface FakeUpdateState {
+    readonly version: string;
+    readonly commit: string | null;
+    readonly stream: string;
+    readonly canChoose: boolean;
+    readonly manual: boolean;
+    readonly checkedAt: number | null;
+    readonly activity: FakeUpdateActivity;
+}
+
 /** What the fake puts in the page as `window.__TAURI_INTERNALS__`: the part of Tauri's the app uses. */
 export interface FakeTauriInternals {
     invoke(command: string, args?: Readonly<Record<string, unknown>>): Promise<unknown>;
@@ -66,7 +80,7 @@ interface FakeEventListener {
  * The desktop app's native side for the e2e tests (`packages/desktop/src-tauri`): the commands of the app's
  * `NativeBridge` (`packages/app/desktop/NativeBridge.ts`), answered here in the test through what Tauri injects into
  * its window, `window.__TAURI_INTERNALS__` — the OS credential store a field, the system browser a log of the pages it
- * opened, GitHub's device flow answered when the test says, and the updater's `update-ready` event sent when the test
+ * opened, GitHub's device flow answered when the test says, and the updater's state, `update-state`, sent when the test
  * says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
  */
 export class FakeNativeBridge {
@@ -86,14 +100,24 @@ export class FakeNativeBridge {
     /** The code `read_job_log` fails with for each job id, before anything in {@link jobLogs}. */
     readonly jobLogFailures = new Map<number, string>();
 
-    /** The version of the update ready to run (`update_status`); set by {@link sendUpdateReady} too. */
-    readyUpdate: string | null = null;
+    /** What `update_status` answers; set by {@link sendUpdateState} too. */
+    updateState: FakeUpdateState = {
+        version: '1.3.0',
+        commit: null,
+        stream: 'stable',
+        canChoose: true,
+        manual: false,
+        checkedAt: null,
+        activity: { kind: 'idle' },
+    };
 
     private readonly openedUrls: string[] = [];
     private readonly jobLogReads: unknown[] = [];
     private readonly listeners: FakeEventListener[] = [];
     private readonly unknownCommands: string[] = [];
     private restarts = 0;
+    private checks = 0;
+    private readonly chosenStreams: string[] = [];
     /** What the current attempt's `device_finish` answers, once the test says. */
     private deviceAnswer = createPromise<FakeNativeAnswer>();
 
@@ -127,6 +151,16 @@ export class FakeNativeBridge {
         return this.restarts;
     }
 
+    /** How many times `update_check` asked for a check. */
+    get checkCount(): number {
+        return this.checks;
+    }
+
+    /** The streams `update_set_stream` chose, oldest first. */
+    get streamChanges(): readonly string[] {
+        return this.chosenStreams;
+    }
+
     /** Whether a page listens to the native event `event`. */
     isListening(event: string): boolean {
         return this.listeners.some(listener => listener.event === event);
@@ -137,15 +171,15 @@ export class FakeNativeBridge {
         this.deviceAnswer.resolve({ ok: true, value: { token, scope: OAUTH_SCOPES.join(',') } });
     }
 
-    /** The updater readied `version`: `update_status` answers it, and every page listening hears `update-ready`. */
-    async sendUpdateReady(version: string): Promise<void> {
-        this.readyUpdate = version;
+    /** The updater's state changed: `update_status` answers it, and every page listening hears `update-state`. */
+    async sendUpdateState(change: Partial<FakeUpdateState>): Promise<void> {
+        this.updateState = { ...this.updateState, ...change };
         for (const { page, document, event, handler } of this.listeners) {
-            if (event === 'update-ready') {
+            if (event === 'update-state') {
                 await page.evaluate(([to, id, message]) => window.__githqE2eEmit?.(to, id, message), [
                     document,
                     handler,
-                    { event, payload: { version } },
+                    { event, payload: this.updateState },
                 ] as const);
             }
         }
@@ -192,13 +226,24 @@ export class FakeNativeBridge {
             case 'device_finish':
                 return await this.deviceAnswer.promise;
             case 'update_status':
-                return { ok: true, value: this.readyUpdate };
-            case 'update_restart':
-                if (this.readyUpdate === null) {
-                    return { ok: false, error: 'notReady' };
+                return { ok: true, value: this.updateState };
+            case 'update_check':
+                this.checks++;
+                return { ok: true, value: null };
+            case 'update_set_stream':
+                if (!this.updateState.canChoose) {
+                    return { ok: false, error: 'notAvailable' };
                 }
 
-                this.restarts++;
+                this.chosenStreams.push(readString(args, 'stream'));
+                await this.sendUpdateState({ stream: readString(args, 'stream'), manual: true });
+                return { ok: true, value: null };
+            case 'update_restart':
+                // Does nothing while checking, downloading or installing, as the native side.
+                if (['ready', 'installFailed'].includes(this.updateState.activity.kind)) {
+                    this.restarts++;
+                }
+
                 return { ok: true, value: null };
             case 'plugin:event|listen': {
                 const handler = isPlainObject(args) && typeof args.handler === 'number' ? args.handler : -1;

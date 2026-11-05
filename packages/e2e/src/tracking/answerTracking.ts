@@ -88,17 +88,19 @@ export function answerEmptyRepositories(
     }
 
     const page = { totalCount: 0, pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] };
-    github.graphql('RepositoryIssues', async () => {
+    github.graphql('RepositoryIssues', async ({ variables }) => {
         await hold;
-        return { repository: { issues: page } };
+        return { repository: { nameWithOwner: `${String(variables.owner)}/${String(variables.name)}`, issues: page } };
     });
-    github.graphql('RepositoryPullRequests', async () => {
+    github.graphql('RepositoryPullRequests', async ({ variables }) => {
         await hold;
-        return { repository: { pullRequests: page } };
+        return {
+            repository: { nameWithOwner: `${String(variables.owner)}/${String(variables.name)}`, pullRequests: page },
+        };
     });
 }
 
-/** Answers looking a repository up by name to track it (J3, G10), as GitHub has it. */
+/** Answers looking a repository up by name to track it (G10), as GitHub has it. */
 export function answerRepositoryLookup(github: GitHubMock, repository: TrackingRepositoryParams): void {
     github.graphql('RepositoryForTracking', { repository: toNode(repository) });
 }

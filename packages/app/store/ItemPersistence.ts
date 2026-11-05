@@ -31,7 +31,7 @@ export interface ItemPersistenceShape {
     load(login: string): Promise<PersistedItems>;
     /** Writes `changes` to the copy {@link load} opened; rejects when it is not open (anymore). */
     save(login: string, changes: ItemChanges): Promise<void>;
-    /** Deletes `login`'s copy. */
+    /** Deletes `login`'s copy, with everything else kept on disk for them (`ReviewBlobStore`). */
     destroy(login: string): Promise<void>;
 }
 

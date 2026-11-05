@@ -4,6 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
+import { PencilLine } from 'lucide-vue-next';
 import { computed } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
@@ -22,6 +23,8 @@ import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
 
 import type { ListStack } from './ListTypes.js';
+import type { ItemStatusFact } from './useItemFacts.js';
+import { draftReview } from './useItemFacts.loc.js';
 import * as l from './useStackFacts.loc.js';
 import { getHeldReason } from './utils/getHeldReason.js';
 import type { HeldReason } from './utils/getHeldReason.js';
@@ -91,6 +94,8 @@ export interface StackFactsViewModel {
     readonly projectField: StackProjectFieldFact | null;
     /** Its pull requests in order, each in its own state. */
     readonly members: readonly StackMemberFact[];
+    /** The viewer's draft reviews on them, or `null` with none: collapsed, nothing else would say so (code review D28). */
+    readonly draft: ItemStatusFact | null;
 }
 
 /** What the held sentence counts and names. */
@@ -224,6 +229,20 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
         }));
     });
 
+    const draft = computed((): ItemStatusFact | null => {
+        const reviews = entry.value.pullRequests.flatMap(pr => pr.pendingReview ?? []);
+        if (reviews.length === 0) {
+            return null;
+        }
+
+        const comments = reviews.reduce((sum, review) => sum + review.commentCount, 0);
+        const text =
+            reviews.length === 1
+                ? t(draftReview, { count: comments })
+                : t(l.draftReviews, { reviews: reviews.length, count: comments });
+        return { icon: PencilLine, tone: 'warning', text, readyToMerge: false };
+    });
+
     return reactive<StackFactsViewModel>({
         count,
         filled,
@@ -235,6 +254,7 @@ export function useStackFacts(options: UseStackFactsOptions): StackFactsViewMode
         milestone,
         projectField,
         members,
+        draft,
     });
 
     /** "+N", or `null` when nothing is left out. */

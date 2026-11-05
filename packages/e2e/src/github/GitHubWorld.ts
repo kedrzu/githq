@@ -137,6 +137,24 @@ export interface GitHubWorldPlacement {
     readonly archived?: boolean;
 }
 
+/** A comment on an item of the world ({@link GitHubWorld.comment}). */
+export interface GitHubWorldCommentParams {
+    readonly author: string;
+    readonly body: string;
+    readonly minutesAgo: number;
+}
+
+/** A submitted review of a pull request of the world ({@link GitHubWorld.review}). */
+export interface GitHubWorldReviewParams {
+    /** Its node id, which a thread's first comment names to be the review's. */
+    readonly id: string;
+    readonly author: string;
+    readonly state: 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED';
+    /** Its text as GitHub renders it (`bodyHTML`); none by default. */
+    readonly bodyHtml?: string;
+    readonly minutesAgo: number;
+}
+
 /** An issue of the world; assigned to the viewer when "assigned" finds it. */
 export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
     /** Its issue type; none by default. */
@@ -145,6 +163,12 @@ export interface GitHubWorldIssueParams extends GitHubWorldItemParams {
 
 /** The issue types of every repository of the world. */
 export type GitHubWorldIssueType = 'Bug' | 'Feature' | 'Task';
+
+/** A review the viewer started and hasn't submitted. */
+export interface GitHubWorldPendingReview {
+    readonly comments: number;
+    readonly minutesAgo: number;
+}
 
 /** An open pull request of the world, and where it stands. */
 export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
@@ -210,6 +234,8 @@ export interface GitHubWorldRepositoryParams {
     readonly milestones?: readonly string[];
     /** Who may be assigned or asked for a review besides the viewer; `monalisa` and `hubot` by default. */
     readonly users?: readonly string[];
+    /** What its page says it is about, which the repository search finds too; none by default. */
+    readonly description?: string;
     /** Public by default. */
     readonly isPrivate?: boolean;
     /** Archived: read-only, it takes no issue. */
@@ -436,6 +462,7 @@ interface WorldRepository {
     labels: readonly GitHubWorldLabel[];
     milestones: readonly string[];
     users: readonly string[];
+    description: string | null;
     isPrivate: boolean;
     isArchived: boolean;
     issuesDisabled: boolean;
@@ -516,6 +543,8 @@ interface WorldPullRequest {
     readonly failingChecks: number;
     readonly conflicts: boolean;
     reviewRequests: string[];
+    readonly reviews: GitHubWorldReviewParams[];
+    pendingReview: GitHubWorldPendingReview | null;
     readonly closes: readonly string[];
     behindBase: boolean;
     readonly mergeabilityUnknown: boolean;
@@ -653,6 +682,7 @@ const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
 const COMMENT_PAGE = 50;
 const OLDER_COMMENT_PAGE = 100;
+const REVIEW_PAGE = 100;
 
 const DEFAULT_LABELS: readonly GitHubWorldLabel[] = [
     { name: 'bug', color: 'd73a4a' },
@@ -685,6 +715,9 @@ const PROJECT_FIELDS: readonly { name: GitHubWorldProjectFieldName; dataType: Pr
 /** The fields a saved view of the world shows. */
 const VIEW_FIELDS: readonly GitHubWorldProjectFieldName[] = ['Title', 'Assignees', 'Status'];
 
+/** How many issues a page of `RepositoryIssues` holds (`issues(first: 100)`); a pull request's page says its own. */
+const ISSUE_PAGE = 100;
+
 /** How many items `ProjectFull` reads with the project. */
 const PROJECT_FIRST_PAGE = 100;
 
@@ -692,14 +725,15 @@ const PROJECT_FIRST_PAGE = 100;
  * A small GitHub for the e2e tests: repositories with issues and pull requests, some found by the four "my work"
  * searches, the viewer's organisations, and projects with a "Status", saved views and draft issues.
  * {@link install} makes a {@link GitHubMock} answer from it, with the shapes of the generated SDK: the searches by
- * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
+ * their query; `ItemsByIds`, `PullRequestStatuses`, `PullRequestPendingReviews`, `PullRequestStacks` (its {@link stack}s), `ItemDetails`,
  * `ItemDetail`, `MoreComments` and `PullRequestMergeOptions` by node id (the check list and the reviews left
  * out, no rules on a base branch); `ItemByNumber`;
- * `RepositoryMetadata`; `RepositoryOpenCounts` (its open issues and pull requests); `ViewerProjects` (every project of the world is the viewer's).
+ * `RepositoryMetadata`; `RepositoryBrowseSearch`; `ViewerProjects` (every project of the world is the viewer's).
  *
  * It answers tracking as GitHub does: what the tracking screens offer (the viewer's repositories and projects,
  * their organisations' — one hiding its private data left out with an error), a lookup by name, a tracked
- * repository's download (`RepositoryIssues`, `RepositoryPullRequests`) and its change list
+ * repository's download or a browsed one's pages (`RepositoryIssues`, `RepositoryPullRequests`, by `first` and `after`,
+ * a repository found by its name in any case) and its change list
  * (`GET /repos/{o}/{r}/issues?since=`), a tracked project's download and re-reads (`ProjectFull`,
  * `ProjectSchema`, `ProjectItems` — `updated:>=` by day, any other query matched against the titles, as GitHub
  * answers a saved view's free text) and its change signal (`GET /users|orgs/{o}/projectsV2/{n}`). Both REST
@@ -752,6 +786,7 @@ export class GitHubWorld {
         repository.labels = params.labels ?? repository.labels;
         repository.milestones = params.milestones ?? repository.milestones;
         repository.users = params.users ?? repository.users;
+        repository.description = params.description ?? repository.description;
         repository.isPrivate = params.isPrivate ?? repository.isPrivate;
         repository.isArchived = params.isArchived ?? repository.isArchived;
         repository.issuesDisabled = params.issuesDisabled ?? repository.issuesDisabled;
@@ -993,6 +1028,33 @@ export class GitHubWorld {
         return this.createPullRequest(params, null).item.id;
     }
 
+    /** Adds a comment to an item, its newest: call them oldest first. */
+    comment(id: string, params: GitHubWorldCommentParams): void {
+        const item = this.get(id);
+        item.comments.push({
+            id: `IC_${id}_${item.comments.length + 1}`,
+            author: params.author,
+            body: params.body,
+            createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+        });
+    }
+
+    /** Adds a submitted review to a pull request, its newest: call them oldest first. */
+    review(id: string, params: GitHubWorldReviewParams): void {
+        this.get(id).pullRequest?.reviews.push(params);
+    }
+
+    /**
+     * Starts the viewer's draft review on github.com, or with `null` submits or discards it. Whether that moves
+     * `updated_at` on GitHub isn't known (code review D21), so here it doesn't: only the statuses' read can find out.
+     */
+    setPendingReview(id: string, review: GitHubWorldPendingReview | null): void {
+        const { pullRequest } = this.get(id);
+        if (pullRequest) {
+            pullRequest.pendingReview = review;
+        }
+    }
+
     /** Adds a stack of open pull requests; returns their node ids, bottom first. */
     stack(params: GitHubWorldStackParams): string[] {
         const stack: WorldStack = {
@@ -1229,7 +1291,7 @@ export class GitHubWorld {
 
     private installReads(github: GitHubMock) {
         github.graphql('RepositoryMetadata', ({ variables }) => {
-            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const repository = this.findRepository(variables);
             if (!repository) {
                 return { repository: null };
             }
@@ -1273,17 +1335,6 @@ export class GitHubWorld {
                     },
                     issueTypes: null,
                 },
-            };
-        });
-        github.graphql('RepositoryOpenCounts', ({ variables }) => {
-            const open = this.readRepositoryItems(variables)?.filter(item => item.state === 'OPEN');
-            return {
-                repository: open
-                    ? {
-                          issues: { totalCount: open.filter(item => !item.pullRequest).length },
-                          pullRequests: { totalCount: open.filter(item => item.pullRequest).length },
-                      }
-                    : null,
             };
         });
         github.graphql('RepositoryCommitRefs', ({ variables }) => {
@@ -1437,6 +1488,31 @@ export class GitHubWorld {
                 },
             };
         });
+        // Every repository of the world holding the words typed in its name or description, within `org:` when it says;
+        // GitHub's other qualifiers are left out of what it matches.
+        github.graphql('RepositoryBrowseSearch', ({ variables }) => {
+            const terms = String(variables.query).toLowerCase().split(/\s+/u).filter(Boolean);
+            const words = terms.filter(term => !term.includes(':'));
+            const owner = terms.find(term => term.startsWith('org:'))?.slice('org:'.length);
+            return {
+                search: {
+                    nodes: [...this.repositories.values()]
+                        .filter(repository => {
+                            const name = repository.nameWithOwner.toLowerCase();
+                            const text = `${name} ${repository.description ?? ''}`.toLowerCase();
+                            return (
+                                (owner === undefined || name.startsWith(`${owner}/`)) &&
+                                words.every(word => text.includes(word))
+                            );
+                        })
+                        .map(repository => ({
+                            nameWithOwner: repository.nameWithOwner,
+                            description: repository.description,
+                            isPrivate: repository.isPrivate,
+                        })),
+                },
+            };
+        });
         github.graphql('RepositoryLabel', ({ variables }) => {
             const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
             const label = repository?.labels.find(candidate => candidate.name === variables.label);
@@ -1503,6 +1579,22 @@ export class GitHubWorld {
                         }
 
                         // GitHub answers an empty object for a node of another type than the fragment's.
+                        return node.__typename === 'PullRequest' ? node : {};
+                    }),
+                },
+                notFoundErrors(ids, id => this.readItem(id) !== undefined),
+            );
+        });
+        github.graphql('PullRequestPendingReviews', ({ variables }) => {
+            const ids = readIds(variables);
+            return new GitHubPartialAnswer<'PullRequestPendingReviews'>(
+                {
+                    nodes: ids.map(id => {
+                        const node = this.readNode(id);
+                        if (!node) {
+                            return null;
+                        }
+
                         return node.__typename === 'PullRequest' ? node : {};
                     }),
                 },
@@ -1628,6 +1720,18 @@ export class GitHubWorld {
             const before = parseCursor(variables.before) ?? item.comments.length;
             return { node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE) } };
         });
+        github.graphql('MoreReviews', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item?.pullRequest) {
+                return new GitHubPartialAnswer<'MoreReviews'>({ node: null }, [notFoundError(id, ['node'])]);
+            }
+
+            const { reviews } = item.pullRequest;
+            return {
+                node: { id, reviews: toReviewPage(item, reviews, parseCursor(variables.before) ?? reviews.length) },
+            };
+        });
     }
 
     /** What tracking reads: the candidates, a lookup by name, the downloads and the re-reads of projects. */
@@ -1686,7 +1790,7 @@ export class GitHubWorld {
             );
         });
         github.graphql('RepositoryForTracking', ({ variables }) => {
-            const repository = this.repositories.get(`${String(variables.owner)}/${String(variables.name)}`);
+            const repository = this.findRepository(variables);
             return repository
                 ? { repository: this.toCandidate(repository) }
                 : new GitHubPartialAnswer<'RepositoryForTracking'>({ repository: null }, [repositoryNotFound()]);
@@ -1699,22 +1803,43 @@ export class GitHubWorld {
         });
 
         github.graphql('RepositoryIssues', ({ variables }) => {
+            const repository = this.findRepository(variables);
+            if (!repository) {
+                return new GitHubPartialAnswer<'RepositoryIssues'>({ repository: null }, [repositoryNotFound()]);
+            }
+
             const states = readStrings(variables.states);
-            const nodes = this.readRepositoryItems(variables)
-                ?.filter(item => !item.pullRequest && states.includes(item.state))
-                .map(item => this.toIssueNode(item));
-            return nodes
-                ? { repository: { issues: { totalCount: nodes.length, pageInfo: LAST_PAGE, nodes } } }
-                : new GitHubPartialAnswer<'RepositoryIssues'>({ repository: null }, [repositoryNotFound()]);
+            const items = this.readRepositoryItems(repository.nameWithOwner).filter(
+                item => !item.pullRequest && states.includes(item.state),
+            );
+            return {
+                repository: {
+                    nameWithOwner: repository.nameWithOwner,
+                    issues: toItemPage(items, ISSUE_PAGE, variables.after, item => this.toIssueNode(item)),
+                },
+            };
         });
         github.graphql('RepositoryPullRequests', ({ variables }) => {
+            const repository = this.findRepository(variables);
+            if (!repository) {
+                return new GitHubPartialAnswer<'RepositoryPullRequests'>({ repository: null }, [repositoryNotFound()]);
+            }
+
             const states = readStrings(variables.states);
-            const nodes = this.readRepositoryItems(variables)?.flatMap(item =>
-                item.pullRequest && states.includes(item.state) ? [this.toPullRequestNode(item, item.pullRequest)] : [],
+            const pullRequests = this.readRepositoryItems(repository.nameWithOwner).flatMap(item =>
+                item.pullRequest && states.includes(item.state) ? [{ item, pullRequest: item.pullRequest }] : [],
             );
-            return nodes
-                ? { repository: { pullRequests: { totalCount: nodes.length, pageInfo: LAST_PAGE, nodes } } }
-                : new GitHubPartialAnswer<'RepositoryPullRequests'>({ repository: null }, [repositoryNotFound()]);
+            return {
+                repository: {
+                    nameWithOwner: repository.nameWithOwner,
+                    pullRequests: toItemPage(
+                        pullRequests,
+                        Number(variables.first),
+                        variables.after,
+                        ({ item, pullRequest }) => this.toPullRequestNode(item, pullRequest),
+                    ),
+                },
+            };
         });
 
         github.graphql('ProjectFull', ({ variables }) => {
@@ -1820,15 +1945,16 @@ export class GitHubWorld {
     }
 
     /** The items of the repository the variables name (`owner`, `name`); `undefined` for one GitHub does not have. */
-    private readRepositoryItems(variables: Readonly<Record<string, unknown>>) {
-        const name = `${String(variables.owner)}/${String(variables.name)}`;
-        if (!this.repositories.has(name)) {
-            return undefined;
-        }
-
+    private readRepositoryItems(nameWithOwner: string) {
         return [...this.items.values()]
-            .filter(item => !item.deleted && item.repository === name)
+            .filter(item => !item.deleted && item.repository === nameWithOwner)
             .toSorted((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    }
+
+    /** The repository the variables name (`owner`, `name`) in any case, as GitHub finds it; `undefined` with none. */
+    private findRepository(variables: Readonly<Record<string, unknown>>) {
+        const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
+        return [...this.repositories.values()].find(repository => repository.nameWithOwner.toLowerCase() === name);
     }
 
     /** The repositories of `owner` as the tracking screens list them; only the public ones when `publicOnly`. */
@@ -2595,6 +2721,8 @@ export class GitHubWorld {
             failingChecks: params.failingChecks ?? 0,
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
+            reviews: [],
+            pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
             mergeabilityUnknown: params.mergeabilityUnknown ?? false,
@@ -2680,6 +2808,7 @@ export class GitHubWorld {
                 labels: DEFAULT_LABELS,
                 milestones: ['v1.0'],
                 users: ['monalisa', 'hubot'],
+                description: null,
                 isPrivate: false,
                 isArchived: false,
                 issuesDisabled: false,
@@ -2776,6 +2905,7 @@ export class GitHubWorld {
                 contextPage: { totalCount: 0, nodes: [] },
             },
             latestReviews: { nodes: [] },
+            reviews: toReviewPage(item, item.pullRequest.reviews, item.pullRequest.reviews.length),
             reviewRequests: {
                 nodes: item.pullRequest.reviewRequests.map(login => ({ requestedReviewer: createUser(login) })),
             },
@@ -2836,6 +2966,19 @@ export class GitHubWorld {
                 nodes: pullRequest.reviewRequests.map(login => ({ requestedReviewer: { login } })),
             },
             latestOpinionatedReviews: { nodes: [] },
+            pendingReviews: {
+                nodes: pullRequest.pendingReview
+                    ? [
+                          {
+                              id: `PRR_${item.id}`,
+                              createdAt: new Date(
+                                  Date.now() - pullRequest.pendingReview.minutesAgo * 60_000,
+                              ).toISOString(),
+                              comments: { totalCount: pullRequest.pendingReview.comments },
+                          },
+                      ]
+                    : [],
+            },
             stack: place && { id: place.stack.id, number: place.stack.number, size: place.stack.entries.length },
             stackEntry: place && { position: place.position },
             headRefOid: toHeadRefOid(item),
@@ -3269,6 +3412,21 @@ function toCommentPage(item: WorldItem, before: number, count: number) {
     };
 }
 
+function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams[], before: number) {
+    const start = Math.max(0, before - REVIEW_PAGE);
+    return {
+        pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
+        nodes: reviews.slice(start, before).map(review => ({
+            id: review.id,
+            url: `${toUrl(item)}#pullrequestreview-${review.id}`,
+            author: createUser(review.author),
+            state: review.state,
+            bodyHTML: review.bodyHtml ?? '',
+            submittedAt: new Date(Date.now() - review.minutesAgo * 60_000).toISOString(),
+        })),
+    };
+}
+
 function toCommentNode(item: WorldItem, comment: WorldComment): IssueCommentFieldsFragment {
     return {
         id: comment.id,
@@ -3429,6 +3587,22 @@ function readStrings(value: unknown): string[] {
 /** The logins of the users a mutation names by id. */
 function readLogins(value: unknown): string[] {
     return readStrings(value).map(id => id.replace(/^U_/, ''));
+}
+
+/** A page of a repository's items: `first` of them after the cursor, as a connection answers. */
+function toItemPage<TItem, TNode>(
+    items: readonly TItem[],
+    first: number,
+    after: unknown,
+    toNode: (item: TItem) => TNode,
+) {
+    const start = parseCursor(after) ?? 0;
+    const end = Math.min(items.length, start + first);
+    return {
+        totalCount: items.length,
+        pageInfo: { hasNextPage: end < items.length, endCursor: end > start ? `C${end}` : null },
+        nodes: items.slice(start, end).map(toNode),
+    };
 }
 
 /** The index a cursor of the world stands for: a comment page's first comment, or a project page's next item. */

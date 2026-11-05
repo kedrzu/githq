@@ -1,10 +1,9 @@
 <!-- The reviews of an opened pull request (F1–F4): each reviewer's latest review with when it was given, then those asked who have not answered yet. Where the user may, "Request" (`⇧R`) asks more people for a review: the repository's users, picked several at a time. -->
 <script lang="ts" setup>
 import type { PullRequestReviewState } from '@githq/github/generated.gen.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
-import { CircleCheck, CircleSlash, FileDiff, Hourglass, MessageSquare, UserPlus, Users } from 'lucide-vue-next';
+import { Hourglass, UserPlus, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { EDIT_KEYS } from '@/commands/useEditCommands.js';
@@ -15,6 +14,8 @@ import type { PickerOption } from '@/components/Picker.vue';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
+import { getReviewVerdict } from './getReviewVerdict.js';
+import type { ReviewVerdictTone } from './getReviewVerdict.js';
 import * as l from './PullRequestReviews.loc.js';
 
 const props = defineProps<{
@@ -35,7 +36,7 @@ interface ReviewerLine {
   name: string;
   avatarUrl: string | null;
   team: boolean;
-  tone: 'danger' | 'dim' | 'success';
+  tone: ReviewVerdictTone;
   icon: LucideIcon;
   state: string;
   at: string | null;
@@ -92,7 +93,7 @@ const lines = computed((): ReviewerLine[] => {
       name,
       avatarUrl: request.kind === 'user' ? request.user.avatarUrl : null,
       team: request.kind === 'team',
-      tone: 'dim',
+      tone: 'quiet',
       icon: Hourglass,
       state: t(l.requested),
       at: null,
@@ -103,20 +104,12 @@ const lines = computed((): ReviewerLine[] => {
 });
 
 function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 'state' | 'tone'> {
-  switch (state) {
-    case 'APPROVED':
-      return { tone: 'success', icon: CircleCheck, state: t(l.approved) };
-    case 'CHANGES_REQUESTED':
-      return { tone: 'danger', icon: FileDiff, state: t(l.changesRequested) };
-    case 'COMMENTED':
-      return { tone: 'dim', icon: MessageSquare, state: t(l.commented) };
-    case 'DISMISSED':
-      return { tone: 'dim', icon: CircleSlash, state: t(l.dismissed) };
-    case 'PENDING':
-      return { tone: 'dim', icon: Hourglass, state: t(l.pending) };
-    default:
-      return assertNever(state);
+  if (state === 'PENDING') {
+    return { tone: 'quiet', icon: Hourglass, state: t(l.pending) };
   }
+
+  const { tone, icon, label } = getReviewVerdict(state);
+  return { tone, icon, state: t(label) };
 }
 </script>
 
@@ -256,15 +249,15 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
   align-items: center;
 }
 
-.pullRequestReviews_state_success {
+.pullRequestReviews_state_approved {
   color: $color-green;
 }
 
-.pullRequestReviews_state_danger {
+.pullRequestReviews_state_changes {
   color: $color-red;
 }
 
-.pullRequestReviews_state_dim {
+.pullRequestReviews_state_quiet {
   color: $color-fg-dim;
 }
 

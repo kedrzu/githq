@@ -50,8 +50,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
 
    All of these are remembered for every pull request, not per pull request.
 4. **Moving on.** `J` / `K` go to the next and previous pull request. Within a stack that is the next one in the
-   stack; after the last one it continues into the next stack of the list the user came from, exactly as in an
-   opened pull request today. Clicking a pull request in the stack goes there too. Coming back to a pull request
+   stack; after the last one it continues into the next entry of the list the user came from. Clicking a pull request in the stack goes there too. Coming back to a pull request
    returns the user to exactly where they were reading.
 5. **An open draft review** (first step). While the user has an unsubmitted draft review on this pull request, the
    review must say so in a way that is impossible to miss, with how many comments are waiting. Lists of pull
@@ -73,7 +72,7 @@ What github.com gets wrong for this user, and what these screens must visibly ge
   size in lines added and removed.
 - Whether the user has marked it viewed. The mark is GitHub's own, and GitHub removes it when the author changes the
   file again, so a second round of review shows only the files changed since.
-- Whether it has comments, and whether any thread on it is unresolved.
+- Whether it has comments, and whether any thread on it is unresolved: open threads in amber, or the count in grey when all are resolved.
 - Whether it starts collapsed because it is generated (lock files, generated code) or very large.
 - **A filter.** It is a path pattern with wildcards, as in VS Code's file filters: `.png` means the extension,
   `docs/**/*.png` a folder and an extension. A toggle button with an icon, as in VS Code, switches the pattern to a
@@ -85,8 +84,8 @@ What github.com gets wrong for this user, and what these screens must visibly ge
   a file and `{` / `}` extend the selection. One action, first of all "mark viewed", applies to all of them. Users
   often tick ten uninteresting files at once.
 - **Entries for gone files.** A file that is no longer in the diff but still has threads gets an entry of its own.
-  That covers a file deleted in the pull request, and one created and deleted again within it, so the diff shows
-  nothing. The entry holds only its threads and disappears once they are resolved.
+  That covers one created and deleted again within the pull request, so the diff shows nothing. The entry holds only
+  its threads and disappears once they are resolved. A file simply deleted is an ordinary file with its diff in red.
 
 **The diff**, by importance:
 
@@ -205,12 +204,10 @@ files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything v
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
 range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
 
+Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.
+
 Still open, not settled by the screens:
 
-- **The keys** D (open the review), N ⇧N (threads), C (comment), ⇧S (submit) and ⌘G (suggestion) are the agent's
-  (D32). The merge section's "Review files" moved from ⇧O to D in every opened pull request.
 - **Placeholders:** the size past which a file isn't diffed (CR67, D35) and GitHub's error wording (CR67, CR76).
 - **The second key while a draft is open** (D22): ⌘⇧↵ in the comment box still sends the whole draft at once, named on its button, without the dialog of CR75.
 - **Wording left as it was:** lists still say "Your draft review · 3 comments unsent" (CR33, CR34), and writing says "Add to draft" and "Submit draft" (CR72). The owner has reworded the toolbar and named the sidebar entry "Draft reviews".
-- **Not drawn:** a collapsed stack entry in a list carrying the draft mark when one of its pull requests has a draft;
-  the drafts list (CR34) shows the pull requests themselves.

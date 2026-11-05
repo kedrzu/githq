@@ -35,7 +35,7 @@ installed side by side on one machine.
 > **Checked 2026-11-04:** the "latest" URL's stream is untouched by builds from `main` if those are prereleases. "The
 > latest release is the most recent non-prerelease, non-draft release" —
 > [REST docs](https://docs.github.com/en/rest/releases/releases#get-the-latest-release). The docs state this for the API;
-> no page says it for the `releases/latest/download/` URL. Test it before relying on it.
+> for the `releases/latest/download/` URL it was tried, under [D4](#d4).
 
 > **Checked 2026-11-04:** a build costs nothing and takes minutes. "Use of the standard GitHub-hosted runners is free and
 > unlimited on public repositories" — [GitHub docs](https://docs.github.com/en/actions/reference/runners/github-hosted-runners);
@@ -129,9 +129,27 @@ above the last stable and below the next minor, and it is the same whether the n
 
 A build makes a draft release, uploads to it and verifies its manifest, as a Stable release does; only then does it delete the
 previous Development release and publish the draft under the same tag, `development`. The tag never moves; the commit is
-named in the description. Accepted: for seconds a check can fail, and the updater retries at the next check. Not yet checked:
-whether GitHub allows a draft with a tag that a published release holds; if not, the draft takes a temporary tag until
-it is published.
+named in the description. Accepted: for seconds a check can fail, and the updater retries at the next check.
+
+> **Checked 2026-11-04**, with temporary releases on this repository: GitHub allows a draft with a tag a published release holds, and
+> publishing it after deleting the other keeps the tag on its commit. `releases/latest/download/` served the stable release's file with a
+> newer prerelease published, so builds from `main` don't reach Stable.
+
+The manifest's download URLs carry `?v=<version>`, because the bundles keep their names from build to build.
+
+> **Checked 2026-11-04:** after a release was replaced, `releases/download/<tag>/<file>` kept serving the old file for about 100 seconds,
+> with `x-cache: HIT`; the same URL with a query served the new one at once. A new manifest with an old bundle fails its signature check.
+
+For the same reason the app asks for the manifest with `?t=<seconds>`, so a replaced manifest is read fresh.
+
+A build is skipped when only documentation changed since the published build, not since the commit's parent: a commit whose Deploy
+failed or was superseded had no build, and a documentation commit after it must not hide it. A run never publishes a commit older
+than the published one.
+
+> **Checked 2026-11-04:** a whole build with notarization took 9 to 16 minutes in four runs, of which macOS 2 to 3 and Linux 3 to 15; the first
+> notarization of the account took 41 minutes, later ones under a minute. In one run GitHub had no macOS runner for 15 minutes and failed
+> the job ("The job was not acquired by Runner"). A `.dmg` is not itself notarized: only the app in it is, stapled. Real updates, `dev.142` to
+> `dev.151` to `dev.152` from the Development release, took about 10 seconds.
 
 Proposed by the design agent, accepted by the owner: a newer push cancels an older build still running, so an older build can't
 overwrite a newer one, and the draft a cancelled build left is removed by the next.
@@ -185,7 +203,10 @@ release with the formal list, which is still correct.
 **After an update the app says so with a toast in a corner; what changed opens from it.** (2026-11-04, owner)
 
 **Why.** A window opening by itself would get in the way, above all on a stream that updates often. Toasts already exist
-(`packages/app/settings/SyncStoppedToast.vue`). Consequence: a summary is read only by someone who clicks.
+(`packages/app/settings/SyncStoppedToast.vue`). Consequence: a summary is read only by someone who clicks. The toast depends on a recorded
+last-run version, which the first public version has to write for its successor to show anything.
+
+Every toast moves to the bottom right corner with it, so toasts stay in one place (owner, 2026-11-04).
 
 **Rejected.**
 
@@ -273,14 +294,6 @@ block; and a published version number is never reused, so a bad release is fixed
 
 **Why.** Publishing is the owner's own step, and no app can tell that a version's contents changed under the same number.
 
-## D13
-
-**Work goes in this order: the Development stream and its choice in Settings; what changed and the toast; then the Apple
-signature and the first Stable, 0.1.0.** (2026-11-04, owner)
-
-**Why.** Development needs nothing from Apple, so the owner can start testing updates on themselves at once. The toast depends on
-a recorded last-run version, which the first public version has to write for its successor to show anything.
-
 ## D14
 
 **The updater's signing key and password live in the secret store and local scripts read them through the provider, mapped only
@@ -322,6 +335,11 @@ moment. It can be refused.** (2026-11-04, owner)
 background: it asks when the user has just asked for the update. Consequence: on Linux a user who quits without
 restarting stays on the old version, and the offer comes back at the next launch. Screens: U38–U40 in `githq.pen`.
 
+Built with one wording for a refused password and any other failure, U40's, because the plugin can't tell them apart.
+
+> **Checked 2026-11-04:** in tauri-plugin-updater 2.14.1, `try_install_with_privileges` drops `AuthenticationFailed` and falls through to
+> `sudo`, so a refused prompt answers `PackageInstallFailed`, like a failing `dpkg`.
+
 ## D17
 
 **What changed is a section of Settings, Changelog, and it lists every version with its own changes, each in a fold: the first open,
@@ -331,11 +349,12 @@ read when needed, and the toast of [D7](#d7) still comes, with its action leadin
 **Why.** A version saying its own changes needs no range to work out, and the section stays reachable after the toast is gone.
 
 On Development there is one fold for everything since the last Stable, then the Stable versions, because builds have no descriptions and
-most are one commit (proposed by the design agent, accepted by the owner, screen U43). Those commits are read from `main` rather than
-compared, so the 250 limit of [D3](#d3) doesn't apply.
+most are one commit (proposed by the design agent, accepted by the owner, screen U43). Those commits are read from the running build's
+commit, so the fold lists nothing the app doesn't have yet, rather than compared, so the 250 limit of [D3](#d3) doesn't apply. Before the
+first Stable there is no end to read to, so the list stops after a few hundred commits, with a link to GitHub.
 
-Proposed by the design agent, not yet confirmed: "New" on versions the user didn't have before this update, so a skipped version isn't
-lost behind its fold.
+"New" marks versions the user didn't have before this update, so a skipped version isn't lost behind its fold (proposed by the design
+agent, accepted by the owner).
 
 **Rejected.**
 

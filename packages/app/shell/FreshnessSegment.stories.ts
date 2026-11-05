@@ -32,6 +32,44 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** Files of a review selected together: the keys that act on them (CR23). */
+export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
+
+/** On a thread of a review: which of them it is, and the keys that walk them (CR15). */
+export const ThreadPosition: Story = {
+    args: { freshness: { kind: 'threadPosition', position: 2, total: 7, open: 5 } },
+};
+
+/** A review opened for the first time, on its first file not viewed (CR20). */
+export const LandedFirstFile: Story = {
+    args: { freshness: { kind: 'landing', at: 'firstFile', number: 1202, viewed: 9, total: 42, backTo: null } },
+};
+
+/** The same, walked to with `J` (CR25). */
+export const LandedFirstFileWalked: Story = {
+    args: {
+        freshness: {
+            kind: 'landing',
+            at: 'firstFile',
+            number: 1203,
+            viewed: 0,
+            total: 42,
+            backTo: { key: 'K', number: 1202 },
+        },
+    },
+};
+
+/** Come back to where it was left (CR26). */
+export const LandedLeft: Story = {
+    args: { freshness: { kind: 'landing', at: 'left', number: 1202, file: 'engine.ts', line: 47 } },
+};
+
+/** GitHub didn't give a review's threads: the files stay usable, and it says so. */
+export const ThreadsUnread: Story = { args: { freshness: { kind: 'threadsUnread' } } };
+
+/** A review's threads wait for the allowance. */
+export const ThreadsPaused: Story = { args: { freshness: { kind: 'threadsPaused', until: AT_14_06 } } };
+
 /** A repository's workflows listed, the first read of their runs under way (actions W3c). */
 export const ReadingRuns: Story = { args: { freshness: { kind: 'reading', read: 2, total: 6 } } };
 

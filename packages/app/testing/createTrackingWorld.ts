@@ -105,7 +105,8 @@ export function createTrackingWorld(): TrackingWorld {
 
         switch (operation) {
             case 'ItemsByIds':
-            case 'PullRequestStatuses': {
+            case 'PullRequestStatuses':
+            case 'PullRequestPendingReviews': {
                 const ids = Array.isArray(variables.ids) ? variables.ids.map(String) : [];
                 const nodes = ids.map(id => (operation === 'ItemsByIds' ? (world.items.get(id) ?? null) : null));
                 return { data: { nodes } };
@@ -128,8 +129,12 @@ export function createTrackingWorld(): TrackingWorld {
                 const connection = toPage(matching, after);
                 return {
                     data: {
-                        repository:
-                            operation === 'RepositoryIssues' ? { issues: connection } : { pullRequests: connection },
+                        repository: {
+                            nameWithOwner,
+                            ...(operation === 'RepositoryIssues'
+                                ? { issues: connection }
+                                : { pullRequests: connection }),
+                        },
                     },
                 };
             }

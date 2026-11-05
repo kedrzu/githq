@@ -11,6 +11,12 @@ export const MY_WORK_GROUP_PATHS: Readonly<Record<MyWorkGroup, string>> = {
     mentioned: '/issues/mentioned',
 };
 
+/**
+ * The address of the pull requests with the viewer's draft review (code review D28). The one list here GitHub has no
+ * address for, under its dashboard's so that it reads as one of them; nothing else in GitHub's `/pulls/` uses it.
+ */
+export const DRAFT_REVIEWS_PATH = '/pulls/drafts';
+
 declare module 'vue-router' {
     interface RouteMeta {
         /** The "my work" group the route narrows the page to (`MY_WORK_GROUP_PATHS`). */

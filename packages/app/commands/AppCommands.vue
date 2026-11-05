@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first) and, off its view, which registers its sections on `1`–`4` itself, its sections too; in the desktop app, while an update is ready, "Restart to update" and "Update later" (U1). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J3). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — `,` Settings and "Sign out"; on any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32); in the desktop app "Check for updates", on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, while an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). Settings and each of its sections, and the broken workflows (actions W2, reached from here while the sidebar does not show them), are places it goes to. The menu finds places and items in the local copy — my work and its groups, the tracked projects and their saved views, the tracked repositories, the items kept — and goes there at once; an item opens as items open from lists (over the screen, or on its page), any `owner/name` typed opens that repository's screen (J5); "Search repositories…" asks GitHub from its submenu (E7–E10). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -7,7 +7,10 @@ import {
   CircleHelp,
   Clock,
   Command as CommandIcon,
+  GitBranch,
   LogOut,
+  RefreshCw,
+  RotateCcw,
   Settings,
   SquarePen,
 } from 'lucide-vue-next';
@@ -20,15 +23,17 @@ import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
-import { getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
+import { getDraftReviews } from '@/myWork/getDraftReviews.js';
+import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import NewIssue from '@/newIssue/NewIssue.vue';
 import { NewIssueComposer } from '@/newIssue/NewIssueComposer.js';
 import { ProjectStore } from '@/projects/ProjectStore.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { useRepositoryCommands } from '@/repository/useRepositoryCommands.js';
-import { AppUpdate } from '@/services/AppUpdate.js';
+import { AppUpdate, isPrereleaseVersion } from '@/services/AppUpdate.js';
+import type { UpdateState } from '@/services/AppUpdate.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
-import { getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
+import { CONFIRM_STABLE_PATH, getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
@@ -43,6 +48,7 @@ import type { Command } from './CommandTypes.js';
 import KeyHelp from './KeyHelp.vue';
 import type { NavigationData, NavigationPlace, NavigationResult } from './searchNavigation.js';
 import { useCommands } from './useCommands.js';
+import { useRepositorySearchCommand } from './useRepositorySearchCommand.js';
 
 const t = useTranslate();
 const registry = useService(CommandRegistry);
@@ -57,6 +63,7 @@ const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
 const openItem = useOpenItem();
+const repositorySearchCommand = useRepositorySearchCommand();
 const repositoryCommands = useRepositoryCommands();
 
 /** The repository a new issue starts in: the opened item's, or the one of a repository's view. */
@@ -148,6 +155,7 @@ useCommands(() => [
     icon: LogOut,
     run: () => auth.signOut(),
   },
+  repositorySearchCommand(),
   ...getUpdateCommands(),
 ]);
 
@@ -167,33 +175,97 @@ useCommands(() => {
     commands.copyLink,
     // "Settings" alone stays the app's: a repository is in context nearly always.
     { ...commands.settings, title: t(l.repositorySettings) },
+    // Last, so that a plain Enter cannot start it.
+    commands.track,
   ];
 });
 
-/** "Restart to update" and "Update later" while an update is ready — only ever in the desktop app (`AppUpdate`). */
+/** The updater's actions, each only while it can run (D18) — only ever in the desktop app (`AppUpdate`). */
 function getUpdateCommands(): Command[] {
-  const version = update.readyVersion;
-  if (version === null) {
+  const { state, notice } = update;
+  if (state === null) {
     return [];
   }
 
-  return [
+  const commands: Command[] = [
     {
+      id: 'app.checkForUpdates',
+      title: t(l.checkForUpdates),
+      section: 'app',
+      icon: RefreshCw,
+      run: () => update.check(),
+    },
+  ];
+  if (state.canChoose) {
+    commands.push(getSwitchCommand(state));
+  }
+
+  const { activity } = state;
+  if (activity.kind === 'ready') {
+    commands.push({
       id: 'app.restartToUpdate',
       title: t(l.restartToUpdate),
-      detail: t(l.updateVersion, { version }),
+      detail: t(l.updateVersion, { version: activity.version }),
       section: 'app',
       icon: CircleArrowDown,
       run: () => update.restart(),
-    },
-    {
-      id: 'app.updateLater',
-      title: t(l.updateLater),
+    });
+  }
+
+  if (activity.kind === 'installFailed') {
+    commands.push({
+      id: 'app.retryInstall',
+      title: t(l.retryInstall),
+      detail: t(l.updateVersion, { version: activity.version }),
       section: 'app',
-      icon: Clock,
-      run: () => update.later(),
-    },
-  ];
+      icon: RotateCcw,
+      run: () => update.restart(),
+    });
+  }
+
+  // "Later" hides the status bar's segment and nothing else, so it goes with the segment.
+  if (notice?.kind === 'ready' || notice?.kind === 'installFailed') {
+    commands.push(getUpdateLaterCommand());
+  }
+
+  return commands;
+}
+
+/** To the stream not chosen. A Development build goes to Stable only through the confirmation in Settings (D5, U13). */
+function getSwitchCommand(state: UpdateState): Command {
+  if (state.stream === 'development') {
+    return {
+      id: 'app.switchToStable',
+      title: t(l.switchToStable),
+      section: 'app',
+      icon: GitBranch,
+      run: () => {
+        if (isPrereleaseVersion(state.version)) {
+          void router.push(CONFIRM_STABLE_PATH);
+        } else {
+          update.setStream('stable');
+        }
+      },
+    };
+  }
+
+  return {
+    id: 'app.switchToDevelopment',
+    title: t(l.switchToDevelopment),
+    section: 'app',
+    icon: GitBranch,
+    run: () => update.setStream('development'),
+  };
+}
+
+function getUpdateLaterCommand(): Command {
+  return {
+    id: 'app.updateLater',
+    title: t(l.updateLater),
+    section: 'app',
+    icon: Clock,
+    run: () => update.later(),
+  };
 }
 
 /** The quick capture with the defaults of the screen: its repository, and the issue open as the parent. */
@@ -228,6 +300,16 @@ function getPlaces(): NavigationPlace[] {
       path: BROKEN_WORKFLOWS_PATH,
     },
   ];
+  if (getDraftReviews(items.all).length > 0) {
+    places.unshift({
+      id: 'draftReviews',
+      group: 'goTo',
+      kind: 'draftReviews',
+      title: t(l.draftReviews),
+      path: DRAFT_REVIEWS_PATH,
+    });
+  }
+
   for (const project of pendingUntracks.projects) {
     places.push({
       id: `project:${project.id}`,

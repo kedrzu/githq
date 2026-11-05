@@ -58,13 +58,15 @@ issues. The design and every decision behind it, with the evidence, are in
 
 githq is a GitHub OAuth App. It asks for three scopes and needs all of them:
 
-- `repo` — read and edit issues and pull requests, private ones included. GitHub has no narrower scope for
-  that, so the consent screen reads as full repository access; githq touches only issues, pull requests and
-  projects.
+- `repo` — read and edit issues and pull requests and read the code they change, private ones included. GitHub
+  has no narrower scope for that, so the consent screen reads as full repository access; githq touches only issues,
+  pull requests and the code they change, and projects.
 - `project` — read and edit GitHub Projects.
 - `read:org` — list your organizations, to filter by owner and to tell which one hides its private data.
 
 Your token stays in your browser's `localStorage`, and your data goes from the browser to `api.github.com`.
+When you review a pull request, the contents of the files it changes stay in your browser until you sign out, so
+that it reopens at once.
 The Worker handles the code and the token in memory during sign-in, stores nothing and logs neither;
 Cloudflare's own request logs still record that a request happened. The app has no analytics. You can revoke
 access at any time under GitHub → Settings → Applications → Authorized OAuth Apps. An organization that
@@ -106,30 +108,34 @@ restart when it's ready.
 
 **Download:** [the latest release](https://github.com/kedrzu/githq/releases/latest) on GitHub.
 
-- **macOS** (Apple Silicon or Intel): the `.dmg` for your Mac. Until the app is signed with a Developer ID, macOS
-  says it is from an unidentified developer. Open it once, then choose **Open Anyway** in System Settings →
-  Privacy & Security. On macOS 14 and earlier, right-click the app and choose **Open** instead.
+- **macOS** (Apple Silicon or Intel): the `.dmg` for your Mac. The app is signed and notarized by Apple.
 - **Windows** (x64): the `-setup.exe` installer. Builds are not signed yet, so SmartScreen warns about an
   unrecognised app: choose **More info → Run anyway**. With Smart App Control turned on, Windows 11 blocks unsigned
   apps outright, and the only way past it is turning Smart App Control off. Signed builds are planned (see below).
-- **Linux** (x64): the `.AppImage`, which updates itself, or the `.deb`, which doesn't: install a newer
-  release by hand. The keychain is the Secret Service (GNOME Keyring, KWallet). Without one, githq asks you to
+- **Linux** (x64): the `.AppImage` or the `.deb`. Both update themselves when you click Restart; the `.deb` asks for your
+  password then. The keychain is the Secret Service (GNOME Keyring, KWallet). Without one, githq asks you to
   sign in at every launch.
 
+**Update streams:** Stable is released now and then. On macOS and Linux you can follow Development instead, in Settings →
+Updates: a build of every push to `main`, minutes after it lands, and it may have bugs. It's the
+[Development release](https://github.com/kedrzu/githq/releases/tag/development).
+
 **Uninstalling:** on macOS, move githq from Applications to the Bin. On Windows, use Settings → Apps → Installed
-apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`). Signing out first removes the token from your keychain. Otherwise, delete the
-`dev.githq.desktop` entry from it yourself.
+apps → githq → Uninstall. On Linux, delete the AppImage, or remove the package (`sudo apt remove githq`). Signing out first removes the token from your keychain and the copy githq keeps on your disk, including
+the contents of files from pull requests you reviewed. Otherwise, delete the `dev.githq.desktop` entry from the keychain
+yourself, and the copy stays in the app's data folder until you delete it.
 
 ## Code signing policy
 
 This policy covers the githq desktop app published on this repository's
 [Releases](https://github.com/kedrzu/githq/releases).
 
-**Signing status.** Windows builds are not signed yet. The project plans to apply to the SignPath Foundation for
-free code signing for open-source projects. macOS builds will be signed and notarized with the owner's Apple
-Developer ID once it is set up. Until then they are ad-hoc signed, which identifies no publisher. Every build is
-made by GitHub Actions on GitHub-hosted runners, from a version tag that
-[the release workflow](.github/workflows/release.yml) creates in this repository. Every release is published by hand after review.
+**Signing status.** macOS builds are signed and notarized with the owner's Apple Developer ID. Windows builds are not signed
+yet; the project plans to apply to the SignPath Foundation for free code signing for open-source projects. Every build is
+made by GitHub Actions on GitHub-hosted runners. A Stable build comes from a version tag that
+[the release workflow](.github/workflows/release.yml) creates in this repository, and is published by hand after it is checked. A
+Development build comes from a commit on `main` whose checks passed ([its workflow](.github/workflows/development.yml)), and is published
+automatically; it is never offered to anyone on Stable.
 Updates are signed with the project's updater key, and the app refuses an update whose signature doesn't verify.
 
 **Team roles.**
@@ -144,7 +150,7 @@ Members of these roles use multi-factor authentication on GitHub and on any sign
 
 **Privacy.** The desktop app talks only to GitHub, and never to githq's own servers or anyone else's:
 
-- `api.github.com`, for your issues, pull requests and projects, and for any change you make, on your behalf
+- `api.github.com`, for your issues, pull requests, the code they change and projects, and for any change you make, on your behalf
   with your token;
 - `github.com`, to sign in with a device code, and to check for and download updates from this repository's
   GitHub Releases;

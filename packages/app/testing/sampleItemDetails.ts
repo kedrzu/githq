@@ -126,6 +126,25 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
         { author: OLAM, state: 'CHANGES_REQUESTED', submittedAt: ago(3 * HOUR) },
         { author: PNOWAK, state: 'APPROVED', submittedAt: ago(DAY) },
     ],
+    reviewSummaries: [
+        {
+            id: 'PRR_1',
+            url: 'https://github.com/kedrzu/githq/pull/1#pullrequestreview-1',
+            author: PNOWAK,
+            state: 'APPROVED',
+            bodyHtml: '<p>Fine by me once the retry test lands.</p>',
+            submittedAt: ago(DAY),
+        },
+        {
+            id: 'PRR_2',
+            url: 'https://github.com/kedrzu/githq/pull/1#pullrequestreview-2',
+            author: OLAM,
+            state: 'CHANGES_REQUESTED',
+            bodyHtml: '<p>Two things in the queue, see the threads. The rest reads well.</p>',
+            submittedAt: ago(3 * HOUR),
+        },
+    ],
+    olderReviewCursor: null,
     reviewRequests: [{ kind: 'user', user: TSW }],
 };
 
@@ -172,6 +191,8 @@ export const F3_PULL_REQUEST_DETAIL: PullRequestDetail = {
         { author: PNOWAK, state: 'APPROVED', submittedAt: ago(3 * HOUR) },
         { author: TSW, state: 'COMMENTED', submittedAt: ago(DAY) },
     ],
+    reviewSummaries: [],
+    olderReviewCursor: null,
     reviewRequests: [],
 };
 

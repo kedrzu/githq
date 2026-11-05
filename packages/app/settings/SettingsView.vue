@@ -1,4 +1,4 @@
-<!-- The Settings screen (D15, G8, T4): its title and a tab for each section, with how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and `1` to `5` to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
+<!-- The Settings screen (D15, G8, T4): its title and a tab for each section, with how many repositories are tracked on Repositories and how many projects on Projects (D25), an amber dot on Sync settings while syncing stopped (settings-sync T7), and `1` to `5`, in the desktop app `6` and `7` too (Updates and Changelog, `settingsRoutes.ts`), to switch them while it is shown (the command menu goes to them as places); the section itself in the default slot. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -19,6 +19,8 @@ const SECTION_KEYS: Readonly<Record<SettingsSection, string>> = {
   display: '3',
   sync: '4',
   account: '5',
+  updates: '6',
+  changelog: '7',
 };
 
 const props = defineProps<{

@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -50,6 +50,11 @@ export class AppShellHarness {
      */
     trackedCount(name: string): Locator {
         return this.tracked(name).locator('span').last();
+    }
+
+    /** The sidebar's "Draft reviews" with its count, shown only while there is any (code review D28); on the rail too. */
+    get draftReviews(): Locator {
+        return this.sidebar.getByRole('link', { name: /^Draft reviews/u });
     }
 
     /**

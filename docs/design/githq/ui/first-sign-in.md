@@ -21,7 +21,7 @@ projects githq should copy in full.
 2. **GitHub's consent screen.** This one is not ours. It will say githq wants "full access to
    repositories" and access to projects. The wording is broad because GitHub has nothing narrower. One
    line under each "Sign in with GitHub" on the landing page warns about it and says that githq only touches
-   issues, pull requests and projects; its "Why?" leads to the full explanation on the Privacy page.
+   issues, pull requests and the code they change, and projects; its "Why?" leads to the full explanation on the Privacy page.
 3. **Back in githq: choosing what to track.** If the user's account already holds saved settings, githq
    offers to load them instead ([settings sync](../../settings-sync/README.md)). Otherwise githq lists the user's
    repositories and projects. Their own repositories are pre-selected, and organisation repositories are not. The
@@ -60,9 +60,10 @@ projects githq should copy in full.
 
 ## Also part of this path
 
-- **Changing what I track, later.** The same choice as on first sign-in, in settings, the only place to start
-  tracking something ([why](../../settings-sync/DECISIONS.md#d15)). Settings is reached from the command menu and the
-  menu on the signed-in user. A tracked item's own menu can still stop tracking it.
+- **Changing what I track, later.** The same choice as on first sign-in, in settings
+  ([why](../../settings-sync/DECISIONS.md#d15)); a repository can also start from the command menu on its own screen
+  ([D34](../DECISIONS.md#d34)). Settings is reached from the command menu and the menu on the signed-in user. A tracked
+  item's own menu can still stop tracking it.
 - **Account.** Who I'm signed in as, signing out (which also clears the copy kept in this browser), and the
   organisations whose private data is hidden, each with a way to request approval.
 

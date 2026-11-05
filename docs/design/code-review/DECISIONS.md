@@ -121,7 +121,9 @@ whitespace-only change after hiding whitespace), the view lands on the nearest v
 known lock files by name — and so do very large files. A collapsed file is neither fetched nor diffed until
 opened.** (2026-11-02, owner: "nobody reads lock files", collapsing is needed "not only for performance"; the
 threshold for size is not set) Only the `.gitattributes` at the repository's root is read, at the pull request's
-head; nested ones may come later (agent, after the rightsize pass).
+head; nested ones may come later (agent, after the rightsize pass). Past 16 KB of rules for this attribute, or once
+matching them has cost 100 million steps, what is left stays open rather than freeze the tab, with a warning in the log
+and nothing in the UI (agent, 2026-11-03).
 
 **Why.** Some files are simply not read, and a large pull request should cost only what you open.
 
@@ -153,7 +155,8 @@ when the file changes in a later push, so a second round of review shows only wh
 **Rejected.**
 
 - Collapsing a viewed file to its header in the diff and filtering only the list (agent) — owner prefers GitHub's
-  behaviour; the next file arriving is not a disturbing jump.
+  behaviour; the next file arriving is not a disturbing jump. This is about the filter being on: with it off, a viewed
+  file stays in the diff collapsed to its header ([D13](#d13)).
 
 ## D10
 
@@ -175,6 +178,9 @@ once, as every edit in githq.
 the extension, `docs/**/*.png` a folder and an extension. A toggle button with an icon, as in VS Code, switches the
 pattern to a regular expression. Next to it, the viewed filter of [D9](#d9).** (2026-11-02, owner)
 
+`{a,b}` expands as in VS Code, and commas outside it separate patterns. `[…]` stays literal, unlike VS Code, so `[id].vue`
+finds route files of Nuxt and Next. (2026-11-03, owner, on the agent's recommendation)
+
 **Why.** A familiar pattern; regular expressions are optional because not everyone is fluent in them (owner).
 
 **Rejected.**
@@ -186,11 +192,11 @@ pattern to a regular expression. Next to it, the viewed filter of [D9](#d9).** (
 **Every thread is shown with the code it belongs to, outdated ones included. An outdated thread is placed by looking
 for the commented line — the last line of its `diffHunk` — in the current file: found exactly once, the thread sits
 there; otherwise at the top of its file, showing the code it was written on. Either way it is marked outdated. A
-thread on a file that is no longer in the diff — deleted, or created and deleted again within the pull request so
-that the diff shows nothing — gets an entry of its own in the file list and the diff, holding only its threads. Once
-such a thread is resolved, the entry is gone.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
+thread on a file created and deleted again within the pull request, so that the diff shows nothing, gets an entry of its
+own in the file list and the diff, holding only its threads. Once such a thread is resolved, the entry is gone. A file
+simply deleted in the pull request is an ordinary file, its whole diff in red as on GitHub, its threads on their lines.** (2026-11-02, owner: "it's a big problem of mine, a thread interests
 me or is unresolved, but it's outdated, so I simply don't see it"; placement by search agreed after the rightsize
-pass)
+pass; a file simply deleted, owner, 2026-11-04) A thread on the deleted side is searched for in the file as it was before. (agent, 2026-11-03)
 
 **Why.** File comments belong with the files, consistently, rather than in the pull request's own conversation
 (owner). An approximate place is enough (owner), and the search needs nothing beyond what GitHub sends with the
@@ -256,13 +262,13 @@ complains about. Accepted cost: a thread deliberately left open keeps its file i
 
 ## D16
 
-**In review, `J` / `K` move to the next and previous pull request exactly as they do in an opened pull request
-today, and `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
+**In review, `J` / `K` go through the pull requests of its stack, and past either end on along the list the review was
+reached from, one step per entry as in [stacked-prs D26](../stacked-prs/DECISIONS.md#d26). `[` / `]` move between files. The stack's map sits at the top of the review, one click per pull request,
 and the command palette goes to any of them. Review is a full-screen route of its own, so Back returns; one key
 opens it from an opened pull request; `x` and `{` / `}` select files in the list ([D10](#d10)); another pair of keys
 jumps between threads; a pull request opened for the first time lands on its first file not yet viewed, otherwise on
 the remembered position ([D14](#d14)).** (2026-11-02, owner: `J` / `K` and `[` / `]` for consistency with the pull
-request view; the rest the agent's proposal, confirmed after the rightsize pass)
+request view; the rest the agent's proposal, confirmed after the rightsize pass; through the stack, owner, 2026-11-04)
 
 **Why.** Walking pull requests with `J` / `K` already exists and crosses from one stack into the next
 ([stacked-prs D9](../stacked-prs/DECISIONS.md#d9)); review keeps the same meaning, so the end of a stack is not a
@@ -270,6 +276,8 @@ special case.
 
 **Rejected.**
 
+- `J` / `K` taking a collapsed stack as one step, as in an opened pull request ([history](history/DECISIONS.md#d16)) — going
+  through a stack in a row is what a review is for, and one step per stack would leave only the clicks for it (owner).
 - `J` / `K` for files and `[` / `]` for pull requests in review (agent) — the same key would mean different things
   in the pull request view and in its review (owner).
 - `Shift+J` / `Shift+K` extending the file selection — they belong with `J` / `K`, which here walk pull requests.
@@ -323,8 +331,19 @@ commit it to the branch itself.
 blob SHA, which never changes. How that store is cleaned up is for later. Fetching ahead for pull requests waiting on
 your review is an option for later.** (2026-11-02, owner; keeping by SHA agent's proposal, on disk owner's choice)
 
-**Why.** A pull request read once reopens at once, also after a restart (owner chose this over memory only).
-Accepted: the store grows until a clean-up exists.
+Beside the contents, the same database per login keeps what they are found by: each pull request's file list, the
+blob ids of `<commit>:<path>` and the merge bases. It is deleted on sign-out. When GitHub answers `NOT_FOUND` for a pull
+request, which is also its answer to someone who lost access, its kept list goes and its code stops showing; the contents
+stay on disk until sign-out, since a blob may belong to other pull requests. `FORBIDDEN` and a failure to reach GitHub
+keep what is shown. (2026-11-03, owner, after a real pull request of 238 files took 2.9 s to reopen with contents alone)
+
+**Why.** A pull request read once reopens at once, also after a restart (owner chose this over memory only). Issues kept
+in the local copy go on `NOT_FOUND` by the same rule. Accepted: the store grows until a clean-up exists.
+
+> **Checked 2026-11-03:** `Blob.text` truncates near 512 KB (`deps/openssl/openssl/CHANGES.md` in nodejs/node: 928,861 bytes,
+> 511,676 characters, `isTruncated`), so larger blobs come from REST `git/blobs`. A query of many `object(...)` costs 1
+> point. GraphQL has no merge base; `compare/{base}...{head}?per_page=1&page=2` returns it without the files, a fork's head
+> included (kedrzu/githq#80, microsoft/vscode#345559).
 
 **Rejected.**
 
@@ -341,8 +360,23 @@ and dropped frames while scrolling. WebAssembly only where the JavaScript is sho
 virtualized per line, not per file.** (2026-11-02, owner: "we optimise for speed"; the worker candidate is the
 agent's)
 
+The diff runs on the main thread (2026-11-03, owner). Lines absent from the other side are dropped before it, which keeps
+it minimal. Syntax colours run in a Web Worker, with highlight.js, by the measurement below; their tokens cross as
+transferred arrays and only colour what is already drawn, so no height changes (2026-11-03, measured, the owner's rule).
+
 **Why.** github.com stutters on large pull requests (owner). Copying a file's text to a worker is cheap next to
 diffing and highlighting it; one GitHub client keeps the token, rate-limit handling and caching in one place.
+
+> **Checked 2026-11-03:** kedrzu/githq#80, 250 files, production-like build, headless Chromium: list 0.6 s, first code 3.1 s
+> cold and 0.03 s reopened, diffs 43 ms in all and at most 13 ms a file, scrolling p95 18.8 ms. Worst cases under bun: 25,000
+> rewritten lines 3.3 s, 7 ms with the lines dropped; the same lines reordered still 2.5 s, which only a worker would help.
+> Generated files of that shape collapse ([D8](#d8)).
+
+> **Checked 2026-11-03:** tokenizing 977 KB of TypeScript in Chromium, warm: highlight.js 75 ms, Lezer 104 ms, Shiki's
+> JavaScript engine 871 ms (and 13.9 s on one 143 KB Go file). Gzipped core and TypeScript grammar: highlight.js 11 KB,
+> Lezer 48 KB, Shiki 71 KB. kedrzu/githq#102, 95 files, at 4× CPU slowdown: no colours 4–7 frames over 25 ms in 400,
+> main thread 22–37, worker 2–9; the longest frame 34–52 ms, 118–144 ms and 33–40 ms. Time to the first row does not change.
+> Posting a 1 MB file's tokens back as a transferred array takes under 0.2 ms.
 
 **Rejected.**
 
@@ -354,7 +388,8 @@ diffing and highlighting it; one GitHub client keeps the token, rate-limit handl
 **An open draft review is impossible to miss. The review screen says so prominently while one is open on the pull
 request — how many comments wait and the actions to submit or discard it. Lists mark a pull request that has your
 open draft. The sidebar of the app gains an entry listing the pull requests with your open drafts, shown only while
-there is at least one.** (2026-11-02, owner)
+there is at least one.** (2026-11-02, owner) **A separate light query looks for drafts on the open pull requests of
+tracked repositories and projects, every 5 minutes and when the window regains focus.** (2026-11-04, owner)
 
 **Why.** The owner reviews agents' pull requests. A draft started without noticing keeps the comments unsent: the
 agent does not see them, and cannot post its own replies or comments while the draft stays open (owner).
@@ -363,8 +398,17 @@ agent does not see them, and cannot post its own replies or comments while the d
 > (`packages/github/src/schema.graphql`); a pending review is visible only to its author, so for the viewer it is
 > exactly "my drafts". The volatile part of a pull request is already re-read by its own query,
 > `PullRequestStatuses` with `PullRequestStatusFields` (`packages/github/src/operations/`), which is where the count
-> would ride. Not checked: whether starting a draft on github.com moves anything the background refresh notices, so a
-> draft begun there may show late; and drafts on pull requests outside githq's copy are not found at all.
+> would ride. Drafts on pull requests outside githq's copy are not found at all.
+
+> **Checked 2026-11-04, live on kedrzu/githq-stack-sandbox#8:** a pending review moves neither `updatedAt`, nor REST's
+> `updated_at`, nor the issue's ETag, so nothing that watches for a change notices one: only reading the review itself
+> does. `reviews(states: [PENDING])` gives its `createdAt` and `comments.totalCount`, and `reviewThreads` returns its
+> threads, their comments with `state: PENDING`.
+
+> **Measured 2026-11-04, on kedrzu/githq:** `PullRequestPendingReviews` costs 1 point (`rateLimit { cost }`) for its 6
+> open pull requests, and also for 50 and 100 of its pull requests (`nodeCount` 200, about 3 KB), where
+> `PullRequestStatusFields` costs 3 and about 139 KB: at most 12 points an hour per 100 open pull requests, against
+> the 5,000 an hour allowed.
 
 ## D22
 
@@ -427,10 +471,10 @@ bars, both remembered (D14), both also in the View options.** (2026-11-02, agent
 **The file list is GitHub's tree order: folders are quiet labels, and a file sits indented under its folder (compact
 folders, as VS Code); files at the root are not indented. While a filter is on, only the matching files show, each
 followed by its folder. A row has no checkbox: change letter (M, A, D, R), name, a tag for collapsed files ("lock
-file", "generated", "binary"), open threads in amber, size, and at the right end a status icon only when there is one
+file", "generated", "binary"), open threads in amber, or their count in grey when all are resolved, size, and at the right end a status icon only when there is one
 (loading, failed, waiting for the API allowance, gone). A viewed file has a small eye right after its name, the name
 slightly dimmed. Files are ticked on their header (Viewed V) or with V.** (2026-11-02, owner: checkboxes in the list
-read like the folder icons; CR46)
+read like the folder icons; the grey count, owner, 2026-11-04: a past discussion stays findable; CR46)
 
 **Rejected.**
 
@@ -443,7 +487,7 @@ read like the folder icons; CR46)
 **A pending review shows four ways, all amber. On the review, one 44 px toolbar pinned to the foot of the diff column,
 under the code: the count in bold, "3 pending comments", then "Others can't see them until you submit.", Discard review… and
 Submit review… (⇧S); there is no close button. The stack row of that pull request (and its square in the pinned bar) carries
-an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state.
+an amber dot. In lists, the row's second line says "Your draft review · 3 comments unsent" in place of its other state. A collapsed stack's entry carries it too, with a dot on its place (owner, 2026-11-04).
 In the app sidebar, "Draft reviews" with a count at the very top, above My work, only while there is at least one,
 opening a list of them (an amber pencil with a badge on the rail). A refused submission turns the same toolbar
 red.** (2026-11-03, owner: a toolbar at the foot of the diff, one row; the wording states what is, without a negation
@@ -478,9 +522,13 @@ agent, CR11–CR13)
 **An outdated thread carries an amber "Outdated" head that says how it was placed: "placed by finding its line
 again, so the place is approximate", or, when the line is gone, the thread moves into a box of its own above the
 file's first change, with the old code and the commit it was written on, closed off before the diff begins. A file
-gone from the diff is a block with a file-x icon, a struck-through name and the reason ("added in 3f0c2aa, deleted
-again in 9b7e411"), holding only its threads; its row in the list says "not in the diff".** (2026-11-02, agent,
-CR2, CR10, CR14)
+gone from the diff is a block with a file-x icon, a struck-through name and that it's no longer in the diff, holding
+only its threads; its row in the list says "not in the diff".** (2026-11-04, owner; CR2, CR10, CR14)
+
+**Rejected.**
+
+- Naming the commits that added and deleted it — about 150 lines and one more query for a sentence
+  ([history](history/DECISIONS.md#d30)).
 
 ## D31
 
@@ -497,7 +545,7 @@ like no change.
 **Keys of the review: D opens it from an opened pull request (the merge section's "Review files" moves from ⇧O,
 which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `}` select, Space collapses a file, /
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
-submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner to confirm)
+submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
 **Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
 
@@ -538,3 +586,18 @@ missing files with the time they'll come, while edits still go through.** (2026-
 
 Open: the size past which a file is "too large to diff here" (CR67 says 1 MB) is a placeholder; D8 left the threshold
 unset. GitHub's wording in the failure screens (CR67, CR76) is a placeholder for its real messages.
+
+## D36
+
+**Code in a diff shows without ligatures: `=>` and `===` are the characters in the file.** (2026-11-03, owner, on the
+agent's recommendation)
+
+**Why.** A review reads what is in the file; the mockups' JetBrains Mono ligatures draw something that isn't.
+
+## D37
+
+**Syntax colours are a muted palette of five: lavender keywords, sage strings, amber numbers and constants, blue functions
+and types, dimmed comments; the rest is the line's text colour.** (2026-11-03, owner, on the agent's proposal, seen on real
+code; the mockups draw code monochrome)
+
+**Why.** Calm, few colours (AGENTS.md); each is AA over the window and over a deleted or an added line.

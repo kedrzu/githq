@@ -3,31 +3,63 @@ import { expect, onTestFinished, test } from 'vitest';
 
 import { NativeBridge } from './NativeBridge.js';
 
-test('an update is listened for as Tauri listens, and the event hands its version over', async () => {
+const STATE = {
+    version: '0.2.0',
+    commit: null,
+    stream: 'stable',
+    canChoose: true,
+    manual: false,
+    checkedAt: null,
+    activity: { kind: 'idle' },
+} as const;
+
+test("the updater's state is listened for as Tauri listens, unknown fields tolerated and anything malformed ignored", async () => {
     const tauri = fakeTauri();
     const bridge = createContainer().resolve(NativeBridge);
-    const versions: string[] = [];
+    const states: unknown[] = [];
 
-    await bridge.onUpdateReady(version => versions.push(version));
+    await bridge.onUpdateState(state => states.push(state));
 
     expect(tauri.invoked).toEqual([
-        { command: 'plugin:event|listen', args: { event: 'update-ready', target: { kind: 'Any' }, handler: 1 } },
+        { command: 'plugin:event|listen', args: { event: 'update-state', target: { kind: 'Any' }, handler: 1 } },
     ]);
-    tauri.call(1, { event: 'update-ready', id: 7, payload: { version: '1.4.0' } });
-    // Anything else on the callback is not an update.
-    tauri.call(1, { event: 'update-ready', id: 8, payload: { version: 2 } });
-    tauri.call(1, { event: 'something-else', id: 9, payload: { version: '9.9.9' } });
-    expect(versions).toEqual(['1.4.0']);
+
+    const downloading = { ...STATE, activity: { kind: 'downloading', version: '0.3.0', percent: null } };
+    const withMore = { ...STATE, checkedAt: 5, added: 1, activity: { kind: 'ready', version: '0.3.0', added: 2 } };
+    tauri.call(1, { event: 'update-state', id: 1, payload: downloading });
+    tauri.call(1, { event: 'update-state', id: 2, payload: withMore });
+
+    for (const malformed of [
+        null,
+        { ...STATE, version: 2 },
+        { ...STATE, stream: 'nightly' },
+        { ...STATE, activity: { kind: 'somethingNew' } },
+        { ...STATE, activity: { kind: 'ready' } },
+        { ...STATE, activity: { kind: 'failed', reason: 'other' } },
+    ]) {
+        tauri.call(1, { event: 'update-state', id: 3, payload: malformed });
+    }
+
+    // Anything else on the callback is not the updater's.
+    tauri.call(1, { event: 'something-else', id: 4, payload: STATE });
+    expect(states).toEqual([downloading, withMore]);
 });
 
-test('asking for a ready update and restarting into it are the native commands', async () => {
+test("the updater's commands are the native ones, the stream its argument", async () => {
     const tauri = fakeTauri();
     const bridge = createContainer().resolve(NativeBridge);
 
-    expect(await bridge.updateStatus()).toBeNull();
+    await bridge.updateStatus();
+    await bridge.checkForUpdate();
+    await bridge.setUpdateStream('development');
     await bridge.restartToUpdate();
 
-    expect(tauri.invoked.map(call => call.command)).toEqual(['update_status', 'update_restart']);
+    expect(tauri.invoked).toEqual([
+        { command: 'update_status' },
+        { command: 'update_check' },
+        { command: 'update_set_stream', args: { stream: 'development' } },
+        { command: 'update_restart' },
+    ]);
 });
 
 /** Puts a fake of what Tauri injects into the window for the test's length. */

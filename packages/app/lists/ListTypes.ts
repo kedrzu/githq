@@ -107,6 +107,8 @@ export interface ListGroup<T> {
      * untracked repository or project, CH37).
      */
     readonly quietWhenEmpty?: boolean;
+    /** In the list, no header: the screen has only this group, and its own head names it (the draft reviews, CR34). */
+    readonly headless?: boolean;
     /** Entries can be moved into it — dragged on the board, or `⇧←`/`⇧→` — when the entry allows it too. */
     readonly droppable: boolean;
 }
@@ -168,4 +170,10 @@ export interface ListChoice<T extends string = string> {
     readonly detail?: string;
     /** The heading it sits under in the grouping menu ("From GitHub"); choices of one heading follow each other. */
     readonly section?: string;
+}
+
+/** How the rows above the list's end stand: with a group collapsed, what is added to it does not push the end away. */
+export interface ListEndProps {
+    /** How many rows are on screen: a collapsed group's and a collapsed stack's are not. */
+    readonly rowsShown: number;
 }

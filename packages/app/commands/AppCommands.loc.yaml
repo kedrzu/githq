@@ -12,8 +12,16 @@ repositorySettings:
   en: Repository settings
 signOut:
   en: Sign out
+checkForUpdates:
+  en: Check for updates
+switchToStable:
+  en: Switch to Stable
+switchToDevelopment:
+  en: Switch to Development
 restartToUpdate:
   en: Restart to update
+retryInstall:
+  en: Try again to install the update
 updateVersion:
   en: githq {version}
 updateLater:
@@ -26,3 +34,5 @@ settingsSection:
   en: 'Settings: {section}'
 brokenWorkflows:
   en: Broken workflows
+draftReviews:
+  en: Draft reviews

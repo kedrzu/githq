@@ -19,6 +19,7 @@ import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from '@/store/ItemStoreTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
 import type { TrackedSyncState, Tracking } from '@/tracking/TrackingTypes.js';
+import { toHex } from '@/utils/toHex.js';
 import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { SyncLoopStatus } from './SyncEngine.js';
@@ -47,7 +48,9 @@ export type TabMessage =
     /**
      * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2).
      */
-    | { readonly kind: 'pollWorkflows' };
+    | { readonly kind: 'pollWorkflows' }
+    /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
+    | { readonly kind: 'pollPendingReviews' };
 
 /** How often a tab says again how it is, so the others know it is still there. */
 const HEARTBEAT_MS = 30_000;
@@ -58,13 +61,14 @@ const HEARTBEAT_MS = 30_000;
 const PRESENCE_EXPIRES_MS = 75_000;
 
 /**
- * What a tab tells the others about itself: whether it is shown, the view GitHub answers it shows, and the repositories
- * whose workflows' runs on any ref it has on screen (`owner/name`).
+ * What a tab tells the others about itself: whether it is shown, the view GitHub answers it shows, the repositories
+ * whose workflows' runs on any ref it has on screen, and those whose rows it holds (`owner/name`).
  */
 interface TabPresence {
     readonly visible: boolean;
     readonly shownView: AnsweredView | null;
     readonly anyRefRepositories: readonly string[];
+    readonly heldRepositories: readonly string[];
 }
 
 /** The tabs' own conversation: one joins (and asks the others to say how they are), says how it is, or leaves. */
@@ -102,8 +106,9 @@ interface Session {
  * per change, and still need a message per kind of change to know what to read.
  *
  * It also keeps how the other tabs are — shown or hidden, which view GitHub answers in them, whose runs on any ref
- * they have on screen — so the syncing tab polls as often as the most visible tab needs, answers the views shown
- * anywhere and reads the runs shown anywhere; a tab gone takes what it asked for with it. While it knows another
+ * they have on screen, which repositories they hold — so the syncing tab polls as often as the most visible tab needs,
+ * answers the views shown anywhere, reads the runs shown anywhere and keeps the rows held anywhere; a tab gone takes
+ * what it asked for with it. While it knows another
  * tab, every tab says how it is again every {@link HEARTBEAT_MS}; one not heard from for
  * {@link PRESENCE_EXPIRES_MS} is forgotten — it ended without saying goodbye.
  *
@@ -124,6 +129,7 @@ export const TabChannel = defineService({
         const visibleRef = shallowRef(browser.isVisible());
         const shownViewRef = shallowRef<AnsweredView | null>(null);
         const anyRefRepositoriesRef = shallowRef<readonly string[]>([]);
+        const heldRepositoriesRef = shallowRef<readonly string[]>([]);
         const othersRef = shallowRef<ReadonlyMap<string, TabPresence>>(new Map());
         const messageListeners: ((message: TabMessage, login: string) => void)[] = [];
         const joinListeners: (() => void)[] = [];
@@ -142,6 +148,9 @@ export const TabChannel = defineService({
         });
         const otherAnyRefRepositories = computed(() => [
             ...new Set([...othersRef.value.values()].flatMap(tab => tab.anyRefRepositories)),
+        ]);
+        const otherHeldRepositories = computed(() => [
+            ...new Set([...othersRef.value.values()].flatMap(tab => tab.heldRepositories)),
         ]);
 
         let session: Session | null = null;
@@ -178,12 +187,17 @@ export const TabChannel = defineService({
             get otherAnyRefRepositories(): readonly string[] {
                 return otherAnyRefRepositories.value;
             },
+            /** The repositories the account's other tabs hold (`RepositoryHolds`); reactive. */
+            get otherHeldRepositories(): readonly string[] {
+                return otherHeldRepositories.value;
+            },
             publish,
             onMessage,
             onTabJoined,
             onViewShown,
             setShownView,
             setAnyRefRepositories,
+            setHeldRepositories,
         };
 
         /** Sends `message` to the account's other tabs; nothing while signed out. */
@@ -219,6 +233,12 @@ export const TabChannel = defineService({
         /** Tells the other tabs whose workflows' runs on any ref this one has on screen. */
         function setAnyRefRepositories(repositories: readonly string[]) {
             anyRefRepositoriesRef.value = repositories;
+            sayPresence();
+        }
+
+        /** Tells the other tabs which repositories this one holds. */
+        function setHeldRepositories(repositories: readonly string[]) {
+            heldRepositoriesRef.value = repositories;
             sayPresence();
         }
 
@@ -326,7 +346,8 @@ export const TabChannel = defineService({
             if (
                 known?.visible === presence.visible &&
                 isSameView(known.shownView, presence.shownView) &&
-                deepEquals(known.anyRefRepositories, presence.anyRefRepositories)
+                deepEquals(known.anyRefRepositories, presence.anyRefRepositories) &&
+                deepEquals(known.heldRepositories, presence.heldRepositories)
             ) {
                 return;
             }
@@ -351,6 +372,7 @@ export const TabChannel = defineService({
                 visible: visibleRef.value,
                 shownView: shownViewRef.value,
                 anyRefRepositories: anyRefRepositoriesRef.value,
+                heldRepositories: heldRepositoriesRef.value,
             };
         }
 
@@ -372,7 +394,7 @@ export const TabChannel = defineService({
         function createTabId() {
             const bytes = new Uint8Array(8);
             browser.getRandomValues(bytes);
-            return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+            return toHex(bytes);
         }
     },
 });

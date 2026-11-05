@@ -147,13 +147,12 @@ describe('plan', () => {
         expect(result.stdout).toContain('v0.1.0');
     });
 
-    test('counts candidates across the tags and ignores commits before the last stable tag', () => {
+    test('ignores commits before the last stable tag', () => {
         commit('feat: first');
         git('tag', 'v0.1.0');
         commit('fix: later');
-        git('tag', 'v0.1.1-rc.1');
-        const result = plan('candidate');
-        expect(result.output).toBe('tag=v0.1.1-rc.2\n');
+        const result = plan('stable');
+        expect(result.output).toBe('tag=v0.1.1\n');
         expect(result.notes).toContain('Later');
         expect(result.notes).not.toContain('First');
     });
@@ -167,18 +166,16 @@ describe('plan', () => {
         expect(result.output).toBeUndefined();
     });
 
-    test('nothing to release fails for stable and candidate without output or notes', () => {
+    test('nothing to release fails for stable without output or notes', () => {
         commit('feat: first');
         git('tag', 'v0.1.0');
         commit('chore: housekeeping');
-        for (const mode of ['stable', 'candidate']) {
-            const result = plan(mode);
-            expect(result.status).not.toBe(0);
-            expect(result.stdout.trim().split('\n')).toHaveLength(1);
-            expect(result.stdout).toStartWith('::error::');
-            expect(result.output).toBeUndefined();
-            expect(result.notes).toBeUndefined();
-        }
+        const result = plan('stable');
+        expect(result.status).not.toBe(0);
+        expect(result.stdout.trim().split('\n')).toHaveLength(1);
+        expect(result.stdout).toStartWith('::error::');
+        expect(result.output).toBeUndefined();
+        expect(result.notes).toBeUndefined();
     });
 
     test('nothing to release in a preview says so and exits zero', () => {
@@ -198,5 +195,42 @@ describe('plan', () => {
         const notes = run(['plan', '--mode', 'stable']);
         expect(notes.status).not.toBe(0);
         expect(notes.stdout).toStartWith('::error::');
+    });
+});
+
+describe('development-plan', () => {
+    function developmentPlan(list: string) {
+        const files = path.join(dir, 'files');
+        const output = path.join(dir, 'output');
+        writeFileSync(files, list);
+        const result = run(['development-plan', '--files', files], { GITHUB_OUTPUT: output });
+        return { ...result, output: existsSync(output) ? readFileSync(output, 'utf8') : undefined };
+    }
+
+    test('outputs the next minor with the commit count of HEAD, from the merged tags only', () => {
+        commit('feat: first');
+        git('tag', 'v0.2.0');
+        commit('fix: second');
+        git('tag', 'v0.9.0');
+        git('reset', '--hard', 'HEAD~1');
+        commit('Old style title');
+        const result = developmentPlan('a.ts\0');
+        expect(result.status).toBe(0);
+        expect(result.output).toBe('version=0.3.0-dev.2\nbuild=true\n');
+    });
+
+    test('a documentation-only list builds nothing, whatever the commit titles say', () => {
+        commit('feat: first');
+        const result = developmentPlan('docs/a.md\0README.md\0');
+        expect(result.output).toBe('version=0.1.0-dev.1\nbuild=false\n');
+    });
+
+    test('a missing list fails with the usage line and outputs nothing', () => {
+        commit('feat: first');
+        const output = path.join(dir, 'output');
+        const result = run(['development-plan'], { GITHUB_OUTPUT: output });
+        expectOneError(result.status, result.stdout);
+        expect(result.stdout).toContain('usage:');
+        expect(existsSync(output)).toBe(false);
     });
 });

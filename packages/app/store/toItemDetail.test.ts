@@ -5,7 +5,13 @@ import type { ProjectItemDetailFieldsFragment } from '@githq/github/generated.ge
 
 import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 
-import type { ItemCheck, ItemDetailProject, ItemDetailReviewRequest, ItemReaction } from './ItemDetailTypes.js';
+import type {
+    ItemCheck,
+    ItemDetailProject,
+    ItemDetailReviewRequest,
+    ItemReaction,
+    ItemReviewSummary,
+} from './ItemDetailTypes.js';
 import { toItemDetail } from './toItemDetail.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
@@ -114,6 +120,45 @@ test("a pull request's checks are told passing, failing, pending or skipped from
     expect(checks[0]?.workflow).toBe('CI');
     // GitHub cut the list: the count says how many there are.
     expect(detail?.kind === 'pullRequest' ? detail.checkCount : null).toBe(140);
+});
+
+test("a review summary keeps its text and id; one not submitted is nobody else's to read", () => {
+    const review = {
+        id: 'PRR_1',
+        url: 'https://github.com/o/r/pull/1#pullrequestreview-1',
+        author: null,
+        state: 'CHANGES_REQUESTED' as const,
+        bodyHTML: '<p>Two things</p>',
+        submittedAt: MONDAY,
+    };
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            reviews: {
+                pageInfo: { hasPreviousPage: true, startCursor: 'older' },
+                nodes: [
+                    review,
+                    null,
+                    { ...review, id: 'PRR_2', state: 'PENDING' as const },
+                    { ...review, id: 'PRR_3', submittedAt: null },
+                ],
+            },
+        },
+        FETCHED_AT,
+    );
+
+    const expected: ItemReviewSummary[] = [
+        {
+            id: 'PRR_1',
+            url: review.url,
+            author: null,
+            state: 'CHANGES_REQUESTED',
+            bodyHtml: '<p>Two things</p>',
+            submittedAt: MONDAY,
+        },
+    ];
+    expect(detail?.kind === 'pullRequest' ? detail.reviewSummaries : null).toEqual(expected);
+    expect(detail?.kind === 'pullRequest' ? detail.olderReviewCursor : null).toBe('older');
 });
 
 test("a pull request's reviewers keep their avatars; a bot asked to review has no one to show", () => {

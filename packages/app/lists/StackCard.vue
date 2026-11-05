@@ -134,6 +134,10 @@ const nameWithOwner = computed(() => {
         :deletions="stackFacts.size.deletions"
       />
     </div>
+    <ItemStatus
+      v-if="stackFacts.draft"
+      :status="stackFacts.draft"
+    />
     <ul
       v-if="expanded"
       :class="css.stackCard_members"

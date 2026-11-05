@@ -12,7 +12,6 @@ use tauri::{AppHandle, Url, WebviewUrl, WebviewWindowBuilder};
 use credentials::Credentials;
 use device_flow::DeviceFlow;
 use job_logs::JobLogs;
-use updater::Updates;
 
 /// The address `nuxt dev` serves the app on, which `tauri dev` loads (`build.devUrl` in `tauri.conf.json`).
 const DEV_SERVER_PORT: u16 = 8787;
@@ -25,7 +24,6 @@ pub fn run() {
         .manage(Credentials::os())
         .manage(DeviceFlow::github())
         .manage(JobLogs::github())
-        .manage(Updates::default())
         // Each one is also listed in `build.rs` and allowed for the window in `capabilities/default.json`.
         .invoke_handler(tauri::generate_handler![
             credentials::token_load,
@@ -36,11 +34,14 @@ pub fn run() {
             external::open_external,
             job_logs::read_job_log,
             updater::update_status,
+            updater::update_check,
+            updater::update_set_stream,
             updater::update_restart,
         ])
         .setup(|app| {
-            open_main_window(app.handle())?;
+            // First, as it sets up the state the window's commands reach for.
             updater::start(app.handle());
+            open_main_window(app.handle())?;
             Ok(())
         })
         .run(tauri::generate_context!())

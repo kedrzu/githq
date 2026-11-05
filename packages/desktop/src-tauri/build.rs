@@ -20,6 +20,9 @@ fn set_client_id() {
 fn main() {
     set_client_id();
 
+    // The commit the release workflow builds, compiled in by `updater.rs`; a local build has none.
+    println!("cargo:rerun-if-env-changed=GITHQ_COMMIT");
+
     // The app's own commands. Listing them makes Tauri check them against the capabilities, so a window can only call
     // the ones `capabilities/default.json` allows (`allow-<command>`).
     tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
@@ -32,6 +35,8 @@ fn main() {
             "open_external",
             "read_job_log",
             "update_status",
+            "update_check",
+            "update_set_stream",
             "update_restart",
         ]),
     ))
