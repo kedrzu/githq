@@ -13,7 +13,7 @@ import { createTestContainer } from '@nzyme/ioc-testing/createTestContainer.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
-import type { BrowserLocalStorage, BrowserShape } from '@/services/Browser.js';
+import type { BrowserShape, BrowserStorage } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
@@ -360,7 +360,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
     return { auth, container, browser: { local, session, navigatedTo, cookies, fromAnotherTab } };
 }
 
-function mapStorage(map: Map<string, string>): BrowserLocalStorage {
+function mapStorage(map: Map<string, string>): BrowserStorage {
     return {
         getItem: key => map.get(key) ?? null,
         setItem: (key, value) => {
@@ -368,10 +368,6 @@ function mapStorage(map: Map<string, string>): BrowserLocalStorage {
         },
         removeItem: key => {
             map.delete(key);
-        },
-        key: index => [...map.keys()][index] ?? null,
-        get length() {
-            return map.size;
         },
     };
 }
