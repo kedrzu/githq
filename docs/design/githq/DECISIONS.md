@@ -380,8 +380,9 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   36px strip along the top of the sidebar, and the rail is 80px there, not 56px, to hold them (owner, 2026-11-01).
   With no title bar the page says what moves the window (`shell/windowControls.ts`): that strip, each screen's top
   header except what is clickable in it, and the same on the two screens with no sidebar. Windows and Linux keep their
-  title bars. Accepted: in full screen, where macOS hides the controls, the strip stays empty (removing it needs native
-  window events), and an unfocused window only activates on the first press, as Tauri documents for this style.
+  title bars. In full screen, where macOS hides the controls, the strip goes and the rail is 56px (owner, 2026-11-05): the
+  window's resize events say when to ask, `desktop/DesktopWindowControls.ts`. Zoomed, the window keeps both, as the
+  controls stay. Accepted: an unfocused window only activates on the first press, as Tauri documents for this style.
   Rejected: `accept_first_mouse`, which would drag at once but also send that first press to every control in the app;
   a 56px rail, with the controls spilling over the screen's header.
 - **The window stays on the app.** Every address outside the app opens in the system browser: the page

@@ -3,7 +3,7 @@ import { isApplePlatform } from '@/utils/isApplePlatform.js';
 /**
  * Whether macOS's window controls sit over the window's top left corner rather than in a title bar of their own: the
  * desktop app on a Mac (`open_main_window` in `packages/desktop/src-tauri/src/lib.rs`). The web builds drop it, with
- * all that hangs on it.
+ * all that hangs on it. What the window does right now, in full screen, is `WindowControls`.
  */
 export const WINDOW_CONTROLS_OVERLAID = __DESKTOP__ && isApplePlatform();
 

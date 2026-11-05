@@ -62,6 +62,24 @@ test("the updater's commands are the native ones, the stream its argument", asyn
     ]);
 });
 
+test("the window's resizing is listened for as Tauri listens, and full screen asked of Tauri's own window command", async () => {
+    const tauri = fakeTauri();
+    const bridge = createContainer().resolve(NativeBridge);
+    let resized = 0;
+
+    await bridge.onWindowResized(() => resized++);
+    await bridge.isFullscreen();
+
+    expect(tauri.invoked).toEqual([
+        { command: 'plugin:event|listen', args: { event: 'tauri://resize', target: { kind: 'Any' }, handler: 1 } },
+        { command: 'plugin:window|is_fullscreen' },
+    ]);
+
+    tauri.call(1, { event: 'tauri://resize', id: 1, payload: { width: 1, height: 1 } });
+    tauri.call(1, { event: 'something-else', id: 2, payload: null });
+    expect(resized).toBe(1);
+});
+
 /** Puts a fake of what Tauri injects into the window for the test's length. */
 function fakeTauri() {
     const callbacks = new Map<number, (message: unknown) => void>();

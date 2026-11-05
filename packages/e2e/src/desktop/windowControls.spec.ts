@@ -22,6 +22,29 @@ test("on a Mac the sidebar's top is kept for the window controls and moves the w
     await expectRail(shell, 80);
 });
 
+test("on a Mac in full screen, where macOS hides the window controls, the sidebar's top and the wider rail go, and come back after it", async ({
+    page,
+    github,
+    native,
+}) => {
+    await pretendOS(page, 'macOS');
+    const shell = await signInOnDesktop({ page, github, native });
+    const strip = shell.sidebar.locator('[data-tauri-drag-region]');
+    await expect(strip).toHaveCount(1);
+
+    await native.setFullscreen(true);
+    await expect(strip).toHaveCount(0);
+    await expect(shell.sidebar).toHaveCSS('padding-top', '12px');
+    await expectRail(shell, 56);
+
+    await native.setFullscreen(false);
+    await expect(strip).toHaveCount(1);
+    await expect(shell.sidebar).toHaveCSS('padding-top', '0px');
+    const segment = shell.statusBar.locator('> *').first();
+    await expect.poll(async () => Math.round((await shell.sidebar.boundingBox())?.width ?? 0)).toBe(80);
+    await expect.poll(async () => Math.round((await segment.boundingBox())?.width ?? 0)).toBe(80);
+});
+
 test('on a Mac the screens with no sidebar move the window too, with nothing under the window controls', async ({
     page,
     github,

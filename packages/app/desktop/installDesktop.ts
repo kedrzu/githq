@@ -4,9 +4,12 @@ import { Logger } from '@nzyme/logging/Logger.js';
 import { TokenVault } from '@/auth/TokenVault.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
+import { WindowControls } from '@/services/WindowControls.js';
+import { WINDOW_CONTROLS_OVERLAID } from '@/shell/windowControls.js';
 
 import { createDesktopAppUpdate } from './DesktopAppUpdate.js';
 import { createDesktopTokenVault } from './DesktopTokenVault.js';
+import { createDesktopWindowControls } from './DesktopWindowControls.js';
 import { interceptExternalLinks, withExternalLinks } from './externalLinks.js';
 import type { ExternalLinksOptions } from './externalLinks.js';
 import { NativeBridge } from './NativeBridge.js';
@@ -14,8 +17,8 @@ import { withNativeJobLogs } from './withNativeJobLogs.js';
 
 /**
  * Prepares the app for the desktop app's window (`packages/desktop`) before any of its services start: the token
- * from the OS credential store, pages outside the app opened in the system browser, jobs' logs read natively, and the
- * app's updates. The one way in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`,
+ * from the OS credential store, pages outside the app opened in the system browser, jobs' logs read natively, the
+ * app's updates, and on a Mac the window controls over the sidebar. The one way in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`,
  * `plugins/iocPlugin.ts`), so the web builds drop it with everything it imports.
  */
 export async function installDesktop(container: Container) {
@@ -42,4 +45,8 @@ export async function installDesktop(container: Container) {
         AppUpdate,
         createDesktopAppUpdate({ bridge, logger, storage: container.resolve(Browser).localStorage }),
     );
+
+    if (WINDOW_CONTROLS_OVERLAID) {
+        container.set(WindowControls, createDesktopWindowControls({ bridge, logger }));
+    }
 }
