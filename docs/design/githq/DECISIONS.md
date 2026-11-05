@@ -709,6 +709,28 @@ edits in the shared store (2026-11-04), so a browsed row behaves like any other.
 repository would cost its whole allowance for a look. A refresh with no poll: rows on screen would go stale in silence,
 when the conditional check is free.
 
+### D35
+
+**The landing page says only what someone needs to choose.** (user, 2026-11-05.) Drawn in `githq.pen`, "Landing — githq.dev" and its mobile frame, with LP30; `/download` in "Landing · Download page" (LP17–LP19).
+Two larger buttons, each with a title and a subtitle: "Download the app", "Best experience, in its own window", and "Sign in
+with GitHub", "In your browser, nothing to install". One line of fine print under both: "All downloads · No new tracker ·
+Nothing stored outside GitHub", the first a link to `/download`.
+
+- **The icon on "Download the app" is the logo of the visitor's system,** the plain download icon when the system isn't known or on
+  a phone. It is the only thing that changes with the system, at one size, so nothing shifts.
+- **The permission line leaves the landing page.** This supersedes the first point of [D21](#d21) there: GitHub's consent
+  screen comes straight after the click, unexplained. `/download` keeps the line with its "Why?", and the Privacy page keeps
+  the explanation.
+- **The Windows warning and "Signed and notarized" are on `/download` only,** so one click on Windows meets SmartScreen
+  unwarned.
+- **On `/download`, someone signed in sees "Open githq"** in place of Sign in, in the toolbar and in the browser path, with no
+  permission line, because nothing is being asked (LP19).
+- **Star on GitHub is a pill above the headline,** and the toolbar has the GitHub mark, Sign in and a small Download, which
+  opens `/download`.
+
+**Rejected.** Two buttons with GitHub only in the toolbar, one button with the browser as a sentence, two equal cards (never committed).
+Lines under the buttons that change with the system: more than the page needs.
+
 ## Open questions
 
 ### D26
