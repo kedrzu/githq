@@ -34,10 +34,16 @@ export class CommandMenuHarness {
         return this.field.locator('xpath=..').getByText(name, { exact: typeof name === 'string' });
     }
 
-    /** Opens it with ⌘K (Ctrl+K) — again until it shows: a key pressed while the screen still loads is lost. */
+    /**
+     * Opens it with ⌘K (Ctrl+K) — again until it shows: a key pressed while the screen still loads is lost. Only while it
+     * doesn't show, as the same key closes it.
+     */
     async open(): Promise<void> {
         await expect(async () => {
-            await this.page.keyboard.press('ControlOrMeta+k');
+            if (!(await this.root.isVisible())) {
+                await this.page.keyboard.press('ControlOrMeta+k');
+            }
+
             await expect(this.field).toBeFocused({ timeout: 1000 });
         }).toPass();
     }

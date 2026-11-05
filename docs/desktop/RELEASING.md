@@ -2,8 +2,12 @@
 
 The desktop app (`packages/desktop`, decision [D23](../design/githq/DECISIONS.md#d23)) is released on demand by
 the Release action. It works out the version from the PR titles, tags `main`, and CI builds every platform into a
-draft GitHub release; you publish it by hand. Apps on the Stable stream update from the release GitHub marks "latest". Every
+draft GitHub release, which is then published. Apps on the Stable stream update from the release GitHub marks "latest". Every
 push to `main` also builds the [Development stream](#the-development-stream).
+
+An agent does all of it. Say "release" (`/release`, the `release` skill): that word covers everything up to and including
+publishing, and the agent asks only about what really needs you. The steps below are what it follows, and what to follow
+by hand.
 
 ## When to release
 
@@ -49,17 +53,25 @@ to its users.
    - the installers for every platform, each updater bundle with its `.sig`;
    - `latest.json` with the right `version` and the platforms `darwin-aarch64`, `darwin-x86_64`, `windows-x86_64`
      and `linux-x86_64`;
-   - if you can, install it on your Mac and launch it.
+   - each platform's `signature` in `latest.json` equal to the `.sig` file of the bundle its `url` names.
 
-5. Add the plain-language summary with the `release` skill (`/release`), which an agent runs on the draft before you publish.
-   The list under it is generated from the PR titles. A forgotten summary leaves the list, which is still correct. Descriptions
-   stay editable after publishing, and the app reads them when opened, so a correction reaches everyone.
-   Then **publish** the draft. Published and not a prerelease, it becomes GitHub's "latest". Installed apps read
-   `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
+5. Add the plain-language summary (the `release` skill). The list under it is generated from the PR titles. A forgotten
+   summary leaves the list, which is still correct. Descriptions stay editable after publishing, and the app reads them
+   when opened, so a correction reaches everyone.
 
-If a build fails, use "Re-run failed jobs" on the run; it continues with the tag and the draft the first attempt
-made. "Re-run all jobs" is refused, because it would work out a new version. To start over, delete the draft release
-and the tag (`git push origin :refs/tags/v0.2.0`), then run the action again.
+6. **Publish** the draft, once the run is green. Published and not a prerelease, it becomes GitHub's "latest". Installed apps
+   read `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
+
+### If a build fails
+
+Use "Re-run failed jobs" on the run; it continues with the tag and the draft the first attempt made. "Re-run all jobs" is
+refused, because it would work out a new version.
+
+If `updater-json` fails because `latest.json` lacks a platform, re-running failed jobs only repeats the check. Re-run that
+platform's build alone instead (`gh run rerun --job <job id>`), one platform at a time, each after the last has finished. The
+build replaces its own files and adds itself to `latest.json`.
+
+To start over, delete the draft release and the tag (`git push origin :refs/tags/v0.2.0`), then run the action again.
 
 There is no way yet to force a version. When 1.0 is near, 1.0.0 needs a small PR that adds an input to the action.
 

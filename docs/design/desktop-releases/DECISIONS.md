@@ -191,8 +191,13 @@ version, so a Stable that was just released is not replaced by the same code und
 **The plain-language summary is written by an agent the owner runs locally on the draft release, through a repo skill
 named along the lines of `release`, before publishing.** (2026-11-04, owner)
 
-**Why.** Publishing is already a hand step, and this needs no API key in the repository. A forgotten summary leaves a
-release with the formal list, which is still correct.
+**Why.** This needs no API key in the repository. A forgotten summary leaves a release with the formal list, which is still
+correct.
+
+**The same agent also publishes, unasked.** (2026-11-05, owner) The owner's word to release covers the whole way: the action,
+recovering from failures, the summary, checking the draft and publishing. The agent stops only for something that really needs
+the owner (the `release` skill lists these). "I don't want to confirm a release every time; when I start one it should go
+through, unless something actually needs my input." It never publishes with a red run.
 
 **Rejected.**
 
@@ -292,7 +297,8 @@ Check now reports its outcome: up to date, or that it failed. Today the updater 
 **Accepted without code: a draft can be published by hand with a platform missing, because the failed check warns and does not
 block; and a published version number is never reused, so a bad release is fixed by the next one.** (2026-11-04, owner)
 
-**Why.** Publishing is the owner's own step, and no app can tell that a version's contents changed under the same number.
+**Why.** Whoever publishes by hand can weigh that for themselves (the agent of [D6](#d6) never publishes with a red run), and no
+app can tell that a version's contents changed under the same number.
 
 ## D14
 

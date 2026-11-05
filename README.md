@@ -133,7 +133,7 @@ This policy covers the githq desktop app published on this repository's
 **Signing status.** macOS builds are signed and notarized with the owner's Apple Developer ID. Windows builds are not signed
 yet; the project plans to apply to the SignPath Foundation for free code signing for open-source projects. Every build is
 made by GitHub Actions on GitHub-hosted runners. A Stable build comes from a version tag that
-[the release workflow](.github/workflows/release.yml) creates in this repository, and is published by hand after it is checked. A
+[the release workflow](.github/workflows/release.yml) creates in this repository, and is published after it is checked. A
 Development build comes from a commit on `main` whose checks passed ([its workflow](.github/workflows/development.yml)), and is published
 automatically; it is never offered to anyone on Stable.
 Updates are signed with the project's updater key, and the app refuses an update whose signature doesn't verify.
