@@ -63,8 +63,14 @@ test('on a Mac the screens with no sidebar move the window too, with nothing und
 
     await expect(new FirstSignInHarness(page).continueButton).toBeVisible();
     await expect(page.locator('header[data-tauri-drag-region="deep"]')).toBeVisible();
-    const name = await page.getByRole('img', { name: 'githq' }).boundingBox();
-    expect(name?.x).toBeGreaterThan(70);
+    const name = page.getByRole('img', { name: 'githq' });
+    expect((await name.boundingBox())?.x).toBeGreaterThan(70);
+
+    // In full screen, where macOS hides the window controls, there is nothing to keep clear of.
+    await native.setFullscreen(true);
+    await expect.poll(async () => (await name.boundingBox())?.x).toBeLessThan(40);
+    await native.setFullscreen(false);
+    await expect.poll(async () => (await name.boundingBox())?.x).toBeGreaterThan(70);
 });
 
 test('with a title bar of its own, as on Windows, nothing changes', async ({ page, github, native }) => {
