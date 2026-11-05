@@ -1,5 +1,5 @@
 {
-  "version": "2.21",
+  "version": "2.22",
   "children": [
     {
       "type": "frame",
@@ -283975,6 +283975,113 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o3IT6o",
+                  "name": "Loading rows",
+                  "width": 640,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UMKkg",
+                      "name": "Diff / Row · unified, loading",
+                      "reusable": true,
+                      "clip": true,
+                      "width": "fill_container",
+                      "height": 20,
+                      "padding": [
+                        0,
+                        10,
+                        0,
+                        108
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 2,
+                          "id": "BMgGl",
+                          "name": "Bar",
+                          "fill": "$bg-3",
+                          "width": 240,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JfZR9",
+                      "name": "Diff / Row · split, loading",
+                      "reusable": true,
+                      "width": "fill_container",
+                      "height": 20,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "vQ0zW",
+                          "name": "Before",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "padding": [
+                            0,
+                            10,
+                            0,
+                            48
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 2,
+                              "id": "t4LOJ",
+                              "name": "Bar",
+                              "fill": "$bg-3",
+                              "width": 180,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Z7Yakx",
+                          "name": "Divider",
+                          "width": 1,
+                          "height": "fill_container",
+                          "fill": "$border"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rn4sj",
+                          "name": "After",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "padding": [
+                            0,
+                            10,
+                            0,
+                            48
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 2,
+                              "id": "D40s5v",
+                              "name": "Bar",
+                              "fill": "$bg-3",
+                              "width": 180,
+                              "height": 8
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
@@ -313045,44 +313152,880 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "aOFa7",
+                                          "id": "ZqBJn",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 9,
-                                          "padding": [
-                                            12,
-                                            16,
-                                            14,
-                                            60
-                                          ],
                                           "children": [
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "j6SNhb",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 420,
-                                              "height": 8
+                                              "id": "r2U6lf",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 1",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 72
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "s7PTao",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 300,
-                                              "height": 8
+                                              "id": "xW1Iw",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 2",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 72
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "Y56bb",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 520,
-                                              "height": 8
+                                              "id": "aDg5C",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 3",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 274
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "WWuP4",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 4",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 194
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "jTiqh",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 5",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 94
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "oDZnY",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 6",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 194
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "r6Fnd",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 7",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 209
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fCapR",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 8",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 115
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "H1CeIg",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 9",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 209
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "i2hpe",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 10",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 338
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "aLwrC",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 11",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Z6iBc",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 12",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 144
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ckZeR",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 13",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "jfrXT",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 14",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 230
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "q1b3N",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 15",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 86
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "B4g7SK",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 16",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 252
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "iuYdd",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 17",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 360
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "uiu2U",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 18",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 230
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "V55cHq",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 19",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 259
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "l7ov1u",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 20",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "UPKUd",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 21",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 151
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "x3p9ER",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 22",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 101
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "M2fyqx",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 23",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 338
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "E1aYkJ",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 24",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 259
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "LxjcP",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 25",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 86
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "SmzdC",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 26",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 72
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "BBFDM",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 27",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 310
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "lA9uu",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 28",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 144
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "u5rIM",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 29",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 101
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "FnILq",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 30",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 288
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "h0am9",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 31",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "acxt2",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 32",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 360
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Ohl6b",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 33",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 173
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "FyA2Z",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 34",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 223
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "jflQQ",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 35",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 144
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "R2X96",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 36",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 216
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "RWMWz",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 37",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 209
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "eNFIo",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 38",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "s8onA",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 39",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ALvwT",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 40",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "jbi6v",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 41",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "V1eZtw",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 42",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 130
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Fgoz1",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 43",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 158
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "G4Zv8",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 44",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 94
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "odioX",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 45",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 230
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "w00oV",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 46",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "JDkvG",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 47",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 22
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "sRO9Y",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 48",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 108
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "ds7ea",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 49",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 288
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "VF8Hf",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 50",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 180
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fDxo5",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 51",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 245
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "QODVt",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 52",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 180
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "bUmOZ",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 53",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 238
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "YZlzA",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 54",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 281
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "PNI10",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 55",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 180
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "UrdJz",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 56",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 166
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fTtJf",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 57",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 173
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "X0TU5",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 58",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 166
+                                                }
+                                              }
                                             }
                                           ]
                                         }
@@ -313126,26 +314069,25 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "P9W325",
+                                          "id": "UZntA",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 9,
-                                          "padding": [
-                                            12,
-                                            16,
-                                            14,
-                                            60
-                                          ],
                                           "children": [
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "Q3Bas",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 420,
-                                              "height": 8
+                                              "id": "pgi66",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 1",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 331
+                                                }
+                                              }
                                             }
                                           ]
                                         }
@@ -313576,71 +314518,535 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "WEo6H",
+                                          "id": "RoLlU",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 9,
-                                          "padding": [
-                                            12,
-                                            16,
-                                            14,
-                                            60
-                                          ],
                                           "children": [
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "Lmmv5",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 420,
-                                              "height": 8
+                                              "id": "Y5ng8",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 1",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 72
+                                                },
+                                                "D40s5v": {
+                                                  "width": 72
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "kUoKj",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 300,
-                                              "height": 8
+                                              "id": "W2zhe",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 2",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 144
+                                                },
+                                                "D40s5v": {
+                                                  "width": 144
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "A5WqDo",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 520,
-                                              "height": 8
+                                              "id": "ihORo",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 3",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 101
+                                                },
+                                                "D40s5v": {
+                                                  "width": 36
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "kxySn",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 8,
-                                              "height": 8
+                                              "id": "EM2Hn",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 4",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 50
+                                                },
+                                                "D40s5v": {
+                                                  "width": 101
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "m6uIvy",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 360,
-                                              "height": 8
+                                              "id": "AnaIR",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 5",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "BMap8",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 460,
-                                              "height": 8
+                                              "id": "P7nw9S",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 6",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 288
+                                                },
+                                                "D40s5v": {
+                                                  "width": 288
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "g5O1Qy",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 7",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 187
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "TNfpP",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 8",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 295
+                                                },
+                                                "D40s5v": {
+                                                  "width": 295
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Uxo4g",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 9",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 94
+                                                },
+                                                "D40s5v": {
+                                                  "width": 94
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Q0frZZ",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 10",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 173
+                                                },
+                                                "D40s5v": {
+                                                  "width": 173
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Rk2Wy",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 11",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 173
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "tTIFO",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 12",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 173
+                                                },
+                                                "D40s5v": {
+                                                  "width": 382
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "HWebR",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 13",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 86
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "x5nfB",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 14",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 79
+                                                },
+                                                "D40s5v": {
+                                                  "width": 194
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "RPKFT",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 15",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 223
+                                                },
+                                                "D40s5v": {
+                                                  "width": 223
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "sykpx",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 16",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 187
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "QhLOT",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 17",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 302
+                                                },
+                                                "D40s5v": {
+                                                  "width": 302
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "yMEzK",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 18",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 202
+                                                },
+                                                "D40s5v": {
+                                                  "width": 202
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fAtcA",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 19",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 43
+                                                },
+                                                "D40s5v": {
+                                                  "width": 274
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "SFF6S",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 20",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 245
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "uurfV",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 21",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 108
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "OSI1I",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 22",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "kvZx4",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 23",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 187
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "WvudT",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 24",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "bdXUx",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 25",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 187
+                                                },
+                                                "D40s5v": {
+                                                  "width": 187
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "euid7",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 26",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 43
+                                                },
+                                                "D40s5v": {
+                                                  "width": 43
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "gLYO5",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 27",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 158
+                                                },
+                                                "D40s5v": {
+                                                  "width": 130
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "JtraG",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 28",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 166
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "lz0r2",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 29",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 223
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "g4enq",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 30",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 266
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Un8L8",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 31",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 58
+                                                },
+                                                "D40s5v": {
+                                                  "width": 58
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fgaUI",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 32",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 288
+                                                },
+                                                "D40s5v": {
+                                                  "width": 288
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "EB9HZ",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 33",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 245
+                                                },
+                                                "D40s5v": {
+                                                  "width": 245
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "aRpvN",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 34",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 173
+                                                },
+                                                "D40s5v": {
+                                                  "width": 223
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "IxJlP",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 35",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "width": 194
+                                                },
+                                                "D40s5v": {
+                                                  "width": 324
+                                                }
+                                              }
                                             }
                                           ]
                                         }
@@ -313684,53 +315090,340 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "xS5GX",
+                                          "id": "T7hdM7",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
-                                          "gap": 9,
-                                          "padding": [
-                                            12,
-                                            16,
-                                            14,
-                                            60
-                                          ],
                                           "children": [
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "UiKQ9",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 420,
-                                              "height": 8
+                                              "id": "wmO3M",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 1",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "TQVwm",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 300,
-                                              "height": 8
+                                              "id": "zxOBv",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 2",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 302
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "l4eZS",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 520,
-                                              "height": 8
+                                              "id": "S7G6Ow",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 3",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 151
+                                                }
+                                              }
                                             },
                                             {
-                                              "type": "rectangle",
-                                              "cornerRadius": 3,
-                                              "id": "z68Ni",
-                                              "name": "Line",
-                                              "fill": "$bg-3",
-                                              "width": 8,
-                                              "height": 8
+                                              "id": "UEd18",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 4",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 259
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "mGSKg",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 5",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 238
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "XnDEb",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 6",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 137
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "DVd5o",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 7",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 245
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Mhhco",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 8",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 194
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "BQRNa",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 9",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 266
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "q9aXyR",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 10",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "yclOl",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 11",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 122
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "PAVGL",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 12",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 202
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "Qb3Eu",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 13",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 94
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "vzlbx",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 14",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 79
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "u6cCG",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 15",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "KmUTe",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 16",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 230
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "gbtXD",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 17",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 36
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "E8stk",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 18",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "enabled": false
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "vEH2H",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 19",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 238
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "VNGvq",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 20",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 180
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "fZAJt",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 21",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 158
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "id": "k67G9h",
+                                              "type": "ref",
+                                              "ref": "JfZR9",
+                                              "name": "Line 22",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "t4LOJ": {
+                                                  "enabled": false
+                                                },
+                                                "D40s5v": {
+                                                  "width": 252
+                                                }
+                                              }
                                             }
                                           ]
                                         }
@@ -317415,6 +319108,1702 @@
                           "fill": "$amber"
                         }
                       }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gBtZ6",
+              "name": "Slot · CR88 · Files arriving, split",
+              "width": 1084,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YU1ED",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "YCzGu",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR88 · Files arriving, split",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DlIWj",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Each line of a file not here yet is a quiet bar where its code will start, as long as a line of code might be: lengths around 26 characters, spread normally (σ 12, clamped 3–72), an indent that wanders between 0 and 4 levels, and a blank line now and then. The bars are drawn from the file's path, so a file always shows the same bars, in either layout, and nothing reshuffles on scroll. As many rows as the file's added and deleted lines, so nothing moves when the code lands. No colour for added or deleted and no animation: they're only a shape. Split follows the change: a modified file mirrors its context on both sides with runs that sit on one side only, an added file has bars on the right alone, a deleted one on the left alone.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dUdri",
+                  "name": "CR88 · Files arriving, split",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ahjM7",
+                      "name": "File engine.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "e2J0HT",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "engine.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+18"
+                            },
+                            "yHDS8": {
+                              "content": "−6"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ygu06",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "G8irP",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 302
+                                },
+                                "D40s5v": {
+                                  "width": 302
+                                }
+                              }
+                            },
+                            {
+                              "id": "xz9FA",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 216
+                                },
+                                "D40s5v": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "s0rYIU",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 94
+                                },
+                                "D40s5v": {
+                                  "width": 94
+                                }
+                              }
+                            },
+                            {
+                              "id": "aY4JL",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 216
+                                },
+                                "D40s5v": {
+                                  "width": 144
+                                }
+                              }
+                            },
+                            {
+                              "id": "TEq6m",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 338
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "O1yR9t",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 50
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "aBYGu",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 353
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "PxCqO",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 173
+                                },
+                                "D40s5v": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "SELEd",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 353
+                                },
+                                "D40s5v": {
+                                  "width": 353
+                                }
+                              }
+                            },
+                            {
+                              "id": "cvkwP",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 259
+                                },
+                                "D40s5v": {
+                                  "width": 259
+                                }
+                              }
+                            },
+                            {
+                              "id": "gUEF3",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 11",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 230
+                                },
+                                "D40s5v": {
+                                  "width": 230
+                                }
+                              }
+                            },
+                            {
+                              "id": "PTgDm",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 12",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 274
+                                },
+                                "D40s5v": {
+                                  "width": 274
+                                }
+                              }
+                            },
+                            {
+                              "id": "MimyG",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 13",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 158
+                                },
+                                "D40s5v": {
+                                  "width": 158
+                                }
+                              }
+                            },
+                            {
+                              "id": "zIBC4",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 14",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 331
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "m9uOl",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 15",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 94
+                                },
+                                "D40s5v": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "M0RBD",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 16",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 137
+                                },
+                                "D40s5v": {
+                                  "width": 108
+                                }
+                              }
+                            },
+                            {
+                              "id": "XpUJo",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 17",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 50
+                                },
+                                "D40s5v": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "DHoml",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 18",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 173
+                                },
+                                "D40s5v": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "ERqp0",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 19",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 180
+                                },
+                                "D40s5v": {
+                                  "width": 180
+                                }
+                              }
+                            },
+                            {
+                              "id": "Oh6vH",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 20",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 209
+                                },
+                                "D40s5v": {
+                                  "width": 209
+                                }
+                              }
+                            },
+                            {
+                              "id": "A98JT1",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 21",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 122
+                                },
+                                "D40s5v": {
+                                  "width": 122
+                                }
+                              }
+                            },
+                            {
+                              "id": "Tsbhi",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 22",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 194
+                                },
+                                "D40s5v": {
+                                  "width": 194
+                                }
+                              }
+                            },
+                            {
+                              "id": "ixA0B",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 23",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 180
+                                },
+                                "D40s5v": {
+                                  "width": 180
+                                }
+                              }
+                            },
+                            {
+                              "id": "LDvR5",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 24",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pT4LC",
+                      "name": "File queue.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "j8lge",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "queue.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+14"
+                            },
+                            "yHDS8": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "x89CU2",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "kKbj0",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 266
+                                }
+                              }
+                            },
+                            {
+                              "id": "FWkup",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "b2TT2e",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 144
+                                }
+                              }
+                            },
+                            {
+                              "id": "m3Eckg",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 166
+                                }
+                              }
+                            },
+                            {
+                              "id": "yAGb2",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 130
+                                }
+                              }
+                            },
+                            {
+                              "id": "wDBaI",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 58
+                                }
+                              }
+                            },
+                            {
+                              "id": "VTRRq",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 166
+                                }
+                              }
+                            },
+                            {
+                              "id": "H2fAW",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 475
+                                }
+                              }
+                            },
+                            {
+                              "id": "ng0aO",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 374
+                                }
+                              }
+                            },
+                            {
+                              "id": "vPNjG",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 238
+                                }
+                              }
+                            },
+                            {
+                              "id": "K1QgtH",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 11",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 209
+                                }
+                              }
+                            },
+                            {
+                              "id": "LG74k",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 12",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "XxCJ5",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 13",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 94
+                                }
+                              }
+                            },
+                            {
+                              "id": "jVBQW",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 14",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "width": 353
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "x6qGtl",
+                      "name": "File poller.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "HQarP",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "D",
+                              "fill": "$red"
+                            },
+                            "fUGop": {
+                              "content": "src/legacy/"
+                            },
+                            "GyXLB": {
+                              "content": "poller.ts"
+                            },
+                            "x8dPO": {
+                              "enabled": false
+                            },
+                            "yHDS8": {
+                              "content": "−10"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Of9h2",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "p5agf",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "enabled": false
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "kOmkV",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 137
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "FpOUX",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 144
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "Kykew",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 194
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "tOgxW",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 122
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "OEE0p",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 101
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "AaVsT",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 310
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "GdOq8",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 108
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "URkxZ",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 245
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "gnwTF",
+                              "type": "ref",
+                              "ref": "JfZR9",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "t4LOJ": {
+                                  "width": 122
+                                },
+                                "D40s5v": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lLGaz",
+              "name": "Slot · CR89 · Files arriving, unified",
+              "width": 1084,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "q3zxE",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "XBBnC",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR89 · Files arriving, unified",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "g2KYkL",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Each line of a file not here yet is a quiet bar where its code will start, as long as a line of code might be: lengths around 26 characters, spread normally (σ 12, clamped 3–72), an indent that wanders between 0 and 4 levels, and a blank line now and then. The bars are drawn from the file's path, so a file always shows the same bars, in either layout, and nothing reshuffles on scroll. As many rows as the file's added and deleted lines, so nothing moves when the code lands. No colour for added or deleted and no animation: they're only a shape. Unified is one column, starting where code starts after both line numbers and the sign.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "brAk6",
+                  "name": "CR89 · Files arriving, unified",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ePJyw",
+                      "name": "File engine.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "j9xeE2",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "M",
+                              "fill": "$fg-dim"
+                            },
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "engine.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+18"
+                            },
+                            "yHDS8": {
+                              "content": "−6"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "gVsqb",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "ORXtc",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 302
+                                }
+                              }
+                            },
+                            {
+                              "id": "Z4P0ea",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "S1AUt1",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 94
+                                }
+                              }
+                            },
+                            {
+                              "id": "VQV8s",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "KczUQ",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 338
+                                }
+                              }
+                            },
+                            {
+                              "id": "I2JLlF",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 50
+                                }
+                              }
+                            },
+                            {
+                              "id": "E0OqAL",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 353
+                                }
+                              }
+                            },
+                            {
+                              "id": "ENUJE",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 144
+                                }
+                              }
+                            },
+                            {
+                              "id": "Et2kZ",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "FgEP5",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 353
+                                }
+                              }
+                            },
+                            {
+                              "id": "XQCDe",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 11",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 259
+                                }
+                              }
+                            },
+                            {
+                              "id": "bncE4",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 12",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 230
+                                }
+                              }
+                            },
+                            {
+                              "id": "IsAaJ",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 13",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 274
+                                }
+                              }
+                            },
+                            {
+                              "id": "nDzF2",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 14",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 158
+                                }
+                              }
+                            },
+                            {
+                              "id": "jHTtN",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 15",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 331
+                                }
+                              }
+                            },
+                            {
+                              "id": "GLpuX",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 16",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 94
+                                }
+                              }
+                            },
+                            {
+                              "id": "S0I3OY",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 17",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 137
+                                }
+                              }
+                            },
+                            {
+                              "id": "kIjTI",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 18",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 50
+                                }
+                              }
+                            },
+                            {
+                              "id": "q2Uro1",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 19",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "eV35G",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 20",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "HQgYA",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 21",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 108
+                                }
+                              }
+                            },
+                            {
+                              "id": "C6zSIh",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 22",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 216
+                                }
+                              }
+                            },
+                            {
+                              "id": "apzWf",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 23",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "E5jIB",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 24",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 180
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MX4RL",
+                      "name": "File queue.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "INCyh",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "A",
+                              "fill": "$green"
+                            },
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "queue.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+14"
+                            },
+                            "yHDS8": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Hik54",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "gwUsZ",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 266
+                                }
+                              }
+                            },
+                            {
+                              "id": "p1iVHn",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 173
+                                }
+                              }
+                            },
+                            {
+                              "id": "yioIz",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 144
+                                }
+                              }
+                            },
+                            {
+                              "id": "RxSrF",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 166
+                                }
+                              }
+                            },
+                            {
+                              "id": "wa0k5",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 130
+                                }
+                              }
+                            },
+                            {
+                              "id": "Oi8Pt",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 58
+                                }
+                              }
+                            },
+                            {
+                              "id": "D4EVh",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 166
+                                }
+                              }
+                            },
+                            {
+                              "id": "daLjv",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 475
+                                }
+                              }
+                            },
+                            {
+                              "id": "hYTTG",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 374
+                                }
+                              }
+                            },
+                            {
+                              "id": "Awq3j",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 238
+                                }
+                              }
+                            },
+                            {
+                              "id": "nDYfR",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 11",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 209
+                                }
+                              }
+                            },
+                            {
+                              "id": "FJiAR",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 12",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "F63rv",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 13",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 94
+                                }
+                              }
+                            },
+                            {
+                              "id": "P5XUd",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 14",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 353
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k8ZPP1",
+                      "name": "File poller.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "v0GfF",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "wY4gE": {
+                              "content": "D",
+                              "fill": "$red"
+                            },
+                            "fUGop": {
+                              "content": "src/legacy/"
+                            },
+                            "GyXLB": {
+                              "content": "poller.ts"
+                            },
+                            "x8dPO": {
+                              "enabled": false
+                            },
+                            "yHDS8": {
+                              "content": "−10"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LYGxD",
+                          "name": "Arriving",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "oixu4",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "enabled": false
+                                }
+                              }
+                            },
+                            {
+                              "id": "H4vvW",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 137
+                                }
+                              }
+                            },
+                            {
+                              "id": "GTCOO",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 144
+                                }
+                              }
+                            },
+                            {
+                              "id": "swHHd",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 194
+                                }
+                              }
+                            },
+                            {
+                              "id": "S9iP0h",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 5",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 122
+                                }
+                              }
+                            },
+                            {
+                              "id": "WgWGS",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 6",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 101
+                                }
+                              }
+                            },
+                            {
+                              "id": "eK08k",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 7",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 310
+                                }
+                              }
+                            },
+                            {
+                              "id": "JXtRx",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 8",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 108
+                                }
+                              }
+                            },
+                            {
+                              "id": "x6l01J",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 9",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 245
+                                }
+                              }
+                            },
+                            {
+                              "id": "RL1W7",
+                              "type": "ref",
+                              "ref": "UMKkg",
+                              "name": "Line 10",
+                              "width": "fill_container",
+                              "descendants": {
+                                "BMgGl": {
+                                  "width": 122
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
