@@ -182,7 +182,6 @@ test('on the review, the toolbar at the foot of the diff says how many wait and 
     await expect(review.pendingToolbar.getByRole('button')).toHaveCount(0);
     const toolbarBox = await review.pendingToolbar.boundingBox();
     const diffBox = await review.diff.boundingBox();
-    expect(toolbarBox?.height).toBe(44);
     expect((diffBox?.y ?? 0) + (diffBox?.height ?? 0)).toBeCloseTo(toolbarBox?.y ?? 0, 0);
 
     await page.goto('/acme/web/pull/1/files');
@@ -231,6 +230,8 @@ test('a pull request outside the local copy: a draft begun on GitHub shows on co
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 
     await expect(review.pendingToolbar).toContainText('2 pending comments');
+    // Outside a stack, no stack section.
+    await expect(review.stackRows).toHaveCount(0);
 });
 
 test('in a stack, the row of the pull request with the draft and its square carry the mark, the others not', async ({

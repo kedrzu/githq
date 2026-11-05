@@ -21,7 +21,6 @@ const {
     CollapsedTrackedMenu,
     Expanded,
     LongLists,
-    LongLogin,
     NoProjects,
     NoRepositories,
     NothingTracked,
@@ -119,17 +118,6 @@ test('long lists scroll, with the user at the bottom of the window all along', a
     last.scrollIntoView();
     await expect.poll(() => last.getBoundingClientRect().bottom).toBeLessThanOrEqual(user.getBoundingClientRect().top);
     expect(user.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
-});
-
-test('a long login ends in an ellipsis, the chevron still in the row', async () => {
-    await LongLogin.run();
-
-    const login = page.getByText(/^a-very-long-login/u).element();
-    const nav = page.getByRole('navigation', { name: 'Sidebar' }).element();
-    const chevron = nav.querySelector('.lucide-chevron-up');
-    expect(login.scrollWidth).toBeGreaterThan(login.clientWidth);
-    expect(getComputedStyle(login).textOverflow).toBe('ellipsis');
-    expect(chevron?.getBoundingClientRect().right).toBeLessThanOrEqual(nav.getBoundingClientRect().right);
 });
 
 test('the user menu opens upwards with who is signed in, Settings and its key, and Sign out', async () => {

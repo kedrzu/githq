@@ -197,19 +197,6 @@ export class ReviewScreenHarness {
         return this.diff.getByRole('button', { name, exact: true });
     }
 
-    /** How far the gap nearest `top` below the top of the diff is from there. */
-    async gapDistance(top: number): Promise<number> {
-        const diff = await this.diff.boundingBox();
-        if (!diff) {
-            throw new Error('The diff is not on screen');
-        }
-
-        const tops = await this.diff
-            .getByTestId('review-gap')
-            .evaluateAll(gaps => gaps.map(gap => gap.getBoundingClientRect().top));
-        return Math.min(...tops.map(gapTop => Math.abs(gapTop - diff.y - top)));
-    }
-
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */
     async topLine(prefix: string): Promise<{ text: string; y: number }> {
         return await this.diff.evaluate((diff, wanted) => {

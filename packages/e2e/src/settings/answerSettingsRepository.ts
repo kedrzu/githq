@@ -78,11 +78,6 @@ export function getSettingsWrites(github: GitHubMock) {
     return github.restCalls.filter(call => call.method === 'PUT' || call.method === 'POST');
 }
 
-/** How many times the app created the settings repository so far. */
-export function countSettingsCreations(github: GitHubMock) {
-    return github.restCalls.filter(call => call.method === 'POST' && call.url.pathname === '/user/repos').length;
-}
-
 function readWrite(body: unknown): SettingsWrite {
     if (typeof body !== 'object' || body === null || !('content' in body) || typeof body.content !== 'string') {
         throw new Error('A settings write without content');

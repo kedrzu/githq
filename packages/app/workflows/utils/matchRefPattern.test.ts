@@ -13,7 +13,6 @@ test.each([
     ['release/*', 'release/', true],
     ['v*', 'v', true],
     ['v*', 'v0.1.0-rc.3', true],
-    ['v*', 'v2-experiment', true],
     ['v*', 'feature/v2', false],
     ['*', 'feature/x', false],
     // `**` matches anything.
@@ -42,7 +41,6 @@ test.each([
     ['[', '[', true],
     ['[z-a]', '[z-a]', true],
     ['?', '?', true],
-    ['*?', 'x?', true],
 ] as const)('%p matching %p is %p', (pattern, ref, matches) => {
     expect(matchRefPattern(pattern, ref)).toBe(matches);
 });

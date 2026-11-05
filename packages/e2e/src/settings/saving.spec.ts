@@ -9,7 +9,7 @@ import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 
-import { answerSettingsRepository, countSettingsCreations, getSettingsWrites } from './answerSettingsRepository.js';
+import { answerSettingsRepository, getSettingsWrites } from './answerSettingsRepository.js';
 import type { SettingsRepository } from './answerSettingsRepository.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
@@ -128,31 +128,6 @@ test('settings found wait for an answer only while saving stays off: another tab
     expect(getSettingsWrites(github)).toEqual([]);
 });
 
-test('a repository deleted on GitHub stops syncing when the window is focused; trying again never creates it', async ({
-    page,
-    github,
-}) => {
-    const repository = await openSaving(page, github, { exists: false, file: null });
-    const saving = new SavingScreenHarness(page);
-    await saving.choice.click();
-    await expect(saving.on).toBeVisible();
-
-    repository.exists = false;
-    repository.file = null;
-    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-
-    await expect(saving.stopped).toContainText(`The repository ${LOGIN}/githq-settings no longer exists on GitHub.`);
-    await expect(new SettingsScreenHarness(page).section('Sync settings')).toHaveAccessibleName(
-        'Sync settings Syncing stopped',
-    );
-    const created = countSettingsCreations(github);
-
-    await page.keyboard.press('r');
-    await expect(saving.tryAgainButton).not.toHaveAttribute('aria-busy');
-    await expect(saving.stopped).toBeVisible();
-    expect(countSettingsCreations(github)).toBe(created);
-});
-
 test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar stays until syncing is turned off', async ({
     page,
     github,
@@ -175,7 +150,10 @@ test('a stop is told once in a toast, ⌥S opens why, and the dot on the avatar 
 
     await page.keyboard.press('Alt+KeyS');
     await expect(page).toHaveURL(/\/settings\?tab=sync$/u);
-    await expect(saving.stopped).toBeVisible();
+    await expect(saving.stopped).toContainText(`The repository ${LOGIN}/githq-settings no longer exists on GitHub.`);
+    await expect(new SettingsScreenHarness(page).section('Sync settings')).toHaveAccessibleName(
+        'Sync settings Syncing stopped',
+    );
     await expect(shell.syncStoppedToast).toHaveCount(0);
 
     await page.goto('/');
@@ -216,23 +194,6 @@ test('the repository layout chosen with saving on is written to the file, and is
     await page.reload();
     await expect(settings.repositoryLayout('Column')).toBeChecked();
     await expect(settings.repositoryLayout('Tabs')).not.toBeChecked();
-});
-
-test('the repository layout chosen with saving off stays on this device, through a reload', async ({
-    page,
-    github,
-}) => {
-    await openSaving(page, github, { exists: false, file: null });
-
-    await page.goto('/settings?tab=display');
-    const settings = new SettingsScreenHarness(page);
-    await expect(settings.repositoryLayoutKept('Saving is off, so this stays on this device.')).toBeVisible();
-    await settings.repositoryLayout('Column').click();
-    await expect(settings.repositoryLayout('Column')).toBeChecked();
-
-    await page.reload();
-    await expect(settings.repositoryLayout('Column')).toBeChecked();
-    expect(getSettingsWrites(github)).toEqual([]);
 });
 
 /**

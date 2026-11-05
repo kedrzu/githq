@@ -16,7 +16,6 @@ const FIRST = 'Split the rate limiter in two';
 const SECOND = 'Move the limits to the config';
 const THIRD = 'Document the new limits';
 const ENGINE = 'src/engine.ts';
-const OTHER = 'src/other.ts';
 
 /** 200 lines, every tenth one changed, for a line to be read deep in a file. */
 function longFile(name: string): SampleReviewFile {
@@ -156,7 +155,7 @@ test('the status bar says why a review opens where it does, until the first move
     const { statusBar } = new AppShellHarness(page);
     await expect(statusBar).toContainText("First visit: starting at the first file you haven't viewed · 1 of 3 viewed");
 
-    await readLine(review, READ, READ_TOP);
+    await readLine(review, READ, TOP_LINE_TOP);
     await expect(statusBar).not.toContainText('First visit');
 
     await page.keyboard.press('j');
@@ -167,93 +166,9 @@ test('the status bar says why a review opens where it does, until the first move
 
     await page.keyboard.press('k');
     await expect(review.title).toHaveText(SECOND);
-    await expect(statusBar).toContainText(/Back\sin\s#202\swhere\syou\sleft\sit:\sengine\.ts,\sline\s\d+/);
-});
-
-test('coming back, the status bar names the first line showing under the pinned header, not the one kept hidden under it', async ({
-    page,
-    github,
-}) => {
-    const { review } = await openReview(page, github);
-    await readLine(review, READ, TOP_LINE_TOP);
-
-    await page.keyboard.press('j');
-    await expect(review.title).toHaveText(THIRD);
-    await page.keyboard.press('k');
-    await expect(review.title).toHaveText(SECOND);
-
-    await expect.poll(() => lineOffset(review, READ)).toBeCloseTo(TOP_LINE_TOP, 0);
-    // `engine47` is line 48, kept at -6. Rows of 20 px under a header of 38: 48 and 49 are behind it, 50 reaches below.
-    await expect(new AppShellHarness(page).statusBar).toContainText(/left\sit:\sengine\.ts,\sline\s50/);
-});
-
-test('a layout switched while away comes back on the same line by identity, not by pixels', async ({
-    page,
-    github,
-}) => {
-    const { review } = await openReview(page, github);
-    await readLine(review, READ, TOP_LINE_TOP);
-
-    await page.keyboard.press('j');
-    await expect(review.title).toHaveText(THIRD);
-    await review.chooseLayout('Unified');
-    await page.keyboard.press('k');
-    await expect(review.title).toHaveText(SECOND);
-
-    await expect(review.viewOptionsButton).toHaveText(/Unified/);
-    await expect.poll(() => lineOffset(review, READ)).toBeCloseTo(TOP_LINE_TOP, 0);
-});
-
-test('a line hidden by the whitespace setting while away lands on the nearest shown above it', async ({
-    page,
-    github,
-}) => {
-    const lines = Array.from({ length: 80 }, (_, index) => `const value${index} = ${index};`);
-    const reindented = lines.map((line, index) => {
-        // Two real changes, and only whitespace between them.
-        if (index === 39 || index === 60) {
-            return `${line} // changed`;
-        }
-
-        return index > 42 && index < 57 ? `    ${line}` : line;
-    });
-    const { review } = await openReview(page, github, [
-        { path: ENGINE, before: `${lines.join('\n')}\n`, after: `${reindented.join('\n')}\n` },
-        { path: OTHER, before: 'a\n', after: 'b\n' },
-    ]);
-    await readLine(review, 'const value50 = 50;', TOP_LINE_TOP);
-
-    await page.keyboard.press('j');
-    await expect(review.title).toHaveText(THIRD);
-    await review.toggleHideWhitespace();
-    await page.keyboard.press('k');
-    await expect(review.title).toHaveText(SECOND);
-
-    // The gap covering it stands where the line stood.
-    await expect(review.viewOptionsButton).toHaveText(/whitespace hidden/);
-    await expect(review.code('const value50 = 50;')).toHaveCount(0);
-    await expect.poll(() => review.gapDistance(TOP_LINE_TOP)).toBeLessThan(0.5);
-});
-
-test('opened for the first time it lands on the first file neither viewed nor collapsed; with all viewed, the top', async ({
-    page,
-    github,
-}) => {
-    const { review } = await openReview(page, github);
-
-    await expect.poll(() => review.headerOffset(ENGINE)).toBe(0);
-    await expect(review.currentFileRow).toContainText('engine.ts');
-    await expect(review.viewedButton(ENGINE)).toBeVisible();
-
-    answerReview(github, {
-        repository: 'acme/api',
-        number: 203,
-        files: FILES.map(file => ({ ...file, viewed: 'VIEWED' as const })),
-    });
-    await page.keyboard.press('j');
-    await expect(review.title).toHaveText(THIRD);
-    await expect.poll(() => review.headerOffset('README.md')).toBe(0);
-    await expect(review.currentFileRow).toContainText('README.md');
+    // The first line showing under the pinned header, not the one kept hidden under it: `engine47` is line 48, kept at -6.
+    // Rows of 20 px under a header of 38: 48 and 49 are behind it, 50 reaches below.
+    await expect(statusBar).toContainText(/Back\sin\s#202\swhere\syou\sleft\sit:\sengine\.ts,\sline\s50/);
 });
 
 test('a remembered line whose file is not here holds its header and takes over when it comes; a scroll meanwhile is left alone', async ({

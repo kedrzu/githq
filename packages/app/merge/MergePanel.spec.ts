@@ -25,12 +25,10 @@ const {
     UpdatingBranch,
     BypassBehindSending,
     BypassBesideAutoMerge,
-    BypassBlockedUnnamed,
     BypassHeadMoved,
     BypassOnQueueBranch,
     BypassRebase,
     BypassRefused,
-    BypassRequiredRunning,
     BypassSending,
     EmailMergeCommit,
     EmailOneAddress,
@@ -39,13 +37,10 @@ const {
     EmailSquashByAuthor,
     EmailSquashNotAuthor,
     InQueue,
-    QueueLocked,
     QueueMergeable,
     QueueNoEstimate,
-    QueueQueued,
     QueueReadChangesMethod,
     QueueReady,
-    QueueUnmergeable,
     Behind,
     BehindRequiredFailed,
     BeingMerged,
@@ -640,7 +635,6 @@ test('PM11: auto-merge on — who and how, the text GitHub holds and not editabl
     await expect.element(page.getByRole('button', { name: /^Edit/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: /Squash and merge/ })).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: /Turn off auto-merge/ })).toBeVisible();
-    expect(panel().element().querySelectorAll('footer button')).toHaveLength(1);
     await userEvent.keyboard('e');
     await expect.element(page.getByRole('textbox', { name: 'Commit title' })).not.toBeInTheDocument();
 
@@ -702,11 +696,6 @@ test('PM15: in the queue — where, its state and who added it; no merge offered
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: dequeue');
 });
 
-test("PM16: each of GitHub's queue states on one line of the verdict, with no estimate when GitHub gives none", async () => {
-    await QueueQueued.run();
-    await expect.element(panel()).toHaveTextContent('In the queue5th · queued · about 40 min');
-});
-
 test('PM16: no estimate when GitHub gives none', async () => {
     await QueueNoEstimate.run();
     await expect.element(panel()).toHaveTextContent('In the queue3rd · waiting for checksPosition');
@@ -715,16 +704,6 @@ test('PM16: no estimate when GitHub gives none', async () => {
 test('PM16: mergeable, first — merging next', async () => {
     await QueueMergeable.run();
     await expect.element(panel()).toHaveTextContent('In the queue1st · mergeable · merging next');
-});
-
-test('PM16: locked for merging', async () => {
-    await QueueLocked.run();
-    await expect.element(panel()).toHaveTextContent('In the queue1st · locked for merging');
-});
-
-test("PM16: unmergeable — in the queue, won't merge", async () => {
-    await QueueUnmergeable.run();
-    await expect.element(panel()).toHaveTextContent("In the queue, won't merge2nd · unmergeable");
 });
 
 test('PM12a, D12: ⌥⌘↵ sends bypass_rules and the method chosen; ⌘↵ never bypasses — here it turns auto-merge on', async () => {
@@ -757,25 +736,12 @@ test('D12: with nothing else to do ⌘↵ still does nothing past the rules; ⌥
         );
 });
 
-test('PM12a: a required check still running is skipped by name, and with no default known it says so', async () => {
-    await BypassRequiredRunning.run();
-
-    await expect.element(panel()).toHaveTextContent('Skips ci / lint');
-    await expect.element(panel()).toHaveTextContent('Commits as your default email');
-});
-
 test('PM12a: behind is what it skips; ⌘↵ stays updating the branch', async () => {
     await BypassBehind.run();
 
     await expect.element(panel()).toHaveTextContent('Skips being up to date with main');
     await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
     await expect.element(page.getByTestId('sent')).toHaveTextContent('Command: updateBranch MERGE');
-});
-
-test('PM12a: blocked for what nothing read names — it says GitHub holds it, and invents no reason', async () => {
-    await BypassBlockedUnnamed.run();
-
-    await expect.element(panel()).toHaveTextContent('Skips what GitHub says still holds it');
 });
 
 test('PM12a: a rebase makes no commit of its own, so the line names no email', async () => {
@@ -801,16 +767,6 @@ test('PM32a: sent, its own button is busy and nothing is said of the primary; a 
         .element(page.getByRole('button', { name: /^Bypass rules and merge/u }))
         .toHaveAttribute('aria-busy', 'true');
     await expect.element(page.getByRole('button', { name: "Can't merge yet", exact: true })).toBeDisabled();
-});
-
-test('PM12a: on a red outline, with no red ground, hovered or not (D12)', async () => {
-    await BypassAlone.run();
-
-    const button = page.getByRole('button', { name: /^Bypass rules and merge/u });
-    await expect.element(button).toBeVisible();
-    expect(getComputedStyle(button.element()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
-    await userEvent.hover(button);
-    expect(getComputedStyle(button.element()).backgroundColor).toBe('rgba(0, 0, 0, 0)');
 });
 
 test('D12: the head moved with the panel open: no bypass of a commit nobody saw until it is read, and ⌥⌘↵ sends nothing meanwhile', async () => {

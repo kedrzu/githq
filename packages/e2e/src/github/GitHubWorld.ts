@@ -195,8 +195,6 @@ export interface GitHubWorldPullRequestParams extends GitHubWorldItemParams {
      * repository requires branches to be up to date ({@link GitHubWorldRepositoryParams.requiresUpToDate}).
      */
     readonly behindBase?: boolean;
-    /** GitHub has not worked out yet whether it merges: `mergeable` and `mergeStateStatus` read `UNKNOWN`. */
-    readonly mergeabilityUnknown?: boolean;
     /**
      * The commit texts GitHub proposes to the viewer for a merge commit and a squash (`viewerMergeHeadlineText`,
      * `viewerMergeBodyText`); GitHub's usual ones by default — for a merge commit "Merge pull request #N from
@@ -359,15 +357,6 @@ export interface GitHubWorldStepParams {
     readonly name: string;
     /** `success`, `failure`, `skipped`, …; `null` while it runs. */
     readonly conclusion: string | null;
-}
-
-/** An organisation the viewer belongs to ({@link GitHubWorld.organization}). */
-export interface GitHubWorldOrganizationParams {
-    /**
-     * It has OAuth App access restrictions and has not approved githq (G5): GitHub leaves it out of what the
-     * tracking screens read, with an error naming it, and lists only its public repositories.
-     */
-    readonly hidesPrivateData?: boolean;
 }
 
 /** A label of a repository: its name and colour (hex without `#`). */
@@ -547,7 +536,6 @@ interface WorldPullRequest {
     pendingReview: GitHubWorldPendingReview | null;
     readonly closes: readonly string[];
     behindBase: boolean;
-    readonly mergeabilityUnknown: boolean;
     /**
      * An update of its branch GitHub accepted but has not made yet: as on GitHub, the pull request still reads the old
      * head, its mergeability `UNKNOWN`, until the update lands — after the next read of the merge panel.
@@ -755,7 +743,7 @@ export class GitHubWorld {
     private readonly repositories = new Map<string, WorldRepository>();
     private readonly projects = new Map<string, WorldProject>();
     private readonly stacks = new Map<string, WorldStack>();
-    private readonly organizations = new Map<string, GitHubWorldOrganizationParams>();
+    private readonly organizations = new Set<string>();
     private readonly heldSearches = new Map<MyWorkSearch, Promise<void>>();
     private readonly failures = new Map<string, GitHubWorldFailure>();
     private readonly received: GitHubWorldEdit[] = [];
@@ -971,8 +959,8 @@ export class GitHubWorld {
     }
 
     /** Makes the viewer a member of the organisation `login`: its repositories and projects are offered to track. */
-    organization(login: string, params: GitHubWorldOrganizationParams = {}): void {
-        this.organizations.set(login, params);
+    organization(login: string): void {
+        this.organizations.add(login);
     }
 
     /** Adds a project, the viewer's by default; returns its node id. */
@@ -1737,57 +1725,34 @@ export class GitHubWorld {
     /** What tracking reads: the candidates, a lookup by name, the downloads and the re-reads of projects. */
     private installTracking(github: GitHubMock) {
         github.graphql('TrackingCandidates', () => {
-            const errors: GitHubGraphQLErrorEntry[] = [];
-            const nodes = [...this.organizations].map(([login, organization], index) => {
-                if (organization.hidesPrivateData) {
-                    errors.push(restrictedError(login, ['viewer', 'organizations', 'nodes', index]));
-                    return null;
-                }
-
-                return {
-                    login,
-                    avatarUrl: `https://avatars.githubusercontent.com/${login}`,
-                    repositories: this.toCandidatePage(login, false),
-                };
-            });
-            return new GitHubPartialAnswer<'TrackingCandidates'>(
-                {
-                    viewer: {
-                        login: this.viewer,
-                        repositories: this.toCandidatePage(this.viewer, false),
-                        organizations: { nodes },
-                    },
+            const nodes = [...this.organizations].map(login => ({
+                login,
+                avatarUrl: `https://avatars.githubusercontent.com/${login}`,
+                repositories: this.toCandidatePage(login),
+            }));
+            return {
+                viewer: {
+                    login: this.viewer,
+                    repositories: this.toCandidatePage(this.viewer),
+                    organizations: { nodes },
                 },
-                errors,
-            );
+            };
         });
         github.graphql('OrganizationRepositories', ({ variables }) => {
             const login = String(variables.login);
-            const organization = this.organizations.get(login);
             return {
-                organization: organization
-                    ? { repositories: this.toCandidatePage(login, organization.hidesPrivateData ?? false) }
-                    : null,
+                organization: this.organizations.has(login) ? { repositories: this.toCandidatePage(login) } : null,
             };
         });
         github.graphql('TrackingProjects', () => {
-            const errors: GitHubGraphQLErrorEntry[] = [];
-            const nodes = [...this.organizations].map(([login, organization], index) => {
-                if (organization.hidesPrivateData) {
-                    errors.push(restrictedError(login, ['viewer', 'organizations', 'nodes', index]));
-                    return null;
-                }
-
+            const nodes = [...this.organizations].map(login => {
                 const projects = this.projectsOf(login);
                 return { login, projectsV2: { totalCount: projects.length, nodes: projects } };
             });
             const own = this.projectsOf(this.viewer);
-            return new GitHubPartialAnswer<'TrackingProjects'>(
-                {
-                    viewer: { projectsV2: { totalCount: own.length, nodes: own }, organizations: { nodes } },
-                },
-                errors,
-            );
+            return {
+                viewer: { projectsV2: { totalCount: own.length, nodes: own }, organizations: { nodes } },
+            };
         });
         github.graphql('RepositoryForTracking', ({ variables }) => {
             const repository = this.findRepository(variables);
@@ -1957,11 +1922,10 @@ export class GitHubWorld {
         return [...this.repositories.values()].find(repository => repository.nameWithOwner.toLowerCase() === name);
     }
 
-    /** The repositories of `owner` as the tracking screens list them; only the public ones when `publicOnly`. */
-    private toCandidatePage(owner: string, publicOnly: boolean): TrackingRepositoryPageFieldsFragment {
+    /** The repositories of `owner` as the tracking screens list them. */
+    private toCandidatePage(owner: string): TrackingRepositoryPageFieldsFragment {
         const nodes = [...this.repositories.values()]
             .filter(repository => repository.nameWithOwner.split('/')[0] === owner)
-            .filter(repository => !publicOnly || !repository.isPrivate)
             .map(repository => this.toCandidate(repository));
         return { totalCount: nodes.length, pageInfo: LAST_PAGE, nodes };
     }
@@ -2725,7 +2689,6 @@ export class GitHubWorld {
             pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
-            mergeabilityUnknown: params.mergeabilityUnknown ?? false,
             updatingBranch: false,
             pushed: null,
             stack,
@@ -3511,15 +3474,6 @@ function repositoryNotFound(): GitHubGraphQLErrorEntry {
     return { type: 'NOT_FOUND', path: ['repository'], message: 'Could not resolve to a Repository.' };
 }
 
-/** GitHub's error for an organisation's part it keeps from githq: OAuth App access restrictions (G5). */
-function restrictedError(login: string, path: readonly (number | string)[]): GitHubGraphQLErrorEntry {
-    return {
-        type: 'FORBIDDEN',
-        path,
-        message: `Although you appear to have the correct authorization credentials, the \`${login}\` organization has enabled OAuth App access restrictions, meaning that data access to third-parties is limited.`,
-    };
-}
-
 /** GitHub's error for each id of a `nodes(ids:)` read it cannot resolve. */
 function notFoundErrors(ids: readonly string[], exists: (id: string) => boolean): GitHubGraphQLErrorEntry[] {
     const errors: GitHubGraphQLErrorEntry[] = [];
@@ -3538,7 +3492,7 @@ function findSearch(q: string): MyWorkSearch | undefined {
 
 /** Whether it merges, as GitHub has worked it out. */
 function getMergeable(pullRequest: WorldPullRequest): MergeableState {
-    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
+    if (pullRequest.updatingBranch) {
         return 'UNKNOWN';
     }
 
@@ -3547,7 +3501,7 @@ function getMergeable(pullRequest: WorldPullRequest): MergeableState {
 
 /** Where its merge stands, in the order GitHub tells it: not worked out, conflicts, a draft, behind, then the rest. */
 function getMergeStateStatus(pullRequest: WorldPullRequest, repository: WorldRepository): MergeStateStatus {
-    if (pullRequest.mergeabilityUnknown || pullRequest.updatingBranch) {
+    if (pullRequest.updatingBranch) {
         return 'UNKNOWN';
     }
 

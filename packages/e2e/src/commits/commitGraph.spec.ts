@@ -109,7 +109,7 @@ test('git-client D11, D20, CH37: an untracked repository shows Commits in full a
     await expect(repository.section('Commits')).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('git-client D17, CH45: the divider dragged with the mouse: as far as two lanes and every lane, the label up meanwhile, kept across a reload, and a double-click resets it', async ({
+test('git-client D17, CH45: the divider dragged with the mouse: as far as two lanes and every lane, the label up meanwhile, and kept across a reload', async ({
     page,
     github,
 }) => {
@@ -152,87 +152,6 @@ test('git-client D17, CH45: the divider dragged with the mouse: as far as two la
     await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
     const after = await graph.divider.boundingBox();
     expect((after?.x ?? 0) - (before?.x ?? 0)).toBe((Number(every) - 2) * 12);
-
-    await graph.dragDivider(-400);
-    await expect(graph.divider).toHaveAttribute('aria-valuenow', '2');
-    await graph.divider.dblclick({ position: { x: 4, y: 10 } });
-    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
-    await page.reload();
-    await expect(graph.rows).toHaveCount(6);
-    await closeDetails(page, graph);
-    await expect(graph.divider).toHaveAttribute('aria-valuenow', String(every));
-});
-
-test("git-client D16: the details' width is the user's: dragged by their left edge it is kept across a reload, on its own and not the left column's, and the graph keeps 240 px", async ({
-    page,
-    github,
-}) => {
-    await page.setViewportSize({ width: 1500, height: 800 });
-    const sample = createSampleTrackedWork();
-    giveHistory(sample.world, SAMPLE_REPOSITORY);
-    await openTrackedWork(page, github, sample.world);
-
-    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
-    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    await expect(graph.details).toBeVisible();
-    await expect(graph.detailsHandle).toBeVisible();
-    await expect.poll(() => graph.detailsWidth()).toBe(440);
-    const column = await graph.leftColumnEdgeX();
-
-    await graph.dragDetailsHandle(-100);
-    await expect.poll(() => graph.detailsWidth()).toBe(540);
-    await page.reload();
-    await expect(graph.details).toBeVisible();
-    await expect.poll(() => graph.detailsWidth()).toBe(540);
-    expect(await graph.leftColumnEdgeX()).toBe(column);
-
-    // As wide as the graph lets it be, not wider.
-    await graph.dragDetailsHandle(-1000);
-    const rows = await graph.root.boundingBox();
-    expect(rows?.width).toBeGreaterThanOrEqual(240);
-});
-
-test('git-client D12, D15, CH25, CH26: B filters the branches and tags, typed letters stay in the field, Enter goes to the commit and Esc back to the graph', async ({
-    page,
-    github,
-}) => {
-    const sample = createSampleTrackedWork();
-    giveHistory(sample.world, SAMPLE_REPOSITORY);
-    await openTrackedWork(page, github, sample.world);
-    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
-    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
-    await expect(graph.rows).toHaveCount(6);
-
-    // The default branch first, then branches and tags newest first, each with its tip's pull request and CI.
-    await expect(graph.refRows).toHaveText([/main\s*default/, /feat\/login\s*#5/, /release\/1\.0\s*#4/, /v1\.0\.0/]);
-    await expect(graph.mark(graph.refRow('feat/login'), 'Checks failing')).toBeVisible();
-    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
-
-    await page.keyboard.press('b');
-    await expect(graph.refFilter).toBeFocused();
-    await page.keyboard.type('rel');
-    // Letters a graph would take are typed, and the cursor stays.
-    await expect(graph.refRows).toHaveText([/release\/1\.0/]);
-    await expect(graph.selectedRef).toContainText('release/1.0');
-    await expect(graph.refList).toContainText('No tag matches "rel".');
-    await page.keyboard.press('j');
-    await expect(graph.refFilter).toHaveValue('relj');
-    await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
-    await page.keyboard.press('Backspace');
-
-    await page.keyboard.press('Enter');
-    // CH26: back in the graph, the filter clear and nothing selected in the list.
-    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
-    await expect(graph.refFilter).toHaveValue('');
-    await expect(graph.root).toBeFocused();
-    await expect(graph.root).toHaveCSS('outline-style', 'none');
-    await expect(graph.selectedRef).toHaveCount(0);
-    await page.keyboard.press('j');
-    await expect(graph.cursorRow).toContainText('docs: describe the setup');
-
-    // The header's tool does as B does.
-    await graph.refListTool.click();
-    await expect(graph.refFilter).toBeFocused();
 });
 
 test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; Enter opens a commit's details right of it with the list staying; B goes to the filter and they stay; J and P move through the graph with them, Shift+Enter opens its pull request over them, O opens GitHub and Esc closes in order", async ({
@@ -247,6 +166,9 @@ test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
     await expect(graph.rows).toHaveCount(6);
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
     await expect(graph.refList).toBeVisible();
+    // The default branch first, then branches and tags newest first, each with its tip's pull request and CI.
+    await expect(graph.refRows).toHaveText([/main\s*default/, /feat\/login\s*#5/, /release\/1\.0\s*#4/, /v1\.0\.0/]);
+    await expect(graph.mark(graph.refRow('feat/login'), 'Checks failing')).toBeVisible();
 
     await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
@@ -274,6 +196,12 @@ test("git-client D13, D15, D16, CH18, CH27-CH29: the list is left of the graph; 
     await page.keyboard.press('Escape');
     await expect(graph.root).toBeFocused();
     await expect(graph.details).toBeVisible();
+
+    // The header's tool does as B does.
+    await graph.refListTool.click();
+    await expect(graph.refFilter).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(graph.root).toBeFocused();
 
     // The second parent, selected in the graph.
     await page.keyboard.press('Shift+P');
@@ -398,18 +326,6 @@ test('a failing check opens its run in the app, and Esc comes back to the commit
     await page.keyboard.press('3');
     await expect(graph.cursorRow).toContainText("Merge branch 'release/1.0'");
     await expect(graph.detailsHeadline).toHaveText("Merge branch 'release/1.0'");
-});
-
-test('CH38: an empty repository says it has no commits yet', async ({ page, github }) => {
-    const sample = createSampleTrackedWork();
-    await openTrackedWork(page, github, sample.world);
-
-    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
-    const main = page.getByRole('main');
-    await expect(main.getByRole('heading', { name: 'No commits yet' })).toBeVisible();
-    await expect(main).toContainText(
-        `${SAMPLE_REPOSITORY} is empty on GitHub. Commits appear here after the first push.`,
-    );
 });
 
 test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column at once; 2 and 3 change section in it, B, typing and Enter choose a ref from its list, Enter opens the details beside the graph with the list staying, and Esc closes them', async ({

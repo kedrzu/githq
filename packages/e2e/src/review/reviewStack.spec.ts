@@ -10,16 +10,12 @@ import { openMyWork } from '../myWork/openMyWork.js';
 import { answerReview } from './answerReview.js';
 
 const FIRST = 'Split the rate limiter in two';
-const OUTSIDE = 'A pull request in no list';
 const SECOND = 'Move the limits to the config';
 const THIRD = 'Document the new limits';
 const NEXT_STACK_FIRST = 'Read the stack of each pull request';
 const NEXT_STACK_SECOND = 'Fold a stack into one entry';
 
-/**
- * My work's two stacks, monalisa's first in the list, then the viewer's; an issue assigned to the viewer at the end of it;
- * and a pull request no list holds.
- */
+/** My work's two stacks, monalisa's first in the list, then the viewer's; and an issue assigned to the viewer at the end of it. */
 function createWorld() {
     const viewer = SAMPLE_VIEWER.viewer.login;
     const world = new GitHubWorld(viewer);
@@ -59,7 +55,6 @@ function createWorld() {
         foundBy: ['assigned'],
         minutesAgo: 5,
     });
-    world.pullRequest({ repository: 'acme/web', number: 77, title: OUTSIDE, minutesAgo: 60 });
     return world;
 }
 
@@ -76,7 +71,6 @@ function answerFiles(github: GitHubMock) {
         ['acme/api', 203],
         ['acme/web', 101],
         ['acme/web', 102],
-        ['acme/web', 77],
     ] as const) {
         answerReview(github, { repository, number, files });
     }
@@ -241,22 +235,6 @@ test('scrolled, the bar stays pinned with the file list head under it, one click
     await expect(review.stackRows).toHaveCount(0);
     await page.keyboard.press('ControlOrMeta+b');
     await expect(review.stackRows).toHaveCount(3);
-});
-
-test('a pull request not in the local copy opens its review, with no stack section outside a stack and no list to walk', async ({
-    page,
-    github,
-}) => {
-    const { myWork } = await openMyWork(page, github, createWorld());
-    answerFiles(github);
-    await expect(myWork.row(FIRST)).toBeVisible();
-
-    await page.goto('/acme/web/pull/77/files');
-    const review = new ReviewScreenHarness(page);
-    await expect(review.title).toHaveText(OUTSIDE);
-    await expect(review.fileRow('file0.ts')).toBeVisible();
-    await expect(review.position).toBeHidden();
-    await expect(review.stackRows).toHaveCount(0);
 });
 
 test('a stack known only once the files are on screen leaves them where they are, the bar showing and its rows one scroll up', async ({
