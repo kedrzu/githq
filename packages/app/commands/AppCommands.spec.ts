@@ -424,25 +424,39 @@ test('a tracked repository is offered neither "Track repository" nor "Stop track
 });
 
 for (const screen of ['/acme/web/issues', '/acme/web/issues?pane=issue&issue=acme%7Cweb%7C1']) {
-    test(`at ${screen}, with its chip, another tracked repository is found, gone to on Enter and walked into on →`, async () => {
-        const router = await mount({ tracked: ['acme/web', 'acme/api'] });
-        await router.push(screen);
-        const top = page.getByRole('listbox', { name: 'Command menu' });
-        const level = page.getByRole('listbox', { name: 'acme/api' });
+    test(`at ${screen}, with its chip, another tracked repository is found and gone to on Enter`, async () => {
+        const router = await mountWithAnotherRepository(screen);
 
         await openOtherRepository();
         await expect.element(page.getByText('Remove context')).toBeInTheDocument();
         await userEvent.keyboard('{Enter}');
         await expect.poll(() => router.currentRoute.value.path).toMatch(/^\/acme\/api/u);
+    });
 
-        await router.push(screen);
+    test(`at ${screen}, another tracked repository is walked into on →, going nowhere until a row is picked`, async () => {
+        const router = await mountWithAnotherRepository(screen);
+        const level = page.getByRole('listbox', { name: 'acme/api' });
+
         await openOtherRepository();
         await userEvent.keyboard('{ArrowRight}');
         await expect.element(level.getByRole('option', { name: 'Pull requests', exact: true })).toBeInTheDocument();
         expect(router.currentRoute.value.fullPath).toBe(screen);
         await expect.element(level.getByRole('option', { name: /^Stop tracking/ })).not.toBeInTheDocument();
 
-        for (const stepBack of ['{ArrowLeft}', '{Backspace}', '{Escape}']) {
+        await userEvent.keyboard('pull requests{Enter}');
+        await expect.poll(() => router.currentRoute.value.path).toBe('/acme/api/pulls');
+    });
+
+    for (const stepBack of ['{ArrowLeft}', '{Backspace}', '{Escape}']) {
+        test(`at ${screen}, ${stepBack} steps back from another tracked repository to the top, with its chip, and it can be walked into again`, async () => {
+            await mountWithAnotherRepository(screen);
+            const top = page.getByRole('listbox', { name: 'Command menu' });
+            const level = page.getByRole('listbox', { name: 'acme/api' });
+
+            await openOtherRepository();
+            await userEvent.keyboard('{ArrowRight}');
+            await expect.element(level).toBeInTheDocument();
+
             await userEvent.keyboard(stepBack);
             await expect.element(top).toBeInTheDocument();
             await expect.element(page.getByText('Remove context')).toBeInTheDocument();
@@ -450,11 +464,8 @@ for (const screen of ['/acme/web/issues', '/acme/web/issues?pane=issue&issue=acm
             await expect.element(top.getByRole('option', { name: /^acme\/api/u })).toBeInTheDocument();
             await userEvent.keyboard('{ArrowRight}');
             await expect.element(level).toBeInTheDocument();
-        }
-
-        await userEvent.keyboard('pull requests{Enter}');
-        await expect.poll(() => router.currentRoute.value.path).toBe('/acme/api/pulls');
-    });
+        });
+    }
 }
 
 test('"api pull" finds the repository\'s Pull requests; "pull" alone no row of any repository\'s level', async () => {
@@ -532,6 +543,12 @@ test("a project's saved view is found by typing its name, not listed with nothin
         .poll(() => router.currentRoute.value.path)
         .toBe(getProjectPath(SAMPLE_PROJECT, SAMPLE_VIEW_BOARD.number));
 });
+
+async function mountWithAnotherRepository(screen: string) {
+    const router = await mount({ tracked: ['acme/web', 'acme/api'] });
+    await router.push(screen);
+    return router;
+}
 
 async function openOtherRepository() {
     await openMenu();
