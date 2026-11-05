@@ -462,6 +462,7 @@ test('a log GitHub had no answer for just after its job ended is asked for again
     await page.goto(`/${SAMPLE_REPOSITORY}/actions/runs/${runId}`);
 
     const screen = new WorkflowRunScreenHarness(page);
+    await expect(screen.job('build')).toBeVisible();
     await expect(screen.logPlaceholder).toBeVisible();
 
     // Away past the minutes a log takes to land: it lands meanwhile, with nothing asking for it.

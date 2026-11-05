@@ -45,6 +45,39 @@ test('a quick arrow press chooses, not only moves', async () => {
     expect(choices.at(-1)).toEqual({ event: 'APPROVE', body: '' });
 });
 
+test('on a busy main thread, the card just left does not take back what the arrow chose', async () => {
+    const choices: unknown[] = [];
+    await Comment.run({ args: { ...Comment.args, 'onUpdate:choice': choice => choices.push(choice) } });
+
+    // What a busy thread does: a timer set by the focus arriving with Tab runs only once the arrow is down.
+    const held: (() => void)[] = [];
+    const realSetTimeout = window.setTimeout;
+    const spy = vi.spyOn(window, 'setTimeout').mockImplementation(((
+        callback: () => void,
+        delay?: number,
+        ...rest: unknown[]
+    ) => {
+        if (!delay) {
+            held.push(callback);
+            return 0;
+        }
+        return realSetTimeout(callback, delay, ...rest);
+    }) as typeof window.setTimeout);
+
+    try {
+        await userEvent.keyboard('{Tab}');
+        const heldSinceTab = held.splice(0);
+        await userEvent.keyboard('{ArrowRight>}');
+        heldSinceTab.forEach(callback => callback());
+        await userEvent.keyboard('{/ArrowRight}');
+        held.splice(0).forEach(callback => callback());
+    } finally {
+        spy.mockRestore();
+    }
+
+    expect(choices.at(-1)).toEqual({ event: 'APPROVE', body: '' });
+});
+
 test('with no comments a comment or changes requested need text, and the button says why; ⌘↵ sends nothing', async () => {
     const onSubmit = vi.fn();
     await NoDraftComment.run({ args: { ...NoDraftComment.args, onSubmit } });

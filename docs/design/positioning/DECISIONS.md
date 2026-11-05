@@ -120,3 +120,6 @@ this section does. Reviews and merging are built, so nothing may send a reader t
 - Code review as a card in the details — it is too strong an argument for a card (owner).
 - The address bar in the hero, with the screenshot moving under it — dropped by the owner. The loop stays in the "Swap
   the host" card.
+
+**Kept.** The hero's screenshot still rises in once as the page opens (dimmed and 16 px lower at first, 320 ms), without
+the address bar: with no motion at all the hero looked flat (owner). Under reduced motion it stands in place.
