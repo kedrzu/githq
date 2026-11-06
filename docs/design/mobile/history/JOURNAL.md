@@ -46,3 +46,7 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-06 — Owner picked the command menu rising from below (D16). Owner is seriously considering a floating
   command line visible everywhere, with everything from the bottom bar under it and no tab bar; drawn as MB78–MB88,
   still to be picked.
+- 2026-11-06 — Owner picked the floating command line, Variant A: wide on a list, the comment box and ⌘ side by side on
+  an item (D17). It replaces D10, now in `RETIRED.md`, and answers where the button lives, what the bottom bar holds
+  and the parts on the bar (MB47), so those frames and all dock components were removed. All remaining screens moved
+  onto the line. Four questions left, in `variants.md`.

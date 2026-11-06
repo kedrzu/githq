@@ -10,53 +10,22 @@ good use of the top-left and top-right corners ([D1](DECISIONS.md#d1)), and no m
 screen's edge ([D2](DECISIONS.md#d2)).
 
 These are starting points, not the boundary. The design agent is expected to be creative and to propose shapes
-nobody listed here, above all for the command menu button.
+nobody listed here.
 
-Picked so far, and gone from this list: where the bottom bar shows ([D10](DECISIONS.md#d10)), whether a link says it
-leaves ([D11](DECISIONS.md#d11)), how "not fresh" shows ([D12](DECISIONS.md#d12)), what the command menu's button looks
-like ([D13](DECISIONS.md#d13)), what the top-right corner holds ([D14](DECISIONS.md#d14)), how the open command menu sits ([D16](DECISIONS.md#d16)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
+Picked so far, and gone from this list: whether a link says it leaves ([D11](DECISIONS.md#d11)), how "not fresh" shows
+([D12](DECISIONS.md#d12)), what the command menu's button looks like ([D13](DECISIONS.md#d13)), what the top-right
+corner holds ([D14](DECISIONS.md#d14)), the command line above Safari's bar ([D15](DECISIONS.md#d15)), how the open
+command menu sits ([D16](DECISIONS.md#d16)), and the command line instead of a bottom bar ([D17](DECISIONS.md#d17)).
 
-## The bottom bar
+## Still to be picked
 
-A bar of tabs along the bottom of the screen. The owner likes it as a way to move between the important parts of
-a place — a repository's issues, pull requests and so on — but it gets in the way when something else needs the
-bottom of the screen, above all an input such as the comment box, and it costs height.
+Drawn in `githq.pen`, frame `App · Mobile`, amber frames:
 
-- **What it holds.**
-  - (a) Changes with the screen: a repository's sections in a repository, My work's groups in My work, a
-    project's views in a project.
-  - (b) Fixed and global: My work, repositories, projects; a repository's sections become tabs at the top of its
-    screen.
-- **Whether it carries the command menu button** in its middle, if the button is not in a top corner.
-
-The owner's latest idea (2026-11-06): no tab bar at all, and one command line floating over every screen with everything
-the bar held moved under it. Drawn in `Variants · A floating command line instead of the bottom bar`.
-
-## The hamburger menu and the two top corners
-
-- **One nested menu on the left.** Opens from the top-left corner and drills down: the first level is today's
-  sidebar (My work and its groups, projects, repositories, settings); choosing a repository goes one level down
-  to its sections (issues, pull requests, actions), with a way back up. Open from inside a repository, it starts
-  at that repository's level.
-- **Left for places, right for this screen.** The left menu is the wide one — where you can go. The top-right
-  corner is about the screen you are on. Candidates for the right corner:
-  - the command menu button — the command menu already starts from the screen's subject (the opened item) and
-    its actions, so it is the screen's contextual menu already;
-  - a second, right-hand menu with the screen's own options (filters, grouping, list or board), now settled as one of
-    the corner's two buttons on a list ([D14](DECISIONS.md#d14)).
-- **The top-left corner on a screen you went into** (an item opened from a list): a back arrow in place of the
-  hamburger, the hamburger next to it, or the hamburger only.
-
-## The command menu button
-
-The command menu is opened by ⌘K on a computer; a phone needs a button for it, shown as ⌘ ([D13](DECISIONS.md#d13)). The top-right corner is the natural
-place, but the owner wants the design agent to look for something smarter (2026-11-06). Known options: top-right
-corner, middle of the bottom bar, a floating button.
-
-Two couplings any drawing has to respect:
-
-- The command menu already starts from the screen's subject (the opened item) and its actions, then the
-  repository's and the app's. A separate contextual menu with the item's actions would hold the same things
-  twice.
-- A button that lives on the bottom bar disappears wherever the bar does. If the bar shows on list screens only,
-  the button is gone from an item's screen — where its actions on the item are needed most.
+- **Whether the button stays once you are inside a task** (MB70–MB77): the owner's idea is that it leaves while writing
+  a reply, picking a value or creating an issue, and comes back at rest.
+- **What the top-left corner opens** (MB26–MB31): a panel, one menu that drills, or a screen. With the command line
+  holding a place's parts, the drill would put them in two menus.
+- **The top-left corner on an item's screen** (MB35–MB37): back with the list's name, back and the menu, or the menu
+  only.
+- **Whether a place shows the parts a phone does not have** (MB46, MB48): in the command line's menu marked ↗, or hidden
+  everywhere.

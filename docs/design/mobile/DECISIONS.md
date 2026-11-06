@@ -127,20 +127,6 @@ project view saved as a board shows on a phone as a list grouped by the board's 
 **Why.** The owner set the board aside. A board's columns are the values of the field it groups by, so a list
 grouped by that field holds the same items in the same order of groups, and the view stays usable.
 
-## D10
-
-**The bottom bar shows on list screens only. On an item's screen the bottom belongs to the comment box.**
-(2026-11-06, owner, picked from the drawings: `MB23` in `githq.pen`)
-
-**Why.** The owner gave no reason beyond the pick. The drawing's case: on an item the part of the place you are in
-no longer matters, because back returns to it, and two stacked bars leave little room for reading.
-
-**Rejected.**
-
-- The bar everywhere with the comment box above it (MB24) — two bars take 136 px with the home indicator, for a jump
-  that back and one tap already give.
-- The bar everywhere with the comment box behind a button (MB25) — every reply costs an extra tap.
-
 ## D11
 
 **A link that leaves githq for github.com on a phone says so before it is tapped, with a ↗.** Only links the phone
@@ -169,8 +155,8 @@ bar, while "your edit did not go through" and "githq cannot reach GitHub" must s
 
 ## D13
 
-**The command menu's button is ⌘.** (2026-11-06, owner, picked from the drawings: `MB57`; where the button sits is
-still open, [variants.md](variants.md))
+**The command menu's button is ⌘.** (2026-11-06, owner, picked from the drawings: `MB57`; it sits in the command line,
+[D17](#d17))
 
 **Why.** The owner gave no reason beyond the pick. It names the same thing as ⌘K on the computer.
 
@@ -198,15 +184,16 @@ computer; the rule against holding things twice is about a separate menu of an i
 
 ## D15
 
-**The dock stays at the bottom in a browser tab too, above Safari's own bar, and takes the height that costs.**
-(2026-11-06, owner: there is no way around it, githq has no control over the browser's interface; `MB69`)
+**In a browser tab the command line floats above Safari's own bar and takes the height that costs.**
+(2026-11-06, owner: there is no way around it, githq has no control over the browser's interface; `MB83`)
 
-**Why.** About 610 px are left for a list on a 390 × 844 phone, against about 690 in an installed app, by the drawing's
+**Why.** About 670 px are left for a list on a 390 × 844 phone, against about 750 in an installed app, by the drawing's
 own measures. The hybrid app of [D8](#d8) gets the difference back.
 
 **Rejected.**
 
-- Moving the parts to the top in a browser tab (MB20) — a second layout for one case, and the owner accepts the cost.
+- Moving a place's parts to the top in a browser tab (MB20) — a second layout for one case, and the owner accepts the
+  cost.
 
 ## D16
 
@@ -222,3 +209,27 @@ typing, and the keyboard would take half the screen.
 - A half sheet with the input on top (MB42–MB43) — the first action is furthest from the thumb, and the input jumps to
   the far side of the results when the keyboard comes.
 - Full screen with the keyboard up (MB44–MB45) — about four actions fit above the keyboard.
+
+## D17
+
+**There is no bottom tab bar. A command line floats over the bottom of every screen: on a list one wide button with ⌘
+and a chip saying which part this is and how many; on an item the comment box and ⌘, two floating buttons side by
+side. Tapping it opens the command menu in place, with the place's parts nearest the thumb.**
+(2026-11-06, the owner's idea, picked from the drawings: `MB78`, `MB80`–`MB83`, `MB39`)
+
+**Why.** The owner wanted everything from the bottom bar under the command line. It fits [D16](#d16), whose input is
+already at the bottom, and the list scrolls out from under the line, which matters most above Safari's bar. A project's
+saved views have room in a menu, where tabs had to scroll sideways.
+
+> **The known cost:** moving between a place's parts is two taps instead of one, and the other parts' counts are out of
+> sight. Accepted knowingly, not yet tried on a phone.
+
+**Rejected.**
+
+- The bottom bar holding a place's parts, with the button at its end (MB1–MB3, MB14–MB16, MB88) — one tap between parts
+  with every count in view, for a bar's height on every list.
+- Fixed global tabs (MB17–MB19), parts as tabs at the top (MB20), the title switching the part (MB21–MB22).
+- The same line on every screen, the comment box behind it (MB84–MB86) — removes the open box that invites a reply.
+- The line shrinking to a bubble while scrolling (MB87) — a moving target for the thumb.
+- The button elsewhere: the title as the button (MB4–MB5), the top-right corner (MB6–MB7), a bar that stays on the item
+  (MB8–MB9), floating alone (MB10–MB11), one box at the bottom (MB12–MB13).

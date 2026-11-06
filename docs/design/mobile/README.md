@@ -59,20 +59,16 @@ full-page form with its own GitHub address, so the deepest level exists today.
 How you move between them is chosen by drawing, not by argument. The direction is set — classic phone navigation
 that makes good use of the top-left and top-right corners, with every menu opened by a button and none by swiping
 from the edge of the screen, which the iPhone's browser uses for its own gestures
-([the direction](DECISIONS.md#d1), [no edge swipes](DECISIONS.md#d2)). The shapes in question — a bar of tabs along
-the bottom, and on which screens it gets out of the way of the comment box; one menu on the left that drills down
-from the sidebar's places to a repository's sections, or a menu for places on the left and one for the current
-screen on the right; where the command menu's button sits — are listed for the design agent to draw side by side,
-with room for shapes nobody listed ([what is to be drawn](variants.md)).
+([the direction](DECISIONS.md#d1), [no edge swipes](DECISIONS.md#d2)). A place's parts live under a command line that floats over the bottom of every screen, with no tab bar: one wide
+button on a list, the comment box and ⌘ side by side on an item ([the line](DECISIONS.md#d17)). What is still open is
+drawn for the owner to pick ([what is left](variants.md)).
 
 ## Where this stands
 
 Settled: what makes the app a phone, the first version's scope, what happens to the addresses it does not show,
 and the first sign-in. Not yet touched: the item's screen on a phone (its properties, activity and comment box in
-one column), and how a list row shrinks to a phone's width. The navigation variants are drawn in `githq.pen`, frame
-`App · Mobile`, from [the brief for the design agent](ui/navigate-on-a-phone.md); the owner is picking from them, and
-so far the bottom bar stays off an item's screen ([D10](DECISIONS.md#d10)), links that leave say so
-([D11](DECISIONS.md#d11)), what is not fresh shows without a status bar ([D12](DECISIONS.md#d12)), and the command
-menu's button is ⌘ ([D13](DECISIONS.md#d13)). The top-right corner holds two buttons for the screen
-([D14](DECISIONS.md#d14)), and the dock sits above Safari's own bar in a browser tab ([D15](DECISIONS.md#d15)). The open command menu rises
-from below ([D16](DECISIONS.md#d16)).
+one column), and how a list row shrinks to a phone's width. The navigation is drawn in `githq.pen`, frame
+`App · Mobile`, from [the brief for the design agent](ui/navigate-on-a-phone.md). The owner has picked the command line
+instead of a bottom bar ([D17](DECISIONS.md#d17)), the command menu rising from below ([D16](DECISIONS.md#d16)), its
+button as ⌘ ([D13](DECISIONS.md#d13)), two buttons in the top-right corner ([D14](DECISIONS.md#d14)), links that say
+they leave ([D11](DECISIONS.md#d11)) and what shows when the copy is not fresh ([D12](DECISIONS.md#d12)).
