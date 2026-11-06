@@ -109,9 +109,9 @@ The first run is in "App · First sign-in and choosing what to track"; the rest 
   (`Track / Top bar` changed); **G15** the same on the macOS desktop app, window buttons in the strip.
 - **G16** — My work seconds after "Track these", nothing arrived; **G17** — some groups in, others arriving.
 - **G6** (the download page) and **G7** (the rejected "straight into the app" draft) are retired.
-- **ES1–ES4** — `Variants · How an empty screen says why`: the four patterns in three directions (A ghost rows, B one
-  centred note, C a line at the top), each on a full screen, a list's group and a board column; ES4 how A moves.
-- **ES5–ES7** — `Variants · What the left segment says while downloading`; **ES8** who has the left segment;
+- **ES1** — the four patterns on a full screen, a list's group and a board column; **ES4** how still arriving moves.
+  ES2 and ES3 (rejected directions) are deleted.
+- **ES5** — what the left segment says while downloading (ES6, ES7 rejected and deleted); **ES8** who has it;
   **ES9** a tracked repository while its closed issues arrive; **ES10** the same, up to date.
 - **ES11–ES13** — My work: a filter leaves nothing; one group chosen from the sidebar, empty; offline before anything
   arrived.

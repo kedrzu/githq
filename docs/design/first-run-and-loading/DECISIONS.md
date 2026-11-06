@@ -173,41 +173,42 @@ fixed as a bug, not designed.** (2026-11-06, design agent's proposal, owner conf
 ## D8
 
 **Every empty screen or list tells its reason through one of four components, each drawn for a full screen, a list's
-group and a board column. Proposed: Variant A (ES1) — still arriving draws faint ghost rows (ghost cards on a board)
-where the rows will land, with three pulsing dots and one short line; nothing there, filtered out and can't be read
-are the centred note the app already uses (K4, J7): an icon, a title, one line, at most one action. In a group each is
-one quiet line under the header; in a board column a small centred note.** (2026-11-06, design agent's proposal;
-waiting on the owner's pick among ES1–ES3)
+group and a board column (ES1). Still arriving is ghost rows alone (ghost cards on a board) where the rows will land,
+with no status line: a dozen on a full screen fading slowly from full strength, three in a group or a column. Nothing
+there, filtered out and can't be read are the centred note the app already uses (K4, J7): an icon, a title, one line,
+at most one action; in a group one quiet line under the header; in a board column a small centred note.**
+(2026-11-06, owner picked the design agent's Variant A, without its "Fetching from GitHub" line)
 
-**Why.** Ghost rows say "rows are coming, here" without words, and rows replace them in place, so nothing jumps when
-data lands; the same shape already shows files still arriving in code review (#205). The other three reasons were
-already designed in the centred style on several screens; making them components keeps them alike.
+**Why.** The skeletons say plainly that something is loading, and the status bar says what (D4, D14); rows replace
+the ghosts in place, so nothing jumps when data lands. The same shape already shows files still arriving in code
+review (#205). The owner found seven rows fading to zero too faint: more rows, wider bars, a slower fade.
 
-Components (`Components · Empty states`): `Empty A / Arriving · screen | group | column`, `Empty / Nothing there ·
+Components (`Components · Empty states`): `Empty / Still arriving · screen | group | column`, `Empty / Nothing there ·
 …`, `Empty / Filtered out · …`, `Empty / Can't be read · …`, built on `Empty / Note · screen | group | column`,
-`Empty / Ghost row`, `Empty / Ghost card`, `Empty / Dots`.
+`Empty / Ghost row`, `Empty / Ghost card`.
 
-**Rejected (proposed).**
+**Rejected.**
 
-- Variant B, one centred note for all four (ES2) — uniform and calm, but a screen still arriving looks as blank as an
-  empty one until it is read.
-- Variant C, a line at the top for all four (ES3) — dense and honest, and it can tick through My work's groups, but
-  a 1,200px pane stays almost empty above the fold, and the ticker exists only where groups are known.
+- One centred note for all four, still arriving with pulsing dots (ES2, deleted) — a screen still arriving looks as
+  blank as an empty one until it is read.
+- A line at the top for all four, still arriving ticking through My work's groups (ES3, deleted) — a 1,200px pane
+  stays almost empty above the fold, and the ticker exists only where groups are known.
+- A status line over the ghosts ("Fetching from GitHub · Rows appear as they arrive", with pulsing dots) — the
+  skeletons already say it (owner).
 
 ## D9
 
-**Still arriving moves in two slow, quiet ways: a soft highlight sweeps through the ghost rows every 1.6 s, each row
-80 ms after the one above, and the three dots fade in turn (400 ms each); an arriving row fades in over its ghost in
-150 ms. With animations off (Display, CH49) both stand still. The words: "Fetching {thing}" on a screen ("Fetching
-your work", "Fetching fitloop/webapp's open issues"), "Still arriving" in a group or a column.** (2026-11-06, design
-agent's proposal) — ES4
+**The ghosts carry the motion alone: a soft highlight sweeps left to right through them, a full pass every 1.6 s,
+each row 80 ms after the one above; an arriving row fades in over its ghost in 150 ms and the ghosts below move down.
+With animations off (Display, CH49) the ghosts stand still.** (2026-11-06, design agent's proposal; the owner asked
+that it visibly move) — ES4
 
-**Why.** The owner asked for "fetching", "crunching", "churning", light and good-looking, not a spinner on a blank
-page. A sweep through the rows reads as work in progress; a blink reads as a fault.
+**Why.** With no words the motion is what tells "something is happening"; a sweep reads as work in progress, a blink
+as a fault. The owner's words for the tone: "fetching", "crunching", "churning".
 
 ## D10
 
-**The still-arriving state shows no numbers; the status bar holds them.** (2026-11-06, design agent's proposal)
+**The still-arriving state shows no numbers or words; the status bar holds them.** (2026-11-06, design agent's proposal)
 
 **Why.** Counts grow while a download runs ("of 8,000" rises once closed items are counted), so a number in two
 places doubles the jitter. The screen's own status bar segment is right below the list and already says "Downloading
@@ -215,21 +216,21 @@ open issues · 40 of 142" (ES14).
 
 ## D11
 
-**The left segment while downloading, proposed (ES5): items so far of the total and the time left, e.g. "1,240 of
-8,000 · about 2 min"; "Downloading · counting…" before the first count; how many repositories and projects are
-downloading moves to the hover title. On the rail (56px): the time left ("2m") once a pace is known, the turning icon
-alone before. Who has the segment, in order: offline, paused by the allowance, downloading, the allowance (ES8).**
-(2026-11-06, design agent's proposal; waiting on the owner's pick among ES5–ES7)
+**The left segment while downloading shows items so far of the total and the time left, e.g. "1,240 of 8,000 · about
+2 min"; "Downloading · counting…" before the first count; how many repositories and projects are downloading is in the
+hover title. On the rail (56px): the time left ("2m") once a pace is known, the turning icon alone before. Who has the
+segment, in order: offline, paused by the allowance, downloading, the allowance.** (2026-11-06, owner picked ES5; the
+rail and the order are the design agent's) — ES5, ES8
 
 **Why.** The brief's example, "Downloading 4 repositories · 1,240 of 8,000 · about 2 min", is about 330px of text in a
 236px segment. The number and the time are what change, so they stay in sight. Offline and paused tell why nothing
 moves, which matters more than how far it got.
 
-**Rejected (proposed).**
+**Rejected.**
 
-- "Downloading 5 · about 2 min" (ES6) — items of the total, which the brief asks for, leave sight.
-- A bar along the segment's top edge (ES7) — it moves backwards when a total grows, which reads as a fault; and on the
-  rail a percentage does the same.
+- "Downloading 5 · about 2 min" (ES6, deleted) — items of the total leave sight.
+- A bar along the segment's top edge (ES7, deleted) — it moves backwards when a total grows, which reads as a fault;
+  on the rail a percentage does the same.
 
 ## D12
 
