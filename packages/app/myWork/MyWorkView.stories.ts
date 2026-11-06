@@ -108,6 +108,16 @@ export const ByRepository: Story = {
     },
 };
 
+/** Grouped by status: "Needs me" and "Waiting on others" as their filters keep them, rows named in full. */
+export const ByStatus: Story = {
+    args: { selectedId: 'I_1187', options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'status' } },
+};
+
+/** Grouped by who opened each row, by login, the pull request closing an assigned issue still under it. */
+export const ByAuthor: Story = {
+    args: { selectedId: 'I_1187', options: { ...MY_WORK_VIEW_DEFAULTS, grouping: 'author' } },
+};
+
 /**
  * SP1: stacks, each one entry in the first reason any of its pull requests has — someone else's asking the user's review
  * on two of its four ("Your review on 2 of 4"), the user's own with its third failing.

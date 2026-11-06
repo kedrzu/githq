@@ -25259,6 +25259,394 @@
                   "width": "fill_container"
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "MFC63",
+              "name": "D8 · Sidebar expanded · My work grouped by status · Item in panel",
+              "clip": true,
+              "width": 1440,
+              "height": 900,
+              "fill": "$bg",
+              "cornerRadius": 10,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "nzAOK",
+                  "name": "Main",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "children": [
+                    {
+                      "id": "Z2coaG",
+                      "type": "ref",
+                      "ref": "ZPurg",
+                      "name": "Sidebar",
+                      "height": "fill_container",
+                      "descendants": {
+                        "b49czV": {
+                          "fill": "$bg-3"
+                        },
+                        "uONNn": {
+                          "fill": "$fg"
+                        },
+                        "AC0j9": {
+                          "fill": "$fg",
+                          "fontWeight": "500"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QtNHi",
+                      "name": "List pane",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "OkO2e",
+                          "type": "ref",
+                          "ref": "wjD5X",
+                          "name": "List header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "EytYH": {
+                              "name": "Group: Status",
+                              "content": "Group: Status"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "blbov",
+                          "name": "Rows",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            4,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "id": "wZlvn",
+                              "type": "ref",
+                              "ref": "nSfK0",
+                              "name": "Group Needs me",
+                              "width": "fill_container",
+                              "descendants": {
+                                "RQBCe": {
+                                  "icon": "circle-alert"
+                                },
+                                "H6gIzC": {
+                                  "content": "Needs me"
+                                },
+                                "PHmZr": {
+                                  "content": "8"
+                                }
+                              }
+                            },
+                            {
+                              "id": "h0aOb9",
+                              "type": "ref",
+                              "ref": "O23QmN",
+                              "name": "Row fitloop/api#482",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "VvHOC",
+                              "type": "ref",
+                              "ref": "O23QmN",
+                              "name": "Row fitloop/webapp#1203",
+                              "width": "fill_container",
+                              "descendants": {
+                                "v0RPVZ": {
+                                  "content": "Migrate class calendar to new date picker"
+                                },
+                                "M2264f": {
+                                  "name": "Avatar RH",
+                                  "fill": "#B39DDB"
+                                },
+                                "M2264f/zeZzP": {
+                                  "content": "RH"
+                                },
+                                "cwGZc": {
+                                  "content": "5h"
+                                },
+                                "NwbJc": {
+                                  "content": "fitloop/webapp#1203"
+                                },
+                                "oMKdk": {
+                                  "name": "Status running"
+                                },
+                                "oMKdk/muoMv": {
+                                  "name": "icon loader",
+                                  "icon": "loader",
+                                  "fill": "$amber"
+                                },
+                                "oMKdk/uYfBa": {
+                                  "fill": "$amber",
+                                  "content": "Checks running"
+                                },
+                                "j2aAGy/g9LUX": {
+                                  "content": "+1,092"
+                                },
+                                "j2aAGy/Cb3Zq": {
+                                  "content": "−640"
+                                }
+                              }
+                            },
+                            {
+                              "id": "l8Un7",
+                              "type": "ref",
+                              "ref": "jzfoH",
+                              "name": "Row mlaine/tasklet#15",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "YdmCc",
+                              "type": "ref",
+                              "ref": "L0fP2E",
+                              "name": "Row fitloop/webapp#1187",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "MWnUc",
+                              "type": "ref",
+                              "ref": "fT1ix",
+                              "name": "Row #1205",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "TssZV",
+                              "type": "ref",
+                              "ref": "omJTP",
+                              "name": "Row mlaine/tasklet#12",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "rEcZF",
+                              "type": "ref",
+                              "ref": "NsgnE",
+                              "name": "Row mlaine/tasklet#9",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "jjPcK",
+                              "type": "ref",
+                              "ref": "NsgnE",
+                              "name": "Row fitloop/api#455",
+                              "width": "fill_container",
+                              "descendants": {
+                                "v0RPVZ": {
+                                  "content": "Document webhook retry policy"
+                                },
+                                "cwGZc": {
+                                  "content": "4d"
+                                },
+                                "dQC2H": {
+                                  "content": "fitloop/api#455"
+                                },
+                                "DzXOo": {
+                                  "name": "Label docs"
+                                },
+                                "DzXOo/nzkCm": {
+                                  "fill": "#4C9AFF"
+                                },
+                                "DzXOo/PssNv": {
+                                  "content": "docs"
+                                }
+                              }
+                            },
+                            {
+                              "id": "JBjpr",
+                              "type": "ref",
+                              "ref": "S1QuW",
+                              "name": "Row mlaine/mdlint#31",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "Z7zdU",
+                              "type": "ref",
+                              "ref": "nSfK0",
+                              "name": "Group Ready to merge",
+                              "width": "fill_container",
+                              "descendants": {
+                                "RQBCe": {
+                                  "icon": "circle-check"
+                                },
+                                "H6gIzC": {
+                                  "content": "Ready to merge"
+                                },
+                                "PHmZr": {
+                                  "content": "2"
+                                }
+                              }
+                            },
+                            {
+                              "id": "W3pGnr",
+                              "type": "ref",
+                              "ref": "PDcPO",
+                              "name": "Row fitloop/api#477",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "Z3cRYF",
+                              "type": "ref",
+                              "ref": "pSXO7",
+                              "name": "Row mlaine/mdlint#38",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "wklLH",
+                              "type": "ref",
+                              "ref": "nSfK0",
+                              "name": "Group Other",
+                              "width": "fill_container",
+                              "descendants": {
+                                "RQBCe": {
+                                  "icon": "at-sign"
+                                },
+                                "H6gIzC": {
+                                  "content": "Other"
+                                },
+                                "PHmZr": {
+                                  "content": "3"
+                                }
+                              }
+                            },
+                            {
+                              "id": "aa8eY",
+                              "type": "ref",
+                              "ref": "Oo1Zf",
+                              "name": "Row fitloop/api#463",
+                              "width": "fill_container",
+                              "descendants": {
+                                "Ro9CD/TZbKU": {
+                                  "name": "icon circle-dot",
+                                  "icon": "circle-dot"
+                                },
+                                "v0RPVZ": {
+                                  "content": "Webhook signatures fail behind the new proxy"
+                                },
+                                "cwGZc": {
+                                  "content": "3h"
+                                },
+                                "EowFl": {
+                                  "content": "fitloop/api#463"
+                                },
+                                "qjNj8": {
+                                  "name": "Project field",
+                                  "gap": 5
+                                },
+                                "b6KZaH": {
+                                  "name": "icon square-kanban",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "square-kanban"
+                                },
+                                "ViRcy": {
+                                  "name": "Todo",
+                                  "fill": "$fg-2",
+                                  "content": "Todo"
+                                },
+                                "kasg4": {
+                                  "name": "Mention",
+                                  "gap": 4
+                                },
+                                "kasg4/muoMv": {
+                                  "name": "icon at-sign",
+                                  "width": 11,
+                                  "height": 11,
+                                  "icon": "at-sign",
+                                  "fill": "$fg-3"
+                                },
+                                "kasg4/uYfBa": {
+                                  "name": "Mention text",
+                                  "fill": "$fg-dim",
+                                  "content": "sofiab"
+                                }
+                              }
+                            },
+                            {
+                              "id": "mVKUG",
+                              "type": "ref",
+                              "ref": "NL2wd",
+                              "name": "Row fitloop/mobile#94",
+                              "width": "fill_container",
+                              "descendants": {
+                                "H15zCp": {
+                                  "enabled": true
+                                }
+                              }
+                            },
+                            {
+                              "id": "P8Ednu",
+                              "type": "ref",
+                              "ref": "Oo1Zf",
+                              "name": "Row tanstack/query#8120",
+                              "width": "fill_container",
+                              "descendants": {
+                                "Ro9CD/TZbKU": {
+                                  "name": "icon circle-dot",
+                                  "icon": "circle-dot"
+                                },
+                                "v0RPVZ": {
+                                  "content": "Stale data after window refocus with a persisted cache"
+                                },
+                                "cwGZc": {
+                                  "content": "2d"
+                                },
+                                "EowFl": {
+                                  "content": "tanstack/query#8120"
+                                },
+                                "kasg4": {
+                                  "name": "Mention",
+                                  "gap": 4
+                                },
+                                "kasg4/muoMv": {
+                                  "name": "icon at-sign",
+                                  "width": 11,
+                                  "height": 11,
+                                  "icon": "at-sign",
+                                  "fill": "$fg-3"
+                                },
+                                "kasg4/uYfBa": {
+                                  "name": "Mention text",
+                                  "fill": "$fg-dim",
+                                  "content": "tmaier"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "oM4Nm",
+                      "type": "ref",
+                      "ref": "jOPlc",
+                      "name": "Item view",
+                      "height": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "left": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "HvETp",
+                  "type": "ref",
+                  "ref": "Nopak",
+                  "name": "Status bar",
+                  "width": "fill_container"
+                }
+              ]
             }
           ]
         },
@@ -30709,6 +31097,90 @@
                         },
                         {
                           "type": "frame",
+                          "id": "Wvg0N",
+                          "name": "Option Author",
+                          "width": "fill_container",
+                          "cornerRadius": 6,
+                          "gap": 8,
+                          "padding": [
+                            6,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "QxTzs",
+                              "name": "icon pen-line",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "pen-line",
+                              "library": "lucide",
+                              "fill": "$fg-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZNaYB",
+                              "name": "Author",
+                              "fill": "$fg",
+                              "content": "Author",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "IVQVq",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EWj6d",
+                          "name": "Option Status",
+                          "width": "fill_container",
+                          "cornerRadius": 6,
+                          "gap": 8,
+                          "padding": [
+                            6,
+                            8
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "z6S1B",
+                              "name": "icon circle-dashed",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "circle-dashed",
+                              "library": "lucide",
+                              "fill": "$fg-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "cGThx",
+                              "name": "Status",
+                              "fill": "$fg",
+                              "content": "Status",
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "oK7KD",
+                              "name": "spacer",
+                              "width": "fill_container",
+                              "height": 1
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "BEIyw",
                           "name": "Option Label",
                           "width": "fill_container",
@@ -30809,48 +31281,6 @@
                               "icon": "check",
                               "library": "lucide",
                               "fill": "$accent"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Wvg0N",
-                          "name": "Option Author",
-                          "width": "fill_container",
-                          "cornerRadius": 6,
-                          "gap": 8,
-                          "padding": [
-                            6,
-                            8
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "QxTzs",
-                              "name": "icon pen-line",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "pen-line",
-                              "library": "lucide",
-                              "fill": "$fg-2"
-                            },
-                            {
-                              "type": "text",
-                              "id": "ZNaYB",
-                              "name": "Author",
-                              "fill": "$fg",
-                              "content": "Author",
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "IVQVq",
-                              "name": "spacer",
-                              "width": "fill_container",
-                              "height": 1
                             }
                           ]
                         },
@@ -31428,6 +31858,905 @@
                         "YBQPD/unZbw": {
                           "fill": "$fg-2",
                           "content": "Not tracked · showing only what concerns you"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iur18",
+              "name": "Slot · J8 · Tracked repository · Pull requests grouped by status",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "lPPMM",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "xnxtI",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "J8 · Tracked repository · Pull requests grouped by status",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "LFmtH",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Group: Status puts each pull request under the stage its row's status line already tells, so the two never disagree: Draft, Waiting for review, Needs work, Checks running, Ready to merge, Merging, Merged, Closed — only those with pull requests, in that order. Nothing can be dragged between them (D39). Issues grouped by status are Open, Closed and Not planned.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ch4Q9",
+                  "name": "J8 · Tracked repository · Pull requests grouped by status",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "pFyNH",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "gQcRI",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "w7B2q": {
+                              "fill": "$bg-3"
+                            },
+                            "j1VWpL": {
+                              "fill": "$fg"
+                            },
+                            "y14orI": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "d6rAu",
+                          "name": "Pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Bw3PV",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "kPzBV",
+                                  "name": "icon lock",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WJr2g",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "fitloop/webapp",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "I6zo6",
+                                  "name": "Meta",
+                                  "fill": "$fg-dim",
+                                  "content": "private",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vX32J",
+                                  "name": "Sections",
+                                  "gap": 2,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "Ah19r",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Issues",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Issues",
+                                          "name": "Issues"
+                                        },
+                                        "prKB9": {
+                                          "content": "118"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "blpIY",
+                                      "type": "ref",
+                                      "ref": "U6PxrM",
+                                      "name": "Section Pull requests",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Pull requests",
+                                          "name": "Pull requests"
+                                        },
+                                        "prKB9": {
+                                          "content": "24"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "m34YmD",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Commits",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Commits",
+                                          "name": "Commits"
+                                        },
+                                        "prKB9": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "YydbK",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Workflows",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Workflows",
+                                          "name": "Workflows"
+                                        },
+                                        "prKB9": {
+                                          "content": "2"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "S3jAmd",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "id": "VcxYr",
+                                  "type": "ref",
+                                  "ref": "XJXsm",
+                                  "name": "Tool Filter",
+                                  "descendants": {
+                                    "rgTry": {
+                                      "icon": "list-filter"
+                                    },
+                                    "deogH": {
+                                      "content": "Filter"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "BTFt0",
+                                  "type": "ref",
+                                  "ref": "J65oxg",
+                                  "name": "Tool Open",
+                                  "descendants": {
+                                    "rgTry": {
+                                      "icon": "circle-dot"
+                                    },
+                                    "deogH": {
+                                      "content": "Open"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "s3bvcJ",
+                                  "type": "ref",
+                                  "ref": "J65oxg",
+                                  "name": "Tool Group: Status",
+                                  "descendants": {
+                                    "rgTry": {
+                                      "icon": "rows-3"
+                                    },
+                                    "deogH": {
+                                      "content": "Group: Status"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "z59q6",
+                                  "name": "Layout switch",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 2,
+                                  "children": [
+                                    {
+                                      "id": "Tld4f",
+                                      "type": "ref",
+                                      "ref": "loIMo",
+                                      "name": "Mode list",
+                                      "fill": "$bg-3",
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "descendants": {
+                                        "dE4cB": {
+                                          "name": "icon list",
+                                          "icon": "list",
+                                          "fill": "$fg"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "cevUI",
+                                      "type": "ref",
+                                      "ref": "loIMo",
+                                      "name": "Mode columns-3",
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "descendants": {
+                                        "dE4cB": {
+                                          "name": "icon columns-3",
+                                          "icon": "columns-3"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "IHLP7",
+                                  "name": "Display",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aSdTA",
+                                      "name": "icon sliders-horizontal",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "sliders-horizontal",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "y8QgS1",
+                                      "name": "Display",
+                                      "fill": "$fg-2",
+                                      "content": "Display",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "QaspY",
+                                  "name": "github",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "AvD94",
+                                      "name": "icon github",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "github",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iBu2b",
+                              "name": "Projects bar",
+                              "width": "fill_container",
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 8,
+                              "padding": [
+                                9,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "OzX54",
+                                  "name": "Its issues live in",
+                                  "fill": "$fg-dim",
+                                  "content": "Its issues live in",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "I5TYJE",
+                                  "name": "Project Platform Q4",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 6,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "zAGMK",
+                                      "name": "icon square-kanban",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Yj6RM",
+                                      "name": "Platform Q4",
+                                      "fill": "$fg",
+                                      "content": "Platform Q4",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "EitP8",
+                                      "name": "Count",
+                                      "fill": "$fg-dim",
+                                      "content": "61",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "rPXVm",
+                                      "name": "icon arrow-right",
+                                      "width": 11,
+                                      "height": 11,
+                                      "icon": "arrow-right",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "CwEnG",
+                                  "name": "Project Bug triage",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 6,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "y4uF4",
+                                      "name": "icon square-kanban",
+                                      "width": 12,
+                                      "height": 12,
+                                      "icon": "square-kanban",
+                                      "library": "lucide",
+                                      "fill": "$accent"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "iVVwU",
+                                      "name": "Bug triage",
+                                      "fill": "$fg",
+                                      "content": "Bug triage",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "JXrwF",
+                                      "name": "Count",
+                                      "fill": "$fg-dim",
+                                      "content": "12",
+                                      "fontFamily": "$mono",
+                                      "fontSize": 11.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "ixgHE",
+                                      "name": "icon arrow-right",
+                                      "width": 11,
+                                      "height": 11,
+                                      "icon": "arrow-right",
+                                      "library": "lucide",
+                                      "fill": "$fg-3"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "IN3kS",
+                                  "name": "· 58 in no project",
+                                  "fill": "$fg-dim",
+                                  "content": "· 58 in no project",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "K7Ggr",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "iZYtP",
+                                  "name": "Freshness",
+                                  "gap": 6,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "ellipse",
+                                      "id": "OZBvE",
+                                      "name": "dot",
+                                      "fill": "$green",
+                                      "width": 6,
+                                      "height": 6
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LgXJg",
+                                      "name": "Synced 14s ago",
+                                      "fill": "$fg-dim",
+                                      "content": "Synced 14s ago",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jVLlx",
+                              "name": "Rows",
+                              "clip": true,
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "Uiwhd",
+                                  "type": "ref",
+                                  "ref": "nSfK0",
+                                  "name": "Group Waiting for review",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "RQBCe": {
+                                      "icon": "hourglass"
+                                    },
+                                    "H6gIzC": {
+                                      "content": "Waiting for review"
+                                    },
+                                    "PHmZr": {
+                                      "content": "2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "NlLzm",
+                                  "type": "ref",
+                                  "ref": "O23QmN",
+                                  "name": "Row #1224",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Waitlist: notify the next member when a spot frees up"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#8FC7A8"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "SB"
+                                    },
+                                    "cwGZc": {
+                                      "content": "3h"
+                                    },
+                                    "NwbJc": {
+                                      "content": "#1224"
+                                    },
+                                    "oMKdk/uYfBa": {
+                                      "content": "Your review requested"
+                                    },
+                                    "j2aAGy/g9LUX": {
+                                      "content": "+318"
+                                    },
+                                    "j2aAGy/Cb3Zq": {
+                                      "content": "−12"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "d5lPp",
+                                  "type": "ref",
+                                  "ref": "O23QmN",
+                                  "name": "Row #1219",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Show the class capacity on the week view"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#7FB3D5"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "JD"
+                                    },
+                                    "cwGZc": {
+                                      "content": "1d"
+                                    },
+                                    "NwbJc": {
+                                      "content": "#1219"
+                                    },
+                                    "oMKdk/uYfBa": {
+                                      "content": "Waiting for review"
+                                    },
+                                    "j2aAGy/g9LUX": {
+                                      "content": "+64"
+                                    },
+                                    "j2aAGy/Cb3Zq": {
+                                      "content": "−8"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "nte6p",
+                                  "type": "ref",
+                                  "ref": "nSfK0",
+                                  "name": "Group Needs work",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "RQBCe": {
+                                      "icon": "circle-x"
+                                    },
+                                    "H6gIzC": {
+                                      "content": "Needs work"
+                                    },
+                                    "PHmZr": {
+                                      "content": "2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "oqSOj",
+                                  "type": "ref",
+                                  "ref": "jzfoH",
+                                  "name": "Row #1228",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Book classes in the studio's timezone"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#C9A26B"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "ML"
+                                    },
+                                    "cwGZc": {
+                                      "content": "38m"
+                                    },
+                                    "bvtz1": {
+                                      "content": "#1228"
+                                    },
+                                    "lLaLZ/uYfBa": {
+                                      "content": "2 checks failing"
+                                    },
+                                    "Rx2ve/g9LUX": {
+                                      "content": "+142"
+                                    },
+                                    "Rx2ve/Cb3Zq": {
+                                      "content": "−37"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "CNHIL",
+                                  "type": "ref",
+                                  "ref": "jzfoH",
+                                  "name": "Row #1213",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Stripe: retry refunds that time out"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#7FD6A0"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "cwGZc": {
+                                      "content": "2d"
+                                    },
+                                    "bvtz1": {
+                                      "content": "#1213"
+                                    },
+                                    "lLaLZ/uYfBa": {
+                                      "content": "1 check failing · changes requested"
+                                    },
+                                    "Rx2ve/g9LUX": {
+                                      "content": "+57"
+                                    },
+                                    "Rx2ve/Cb3Zq": {
+                                      "content": "−14"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "W9iVx",
+                                  "type": "ref",
+                                  "ref": "nSfK0",
+                                  "name": "Group Checks running",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "RQBCe": {
+                                      "icon": "loader"
+                                    },
+                                    "H6gIzC": {
+                                      "content": "Checks running"
+                                    },
+                                    "PHmZr": {
+                                      "content": "1"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "w50eY",
+                                  "type": "ref",
+                                  "ref": "jzfoH",
+                                  "name": "Row #1231",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Sync the class calendar on reconnect"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#B39DDB"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "RH"
+                                    },
+                                    "cwGZc": {
+                                      "content": "12m"
+                                    },
+                                    "bvtz1": {
+                                      "content": "#1231"
+                                    },
+                                    "lLaLZ/muoMv": {
+                                      "icon": "loader",
+                                      "fill": "$amber"
+                                    },
+                                    "lLaLZ/uYfBa": {
+                                      "content": "Checks running",
+                                      "fill": "$amber"
+                                    },
+                                    "Rx2ve/g9LUX": {
+                                      "content": "+233"
+                                    },
+                                    "Rx2ve/Cb3Zq": {
+                                      "content": "−41"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "G8BWVy",
+                                  "type": "ref",
+                                  "ref": "nSfK0",
+                                  "name": "Group Ready to merge",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "RQBCe": {
+                                      "icon": "circle-check"
+                                    },
+                                    "H6gIzC": {
+                                      "content": "Ready to merge"
+                                    },
+                                    "PHmZr": {
+                                      "content": "2"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "t8a6ti",
+                                  "type": "ref",
+                                  "ref": "PDcPO",
+                                  "name": "Row #1162",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "chore(deps): update vite to 6.2"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#656C76"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "DB"
+                                    },
+                                    "cwGZc": {
+                                      "content": "2w"
+                                    },
+                                    "ycZMF": {
+                                      "content": "#1162"
+                                    },
+                                    "ghRKQ/uYfBa": {
+                                      "content": "Approved · ready to merge"
+                                    },
+                                    "im2im/g9LUX": {
+                                      "content": "+86"
+                                    },
+                                    "im2im/Cb3Zq": {
+                                      "content": "−91"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "pm5GA",
+                                  "type": "ref",
+                                  "ref": "PDcPO",
+                                  "name": "Row #1208",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "v0RPVZ": {
+                                      "content": "Studio settings page in the new layout"
+                                    },
+                                    "M2264f": {
+                                      "fill": "#E8A0A0"
+                                    },
+                                    "M2264f/zeZzP": {
+                                      "content": "SR"
+                                    },
+                                    "cwGZc": {
+                                      "content": "4d"
+                                    },
+                                    "ycZMF": {
+                                      "content": "#1208"
+                                    },
+                                    "ghRKQ/uYfBa": {
+                                      "content": "Approved"
+                                    },
+                                    "im2im/g9LUX": {
+                                      "content": "+402"
+                                    },
+                                    "im2im/Cb3Zq": {
+                                      "content": "−260"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tQBi7",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Up to date"
                         }
                       }
                     }
