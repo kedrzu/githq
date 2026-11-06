@@ -211,7 +211,9 @@ through, unless something actually needs my input." It never publishes with a re
 (`packages/app/settings/SyncStoppedToast.vue`). Consequence: a summary is read only by someone who clicks. The toast depends on a recorded
 last-run version, which the first public version has to write for its successor to show anything.
 
-Every toast moves to the bottom right corner with it, so toasts stay in one place (owner, 2026-11-04).
+Every toast moves to the bottom right corner with it, so toasts stay in one place (owner, 2026-11-04). Later the toast
+became brief, going by itself after 6 seconds, and a ready update got a pinned toast of its own (owner, 2026-11-06,
+[githq D40](../githq/DECISIONS.md#d40)).
 
 **Rejected.**
 

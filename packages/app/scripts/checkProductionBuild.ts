@@ -26,7 +26,8 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
- * window, the command the token is read with, the update notice with the command it restarts with, the toast after an update, and
+ * window, the command the token is read with, the update notice with the command it restarts with, the toasts of an update ready
+ * and after an update, and
  * Settings' Updates and Changelog sections. The production build must have none; the desktop build must have all (`checkDesktopBuild.ts`).
  */
 export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
@@ -38,8 +39,17 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'UpdatesSection', what: "Settings' Updates section" },
     { text: 'Official versions, released', what: "the text of Settings' Updates section" },
     { text: 'UpdatedToast', what: 'the toast saying the app updated' },
+    { text: 'UpdateReadyToast', what: 'the toast offering an update' },
     { text: 'ChangelogSection', what: "Settings' Changelog section" },
     { text: 'changelog appears', what: "the text of Settings' Changelog section" },
+];
+
+/**
+ * Text only the web's code puts into a build: the toast of a newer deploy, which the desktop app, with its own updater,
+ * never shows. The production build must have all; the desktop build must have none (`checkDesktopBuild.ts`).
+ */
+export const WEB_MARKERS: readonly { text: string; what: string }[] = [
+    { text: 'NewVersionToast', what: "the web's toast of a newer deploy" },
 ];
 
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */
@@ -58,8 +68,10 @@ async function checkProductionBuild() {
         }
     }
 
-    if (!files.some(file => file.content.includes(APP_MARKER))) {
-        problems.push(`the sign-in (${APP_MARKER}) is in none of the files`);
+    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...WEB_MARKERS]) {
+        if (!files.some(file => file.content.includes(text))) {
+            problems.push(`${what} (${text}) is in none of the files`);
+        }
     }
 
     if (problems.length > 0) {
@@ -69,7 +81,7 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code.`,
+        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code, the web's own.`,
     );
 }
 

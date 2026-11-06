@@ -178,6 +178,13 @@ test('"Track repository" adds it to the sidebar, starts its first download and l
     await expect(repository.notTrackedChip).toBeVisible();
     await expect(repository.row('Issue 001')).toBeVisible();
     await expect(repository.row('Issue 002')).toBeVisible();
+
+    // While Undo is on offer (D25), tracking it again takes the untrack back.
+    await menu.open();
+    await menu.field.pressSequentially('Track repository');
+    await page.keyboard.press('Enter');
+    await expect(shell.tracked(BROWSED)).toBeVisible();
+    await expect(repository.notTrackedChip).toHaveCount(0);
 });
 
 test('a failed look-up says so and tracks nothing', async ({ page, github }) => {

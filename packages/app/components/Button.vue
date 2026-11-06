@@ -72,6 +72,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
       css[`button_${variant}`],
       css[`button_${size ?? 'md'}`],
       block && css.button_block,
+      kbd && css.button_keyed,
       busy && css.button_busy,
       disabled && css.button_disabled,
     ]"
@@ -340,6 +341,34 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 
   &.button_secondary:hover {
     background: $color-bg-3;
+  }
+}
+
+// With a key at its end, the key sits as far from the right edge as from the top and bottom: the hint is as tall as
+// the label's line, so the end padding is the block padding. After the variants, which set their own inline padding.
+.button_keyed {
+  &.button_sm {
+    padding-inline-end: 3px;
+  }
+
+  &.button_md {
+    padding-inline-end: 6px;
+  }
+
+  &.button_lg {
+    padding-inline-end: 9px;
+  }
+
+  &.button_xl {
+    padding-inline-end: 13px;
+  }
+
+  &.button_field {
+    padding-inline-end: $spacing-6;
+  }
+
+  &.button_link {
+    padding-inline-end: 0;
   }
 }
 
