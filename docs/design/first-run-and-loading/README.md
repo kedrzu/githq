@@ -105,4 +105,5 @@ everything, and the sidebar's download percentages gone. Then the rest of the em
 
 ## Still open
 
-- The four patterns' look, words and the arriving animation — the owner designs the screens.
+- The four patterns' look, words and the arriving animation — the owner designs the screens, from [the brief for the
+  design agent](ui/first-run-and-empty-states.md).

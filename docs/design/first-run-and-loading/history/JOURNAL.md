@@ -32,3 +32,5 @@ Append-only; one line per turn that settled something.
   "can't be read" into permanent and transient; fixing only the wrong states instead of the whole table.
 - 2026-11-06 — Owner: one "can't be read" reason (not split), the whole table (not only the wrong states); both
   recorded as D6 Rejected lines. Added what gets built first to README. Proposed closing.
+- 2026-11-06 — Owner asked for the design agent's prompt: wrote ui/first-run-and-empty-states.md (brief) and
+  ui/design-agent-prompt.md.
