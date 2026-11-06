@@ -12,6 +12,18 @@ reason:
   en: Reason
 repository:
   en: Repository
+status:
+  en: Status
+author:
+  en: Author
+readyToMerge:
+  en: Ready to merge
+draft:
+  en: Draft
+other:
+  en: Other
+noAuthor:
+  en: No author
 otherRepositories:
   en: Other repositories
 notTracked:
