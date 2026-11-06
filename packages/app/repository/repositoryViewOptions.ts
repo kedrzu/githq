@@ -5,14 +5,14 @@ import type { RepositoryItemSection } from './RepositorySection.js';
 
 /**
  * What a repository's issues or pull requests can be grouped by — GitHub's own properties (J2): its milestones,
- * labels, assignees, issue types (issues only), or nothing.
+ * assignees, authors, statuses, labels, issue types (issues only), or nothing.
  */
-export type RepositoryGrouping = 'assignee' | 'issueType' | 'label' | 'milestone' | 'none';
+export type RepositoryGrouping = 'assignee' | 'author' | 'issueType' | 'label' | 'milestone' | 'none' | 'status';
 
 /** Each section's groupings, in the order the grouping menu lists them: pull requests have no issue type. */
 export const REPOSITORY_GROUPINGS: Readonly<Record<RepositoryItemSection, readonly RepositoryGrouping[]>> = {
-    issues: ['none', 'milestone', 'assignee', 'label', 'issueType'],
-    pullRequests: ['none', 'milestone', 'assignee', 'label'],
+    issues: ['none', 'milestone', 'assignee', 'author', 'status', 'label', 'issueType'],
+    pullRequests: ['none', 'milestone', 'assignee', 'author', 'status', 'label'],
 };
 
 /**

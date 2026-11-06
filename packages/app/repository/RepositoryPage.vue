@@ -134,6 +134,22 @@ const texts = computed((): RepositoryListTexts => ({
   noLabel: t(l.noLabel),
   unassigned: t(l.unassigned),
   noType: t(l.noType),
+  noAuthor: t(l.noAuthor),
+  pullRequestStages: {
+    draft: t(l.stageDraft),
+    waitingForReview: t(l.stageWaitingForReview),
+    needsWork: t(l.stageNeedsWork),
+    checksRunning: t(l.stageChecksRunning),
+    readyToMerge: t(l.stageReadyToMerge),
+    merging: t(l.stageMerging),
+    merged: t(l.stageMerged),
+    closed: t(l.stageClosed),
+  },
+  issueStatuses: {
+    open: t(l.issueOpen),
+    closed: t(l.issueClosed),
+    notPlanned: t(l.issueNotPlanned),
+  },
   milestoneDetail: ({ closed, total, dueOn }) => {
     const progress = t(l.milestoneProgress, { closed, total });
     return dueOn ? t(l.milestoneDue, { progress, date: formatShortDate(Date.parse(dueOn)) }) : progress;
@@ -318,6 +334,8 @@ function canMove(entry: ListEntry<Item>, from: string, to: string) {
     case 'issueType':
       return item.kind === 'issue' && permissions.issueType;
     case 'none':
+    case 'author':
+    case 'status':
       return false;
     default:
       return assertNever(grouping);
@@ -343,6 +361,8 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     case 'issueType':
       return { kind: 'issueType', name: to === NO_VALUE ? null : to };
     case 'none':
+    case 'author':
+    case 'status':
       return null;
     default:
       return assertNever(grouping);

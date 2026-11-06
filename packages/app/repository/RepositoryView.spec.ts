@@ -38,6 +38,18 @@ const TEXTS: RepositoryListTexts = {
     noLabel: 'No label',
     unassigned: 'Unassigned',
     noType: 'No type',
+    noAuthor: 'No author',
+    pullRequestStages: {
+        draft: 'Draft',
+        waitingForReview: 'Waiting for review',
+        needsWork: 'Needs work',
+        checksRunning: 'Checks running',
+        readyToMerge: 'Ready to merge',
+        merging: 'Merging',
+        merged: 'Merged',
+        closed: 'Closed',
+    },
+    issueStatuses: { open: 'Open', closed: 'Closed', notPlanned: 'Not planned' },
     milestoneDetail: ({ closed, total }) => `${closed} of ${total} closed`,
 };
 
