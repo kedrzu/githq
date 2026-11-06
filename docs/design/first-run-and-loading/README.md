@@ -60,6 +60,18 @@ tracking it. It never shows loading when the data it has is complete and is only
 includes a refresh that found changes and is fetching them: those simply appear in the list.
 [The rule and what it turned down](DECISIONS.md#d3).
 
+**Which screens can be incomplete.** My work waits for the user's own issues and pull requests, and is the one screen
+likely to be wholly empty right after signing in. A tracked repository waits first for its open items, then for its
+closed ones. A tracked project waits for all its items at once. A repository opened without tracking it waits for its
+first read. An opened issue or pull request may wait for its comments, and says so inside its panel rather than as an
+empty screen. [The list](DECISIONS.md#d5).
+
+**Progress of everything at once.** No single screen owns it any more, so the left end of the status bar — under the
+sidebar, where the API allowance normally sits — takes it over while anything is downloading: how many repositories and
+projects, how many items of how many, and roughly how long is left. Clicking it lists each with its progress. When all
+has arrived it goes back to the allowance. Being offline or paused still comes first. This is not only for the first
+sign-in: tracking another repository later shows the same. [Why there and not nowhere](DECISIONS.md#d4).
+
 ## How far this goes
 
 In: the first sign-in after the choosing screen, the top bar of the sign-in screens, what an empty screen says while
@@ -71,8 +83,4 @@ truthful only under some filters. Postponed by the owner.
 
 ## Still open
 
-- Which screens can be incomplete, and what each one is waiting for — My work, a tracked repository, a project, an
-  untracked repository being browsed, an opened item.
-- Where the progress of everything at once goes (the old page's overall bar and time left), now that no single screen
-  owns it.
 - The empty state's words and animation — the owner designs the screens.

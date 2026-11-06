@@ -75,6 +75,41 @@ wants to know is whether what they see is all there is. Changes found by a refre
 - Showing a refresh that found changes while it fetches them — they show up in the list anyway, and it would make the
   marker flicker with ordinary activity.
 
+## D4
+
+**While any tracked repository or project is downloading, the status bar's sidebar segment says so in place of the API
+allowance — how many are downloading, items so far of the total counted, and the time left once a pace is known — and
+clicking it lists each one with its progress. It returns to the allowance when everything has arrived. Being offline or
+paused by the allowance still takes the segment first.** (2026-11-06, owner)
+
+**Why.** With the download page gone ([D1](#d1)) no screen owns the progress of everything at once, and from My work the
+user would otherwise not know whether the rest takes a minute or twenty. It follows [D3](#d3): it shows only while data
+is actually missing, so the same holds for a repository tracked later, not only on the first sign-in. The figures exist
+already — the old page summed `TrackingStore.getProgress` per tracked target and estimated time from the pace after five
+seconds (`packages/app/tracking/FirstDownloadPage.vue`, `PACE_AFTER_MS`).
+
+**Rejected.**
+
+- No overall progress, each repository speaking only for itself (its sidebar entry, its own status bar) — from My work
+  nothing says how much is left.
+
+## D5
+
+**The screens that can be incomplete, and what each waits for:** (2026-11-06, owner)
+
+- **My work** — the user's own issues and pull requests; the one screen that can be wholly empty right after sign-in,
+  and the main home of the "fetching" empty state.
+- **A tracked repository** — its open items first (empty state until then), then its closed items (the status bar says
+  how far, not "Up to date").
+- **A tracked project** — all its items at once, as its download reads them.
+- **An untracked repository being browsed** — its first read.
+- **An opened issue or pull request** — its comments and details fetched separately (githq Q8); shown inside its panel,
+  not as an empty screen.
+
+**Why.** These are the surfaces with a freshness of their own ([githq D15](../githq/DECISIONS.md#d15)); each already
+knows when it has nothing yet (`partial`), and only a tracked repository has a second phase that today reads `fresh`
+([D3](#d3)).
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land
