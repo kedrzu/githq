@@ -93,3 +93,20 @@ export const SizeOff: Story = {
         await expect(within(canvasElement).queryByText(/^\+\d/)).toBeNull();
     },
 };
+
+/** The viewer's draft review on one of its pull requests: collapsed, the card says so itself, as the row does (code review D28). */
+export const DraftReview: Story = {
+    args: {
+        stack: sampleShare(
+            SAMPLE_STACKS.held.map((pr, index) =>
+                index === 1
+                    ? { ...pr, pendingReview: { id: 'PRR_1', commentCount: 3, createdAt: '2026-11-01T10:00:00Z' } }
+                    : pr,
+            ),
+            2,
+        ),
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByText('Your draft review · 3 comments unsent')).toBeVisible();
+    },
+};

@@ -8,6 +8,7 @@ import { computed } from 'vue';
 import Avatar from '@/components/Avatar.vue';
 
 import type { ItemProperty } from './ItemProperty.js';
+import ItemStatus from './ItemStatus.vue';
 import type { ListStack } from './ListTypes.js';
 import PullRequestSize from './PullRequestSize.vue';
 import * as l from './StackCard.loc.js';
