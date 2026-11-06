@@ -30,7 +30,8 @@ every refresh would say "something is happening" all the time and mean nothing.
 
 Someone signs in for the first time, ticks four repositories and presses "Track these". They are on My work at once.
 If nothing of theirs has arrived yet, the list says so — a short, light "fetching your work" state, not "nothing needs
-you". Rows appear as they come. In the sidebar the four repositories show they are still downloading; opening one, its
+you". Rows appear as they come. At the bottom left, the status bar says four repositories are downloading and roughly how long
+is left. Opening one, its
 status bar reads how far it is — its closed issues, so many of so many — and turns to "Up to date" only when the
 repository is actually complete.
 
@@ -44,7 +45,7 @@ On the Mac, the window buttons sit in the same strip on the sign-in screen as in
 **No download step.** "Track these" goes straight to where the user was heading, My work by default. The download is
 the sync engine's and already continued when the user left the old page, so nothing about it changes; only the page
 goes. What that page told is moved to where it belongs: whether the user's own work is in, to My work itself; how far
-each repository is, to that repository's screen and its sidebar entry. Organisations that hide their private
+each repository is, to the status bar. Organisations that hide their private
 repositories from githq were also listed there — they are already shown on the choosing screen, so nothing is lost.
 [Why the step goes, and what it replaced](DECISIONS.md#d1).
 
@@ -68,7 +69,8 @@ empty screen. [The list](DECISIONS.md#d5).
 
 **Progress of everything at once.** No single screen owns it any more, so the left end of the status bar — under the
 sidebar, where the API allowance normally sits — takes it over while anything is downloading: how many repositories and
-projects, how many items of how many, and roughly how long is left. Clicking it lists each with its progress. When all
+projects, how many items of how many, and roughly how long is left. Clicking it lists each with its progress. The sidebar's entries show no download marker of their own: an entry
+shows nothing until its open items are in, then its count. When all
 has arrived it goes back to the allowance. Being offline or paused still comes first. This is not only for the first
 sign-in: tracking another repository later shows the same. [Why there and not nowhere](DECISIONS.md#d4).
 

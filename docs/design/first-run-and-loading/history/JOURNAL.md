@@ -15,3 +15,6 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Rightsize (3 passes): D4's segment and D5's list stand (owner picked them over the simpler versions);
   recorded as build notes that D2 changes FirstSignInFrame rather than adding a frame and D3 reuses an existing
   freshness shape. Put to owner: D4's click-through list, and the opened item's panel in D5.
+- 2026-11-06 — Owner: no per-repository download marker anywhere in the sidebar; download progress only in the status
+  bar's left segment (D4 sharpened). Asked: does a repository's own segment still say its closed items are downloading
+  (D3), and does the left segment keep its click-through list; the opened item in D5 still unanswered.

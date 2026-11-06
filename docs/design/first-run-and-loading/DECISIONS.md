@@ -17,7 +17,7 @@ by default), and the download continues in the app, each screen saying for itsel
 ([D3](#d3)).** (2026-11-06, owner)
 
 **Why.** The page was a click and a wait before the app. Everything it told has a better home: whether the user's own
-work is in belongs to My work; each repository's progress to its screen and sidebar entry; organisations hiding their
+work is in belongs to My work; each repository's progress to the status bar ([D4](#d4)); organisations hiding their
 private repositories are already shown on the choosing screen.
 
 > **Checked 2026-11-06:** leaving the old page stopped nothing — the download is the sync engine's
@@ -89,6 +89,9 @@ allowance — how many are downloading, items so far of the total counted, and t
 clicking it lists each one with its progress. It returns to the allowance when everything has arrived. Being offline or
 paused by the allowance still takes the segment first.** (2026-11-06, owner)
 
+**The sidebar's entries show no download marker:** a tracked repository or project shows nothing in place of its
+count until its open items are in, then its count. (2026-11-06, owner)
+
 **Why.** With the download page gone ([D1](#d1)) no screen owns the progress of everything at once, and from My work the
 user would otherwise not know whether the rest takes a minute or twenty. It follows [D3](#d3): it shows only while data
 is actually missing, so the same holds for a repository tracked later, not only on the first sign-in. The figures exist
@@ -97,6 +100,8 @@ seconds (`packages/app/tracking/FirstDownloadPage.vue`, `PACE_AFTER_MS`).
 
 **Rejected.**
 
+- A marker on each sidebar entry while it downloads (today's percentage, `SidebarTrackedStatus` `downloading` in
+  `packages/app/shell/Sidebar.vue`) — the owner wants download progress in one place only, the status bar.
 - No overall progress, each repository speaking only for itself (its sidebar entry, its own status bar) — from My work
   nothing says how much is left.
 
