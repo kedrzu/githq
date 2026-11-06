@@ -146,14 +146,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 </script>
 
 <template>
-  <div
-    v-if="row.kind === 'tail'"
-    :class="css.reviewDiffRow_tail"
-  />
-  <div
-    v-else
-    :class="css.reviewDiffRow"
-  >
+  <div :class="css.reviewDiffRow">
     <DiffFileHeader
       v-if="row.kind === 'header'"
       :file="row.file"
@@ -402,12 +395,6 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 
 .reviewDiffRow_endCollapsed {
   height: $spacing-12;
-}
-
-// Under the last file, enough for its header alone to reach the top: the viewport (the screen without the toolbar and
-// the status bar) less the header and its end.
-.reviewDiffRow_tail {
-  height: calc(100vh - #{$status-bar-height} - #{$list-header-height} - 54px);
 }
 
 .reviewDiffRow_gap {

@@ -230,7 +230,7 @@ export const Paused: Story = {
             buildReviewRows({
                 files: [FILE, file('src/styles/sync.css', 29, 0), file('src/sync/queue.ts', 9, 0)],
                 getContent: () => ({ kind: 'paused', until }),
-            }).filter(row => row.kind !== 'tail'),
+            }),
         );
     },
     play: async ({ canvas }) => {
@@ -342,7 +342,7 @@ function fileRows(
         files: [shown],
         getContent: () => content,
         getCollapseReason: () => collapseReason,
-    }).filter(row => row.kind !== 'tail');
+    });
 }
 
 /** A modified, an added and a deleted file, all still on their way. */

@@ -109,8 +109,13 @@ The same position survives switching layout ([D3](#d3)), whitespace ([D4](#d4)) 
 and is what is remembered per pull request when moving through a stack. If the remembered line is hidden (a
 whitespace-only change after hiding whitespace), the view lands on the nearest visible line above it.
 
+Near the end of the diff, where nothing is left below to scroll to, the target lands as far up as the list reaches: it
+must be in view, not at the top, so no room is kept under the last file. (2026-11-06, owner)
+
 **Rejected.**
 
+- Room under the last file, about a screen of it, so that even a short last file could land at the very top — scrolling
+  to the end showed a screen of nothing. (owner, 2026-11-06)
 - Estimate, jump, measure the miss, correct and repeat (owner's first idea) — every correction is a visible jump, and
   an image loading after the last correction moves the target again.
 - Remembering the scroll position in pixels — breaks at the first change of layout or whitespace.

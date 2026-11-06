@@ -167,12 +167,6 @@ export interface ReviewEndRow {
     readonly collapsed: boolean;
 }
 
-/** Room under the last file, so that a jump can land even a short last file at the very top (D7). */
-export interface ReviewTailRow {
-    readonly kind: 'tail';
-    readonly key: string;
-}
-
 /** Over what is left when every file is viewed and those hidden (CR63). */
 export interface ReviewAllViewedRow {
     readonly kind: 'allViewed';
@@ -194,7 +188,6 @@ export type ReviewRow =
     | ReviewOnlyWhitespaceRow
     | ReviewPausedRow
     | ReviewPlaceholderRow
-    | ReviewTailRow
     | ReviewThreadRow;
 
 /** What shows under a file's header. */
@@ -224,7 +217,7 @@ export interface BuildReviewRowsParams {
 }
 
 /**
- * The flat rows of a review: for each file its pinned header, what shows under it and its end, and room after the last.
+ * The flat rows of a review: for each file its pinned header, what shows under it and its end.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -324,11 +317,6 @@ export function buildReviewRows({
             key: path + KEY_SEPARATOR + (headerAlone ? 'collapsedEnd' : 'end'),
             collapsed: headerAlone,
         });
-    }
-
-    const last = files.at(-1);
-    if (last) {
-        rows.push({ kind: 'tail', key: last.path + KEY_SEPARATOR + 'tail' });
     }
 
     return rows;
@@ -738,8 +726,6 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
             return 58;
         case 'end':
             return row.collapsed ? 12 : 16;
-        case 'tail':
-            return 600;
         case 'allViewed':
             return ALL_VIEWED_HEIGHT;
         default:
@@ -945,11 +931,6 @@ export function findReplacementRow({
 
     const place = held ? getRowLine(held) : null;
     const first = next[start + 1] ?? header;
-    if (held?.kind === 'tail') {
-        const end = next.findIndex(row => row.kind === 'end' && getReviewRowPath(row.key) === path);
-        return { row: next[end + 1] ?? first, offset };
-    }
-
     if (!place) {
         return { row: first, offset };
     }
