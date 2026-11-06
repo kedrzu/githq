@@ -654,9 +654,8 @@ Changelog, the owner's choice ([D17](../desktop-releases/DECISIONS.md#d17)).
   would then need its own states.
 - **Offline, the switch to Stable stands and is not undone.** [D5](../desktop-releases/DECISIONS.md#d5) holds no state, so the
   newest Stable installs once GitHub can be reached.
-- **The update toast stays until dismissed,** unlike the default 12 seconds, because the app has just started. Its key is ⌥W.
-  It sits in the bottom right corner as the owner asked, while `Toaster.vue` centres every other toast: building it needs
-  a second position.
+- **The update toast** has the key ⌥W. It went from "until dismissed" to brief, and a ready update moved from the status bar
+  into a toast, with [D40](#d40). Every toast sits in the bottom right corner ([desktop releases D7](../desktop-releases/DECISIONS.md#d7)).
 
 **Rejected.** A second button for Try again in Settings: Check for updates already is that. Disabling the stream block on
 Windows: a choice that leads nowhere, so it isn't drawn.
@@ -831,6 +830,35 @@ group can be moved into, because an author can't be changed and a status follows
 **Rejected.** An issue's status from a project's Status field: its options differ per project, and the project views
 already group by it. A draft always in Draft, whatever else it says: its group would then disagree with its row.
 Moving a pull request between Draft and Ready for review by dragging it: left for later.
+
+### D40
+
+**Toasts follow one set of rules: one stack in arrival order, keys only on the newest, three lifetimes.** (owner,
+2026-11-06.) Drawn in `githq.pen`, App · Toasts (N1–N5) and Desktop · Updates (U49–U51).
+
+- **One component, one corner.** Every toast is `Toast.vue` in the bottom right corner above the status bar, 480 wide:
+  icon in its tone, title, what happened, the actions as small secondary buttons with their keys, Dismiss (Esc) last. No
+  primary or ghost buttons in a toast.
+- **The stack is in arrival order,** the newest at the bottom, nearest the corner, whichever kind it is.
+- **Keys go to the newest toast only.** Its action keys and Esc work and their hints show; the toasts above show no keys,
+  but their buttons still work with the mouse. When the newest goes, the one before takes the keys. So ⌘Z always undoes
+  the last thing done, and one Esc dismisses one toast.
+- **Three lifetimes.** Brief, 6 s: news and outcomes (merged, reverted, updated to a version, a repository that couldn't be
+  tracked, a viewed mark GitHub refused). Long, 10 s: Undo (a close, an untrack) and failures the status bar keeps anyway
+  (an edit, a re-run). Pinned, until acted on or dismissed: what needs a decision (a refused merge, settings sync stopped,
+  a ready desktop update, a new version on the web). Hovering or focusing a toast stops its clock; a timed toast drains an
+  accent ring around its ×.
+- **Updates are toasts.** A ready desktop update is a pinned toast with Restart (⌥R), its Dismiss being Later; a quiet
+  offer stays in the status bar after it. The web says a new version was deployed with a pinned toast and Reload (⌥R),
+  and never reloads by itself.
+- **Untracking from the sidebar or ⌘K offers Undo,** as from Settings ([D25](#d25)).
+
+**Why.** Each toast kind had grown its own lifetime (5, 10, 12 seconds or until dismissed) and its own buttons; two Undo
+toasts answered ⌘Z by whichever registered first, and one Esc dismissed every toast, untracking at once. A ready update
+was easy to miss in the status bar.
+
+**Rejected.** Only one toast visible at a time, the rest queued: hides what happened. Actions disabled on older toasts:
+a click is never ambiguous. Every toast in its own lifetime: the reason to have rules.
 
 ## Open questions
 

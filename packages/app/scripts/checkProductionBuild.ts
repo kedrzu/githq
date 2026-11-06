@@ -44,6 +44,14 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'changelog appears', what: "the text of Settings' Changelog section" },
 ];
 
+/**
+ * Text only the web's code puts into a build: the toast of a newer deploy, which the desktop app, with its own updater,
+ * never shows. The production build must have all; the desktop build must have none (`checkDesktopBuild.ts`).
+ */
+export const WEB_MARKERS: readonly { text: string; what: string }[] = [
+    { text: 'NewVersionToast', what: "the web's toast of a newer deploy" },
+];
+
 /** Text the app's sign-in puts into every build: without it the check would pass on files that are not the app. */
 export const APP_MARKER = '/api/auth/authorize';
 
@@ -60,8 +68,10 @@ async function checkProductionBuild() {
         }
     }
 
-    if (!files.some(file => file.content.includes(APP_MARKER))) {
-        problems.push(`the sign-in (${APP_MARKER}) is in none of the files`);
+    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...WEB_MARKERS]) {
+        if (!files.some(file => file.content.includes(text))) {
+            problems.push(`${what} (${text}) is in none of the files`);
+        }
     }
 
     if (problems.length > 0) {
@@ -71,7 +81,7 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code.`,
+        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code, the web's own.`,
     );
 }
 

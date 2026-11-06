@@ -44,6 +44,27 @@ test('an entry being untracked leaves the sidebar at once and the toast says so;
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
 });
 
+for (const [name, target] of [
+    [WEB, WEB_TARGET],
+    [ROADMAP, { kind: 'project', id: 'PVT_1' }],
+] satisfies [string, TrackedTarget][]) {
+    test(`Stop tracking in the sidebar menu of ${name} is pending with Undo: out of the sidebar at once, tracked until the toast goes`, async () => {
+        const { pending, tracking } = await open();
+
+        await userEvent.click(sidebarLink(name), { button: 'right' });
+        await userEvent.click(page.getByRole('menuitem', { name: 'Stop tracking' }));
+
+        await expect.element(sidebarLink(name)).not.toBeInTheDocument();
+        await expect.element(toast()).toHaveTextContent(`Stopped tracking ${name}`);
+        expect(pending.isPending(target)).toBe(true);
+        expect(tracking.isTracked(target)).toBe(true);
+
+        await userEvent.click(toast().getByRole('button', { name: 'Dismiss' }).first());
+        await expect.element(toast()).not.toBeInTheDocument();
+        expect(tracking.isTracked(target)).toBe(false);
+    });
+}
+
 test('the command menu offers neither a repository nor a project being untracked', async () => {
     const { pending } = await open();
 

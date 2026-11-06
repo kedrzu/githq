@@ -23,8 +23,8 @@ export interface PendingUntrack {
  * as they were, so it is kept and synced as ever: anything not tracked is evicted by whichever tab leads sync, and
  * its sync state would keep a later re-track from downloading it again.
  *
- * An entry no longer tracked is forgotten, so nothing is committed for it — untracked elsewhere (another tab, a menu's
- * plain untrack), or another account or none signed in, which empties what the store tracks at that very moment.
+ * An entry no longer tracked is forgotten, so nothing is committed for it — untracked elsewhere (another tab, another
+ * device's synced settings), or another account or none signed in, which empties what the store tracks at that very moment.
  * A service, so it outlives the route: moving between screens keeps the toast and Undo.
  */
 export type PendingUntracks = Resolved<typeof PendingUntracks>;
