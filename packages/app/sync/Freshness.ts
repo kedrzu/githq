@@ -1,5 +1,6 @@
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
 import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
+import type { DownloadCount, RepositoryDownloadPhase } from '@/tracking/TrackingTypes.js';
 
 /**
  * How current what a surface shows is (D15), for its segment of the status bar. Times are epoch ms.
@@ -12,8 +13,10 @@ import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
  *   repository's workflows GitHub no longer lists, the last known ones staying on screen (`workflowsUnavailable`);
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
- * - `partial`: nothing was ever downloaded for it and the first download is under way; for "my work", `arriving` names
- *   the groups whose searches haven't answered yet (first run and loading D14);
+ * - `partial`: what it shows is not all there yet and its first download is under way; for "my work", `arriving` names
+ *   the groups whose searches haven't answered yet (first run and loading D14); for a tracked repository, `downloading`
+ *   the phase under way and how far it is — its open items first, then its closed ones, while its poll keeps what is in
+ *   fresh (first run and loading D3, D14);
  * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
  * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
  * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
@@ -49,7 +52,11 @@ export type Freshness =
       }
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
-    | { readonly kind: 'partial'; readonly arriving?: readonly MyWorkGroup[] }
+    | {
+          readonly kind: 'partial';
+          readonly arriving?: readonly MyWorkGroup[];
+          readonly downloading?: RepositoryDownloading;
+      }
     | { readonly kind: 'reading'; readonly read: number; readonly total: number }
     | { readonly kind: 'readingLog'; readonly job: string }
     | { readonly kind: 'logFailed'; readonly job: string }
@@ -91,6 +98,11 @@ export type Freshness =
           readonly saving: SettingsSaving['state'];
           readonly repository: string;
       };
+
+/** A tracked repository's first download as its segment tells it: the phase under way and how far it is. */
+export interface RepositoryDownloading extends DownloadCount {
+    readonly phase: RepositoryDownloadPhase;
+}
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {

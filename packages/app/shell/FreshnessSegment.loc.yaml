@@ -38,6 +38,18 @@ filling:
   en: Filling in the other branches · {done} of {total}
 downloading:
   en: Downloading · what's here is usable
+downloadingPhase:
+  en: Downloading {what}
+downloadingPhaseCounted:
+  en: Downloading {what} · {done} of {total}
+phaseOpenIssues:
+  en: open issues
+phaseOpenPullRequests:
+  en: open pull requests
+phaseClosedIssues:
+  en: closed issues
+phaseClosedPullRequests:
+  en: closed pull requests
 fetchingMyWork:
   en: Fetching your work
 myWorkArriving:

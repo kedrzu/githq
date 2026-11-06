@@ -79,6 +79,14 @@ test('first run and loading D14: my work says it is fetching until a group is in
     await expect.element(page.getByText('Still arriving · review requests')).toBeVisible();
 });
 
+test('first run and loading D3, D14: a tracked repository names the phase of its download, counted once GitHub has', async () => {
+    mount({ kind: 'partial', downloading: { phase: 'openPullRequests', done: 0, total: null } });
+    await expect.element(page.getByText('Downloading open pull requests', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', downloading: { phase: 'closedIssues', done: 1200, total: 4000 } });
+    await expect.element(page.getByText('Downloading closed issues · 1,200 of 4,000')).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

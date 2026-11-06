@@ -325,6 +325,19 @@ test('the first page on its way shows the list arriving, not that there is nothi
     await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
 });
 
+test('first run and loading ES14, ES29: tracked, a state still downloading shows ghosts — rows, on the board columns — never that nothing matches', async () => {
+    mount({ items: [], arriving: true });
+
+    await expect.element(page.getByText(/Still arriving/)).toBeVisible();
+    await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
+
+    // The board's columns come from its items: none is named before they are in.
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    await expect.element(page.getByText(/Still arriving/)).toBeVisible();
+    await expect.element(page.getByRole('heading', { level: 2 })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
+});
+
 test('J7: GitHub does not show it: the name, the chip and the way to GitHub, none of the list or its tools', async () => {
     mount({ tracked: false, items: [], status: browsedStatus({ notShown: true }) });
 

@@ -1,4 +1,4 @@
-<!-- What stands where rows or cards are still arriving (first run and loading D8, `Empty / Still arriving · screen | group | column`): ghosts alone, no words on screen, fading down the set; screen readers get one quiet line, not announced. -->
+<!-- What stands where rows or cards are still arriving (first run and loading D8, D17, `Empty / Still arriving · screen | group | column | board`): ghosts alone, no words on screen, fading down the set — on a board whose columns aren't known yet, ghost columns; screen readers get one quiet line, not announced. -->
 <script lang="ts">
 interface GhostRowShape {
   titleWidth: number;
@@ -29,18 +29,30 @@ const GROUP_ROWS: readonly GhostRowShape[] = [
 ];
 
 const COLUMN_OPACITIES = [1, 0.8, 0.6];
+
+/** The design's ghost columns: their name bars varied, strength fading column by column. */
+const BOARD_COLUMNS: readonly { nameWidth: number; opacity: number }[] = [
+  { nameWidth: 90, opacity: 1 },
+  { nameWidth: 60, opacity: 0.8 },
+  { nameWidth: 110, opacity: 0.6 },
+  { nameWidth: 75, opacity: 0.4 },
+];
 </script>
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 
 import GhostCard from './GhostCard.vue';
+import GhostColumn from './GhostColumn.vue';
 import GhostRow from './GhostRow.vue';
 import * as l from './StillArriving.loc.js';
 
 defineProps<{
-  /** `screen`: a dozen rows filling a list; `group`: three rows under a list's group; `column`: three cards in a board's column. */
-  place: 'screen' | 'group' | 'column';
+  /**
+   * `screen`: a dozen rows filling a list; `group`: three rows under a list's group; `column`: three cards in a board's
+   * column; `board`: four columns of a board whose columns aren't known yet.
+   */
+  place: 'screen' | 'group' | 'column' | 'board';
 }>();
 
 const t = useTranslate();
@@ -49,7 +61,15 @@ const t = useTranslate();
 <template>
   <div :class="[css.stillArriving, css[`stillArriving_${place}`]]">
     <span :class="css.stillArriving_label">{{ t(l.stillArriving) }}</span>
-    <template v-if="place === 'column'">
+    <template v-if="place === 'board'">
+      <GhostColumn
+        v-for="(column, index) in BOARD_COLUMNS"
+        :key="index"
+        :name-width="column.nameWidth"
+        :style="{ opacity: column.opacity }"
+      />
+    </template>
+    <template v-else-if="place === 'column'">
       <GhostCard
         v-for="(opacity, index) in COLUMN_OPACITIES"
         :key="index"
@@ -84,6 +104,13 @@ const t = useTranslate();
 // The gap between a board's cards (`ListView`).
 .stillArriving_column {
   gap: $spacing-8;
+}
+
+// The gap between a board's columns (`ListView`), which lays out the board itself.
+.stillArriving_board {
+  flex-direction: row;
+  gap: $spacing-12;
+  align-items: flex-start;
 }
 
 .stillArriving_label {

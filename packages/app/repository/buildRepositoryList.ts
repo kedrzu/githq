@@ -22,6 +22,11 @@ export interface RepositoryList {
     readonly groups: readonly ListGroup<Item>[];
     /** How many items are listed, each once whichever groups it is under. */
     readonly count: number;
+    /**
+     * Nothing is listed and what the state holds is still on its way, so not even its groups are known: ghosts stand
+     * for all of it, never a list saying there is nothing (first run and loading D8, D17).
+     */
+    readonly arriving: boolean;
 }
 
 /** What the groups are called — the caller's translations. */
@@ -53,7 +58,10 @@ export interface BuildRepositoryListParams {
     readonly grouping: RepositoryGrouping;
     readonly sort: ItemSort;
     readonly texts: RepositoryListTexts;
-    /** GitHub has not said yet what the state holds (a browsed repository's first page): none listed means not known. */
+    /**
+     * What the state holds is still on its way — a browsed repository's first page, a tracked one's download not past
+     * it yet: none listed means not known.
+     */
     readonly arriving?: boolean;
 }
 
@@ -62,7 +70,7 @@ export interface BuildRepositoryListParams {
  * properties and ordered within each group. Milestones come by due date, the soonest first, each with its
  * progress; labels, assignees and issue types by name; an item with two labels or assignees is under both. The
  * group of items without the value comes last. Items can be moved between milestones, labels, assignees and
- * issue types (an edit).
+ * issue types (an edit). With none listed while the state is still arriving, no groups at all: they are not known.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -74,10 +82,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
         .toSorted(getItemComparator(sort));
 
     if (arriving && listed.length === 0) {
-        return {
-            groups: [{ key: 'arriving', label: texts.all, arrived: false, droppable: false, rows: [] }],
-            count: 0,
-        };
+        return { groups: [], count: 0, arriving: true };
     }
 
     return {
@@ -87,6 +92,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
             grouping: getGrouping(grouping, items, texts),
         }),
         count: listed.length,
+        arriving: false,
     };
 }
 

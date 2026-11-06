@@ -66,6 +66,16 @@ export const FetchingMyWork: Story = {
 /** My work's first download, two groups in: the others named (D14, G17). */
 export const MyWorkArriving: Story = { args: { freshness: { kind: 'partial', arriving: ['assigned', 'mentioned'] } } };
 
+/** A tracked repository before its open issues are in (first run and loading D14, ES14). */
+export const DownloadingOpenIssues: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'openIssues', done: 40, total: 142 } } },
+};
+
+/** A tracked repository whose closed issues still arrive: not "Up to date" yet (D3, ES9). */
+export const DownloadingClosedIssues: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'closedIssues', done: 1200, total: 4000 } } },
+};
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 

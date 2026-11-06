@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. Tracked, a section whose state its download has not read yet, with nothing listed, stands as still arriving — ghost rows, on the board ghost columns — never as nothing there (first run and loading D5, ES14, ES15, ES29). The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -38,6 +38,7 @@ import { WorkflowTabPlaces } from '@/workflows/WorkflowTabPlaces.js';
 
 import type { RepositoryListTexts, RepositoryState } from './buildRepositoryList.js';
 import { buildRepositoryList } from './buildRepositoryList.js';
+import { isRepositoryStateArriving } from './isRepositoryStateArriving.js';
 import RepositoryContextMenu from './RepositoryContextMenu.vue';
 import type { RepositoryProjectLink } from './RepositoryView.vue';
 import RepositoryView from './RepositoryView.vue';
@@ -160,8 +161,15 @@ const repositoryList = computed(() =>
     grouping: view.options.grouping,
     sort: view.options.sort,
     texts: texts.value,
-    // Nothing else says what a repository not tracked holds until GitHub has answered.
-    arriving: !tracked.value && (status.value?.total ?? null) === null,
+    // Nothing else says what a repository not tracked holds until GitHub has answered, nor a tracked one until its
+    // download has read the state shown (first run and loading D5).
+    arriving: tracked.value
+      ? isRepositoryStateArriving(
+          tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value }),
+          getSectionItemKind(listSection.value),
+          state.value,
+        )
+      : (status.value?.total ?? null) === null,
   }),
 );
 /** The list as shown: a stack's pull requests folded into its entries. */

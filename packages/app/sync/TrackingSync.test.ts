@@ -621,8 +621,37 @@ test('a poll failing for one repository does not hide that another is still down
     await session.clock.advance(60_000);
 
     expect(sync.getRepositoryFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
-    expect(sync.getRepositoryFreshness('acme/api')).toEqual({ kind: 'partial' });
+    expect(sync.getRepositoryFreshness('acme/api')).toEqual({
+        kind: 'partial',
+        downloading: { phase: 'openIssues', done: 0, total: null },
+    });
     apiPage.resolve();
+});
+
+test('first run and loading D3: a repository whose closed items still download says how far, and is up to date once they are in', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    const closedPage = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'RepositoryIssues' &&
+        request.variables.name === 'web' &&
+        Array.isArray(request.variables.states) &&
+        request.variables.states.includes('CLOSED')
+            ? closedPage.promise
+            : null;
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(60_000);
+
+    // Its open items are in and polled, its closed issues on their way: not "Up to date".
+    expect(sync.getRepositoryFreshness('acme/web')).toEqual({
+        kind: 'partial',
+        downloading: { phase: 'closedIssues', done: 0, total: null },
+    });
+
+    closedPage.resolve();
+    await session.clock.advance(0);
+    expect(tracking.getSyncState({ kind: 'repository', nameWithOwner: 'acme/web' })?.phase).toBe('done');
+    expect(sync.getRepositoryFreshness('acme/web').kind).toBe('fresh');
 });
 
 /** The world of these tests: two repositories, a project holding one of their issues and two others. */

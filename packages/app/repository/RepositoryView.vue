@@ -541,6 +541,7 @@ function getSectionCount(value: RepositorySection) {
             v-model:selected-id="selectedId"
             v-model:checked-ids="checkedIds"
             :groups="list.groups"
+            :groups-arriving="list.arriving"
             :layout="options.layout"
             :opened-id="openedId"
             :is-edited="isEdited"

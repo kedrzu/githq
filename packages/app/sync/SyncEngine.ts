@@ -28,6 +28,7 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { toPendingReview, toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import type { RepositorySyncState } from '@/tracking/TrackingTypes.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 import { WorkflowSync } from '@/workflows/WorkflowSync.js';
@@ -357,19 +358,37 @@ export const SyncEngine = defineService({
 
         /**
          * How fresh a tracked repository is: `partial` until its open items have arrived — told by the download, not
-         * by the poll of the others — then as its poll goes, or `refused` while GitHub refuses its changes; reactive.
+         * by the poll of the others —, with the phase under way and how far it is; then as its poll goes, or `refused`
+         * while GitHub refuses its changes. While its closed items still download and the poll keeps the rest fresh,
+         * `partial` with that phase, never "Up to date" before it is complete (first run and loading D3); reactive.
          */
         function getRepositoryFreshness(nameWithOwner: string): Freshness {
             const state = tracking.getSyncState({ kind: 'repository', nameWithOwner });
             if (!haveOpenItemsArrived(state)) {
-                return getLoopFreshness('download', null);
+                return withDownloading(getLoopFreshness('download', null), state);
             }
 
             if (state.refused) {
                 return { kind: 'stale', since: state.lastSuccessAt, reason: 'refused' };
             }
 
-            return getLoopFreshness('repositories', state.lastSuccessAt);
+            const polled = getLoopFreshness('repositories', state.lastSuccessAt);
+            if (state.phase === 'done' || state.hidden || (polled.kind !== 'fresh' && polled.kind !== 'checking')) {
+                return polled;
+            }
+
+            return withDownloading(getLoopFreshness('download', null), state);
+        }
+
+        /** A repository's download freshness with the phase under way, its open issues before it started. */
+        function withDownloading(freshness: Freshness, state: RepositorySyncState | undefined): Freshness {
+            if (freshness.kind !== 'partial') {
+                return freshness;
+            }
+
+            const phase = state && state.phase !== 'done' ? state.phase : 'openIssues';
+            const count = state?.counts[phase];
+            return { kind: 'partial', downloading: { phase, done: count?.done ?? 0, total: count?.total ?? null } };
         }
 
         /**

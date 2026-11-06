@@ -25,3 +25,9 @@ export const Column: Story = {
     args: { place: 'column' },
     decorators: [() => ({ template: '<div style="width: 252px; padding: 16px"><story /></div>' })],
 };
+
+/** A board whose columns aren't known yet: four ghost columns (first run and loading D17, ES29). */
+export const Board: Story = {
+    args: { place: 'board' },
+    decorators: [() => ({ template: '<div style="width: 1200px; padding: 12px 16px"><story /></div>' })],
+};

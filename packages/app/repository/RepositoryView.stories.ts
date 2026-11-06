@@ -155,6 +155,26 @@ export const NothingMatches: Story = {
     args: { list: sampleList([], 'milestone'), openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
 };
 
+const ARRIVING_LIST = buildRepositoryList({
+    items: [],
+    state: 'open',
+    kind: 'issue',
+    grouping: 'milestone',
+    sort: 'updated',
+    texts: TEXTS,
+    arriving: true,
+});
+
+/** Tracked, its open issues still downloading: ghost rows, never "nothing matches" (first run and loading ES14). */
+export const TrackedArriving: Story = {
+    args: { list: ARRIVING_LIST, openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
+};
+
+/** The same as a board: ghost columns, as its columns come from its items (ES29). */
+export const TrackedArrivingBoard: Story = {
+    args: { ...TrackedArriving.args, options: options('board', 'milestone') },
+};
+
 const NOT_TRACKED = {
     nameWithOwner: 'vitejs/vite',
     isPrivate: false,
@@ -196,15 +216,7 @@ export const NotTrackedBoard: Story = {
 export const NotTrackedArriving: Story = {
     args: {
         ...NOT_TRACKED,
-        list: buildRepositoryList({
-            items: [],
-            state: 'open',
-            kind: 'issue',
-            grouping: 'milestone',
-            sort: 'updated',
-            texts: TEXTS,
-            arriving: true,
-        }),
+        list: ARRIVING_LIST,
         status: browsedStatus({ reading: true }),
     },
 };
