@@ -73638,137 +73638,38 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "Uc5sj",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 760,
+                      "id": "GYBTP",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 701,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "circle-x",
+                          "fill": "$red"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "kIxue",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "amh1G",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "sHo2l",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "R34qn",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "M6SugW",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Label “regression” wasn't added to fitloop/webapp#1187",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "O3lABU",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: the label no longer exists in fitloop/webapp. It was deleted on GitHub a minute ago, after githq last refreshed the repository's labels. The label was removed again, and the list of labels is up to date now.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "eknG3",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "Label “regression” wasn't added to fitloop/webapp#1187"
                         },
-                        {
-                          "type": "frame",
-                          "id": "XWuNj",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "jlSA7",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub"
-                            },
-                            {
-                              "id": "YWE7D",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
+                        "RtQYI": {
+                          "content": "GitHub refused it: the label no longer exists in fitloop/webapp. It was deleted on GitHub a minute ago, after githq last refreshed the repository's labels. The label was removed again, and the list of labels is up to date now."
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": true,
+                          "icon": "arrow-up-right"
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Open labels on GitHub"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "O"
                         }
-                      ]
+                      }
                     },
                     {
                       "id": "KTTNt",
@@ -75724,174 +75625,37 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "blrc7",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 744,
+                      "id": "L9D5zF",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 600,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 720,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "triangle-alert",
+                          "fill": "$amber"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "A7pqtK",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "Pbvse",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "S2i68",
-                                  "name": "icon triangle-alert",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "triangle-alert",
-                                  "library": "lucide",
-                                  "fill": "$amber"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Kf0eM",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "U80xZp",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "“q4-release” added to 2 of 3 items",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "rQzCp",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "mobile#88 failed: you can read fitloop/mobile but not edit its labels, so that change was undone. Its project fields still work, since they belong to Platform Q4.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "JaCw4",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "“q4-release” added to 2 of 3 items"
                         },
-                        {
-                          "type": "frame",
-                          "id": "dCyu5",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "P2d59Q",
-                              "name": "Button Select the failed item",
-                              "fill": "$bg-3",
-                              "cornerRadius": 7,
-                              "stroke": "$border-2",
-                              "strokeWidth": 1,
-                              "gap": 7,
-                              "padding": [
-                                4,
-                                9
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "Uyf3Y",
-                                  "name": "Label",
-                                  "fill": "$fg",
-                                  "content": "Select the failed item",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12,
-                                  "fontWeight": "500"
-                                },
-                                {
-                                  "id": "XezCi",
-                                  "type": "ref",
-                                  "ref": "L44zw",
-                                  "name": "Kbd ⇧F",
-                                  "height": 15,
-                                  "descendants": {
-                                    "pINSd": {
-                                      "name": "Key arrow-big-up",
-                                      "icon": "arrow-big-up"
-                                    },
-                                    "Q8v43": {
-                                      "content": "F"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "id": "nWbWH",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
+                        "RtQYI": {
+                          "content": "mobile#88 failed: you can read fitloop/mobile but not edit its labels, so that change was undone. Its project fields still work, since they belong to Platform Q4."
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": false
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Select the failed item"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⇧F"
                         }
-                      ]
+                      }
                     },
                     {
                       "id": "twbYO",
@@ -142174,173 +141938,53 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "S8pCh",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 790,
+                      "id": "iufWy",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 777,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "git-merge",
+                          "fill": "$purple"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "fplYT",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "ZT8aq",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "zGbpM",
-                                  "name": "icon git-merge",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "git-merge",
-                                  "library": "lucide",
-                                  "fill": "$purple"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Mk8zf",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "QBlpP",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/api#477 merged into main",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "QGzFq",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "fitloop/api#477 merged into main"
                         },
-                        {
-                          "type": "frame",
-                          "id": "x2Mpe",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "Am3yY",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Delete branch",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "content": "Delete branch",
-                                  "fontSize": 12.5
-                                },
-                                "oCNhh": {
-                                  "id": "BI1DN",
-                                  "type": "ref",
-                                  "ref": "L44zw",
-                                  "name": "Kbd ⌥D",
-                                  "height": 15,
-                                  "descendants": {
-                                    "pINSd": {
-                                      "icon": "option"
-                                    },
-                                    "Q8v43": {
-                                      "content": "D"
-                                    }
-                                  }
-                                }
-                              }
+                        "RtQYI": {
+                          "enabled": false
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": false
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Delete branch"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⌥D"
+                        },
+                        "McVDN": {
+                          "id": "cf54p",
+                          "type": "ref",
+                          "ref": "m1uQkH",
+                          "name": "Second action",
+                          "enabled": true,
+                          "descendants": {
+                            "O9dWyI": {
+                              "enabled": true,
+                              "icon": "undo-2"
                             },
-                            {
-                              "type": "frame",
-                              "id": "PgOqk",
-                              "name": "Button Revert…",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "KbfaG",
-                                  "name": "Label",
-                                  "fill": "$fg-2",
-                                  "content": "Revert",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "500"
-                                }
-                              ]
+                            "i9UKWn": {
+                              "content": "Revert"
                             }
-                          ]
+                          }
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -144078,214 +143722,57 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "Jp0MF",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 688,
+                      "id": "eUSa0",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 739,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "circle-x",
+                          "fill": "$red"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "F1vBwv",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "F36Tn",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "xpg4K",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "bHLit",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "B5bg8d",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/api#477 wasn't merged",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "T8SJol",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: “At least 2 approving reviews are required by reviewers with write access.” Nothing changed on GitHub.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "iPGrt",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "fitloop/api#477 wasn't merged"
                         },
-                        {
-                          "type": "frame",
-                          "id": "qyh5Z",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "SJ4U1",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Back to the merge",
-                              "fill": "$accent",
-                              "cornerRadius": 6,
-                              "stroke": "$accent",
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon git-merge",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "git-merge",
-                                  "fill": "#0D1117"
-                                },
-                                "i9UKWn": {
-                                  "fill": "#0D1117",
-                                  "content": "Back to the merge",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "600"
-                                },
-                                "I9KkTl": {
-                                  "id": "t01r4",
-                                  "type": "ref",
-                                  "ref": "L44zw",
-                                  "name": "Kbd ⌥M",
-                                  "fill": "#0D11171A",
-                                  "stroke": "#0D111733",
-                                  "height": 15,
-                                  "descendants": {
-                                    "pINSd": {
-                                      "icon": "option",
-                                      "fill": "#0D1117"
-                                    },
-                                    "Q8v43": {
-                                      "content": "M",
-                                      "fill": "#0D1117"
-                                    }
-                                  }
-                                }
-                              }
+                        "RtQYI": {
+                          "content": "GitHub refused it: “At least 2 approving reviews are required by reviewers with write access.” Nothing changed on GitHub."
+                        },
+                        "isooB": {
+                          "enabled": false
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": true,
+                          "icon": "git-merge"
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Back to the merge"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⌥M"
+                        },
+                        "McVDN": {
+                          "id": "YxZQ9",
+                          "type": "ref",
+                          "ref": "m1uQkH",
+                          "name": "Second action",
+                          "enabled": true,
+                          "descendants": {
+                            "O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            {
-                              "id": "k6bobh",
-                              "type": "ref",
-                              "ref": "syf0m",
-                              "name": "Button Open on GitHub",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "SofV5": {
-                                  "content": "Open on GitHub",
-                                  "fontSize": 12.5
-                                }
-                              }
-                            },
-                            {
-                              "id": "TTdKQ",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "fontSize": 12.5
-                                }
-                              }
+                            "i9UKWn": {
+                              "content": "Open on GitHub"
                             }
-                          ]
+                          }
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -172608,412 +172095,97 @@
                     },
                     {
                       "type": "frame",
-                      "id": "W9F2j7",
+                      "id": "k2x53U",
                       "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 300,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
+                      "x": 944,
+                      "y": 416,
+                      "name": "Toasts",
+                      "width": 480,
                       "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
+                      "gap": 8,
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "X4GN7",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "a4A0Q",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "r3ExfC",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
+                          "id": "qph0y",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
                             },
-                            {
-                              "type": "frame",
-                              "id": "FJWFz",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "z9mU0",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: no permission",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "zwz8G",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: your role in fitloop/webapp can't run workflows. Nothing was started, and the run is still failed.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: no permission"
                             },
-                            {
-                              "type": "icon",
-                              "id": "z3J8oC",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
+                            "RtQYI": {
+                              "content": "GitHub refused it: your role in fitloop/webapp can't run workflows. Nothing was started, and the run is still failed."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
                             }
-                          ]
+                          }
                         },
                         {
-                          "type": "frame",
-                          "id": "EeeoM",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "J7VJpj",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
+                          "id": "r6nG3u",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
                             },
-                            {
-                              "id": "oxIgR",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: the run is too old"
+                            },
+                            "RtQYI": {
+                              "content": "GitHub refused it: a run can be re-run for about a month after it ran. Nothing was started. A new commit or a manual run on GitHub starts a new one."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
                             }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "H2nzo5",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 450,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "M2G5U",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "H9AwH",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "UyOo0",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Anebg",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "gK4pB",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: the run is too old",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "SBRh2",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: a run can be re-run for about a month after it ran. Nothing was started. A new commit or a manual run on GitHub starts a new one.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "nQJOs",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                          }
                         },
                         {
-                          "type": "frame",
-                          "id": "K3kCnh",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "u9RhwM",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
+                          "id": "j709H",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
                             },
-                            {
-                              "id": "OVaTW",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "FazdQ",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 616,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "T3iz5n",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "dKaZ2",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "S1bxGN",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: it's already running"
                             },
-                            {
-                              "type": "frame",
-                              "id": "POcx5",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "BrkSX",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: it's already running",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "LYXRF",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: someone else re-ran it a moment ago. This page now follows that run.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
+                            "RtQYI": {
+                              "content": "GitHub refused it: someone else re-ran it a moment ago. This page now follows that run."
                             },
-                            {
-                              "type": "icon",
-                              "id": "gYIJA",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
+                            "e3gZq": {
+                              "enabled": false
                             }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "A4X6FL",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "A2mTB",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
+                          }
                         }
                       ]
                     }
@@ -182276,716 +181448,6 @@
                     },
                     {
                       "type": "frame",
-                      "id": "NvsaO",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 70,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "H2mrJ",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "B9nzH",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "R2deT",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "RR05D",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "dmTaO",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: GitHub couldn't be reached",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "p1Ghb",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "githq couldn't reach GitHub, so the run stays as GitHub last said it. Try again once you're online.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "ZbUpV",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "rIPjo",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "lD74r",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "ohURe",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "pwO1G",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 197,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "DuPmr",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "NKbAe",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "zThUT",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "u6uTC",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "flMMr",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: GitHub failed",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "SUPIY",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub answered 502, a failure on its side rather than a refusal. The run stays as GitHub last said it; try again in a moment.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "Y3WFzF",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "zIuJx",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "P35r73",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "JcOp4",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "tNAlE",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 324,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "M29jy6",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "R8sLKZ",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "nTZkd",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "i2ESQ",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "If3aY",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: the allowance is used up",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "iO3lK",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub's API allowance is used up until 15:02, so nothing was started.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "PDicn",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "mbY0Y",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "NHoB5",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "Bckf6",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "u75Rpi",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 451,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "YbpIw",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "vdwfE",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "nHjCe",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "CtRfd",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "V15vL",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "XqGPg",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused it: Resource not accessible by integration. Nothing was started, and the run is still failed.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "W3qhhj",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "BHLfy",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "WaSjQ",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open on GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "d59DYD",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "VLsFp",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 578,
-                      "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "uSBoc",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "skRc5",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "n89Nq",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "CAV3l",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "emymv",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Deploy #4821 wasn't re-run: fitloop hasn't approved githq",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "un6ra",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "fitloop hasn't approved githq, so githq can read its public repositories but can't change anything there.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "oJCKN",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "OAUkf",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "mKM8Q",
-                              "type": "ref",
-                              "ref": "m1uQkH",
-                              "name": "Button Request access on GitHub",
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon arrow-up-right",
-                                  "icon": "arrow-up-right"
-                                },
-                                "i9UKWn": {
-                                  "content": "Request access on GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "ojkhS",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
                       "id": "cw4cz",
                       "layoutPosition": "absolute",
                       "x": 548,
@@ -183051,6 +181513,176 @@
                             "unZbw": {
                               "fill": "$red",
                               "content": "Re-run not sent · allowance used up"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "cT5yv",
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 181,
+                      "name": "Toasts",
+                      "width": 480,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "id": "b0DkY",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: GitHub couldn't be reached"
+                            },
+                            "RtQYI": {
+                              "content": "githq couldn't reach GitHub, so the run stays as GitHub last said it. Try again once you're online."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
+                            }
+                          }
+                        },
+                        {
+                          "id": "czjel",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: GitHub failed"
+                            },
+                            "RtQYI": {
+                              "content": "GitHub answered 502, a failure on its side rather than a refusal. The run stays as GitHub last said it; try again in a moment."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
+                            }
+                          }
+                        },
+                        {
+                          "id": "JwJPa",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: the allowance is used up"
+                            },
+                            "RtQYI": {
+                              "content": "GitHub's API allowance is used up until 15:02, so nothing was started."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
+                            }
+                          }
+                        },
+                        {
+                          "id": "bu2Mn",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run"
+                            },
+                            "RtQYI": {
+                              "content": "GitHub refused it: Resource not accessible by integration. Nothing was started, and the run is still failed."
+                            },
+                            "e3gZq/O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
+                            },
+                            "e3gZq/i9UKWn": {
+                              "content": "Open on GitHub"
+                            },
+                            "e3gZq/I9KkTl": {
+                              "enabled": true
+                            },
+                            "e3gZq/I9KkTl/luKkY": {
+                              "content": "O"
+                            }
+                          }
+                        },
+                        {
+                          "id": "ZLEbN",
+                          "type": "ref",
+                          "ref": "E6hAh",
+                          "name": "Toast",
+                          "descendants": {
+                            "ZJgkP": {
+                              "icon": "circle-x",
+                              "fill": "$red"
+                            },
+                            "DSFdz": {
+                              "content": "Deploy #4821 wasn't re-run: fitloop hasn't approved githq"
+                            },
+                            "RtQYI": {
+                              "content": "fitloop hasn't approved githq, so githq can read its public repositories but can't change anything there."
+                            },
+                            "e3gZq": {
+                              "id": "aFvoL",
+                              "type": "ref",
+                              "ref": "m1uQkH",
+                              "name": "Action",
+                              "descendants": {
+                                "O9dWyI": {
+                                  "enabled": true,
+                                  "icon": "arrow-up-right"
+                                },
+                                "i9UKWn": {
+                                  "content": "Request access on GitHub"
+                                }
+                              }
                             }
                           }
                         }
@@ -189412,101 +188044,37 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "hFYmM",
-                      "layoutPosition": "absolute",
-                      "x": 618,
-                      "y": 790,
+                      "id": "LGUtE",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 440,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
-                        },
-                        "blur": 40
-                      },
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        10,
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "T8TYU",
-                          "name": "icon eye-off",
-                          "width": 15,
-                          "height": 15,
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 758,
+                      "descendants": {
+                        "ZJgkP": {
                           "icon": "eye-off",
-                          "library": "lucide",
                           "fill": "$fg-2"
                         },
-                        {
-                          "type": "frame",
-                          "id": "wStl5",
-                          "name": "Text",
-                          "width": "fill_container",
-                          "layout": "vertical",
-                          "gap": 2,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "XcSNn",
-                              "name": "Title",
-                              "fill": "$fg",
-                              "content": "Stopped tracking fitloop/api",
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "text",
-                              "id": "iu6N7",
-                              "name": "Detail",
-                              "fill": "$fg-2",
-                              "content": "Its copy in this browser goes when this closes.",
-                              "fontFamily": "$font",
-                              "fontSize": 12,
-                              "fontWeight": "normal"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "Stopped tracking fitloop/api"
                         },
-                        {
-                          "id": "NiV5t",
-                          "type": "ref",
-                          "ref": "JOjbe",
-                          "name": "Button Undo",
-                          "descendants": {
-                            "KpHhX": {
-                              "content": "Undo"
-                            },
-                            "oCNhh/luKkY": {
-                              "content": "⌘Z"
-                            }
-                          }
+                        "RtQYI": {
+                          "content": "Its copy in this browser goes when this closes."
                         },
-                        {
-                          "type": "icon",
-                          "id": "C6zwY",
-                          "name": "icon x",
-                          "width": 14,
-                          "height": 14,
-                          "icon": "x",
-                          "library": "lucide",
-                          "fill": "$fg-3"
+                        "e3gZq/O9dWyI": {
+                          "enabled": false
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Undo"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⌘Z"
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -193508,157 +192076,41 @@
                       "width": "fill_container"
                     },
                     {
-                      "type": "frame",
-                      "id": "BgL07",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 740,
+                      "id": "l1ktY",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 739,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "triangle-alert",
+                          "fill": "$amber"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "H751JP",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "gsCVL",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "n0Zne",
-                                  "name": "icon triangle-alert",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "triangle-alert",
-                                  "library": "lucide",
-                                  "fill": "$amber"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "Psdfe",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "F4GC4B",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Syncing settings stopped",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "SToWK",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "The repository mlaine/githq-settings no longer exists on GitHub. githq keeps working from what's on this device.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "iQYoe",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "Syncing settings stopped"
                         },
-                        {
-                          "type": "frame",
-                          "id": "u0au2",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "EIp4C",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Open settings",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon settings",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "settings"
-                                },
-                                "i9UKWn": {
-                                  "content": "Open settings",
-                                  "fontSize": 12.5
-                                },
-                                "I9KkTl": {
-                                  "name": "Kbd ⌥S"
-                                },
-                                "I9KkTl/luKkY": {
-                                  "content": "⌥S"
-                                }
-                              }
-                            }
-                          ]
+                        "RtQYI": {
+                          "content": "The repository mlaine/githq-settings no longer exists on GitHub. githq keeps working from what's on this device."
+                        },
+                        "isooB": {
+                          "enabled": false
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": true,
+                          "icon": "settings"
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Open settings"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⌥S"
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -211286,97 +209738,28 @@
                       "width": "fill_container"
                     },
                     {
-                      "type": "frame",
-                      "id": "sRU7M",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 826,
+                      "id": "l5Sl1",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 777,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "git-merge",
+                          "fill": "$purple"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "S5c9nZ",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "t4C4f",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "qHrzw",
-                                  "name": "icon git-merge",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "git-merge",
-                                  "library": "lucide",
-                                  "fill": "$purple"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "qRPap",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "cr3mO",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "mlaine/tasklet · 3 pull requests merged into main",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "a7hri",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "mlaine/tasklet · 3 pull requests merged into main"
+                        },
+                        "RtQYI": {
+                          "enabled": false
+                        },
+                        "e3gZq": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -244623,107 +243006,25 @@
                       ]
                     },
                     {
-                      "type": "frame",
-                      "id": "KKXHh",
+                      "id": "jApxC",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": "fill_container",
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "unlink",
+                          "fill": "$fg-2"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "h3h5bm",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "k7lvVl",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "DgalD",
-                                  "name": "icon unlink",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "unlink",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "zwWq0",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "CKIRP",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Stack dissolved",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "V4HCA",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "#471 and #473 are ordinary pull requests now. #470 is merged and stays in the stack on GitHub.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "VQ8bo",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "Stack dissolved"
+                        },
+                        "RtQYI": {
+                          "content": "#471 and #473 are ordinary pull requests now. #470 is merged and stays in the stack on GitHub."
+                        },
+                        "e3gZq": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -246170,214 +244471,57 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "z0s6I",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 720,
+                      "id": "wGo8k",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 739,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "circle-x",
+                          "fill": "$red"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "GsXbp",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "eri3R",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "RVJYy",
-                                  "name": "icon circle-x",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "circle-x",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "FEMMI",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "cwE7k",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "Merge stack: 1 of 3 landed in mlaine/tasklet",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "b4xgR",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused #16: “Required status check \"unit\" is failing.” #15 landed, #16 and #17 are still open. Read from GitHub just now.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "oPMPx",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "Merge stack: 1 of 3 landed in mlaine/tasklet"
                         },
-                        {
-                          "type": "frame",
-                          "id": "lLHDr",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "HxW7W",
-                              "type": "ref",
-                              "ref": "n73Aps",
-                              "name": "Button Back to the merge",
-                              "fill": "$accent",
-                              "cornerRadius": 6,
-                              "stroke": "$accent",
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "O9dWyI": {
-                                  "name": "icon git-merge",
-                                  "width": 13,
-                                  "height": 13,
-                                  "icon": "git-merge",
-                                  "fill": "#FFFFFF"
-                                },
-                                "i9UKWn": {
-                                  "fill": "#FFFFFF",
-                                  "content": "Back to the merge",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "600"
-                                },
-                                "I9KkTl": {
-                                  "id": "ry2Gy",
-                                  "type": "ref",
-                                  "ref": "L44zw",
-                                  "name": "Kbd ⌥M",
-                                  "fill": "#FFFFFF33",
-                                  "stroke": "#0D111733",
-                                  "height": 15,
-                                  "descendants": {
-                                    "pINSd": {
-                                      "icon": "option",
-                                      "fill": "#FFFFFF"
-                                    },
-                                    "Q8v43": {
-                                      "content": "M",
-                                      "fill": "#FFFFFF"
-                                    }
-                                  }
-                                }
-                              }
+                        "RtQYI": {
+                          "content": "GitHub refused #16: “Required status check \"unit\" is failing.” #15 landed, #16 and #17 are still open. Read from GitHub just now."
+                        },
+                        "isooB": {
+                          "enabled": false
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": true,
+                          "icon": "git-merge"
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Back to the merge"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "⌥M"
+                        },
+                        "McVDN": {
+                          "id": "Zt4NR",
+                          "type": "ref",
+                          "ref": "m1uQkH",
+                          "name": "Second action",
+                          "enabled": true,
+                          "descendants": {
+                            "O9dWyI": {
+                              "enabled": true,
+                              "icon": "arrow-up-right"
                             },
-                            {
-                              "id": "RkJUP",
-                              "type": "ref",
-                              "ref": "syf0m",
-                              "name": "Button Open on GitHub",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "SofV5": {
-                                  "content": "Open on GitHub",
-                                  "fontSize": 12.5
-                                }
-                              }
-                            },
-                            {
-                              "id": "W2df5",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "fontSize": 12.5
-                                }
-                              }
+                            "i9UKWn": {
+                              "content": "Open on GitHub"
                             }
-                          ]
+                          }
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -246512,176 +244656,37 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "OBacW",
-                      "layoutPosition": "absolute",
-                      "x": 548,
-                      "y": 720,
+                      "id": "G8B8QB",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 580,
-                      "fill": "$bg-2",
-                      "cornerRadius": 10,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "#000000B0",
-                        "offset": {
-                          "x": 0,
-                          "y": 14
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 739,
+                      "descendants": {
+                        "ZJgkP": {
+                          "icon": "circle-x",
+                          "fill": "$red"
                         },
-                        "blur": 40
-                      },
-                      "layout": "vertical",
-                      "gap": 10,
-                      "padding": [
-                        12,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "bs3UN",
-                          "name": "Head",
-                          "width": "fill_container",
-                          "gap": 10,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "PwYEy",
-                              "name": "Icon",
-                              "padding": [
-                                1,
-                                0,
-                                0,
-                                0
-                              ],
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "iAFNY",
-                                  "name": "icon undo-2",
-                                  "width": 15,
-                                  "height": 15,
-                                  "icon": "undo-2",
-                                  "library": "lucide",
-                                  "fill": "$red"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "bELps",
-                              "name": "Text",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "m2N3M",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "#1206 kept its labels",
-                                  "fontFamily": "$font",
-                                  "fontSize": 13,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "Torn1",
-                                  "name": "Detail",
-                                  "fill": "$fg-2",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "GitHub refused the edit for fitloop/webapp#1206: “Resource not accessible.” #1203, #1204 and #1207 have the label frontend.",
-                                  "lineHeight": 1.5,
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "DlZ2j",
-                              "name": "icon x",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "x",
-                              "library": "lucide",
-                              "fill": "$fg-3"
-                            }
-                          ]
+                        "DSFdz": {
+                          "content": "#1206 kept its labels"
                         },
-                        {
-                          "type": "frame",
-                          "id": "Gt7aU",
-                          "name": "Actions",
-                          "gap": 8,
-                          "padding": [
-                            0,
-                            0,
-                            0,
-                            25
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "id": "D4SYA",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Open #1206",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "content": "Open #1206",
-                                  "fontSize": 12.5
-                                },
-                                "oCNhh": {
-                                  "id": "PeoGk",
-                                  "type": "ref",
-                                  "ref": "oPSI9",
-                                  "name": "Kbd ↵",
-                                  "height": 15,
-                                  "descendants": {
-                                    "YRrEc": {
-                                      "icon": "corner-down-left"
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            {
-                              "id": "fDLsu",
-                              "type": "ref",
-                              "ref": "JOjbe",
-                              "name": "Button Dismiss",
-                              "cornerRadius": 6,
-                              "gap": 6,
-                              "padding": [
-                                5,
-                                8,
-                                5,
-                                10
-                              ],
-                              "descendants": {
-                                "KpHhX": {
-                                  "fontSize": 12.5
-                                }
-                              }
-                            }
-                          ]
+                        "RtQYI": {
+                          "content": "GitHub refused the edit for fitloop/webapp#1206: “Resource not accessible.” #1203, #1204 and #1207 have the label frontend."
+                        },
+                        "e3gZq/O9dWyI": {
+                          "enabled": false
+                        },
+                        "e3gZq/i9UKWn": {
+                          "content": "Open #1206"
+                        },
+                        "e3gZq/I9KkTl": {
+                          "enabled": true
+                        },
+                        "e3gZq/I9KkTl/luKkY": {
+                          "content": "↵"
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -279004,48 +277009,28 @@
                       }
                     },
                     {
-                      "type": "frame",
-                      "id": "kl4xY",
-                      "layoutPosition": "absolute",
-                      "x": 900,
-                      "y": 820,
+                      "id": "J3SXUg",
+                      "type": "ref",
+                      "ref": "E6hAh",
                       "name": "Toast",
-                      "width": 500,
-                      "fill": "$bg-3",
-                      "cornerRadius": 8,
-                      "stroke": "$border-2",
-                      "strokeWidth": 1,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        14
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "cFMdq",
-                          "name": "icon hard-drive",
-                          "width": 14,
-                          "height": 14,
+                      "layoutPosition": "absolute",
+                      "x": 944,
+                      "y": 758,
+                      "descendants": {
+                        "ZJgkP": {
                           "icon": "hard-drive",
-                          "library": "lucide",
-                          "fill": "$green"
+                          "fill": "$fg-2"
                         },
-                        {
-                          "type": "text",
-                          "id": "zieWO",
-                          "name": "Added the clone at ~/Dev/webap",
-                          "fill": "$fg",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Added the clone at ~/Dev/webapp, from the worktree brave-lynx · 5 working copies",
-                          "lineHeight": 1.4,
-                          "fontFamily": "$font",
-                          "fontSize": 12.5,
-                          "fontWeight": "normal"
+                        "DSFdz": {
+                          "content": "Added the clone at ~/Dev/webapp"
+                        },
+                        "RtQYI": {
+                          "content": "From the worktree brave-lynx · 5 working copies"
+                        },
+                        "e3gZq": {
+                          "enabled": false
                         }
-                      ]
+                      }
                     }
                   ]
                 }
@@ -345630,7 +343615,7 @@
                         },
                         "e3gZq/O9dWyI": {
                           "enabled": true,
-                          "icon": "arrow-left"
+                          "icon": "git-merge"
                         },
                         "e3gZq/i9UKWn": {
                           "content": "Back to the merge"
