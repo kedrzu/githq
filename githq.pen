@@ -341630,653 +341630,312 @@
           "children": [
             {
               "type": "frame",
-              "id": "MvhxE",
-              "name": "Variants · How Commits show their first read",
-              "fill": "#D299221A",
-              "cornerRadius": 12,
-              "stroke": "$amber",
-              "strokeWidth": 2,
-              "gap": 80,
-              "padding": 24,
+              "id": "BLVJl",
+              "name": "Slot · ES21 · Commits' first read as a skeleton",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
               "children": [
                 {
                   "type": "frame",
-                  "id": "BLVJl",
-                  "name": "Slot · ES21 · Variant A · Commits' first read as a skeleton",
-                  "width": 1440,
+                  "id": "UWuMO",
+                  "name": "Caption",
+                  "width": "fill_container",
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 4,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "UWuMO",
-                      "name": "Caption",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "B85s7",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "ES21 · Variant A · Commits' first read as a skeleton",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "cLhLg",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Recommended. The skeleton takes the graph's own shape: branches and tags on the left, a lane with commit dots and message bars on the right, author and date at the end, so the first page lands in place without a jump. It is on screen for a second or two at most (the first page is small, CH32); a loader would flash for the same second and then the whole layout would appear at once.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                      "type": "text",
+                      "id": "B85s7",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "ES21 · Commits' first read as a skeleton",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
                     },
                     {
-                      "type": "frame",
-                      "id": "tmLHL",
-                      "name": "ES21 · Variant A · Commits · First read, skeleton",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "ZjBeR",
-                          "name": "Main",
-                          "width": "fill_container",
-                          "height": "fill_container",
-                          "children": [
-                            {
-                              "id": "lyGnj",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container",
-                              "descendants": {
-                                "w7B2q": {
-                                  "fill": "$bg-3"
-                                },
-                                "j1VWpL": {
-                                  "fill": "$fg"
-                                },
-                                "y14orI": {
-                                  "fill": "$fg",
-                                  "fontWeight": "500"
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "OUIU4",
-                              "name": "Pane",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "layout": "vertical",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "hGScI",
-                                  "name": "Header",
-                                  "width": "fill_container",
-                                  "height": 48,
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "bottom": 1
-                                  },
-                                  "gap": 10,
-                                  "padding": [
-                                    0,
-                                    20
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "m0dhV",
-                                      "name": "icon lock",
-                                      "width": 16,
-                                      "height": 16,
-                                      "icon": "lock",
-                                      "library": "lucide",
-                                      "fill": "$fg-2"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "V3qaR7",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "fitloop/webapp",
-                                      "fontFamily": "$font",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "cSSkZ",
-                                      "name": "Meta",
-                                      "fill": "$fg-dim",
-                                      "content": "private",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "f7TSk",
-                                      "name": "Sections",
-                                      "gap": 2,
-                                      "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        12
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "QmM6Z",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Issues",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Issues",
-                                              "name": "Issues"
-                                            },
-                                            "prKB9": {
-                                              "content": "118"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "taMWN",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Pull requests",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Pull requests",
-                                              "name": "Pull requests"
-                                            },
-                                            "prKB9": {
-                                              "content": "24"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "EFxIx",
-                                          "type": "ref",
-                                          "ref": "U6PxrM",
-                                          "name": "Section Commits",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Commits",
-                                              "name": "Commits"
-                                            },
-                                            "prKB9": {
-                                              "enabled": false
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "g5l1M",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Workflows",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Workflows",
-                                              "name": "Workflows"
-                                            },
-                                            "prKB9": {
-                                              "content": "2"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "zRMjG",
-                                      "name": "spacer",
-                                      "width": "fill_container",
-                                      "height": 1
-                                    },
-                                    {
-                                      "id": "n3ppE",
-                                      "type": "ref",
-                                      "ref": "XJXsm",
-                                      "name": "Tool Branches and tags  B",
-                                      "descendants": {
-                                        "rgTry": {
-                                          "icon": "git-branch"
-                                        },
-                                        "deogH": {
-                                          "content": "Branches and tags"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "FGBJx",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd B",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "B"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "PRlqh",
-                                      "name": "github",
-                                      "cornerRadius": 6,
-                                      "gap": 6,
-                                      "padding": [
-                                        4,
-                                        8
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "kHetB",
-                                          "name": "icon github",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "github",
-                                          "library": "lucide",
-                                          "fill": "$fg-2"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "id": "GmD8j",
-                                  "type": "ref",
-                                  "ref": "Rp1Rx",
-                                  "name": "Empty state",
-                                  "width": "fill_container",
-                                  "height": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "id": "hBziW",
-                          "type": "ref",
-                          "ref": "BFhwj",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "IHAUy": {
-                              "width": 236,
-                              "padding": [
-                                0,
-                                12
-                              ],
-                              "justifyContent": "start"
-                            },
-                            "IHAUy/unZbw": {
-                              "content": "4,812 of 5,000 left this hour"
-                            },
-                            "YBQPD/zYDcH": {
-                              "icon": "loader-circle",
-                              "fill": "$fg-2",
-                              "enabled": true
-                            },
-                            "YBQPD/unZbw": {
-                              "content": "Reading commits",
-                              "fill": "$fg-2"
-                            }
-                          }
-                        }
-                      ]
+                      "type": "text",
+                      "id": "cLhLg",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Picked (owner, 2026-11-06). Fix of the bare \"Loading commits…\": the skeleton takes the graph's own shape, branches and tags on the left, a lane with commit dots and message bars on the right, author and date at the end, so the first page lands in place without a jump. On screen for a second or two at most (the first page is small, CH32).",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
                 {
                   "type": "frame",
-                  "id": "gIbF0",
-                  "name": "Slot · ES26 · Variant B · Commits' first read as a loader in the middle",
+                  "id": "tmLHL",
+                  "name": "ES21 · Commits · First read, skeleton",
+                  "clip": true,
                   "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
                   "layout": "vertical",
-                  "gap": 14,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "ET97y",
-                      "name": "Caption",
+                      "id": "ZjBeR",
+                      "name": "Main",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
+                      "height": "fill_container",
                       "children": [
                         {
-                          "type": "text",
-                          "id": "NOwNK",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "content": "ES26 · Variant B · Commits' first read as a loader in the middle",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
+                          "id": "lyGnj",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "w7B2q": {
+                              "fill": "$bg-3"
+                            },
+                            "j1VWpL": {
+                              "fill": "$fg"
+                            },
+                            "y14orI": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            }
+                          }
                         },
                         {
-                          "type": "text",
-                          "id": "gQVLa",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "Today's shape, made one of the shared notes: a turning loader, \"Reading commits\", one line. Simpler, and it says the same; but the graph's two columns appear all at once when the first page lands, after a second of a centred icon.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "LuKNb",
-                      "name": "ES26 · Variant B · Commits · First read, loader",
-                      "clip": true,
-                      "width": 1440,
-                      "height": 900,
-                      "fill": "$bg",
-                      "cornerRadius": 10,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
                           "type": "frame",
-                          "id": "xjSFP",
-                          "name": "Main",
+                          "id": "OUIU4",
+                          "name": "Pane",
                           "width": "fill_container",
                           "height": "fill_container",
+                          "layout": "vertical",
                           "children": [
                             {
-                              "id": "rStup",
-                              "type": "ref",
-                              "ref": "ZPurg",
-                              "name": "Sidebar",
-                              "height": "fill_container",
-                              "descendants": {
-                                "w7B2q": {
-                                  "fill": "$bg-3"
-                                },
-                                "j1VWpL": {
-                                  "fill": "$fg"
-                                },
-                                "y14orI": {
-                                  "fill": "$fg",
-                                  "fontWeight": "500"
-                                }
-                              }
-                            },
-                            {
                               "type": "frame",
-                              "id": "XjLT8",
-                              "name": "Pane",
+                              "id": "hGScI",
+                              "name": "Header",
                               "width": "fill_container",
-                              "height": "fill_container",
-                              "layout": "vertical",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
+                                  "type": "icon",
+                                  "id": "m0dhV",
+                                  "name": "icon lock",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "V3qaR7",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "fitloop/webapp",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cSSkZ",
+                                  "name": "Meta",
+                                  "fill": "$fg-dim",
+                                  "content": "private",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
                                   "type": "frame",
-                                  "id": "DGPqA",
-                                  "name": "Header",
-                                  "width": "fill_container",
-                                  "height": 48,
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "bottom": 1
-                                  },
-                                  "gap": 10,
+                                  "id": "f7TSk",
+                                  "name": "Sections",
+                                  "gap": 2,
                                   "padding": [
                                     0,
-                                    20
+                                    0,
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "QmM6Z",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Issues",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Issues",
+                                          "name": "Issues"
+                                        },
+                                        "prKB9": {
+                                          "content": "118"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "taMWN",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Pull requests",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Pull requests",
+                                          "name": "Pull requests"
+                                        },
+                                        "prKB9": {
+                                          "content": "24"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "EFxIx",
+                                      "type": "ref",
+                                      "ref": "U6PxrM",
+                                      "name": "Section Commits",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Commits",
+                                          "name": "Commits"
+                                        },
+                                        "prKB9": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "g5l1M",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Workflows",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Workflows",
+                                          "name": "Workflows"
+                                        },
+                                        "prKB9": {
+                                          "content": "2"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zRMjG",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "id": "n3ppE",
+                                  "type": "ref",
+                                  "ref": "XJXsm",
+                                  "name": "Tool Branches and tags  B",
+                                  "descendants": {
+                                    "rgTry": {
+                                      "icon": "git-branch"
+                                    },
+                                    "deogH": {
+                                      "content": "Branches and tags"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "FGBJx",
+                                  "type": "ref",
+                                  "ref": "w9kS9",
+                                  "name": "Kbd B",
+                                  "descendants": {
+                                    "luKkY": {
+                                      "content": "B"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "PRlqh",
+                                  "name": "github",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
                                   ],
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "V1Gwb",
-                                      "name": "icon lock",
-                                      "width": 16,
-                                      "height": 16,
-                                      "icon": "lock",
+                                      "id": "kHetB",
+                                      "name": "icon github",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "github",
                                       "library": "lucide",
                                       "fill": "$fg-2"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "j1EHKV",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "fitloop/webapp",
-                                      "fontFamily": "$font",
-                                      "fontSize": 14,
-                                      "fontWeight": "600"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "x79FG",
-                                      "name": "Meta",
-                                      "fill": "$fg-dim",
-                                      "content": "private",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12.5,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "TuPJK",
-                                      "name": "Sections",
-                                      "gap": 2,
-                                      "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        12
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "id": "yNenm",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Issues",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Issues",
-                                              "name": "Issues"
-                                            },
-                                            "prKB9": {
-                                              "content": "118"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "x41dD",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Pull requests",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Pull requests",
-                                              "name": "Pull requests"
-                                            },
-                                            "prKB9": {
-                                              "content": "24"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "Hpv75",
-                                          "type": "ref",
-                                          "ref": "U6PxrM",
-                                          "name": "Section Commits",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Commits",
-                                              "name": "Commits"
-                                            },
-                                            "prKB9": {
-                                              "enabled": false
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "tcuMg",
-                                          "type": "ref",
-                                          "ref": "k0cJZ",
-                                          "name": "Section Workflows",
-                                          "descendants": {
-                                            "JaHcp": {
-                                              "content": "Workflows",
-                                              "name": "Workflows"
-                                            },
-                                            "prKB9": {
-                                              "content": "2"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "hL9dN",
-                                      "name": "spacer",
-                                      "width": "fill_container",
-                                      "height": 1
-                                    },
-                                    {
-                                      "id": "LYOQs",
-                                      "type": "ref",
-                                      "ref": "XJXsm",
-                                      "name": "Tool Branches and tags  B",
-                                      "descendants": {
-                                        "rgTry": {
-                                          "icon": "git-branch"
-                                        },
-                                        "deogH": {
-                                          "content": "Branches and tags"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "H0vf9",
-                                      "type": "ref",
-                                      "ref": "w9kS9",
-                                      "name": "Kbd B",
-                                      "descendants": {
-                                        "luKkY": {
-                                          "content": "B"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "y292WS",
-                                      "name": "github",
-                                      "cornerRadius": 6,
-                                      "gap": 6,
-                                      "padding": [
-                                        4,
-                                        8
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "m8CQt",
-                                          "name": "icon github",
-                                          "width": 14,
-                                          "height": 14,
-                                          "icon": "github",
-                                          "library": "lucide",
-                                          "fill": "$fg-2"
-                                        }
-                                      ]
                                     }
                                   ]
-                                },
-                                {
-                                  "id": "u7lEez",
-                                  "type": "ref",
-                                  "ref": "hk0U0",
-                                  "name": "Empty state",
-                                  "width": "fill_container",
-                                  "height": "fill_container",
-                                  "descendants": {
-                                    "qEsb9": {
-                                      "icon": "loader-circle",
-                                      "fill": "$fg-3"
-                                    },
-                                    "P3dpQw": {
-                                      "content": "Reading commits"
-                                    },
-                                    "QFwBj": {
-                                      "content": "githq is reading fitloop/webapp's history from GitHub."
-                                    },
-                                    "vFbwf": {
-                                      "enabled": false
-                                    }
-                                  }
                                 }
                               ]
+                            },
+                            {
+                              "id": "GmD8j",
+                              "type": "ref",
+                              "ref": "Rp1Rx",
+                              "name": "Empty state",
+                              "width": "fill_container",
+                              "height": "fill_container"
                             }
                           ]
-                        },
-                        {
-                          "id": "TQTtZ",
-                          "type": "ref",
-                          "ref": "BFhwj",
-                          "name": "Status bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "IHAUy": {
-                              "width": 236,
-                              "padding": [
-                                0,
-                                12
-                              ],
-                              "justifyContent": "start"
-                            },
-                            "IHAUy/unZbw": {
-                              "content": "4,812 of 5,000 left this hour"
-                            },
-                            "YBQPD/zYDcH": {
-                              "icon": "loader-circle",
-                              "fill": "$fg-2",
-                              "enabled": true
-                            },
-                            "YBQPD/unZbw": {
-                              "content": "Reading commits",
-                              "fill": "$fg-2"
-                            }
-                          }
                         }
                       ]
+                    },
+                    {
+                      "id": "hBziW",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "loader-circle",
+                          "fill": "$fg-2",
+                          "enabled": true
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Reading commits",
+                          "fill": "$fg-2"
+                        }
+                      }
                     }
                   ]
                 }
