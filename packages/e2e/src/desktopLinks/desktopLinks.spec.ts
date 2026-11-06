@@ -105,6 +105,38 @@ test('signed out, nothing is handed off: not on the landing page, not on /downlo
     expect(handOff.handedOff).toEqual([]);
 });
 
+test('signed out, nothing is handed off at sign-in or at an address of the app, which both lead to the landing page', async ({
+    page,
+}) => {
+    await optInFromTheStart(page);
+    const handOff = new DesktopHandOffHarness(page);
+    const landing = new LandingHarness(page);
+
+    await page.goto('/login');
+    await expect(landing.signInButton).toBeVisible();
+    await page.goto(ISSUE_PATH);
+    await expect(landing.signInButton).toBeVisible();
+    await settle(page);
+
+    expect(handOff.handedOff).toEqual([]);
+});
+
+test('the OAuth callback hands nothing off, nor does the shell it leads to in the same page load', async ({
+    page,
+    github,
+}) => {
+    await openMyWork(page, github, createSampleMyWork().world);
+    await optIn(page);
+    const handOff = new DesktopHandOffHarness(page);
+
+    await page.goto('/auth/callback?error=access_denied');
+    await expect(page).not.toHaveURL(/auth\/callback/);
+    await expect(new AppShellHarness(page).sidebar).toBeVisible();
+    await settle(page);
+
+    expect(handOff.handedOff).toEqual([]);
+});
+
 test('a sign-in with a pasted token, and the choice of what to track after it, in the page that was opened signed out, hand nothing off', async ({
     page,
     github,
