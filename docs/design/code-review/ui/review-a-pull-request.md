@@ -201,7 +201,7 @@ laptop split CR4, unified with the conversation CR5, both columns hidden CR6. Th
 threads CR15). Settled by the owner: the pending review's toolbar (CR35, CR36, D28), where the stack sits (CR47, CR48, D25), the viewed mark (CR46, D27) and the comment setting being synced (CR77, D34). The walk: first open CR20, viewed hidden CR21, V and the next file CR22, ten selected CR23, ticked at
 once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the keys CR29. States and failures:
 files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
-binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68. Writing: a
+binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68, a file still arriving in split CR88 and unified CR89 (D38). Writing: a
 range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
 
 Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.

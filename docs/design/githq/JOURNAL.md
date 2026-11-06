@@ -46,3 +46,4 @@ Append-only. One line per turn that settled something.
 - 2026-11-05 — User approved the landing page's design: it moved into the accepted frames `Landing — githq.dev` and its mobile frame, with `/download` as its own design in `Landing · Download page`. G1 and the share images take the new headline.
 - 2026-11-05 — User: code in review is tiring to read → D37: GitHub's Primer dark colours across the app and `githq.pen`, indigo kept as the brand only; neutrals not tilted; landing hero, share image and README picture wait for #178.
 - 2026-11-05 — User asked for short animations where something appears, all of them off with a setting in Display (D38). githq.pen: new `Settings / Switch row` and `· off`, CH43 gets the Animations section, new CH49 with it off. Changelog: `subtle-animations`.
+- 2026-11-05 — User: correct the CR79 caption, which still described the five muted hues D37 replaced. githq.pen: `Caption note` now names GitHub's seven syntax colours.
