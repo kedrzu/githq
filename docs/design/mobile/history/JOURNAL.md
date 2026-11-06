@@ -21,3 +21,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   top-right corner is natural, but leave the design agent room to find something smarter; variants are starting
   points, not the boundary (D1). Recorded the two couplings (command menu is already contextual; a button on a
   list-only bar vanishes from the item screen) in `variants.md`.
+- 2026-11-06 — Owner: on a phone, what githq does not support there hands off to github.com like any other address
+  githq does not show (D3). Scope proposed as D4 — owner did not object, not confirmed; merging still open. Still
+  unanswered: why the owner wants githq on a phone (what they do with it there).
