@@ -1,4 +1,4 @@
-<!-- A newer githq was deployed while the page runs (`NewVersion`, on the web only: the desktop app has its own updater): a toast that stays until dismissed, with Reload (⌥R on the newest toast; in the command menu while it shows). Nothing reloads until the user says so; dismissed, it does not come back until the next load. -->
+<!-- A newer githq was deployed while the page runs (`NewVersion`, on the web only: the desktop app has its own updater): a toast that stays until dismissed, with Reload (⌥R on the newest toast; in the command menu while it shows). Reload loads the new version at once; otherwise the next move to another screen does (Nuxt's chunk-reload plugin), never a reload in place. Dismissed, it does not come back until the next load. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';

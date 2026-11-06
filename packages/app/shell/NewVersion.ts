@@ -5,8 +5,9 @@ import { Browser } from '@/services/Browser.js';
 
 /**
  * A newer githq deployed while this page runs, on the web (the desktop app has its own updater, `AppUpdate`). Nuxt
- * polls for a new build and says so through `app:manifest:update`, which `iocPlugin` passes to {@link announce}; the
- * page reloads only at the user's word (`NewVersionToast.vue`).
+ * polls for a new build and says so through `app:manifest:update`, which `iocPlugin` passes to {@link announce}; Reload
+ * (`NewVersionToast.vue`) loads it at once, and otherwise Nuxt's own chunk-reload plugin loads it on the next move to
+ * another screen, since the old build's chunks may be gone.
  */
 export const NewVersion = defineService({
     name: 'NewVersion',

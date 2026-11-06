@@ -849,8 +849,9 @@ Moving a pull request between Draft and Ready for review by dragging it: left fo
   a ready desktop update, a new version on the web). Hovering or focusing a toast stops its clock; a timed toast drains an
   accent ring around its ×.
 - **Updates are toasts.** A ready desktop update is a pinned toast with Restart (⌥R), its Dismiss being Later; a quiet
-  offer stays in the status bar after it. The web says a new version was deployed with a pinned toast and Reload (⌥R),
-  and never reloads by itself.
+  offer stays in the status bar after it. The web says a new version was deployed with a pinned toast and Reload (⌥R);
+  it never reloads the screen in place, though the next move to another screen loads the new version, as Nuxt does to
+  keep the old build's missing files from breaking navigation.
 - **Untracking from the sidebar or ⌘K offers Undo,** as from Settings ([D25](#d25)).
 
 **Why.** Each toast kind had grown its own lifetime (5, 10, 12 seconds or until dismissed) and its own buttons; two Undo

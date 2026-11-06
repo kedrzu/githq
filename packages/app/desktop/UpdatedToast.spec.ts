@@ -3,10 +3,11 @@ import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h, shallowRef } from 'vue';
+import { createApp, defineComponent, h, nextTick, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { TOAST_LASTS } from '@/components/Toast.vue';
 import Toaster from '@/components/Toaster.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
@@ -57,6 +58,24 @@ test('dismissed, its command goes with it', async () => {
     await userEvent.click(toast().getByRole('button', { name: 'Dismiss' }).first());
 
     await expect.element(toast()).not.toBeInTheDocument();
+    expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
+});
+
+test('brief: it goes by itself after 6 s, its command with it', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    onTestFinished(() => {
+        vi.useRealTimers();
+    });
+    const { registry } = mount({ version: '0.2.0', previousVersion: '0.1.0' });
+    await expect.element(toast()).toBeInTheDocument();
+
+    await vi.advanceTimersByTimeAsync(TOAST_LASTS.brief - 1);
+    await nextTick();
+    expect(toast().query()).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(1);
+    await nextTick();
+
+    expect(toast().query()).toBeNull();
     expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
 });
 
