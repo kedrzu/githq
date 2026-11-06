@@ -11,3 +11,9 @@ Append-only. One line per decision, rejection or answer from the owner.
   the landing page alone has a mobile layout, via container queries (`styles/tokens.scss:241`). The item already
   has a full-page arrangement (`item/itemRoutes.ts:12`); the sidebar search button is the only clickable trigger of
   the command menu (`shell/Sidebar.vue:205`). Nothing folded into a README yet.
+- 2026-11-06 — Owner: undecided on the bottom bar; wants to see variants drawn before choosing. Every navigation
+  idea from here goes into `variants.md` as something for the design agent to draw. Direction set: classic mobile
+  navigation, making good use of the top-left and top-right corners. Owner's ideas recorded there: a nested
+  hamburger menu on the left (sidebar level, then a repository's sections); or a wide left menu for places and a
+  contextual right one for the current screen; the bottom bar perhaps on list screens only, not where an input
+  takes the bottom (the comment box). Not yet answered: what the owner does with githq on a phone.
