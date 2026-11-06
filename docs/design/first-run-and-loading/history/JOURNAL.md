@@ -34,3 +34,4 @@ Append-only; one line per turn that settled something.
   recorded as D6 Rejected lines. Added what gets built first to README. Proposed closing.
 - 2026-11-06 — Owner asked for the design agent's prompt: wrote ui/first-run-and-empty-states.md (brief) and
   ui/design-agent-prompt.md.
+- 2026-11-06 — Prompt sent to the design agent; removed ui/design-agent-prompt.md from the repo (owner).
