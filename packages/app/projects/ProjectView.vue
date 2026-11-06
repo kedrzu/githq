@@ -294,7 +294,8 @@ function hasItemView(entry: ProjectEntry) {
       </template>
       <template #title>
         <span :class="css.projectView_meta">
-          {{ t(l.meta, { owner: project.owner, count: itemCount }) }}
+          <!-- While its items arrive the count is left out: a partial total would read as the whole (D14). -->
+          {{ arriving ? project.owner : t(l.meta, { owner: project.owner, count: itemCount }) }}
         </span>
       </template>
       <slot
