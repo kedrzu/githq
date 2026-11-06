@@ -96485,7 +96485,7 @@
           "padding": [
             88,
             120,
-            0,
+            100,
             120
           ],
           "alignItems": "center",
@@ -104587,7 +104587,7 @@
           "padding": [
             32,
             20,
-            0,
+            56,
             20
           ],
           "alignItems": "center",
@@ -330181,13 +330181,16 @@
                           "name": "Wordmark",
                           "descendants": {
                             "vRWIQ": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             },
                             "LgB4e": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             },
                             "N78Orz": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             }
                           }
                         }
@@ -330260,13 +330263,16 @@
                           "name": "Wordmark",
                           "descendants": {
                             "vRWIQ": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             },
                             "LgB4e": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             },
                             "N78Orz": {
-                              "fontSize": 20
+                              "fontSize": 24,
+                              "letterSpacing": -1.08
                             }
                           }
                         }
