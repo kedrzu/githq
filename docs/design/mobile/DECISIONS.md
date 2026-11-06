@@ -25,6 +25,7 @@ listed.
 gestures; the owner rules it out for now.
 
 **Rejected.**
+
 - Swiping from the left edge to open the left menu — clashes with the browser's own edge gestures.
 
 ## D3
@@ -41,6 +42,7 @@ addresses.
 > goes back instead — `packages/app/shell/GitHubHandOffPage.vue:1`.
 
 **Rejected.**
+
 - A "not on mobile yet" screen with a link to GitHub — a dead end, and a second way of saying what the hand-off
   already says.
 - Redirecting to the nearest screen githq has (a pull request's files → the pull request) — the link would not show
@@ -51,10 +53,16 @@ addresses.
 **The first mobile version is the daily loop: My work, a repository's issues and pull requests, a project as a
 list, an item read and edited (comment, assignees, labels, project fields, open or closed), a new issue, the
 command menu from a button, and the first sign-in ([D7](#d7)). Commits, code review, Actions, tracking settings and merging come later.**
-(2026-11-06, proposal of the design agent; the owner raised no objection but has not confirmed the list)
+(2026-11-06, proposal of the design agent; the owner confirmed merging as later and raised no objection to the
+rest)
 
-**Why.** The owner asked for the basic functionality first, naming commits and code review as later. The rest of
-the list is inferred from the desktop's first version, not from the owner; merging is the open edge.
+**Why.** The owner asked for the basic functionality first, naming commits and code review as later, and put
+merging later too. The rest of the list is inferred from the desktop's first version, not from the owner.
+
+**Rejected.**
+
+- Merging a green pull request from the phone in the first version — the owner put it later; on the desktop it is a
+  whole panel of conditions, checks and stacks.
 
 ## D5
 
@@ -71,6 +79,7 @@ commits and code review, which are not designed. The width is not fixed here.
 > of its container — `packages/app/styles/tokens.scss:241`.
 
 **Rejected.**
+
 - Deciding by device (a touch screen and a narrow screen) — a narrow window on a computer would be a third state,
   mobile layout with desktop features, that nobody designs. It would win if someone regularly works in a narrow
   window on a computer and needs commits there; no such case is known.
@@ -95,5 +104,16 @@ shell's side-by-side panes (`firstSignIn` routes, `packages/app/app/router.optio
 phone is cheap.
 
 **Rejected.**
+
 - Accepting the default choice (your own repositories) without asking on a phone — a member of an organization,
   whose repositories are not "theirs", would land in an empty My work with no way to fix it from the phone.
+
+## D8
+
+**The mobile layout is also what a future hybrid mobile app will show, the way the desktop app bundles the same
+app; building that app is not part of this design.** (2026-11-06, owner said a hybrid phone app comes later; that
+it reuses this layout is the design agent's proposal)
+
+**Why.** The owner's aim is access to all of their GitHub work from the phone as comfortable as from the computer,
+and a hybrid app is where that ends. Designing the phone layout once, for the browser, and reusing it there avoids a
+second phone UI.

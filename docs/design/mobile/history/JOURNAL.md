@@ -28,3 +28,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   (D5). Proposed, not confirmed: the desktop app's window never gets that narrow (D6).
 - 2026-11-06 — Owner accepted: the first sign-in (tracking choice, first download) works on a phone; tracking
   settings later do not (D7).
+- 2026-11-06 — Owner: merging later (D4 Rejected). Why mobile at all: "I simply want access to all my things on
+  GitHub from the phone, as comfortable as" from the computer; a hybrid (not native) phone app will come later (D8).
+  README written from D1–D8 and `variants.md`.
