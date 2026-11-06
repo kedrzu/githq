@@ -286,9 +286,9 @@ sidebar) are deleted from `githq.pen`; G16 and G17 take their place.** (2026-11-
 requests, projects and My work (ES1); a workflow row with its five-run strip for a repository's Workflows and for
 Broken workflows, with the repository column there (ES27, ES28, fixing W16's centred "Not read yet"); a board shows
 ghost columns when its columns aren't known yet (ES29) and the real column headers, without counts, over ghost cards
-when they are (ES30). Commits are proposed as a skeleton in the graph's shape: the branch list on the left, a lane
-with commit dots, message bars, author and date (ES21).** (2026-11-06, owner asked for workflows, commits and boards;
-the shapes are the design agent's; commits wait on the owner's pick between ES21 and ES26)
+when they are (ES30). Commits are a skeleton in the graph's shape: the branch list on the left, a lane with commit
+dots, message bars, author and date (ES21).** (2026-11-06, owner asked for workflows, commits and boards and picked
+ES21 for commits; the shapes are the design agent's)
 
 **Why.** A skeleton is worth having where the data lands in place of it, so it has to be the shape of what lands;
 the same rows everywhere told nothing about the screen. For commits the skeleton is on screen a second or two at most
@@ -298,9 +298,9 @@ would appear all at once.
 Components: `Empty / Ghost workflow row`, `Empty / Ghost commit row`, `Empty / Ghost ref row`, `Empty / Ghost column`,
 `Empty / Still arriving · workflows | commits | board`. The motion of D9 runs on all of them.
 
-**Rejected (proposed).**
+**Rejected.**
 
-- A turning loader in the middle of Commits, as today (ES26) — simpler, but the graph appears all at once after it.
+- A turning loader in the middle of Commits, as today (ES26, deleted) — simpler, but the graph appears all at once after it.
 
 ## Postponed
 

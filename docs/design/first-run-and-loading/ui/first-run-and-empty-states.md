@@ -119,8 +119,8 @@ The first run is in "App · First sign-in and choosing what to track"; the rest 
   a tracked repository GitHub won't show; an untracked repository with GitHub failing.
 - **ES18–ES20** — a tracked project while its items arrive; its board when the filter leaves nothing; a tracked
   project GitHub won't show.
-- **ES21, ES26** — `Variants · How Commits show their first read`: a skeleton in the graph's shape (ES21, recommended)
-  or a loader in the middle (ES26).
+- **ES21** — Commits' first read as a skeleton in the graph's shape (ES26, a loader in the middle, rejected and
+  deleted).
 - **ES22–ES24** — Commits paused by the allowance; Broken workflows when no repository
   can be read; Settings with no repositories tracked.
 - **ES25** — "can't be read": the title, line and action per cause.
