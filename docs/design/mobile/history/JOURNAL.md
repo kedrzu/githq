@@ -1,0 +1,13 @@
+# Journal — mobile web app
+
+Append-only. One line per decision, rejection or answer from the owner.
+
+- 2026-11-06 — Owner's opening request (translated): design a mobile version of the web app. The desktop's menus
+  sit side by side, so mobile needs nested navigation. A bottom bar for moving between the important parts of, for
+  example, a repository: issues, pull requests, commits. The first mobile version need not do everything — commits
+  and code review can wait; the basic functionality matters. The command menu must be easy to open, and with no
+  keyboard that means a button of its own.
+- 2026-11-06 — Codebase survey: no responsive handling in the app today (no width media queries, no viewport meta);
+  the landing page alone has a mobile layout, via container queries (`styles/tokens.scss:241`). The item already
+  has a full-page arrangement (`item/itemRoutes.ts:12`); the sidebar search button is the only clickable trigger of
+  the command menu (`shell/Sidebar.vue:205`). Nothing folded into a README yet.
