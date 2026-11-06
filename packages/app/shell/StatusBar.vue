@@ -14,8 +14,8 @@ import { useNow } from '@/services/useNow.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
 import type { OverallDownload } from '@/tracking/DownloadProgress.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
+import { formatDuration } from '@/utils/formatDuration.js';
 import { formatTime } from '@/utils/formatTime.js';
-import { formatTimeLeft } from '@/utils/formatTimeLeft.js';
 
 import * as l from './StatusBar.loc.js';
 import StatusSegment from './StatusSegment.vue';
@@ -49,7 +49,6 @@ const update = __DESKTOP__ ? useService(AppUpdate) : null;
 const t = useTranslate();
 const explained = shallowRef(false);
 const now = useNow(TICK_MS, explained);
-const minutes = new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'minute', unitDisplay: 'short' });
 const fullNumber = new Intl.NumberFormat(APP_LANGUAGE);
 const shortNumber = new Intl.NumberFormat(APP_LANGUAGE, { notation: 'compact', maximumFractionDigits: 1 });
 // Offline and paused tell why nothing moves, which matters more than how far the download got (D11).
@@ -141,7 +140,13 @@ const explanation = computed(() => {
   }
 
   const time = formatTime(pause.until);
-  const duration = minutes.format(Math.max(1, Math.ceil((pause.until - now.value) / MINUTE)));
+  // In whole minutes, at least one: "in 18 min".
+  const duration = formatDuration(Math.max(MINUTE, pause.until - now.value), {
+    units: 1,
+    display: 'short',
+    rounding: 'ceil',
+    largestUnit: 'minute',
+  });
   const { allowance } = pause;
   // The search allowance goes by the minute, the others by the hour.
   const perMinute = allowance?.resource === 'search';
@@ -161,6 +166,11 @@ const explanation = computed(() => {
         : t(l.atAgo, { time: formatTime(lastRefreshedAt), age: formatCheckedAge(lastRefreshedAt, now.value) }),
   };
 });
+
+/** Roughly how long the download has left, in its largest unit: "2 min", or "2m" under the rail. */
+function formatTimeLeft(seconds: number, display: 'narrow' | 'short') {
+  return formatDuration(seconds * 1000, { units: 1, display, rounding: 'round' });
+}
 
 function getExplanation(allowance: GitHubRateLimit | null) {
   if (allowance === null) {
