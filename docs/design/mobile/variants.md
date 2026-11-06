@@ -6,7 +6,11 @@ side, instead of being settled in conversation. An entry leaves this list when t
 drawings; the pick becomes a decision.
 
 What the owner did set as a direction, not a variant: classic mobile navigation, comfortable to use, that makes
-good use of the top-left and top-right corners.
+good use of the top-left and top-right corners ([D1](DECISIONS.md#d1)), and no menu opened by a swipe from the
+screen's edge ([D2](DECISIONS.md#d2)).
+
+These are starting points, not the boundary. The design agent is expected to be creative and to propose shapes
+nobody listed here, above all for the command menu button.
 
 ## The bottom bar
 
@@ -39,5 +43,14 @@ bottom of the screen, above all an input such as the comment box, and it costs h
 
 ## The command menu button
 
-The command menu is opened by ⌘K on a computer; a phone needs a button for it. Where it sits: top-right corner,
-middle of the bottom bar, or a floating button.
+The command menu is opened by ⌘K on a computer; a phone needs a button for it. The top-right corner is the natural
+place, but the owner wants the design agent to look for something smarter (2026-11-06). Known options: top-right
+corner, middle of the bottom bar, a floating button.
+
+Two couplings any drawing has to respect:
+
+- The command menu already starts from the screen's subject (the opened item) and its actions, then the
+  repository's and the app's. A separate contextual menu with the item's actions would hold the same things
+  twice.
+- A button that lives on the bottom bar disappears wherever the bar does. If the bar shows on list screens only,
+  the button is gone from an item's screen — where its actions on the item are needed most.

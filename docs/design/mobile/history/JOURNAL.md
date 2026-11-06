@@ -17,3 +17,7 @@ Append-only. One line per decision, rejection or answer from the owner.
   hamburger menu on the left (sidebar level, then a repository's sections); or a wide left menu for places and a
   contextual right one for the current screen; the bottom bar perhaps on list screens only, not where an input
   takes the bottom (the comment box). Not yet answered: what the owner does with githq on a phone.
+- 2026-11-06 — Owner: no menu opens by swiping from an edge, risky on the iPhone (D2). Command menu button: the
+  top-right corner is natural, but leave the design agent room to find something smarter; variants are starting
+  points, not the boundary (D1). Recorded the two couplings (command menu is already contextual; a button on a
+  list-only bar vanishes from the item screen) in `variants.md`.
