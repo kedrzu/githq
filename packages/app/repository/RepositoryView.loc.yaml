@@ -56,22 +56,40 @@ inNoProject:
   en:
     one: 1 in no project
     many: '{count} in no project'
-nothingTitle:
-  en: Nothing here
-nothingIssues:
-  en: No issue of this repository matches. Try another state.
-nothingPullRequests:
-  en: No pull request of this repository matches. Try another state.
+noIssues:
+  en: No issues
+noOpenIssues:
+  en: No open issues
+noClosedIssues:
+  en: No closed issues
+noPullRequests:
+  en: No pull requests
+noOpenPullRequests:
+  en: No open pull requests
+noClosedPullRequests:
+  en: No closed pull requests
+nothingDetail:
+  en: GitHub lists none in {repository}.
+stateIsOpen:
+  en: State is open
+stateIsClosed:
+  en: State is closed
+stateHidesIssues:
+  plural: count
+  en:
+    one: '{state} hides the 1 issue.'
+    many: '{state} hides all {count} issues.'
+stateHidesPullRequests:
+  plural: count
+  en:
+    one: '{state} hides the 1 pull request.'
+    many: '{state} hides all {count} pull requests.'
 readCount:
   en: '{read} of {total}'
 readMore:
   en: Read more
 readingMore:
   en: Reading more…
-notShownTitle:
-  en: GitHub does not show this repository
-notShownDetail:
-  en: It may be private or gone, or this name may be wrong.
 commits:
   en: Commits
 openOnGitHub:

@@ -196,6 +196,32 @@ test('"Try again" in a tab that does not sync has the syncing tab poll my work',
     expect(github.searches().length).toBeGreaterThan(searches);
 });
 
+test('the download waits for my work, so my work failing tells on what it has yet to read, and "Try again" asks it again', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const { sync } = await setup(github, 'alice');
+    expect(sync.getRepositoryFreshness('acme/web')).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    const searches = github.searches().length;
+    github.failSearch = null;
+    await sync.pollTrackedNow();
+    expect(github.searches().length).toBeGreaterThan(searches);
+    expect(sync.getRepositoryFreshness('acme/web').kind).toBe('partial');
+});
+
+test('"Try again" on a tracked repository in a tab that does not sync has the syncing tab poll', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const tabs = createTestTabs();
+    const syncing = await setup(github, 'alice', { tabs });
+    const browsing = await setup(github, 'alice', { tabs });
+    const searches = github.searches().length;
+
+    await browsing.sync.pollTrackedNow();
+    await syncing.clock.advance(0);
+    expect(github.searches().length).toBeGreaterThan(searches);
+});
+
 test('an item two groups hold, found deleted by the read of one, leaves both', async () => {
     const github = fakeGitHub();
     github.found.authored = [pullRequestNode('PR_9', MONDAY)];

@@ -6,7 +6,7 @@ import { computed } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import CantBeRead from '@/components/CantBeRead.vue';
-import type { CantBeReadCause } from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';

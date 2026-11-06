@@ -1,4 +1,4 @@
-<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). One not tracked shows what concerns the user and points to Settings (J4). -->
+<!-- `/orgs/<login>/projects/<n>[/views/<v>]`, `/users/<login>/projects/<n>[/views/<v>]`: a tracked project's view at GitHub's addresses of it, from the local copy (D4, D13). The saved view named by the address — else the first — gives the filter, evaluated here (or answered by GitHub, K6), and the layout, grouping, order and fields; what the user changes of them is kept on this device per view. Field edits from the view — moving a card, `⇧←`/`⇧→` — and draft issues go through the edit engine, only where the user may update the project (D14). The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board — under the view's filter all of them where any matches, the others de-emphasised (`withStackMembers`, SP25); moving a stack's card sets the field of each of its pull requests, one edit GitHub refuses undone for its own pull request alone. A tracked project stands as still arriving until its first download has read all its items: before the project itself is in — its fields, views and so its layout come with its first page of items — its title over a screen of ghost rows, then its view, ghosts where nothing is in yet (`ProjectView`, first run and loading D5, ES18, ES30). What stands in the way of that — GitHub not showing it, offline, paused, GitHub failing — is told once the kept copy is loaded (`cantBeRead`, D6, D12, ES20), in place of the ghosts. One not tracked shows what concerns the user and points to Settings (J4). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -11,6 +11,8 @@ import { CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import type { CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import CantBeRead from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import StillArriving from '@/components/StillArriving.vue';
 import type { DraftIssueFieldInput } from '@/edits/ItemEditor.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
@@ -35,12 +37,14 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { ProjectIteration } from '@/store/ItemDetailTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { SyncEngine } from '@/sync/SyncEngine.js';
 import type { ProjectAddress } from '@/tracking/trackingRoutes.js';
 import { getProjectPath, GITHUB_ORIGIN } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import UntrackedView from '@/tracking/UntrackedView.vue';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
+import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
 
 import type { ProjectListTexts } from './buildProjectList.js';
 import { buildProjectList, getProjectEntryId } from './buildProjectList.js';
@@ -91,6 +95,7 @@ const answers = useService(ProjectViewAnswers);
 const listViewOptions = useService(ListViewOptionsStore);
 const composer = useService(NewIssueComposer);
 const registry = useService(CommandRegistry);
+const sync = useService(SyncEngine);
 const route = useRoute();
 const t = useTranslate();
 const list = useItemList();
@@ -117,6 +122,17 @@ const project = computed((): Project | null => (tracked.value ? (projects.get(tr
 const arriving = computed(() => {
   const state = tracked.value ? tracking.getSyncState({ kind: 'project', id: tracked.value.id }) : undefined;
   return tracked.value !== undefined && !state?.hidden && !haveOpenItemsArrived(state);
+});
+/** Why what the project lacks can't arrive now; `null` when nothing stands in its way. */
+const cantBeRead = computed((): CantBeReadCause | null => {
+  if (!tracked.value || !projects.loaded || !items.loaded) {
+    return null;
+  }
+
+  const { id } = tracked.value;
+  return tracking.getSyncState({ kind: 'project', id })?.hidden
+    ? { kind: 'hidden', url: githubUrl.value }
+    : getCantBeReadCause({ freshness: sync.getProjectFreshness(id), retry: () => sync.pollTrackedNow() });
 });
 /** Not tracked, the copy holds what concerns the user: the open items of my work that say they are in it (J4). */
 const concerning = computed(() => {
@@ -547,6 +563,7 @@ function setRowField(fieldId: string | null) {
     :groups="groups"
     :item-count="itemCount"
     :arriving="arriving"
+    :cant-be-read="cantBeRead"
     :all-items-to="allItemsTo"
     :answered-term="answered?.term ?? null"
     :options="shownOptions"
@@ -650,8 +667,17 @@ function setRowField(fieldId: string | null) {
     >
       <h1 :class="css.projectPage_title">{{ name }}</h1>
     </header>
+    <CantBeRead
+      v-if="cantBeRead"
+      place="screen"
+      :cause="cantBeRead"
+      :thing="name"
+    />
     <!-- Its layout comes with it, from its saved views: until then a screen of ghost rows (ES18). -->
-    <StillArriving place="screen" />
+    <StillArriving
+      v-else
+      place="screen"
+    />
   </div>
 </template>
 

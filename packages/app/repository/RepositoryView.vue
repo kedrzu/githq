@@ -1,4 +1,4 @@
-<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show has only its name, "not tracked" and the way to GitHub. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
+<!-- A repository's view (J1, J2, J5–J7, `ui/project.md` "Repository view"; git-client D14, CH1). Its sections, Issues, Pull requests and Commits, and while tracked Workflows, are tabs beside the title on `1`, `2`, `3` and `4`, the first two with their count of open items while tracked, none while those are still arriving (first run and loading D4, D14). Workflows (actions D6, W3a) counts the broken ones — a dash while that is not known yet, no count with no workflows or with alerts off —; its body is the caller's (`workflows`), under a toolbar without view options. Commits (git-client D10, D11, CH3) has none of the list's tools: its header holds the title, the tabs, the way to its branches and tags (`B`, handled by the graph) and to its history on GitHub — and "not tracked" when it is not, which changes nothing there — over the graph the owner puts in (`commits`). Its sections are also the command menu's, in the group of the repository (on `1`–`4`, with their icons); `AppCommands` offers the rest of that group. Issues and Pull requests, tracked or not: the section's items, with GitHub's own properties, as a List or a Board through the list engine — the state (open by default, closed, both) on the right, moved into the display options last when the toolbar runs out of room; it is a command of the command menu too ("Filter by state…", on Issues and Pull requests); grouped by milestone, assignee, label or, for issues, issue type; under the toolbar the projects its listed items live in, each a way there. Rows show their projects' row fields as in my work (D12); a stack's entry the list was given shows as one — a row (`StackRow`), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. On the board an item can be dragged — or moved with `⇧←`/`⇧→` — to another milestone, label, assignee or issue type when the user may set it (`canMove`); a stack's card moves its pull requests. Not tracked (J5–J7, D34), read on demand as `status` tells: "not tracked" and how much is read ("120 of 3412") by the title; the next page is asked for (`readMore`) as the list's end comes in reach (`ListEndSentinel`) — with a group collapsed, again after a page only if it added rows on screen, or a collapsed large group would have the whole repository read — and by one button beside the count on the board, whose columns scroll on their own, and while a group is collapsed, whose end may no longer move; a repository GitHub does not show, or one nothing of whose section can be read now, has only its name, "not tracked" and what stands in the way (J7, ES17, D6). Tracked or not, with nothing listed the section says why, first of what holds (first run and loading D6): it can't be read — GitHub won't show it or refuses it, whatever arrived; offline, paused or GitHub failing only for what hasn't arrived (`CantBeRead`, ES16, ES17) — it is still arriving (ghosts), the state hides all it holds, with a way to clear it (`FilteredOut`), or it holds nothing (`NothingThere`); with rows on screen the status bar alone tells. The `column` layout (git-client D14, CH4–CH6, CH42) moves the name, the way to GitHub, "not tracked", the sections and the projects into a column of the repository's own (`RepositoryColumn`), resizable and of one width on every section (`RepositoryColumnSplit`), the pane staying mounted as the layout changes, and the pane's header holds the section's name and its tools: the list's on Issues and Pull requests, none on Commits, whose list of branches and tags the graph renders in the column (`refListTarget`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -8,7 +8,6 @@ import {
   Github,
   Ban,
   BookMarked,
-  EyeOff,
   ListFilter,
   Milestone,
   Shapes,
@@ -21,8 +20,11 @@ import { computed, ref, watch } from 'vue';
 import { useCommands } from '@/commands/useCommands.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
 import Button from '@/components/Button.vue';
-import EmptyState from '@/components/EmptyState.vue';
+import CantBeRead from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
+import FilteredOut from '@/components/FilteredOut.vue';
 import IconButton from '@/components/IconButton.vue';
+import NothingThere from '@/components/NothingThere.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -92,6 +94,8 @@ const props = withDefaults(
     openCounts: Readonly<Record<RepositoryItemSection, number | null>>;
     /** How the reading of the section's state stands while it is read on demand; else `null`. */
     status?: BrowsedStatus | null;
+    /** Why what the section lacks can't arrive now, as the page knows it; `null` when nothing stands in its way. */
+    cantBeRead?: CantBeReadCause | null;
     /** The projects the listed items live in, and how many listed items are in none. */
     projects?: readonly RepositoryProjectLink[];
     withoutProject?: number;
@@ -117,6 +121,7 @@ const props = withDefaults(
   {
     list: null,
     status: null,
+    cantBeRead: null,
     projects: () => [],
     withoutProject: 0,
     openedId: null,
@@ -184,8 +189,16 @@ const SECTION_KEYS: Readonly<Record<RepositorySection, string>> = {
 };
 /** What each item section says of its items. */
 const SECTION_TEXTS = {
-  issues: { liveIn: l.issuesLiveIn, nothing: l.nothingIssues },
-  pullRequests: { liveIn: l.pullRequestsLiveIn, nothing: l.nothingPullRequests },
+  issues: {
+    liveIn: l.issuesLiveIn,
+    hidden: l.stateHidesIssues,
+    nothing: { open: l.noOpenIssues, closed: l.noClosedIssues, all: l.noIssues },
+  },
+  pullRequests: {
+    liveIn: l.pullRequestsLiveIn,
+    hidden: l.stateHidesPullRequests,
+    nothing: { open: l.noOpenPullRequests, closed: l.noClosedPullRequests, all: l.noPullRequests },
+  },
 } as const;
 
 // An untracked repository's workflows are not read (actions D4): it has no Workflows section.
@@ -241,6 +254,24 @@ const readCount = computed(() => {
   return total === null || !props.list
     ? null
     : t(l.readCount, { read: props.list.count, total: Math.max(total, props.list.count) });
+});
+/**
+ * With nothing listed, what stands in the way (D6): GitHub not showing it stands whatever has arrived, as nothing more
+ * comes; the others only for what hasn't, as what has can be trusted while they last.
+ */
+const unreadable = computed(() => {
+  const cause = props.cantBeRead;
+  return cause && props.list?.count === 0 && (cause.kind === 'hidden' || props.list.arriving) ? cause : null;
+});
+/**
+ * Not tracked, the same with none of the list's tools (J7, ES17): GitHub not showing it, rows of the copy or not, or
+ * nothing of the section held. Holding some, a state that can't be read keeps them, so the user can go back to them.
+ */
+const unreadableAlone = computed(() => {
+  const cause = props.cantBeRead;
+  return !props.tracked && cause && (cause.kind === 'hidden' || (unreadable.value && props.list?.held === 0))
+    ? cause
+    : null;
 });
 const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
@@ -331,7 +362,7 @@ function getSectionCount(value: RepositorySection) {
       <div :class="css.repositoryView_pane">
         <!-- In the column, the section's name alone, where the section has no tools of its own to put beside it. -->
         <header
-          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || status?.notShown)"
+          v-if="inColumn && section !== 'workflows' && (itemSection === null || !list || unreadableAlone)"
           :class="css.repositoryView_header"
           v-bind="WINDOW_DRAG_REGION"
         >
@@ -421,8 +452,8 @@ function getSectionCount(value: RepositorySection) {
           />
         </template>
 
-        <!-- J7: nothing of it can be listed, and none of the list's tools apply. -->
-        <template v-else-if="status?.notShown">
+        <!-- J7, ES17: nothing of it can be listed, and none of the list's tools apply. -->
+        <template v-else-if="unreadableAlone">
           <header
             v-if="!inColumn"
             :class="css.repositoryView_header"
@@ -438,23 +469,11 @@ function getSectionCount(value: RepositorySection) {
             </ListTitle>
             <NotTrackedChip />
           </header>
-          <EmptyState
-            :icon="EyeOff"
-            :title="t(l.notShownTitle)"
-            :detail="t(l.notShownDetail)"
-          >
-            <template #action>
-              <Button
-                variant="outline"
-                size="sm"
-                :icon="Github"
-                :link="githubUrl"
-                target="_blank"
-              >
-                {{ t(l.openOnGitHub) }}
-              </Button>
-            </template>
-          </EmptyState>
+          <CantBeRead
+            place="screen"
+            :cause="unreadableAlone"
+            :thing="nameWithOwner"
+          />
         </template>
 
         <template v-else>
@@ -541,7 +560,7 @@ function getSectionCount(value: RepositorySection) {
             v-model:selected-id="selectedId"
             v-model:checked-ids="checkedIds"
             :groups="list.groups"
-            :groups-arriving="list.arriving"
+            :groups-arriving="list.arriving && !unreadable"
             :layout="options.layout"
             :opened-id="openedId"
             :is-edited="isEdited"
@@ -619,10 +638,29 @@ function getSectionCount(value: RepositorySection) {
               />
             </template>
             <template #empty>
-              <EmptyState
+              <CantBeRead
+                v-if="unreadable"
+                place="screen"
+                :cause="unreadable"
+                :thing="nameWithOwner"
+              />
+              <FilteredOut
+                v-else-if="list.held > 0"
+                place="screen"
+                :detail="
+                  t(sectionTexts.hidden, {
+                    count: list.held,
+                    state: t(state === 'closed' ? l.stateIsClosed : l.stateIsOpen),
+                  })
+                "
+                :clear="() => (state = 'all')"
+              />
+              <NothingThere
+                v-else
+                place="screen"
                 :icon="BookMarked"
-                :title="t(l.nothingTitle)"
-                :detail="t(sectionTexts.nothing)"
+                :title="t(sectionTexts.nothing[state])"
+                :detail="t(l.nothingDetail, { repository: nameWithOwner })"
               />
             </template>
             <template

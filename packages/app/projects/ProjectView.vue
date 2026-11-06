@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way; with rows on screen the status bar alone tells. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -25,7 +25,10 @@ import type { RouteLocationRaw } from 'vue-router';
 import { APP_KEYS, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
+import CantBeRead from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import EmptyState from '@/components/EmptyState.vue';
+import FilteredOut from '@/components/FilteredOut.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
 import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
@@ -87,6 +90,8 @@ const props = withDefaults(
      * ES30).
      */
     arriving?: boolean;
+    /** Why what it lacks can't arrive now, as the page knows it; `null` when nothing stands in its way. */
+    cantBeRead?: CantBeReadCause | null;
     /** The term of the view's filter githq can't evaluate; `null` when it evaluates the filter itself. */
     answeredTerm?: string | null;
     /** The options differ from the saved view's (D13). */
@@ -113,6 +118,7 @@ const props = withDefaults(
   {
     allItemsTo: null,
     arriving: false,
+    cantBeRead: null,
     answeredTerm: null,
     modified: false,
     roadmap: false,
@@ -235,6 +241,14 @@ const shownCount = computed(() => {
 
   return ids.size;
 });
+/**
+ * With nothing on screen, what stands in the way (D6): GitHub not showing it stands whatever has arrived, as nothing more
+ * comes; the others only while its items are on their way.
+ */
+const unreadable = computed(() => {
+  const cause = props.cantBeRead;
+  return cause && shownCount.value === 0 && (cause.kind === 'hidden' || props.arriving) ? cause : null;
+});
 /** The field this project shows next to its items in other lists, among the list's view options. */
 const rowFieldOption = computed((): ListToolbarOption => {
   const choices = [
@@ -295,7 +309,7 @@ function hasItemView(entry: ProjectEntry) {
       <template #title>
         <span :class="css.projectView_meta">
           <!-- While its items arrive the count is left out: a partial total would read as the whole (D14). -->
-          {{ arriving ? project.owner : t(l.meta, { owner: project.owner, count: itemCount }) }}
+          {{ arriving || unreadable ? project.owner : t(l.meta, { owner: project.owner, count: itemCount }) }}
         </span>
       </template>
       <slot
@@ -374,7 +388,7 @@ function hasItemView(entry: ProjectEntry) {
     </ListToolbar>
 
     <div
-      v-if="view && (filterTerms.length > 0 || roadmap)"
+      v-if="view && (filterTerms.length > 0 || roadmap) && !unreadable"
       :class="css.projectView_filter"
       :aria-label="t(l.filterLabel, { view: view.name })"
       role="group"
@@ -411,9 +425,21 @@ function hasItemView(entry: ProjectEntry) {
       <span :class="css.projectView_sortSummary">{{ t(l.sortedBy, { order: sortSummary }) }}</span>
     </div>
 
+    <!-- ES20: first of all reasons, and nothing of the view's own applies. -->
+    <div
+      v-if="unreadable"
+      :class="css.projectView_empty"
+    >
+      <CantBeRead
+        place="screen"
+        :cause="unreadable"
+        :thing="project.title"
+      />
+    </div>
+
     <!-- K8: nothing in the project at all — not while its items are still on their way (ES18). -->
     <div
-      v-if="itemCount === 0 && !arriving"
+      v-else-if="itemCount === 0 && !arriving"
       :class="css.projectView_empty"
     >
       <EmptyState
@@ -517,16 +543,21 @@ function hasItemView(entry: ProjectEntry) {
     </div>
 
     <template v-else>
-      <p
+      <!-- ES19: the filter leaves the board nothing, and its columns stay, to write a draft into. -->
+      <div
         v-if="shownCount === 0 && !arriving"
-        :class="css.projectView_nothing"
+        :class="css.projectView_filteredOut"
       >
-        {{
-          view && filter
-            ? t(l.emptyViewDetail, { view: view.name, filter })
-            : t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })
-        }}
-      </p>
+        <FilteredOut
+          place="screen"
+          :detail="
+            filter
+              ? t(l.filterHidesItems, { filter, count: itemCount })
+              : t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })
+          "
+          :clear="filter ? () => emit('clearFilter') : undefined"
+        />
+      </div>
       <ListView
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
@@ -853,11 +884,8 @@ function hasItemView(entry: ProjectEntry) {
   justify-content: center;
 }
 
-.projectView_nothing {
+.projectView_filteredOut {
   flex: none;
-  padding: $spacing-12 $spacing-16 0;
-  font-size: $font-size-sm;
-  color: $color-fg-dim;
 }
 
 .projectView_newDraft {

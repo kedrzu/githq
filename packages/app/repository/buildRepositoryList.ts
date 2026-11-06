@@ -23,6 +23,11 @@ export interface RepositoryList {
     /** How many items are listed, each once whichever groups it is under. */
     readonly count: number;
     /**
+     * How many of the section's items the copy holds in any state: with none listed, whether the state hides them
+     * (filtered out) or there is nothing to hide (nothing there; first run and loading D6).
+     */
+    readonly held: number;
+    /**
      * Nothing is listed and what the state holds is still on its way, so not even its groups are known: ghosts stand
      * for all of it, never a list saying there is nothing (first run and loading D8, D17).
      */
@@ -77,12 +82,11 @@ export interface BuildRepositoryListParams {
 export function buildRepositoryList(params: BuildRepositoryListParams): RepositoryList {
     const { items, state, kind, grouping, sort, texts, arriving = false } = params;
 
-    const listed = items
-        .filter(item => item.kind === kind && matchesState(item, state))
-        .toSorted(getItemComparator(sort));
+    const held = items.filter(item => item.kind === kind);
+    const listed = held.filter(item => matchesState(item, state)).toSorted(getItemComparator(sort));
 
     if (arriving && listed.length === 0) {
-        return { groups: [], count: 0, arriving: true };
+        return { groups: [], count: 0, held: held.length, arriving: true };
     }
 
     return {
@@ -92,6 +96,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
             grouping: getGrouping(grouping, items, texts),
         }),
         count: listed.length,
+        held: held.length,
         arriving: false,
     };
 }

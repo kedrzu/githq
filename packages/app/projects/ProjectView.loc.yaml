@@ -78,6 +78,11 @@ emptyViewTitle:
   en: Nothing matches “{view}”
 emptyViewDetail:
   en: '“{view}” is a view defined on GitHub: {filter}. No items match it right now.'
+filterHidesItems:
+  plural: count
+  en:
+    one: '{filter} hides the 1 item.'
+    many: '{filter} hides all {count} items.'
 showAllItems:
   en: Show all items
 clearFilters:

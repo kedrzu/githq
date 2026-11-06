@@ -162,8 +162,8 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
- * tab is shown with its last success older than an interval, and when the connection comes back; `myWork` also when
- * the user asks ("Try again" on My work: {@link pollMyWorkNow}). A loop never
+ * tab is shown with its last success older than an interval, and when the connection comes back; `myWork` and what
+ * reads the tracked copies also when the user asks ("Try again": {@link pollMyWorkNow}, {@link pollTrackedNow}). A loop never
  * overlaps itself. Before every request it checks the allowance of the bucket it draws on, and waits for the
  * reset while one is used up. GitHub asking to slow down (`retry-after`, or a refusal naming no used-up bucket) is
  * about the user rather than a bucket, so every loop waits that out.
@@ -355,6 +355,7 @@ export const SyncEngine = defineService({
             getRepositoryWorkflowsFreshness,
             pollWorkflowsNow,
             pollMyWorkNow,
+            pollTrackedNow,
             watchAnyRef,
         };
 
@@ -368,7 +369,7 @@ export const SyncEngine = defineService({
         function getRepositoryFreshness(nameWithOwner: string): Freshness {
             const state = tracking.getSyncState({ kind: 'repository', nameWithOwner });
             if (!haveOpenItemsArrived(state)) {
-                const downloaded = getLoopFreshness('download', null);
+                const downloaded = getDownloadFreshness();
                 return downloaded.kind === 'partial' ? getDownloading(state) : downloaded;
             }
 
@@ -382,6 +383,17 @@ export const SyncEngine = defineService({
             }
 
             return getDownloading(state);
+        }
+
+        /**
+         * How the first download stands, for what still waits for it: it waits for "my work" (G6), so until that has
+         * answered once, what stands in my work's way stands in its own (first run and loading D6).
+         */
+        function getDownloadFreshness(): Freshness {
+            const downloaded = getLoopFreshness('download', null);
+            return downloaded.kind === 'partial' && items.getSyncState('myWork').lastSuccessAt === null
+                ? getLoopFreshness('myWork', null)
+                : downloaded;
         }
 
         /** A repository's first download under way: the phase it reads and how far, its open issues before it started. */
@@ -400,7 +412,7 @@ export const SyncEngine = defineService({
             const state = tracking.getSyncState({ kind: 'project', id });
             const count = state?.count;
             if (!haveOpenItemsArrived(state)) {
-                const freshness = getLoopFreshness('download', null);
+                const freshness = getDownloadFreshness();
                 return freshness.kind === 'partial'
                     ? {
                           kind: 'partial',
@@ -495,6 +507,28 @@ export const SyncEngine = defineService({
             } else if (followed) {
                 tabs.publish({ kind: 'pollMyWork' });
             }
+        }
+
+        /**
+         * Polls all that reads the tracked repositories and projects at once, here or in the tab that syncs: the "Try
+         * again" of one GitHub failed on before it arrived (first run and loading D12). Settles when this tab's polls
+         * have; at once when another tab polls, whose status then tells how it went.
+         */
+        async function pollTrackedNow() {
+            if (session) {
+                await pollTracked(session);
+            } else if (followed) {
+                tabs.publish({ kind: 'pollTracked' });
+            }
+        }
+
+        /** The download waits for "my work", whose first answer starts it: until then, that is what to ask. */
+        async function pollTracked(current: Session) {
+            if (items.getSyncState('myWork').lastSuccessAt === null) {
+                await run(current, 'myWork');
+            }
+
+            await Promise.all([run(current, 'download'), run(current, 'repositories'), run(current, 'projects')]);
         }
 
         /**
@@ -597,6 +631,12 @@ export const SyncEngine = defineService({
                 case 'pollMyWork':
                     if (session) {
                         void run(session, 'myWork');
+                    }
+
+                    break;
+                case 'pollTracked':
+                    if (session) {
+                        void pollTracked(session);
                     }
 
                     break;

@@ -51,6 +51,8 @@ export type TabMessage =
     | { readonly kind: 'pollWorkflows' }
     /** "Try again" on My work in a tab that does not sync: the syncing tab polls it at once (first run and loading D12). */
     | { readonly kind: 'pollMyWork' }
+    /** "Try again" on a tracked repository or project in a tab that does not sync: the syncing tab polls them at once (D12). */
+    | { readonly kind: 'pollTracked' }
     /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
     | { readonly kind: 'pollPendingReviews' };
 

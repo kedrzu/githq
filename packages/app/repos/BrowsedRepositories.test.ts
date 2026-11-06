@@ -497,6 +497,43 @@ test('a first read that failed is tried again at the next interval, as a read ra
     expect(tab.browsed.getFreshness(WEB, 'issues')).toEqual(fresh);
 });
 
+test('"Try again" asks at once what failed, settling with the answer, and only on a section shown', async () => {
+    const tab = await openTab();
+    tab.world.failing = true;
+    await tab.browsed.readNow(WEB, 'issues');
+    expect(tab.asked()).toEqual([]);
+
+    tab.browsed.show(VIEW);
+    await tab.session.clock.advance(0);
+    tab.clear();
+
+    tab.world.failing = false;
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);
+    await tab.browsed.readNow(WEB, 'issues');
+    expect(tab.asked()).toEqual(['RepositoryIssues OPEN']);
+    expect(tab.browsed.getStatus(WEB, 'issues', 'open').total).toBe(1);
+    expect(tab.browsed.getFreshness(WEB, 'issues').kind).toBe('fresh');
+});
+
+test('for one state, what stands in its way tells at once with no page of it read, though the section is fresh by another', async () => {
+    const tab = await openTab();
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);
+    tab.browsed.show(VIEW);
+    await tab.session.clock.advance(0);
+
+    tab.session.setOnline(false);
+    tab.browsed.show({ ...VIEW, state: 'closed' });
+    await tab.session.clock.advance(0);
+
+    expect(tab.browsed.getFreshness(WEB, 'issues').kind).toBe('fresh');
+    expect(tab.browsed.getFreshness(WEB, 'issues', 'open').kind).toBe('fresh');
+    expect(tab.browsed.getFreshness(WEB, 'issues', 'closed')).toEqual({
+        kind: 'stale',
+        since: null,
+        reason: 'offline',
+    });
+});
+
 test('the freshness turns with time alone: checks failing stay fresh for the slack, then say so', async () => {
     const tab = await openTab();
     tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);

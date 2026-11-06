@@ -41,8 +41,18 @@ test('J1: grouped by milestone — the soonest due first, those without a date a
 });
 
 test('on its way, a state with nothing listed yet is still arriving, its groups not known, never a list with nothing; what is listed shows', () => {
-    expect(build([], { grouping: 'milestone', arriving: true })).toEqual({ groups: [], count: 0, arriving: true });
-    expect(build([], { grouping: 'milestone' })).toEqual({ groups: [], count: 0, arriving: false });
+    expect(build([], { grouping: 'milestone', arriving: true })).toEqual({
+        groups: [],
+        count: 0,
+        held: 0,
+        arriving: true,
+    });
+    expect(build([], { grouping: 'milestone' })).toEqual({
+        groups: [],
+        count: 0,
+        held: 0,
+        arriving: false,
+    });
 
     const kept = build([issue('I_1')], { grouping: 'none', arriving: true });
     expect(summarize(kept.groups)).toEqual([['all', ['I_1']]]);

@@ -18,6 +18,7 @@ import { sampleProjectView } from '@/testing/sampleProjectView.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import ProjectView from './ProjectView.vue';
+import { getProjectViewDefaults } from './projectViewOptions.js';
 
 const meta = {
     component: ProjectView,
@@ -110,6 +111,36 @@ export const EmptyProject: Story = {
             entries: [],
         }),
         rowFieldId: 'F_status',
+    },
+};
+
+/** ES19: on the board a filter leaves nothing: what it hides and the way to clear it, over the columns that stay. */
+export const BoardFilteredOut: Story = {
+    args: sampleProjectView({
+        project: SAMPLE_PROJECT,
+        view: SAMPLE_VIEW_BLOCKED,
+        entries: SAMPLE_PROJECT_ENTRIES,
+        options: {
+            ...getProjectViewDefaults(SAMPLE_PROJECT, SAMPLE_VIEW_BLOCKED).options,
+            layout: 'board',
+            grouping: 'field:F_status',
+        },
+    }),
+};
+
+/** ES20: GitHub won't show it: the toolbar over why, with the way to GitHub. */
+export const NotShown: Story = {
+    args: {
+        ...sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [] }),
+        cantBeRead: { kind: 'hidden', url: SAMPLE_PROJECT.url },
+    },
+};
+
+/** Its items on their way and GitHub failing: why, in place of ghosts that would spin on (D6). */
+export const ItemsFailing: Story = {
+    args: {
+        ...sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [], arriving: true }),
+        cantBeRead: { kind: 'failing', retry: fn() },
     },
 };
 

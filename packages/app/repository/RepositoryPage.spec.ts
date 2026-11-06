@@ -80,6 +80,17 @@ test('first run and loading ES14: tracked, a tab has no count until its download
     await expect.element(sections.getByRole('button', { name: 'Pull requests', exact: true })).toBeVisible();
 });
 
+test('first run and loading ES16: tracked, one GitHub stops showing says so instead of nothing, with no count on its tabs', async () => {
+    const { tracking } = await open({ path: `/${WEB}/issues`, tracked: true });
+    const sections = page.getByRole('group', { name: 'Sections' });
+
+    await tracking.updateSyncState({ kind: 'repository', nameWithOwner: WEB }, { phase: 'done', hidden: true });
+
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${WEB}` })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
+});
+
 test("GitHub's own name replaces the address, at the same section with its query and hash, and the rows stay", async () => {
     const { router } = await open({ path: '/ACME/Web/issues?panel=1#top', actualName: WEB });
 
@@ -93,7 +104,7 @@ test('the page holds the repository, tracked or not, and leaving it stops the re
     await expect.element(rowOf('Issue I_open')).toBeVisible();
 
     await router.push('/acme/hidden/issues');
-    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "GitHub doesn't show acme/hidden" })).toBeVisible();
     expect(holds.isHeld(WEB)).toBe(true);
     expect(holds.isHeld('acme/hidden')).toBe(true);
     // One first page each: leaving, the page never asked anything more of the repository it left.

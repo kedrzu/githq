@@ -2,8 +2,12 @@ import type { Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
-import type { AppShellHarness } from '../harnesses/AppShell.harness.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
+import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { AppShellHarness } from '../harnesses/AppShell.harness.js';
+import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { ProjectScreenHarness } from '../harnesses/ProjectScreen.harness.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import type { SampleTrackedWork } from '../tracking/sampleTrackedWork.js';
@@ -114,6 +118,48 @@ test('a view nothing matches shows all the project’s items, or its filter clea
     await expect(project.root.getByRole('listitem')).toHaveText(allItems);
     // The saved view itself is untouched.
     await expect(project.tab('Shipped bugs').getByRole('img', { name: 'modified locally' })).toHaveCount(0);
+});
+
+test('first run and loading ES19: on the board a filter leaving nothing says what it hides, the columns stay, and its filter clears here', async ({
+    page,
+    github,
+}) => {
+    const { project } = await openProject(page, github, createSampleTrackedWork());
+    await project.tab('Shipped bugs').click();
+    await expect(project.root.getByRole('heading', { name: 'Nothing matches “Shipped bugs”' })).toBeVisible();
+
+    await project.layout('Board').click();
+    await expect(project.root.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect(project.root).toContainText('status:Done label:bug hides all 5 items.');
+    await expect(project.group('Todo')).toBeVisible();
+
+    await project.root.getByRole('button', { name: 'Clear filter' }).click();
+    await expect(project.root.getByRole('heading', { name: 'Nothing matches this filter' })).toHaveCount(0);
+    await expect(project.group('Todo').getByRole('listitem').first()).toBeVisible();
+});
+
+test('first run and loading D6, ES20: GitHub failing on a tracked project before it arrived says so instead of ghosts, and Try again reads it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    github.graphql('ProjectFull', new GitHubHttpError(502, 'Bad gateway'));
+    await new FirstSignInHarness(page).trackAndOpenMyWork();
+
+    await new AppShellHarness(page).tracked(SAMPLE_PROJECT).click();
+    const project = new ProjectScreenHarness(page);
+    await expect(project.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect(project.root).toContainText(`githq couldn't read ${SAMPLE_PROJECT}.`);
+
+    sample.world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    await project.root.getByRole('button', { name: 'Try again' }).click();
+    await expect(project.tabs.first()).toBeVisible();
+    await expect(project.root.getByRole('listitem').first()).toBeVisible();
 });
 
 test('on the board, ⇧→ and a drag set the Status on GitHub; one GitHub refuses goes back to its column, with its toast', async ({

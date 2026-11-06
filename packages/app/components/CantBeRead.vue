@@ -1,15 +1,5 @@
 <!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none; GitHub failing offers "Try again" (R), hidden or gone "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. -->
 <script lang="ts">
-/** Why it can't be read, as the status bar knows it app-wide, with what the cause's action needs. */
-export type CantBeReadCause =
-  | { readonly kind: 'offline' }
-  /** Refresh paused by GitHub's hourly allowance until `until` (epoch ms). */
-  | { readonly kind: 'paused'; readonly until: number }
-  /** GitHub fails; `retry` asks again, the button busy until it settles. */
-  | { readonly kind: 'failing'; readonly retry: () => Promise<unknown> }
-  /** No access or gone, which look the same from GitHub; `url` is its page there. */
-  | { readonly kind: 'hidden'; readonly url: string };
-
 /** The key of "Try again" (D18), as where settings saving stopped. */
 const RETRY_KEY = 'R';
 
@@ -31,6 +21,7 @@ import { Browser } from '@/services/Browser.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import Button from './Button.vue';
+import type { CantBeReadCause } from './CantBeReadCause.js';
 import * as l from './CantBeRead.loc.js';
 import EmptyState from './EmptyState.vue';
 

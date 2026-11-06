@@ -147,7 +147,7 @@ export const BrowsedRepositories = defineService({
         browser.onOnlineChange(followPresence);
         watch(copyLoaded, followPresence, { flush: 'sync' });
 
-        return { hold, show, loadMore, getStatus, getFreshness: getSectionFreshness, isTabVisible };
+        return { hold, show, loadMore, readNow, getStatus, getFreshness: getSectionFreshness, isTabVisible };
 
         /**
          * Holds the repository for a screen's whole life; returns the release. With no tab holding it yet, what is kept
@@ -193,6 +193,17 @@ export const BrowsedRepositories = defineService({
             }
         }
 
+        /**
+         * "Try again" on a section GitHub failed on (first run and loading ES17): asks now what it would ask at its next
+         * refresh, settling when GitHub has answered. Nothing while it can't be asked or isn't on screen.
+         */
+        async function readNow(nameWithOwner: string, sectionName: RepositoryItemSection) {
+            const section = findSection(nameWithOwner, sectionName);
+            if (section && isShown(section) && !section.notShown) {
+                await refresh(section, 0);
+            }
+        }
+
         /** How the reading of the section's state stands; reactive. */
         function getStatus(
             nameWithOwner: string,
@@ -212,8 +223,16 @@ export const BrowsedRepositories = defineService({
             };
         }
 
-        /** How fresh the section is, by this service's own reads; `partial` with nothing read yet. Reactive. */
-        function getSectionFreshness(nameWithOwner: string, sectionName: RepositoryItemSection): Freshness {
+        /**
+         * How fresh the section is, by this service's own reads; `partial` with nothing read yet. Reactive. For one `state`
+         * of it, that state with no page read yet has nothing fresh to stand on, whatever the section's others had: what
+         * stands in its way tells at once, not once they are stale.
+         */
+        function getSectionFreshness(
+            nameWithOwner: string,
+            sectionName: RepositoryItemSection,
+            state?: RepositoryState,
+        ): Freshness {
             const section = findSection(nameWithOwner, sectionName);
             if (!section) {
                 return { kind: 'partial' };
@@ -225,7 +244,7 @@ export const BrowsedRepositories = defineService({
 
             return getFreshness({
                 now: nowRef.value,
-                lastSuccessAt: section.checkedAt,
+                lastSuccessAt: state && section.pages[state].total === null ? null : section.checkedAt,
                 intervalMs: BROWSE_POLL_MS,
                 checking: section.running > 0,
                 online: onlineRef.value,
@@ -256,15 +275,16 @@ export const BrowsedRepositories = defineService({
                 triggerRef(sectionsRef);
             }
 
-            refresh(section, BROWSE_FRESH_MS);
+            void refresh(section, BROWSE_FRESH_MS);
             touch();
         }
 
         /**
          * What the section needs now, given it was last checked: the first page of a state shown without one — all
-         * over, if its rows have gone — else a check when older than `minAgeMs`. Then its timer.
+         * over, if its rows have gone — else a check when older than `minAgeMs`. Then its timer. Settles when what it
+         * asked has been answered, however that went: the section's freshness tells.
          */
-        function refresh(section: BrowsedSectionState, minAgeMs: number) {
+        async function refresh(section: BrowsedSectionState, minAgeMs: number) {
             if (!canAsk()) {
                 cancelTimer(section);
                 return;
@@ -284,17 +304,17 @@ export const BrowsedRepositories = defineService({
 
             const now = clock.now();
             const missing = getShownStates(section).filter(state => section.pages[state].total === null);
+            const asked: Promise<void>[] = [];
             if (missing.length > 0) {
                 section.askedAt = now;
-                for (const state of missing) {
-                    void readPage(section, state);
-                }
+                asked.push(...missing.map(state => readPage(section, state)));
             } else if (section.checkCutShort || now - (section.checkedAt ?? 0) >= minAgeMs) {
                 section.askedAt = now;
-                void check(section);
+                asked.push(check(section));
             }
 
             arm(section);
+            await Promise.all(asked);
         }
 
         /** Sets the section's next refresh: an interval after the last, or when its pause ends; none while it can't be. */
@@ -312,7 +332,7 @@ export const BrowsedRepositories = defineService({
             section.cancelTimer = clock.schedule(
                 () => {
                     section.cancelTimer = null;
-                    refresh(section, 0);
+                    void refresh(section, 0);
                 },
                 Math.max(0, at - now),
             );
@@ -658,7 +678,7 @@ export const BrowsedRepositories = defineService({
                     continue;
                 }
 
-                refresh(section, BROWSE_POLL_MS);
+                void refresh(section, BROWSE_POLL_MS);
             }
 
             touch();

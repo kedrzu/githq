@@ -150,9 +150,31 @@ export const StackOnBoard: Story = {
     },
 };
 
-/** Nothing of the section matches the state chosen. */
-export const NothingMatches: Story = {
+/** It has all arrived and holds nothing (first run and loading D6). */
+export const NothingThere: Story = {
     args: { list: sampleList([], 'milestone'), openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
+};
+
+/** The state hides all the section holds: named, with a way to clear it (first run and loading D6). */
+export const StateHidesAll: Story = {
+    args: {
+        list: sampleList(
+            SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN'),
+            'milestone',
+        ),
+        openCounts: { issues: 0, pullRequests: 0 },
+        projects: [],
+    },
+};
+
+/** ES16: tracked, GitHub won't show it, or refuses its changes: the toolbar stays over why, with the way to GitHub. */
+export const TrackedNotShown: Story = {
+    args: {
+        list: sampleList([], 'milestone'),
+        openCounts: { issues: null, pullRequests: null },
+        projects: [],
+        cantBeRead: { kind: 'hidden', url: 'https://github.com/fitloop/webapp' },
+    },
 };
 
 const ARRIVING_LIST = buildRepositoryList({
@@ -221,6 +243,17 @@ export const NotTrackedArriving: Story = {
     },
 };
 
+/** ES17: GitHub failing on one not tracked with nothing held: the name, the chip and "Try again". */
+export const NotTrackedFailing: Story = {
+    args: {
+        ...NOT_TRACKED,
+        isPrivate: null,
+        list: ARRIVING_LIST,
+        status: browsedStatus({}),
+        cantBeRead: { kind: 'failing', retry: fn() },
+    },
+};
+
 /** J7: GitHub does not show it: the name, the chip and the way to GitHub. */
 export const NotTrackedNotShown: Story = {
     args: {
@@ -228,10 +261,11 @@ export const NotTrackedNotShown: Story = {
         isPrivate: null,
         list: sampleList([], 'none'),
         status: browsedStatus({ notShown: true }),
+        cantBeRead: { kind: 'hidden', url: 'https://github.com/vitejs/vite' },
     },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^GitHub doesn't show / })).toBeVisible();
         await expect(canvas.getByRole('link', { name: /^Open on\sGitHub$/ })).toHaveAttribute(
             'href',
             'https://github.com/vitejs/vite',

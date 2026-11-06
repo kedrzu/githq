@@ -1,5 +1,6 @@
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
@@ -218,6 +219,55 @@ test('a repository GitHub does not show says so, has the way to GitHub, and send
     await expect.poll(() => pollsOf(github, SAMPLE_REPOSITORY)).toBeGreaterThan(polled);
     await expect(repository.notShown).toBeVisible();
     expect(requestsNaming(github, 'hidden')).toHaveLength(asked);
+});
+
+test('first run and loading D6, ES17: GitHub failing, then offline, on a repository browsed says so instead of ghosts, with its name and the chip; Try again reads it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    addIssues(sample.world, 1);
+    await openTrackedWork(page, github, sample.world);
+    const repository = new RepositoryScreenHarness(page);
+    github.graphql('RepositoryIssues', new GitHubHttpError(502, 'Bad gateway'));
+
+    await page.goto(`/${BROWSED}/issues`);
+    await expect(repository.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect(repository.root).toContainText(`githq couldn't read ${BROWSED}.`);
+    await expect(repository.notTrackedChip).toBeVisible();
+
+    await page.context().setOffline(true);
+    await expect(repository.root.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect(repository.root.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+
+    await page.context().setOffline(false);
+    await expect(repository.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+
+    sample.world.install(github);
+    await repository.root.getByRole('button', { name: 'Try again' }).click();
+    await expect(repository.row('Issue 001')).toBeVisible();
+});
+
+test('filtered out, nothing there: a state hiding all a section holds offers to clear it; a section with nothing says so', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    addIssues(sample.world, 1);
+    await openTrackedWork(page, github, sample.world);
+    const repository = new RepositoryScreenHarness(page);
+
+    await page.goto(`/${BROWSED}/issues`);
+    await expect(repository.row('Issue 001')).toBeVisible();
+    await page.getByRole('button', { name: 'Open', exact: true }).click();
+    await page.getByRole('menuitemradio', { name: 'Closed', exact: true }).click();
+    await expect(repository.root.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect(repository.root).toContainText('State is closed hides the 1 issue.');
+    await repository.root.getByRole('button', { name: 'Clear filter' }).click();
+    await expect(repository.row('Issue 001')).toBeVisible();
+
+    await page.keyboard.press('2');
+    await expect(repository.root.getByRole('heading', { name: 'No open pull requests' })).toBeVisible();
 });
 
 test("opening a repository by another case of its name settles the address on GitHub's name and lists its rows", async ({

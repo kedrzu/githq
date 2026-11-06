@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { HOME_PATH } from '@/auth/routeAccess.js';
-import type { CantBeReadCause } from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import ItemContextMenu from '@/lists/ItemContextMenu.vue';
 import SelectionActions from '@/lists/SelectionActions.vue';
 import { useItemList } from '@/lists/useItemList.js';
@@ -17,6 +17,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
 
 import type { MyWorkFilter } from './buildMyWork.js';
 import { buildMyWork } from './buildMyWork.js';
@@ -46,23 +47,7 @@ const cantBeRead = computed((): CantBeReadCause | null => {
     return null;
   }
 
-  const freshness = sync.myWorkFreshness;
-  if (freshness.kind === 'paused') {
-    return { kind: 'paused', until: freshness.until };
-  }
-
-  if (freshness.kind !== 'stale') {
-    return null;
-  }
-
-  switch (freshness.reason) {
-    case 'offline':
-      return { kind: 'offline' };
-    case 'failing':
-      return { kind: 'failing', retry: () => sync.pollMyWorkNow() };
-    default:
-      return null;
-  }
+  return getCantBeReadCause({ freshness: sync.myWorkFreshness, retry: () => sync.pollMyWorkNow() });
 });
 // "Needs me" empty points at the user's open pull requests waiting on others, nested ones included.
 const waitingCount = computed(() => {
