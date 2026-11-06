@@ -31,3 +31,7 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-06 — Owner: merging later (D4 Rejected). Why mobile at all: "I simply want access to all my things on
   GitHub from the phone, as comfortable as" from the computer; a hybrid (not native) phone app will come later (D8).
   README written from D1–D8 and `variants.md`.
+- 2026-11-06 — Owner: leave the board for now (D9). Owner asked for a prompt for the design agent focused on
+  navigation: brief written as `ui/navigate-on-a-phone.md`, the prompt given inline (AGENTS.md → Design). Open:
+  githq's own Settings (`/settings`) is not on GitHub, so the hand-off of D3 would send it to GitHub's settings —
+  raised with the owner.

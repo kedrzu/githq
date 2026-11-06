@@ -30,7 +30,8 @@ github.com, the same way every address githq does not show at all already does.
 
 ## What the first version does
 
-The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list;
+The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list — no board on a phone yet, and a view saved as a board shows as a list grouped the same way
+([the board](DECISIONS.md#d9));
 opening an item, reading it, commenting, changing its assignees, labels and project fields, opening or closing it;
 creating an issue; the command menu from a button. And signing in for the first time, because someone whose first
 contact with githq is on a phone has to be able to choose what to track
@@ -68,5 +69,5 @@ with room for shapes nobody listed ([what is to be drawn](variants.md)).
 
 Settled: what makes the app a phone, the first version's scope, what happens to the addresses it does not show,
 and the first sign-in. Not yet touched: the item's screen on a phone (its properties, activity and comment box in
-one column), how a list row shrinks to a phone's width, and the board on a phone. Next is drawing the navigation
-variants.
+one column), and how a list row shrinks to a phone's width. The navigation variants are being drawn, from
+[the brief for the design agent](ui/navigate-on-a-phone.md).

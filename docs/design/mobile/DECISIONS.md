@@ -117,3 +117,12 @@ it reuses this layout is the design agent's proposal)
 **Why.** The owner's aim is access to all of their GitHub work from the phone as comfortable as from the computer,
 and a hybrid app is where that ends. Designing the phone layout once, for the browser, and reusing it there avoids a
 second phone UI.
+
+## D9
+
+**No board on a phone in the first version: lists only, and the switch between list and board is not shown. A
+project view saved as a board shows on a phone as a list grouped by the board's column field.**
+(2026-11-06, owner said to leave the board for now; how a board view shows is the design agent's proposal)
+
+**Why.** The owner set the board aside. A board's columns are the values of the field it groups by, so a list
+grouped by that field holds the same items in the same order of groups, and the view stays usable.
