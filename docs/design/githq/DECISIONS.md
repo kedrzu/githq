@@ -808,7 +808,7 @@ would add a wrapper at every overlay for nothing. Animating closing everywhere: 
 ### D39
 
 **Issues and pull requests can be grouped by status and by author, in a repository and in My work.** (user, 2026-11-06.)
-Drawn in `githq.pen` (see the changelog of this change). Both groupings join the existing ones and change no default. Neither
+Drawn in `githq.pen`: J2 (the grouping menu), J8 and D8. Both groupings join the existing ones and change no default. Neither
 group can be moved into, because an author can't be changed and a status follows from several GitHub facts.
 
 - **A pull request's status** is the group its row's status line already tells, so the two can never disagree: Draft,
