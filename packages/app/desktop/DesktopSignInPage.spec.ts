@@ -110,6 +110,7 @@ function mount() {
         readJobLog: () => Promise.reject(new Error('Not expected')),
         onWindowResized: () => Promise.reject(new Error('Not expected')),
         isFullscreen: () => Promise.reject(new Error('Not expected')),
+        onScrollPhase: () => Promise.reject(new Error('Not expected')),
     });
 
     const host = document.createElement('div');
