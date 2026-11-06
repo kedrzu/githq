@@ -32,16 +32,10 @@ freshNote:
   en: broke in the last 24 hours
 ongoing:
   en: Ongoing
-notKnownYet:
-  en: Not known yet
 cantTell:
   en: Can't tell
 cantTellNote:
   en: not in the total
-readingRow:
-  en: Reading…
-notReadYet:
-  en: not read yet
 actionsOff:
   en: Actions turned off
 actionsRefused:

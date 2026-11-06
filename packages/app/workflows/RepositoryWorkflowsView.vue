@@ -1,10 +1,10 @@
-<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, D7): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. One workflow at a time unfolds in place, its runs under its row (W3b, `UnfoldedWorkflowRuns`). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved, through an unfolded workflow's runs —, Enter or a click opens a broken workflow's latest failed run and unfolds any other, opens a run, or asks again after a failed read; → unfolds the selected workflow, ← folds, Esc clears the ref filter, then folds; P opens the repository's alert settings. -->
+<!-- A repository's Workflows section (actions W3a–W3e, W13, W14, D7): every workflow, one row each (`WorkflowRow`), under Broken — the newest break first —, Pull requests only, No alerts, Passing, Not known yet and Disabled, each while it has rows; above them the Alerts bar (`WorkflowAlertsBar`). While runs are still being read the groups say "so far", and a workflow not read yet has an empty strip and no verdict (W3c). Before the first read, ghost workflow rows stand in their place (`WorkflowsArriving`, first run and loading D17). With no workflows, or none GitHub shows, an empty state says why (W3d, W3e), with a way to GitHub (O); the rows last read stay below the latter. One workflow at a time unfolds in place, its runs under its row (W3b, `UnfoldedWorkflowRuns`). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved, through an unfolded workflow's runs —, Enter or a click opens a broken workflow's latest failed run and unfolds any other, opens a run, or asks again after a failed read; → unfolds the selected workflow, ← folds, Esc clears the ref filter, then folds; P opens the repository's alert settings. -->
 <script lang="ts" setup>
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
-import { CircleDashed, Github, PackageOpen, PowerOff } from 'lucide-vue-next';
+import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
@@ -23,6 +23,7 @@ import UnfoldedWorkflowRuns from './UnfoldedWorkflowRuns.vue';
 import WorkflowAlertsBar from './WorkflowAlertsBar.vue';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRow from './WorkflowRow.vue';
+import WorkflowsArriving from './WorkflowsArriving.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -103,19 +104,13 @@ const selection = useRowSelection({
   chosenKey: selected,
   open: openSelected,
 });
-/** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain. */
+/** What the screen says in place of rows, or above the last known ones; `null` with rows and nothing to explain, or while the first read runs. */
 const emptyState = computed(() => {
   const { list, nameWithOwner } = props;
   const actionsUrl = getGitHubUrl(getRepositoryPath(nameWithOwner, 'workflows'));
   switch (list.status) {
     case 'unread':
-      return {
-        icon: CircleDashed,
-        title: t(l.notReadTitle),
-        text: t(l.notReadText, { name: nameWithOwner }),
-        detail: null,
-        action: null,
-      };
+      return null;
     case 'unavailable':
       return list.unavailable?.reason === 'disabled'
         ? {
@@ -305,8 +300,9 @@ function describeGroup(group: RepositoryWorkflowGroup) {
     />
 
     <div :class="css.repositoryWorkflowsView_body">
+      <WorkflowsArriving v-if="list.status === 'unread'" />
       <div
-        v-if="emptyState"
+        v-else-if="emptyState"
         :class="[
           css.repositoryWorkflowsView_message,
           list.groups.length > 0 && css.repositoryWorkflowsView_message_above,

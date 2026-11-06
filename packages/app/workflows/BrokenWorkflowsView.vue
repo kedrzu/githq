@@ -1,7 +1,7 @@
-<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. Repositories not read yet follow under "Not known yet", and nothing claims them healthy; those GitHub shows nothing of under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
+<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. While some repositories are still being read, ghost workflow rows with the repository's column follow (`WorkflowsArriving`, first run and loading D17), and nothing claims them healthy — the header says "reading 4 repositories" (ES28); those GitHub shows nothing of follow under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Ban, CircleDashed, Coffee, Workflow } from 'lucide-vue-next';
+import { Ban, Coffee, Workflow } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
@@ -14,6 +14,7 @@ import * as l from './BrokenWorkflowsView.loc.js';
 import RunStrip from './RunStrip.vue';
 import WorkflowEmptyState from './WorkflowEmptyState.vue';
 import WorkflowRow from './WorkflowRow.vue';
+import WorkflowsArriving from './WorkflowsArriving.vue';
 
 const props = defineProps<{
   broken: BrokenWorkflows;
@@ -188,32 +189,10 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
         />
       </section>
 
-      <section
+      <WorkflowsArriving
         v-if="broken.unread.length > 0"
-        :aria-label="t(l.notKnownYet)"
-      >
-        <h2 :class="css.brokenWorkflowsView_group">{{ t(l.notKnownYet) }}</h2>
-        <div
-          v-for="repository in broken.unread"
-          :key="repository"
-          :class="css.brokenWorkflowsView_row"
-        >
-          <CircleDashed
-            :class="css.brokenWorkflowsView_rowIcon"
-            aria-hidden="true"
-          />
-          <span :class="[css.brokenWorkflowsView_rowName, css.brokenWorkflowsView_rowName_muted]">{{
-            t(l.readingRow)
-          }}</span>
-          <span :class="css.brokenWorkflowsView_rowRepository">{{ repository }}</span>
-          <span :class="css.brokenWorkflowsView_rowRef" />
-          <RunStrip
-            :runs="[]"
-            :new-since="null"
-          />
-          <span :class="css.brokenWorkflowsView_rowStatus">{{ t(l.notReadYet) }}</span>
-        </div>
-      </section>
+        repository
+      />
 
       <section
         v-if="broken.unavailable.length > 0"
@@ -365,10 +344,6 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
   color: $color-fg-2;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.brokenWorkflowsView_rowName_muted {
-  color: $color-fg-dim;
 }
 
 .brokenWorkflowsView_rowRepository {

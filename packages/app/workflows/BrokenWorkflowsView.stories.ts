@@ -102,7 +102,7 @@ type Story = StoryObj<typeof meta>;
 /** W2: broken in three of four repositories — two breaks under a day old, three older. */
 export const Everything: Story = {};
 
-/** W2c: two repositories still being read, one with Actions off — the total is "1 so far". */
+/** W2c: two repositories still being read, one with Actions off — the total is "1 so far", ghost rows below. */
 export const PartlyKnown: Story = {
     args: {
         broken: buildBrokenWorkflows([
@@ -117,7 +117,7 @@ export const PartlyKnown: Story = {
     },
 };
 
-/** Nothing read yet: no zero, nothing claimed healthy. */
+/** Nothing read yet: no zero, nothing claimed healthy, ghost rows with the repository's column (ES28). */
 export const NotKnownYet: Story = {
     args: {
         broken: buildBrokenWorkflows([

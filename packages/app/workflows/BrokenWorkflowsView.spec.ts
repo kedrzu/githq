@@ -85,8 +85,7 @@ test('W2c: while some repositories are unread the total is "so far" and nothing 
     await PartlyKnown.run();
 
     await expect.element(page.getByText(matchText('1 so far · reading 2 repositories'))).toBeVisible();
-    await expect.element(group('Not known yet')).toHaveTextContent(/mlaine\/tasklet.*not read yet/u);
-    await expect.element(group('Not known yet')).toHaveTextContent(/fitloop\/webapp/u);
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
     await expect.element(page.getByText('All green, exit code 0')).not.toBeInTheDocument();
 });
 
@@ -101,10 +100,12 @@ test("W2c: a repository GitHub shows nothing of is under Can't tell, at the bott
     expect(regions.at(-1)?.getAttribute('aria-label')).toBe("Can't tell");
 });
 
-test('nothing read yet: no zero and no green', async () => {
+test('first run and loading ES28: nothing read yet — ghost rows, no zero and no green', async () => {
     await NotKnownYet.run();
 
     await expect.element(page.getByText(matchText('reading 2 repositories'))).toBeVisible();
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { level: 2 })).not.toBeInTheDocument();
     await expect.element(page.getByText(/^none\s/u)).not.toBeInTheDocument();
     await expect.element(page.getByText('All green, exit code 0')).not.toBeInTheDocument();
 });
