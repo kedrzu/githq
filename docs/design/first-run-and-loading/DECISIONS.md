@@ -85,8 +85,9 @@ already does.
 ## D4
 
 **While any tracked repository or project is downloading, the status bar's sidebar segment says so in place of the API
-allowance — how many are downloading, items so far of the total counted, and the time left once a pace is known — and
-clicking it lists each one with its progress. It returns to the allowance when everything has arrived. Being offline or
+allowance — how many are downloading, items so far of the total counted, and the time left once a pace is known. It is
+not a button: no list behind it. It is the only place that speaks of repositories downloading; each screen's own segment
+still says what is happening to that screen ([D3](#d3)). It returns to the allowance when everything has arrived. Being offline or
 paused by the allowance still takes the segment first.** (2026-11-06, owner)
 
 **The sidebar's entries show no download marker:** a tracked repository or project shows nothing in place of its
@@ -115,12 +116,15 @@ seconds (`packages/app/tracking/FirstDownloadPage.vue`, `PACE_AFTER_MS`).
   how far, not "Up to date").
 - **A tracked project** — all its items at once, as its download reads them.
 - **An untracked repository being browsed** — its first read.
-- **An opened issue or pull request** — its comments and details fetched separately (githq Q8); shown inside its panel,
-  not as an empty screen.
 
 **Why.** These are the surfaces with a freshness of their own ([githq D15](../githq/DECISIONS.md#d15)); each already
 knows when it has nothing yet (`partial`), and only a tracked repository has a second phase that today reads `fresh`
 ([D3](#d3)).
+
+**Rejected.**
+
+- An opened issue's or pull request's comments and details as an incomplete screen (design agent's addition) — a
+  separate mechanism already covered by githq Q8, and not what the owner asked about.
 
 ## Postponed
 

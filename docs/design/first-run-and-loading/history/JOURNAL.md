@@ -18,3 +18,7 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Owner: no per-repository download marker anywhere in the sidebar; download progress only in the status
   bar's left segment (D4 sharpened). Asked: does a repository's own segment still say its closed items are downloading
   (D3), and does the left segment keep its click-through list; the opened item in D5 still unanswered.
+- 2026-11-06 — Owner clarified: repositories' download state lives only in the status bar's left segment; each screen's
+  own segment and its empty-while-loading state stay (D3, D5 hold). Taken as the owner's reading: no list behind the
+  left segment (D4); the opened item dropped from D5. Scope grows: every empty state, not only loading ones — some are
+  "wooden". Dispatched an inventory of the app's empty states.

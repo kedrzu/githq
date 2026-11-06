@@ -64,20 +64,23 @@ includes a refresh that found changes and is fetching them: those simply appear 
 **Which screens can be incomplete.** My work waits for the user's own issues and pull requests, and is the one screen
 likely to be wholly empty right after signing in. A tracked repository waits first for its open items, then for its
 closed ones. A tracked project waits for all its items at once. A repository opened without tracking it waits for its
-first read. An opened issue or pull request may wait for its comments, and says so inside its panel rather than as an
-empty screen. [The list](DECISIONS.md#d5).
+first read. [The list](DECISIONS.md#d5).
 
 **Progress of everything at once.** No single screen owns it any more, so the left end of the status bar — under the
 sidebar, where the API allowance normally sits — takes it over while anything is downloading: how many repositories and
-projects, how many items of how many, and roughly how long is left. Clicking it lists each with its progress. The sidebar's entries show no download marker of their own: an entry
-shows nothing until its open items are in, then its count. When all
-has arrived it goes back to the allowance. Being offline or paused still comes first. This is not only for the first
+projects, how many items of how many, and roughly how long is left. It is the only place that speaks of downloading
+repositories: the sidebar's entries show no download marker of their own (an entry shows nothing until its open items
+are in, then its count). Each screen's own segment still says what is happening to that screen. When all has arrived
+the left end goes back to the allowance. Being offline or paused still comes first. This is not only for the first
 sign-in: tracking another repository later shows the same. [Why there and not nowhere](DECISIONS.md#d4).
 
 ## How far this goes
 
-In: the first sign-in after the choosing screen, the top bar of the sign-in screens, what an empty screen says while
-its data downloads, and what the status bar says while a screen's data is incomplete.
+In: the first sign-in after the choosing screen, the top bar of the sign-in screens, what the status bar says while a
+screen's data is incomplete, and every empty state — not only a screen still downloading, but one a filter leaves
+empty, one with nothing in it, and the rest. Some are designed already, others are a bare line.
+
+Out of it: an opened issue's or pull request's parts fetched separately, which the main design already covers.
 
 Out for now: a "loading more" row at the end of a list. Lists are sorted by last update, so arriving items land between
 existing rows rather than at the end, and the default filter shows open items, which arrive first — such a row would be
@@ -85,4 +88,5 @@ truthful only under some filters. Postponed by the owner.
 
 ## Still open
 
-- The empty state's words and animation — the owner designs the screens.
+- The empty states: which reasons a screen can be empty for, and what each says. The owner designs the screens; this
+  design settles which cases exist.
