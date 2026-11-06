@@ -68,6 +68,17 @@ test('W4i: a log that failed to read says so, whichever job', async () => {
     await expect.element(page.getByText("The log of build didn't load")).toBeVisible();
 });
 
+test('first run and loading D14: my work says it is fetching until a group is in, then names the groups still arriving', async () => {
+    mount({ kind: 'partial', arriving: ['reviewRequested', 'authored', 'assigned', 'mentioned'] });
+    await expect.element(page.getByText('Fetching your work')).toBeVisible();
+
+    mount({ kind: 'partial', arriving: ['assigned', 'mentioned'] });
+    await expect.element(page.getByText('Still arriving · assigned to you, mentions')).toBeVisible();
+
+    mount({ kind: 'partial', arriving: ['reviewRequested'] });
+    await expect.element(page.getByText('Still arriving · review requests')).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

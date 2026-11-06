@@ -1,4 +1,4 @@
-<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time, on Settings' screens with where the settings are saved (githq D26), or on a run's page what its log is doing (W4e, W4i, W4j); amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), or the review threads it didn't give, or they waiting for the allowance, and with files selected the keys that act on them (CR23); on a thread, which of them it is and the keys that walk them (CR15); just opened and not moved yet, why it starts where it does (CR20, CR25, CR26). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
+<!-- The status bar's segment of a list or an item (D15): how fresh what it shows is — dim "Up to date" most of the time; on the first download of "my work" "Fetching your work", then the groups still arriving (first run and loading D14); on Settings' screens with where the settings are saved (githq D26), or on a run's page what its log is doing (W4e, W4i, W4j); amber with since when and why when it is not. A review says how far its files are, and in amber that they wait for the API allowance or that GitHub lists only some (code review D35), or the review threads it didn't give, or they waiting for the allowance, and with files selected the keys that act on them (CR23); on a thread, which of them it is and the keys that walk them (CR15); just opened and not moved yet, why it starts where it does (CR20, CR25, CR26). Up to date, hovering it tells how long ago it was checked, ticking. A saved view githq can't evaluate says, in purple, that GitHub answers it and why it is slower (K6). Paused by the API allowance (K3), the screen's segment adds that the user's edits still go through. The user's own edits come first (D15): "Sending 2 changes · portal#1187" while on their way, and in red "1 change failed · …" until the failure is dismissed — clicking that shows its message again; a merge GitHub has not said the end of, in grey, until the next refresh settles it (merging PM36). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -25,6 +25,8 @@ import { computed } from 'vue';
 import Tooltip from '@/components/Tooltip.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { useNow } from '@/services/useNow.js';
+import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
+import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatTime } from '@/utils/formatTime.js';
@@ -54,10 +56,19 @@ interface SegmentLook {
 
 /** How often "checked 12s ago" moves on while up to date. */
 const TICK_MS = 1000;
+/** A "my work" group as the segment names it among those still arriving. */
+const ARRIVING_GROUPS: Readonly<Record<MyWorkGroup, typeof l.arrivingMentioned>> = {
+  reviewRequested: l.arrivingReviewRequested,
+  authored: l.arrivingAuthored,
+  assigned: l.arrivingAssigned,
+  mentioned: l.arrivingMentioned,
+};
 
 const t = useTranslate();
 const now = useNow(TICK_MS, () => ['fresh', 'settingsSaved', 'statusChecked'].includes(props.freshness.kind));
 const numbers = new Intl.NumberFormat(APP_LANGUAGE);
+// "assigned to you, mentions": a list of names, not a sentence ending in "and".
+const groupList = new Intl.ListFormat(APP_LANGUAGE, { type: 'unit', style: 'short' });
 
 const look = computed((): SegmentLook => {
   const { freshness, edits } = props;
@@ -91,7 +102,7 @@ const look = computed((): SegmentLook => {
     case 'checking':
       return { icon: RefreshCw, tone: 'dim', text: t(l.checking) };
     case 'partial':
-      return { icon: LoaderCircle, tone: 'muted', text: t(l.downloading) };
+      return { icon: LoaderCircle, tone: 'muted', text: getPartialText(freshness) };
     case 'reading':
       return {
         icon: LoaderCircle,
@@ -208,6 +219,19 @@ const look = computed((): SegmentLook => {
       return assertNever(freshness);
   }
 });
+
+// "My work" names the groups still on their way once some are in, but not before (first run and loading D14).
+function getPartialText({ arriving }: Extract<Freshness, { kind: 'partial' }>) {
+  if (!arriving) {
+    return t(l.downloading);
+  }
+
+  if (arriving.length === 0 || arriving.length === MY_WORK_GROUPS.length) {
+    return t(l.fetchingMyWork);
+  }
+
+  return t(l.myWorkArriving, { groups: groupList.format(arriving.map(group => t(ARRIVING_GROUPS[group]))) });
+}
 
 function getLandingText(landing: Extract<Freshness, { kind: 'landing' }>) {
   switch (landing.at) {

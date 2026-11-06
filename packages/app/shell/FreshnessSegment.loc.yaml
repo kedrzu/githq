@@ -38,6 +38,18 @@ filling:
   en: Filling in the other branches · {done} of {total}
 downloading:
   en: Downloading · what's here is usable
+fetchingMyWork:
+  en: Fetching your work
+myWorkArriving:
+  en: Still arriving · {groups}
+arrivingReviewRequested:
+  en: review requests
+arrivingAuthored:
+  en: your pull requests
+arrivingAssigned:
+  en: assigned to you
+arrivingMentioned:
+  en: mentions
 checkedAgo:
   en: Checked {age} ago
 answered:

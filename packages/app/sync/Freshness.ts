@@ -1,4 +1,5 @@
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
+import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 
 /**
  * How current what a surface shows is (D15), for its segment of the status bar. Times are epoch ms.
@@ -11,7 +12,8 @@ import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
  *   repository's workflows GitHub no longer lists, the last known ones staying on screen (`workflowsUnavailable`);
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
- * - `partial`: nothing was ever downloaded for it and the first download is under way;
+ * - `partial`: nothing was ever downloaded for it and the first download is under way; for "my work", `arriving` names
+ *   the groups whose searches haven't answered yet (first run and loading D14);
  * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
  * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
  * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
@@ -47,7 +49,7 @@ export type Freshness =
       }
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
-    | { readonly kind: 'partial' }
+    | { readonly kind: 'partial'; readonly arriving?: readonly MyWorkGroup[] }
     | { readonly kind: 'reading'; readonly read: number; readonly total: number }
     | { readonly kind: 'readingLog'; readonly job: string }
     | { readonly kind: 'logFailed'; readonly job: string }

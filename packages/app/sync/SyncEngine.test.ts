@@ -684,6 +684,27 @@ test('a slow poll is never overlapped by the next one — not by its timer, the 
     expect(github.searches()).toHaveLength(8);
 });
 
+test('first run and loading D14: on the first download my work says which groups are still arriving', async () => {
+    const github = fakeGitHub();
+    const all = createPromise();
+    github.holdSearch = all.promise;
+    const later = createPromise();
+    github.holdGroups = { groups: ['assigned', 'mentioned'], until: later.promise };
+    const { sync, clock } = await setup(github, 'alice');
+
+    const nothingYet: Freshness = { kind: 'partial', arriving: [...MY_WORK_GROUPS] };
+    expect(sync.myWorkFreshness).toEqual(nothingYet);
+
+    all.resolve();
+    await clock.advance(0);
+    const someIn: Freshness = { kind: 'partial', arriving: ['assigned', 'mentioned'] };
+    expect(sync.myWorkFreshness).toEqual(someIn);
+
+    later.resolve();
+    await clock.advance(0);
+    expect(sync.myWorkFreshness).toEqual({ kind: 'fresh', checkedAt: START });
+});
+
 test('freshness: up to date after a poll, still up to date while the next one runs, stale "as of" the last success when offline', async () => {
     const github = fakeGitHub();
     const { sync, clock, browser } = await setup(github, 'alice');
@@ -889,6 +910,8 @@ interface FakeGitHub {
     hold: Promise<void> | null;
     /** Searches wait for it. */
     holdSearch: Promise<void> | null;
+    /** The search of these groups waits for it. */
+    holdGroups: { readonly groups: readonly MyWorkGroup[]; readonly until: Promise<void> } | null;
     fetch(input: string | URL | Request, init?: RequestInit): Promise<Response>;
     /** The queries searched, in order. */
     searches(): string[];
@@ -914,6 +937,7 @@ function fakeGitHub(): FakeGitHub {
         failSearch: null,
         hold: null,
         holdSearch: null,
+        holdGroups: null,
         fetch,
         searches: () =>
             github.requests.filter(request => request.url.includes('/search/')).map(request => request.name),
@@ -929,6 +953,11 @@ function fakeGitHub(): FakeGitHub {
             const q = url.searchParams.get('q') ?? '';
             github.requests.push({ url: url.href, token, name: q, ids: [] });
             await github.holdSearch;
+            const held = github.holdGroups;
+            if (held && held.groups.some(group => QUERIES[group] === q)) {
+                await held.until;
+            }
+
             return searchAnswer(q);
         }
 

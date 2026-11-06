@@ -58,6 +58,14 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** My work's first download, no search answered yet (first run and loading D14, G16). */
+export const FetchingMyWork: Story = {
+    args: { freshness: { kind: 'partial', arriving: ['reviewRequested', 'authored', 'assigned', 'mentioned'] } },
+};
+
+/** My work's first download, two groups in: the others named (D14, G17). */
+export const MyWorkArriving: Story = { args: { freshness: { kind: 'partial', arriving: ['assigned', 'mentioned'] } } };
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 

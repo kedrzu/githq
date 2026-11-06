@@ -224,7 +224,13 @@ export const SyncEngine = defineService({
         // Freshness changes with time alone; this moves when it may have (`touch`).
         const nowRef = shallowRef(clock.now());
 
-        const myWorkFreshness = computed(() => getLoopFreshness('myWork', items.getSyncState('myWork').lastSuccessAt));
+        // On the first download, which groups are still on their way (first run and loading D14).
+        const myWorkFreshness = computed((): Freshness => {
+            const freshness = getLoopFreshness('myWork', items.getSyncState('myWork').lastSuccessAt);
+            return freshness.kind === 'partial'
+                ? { kind: 'partial', arriving: MY_WORK_GROUPS.filter(group => items.membership[group] === undefined) }
+                : freshness;
+        });
 
         const notice = computed((): SyncNotice | null => {
             if (!activeRef.value) {

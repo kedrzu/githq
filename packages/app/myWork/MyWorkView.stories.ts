@@ -71,10 +71,10 @@ export const NothingWaiting: Story = {
     args: { filter: 'waitingOnOthers', work: sampleMyWork([], sampleMembership({}), 'waitingOnOthers') },
 };
 
-/** G7: the first download is under way; every group says it is still arriving. */
+/** G16: the first download is under way and no search has answered: a full screen of ghosts. */
 export const StillArriving: Story = { args: { work: sampleMyWork([], {}, 'all') } };
 
-/** G7: two searches have answered — their groups are listed and usable — and the other two are still arriving. */
+/** G17: two searches have answered — their groups are listed and usable — and the other two show their ghosts. */
 export const PartlyArrived: Story = {
     args: {
         work: sampleMyWork(
