@@ -92,7 +92,12 @@ test('every other colour is a named exception, an alias, or outside the palette'
         token =>
             !(token in TAKEN_FROM) &&
             !(token in EXCEPTIONS) &&
-            !(token.startsWith('landing-') || token.startsWith('button-light') || token.startsWith('row-stripe')) &&
+            !(
+                token.startsWith('landing-') ||
+                token.startsWith('button-light') ||
+                token.startsWith('row-stripe') ||
+                token.startsWith('skeleton-')
+            ) &&
             !['control-border', 'graph-line', 'focus'].includes(token),
     );
     expect(unnamed).toEqual([]);

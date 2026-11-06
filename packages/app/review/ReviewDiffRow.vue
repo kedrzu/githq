@@ -476,7 +476,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 }
 
 // A bar for each line, as tall as the file will about take (D38): the bars are a generated mask, so a long file is no
-// more elements than a short one, and the colour stays here.
+// more elements than a short one, and the colour stays here: the shared skeleton's, with its highlight (D9).
 .reviewDiffRow_placeholder {
   position: relative;
 
@@ -484,7 +484,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
     position: absolute;
     inset: 0;
     content: '';
-    background: $color-bg-3;
+    @include skeleton-fill(weak);
     mask-image: var(--placeholder-mask);
     mask-repeat: no-repeat;
     mask-size: 100% 100%;

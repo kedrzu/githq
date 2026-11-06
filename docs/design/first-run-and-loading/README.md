@@ -95,14 +95,6 @@ Out for now: a "loading more" row at the end of a list. Lists are sorted by last
 existing rows rather than at the end, and the default filter shows open items, which arrive first — such a row would be
 truthful only under some filters. Postponed by the owner.
 
-## What gets built first
-
-The first sign-in without the download page, and the choosing screen in the app's top strip — together with the
-"still arriving" pattern on My work, because without it the user lands on a screen that looks empty. Then the status
-bar: a tracked repository no longer "Up to date" while its closed items arrive, the left end telling the progress of
-everything, and the sidebar's download percentages gone. Then the rest of the empty states, screen by screen from
-[the table](empty-states.md#what-each-screen-can-say), once the owner has drawn the four patterns.
-
 ## Still open
 
 - The four patterns' look, words and the arriving animation — the owner designs the screens, from [the brief for the

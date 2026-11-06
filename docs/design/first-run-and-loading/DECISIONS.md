@@ -203,8 +203,13 @@ each row 80 ms after the one above; an arriving row fades in over its ghost in 1
 With animations off (Display, CH49) the ghosts stand still.** (2026-11-06, design agent's proposal; the owner asked
 that it visibly move) — ES4
 
+Every skeleton in the app is built from one shared set — a wrapper holding the rhythm, and the shapes inside it (bar,
+circle, dot) — and code review's file placeholders use it too. All shapes inside one wrapper share one highlight: a
+single band crosses the whole row (a gradient anchored to the wrapper, which the shapes only cut out), so no circle or
+bar animates on its own. (2026-11-06, owner, at the start of the build)
+
 **Why.** With no words the motion is what tells "something is happening"; a sweep reads as work in progress, a blink
-as a fault. The owner's words for the tone: "fetching", "crunching", "churning".
+as a fault. Shapes animating each on their own would look chaotic (owner). The owner's words for the tone: "fetching", "crunching", "churning".
 
 ## D10
 

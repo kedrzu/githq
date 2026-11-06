@@ -158,17 +158,11 @@ test('a first sign-in chooses what to track before anything else, then goes on t
     expect(
         resolveRouteAccess(route('/settings/tracking/new', 'signedIn', {}, 'choose'), FIRST_SIGN_IN),
     ).toBeUndefined();
-    expect(
-        resolveRouteAccess(route('/settings/tracking/download', 'signedIn', {}, 'download'), FIRST_SIGN_IN),
-    ).toBeUndefined();
 });
 
 test('signed in again with the choice kept, the app opens straight away; choosing again is Settings', () => {
     expect(resolveRouteAccess(route('/', 'home'), SIGNED_IN)).toBeUndefined();
     expect(resolveRouteAccess(route('/settings/tracking/new', 'signedIn', {}, 'choose'), SIGNED_IN)).toBe('/settings');
-    expect(
-        resolveRouteAccess(route('/settings/tracking/download', 'signedIn', {}, 'download'), SIGNED_IN),
-    ).toBeUndefined();
 });
 
 test('a route without access rules opens to everyone', () => {

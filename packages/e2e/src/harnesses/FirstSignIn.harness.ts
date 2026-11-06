@@ -4,8 +4,8 @@ import type { Locator, Page } from '@playwright/test';
 import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 /**
- * Playwright harness for the first sign-in's steps: choosing what to track (`/settings/tracking/new`, `TrackingChooser.vue` —
- * G2, G5, G10, and settings-sync's G11–G14) and the first download (`/settings/tracking/download`, `FirstDownloadView.vue` — G6).
+ * Playwright harness for the first sign-in: choosing what to track (`/settings/tracking/new`, `TrackingChooser.vue` —
+ * G2, G5, G10, and settings-sync's G11–G14).
  */
 export class FirstSignInHarness {
     readonly page: Page;
@@ -28,14 +28,6 @@ export class FirstSignInHarness {
         return this.root
             .getByRole('region', { name: 'Projects', exact: true })
             .getByRole('checkbox', { name: new RegExp(`^${escapeRegExp(title)} `) });
-    }
-
-    /** The first download's progress of a repository (`owner/name`) or project (its title). */
-    progress(name: string): Locator {
-        return this.root
-            .getByRole('list', { name: 'Download progress' })
-            .getByRole('listitem')
-            .filter({ has: this.page.getByRole('progressbar', { name, exact: true }) });
     }
 
     /** An owner on the left of the choice. */
@@ -65,16 +57,14 @@ export class FirstSignInHarness {
         return this.root.getByRole('button', { name: 'Continue to My work' });
     }
 
-    /** "Open My work" on the first download (G6). */
-    get openMyWorkButton(): Locator {
-        return this.root.getByRole('button', { name: 'Open My work' });
-    }
-
-    /** Tracks what is chosen, waits until all of it is downloaded, and opens My work. */
+    /**
+     * Tracks what is chosen and lands on My work, where it downloads in the background — once the choice is gone:
+     * the address changes before the app's shell is loaded and drawn.
+     */
     async trackAndOpenMyWork(): Promise<void> {
         await this.trackButton.click();
-        await expect(this.root).toContainText('Everything is here.');
-        await this.openMyWorkButton.click();
+        await expect(this.page).toHaveURL('/');
+        await expect(this.trackButton).toHaveCount(0);
     }
 
     /** "Request approval on GitHub" of an organisation hiding its private data (G5). */
