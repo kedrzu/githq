@@ -391,6 +391,10 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   intercepts links and the `Browser` service, and the window's `on_navigation`/`on_new_window` handlers back it
   up. The content security policy allows `connect-src` only to `api.github.com`, and images only from GitHub's
   hosts.
+- **Links open in the app** (owner, 2026-11-06). The app registers `githq://`, where `githq://<path>` is the app's
+  `/<path>`, and runs as a single instance. A signed macOS build also takes `https://githq.dev/...` as a Universal Link,
+  and a githq.dev link inside the window stays in it. Every other browser hands off through an opt-in on the web.
+  Why: [the decision](../../decisions/desktop-deep-links-and-web-hand-off.md).
 - **Updates:** the app checks GitHub Releases at launch and every 4 hours and downloads in the background. The
   signature is always verified. The update is then offered as "githq X.Y.Z is ready · Restart · Later" at the
   right end of the status bar (`githq.pen`, "Desktop · Updates", U1). Nothing restarts on its own. On macOS

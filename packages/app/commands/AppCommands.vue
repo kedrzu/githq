@@ -1,4 +1,4 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). In the web builds "Open in desktop app" opens the screen in the githq desktop app. The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -27,6 +27,7 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
+import { useOpenInDesktopCommand } from '@/desktopLinks/useOpenInDesktopCommand.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
@@ -89,6 +90,8 @@ const openItem = useOpenItem();
 const repositorySearchCommand = useRepositorySearchCommand();
 const repositoryCommands = useRepositoryCommands();
 const projectCommands = useProjectCommands();
+// Opening the screen in the desktop app is for the web builds; the desktop build has none of it.
+const openInDesktopCommand = !__DESKTOP__ ? useOpenInDesktopCommand() : null;
 
 /** The repository a new issue starts in: the opened item's, or the one of a repository's view. */
 const repository = computed(() => {
@@ -174,6 +177,7 @@ useCommands(() => [
     },
   },
   repositorySearchCommand(),
+  ...(openInDesktopCommand ? [openInDesktopCommand()] : []),
   ...getUpdateCommands(),
 ]);
 

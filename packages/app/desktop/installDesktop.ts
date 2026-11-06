@@ -1,5 +1,6 @@
 import type { Container } from '@nzyme/ioc/Container.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import type { Router } from 'vue-router';
 
 import { TokenVault } from '@/auth/TokenVault.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
@@ -19,11 +20,11 @@ import { withNativeJobLogs } from './withNativeJobLogs.js';
 /**
  * Prepares the app for the desktop app's window (`packages/desktop`) before any of its services start: the token
  * from the OS credential store, pages outside the app opened in the system browser, jobs' logs read natively, the
- * app's updates, and on a Mac the window controls over the sidebar and the keys that go back and forward. The one way
+ * app's updates, githq.dev pages shown in the window through `router`, and on a Mac the window controls over the sidebar and the keys that go back and forward. The one way
  * in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`, `plugins/iocPlugin.ts`), so the
  * web builds drop it with everything it imports.
  */
-export async function installDesktop(container: Container) {
+export async function installDesktop(container: Container, router: Router) {
     // Throws outside the desktop app, before anything starts.
     const bridge = container.resolve(NativeBridge);
     const logger = container.resolve(Logger);
@@ -37,6 +38,11 @@ export async function installDesktop(container: Container) {
         open: url => {
             bridge.openExternal(url).catch((error: unknown) => {
                 logger.warn('Could not open a page in the browser', { error });
+            });
+        },
+        openInApp: address => {
+            router.push(address).catch((error: unknown) => {
+                logger.warn('Could not open a githq page in the app', { error });
             });
         },
     };

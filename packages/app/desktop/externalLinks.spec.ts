@@ -64,6 +64,32 @@ test('a click on a link leaving the app opens it in the system browser — new t
     expect(clicks).toEqual([true, true, true, true]);
 });
 
+test('a githq.dev address — navigated to, replaced or opened beside — opens in the app by its path, query and hash, not in the system browser', () => {
+    const { browser, opened, inApp, inAppLinks } = setupBrowser();
+
+    browser.navigate('https://githq.dev/acme/web/issues/12');
+    browser.replaceLocation('https://www.githq.dev/acme/web/pull/7/files?x=1#diff');
+    browser.openInNewTab('https://githq.dev/');
+    // Not githq's page: another host, a look-alike, or not https.
+    browser.navigate('https://githq.dev.example.com/acme');
+    browser.navigate('http://githq.dev/acme');
+
+    expect(inAppLinks).toEqual(['/acme/web/issues/12', '/acme/web/pull/7/files?x=1#diff', '/']);
+    expect(opened).toEqual(['https://githq.dev.example.com/acme', 'http://githq.dev/acme']);
+    expect(inApp).toEqual([]);
+});
+
+test('a click on a githq.dev link opens it in the app and keeps it from the window', () => {
+    const { root, opened, clicks, inApp } = setupLinks();
+    const link = addLink(root, 'https://githq.dev/acme/web/issues/12?tab=1#top', '_blank');
+
+    link.click();
+
+    expect(inApp).toEqual(['/acme/web/issues/12?tab=1#top']);
+    expect(opened).toEqual([]);
+    expect(clicks).toEqual([true]);
+});
+
 test('links within the app, to anything but a web page, a right click and a click already handled are left alone', () => {
     const { root, opened, clicks } = setupLinks();
     const inApp = addLink(root, '/acme/portal/issues/1');
@@ -99,8 +125,13 @@ function setupBrowser() {
         replaceLocation: url => inApp.push(`replaceLocation ${url}`),
         openInNewTab: url => inApp.push(`openInNewTab ${url}`),
     };
-    const browser = withExternalLinks(underlying, { appUrl: APP_URL, open: url => opened.push(url) });
-    return { browser, opened, inApp };
+    const inAppLinks: string[] = [];
+    const browser = withExternalLinks(underlying, {
+        appUrl: APP_URL,
+        open: url => opened.push(url),
+        openInApp: address => inAppLinks.push(address),
+    });
+    return { browser, opened, inApp, inAppLinks };
 }
 
 /**
@@ -115,7 +146,12 @@ function setupLinks() {
     onTestFinished(() => root.remove());
 
     // The test page stands for the app: its links resolve against it, as the app's resolve against the window's.
-    const options: ExternalLinksOptions = { appUrl: window.location.href, open: url => opened.push(url) };
+    const inApp: string[] = [];
+    const options: ExternalLinksOptions = {
+        appUrl: window.location.href,
+        open: url => opened.push(url),
+        openInApp: address => inApp.push(address),
+    };
     interceptExternalLinks(root, options);
     for (const type of ['click', 'auxclick']) {
         root.addEventListener(type, event => {
@@ -124,7 +160,7 @@ function setupLinks() {
         });
     }
 
-    return { root, opened, clicks };
+    return { root, opened, clicks, inApp };
 }
 
 function addLink(root: HTMLElement, href: string, target?: string) {

@@ -168,6 +168,38 @@ from an unidentified developer. With them, the build signs and notarizes. Follow
 The workflow exports each one only when it is set: an empty `APPLE_CERTIFICATE` would fail the bundle. Then
 update the macOS line in the root README's download section and its Code signing policy.
 
+### Universal Links on macOS (once, after the Developer ID)
+
+With these a `https://githq.dev/...` link opened from Safari or from a native app (Mail, Messages, Notes) opens the app.
+Chrome and Firefox keep it in a tab, where the browser's hand-off to `githq://` takes over
+([decision](../decisions/desktop-deep-links-and-web-hand-off.md)). Without the secret, signed builds have no Universal
+Links and everything else works. Only the workflows use it: `bun run build:desktop` and `build:desktop:signed` stay without.
+
+1. On [developer.apple.com](https://developer.apple.com/account/resources/identifiers/list) → Identifiers, open the App
+   ID `dev.githq.desktop` (register it if it is missing) and tick **Associated Domains**.
+
+2. Under Profiles, create a **Developer ID** profile (Distribution → Developer ID) for that App ID and the Developer ID
+   Application certificate the app is signed with, and download it.
+
+3. Put it in the secret store and in the repository secrets:
+
+   ```sh
+   base64 -i githq.provisionprofile | GITHQ_ENV=prod bun nzyme secrets set APPLE_PROVISIONING_PROFILE --no-prompt
+   GITHQ_ENV=prod bun nzyme secrets run -- sh -c \
+     'printf %s "$APPLE_PROVISIONING_PROFILE" | gh secret set APPLE_PROVISIONING_PROFILE'
+   ```
+
+4. Check it on the next Development build, installed in `/Applications`. Its log says `Universal Links: on`, then:
+
+   ```sh
+   codesign -d --entitlements - /Applications/githq.app   # lists applinks:githq.dev
+   swcutil show --bundle dev.githq.desktop                # needs sudo; the domain's state
+   ```
+
+   Click a `https://githq.dev/<owner>/<repo>/issues/1` link in Notes: the app opens on that issue. Also try it with the
+   app closed; delivery on a cold start has not been tried on a signed build yet. Apple's CDN can take a while to pick up
+   a change to `/.well-known/apple-app-site-association`.
+
 ### Windows signing through SignPath Foundation (follow-up)
 
 SignPath Foundation signs open-source projects for free, with a certificate issued to the foundation. Its

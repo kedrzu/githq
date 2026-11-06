@@ -1,7 +1,7 @@
 import type { Container } from '@nzyme/ioc/Container.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { defineNuxtPlugin } from 'nuxt/app';
+import { defineNuxtPlugin, useRouter } from 'nuxt/app';
 
 import { CommitPersistence } from '@/commits/CommitPersistence.js';
 import { installDesktop } from '@/desktop/installDesktop.js';
@@ -38,7 +38,7 @@ export default defineNuxtPlugin({
         // The desktop app's code, in the desktop build only (`__DESKTOP__`); the web builds drop it. It asks the native
         // side for the token first; Nuxt waits for it before the next plugin and the first route.
         if (__DESKTOP__) {
-            return installDesktop(container).then(() => startServices(container));
+            return installDesktop(container, useRouter()).then(() => startServices(container));
         }
 
         startServices(container);

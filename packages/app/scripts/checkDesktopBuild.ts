@@ -1,12 +1,12 @@
 import path from 'node:path';
 
 import { checkAppShell } from './checkPrerenderedPages.js';
-import { APP_MARKER, DESKTOP_MARKERS, DEV_SIGN_IN_MARKERS } from './checkProductionBuild.js';
+import { APP_MARKER, DESKTOP_MARKERS, DEV_SIGN_IN_MARKERS, WEB_ONLY_MARKERS } from './checkProductionBuild.js';
 import { readBuiltFiles } from './readBuiltFiles.js';
 
 // Runs after every desktop build (`bun --cwd packages/app build:desktop`, `GITHQ_TARGET=desktop`): proves that the
 // app the desktop app bundles (`packages/desktop`) is the app, with its desktop code and without the development
-// sign-in, and that `/` in its window — `index.html` — is the SPA shell, with no landing page anywhere. Its folder is not the one the Worker serves (`.output/public`).
+// sign-in or the web's links to the desktop app, and that `/` in its window — `index.html` — is the SPA shell, with no landing page anywhere. Its folder is not the one the Worker serves (`.output/public`).
 
 const OUTPUT = path.join(import.meta.dirname, '../.output-desktop/public');
 
@@ -25,7 +25,7 @@ async function checkDesktopBuild() {
     }
 
     for (const file of files) {
-        for (const { text, what } of DEV_SIGN_IN_MARKERS) {
+        for (const { text, what } of [...DEV_SIGN_IN_MARKERS, ...WEB_ONLY_MARKERS]) {
             if (file.content.includes(text)) {
                 problems.push(`${file.path}: ${what} (${text})`);
             }
@@ -37,7 +37,7 @@ async function checkDesktopBuild() {
     }
 
     console.info(
-        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, no landing page.`,
+        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, no web-only desktop links, no landing page.`,
     );
 }
 

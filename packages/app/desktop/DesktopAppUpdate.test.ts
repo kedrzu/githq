@@ -367,6 +367,8 @@ function createFakeNative(): FakeNative {
             onWindowResized: notExpected,
             isFullscreen: notExpected,
             onScrollPhase: notExpected,
+            takeOpenedLink: notExpected,
+            onLinkOpened: notExpected,
             onUpdateState: listener => {
                 native.calls.push('listen');
                 if (native.listenFails) {

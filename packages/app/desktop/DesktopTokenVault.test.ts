@@ -187,6 +187,8 @@ function createFakeNative(): FakeNative {
             onWindowResized: () => Promise.reject(new Error('Not expected')),
             isFullscreen: () => Promise.reject(new Error('Not expected')),
             onScrollPhase: () => Promise.reject(new Error('Not expected')),
+            takeOpenedLink: () => Promise.reject(new Error('Not expected')),
+            onLinkOpened: () => Promise.reject(new Error('Not expected')),
         },
         kept: null,
         calls: [],
