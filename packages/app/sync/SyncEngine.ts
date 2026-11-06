@@ -360,12 +360,14 @@ export const SyncEngine = defineService({
          * How fresh a tracked repository is: `partial` until its open items have arrived — told by the download, not
          * by the poll of the others —, with the phase under way and how far it is; then as its poll goes, or `refused`
          * while GitHub refuses its changes. While its closed items still download and the poll keeps the rest fresh,
-         * `partial` with that phase, never "Up to date" before it is complete (first run and loading D3); reactive.
+         * `partial` with that phase, never "Up to date" before it is complete (first run and loading D3) — its own poll,
+         * not the shared download's, tells whether it is stale then; reactive.
          */
         function getRepositoryFreshness(nameWithOwner: string): Freshness {
             const state = tracking.getSyncState({ kind: 'repository', nameWithOwner });
             if (!haveOpenItemsArrived(state)) {
-                return withDownloading(getLoopFreshness('download', null), state);
+                const downloaded = getLoopFreshness('download', null);
+                return downloaded.kind === 'partial' ? getDownloading(state) : downloaded;
             }
 
             if (state.refused) {
@@ -377,15 +379,11 @@ export const SyncEngine = defineService({
                 return polled;
             }
 
-            return withDownloading(getLoopFreshness('download', null), state);
+            return getDownloading(state);
         }
 
-        /** A repository's download freshness with the phase under way, its open issues before it started. */
-        function withDownloading(freshness: Freshness, state: RepositorySyncState | undefined): Freshness {
-            if (freshness.kind !== 'partial') {
-                return freshness;
-            }
-
+        /** A repository's first download under way: the phase it reads and how far, its open issues before it started. */
+        function getDownloading(state: RepositorySyncState | undefined): Freshness {
             const phase = state && state.phase !== 'done' ? state.phase : 'openIssues';
             const count = state?.counts[phase];
             return { kind: 'partial', downloading: { phase, done: count?.done ?? 0, total: count?.total ?? null } };
