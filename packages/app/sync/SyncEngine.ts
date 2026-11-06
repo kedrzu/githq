@@ -431,7 +431,8 @@ export const SyncEngine = defineService({
         /**
          * How fresh the tracked repositories' workflows are, as Broken workflows tells it: `partial` while some of them
          * are not read yet, with how many are of those GitHub shows the Actions of (first run and loading D14, ES28),
-         * unless GitHub stands in its way; else as their poll goes. Reactive.
+         * unless GitHub stands in its way, which then shows however recently the poll last succeeded (D6, ES23); else as
+         * their poll goes. Reactive.
          */
         function getWorkflowsFreshness(): Freshness {
             let read = 0;
@@ -443,9 +444,19 @@ export const SyncEngine = defineService({
                 }
             }
 
-            return read < total && isWorkflowsReadOnItsWay()
-                ? { kind: 'partial', readingWorkflows: { read, total } }
-                : getWorkflowsPollFreshness();
+            if (read === total) {
+                return getWorkflowsPollFreshness();
+            }
+
+            if (isWorkflowsReadOnItsWay()) {
+                return { kind: 'partial', readingWorkflows: { read, total } };
+            }
+
+            // A success of the poll says nothing of those it hasn't read, and a tracking just begun has one from before.
+            const freshness = getWorkflowsPollFreshness();
+            return freshness.kind === 'fresh' && statusRef.value.workflows.failing
+                ? { kind: 'stale', since: freshness.checkedAt, reason: 'failing' }
+                : freshness;
         }
 
         /**
@@ -485,12 +496,13 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * Polls the workflows now — a screen showing them opened (actions D2) — unless a poll of them is running. In a
-         * tab that does not sync, the syncing tab is asked to.
+         * Polls the workflows now — a screen showing them opened (actions D2), or its "Try again" (first run and loading
+         * D12) — unless a poll of them is running. In a tab that does not sync, the syncing tab is asked to. Settles when
+         * this tab's poll has; at once when another tab polls.
          */
-        function pollWorkflowsNow() {
+        async function pollWorkflowsNow() {
             if (session) {
-                void run(session, 'workflows', true);
+                await run(session, 'workflows', true);
             } else if (followed) {
                 tabs.publish({ kind: 'pollWorkflows' });
             }
@@ -541,7 +553,7 @@ export const SyncEngine = defineService({
         function watchAnyRef(nameWithOwner: string) {
             anyRefWatchers.set(nameWithOwner, (anyRefWatchers.get(nameWithOwner) ?? 0) + 1);
             tabs.setAnyRefRepositories([...anyRefWatchers.keys()]);
-            pollWorkflowsNow();
+            void pollWorkflowsNow();
 
             return () => {
                 const left = (anyRefWatchers.get(nameWithOwner) ?? 0) - 1;

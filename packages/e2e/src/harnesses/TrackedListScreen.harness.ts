@@ -18,6 +18,11 @@ export class TrackedListScreenHarness {
         return this.root.getByRole('heading', { level: 2, name: /^\d+\stracked\s/u });
     }
 
+    /** The note with nothing tracked (ES24): "No repositories tracked", "No projects tracked". */
+    get nothingTracked(): Locator {
+        return this.root.getByRole('heading', { level: 2, name: /^No\s\w+\stracked$/u });
+    }
+
     /** The header of an owner's group: its icon, login, standing and counts, and "Track more". */
     groupHeader(owner: string): Locator {
         return this.root.getByRole('heading', { level: 3, name: owner, exact: true }).locator('..');

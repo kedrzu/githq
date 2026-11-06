@@ -290,6 +290,46 @@ test('CH35, CH36: under the rows, the next page on its way, then the beginning o
     await expect.element(page.getByText('Commit c0')).toBeVisible();
 });
 
+test('ES22: GitHub failing with nothing to draw says so, stays up while asked again, and R draws the graph', async () => {
+    let failing = true;
+    let held = Promise.resolve();
+    await mount({
+        commits: [sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c1')],
+        firstOpen: true,
+        failIf: () => failing,
+        holdIf: () => held,
+    });
+    const heading = page.getByRole('heading', { name: "GitHub isn't answering" });
+    await expect.element(heading).toBeVisible();
+
+    failing = false;
+    const answer = createPromise();
+    held = answer.promise;
+    await userEvent.keyboard('r');
+    // Asked again, the note stays and no skeleton comes between.
+    await expect.element(page.getByRole('button', { name: /Try again/u })).toHaveAttribute('aria-busy', 'true');
+    await expect.element(heading).toBeVisible();
+
+    answer.resolve();
+    await expect.element(graphText('Commit c1')).toBeVisible();
+    await expect.element(heading).not.toBeInTheDocument();
+});
+
+test('ES22: GitHub failing leaves a graph already on screen on screen: the status bar alone tells it', async () => {
+    const commits = [sampleCommit('c1', 10)];
+    const view = await mount({
+        commits,
+        branches: [sampleCommitRef('main', 'c1')],
+        kept: commits,
+        failIf: () => true,
+    });
+
+    await expect.poll(() => view.store.getFreshness(REPOSITORY)).toMatchObject({ kind: 'stale', reason: 'failing' });
+    await expect.element(graphText('Commit c1')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "GitHub isn't answering" })).not.toBeInTheDocument();
+});
+
 test('CH40: offline, what is kept stays and the last row says older commits wait', async () => {
     const commits = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['c0'])];
     const view = await mount({

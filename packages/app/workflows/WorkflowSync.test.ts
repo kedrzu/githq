@@ -462,7 +462,7 @@ test('a repository coming on screen while a poll runs past it is read at the end
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/api/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
     await session.clock.advance(0);
     sync.watchAnyRef('acme/web');
     held.resolve();
@@ -757,6 +757,21 @@ test('first run and loading D14: workflows not read yet are being read — Broke
     expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
 });
 
+test('ES23: a repository just tracked that GitHub fails on is told at once on Broken workflows, however recently the poll last succeeded', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    // Polled with nothing tracked: a success, and fresh for minutes.
+    await session.clock.advance(0);
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+
+    world.failing.add('GET /repos/acme/web/actions/runs');
+    tracking.choose({ projects: [], repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    void sync.pollWorkflowsNow();
+    await session.clock.advance(0);
+
+    expect(sync.getWorkflowsFreshness()).toMatchObject({ kind: 'stale', reason: 'failing' });
+});
+
 test('the Workflows section’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
     const world = sampleWorld();
     world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
@@ -848,7 +863,7 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(10_000);
 
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
@@ -862,10 +877,10 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
     await session.clock.advance(0);
-    sync.pollWorkflowsNow();
-    sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
     await session.clock.advance(0);
     held.resolve();
     await session.clock.advance(0);
@@ -901,7 +916,7 @@ test('a screen asking for the workflows does not wait for the open items', async
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([]);
 
-    sync.pollWorkflowsNow();
+    void sync.pollWorkflowsNow();
     await session.clock.advance(0);
     expect(workflows.getState('acme/web').status).toBe('read');
 });

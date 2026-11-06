@@ -1,4 +1,4 @@
-<!-- `/dashboard/workflows` (actions W2): every broken workflow of the tracked repositories, from the local copy (`WorkflowStore`), and the repositories not read yet or GitHub shows nothing of. Opening it polls the workflows at once rather than at the next turn of their loop (D2); the status bar tells how fresh they are (`layouts/shell.vue`). A workflow opens its latest failed run on its page in githq, and Back or Esc there comes back to the same row (`WorkflowTabPlaces`). -->
+<!-- `/dashboard/workflows` (actions W2): every broken workflow of the tracked repositories, from the local copy (`WorkflowStore`), and the repositories not read yet or GitHub shows nothing of. Opening it polls the workflows at once rather than at the next turn of their loop (D2); the status bar tells how fresh they are (`layouts/shell.vue`). What stands in the way of reading any (offline, paused, GitHub failing) goes to the screen, GitHub failing being asked again every 30 seconds rather than at the next turn (first run and loading D12). A workflow opens its latest failed run on its page in githq, and Back or Esc there comes back to the same row (`WorkflowTabPlaces`). -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { computed, onMounted } from 'vue';
@@ -6,6 +6,8 @@ import { computed, onMounted } from 'vue';
 import { useNow } from '@/services/useNow.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
+import { useCantBeReadRetry } from '@/utils/useCantBeReadRetry.js';
 
 import type { BrokenWorkflowEntry } from './buildBrokenWorkflows.js';
 import { buildBrokenWorkflows } from './buildBrokenWorkflows.js';
@@ -25,10 +27,15 @@ const openRun = useOpenWorkflowRun();
 const now = useNow(TICK_MS);
 
 const broken = computed(() => buildBrokenWorkflows(store.repositories));
+const cantBeRead = computed(() =>
+  getCantBeReadCause({ freshness: sync.getWorkflowsFreshness(), retry: () => sync.pollWorkflowsNow() }),
+);
 const selected = computed({
   get: () => places.brokenSelected,
   set: (key: string | null) => places.setBrokenSelected(key),
 });
+
+useCantBeReadRetry({ cause: () => cantBeRead.value, retry: () => sync.pollWorkflowsNow() });
 
 onMounted(() => sync.pollWorkflowsNow());
 
@@ -44,6 +51,7 @@ function open(entry: BrokenWorkflowEntry) {
   <BrokenWorkflowsView
     v-model:selected="selected"
     :broken="broken"
+    :cant-be-read="cantBeRead"
     :checked-at="items.getSyncState('workflows').lastSuccessAt"
     :now="now"
     @open="open"

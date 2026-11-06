@@ -7,6 +7,7 @@ import type {
     RepositoryCommitRefsQuery,
     RepositoryCommitRefsQueryVariables,
 } from '@githq/github/generated.gen.js';
+import { isGitHubNotFound } from '@githq/github/isGitHubNotFound.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -108,11 +109,11 @@ interface RepositoryGraph {
     /** When the refs were last read in this session (epoch ms). */
     checkedAt: number | null;
     /** Why the last refs check, or the joining after it, failed; `null` when it did not. */
-    problem: 'offline' | 'failing' | null;
+    problem: GraphProblem | null;
     /** The last refs check, or the joining after it, was not sent: the allowance is spent until then. */
     pausedUntil: number | null;
     /** Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. */
-    moreProblem: 'offline' | 'failing' | null;
+    moreProblem: GraphProblem | null;
     /** The last older page was refused: the allowance is spent until then. */
     morePausedUntil: number | null;
     joining: boolean;
@@ -951,7 +952,15 @@ export const CommitGraphStore = defineService({
             const refusal = getRefusalPause({ error, limits: [rateLimits.get('graphql')], now: clock.now() });
             return refusal
                 ? { problem: null, pausedUntil: refusal.until }
-                : { problem: browser.isOnline() ? 'failing' : 'offline', pausedUntil: null };
+                : { problem: readProblem(error), pausedUntil: null };
+        }
+
+        function readProblem(error: unknown): GraphProblem {
+            if (isGitHubNotFound(error)) {
+                return 'refused';
+            }
+
+            return browser.isOnline() ? 'failing' : 'offline';
         }
 
         /** Publishes the graph's state for the view. */
@@ -988,9 +997,12 @@ type RefsPage = Partial<Omit<RepositoryCommitRefsQueryVariables, 'owner' | 'name
 /** The repository as a `RepositoryCommitRefs` request answers it. */
 type ReadRepository = NonNullable<RepositoryCommitRefsQuery['repository']>;
 
+/** Why GitHub gave no answer; `refused`: it doesn't show the repository, or the repository is gone. */
+type GraphProblem = 'offline' | 'failing' | 'refused';
+
 /** What a read's failure says; one of the two is set. */
 interface ReadFailure {
-    readonly problem: 'offline' | 'failing' | null;
+    readonly problem: GraphProblem | null;
     readonly pausedUntil: number | null;
 }
 

@@ -152,5 +152,35 @@ export const NothingBrokenOneRefused: Story = {
     },
 };
 
+/** ES23: GitHub fails before any repository's workflows were read: the note and Try again, no ghosts. */
+export const NoRepositoryCanBeRead: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/mdlint', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/webapp', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/api', unread: true }),
+        ]),
+        checkedAt: null,
+        cantBeRead: { kind: 'failing', retry: fn(() => Promise.resolve()) },
+    },
+};
+
+/** GitHub answers, and shows nothing of any tracked repository: the note over "Can't tell", which says why of each. */
+export const NoneShown: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({
+                nameWithOwner: 'mlaine/tasklet',
+                unavailable: { reason: 'disabled', status: 404 },
+            }),
+            sampleRepositoryWorkflows({
+                nameWithOwner: 'fitloop/api',
+                unavailable: { reason: 'refused', status: 403 },
+            }),
+        ]),
+    },
+};
+
 /** No repository tracked. */
 export const NothingTracked: Story = { args: { broken: buildBrokenWorkflows([]) } };

@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
 import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
@@ -79,6 +80,46 @@ test("git-client D9, D18, CH3: Commits on 3 opens GitHub's address of the histor
     // The repository's link now opens on Commits.
     await shell.myWorkLink('My work').click();
     await expect(shell.tracked(SAMPLE_REPOSITORY)).toHaveAttribute('href', `/${SAMPLE_REPOSITORY}/commits`);
+});
+
+test('first run and loading D6, D12, ES22: GitHub failing, then offline, with nothing kept says so; a graph that arrives stays when GitHub fails again', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    giveHistory(sample.world, SAMPLE_REPOSITORY);
+    const shell = await openTrackedWork(page, github, sample.world);
+    github.graphql('RepositoryCommitRefs', () => new GitHubHttpError(502, 'Bad gateway'));
+    await shell.tracked(SAMPLE_REPOSITORY).click();
+    const repository = new RepositoryScreenHarness(page);
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('3');
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    const failing = graph.root.getByRole('heading', { name: "GitHub isn't answering" });
+    await expect(failing).toBeVisible();
+    await expect(graph.root).toContainText("githq couldn't read the commits.");
+
+    await page.context().setOffline(true);
+    await page.keyboard.press('1');
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('3');
+    await expect(graph.root.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect(graph.root.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+    await page.context().setOffline(false);
+    await expect(failing).toBeVisible();
+
+    sample.world.install(github);
+    await page.keyboard.press('r');
+    await expect(graph.row('Initial commit')).toBeAttached();
+    await expect(failing).toHaveCount(0);
+
+    github.graphql('RepositoryCommitRefs', () => new GitHubHttpError(502, 'Bad gateway'));
+    await page.keyboard.press('1');
+    await expect(repository.section('Issues')).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('3');
+    await expect(shell.statusBar).toContainText("GitHub isn't answering");
+    await expect(graph.rows.first()).toBeVisible();
+    await expect(failing).toHaveCount(0);
 });
 
 test('git-client D11, D20, CH37: an untracked repository shows Commits in full at its GitHub address, and its Issues are one key away', async ({

@@ -605,6 +605,19 @@ test('coming back online leaves a graph that failed for another reason alone', a
     expect(requests()).toHaveLength(asked);
 });
 
+test('GitHub hiding the repository, or it being gone, is told apart from GitHub failing', async () => {
+    const { graphs } = setup(uniqueLogin(), {
+        answer: () => ({
+            data: null,
+            errors: [{ type: 'NOT_FOUND', path: ['repository'], message: 'Could not resolve to a Repository.' }],
+        }),
+    });
+
+    await graphs.open('acme/web');
+
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'refused' });
+});
+
 test('a later good page clears what a failed one said, a failure and a pause alike', async () => {
     const refusal = { data: null, errors: [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }] };
     for (const [failure, kind] of [

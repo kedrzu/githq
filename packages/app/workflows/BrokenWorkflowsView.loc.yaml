@@ -20,6 +20,28 @@ reading:
   en:
     one: reading {count} repository
     many: reading {count} repositories
+repositories:
+  plural: count
+  en:
+    one: '{count} repository'
+    many: '{count} repositories'
+workflowsOfTracked:
+  plural: count
+  en:
+    one: the workflows of your tracked repository
+    many: the workflows of your {count} tracked repositories
+workflowsOfAnyTracked:
+  plural: count
+  en:
+    one: the workflows of your tracked repository, so it can't tell what is broken
+    many: the workflows of any of your {count} tracked repositories, so it can't tell what is broken
+noneShownTitle:
+  en: GitHub doesn't show the workflows
+noneShownDetail:
+  plural: count
+  en:
+    one: GitHub shows nothing of the workflows of your tracked repository, so githq can't tell what is broken. It says why below.
+    many: GitHub shows nothing of the workflows of any of your {count} tracked repositories, so githq can't tell what is broken. Each says why below.
 openFailedRun:
   en: Open failed run
 next:

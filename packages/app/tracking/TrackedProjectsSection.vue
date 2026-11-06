@@ -110,6 +110,7 @@ function openPicker(owner?: string) {
     kind="projects"
     :groups="groups"
     :get-key="getKey"
+    :loaded="tracking.loaded"
     @open="openSettings"
     @untrack="untrack"
     @add="openPicker"

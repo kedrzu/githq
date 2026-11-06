@@ -1,10 +1,13 @@
-<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. While some repositories are still being read, ghost workflow rows with the repository's column follow (`WorkflowsArriving`, first run and loading D17), and nothing claims them healthy — the header says "reading 4 repositories" (ES28); those GitHub shows nothing of follow under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
+<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. While some repositories are still being read, ghost workflow rows with the repository's column follow (`WorkflowsArriving`, first run and loading D17), and nothing claims them healthy — the header says "reading 4 repositories" (ES28); those GitHub shows nothing of follow under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). No repository read and GitHub in the way, the screen says why instead of ghosts (`CantBeRead`, first run and loading D6, D12, ES23); every repository under "Can't tell", it says GitHub shows none of them above that list. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Ban, Coffee, Workflow } from 'lucide-vue-next';
+import { Ban, Coffee, EyeOff, Workflow } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
+import CantBeRead from '@/components/CantBeRead.vue';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
+import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
@@ -22,6 +25,8 @@ const props = defineProps<{
   checkedAt: number | null;
   /** Epoch ms the ages are counted to. */
   now: number;
+  /** What stands in the way of reading them (first run and loading D12), when anything does. */
+  cantBeRead?: CantBeReadCause | null;
 }>();
 
 const emit = defineEmits<{
@@ -58,8 +63,25 @@ const trackedCount = computed(
 );
 /** Nothing broken and every repository that shows its workflows read: the all-green state. */
 const allGreen = computed(() => props.broken.brokenCount === 0 && props.broken.unread.length === 0);
+/** No repository read, nothing to list and GitHub in the way: what is said instead of ghosts. Rows on screen stay. */
+const unreadable = computed(() =>
+  trackedCount.value > 0 && props.broken.readCount === 0 && rows.value.length === 0 ? (props.cantBeRead ?? null) : null,
+);
+/** Read to the end, and GitHub shows nothing of any of them: there is nothing to call green. */
+const noneShown = computed(
+  () => props.broken.unavailable.length > 0 && props.broken.readCount === 0 && props.broken.unread.length === 0,
+);
+const unreadableThing = computed(() =>
+  t(unreadable.value?.kind === 'failing' ? l.workflowsOfAnyTracked : l.workflowsOfTracked, {
+    count: trackedCount.value,
+  }),
+);
 const meta = computed(() => {
   const { brokenCount, brokenRepositoryCount, readCount, unread } = props.broken;
+  if (unreadable.value || noneShown.value) {
+    return t(l.repositories, { count: trackedCount.value });
+  }
+
   if (unread.length > 0) {
     return brokenCount > 0
       ? t(l.soFarReading, { broken: brokenCount, count: unread.length })
@@ -135,7 +157,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
       </span>
     </header>
 
-    <div :class="css.brokenWorkflowsView_body">
+    <div :class="[css.brokenWorkflowsView_body, (unreadable || noneShown) && css.brokenWorkflowsView_body_note]">
       <div
         v-if="allGreen && trackedCount === 0"
         :class="css.brokenWorkflowsView_message"
@@ -146,6 +168,13 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           :text="t(l.nothingTrackedText)"
         />
       </div>
+      <CantBeRead
+        v-else-if="unreadable"
+        place="screen"
+        :cause="unreadable"
+        :thing="unreadableThing"
+        plural
+      />
       <div
         v-else-if="allGreen && broken.readCount > 0"
         :class="css.brokenWorkflowsView_message"
@@ -158,6 +187,13 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
           :detail="allGreenDetail"
         />
       </div>
+      <EmptyState
+        v-else-if="noneShown"
+        :icon="EyeOff"
+        tone="warning"
+        :title="t(l.noneShownTitle)"
+        :detail="t(l.noneShownDetail, { count: trackedCount })"
+      />
 
       <section
         v-for="group in brokenGroups"
@@ -190,7 +226,7 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
       </section>
 
       <WorkflowsArriving
-        v-if="broken.unread.length > 0"
+        v-if="broken.unread.length > 0 && !unreadable"
         repository
       />
 
@@ -291,6 +327,11 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
   min-height: 0;
   padding-bottom: $spacing-16;
   overflow-y: auto;
+}
+
+.brokenWorkflowsView_body_note {
+  display: flex;
+  flex-direction: column;
 }
 
 .brokenWorkflowsView_message {

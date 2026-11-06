@@ -135,7 +135,7 @@ export const FirstOpen: Story = {
     },
 };
 
-/** GitHub does not answer and nothing is kept: the section says so, instead of loading for good. */
+/** ES22, D12: GitHub does not answer and nothing is kept: the section says so, instead of loading for good. */
 export const Unavailable: Story = {
     render: () =>
         renderOver({
@@ -144,8 +144,19 @@ export const Unavailable: Story = {
             failIf: operation => operation === 'RepositoryCommitRefs',
         }),
     play: async ({ canvasElement }) => {
-        const notice = "GitHub can't be asked for the commits right now. They appear here once it can.";
+        const notice = "githq couldn't read the commits. It tries again every 30 seconds.";
         await expect(await within(canvasElement).findByText(notice)).toBeVisible();
+    },
+};
+
+/** ES22, D12: offline with nothing kept: the same note, its line the cause's, and nothing to press. */
+export const OfflineNothingKept: Story = {
+    render: () => renderOver({ commits: [], firstOpen: true, failIf: () => true, online: false }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByRole('heading', { name: "You're offline" })).toBeVisible();
+        await expect(canvas.getByText(/so the commits haven't arrived yet/u)).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /Try again/u })).toBeNull();
     },
 };
 
