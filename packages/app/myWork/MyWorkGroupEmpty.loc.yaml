@@ -1,0 +1,28 @@
+reviewRequestedTitle:
+  en: No reviews asked of you
+reviewRequestedDetail:
+  en: No open pull request asks for your review.
+authoredTitle:
+  en: No open pull requests of yours
+authoredDetail:
+  en: You have no open pull requests.
+assignedTitle:
+  en: Nothing assigned to you
+assignedDetail:
+  en: No open issue is assigned to you.
+mentionedTitle:
+  en: Nothing mentions you
+mentionedDetail:
+  en: No open issue or pull request mentions you.
+others:
+  plural: count
+  en:
+    one: Your other item is in My work.
+    many: Your other {count} items are in My work.
+showAll:
+  en: Show all of My work
+hides:
+  plural: count
+  en:
+    one: '{filter} hides the 1 item in {group}.'
+    many: '{filter} hides all {count} items in {group}.'

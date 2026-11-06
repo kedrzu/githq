@@ -14,6 +14,7 @@ import { EDIT_KEYS } from '@/commands/useEditCommands.js';
 import { PULL_REQUEST_COMMAND_KEYS, usePullRequestCommands } from '@/commands/usePullRequestCommands.js';
 import Button from '@/components/Button.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
+import NothingThere from '@/components/NothingThere.vue';
 import StillArriving from '@/components/StillArriving.vue';
 import { usePullRequestVerdicts } from '@/item/usePullRequestVerdict.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -1540,12 +1541,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                 {{ group.detail }}
               </span>
             </h2>
-            <p
+            <NothingThere
               v-if="group.rows.length === 0 && !group.quietWhenEmpty"
-              :class="css.listView_note"
-            >
-              {{ t(l.groupEmpty) }}
-            </p>
+              place="group"
+            />
             <ul
               v-else-if="group.rows.length > 0 && !collapsed.has(group.key)"
               :class="[css.listView_rows, arriving.has(group.key) && css.listView_arrived]"
@@ -1629,12 +1628,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
             v-if="!group.arrived"
             place="column"
           />
-          <p
+          <NothingThere
             v-else-if="group.rows.length === 0"
-            :class="css.listView_cardNote"
-          >
-            {{ t(l.groupEmpty) }}
-          </p>
+            place="column"
+          />
           <!-- Focusable, as a tall column scrolls on its own: its scroll must be reachable from the keyboard. -->
           <ul
             v-else
@@ -1764,15 +1761,6 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   font-family: $font-family-mono;
 }
 
-.listView_note {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-8 $spacing-16 $spacing-8 40px;
-  font-size: $font-size-sm;
-  color: $color-fg-dim;
-}
-
 .listView_rows,
 .listView_cards {
   padding: 0;
@@ -1894,15 +1882,6 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.listView_cardNote {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-4 $spacing-6;
-  font-size: $font-size-sm;
-  color: $color-fg-dim;
 }
 
 .listView_cards {

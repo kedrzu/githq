@@ -71,6 +71,126 @@ export const NothingWaiting: Story = {
     args: { filter: 'waitingOnOthers', work: sampleMyWork([], sampleMembership({}), 'waitingOnOthers') },
 };
 
+/** ES12, D15: narrowed to a group in and empty: says what is shown, counts the rest and offers it. */
+export const GroupEmpty: Story = {
+    args: {
+        group: 'mentioned',
+        work: sampleMyWork(D1_ITEMS, { ...D1_MEMBERSHIP, mentioned: new Set() }, 'all'),
+        onShowAll: fn(),
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: /^Nothing\smentions\syou$/u })).toBeVisible();
+        await expect(canvas.getByText(/Your\sother\s\d+\sitems\sare\sin\sMy\swork\.$/u)).toBeVisible();
+        await expect(canvas.queryByText('Nothing here.')).toBeNull();
+        await userEvent.click(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u }));
+        await expect(args.onShowAll).toHaveBeenCalledOnce();
+    },
+};
+
+/** The same on the board: no column standing for a group that says nothing else. */
+export const GroupEmptyOnBoard: Story = {
+    args: {
+        ...GroupEmpty.args,
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\smentions\syou$/u })).toBeVisible();
+    },
+};
+
+/** D15 with nothing else in "my work": nothing to offer. */
+export const GroupEmptyNothingElse: Story = {
+    args: { group: 'assigned', work: sampleMyWork([], sampleMembership({}), 'all') },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sassigned\sto\syou$/u })).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeNull();
+    },
+};
+
+/** D15 while other groups still arrive: the rest is offered, not counted (D14). */
+export const GroupEmptyOthersArriving: Story = {
+    args: { group: 'mentioned', work: sampleMyWork([], { mentioned: new Set() }, 'all') },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeVisible();
+        await expect(canvas.queryByText(/Your\sother/u)).toBeNull();
+    },
+};
+
+/** ES11: the filter hides everything the narrowed group holds: it is named, and clearing it keeps the group. */
+export const GroupHiddenByFilter: Story = {
+    args: {
+        group: 'mentioned',
+        filter: 'needsMe',
+        work: sampleMyWork([], sampleMembership({}), 'needsMe'),
+        unfilteredCounts: { reviewRequested: 2, authored: 3, assigned: 5, mentioned: 3, total: 13 },
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: /^Nothing\smatches\sthis\sfilter$/u })).toBeVisible();
+        await expect(canvas.getByText(/^Needs\sme\shides\sall\s3\sitems\sin\sMentioned\.$/u)).toBeVisible();
+        await userEvent.click(canvas.getByRole('button', { name: /^Clear\sfilter$/u }));
+        await expect(args['onUpdate:filter']).toHaveBeenCalledWith('all');
+    },
+};
+
+/** ES13: offline before anything arrived: why, instead of ghosts that would spin forever (D6). */
+export const OfflineNothingArrived: Story = {
+    args: { work: sampleMyWork([], {}, 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: "You're offline" })).toBeVisible();
+        await expect(canvas.getByText(/your\swork\shasn't\sarrived\syet/u)).toBeVisible();
+    },
+};
+
+/** D12: the allowance ran out before anything arrived: it says until when. */
+export const PausedNothingArrived: Story = {
+    args: { work: sampleMyWork([], {}, 'all'), cantBeRead: { kind: 'paused', until: SAMPLE_NOW + 600_000 } },
+};
+
+/** D12: GitHub fails before anything arrived: "Try again" asks at once. */
+export const FailingNothingArrived: Story = {
+    args: {
+        work: sampleMyWork([], {}, 'all'),
+        cantBeRead: { kind: 'failing', retry: fn(() => Promise.resolve()) },
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    },
+};
+
+/** D6: with rows on screen the status bar alone tells it: what arrived stands, the rest keeps its ghosts. */
+export const OfflineSomeArrived: Story = {
+    args: {
+        work: sampleMyWork(D1_ITEMS, { authored: D1_MEMBERSHIP.authored }, 'all'),
+        cantBeRead: { kind: 'offline' },
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.queryByRole('heading', { name: "You're offline" })).toBeNull();
+        await expect(canvas.getByRole('region', { name: /^My\spull\srequests$/u })).toBeVisible();
+    },
+};
+
+/** D6: nothing shown and offline with a group still on its way: the note, though another group is in and empty. */
+export const OfflineArrivedEmpty: Story = {
+    args: { work: sampleMyWork([], { authored: new Set() }, 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: "You're offline" })).toBeVisible();
+    },
+};
+
+/** D6: everything in, nothing there: a cause doesn't change what is known. */
+export const OfflineNothingOnYourPlate: Story = {
+    args: { work: sampleMyWork([], sampleMembership({}), 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\son\syour\splate$/u })).toBeVisible();
+    },
+};
+
 /** G16: the first download is under way and no search has answered: a full screen of ghosts. */
 export const StillArriving: Story = { args: { work: sampleMyWork([], {}, 'all') } };
 

@@ -167,6 +167,35 @@ test('each group is written as its search answers: one that fails leaves the oth
     expect(items.getSyncState('myWork')).toMatchObject({ lastSuccessAt: null, lastError: expect.any(String) });
 });
 
+test('"Try again" polls my work at once: it tells failing until the search answers, then what arrived', async () => {
+    const github = fakeGitHub();
+    github.found.assigned = [issueNode('I_1', MONDAY)];
+    github.failSearch = 'assigned';
+    const { items, sync } = await setup(github, 'alice');
+    expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    await sync.pollMyWorkNow();
+    expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    github.failSearch = null;
+    await sync.pollMyWorkNow();
+    expect(items.membership.assigned).toEqual(new Set(['I_1']));
+    expect(sync.myWorkFreshness.kind).toBe('fresh');
+});
+
+test('"Try again" in a tab that does not sync has the syncing tab poll my work', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const tabs = createTestTabs();
+    const syncing = await setup(github, 'alice', { tabs });
+    const browsing = await setup(github, 'alice', { tabs });
+    const searches = github.searches().length;
+
+    await browsing.sync.pollMyWorkNow();
+    await syncing.clock.advance(0);
+    expect(github.searches().length).toBeGreaterThan(searches);
+});
+
 test('an item two groups hold, found deleted by the read of one, leaves both', async () => {
     const github = fakeGitHub();
     github.found.authored = [pullRequestNode('PR_9', MONDAY)];

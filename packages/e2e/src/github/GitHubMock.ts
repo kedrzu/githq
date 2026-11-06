@@ -109,6 +109,9 @@ export class GitHubHttpError {
     ) {}
 }
 
+/** What a search answers ({@link GitHubMock.searchIssues}). */
+type GitHubSearchAnswer = readonly GitHubSearchHit[] | GitHubHttpError | undefined;
+
 /** A GraphQL answer's body as GitHub sends it. */
 export interface GitHubGraphQLBody {
     readonly data: unknown;
@@ -202,12 +205,10 @@ export class GitHubMock {
 
     /**
      * What a search finds by its query (`is:open is:pr author:@me archived:false`); nothing by default.
-     * `undefined` for a query the test did not expect: the search is unrouted. It may wait, to hold a search
-     * back.
+     * `undefined` for a query the test did not expect: the search is unrouted. A {@link GitHubHttpError} is GitHub
+     * refusing it. It may wait, to hold a search back.
      */
-    searchIssues: (
-        q: string,
-    ) => readonly GitHubSearchHit[] | undefined | Promise<readonly GitHubSearchHit[] | undefined> = () => [];
+    searchIssues: (q: string) => GitHubSearchAnswer | Promise<GitHubSearchAnswer> = () => [];
 
     private readonly operations = new Map<GitHubOperationName, (request: GitHubGraphQLRequest) => Promise<unknown>>();
     private readonly documents = new Map<string, (request: GitHubGraphQLRequest) => Promise<GitHubGraphQLBody>>();
@@ -515,6 +516,11 @@ export class GitHubMock {
         const hits = await this.searchIssues(url.searchParams.get('q') ?? '');
         if (!hits) {
             await this.reject(route, `GET ${url.href}`);
+            return;
+        }
+
+        if (hits instanceof GitHubHttpError) {
+            await route.fulfill(this.apiAnswer(hits.status, { message: hits.message }, 'search', this.searchRateLimit));
             return;
         }
 

@@ -162,7 +162,8 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
- * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
+ * tab is shown with its last success older than an interval, and when the connection comes back; `myWork` also when
+ * the user asks ("Try again" on My work: {@link pollMyWorkNow}). A loop never
  * overlaps itself. Before every request it checks the allowance of the bucket it draws on, and waits for the
  * reset while one is used up. GitHub asking to slow down (`retry-after`, or a refusal naming no used-up bucket) is
  * about the user rather than a bucket, so every loop waits that out.
@@ -353,6 +354,7 @@ export const SyncEngine = defineService({
             getWorkflowsFreshness,
             getRepositoryWorkflowsFreshness,
             pollWorkflowsNow,
+            pollMyWorkNow,
             watchAnyRef,
         };
 
@@ -483,6 +485,19 @@ export const SyncEngine = defineService({
         }
 
         /**
+         * Polls "my work" at once, here or in the tab that syncs: the "Try again" of My work GitHub failed on before
+         * anything of it arrived (first run and loading D12). Settles when this tab's poll has; at once when another tab
+         * polls, whose status then tells how it went.
+         */
+        async function pollMyWorkNow() {
+            if (session) {
+                await run(session, 'myWork');
+            } else if (followed) {
+                tabs.publish({ kind: 'pollMyWork' });
+            }
+        }
+
+        /**
          * Has every poll read the repository's workflows' recent runs on any ref (actions D2, D7), which a screen has on
          * screen though they may count nowhere, until the function returned is called. A state, not a request: asked at
          * once when it can be, by the first poll of a session otherwise, by the running poll when one runs, and again
@@ -576,6 +591,12 @@ export const SyncEngine = defineService({
                 case 'pollWorkflows':
                     if (session) {
                         void run(session, 'workflows', true);
+                    }
+
+                    break;
+                case 'pollMyWork':
+                    if (session) {
+                        void run(session, 'myWork');
                     }
 
                     break;
