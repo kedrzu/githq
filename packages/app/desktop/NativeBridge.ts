@@ -122,6 +122,16 @@ export interface NativeBridgeShape {
      * (the `scroll-phase` event; a payload that isn't one is ignored); resolves once it listens.
      */
     onScrollPhase(listener: (phase: ScrollPhase) => void): Promise<void>;
+    /**
+     * `link_take`: the app address of the last githq link opened in the desktop app (`/acme/web/issues/12`) that was
+     * not taken yet, which it forgets; `null` when there is none. Never rejects.
+     */
+    takeOpenedLink(): Promise<string | null>;
+    /**
+     * Calls `listener` each time a githq link is opened in the app (the `link-opened` event, with no payload); resolves
+     * once it listens. Then ask {@link takeOpenedLink}: a link opened before is not told again.
+     */
+    onLinkOpened(listener: () => void): Promise<void>;
 }
 
 /**
@@ -188,6 +198,8 @@ function createTauriBridge(): NativeBridgeShape {
                     listener(payload);
                 }
             }),
+        takeOpenedLink: () => tauri.invoke<string | null>('link_take'),
+        onLinkOpened: listener => listen('link-opened', () => listener()),
     };
 
     /** Calls `handler` with the payload of each `event` the native side emits; resolves once it listens. */

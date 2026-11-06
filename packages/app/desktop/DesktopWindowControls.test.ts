@@ -115,6 +115,8 @@ function createFakeNative(): FakeNative {
                 return native.answers.shift()?.() ?? Promise.resolve(native.fullscreen);
             },
             onScrollPhase: notExpected,
+            takeOpenedLink: notExpected,
+            onLinkOpened: notExpected,
         },
     };
 

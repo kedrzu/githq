@@ -1,10 +1,11 @@
-<!-- The Account section of Settings (G9), with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, how it refreshes, and signing out. -->
+<!-- The Account section of Settings (G9), with the organisations read from GitHub when it opens (once a session, as the tracking screens read them), the approval requests githq remembers, what this browser keeps of the account and how big it is, in the web builds whether it opens githq links in the desktop app, how it refreshes, and signing out. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed, onMounted, shallowRef } from 'vue';
+import { computed, defineAsyncComponent, onMounted, shallowRef } from 'vue';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { Browser } from '@/services/Browser.js';
+import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -16,6 +17,9 @@ import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 import AccountView from './AccountView.vue';
 import type { AccountCopy, AccountOrganizations, AccountRefresh } from './AccountView.vue';
 
+// Opening links in the desktop app is for the web builds; the desktop build drops the switch.
+const OpenLinksSwitch = !__DESKTOP__ ? defineAsyncComponent(() => import('@/desktopLinks/OpenLinksSwitch.vue')) : null;
+
 /** How often "last 14s ago" moves on. */
 const TICK_MS = 1000;
 
@@ -26,6 +30,7 @@ const items = useService(ItemStore);
 const sync = useService(SyncEngine);
 const rateLimits = useService(GitHubRateLimitStore);
 const browser = useService(Browser);
+const preferences = useService(LocalPreferences);
 
 const now = useNow(TICK_MS);
 const failed = shallowRef(false);
@@ -90,5 +95,15 @@ async function loadOrganizations() {
     @request-approval="approvals.record"
     @retry="loadOrganizations"
     @sign-out="auth.signOut()"
-  />
+  >
+    <template
+      v-if="OpenLinksSwitch"
+      #browser
+    >
+      <component
+        :is="OpenLinksSwitch"
+        v-model="preferences.openLinksInDesktop.value"
+      />
+    </template>
+  </AccountView>
 </template>
