@@ -13,12 +13,14 @@ import type { NativeBridgeShape } from './NativeBridge.js';
 const READY: UpdateActivity = { kind: 'ready', version: '1.4.0' };
 const OFFLINE: UpdateActivity = { kind: 'failed', reason: 'offline' };
 
-test('an update the native side readies is offered, and nothing restarts until the user says so', async () => {
+test('an update the native side readies is offered in the toast, and nothing restarts until the user says so', async () => {
     const { native, update } = await start();
 
     native.emit(READY);
 
-    expect(update.notice).toEqual(READY);
+    expect(update.offer).toEqual(READY);
+    // The toast says it: the status bar does not too.
+    expect(update.notice).toBeNull();
     // Offered, never forced: no restart while the user has not asked for one.
     await settle();
     expect(native.calls).not.toContain('update_restart');
@@ -34,9 +36,9 @@ test('it listens before it asks, so what happened before the app listened is kno
 
     const update = createUpdate(native);
     expect(update.state).toBeNull();
-    expect(update.notice).toBeNull();
+    expect(update.offer).toBeNull();
 
-    await waitUntil(() => update.notice?.kind === 'ready', WAIT);
+    await waitUntil(() => update.offer?.kind === 'ready', WAIT);
     expect(native.calls).toEqual(['listen', 'update_status']);
 });
 
@@ -48,30 +50,33 @@ test('an event that arrives before the answer is not overwritten by it', async (
     await waitUntil(() => native.calls.includes('update_status'), WAIT);
     await settle();
 
-    expect(update.notice).toEqual(READY);
+    expect(update.offer).toEqual(READY);
 });
 
-test('"Later" hides the offer until the app next starts, whatever a check nobody asked for does', async () => {
+test('"Later" dismisses the toast until the app next starts, whatever a check nobody asked for does; the bar keeps it', async () => {
     const { native, update } = await start();
     native.emit(READY);
 
     update.later();
 
-    expect(update.notice).toBeNull();
-    // Told again in this run, it stays hidden.
+    expect(update.offer).toBeNull();
+    expect(update.notice).toEqual(READY);
+    // Told again in this run, the toast stays dismissed.
     native.emit(READY);
-    expect(update.notice).toBeNull();
+    expect(update.offer).toBeNull();
     native.emit({ kind: 'checking' });
     native.emit(READY);
-    expect(update.notice).toBeNull();
+    expect(update.offer).toBeNull();
+    expect(update.notice).toEqual(READY);
     await settle();
     expect(native.calls).not.toContain('update_restart');
 
-    // The next start offers it again.
+    // The next start offers it in the toast again.
     const nextStart = createFakeNative();
     nextStart.status = { ...STATE, activity: READY };
     const restarted = createUpdate(nextStart);
-    await waitUntil(() => restarted.notice?.kind === 'ready', WAIT);
+    await waitUntil(() => restarted.offer?.kind === 'ready', WAIT);
+    expect(restarted.notice).toBeNull();
 });
 
 test('a check the user asks for brings an offer put off by "Later" back', async () => {
@@ -81,9 +86,11 @@ test('a check the user asks for brings an offer put off by "Later" back', async 
 
     native.emit({ kind: 'checking' }, { manual: true });
     expect(update.notice).toEqual({ kind: 'checking' });
+    expect(update.offer).toBeNull();
     native.emit(READY, { manual: true });
 
-    expect(update.notice).toEqual(READY);
+    expect(update.offer).toEqual(READY);
+    expect(update.notice).toBeNull();
 });
 
 test('a check nobody asked for says nothing until an update is ready', async () => {
@@ -101,10 +108,11 @@ test('a check nobody asked for says nothing until an update is ready', async () 
     ] satisfies UpdateActivity[]) {
         native.emit(activity);
         expect(update.notice).toBeNull();
+        expect(update.offer).toBeNull();
     }
 
     native.emit(READY);
-    expect(update.notice).toEqual(READY);
+    expect(update.offer).toEqual(READY);
 });
 
 test('a check the user asks for shows each step, the running version in "up to date"', async () => {
@@ -181,10 +189,11 @@ test('an update readied after a failure replaces it, and "Later" does not bring 
     native.emit(OFFLINE, { manual: true });
 
     native.emit(READY);
-    expect(update.notice).toEqual(READY);
+    expect(update.notice).toBeNull();
+    expect(update.offer).toEqual(READY);
 
     update.later();
-    expect(update.notice).toBeNull();
+    expect(update.notice).toEqual(READY);
 });
 
 test('the install says so whether or not anyone asked, and offers nothing while it runs', async () => {
@@ -196,13 +205,28 @@ test('the install says so whether or not anyone asked, and offers nothing while 
     }
 });
 
-test('a failed install is noticed, and "Later" hides it', async () => {
+test('a failed install is offered in the toast, and "Later" leaves it to the bar', async () => {
     const { native, update } = await start();
 
     native.emit({ kind: 'installFailed', version: '1.4.0' });
-    expect(update.notice).toEqual({ kind: 'installFailed', version: '1.4.0' });
+    expect(update.offer).toEqual({ kind: 'installFailed', version: '1.4.0' });
+    expect(update.notice).toBeNull();
 
     update.later();
+    expect(update.offer).toBeNull();
+    expect(update.notice).toEqual({ kind: 'installFailed', version: '1.4.0' });
+});
+
+test('an install the user starts after "Later" is news again: its failure comes back in the toast', async () => {
+    const { native, update } = await start();
+    native.emit(READY);
+    update.later();
+
+    native.emit({ kind: 'installing', version: '1.4.0' });
+    expect(update.offer).toBeNull();
+    native.emit({ kind: 'installFailed', version: '1.4.0' });
+
+    expect(update.offer).toEqual({ kind: 'installFailed', version: '1.4.0' });
     expect(update.notice).toBeNull();
 });
 
@@ -271,7 +295,7 @@ test('a storage that refuses costs the memory, not the updates', async () => {
     await waitUntil(() => update.state !== null, WAIT);
 
     native.emit(READY);
-    expect(update.notice).toEqual(READY);
+    expect(update.offer).toEqual(READY);
 });
 
 const WAIT = { intervalMs: 1, timeoutMs: 1000 };

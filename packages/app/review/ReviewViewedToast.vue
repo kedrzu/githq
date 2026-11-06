@@ -30,6 +30,7 @@ const t = useTranslate();
         name: getFileName(failures.latest.paths[0] ?? ''),
       })
     "
+    lasts="brief"
     @dismiss="failures.dismiss()"
     @update:open="open => open || failures.dismiss()"
   >

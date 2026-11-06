@@ -1,11 +1,12 @@
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { createApp, defineComponent, h } from 'vue';
+import { createApp, defineComponent, h, nextTick } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { TOAST_LASTS } from '@/components/Toast.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
@@ -43,6 +44,27 @@ test('an entry being untracked leaves the sidebar at once and the toast says so;
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
 });
 
+for (const [name, target] of [
+    [WEB, WEB_TARGET],
+    [ROADMAP, { kind: 'project', id: 'PVT_1' }],
+] satisfies [string, TrackedTarget][]) {
+    test(`Stop tracking in the sidebar menu of ${name} is pending with Undo: out of the sidebar at once, tracked until the toast goes`, async () => {
+        const { pending, tracking } = await open();
+
+        await userEvent.click(sidebarLink(name), { button: 'right' });
+        await userEvent.click(page.getByRole('menuitem', { name: 'Stop tracking' }));
+
+        await expect.element(sidebarLink(name)).not.toBeInTheDocument();
+        await expect.element(toast()).toHaveTextContent(`Stopped tracking ${name}`);
+        expect(pending.isPending(target)).toBe(true);
+        expect(tracking.isTracked(target)).toBe(true);
+
+        await userEvent.click(toast().getByRole('button', { name: 'Dismiss' }).first());
+        await expect.element(toast()).not.toBeInTheDocument();
+        expect(tracking.isTracked(target)).toBe(false);
+    });
+}
+
 test('the command menu offers neither a repository nor a project being untracked', async () => {
     const { pending } = await open();
 
@@ -56,16 +78,18 @@ test('the command menu offers neither a repository nor a project being untracked
     await expect.element(menu.getByRole('option', { name: ROADMAP })).not.toBeInTheDocument();
 });
 
-test('⌘Z undoes the latest while the toast shows, and the one before it then shows', async () => {
+test('each untrack has its toast; ⌘Z undoes the newest, and the one before it then takes the key', async () => {
     const { pending, tracking } = await open();
 
     pending.untrack(WEB_TARGET, WEB);
     pending.untrack({ kind: 'repository', nameWithOwner: API }, API);
-    await expect.element(toast()).toHaveTextContent(`Stopped tracking ${API}`);
+    await expect.element(toast().filter({ hasText: `Stopped tracking ${API}` })).toBeInTheDocument();
+    await expect.element(toast().filter({ hasText: `Stopped tracking ${WEB}` })).toBeInTheDocument();
 
     await userEvent.keyboard('{ControlOrMeta>}z{/ControlOrMeta}');
 
     await expect.element(toast()).toHaveTextContent(`Stopped tracking ${WEB}`);
+    await expect.element(toast().getByRole('button', { name: 'Undo' })).toHaveAttribute('aria-keyshortcuts');
     await expect.element(sidebarLink(API)).toBeInTheDocument();
     expect(pending.isPending(WEB_TARGET)).toBe(true);
     expect(tracking.isTracked({ kind: 'repository', nameWithOwner: API })).toBe(true);
@@ -85,6 +109,26 @@ test('dismissing the toast untracks at once, by its button or by Escape', async 
     await userEvent.keyboard('{Escape}');
     await expect.element(toast()).not.toBeInTheDocument();
     expect(tracking.isTracked(api)).toBe(false);
+});
+
+test('the toast running out of time untracks; until then it is only pending', async () => {
+    const { pending, tracking } = await open();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    onTestFinished(() => {
+        vi.useRealTimers();
+    });
+
+    pending.untrack(WEB_TARGET, WEB);
+    await nextTick();
+    expect(toast().query()).not.toBeNull();
+
+    await vi.advanceTimersByTimeAsync(TOAST_LASTS.long - 1);
+    expect(tracking.isTracked(WEB_TARGET)).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+    await nextTick();
+    expect(toast().query()).toBeNull();
+    expect(tracking.isTracked(WEB_TARGET)).toBe(false);
+    expect(pending.isPending(WEB_TARGET)).toBe(false);
 });
 
 test('a change of screen gives the keys back from what Tab focused; Escape doing so leaves a toast alone', async () => {

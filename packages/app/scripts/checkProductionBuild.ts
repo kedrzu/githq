@@ -28,7 +28,8 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
- * window, the command the token is read with, the update notice with the command it restarts with, the toast after an update, and
+ * window, the command the token is read with, the update notice with the command it restarts with, the toasts of an update ready
+ * and after an update, and
  * Settings' Updates and Changelog sections. The production build must have none; the desktop build must have all (`checkDesktopBuild.ts`).
  */
 export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
@@ -41,16 +42,18 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'UpdatesSection', what: "Settings' Updates section" },
     { text: 'Official versions, released', what: "the text of Settings' Updates section" },
     { text: 'UpdatedToast', what: 'the toast saying the app updated' },
+    { text: 'UpdateReadyToast', what: 'the toast offering an update' },
     { text: 'ChangelogSection', what: "Settings' Changelog section" },
     { text: 'changelog appears', what: "the text of Settings' Changelog section" },
 ];
 
 /**
- * Text only the web code of the desktop links (`desktopLinks/`) puts into a build: the hand-off of a page's link to
- * the desktop app, its screen, the Settings switch and the command. The production build must have all (below);
- * the desktop build none (`checkDesktopBuild.ts`).
+ * Text only the web's code puts into a build: the toast of a newer deploy, which the desktop app, with its own updater,
+ * never shows, and the links to the desktop app (`desktopLinks/`) — the hand-off of a page's link, its screen, the Settings
+ * switch and the command. The production build must have all; the desktop build must have none (`checkDesktopBuild.ts`).
  */
-export const WEB_ONLY_MARKERS: readonly { text: string; what: string }[] = [
+export const WEB_MARKERS: readonly { text: string; what: string }[] = [
+    { text: 'NewVersionToast', what: "the web's toast of a newer deploy" },
     { text: 'DesktopHandOff', what: 'the hand-off of a link to the desktop app' },
     { text: 'githq.stayHere', what: "the hand-off's mark that a tab stays on the web" },
     { text: 'Open here instead', what: 'the text of the hand-off screen' },
@@ -78,7 +81,7 @@ async function checkProductionBuild() {
         }
     }
 
-    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...WEB_ONLY_MARKERS]) {
+    for (const { text, what } of [{ text: APP_MARKER, what: 'the sign-in' }, ...WEB_MARKERS]) {
         if (!files.some(file => file.content.includes(text))) {
             problems.push(`${what} (${text}) is in none of the files`);
         }
@@ -91,7 +94,7 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code, the web-only desktop links, the Universal Links file.`,
+        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code, the web's own, the Universal Links file.`,
     );
 }
 

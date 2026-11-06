@@ -13,7 +13,6 @@ const meta = {
     args: {
         notice: { kind: 'ready', version: '1.4.0' },
         onRestart: fn(),
-        onLater: fn(),
         onCheck: fn(),
         onDismiss: fn(),
     },
@@ -40,7 +39,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** U1: an update downloaded and waiting. */
+/** U50: an update downloaded and waiting, its toast dismissed: a quiet trace with Restart. */
 export const Ready: Story = {};
 
 /** U21: a check the user asked for, under way. */
@@ -72,5 +71,8 @@ export const NoDevelopmentBuild: Story = { args: { notice: { kind: 'noRelease', 
 /** U40: installing, the system perhaps asking for a password; offers nothing. */
 export const Installing: Story = { args: { notice: { kind: 'installing', version: '1.4.0' } } };
 
-/** U40: the install failed or the password was refused, which can't be told apart. */
+/**
+ * U51: the install failed or the password was refused, which can't be told apart; its toast dismissed, Try again is
+ * left.
+ */
 export const InstallFailed: Story = { args: { notice: { kind: 'installFailed', version: '1.4.0' } } };

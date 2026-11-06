@@ -204,7 +204,7 @@ useCommands(() => {
 
 /** What the updater proposes now, each only while it can run (D18) — only ever in the desktop app (`AppUpdate`). */
 function getUpdateCommands(): Command[] {
-  const { state, notice } = update;
+  const { state, offer } = update;
   if (state === null) {
     return [];
   }
@@ -233,8 +233,8 @@ function getUpdateCommands(): Command[] {
     });
   }
 
-  // "Later" hides the status bar's segment and nothing else, so it goes with the segment.
-  if (notice?.kind === 'ready' || notice?.kind === 'installFailed') {
+  // "Later" dismisses the update's toast and nothing else, so it goes with the toast.
+  if (offer) {
     commands.push(getUpdateLaterCommand());
   }
 

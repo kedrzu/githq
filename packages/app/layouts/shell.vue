@@ -70,10 +70,21 @@ import WorkflowRerunToast from '@/workflows/WorkflowRerunToast.vue';
 import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
-// The desktop app's toast, in the desktop build only (`__DESKTOP__`); the web builds drop it.
-const UpdatedToast = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/UpdatedToast.vue')) : null;
-// Handing the page's link to the desktop app, in the web builds only; the desktop build drops it. Not suspensible: the
-// shell's suspense waiting for this chunk holds back the panels' own setup, and dragging them then throws (Reka UI).
+// The desktop app's toasts, in the desktop build only (`__DESKTOP__`); the web builds drop them. Not suspensible: a
+// toast arrives later than the screen, and loading it as a dependency of Nuxt's root `<Suspense>`, which re-renders the
+// shell before the chunk is in, breaks Vue's patch of the page (a blank window).
+const UpdatedToast = __DESKTOP__
+  ? defineAsyncComponent({ loader: () => import('@/desktop/UpdatedToast.vue'), suspensible: false })
+  : null;
+const UpdateReadyToast = __DESKTOP__
+  ? defineAsyncComponent({ loader: () => import('@/desktop/UpdateReadyToast.vue'), suspensible: false })
+  : null;
+// The web's toast of a newer deploy, in the web builds only; the desktop app has its own updater.
+const NewVersionToast = __DESKTOP__
+  ? null
+  : defineAsyncComponent({ loader: () => import('@/shell/NewVersionToast.vue'), suspensible: false });
+// Handing the page's link to the desktop app, in the web builds only; the desktop build drops it. Not suspensible, like
+// the toasts above: the shell's suspense waiting for this chunk also breaks dragging the panels (Reka UI).
 const DesktopHandOff = !__DESKTOP__
   ? defineAsyncComponent({ loader: () => import('@/desktopLinks/DesktopHandOff.vue'), suspensible: false })
   : null;
@@ -420,6 +431,14 @@ function showLastFailure() {
     <component
       :is="UpdatedToast"
       v-if="UpdatedToast"
+    />
+    <component
+      :is="UpdateReadyToast"
+      v-if="UpdateReadyToast"
+    />
+    <component
+      :is="NewVersionToast"
+      v-if="NewVersionToast"
     />
   </Toaster>
   <AppCommands v-if="auth.viewer" />
