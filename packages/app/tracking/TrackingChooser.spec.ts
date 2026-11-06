@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import type { Locator } from 'vitest/browser';
 
@@ -491,7 +491,7 @@ test("someone else's repository already tracked looks up to a fixed tick; one li
     expect(listed).not.toHaveBeenCalled();
 });
 
-test('lookups cannot race: one per settled input, and a stale answer never replaces the current one', async () => {
+test('lookups cannot race: one per name, and a stale answer never replaces the current one', async () => {
     const answers = new Map<string, (found: Found) => void>();
     const find = vi.fn(
         (reference: TrackingReference) =>
@@ -499,14 +499,18 @@ test('lookups cannot race: one per settled input, and a stale answer never repla
                 answers.set(reference.owner, resolve);
             }),
     );
+    // Wide enough for the filter to show, which `fill` waits for.
+    await page.viewport(1280, 800);
+    onTestFinished(() => page.viewport(414, 896));
     await Picker.run({ args: { ...Picker.args, find } });
+    const filter = page.getByRole('textbox', { name: 'Filter repositories' });
 
-    // Typed through: only what settled is asked for.
-    await userEvent.keyboard('/first/one');
+    // Each name arrives whole: a slow key would let part of it settle, so typing goes to `useCandidateLookup.test.ts`'s clock.
+    await filter.fill('first/one');
     await vi.waitFor(() => expect(find).toHaveBeenCalledTimes(1));
     expect(find).toHaveBeenCalledWith({ kind: 'repository', owner: 'first', name: 'one' });
 
-    await userEvent.keyboard('{Escape}second/two');
+    await filter.fill('second/two');
     await vi.waitFor(() => expect(find).toHaveBeenCalledTimes(2));
 
     answers.get('second')?.(sampleCandidateRepository('second/two', { ago: 60_000, open: 1 }));
