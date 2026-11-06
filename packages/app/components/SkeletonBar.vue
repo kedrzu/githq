@@ -1,10 +1,8 @@
 <!-- A skeleton's bar, standing in for a line of text or any block on its way: a fill in its tone, which the band of its `Skeleton` runs through (D9). Decorative. -->
 <script lang="ts" setup>
-import { injectContext } from '@nzyme/vue-utils/context.js';
-import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue';
+import { computed, onMounted, useTemplateRef } from 'vue';
 
 import { anchorSkeletonAnimations } from './skeletonClock.js';
-import { SkeletonContext } from './SkeletonContext.js';
 
 const props = withDefaults(
   defineProps<{
@@ -21,7 +19,6 @@ const props = withDefaults(
 );
 
 const element = useTemplateRef<HTMLElement>('element');
-const skeleton = injectContext(SkeletonContext, { optional: true });
 
 const style = computed(() => ({
   width: toLength(props.width),
@@ -31,14 +28,7 @@ const style = computed(() => ({
 
 onMounted(() => {
   if (element.value) {
-    skeleton?.add(element.value);
     anchorSkeletonAnimations(element.value);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (element.value) {
-    skeleton?.remove(element.value);
   }
 });
 
@@ -52,6 +42,7 @@ function toLength(value: number | string) {
     ref="element"
     :class="[css.skeletonBar, css[`skeletonBar_${tone}`]]"
     :style="style"
+    data-skeleton-shape
     aria-hidden="true"
   />
 </template>
