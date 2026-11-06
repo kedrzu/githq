@@ -199,9 +199,8 @@ test('a long list reads on only as its end comes in reach, by scrolling or walki
     await settle();
     expect(view.readMore).not.toHaveBeenCalled();
 
-    for (const _row of manyIssues(60)) {
-        await userEvent.keyboard('j');
-    }
+    // One call for all 60 presses: one round trip to the browser driver each made the test outlast its time under load.
+    await userEvent.keyboard('j'.repeat(60));
 
     await expect.poll(() => view.readMore.mock.calls.length).toBe(1);
 });
