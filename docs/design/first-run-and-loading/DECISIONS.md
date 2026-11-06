@@ -47,6 +47,9 @@ height.
 > `packages/app/desktop/DesktopSignIn.vue:298`); the sign-in steps' frame a 56px header with a border
 > (`packages/app/tracking/FirstSignInFrame.vue`, `.firstSignInFrame_top`).
 
+Built by changing the existing frame (`FirstSignInFrame.vue`): its header becomes the shared strip, the step indicator
+goes. No second frame component.
+
 **Rejected.**
 
 - The choosing screen inside the app's shell (sidebar, status bar) — before anything is chosen the sidebar would be
@@ -68,6 +71,10 @@ wants to know is whether what they see is all there is. Changes found by a refre
 > (`getRepositoryFreshness`, `packages/app/sync/SyncEngine.ts:356`, via `haveOpenItemsArrived`), while the download's
 > later phases go on, counted per phase (`getProgress`, `packages/app/tracking/TrackingStore.ts:479`). A poll running
 > while fresh deliberately reads `fresh` (`packages/app/sync/Freshness.ts`, `getFreshness`).
+
+The closed-items phase reuses the shape freshness already has for a counted first read (`partial`, or `filling`'s
+`done`/`total`) rather than adding a kind to a union of about twenty; the rest of the rule is what `getFreshness`
+already does.
 
 **Rejected.**
 

@@ -12,3 +12,6 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Owner: overall progress goes to the status bar's sidebar segment in place of the allowance while anything
   downloads, clickable for the per-repository list (D4); the list of screens that can be incomplete accepted (D5).
   Folded into README.
+- 2026-11-06 — Rightsize (3 passes): D4's segment and D5's list stand (owner picked them over the simpler versions);
+  recorded as build notes that D2 changes FirstSignInFrame rather than adding a frame and D3 reuses an existing
+  freshness shape. Put to owner: D4's click-through list, and the opened item's panel in D5.
