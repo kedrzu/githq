@@ -15,6 +15,7 @@ import type { SyncNotice } from '@/sync/SyncEngine.js';
 import type { OverallDownload } from '@/tracking/DownloadProgress.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatTime } from '@/utils/formatTime.js';
+import { formatTimeLeft } from '@/utils/formatTimeLeft.js';
 
 import * as l from './StatusBar.loc.js';
 import StatusSegment from './StatusSegment.vue';
@@ -40,8 +41,6 @@ defineSlots<{
 /** How often "in 18 min" moves on while the explanation is open. */
 const TICK_MS = 15_000;
 const MINUTE = 60_000;
-const SECONDS_IN_MINUTE = 60;
-const SECONDS_IN_HOUR = 3600;
 
 // The desktop app's update segment, in the desktop build only (`__DESKTOP__`); the web builds drop it.
 const UpdateSegment = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/UpdateSegment.vue')) : null;
@@ -53,12 +52,6 @@ const now = useNow(TICK_MS, explained);
 const minutes = new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'minute', unitDisplay: 'short' });
 const fullNumber = new Intl.NumberFormat(APP_LANGUAGE);
 const shortNumber = new Intl.NumberFormat(APP_LANGUAGE, { notation: 'compact', maximumFractionDigits: 1 });
-// The time left, "about 2 min" in full and "2m" under the rail.
-const timeLeftUnits = {
-  short: createTimeUnits('short'),
-  narrow: createTimeUnits('narrow'),
-};
-
 // Offline and paused tell why nothing moves, which matters more than how far the download got (D11).
 const download = computed(() => (props.notice ? null : (props.download ?? null)));
 const downloadText = computed(() => {
@@ -209,28 +202,6 @@ const tooltip = computed(() => {
 
   return props.collapsed ? fullText.value : '';
 });
-
-function createTimeUnits(unitDisplay: 'narrow' | 'short') {
-  return {
-    hour: new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'hour', unitDisplay }),
-    minute: new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'minute', unitDisplay }),
-    second: new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'second', unitDisplay }),
-  };
-}
-
-/** Roughly how long is left, in its largest unit: "45 sec", "2 min", "1 hr" ("45s", "2m", "1h" narrow). */
-function formatTimeLeft(seconds: number, display: 'narrow' | 'short') {
-  const units = timeLeftUnits[display];
-  if (seconds < SECONDS_IN_MINUTE) {
-    return units.second.format(seconds);
-  }
-
-  if (seconds < SECONDS_IN_HOUR) {
-    return units.minute.format(Math.round(seconds / SECONDS_IN_MINUTE));
-  }
-
-  return units.hour.format(Math.round(seconds / SECONDS_IN_HOUR));
-}
 </script>
 
 <template>
