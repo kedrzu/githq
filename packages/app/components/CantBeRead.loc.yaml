@@ -1,0 +1,28 @@
+offlineTitle:
+  en: You're offline
+offlineLine:
+  en: "githq can't reach GitHub, so {thing} hasn't arrived yet. It carries on by itself as soon as you're back."
+offlineNote:
+  en: Offline. Fills in when you're back.
+pausedTitle:
+  en: Refresh paused until {time}
+pausedLine:
+  en: GitHub's hourly allowance ran out before {thing} was read. It comes in by itself at {time}.
+pausedNote:
+  en: Refresh paused. Fills in at {time}.
+failingTitle:
+  en: GitHub isn't answering
+failingLine:
+  en: githq couldn't read {thing}. It tries again every 30 seconds.
+failingNote:
+  en: GitHub isn't answering. It tries again every 30 seconds.
+hiddenTitle:
+  en: GitHub doesn't show {thing}
+hiddenLine:
+  en: It may be private to githq, its organisation may not have approved githq, or it is gone.
+hiddenNote:
+  en: GitHub doesn't show this.
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub
