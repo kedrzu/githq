@@ -673,7 +673,6 @@ test('D15, D16: on a wide window Enter opens the details right of the graph with
     await expect.poll(() => scroller.clientWidth).toBe(1200 - 280 - 440);
     const panel = details().element().getBoundingClientRect();
     expect(panel.left).toBeGreaterThanOrEqual(scroller.getBoundingClientRect().right);
-    expect(getComputedStyle(details().element()).position).toBe('relative');
     expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(scroller.getBoundingClientRect().left);
     expect(view.scroller()).toBe(scroller);
     expect(refList().element()).toBe(list);
@@ -697,44 +696,43 @@ test('D15, D16: on a wide window Enter opens the details right of the graph with
     expect(scroller.scrollTop).toBe(1000);
 });
 
-test("D16: the arrow keys on the details' left edge resize them 20 px at a time, kept under their own key and no other panel's, the graph keeping at least 240 px", async () => {
+test("D16: the arrow keys on the details' left edge resize them a tenth of the room at a time, kept under their own key and no other panel's, the graph keeping at least 240 px", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
+    // 1,000 - 300 leaves the graph and the details 700: 70 px a press, the details 460 at the most.
     const view = await mount({ commits: parallelBranches(4) }, { width: 1000, keptColumnWidth: 300 });
     const preferences = view.container.resolve(LocalPreferences);
     await expect.element(details()).toBeVisible();
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(440);
+    await expect.poll(() => detailsWidth()).toBe(440);
 
     detailsHandle().element().focus();
     await userEvent.keyboard('{ArrowLeft}');
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
-    expect(preferences.getPanelWidth('commitDetails').value).toBe(460);
+    await expect.poll(() => detailsWidth()).toBe(460);
+    await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(460);
+    expect(view.scroller().getBoundingClientRect().width).toBe(240);
     expect(preferences.getPanelWidth('repositoryColumn').value).toBe(300);
     expect(preferences.getPanelWidth('modal').value).toBeNull();
 
-    // At the most the graph lets it have (1000 - 300 - 240), nothing more is kept.
     await userEvent.keyboard('{ArrowLeft}');
-    await userEvent.keyboard('{ArrowLeft}');
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
-    expect(view.scroller().getBoundingClientRect().width).toBeGreaterThanOrEqual(240);
+    expect(detailsWidth()).toBe(460);
     expect(preferences.getPanelWidth('commitDetails').value).toBe(460);
 
     await userEvent.keyboard('{ArrowRight}');
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(440);
-    expect(preferences.getPanelWidth('commitDetails').value).toBe(440);
+    await expect.poll(() => detailsWidth()).toBe(390);
+    await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(390);
 });
 
 test('D16: a width squeezed by the window is never kept over the one the user chose: the details narrower, by a key that does nothing at the limit', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
-    // 1,000 - 300 leaves the details 460 of the 600 chosen.
+    // 1,000 - 300 - 240 leaves the details 460 of the 600 chosen.
     const view = await mount(
         { commits: parallelBranches(4) },
         { width: 1000, keptColumnWidth: 300, keptDetailsWidth: 600 },
     );
     const preferences = view.container.resolve(LocalPreferences);
     await expect.element(details()).toBeVisible();
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(460);
+    await expect.poll(() => detailsWidth()).toBe(460);
     expect(preferences.getPanelWidth('commitDetails').value).toBe(600);
 
     detailsHandle().element().focus();
@@ -744,22 +742,23 @@ test('D16: a width squeezed by the window is never kept over the one the user ch
 
     detailsHandle().element().focus();
     await userEvent.keyboard('{ArrowRight}');
-    await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(440);
+    await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(390);
 });
 
-test("D16: with less room than the details' least width the handle changes and keeps nothing", async () => {
+test("D16: with less room than the details' least width and the graph's 240 px the details keep their 320, the graph gives way, and the handle keeps nothing", async () => {
     await page.viewport(1200, 800);
     onTestFinished(() => page.viewport(414, 896));
-    // 900 - 480 - 240 leaves 180, under the 320 least.
+    // 900 - 480 leaves 420: 100 for the graph.
     const view = await mount({ commits: parallelBranches(4) }, { keptColumnWidth: 480, width: 900 });
     const preferences = view.container.resolve(LocalPreferences);
     await expect.element(details()).toBeVisible();
-    await expect.poll(() => details().element().getBoundingClientRect().width).toBe(180);
+    await expect.poll(() => detailsWidth()).toBe(320);
+    expect(view.scroller().getBoundingClientRect().width).toBe(100);
 
     detailsHandle().element().focus();
     await userEvent.keyboard('{ArrowLeft}');
     await userEvent.keyboard('{ArrowRight}');
-    expect(details().element().getBoundingClientRect().width).toBe(180);
+    expect(detailsWidth()).toBe(320);
     expect(preferences.getPanelWidth('commitDetails').value).toBeNull();
 });
 
@@ -768,12 +767,15 @@ test("D16: the details' handle is there beside the graph only, and a click on it
     onTestFinished(() => page.viewport(414, 896));
     await mount({ commits: parallelBranches(4) });
     await expect.element(details()).toBeVisible();
-    await userEvent.click(detailsHandle());
-    expect(document.activeElement).not.toBe(detailsHandle().element());
+    // Pressed as Reka hears it: the handle takes no width to be clicked by a tool.
+    const handle = detailsHandle().element();
+    const focused = document.activeElement;
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    handle.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    expect(document.activeElement).toBe(focused);
 
     await page.viewport(1100, 800);
     await expect.element(detailsHandle()).not.toBeInTheDocument();
-    expect((details().element() as HTMLElement).style.width).toBe('');
 });
 
 test("D17: the graph's share is of the pane without the list", async () => {
@@ -812,7 +814,9 @@ test('D14, D15, CH6, CH42: with the list in the column it renders there at any w
     expect(list('[role="grid"]')).not.toBeNull();
     expect(view.scroller().clientWidth).toBe(1200 - 440);
     // Beside the graph, not over it.
-    expect(getComputedStyle(details().element()).position).toBe('relative');
+    expect(details().element().getBoundingClientRect().left).toBeGreaterThanOrEqual(
+        view.scroller().getBoundingClientRect().right,
+    );
 
     // B with the details open: the filter, and they stay.
     await userEvent.keyboard('b');
@@ -1042,7 +1046,7 @@ test('D16, CH18: the details are open from the start beside the list and the gra
     await expect.element(details()).not.toHaveTextContent('The third, in detail.');
     await expect.element(list).toBeVisible();
     await expect.poll(() => view.scroller().clientWidth).toBe(1200 - 280 - 440);
-    expect(details().element().getBoundingClientRect().width).toBe(440);
+    expect(detailsWidth()).toBe(440);
     answered.resolve();
     await expect.element(details()).toHaveTextContent('The third, in detail.');
 
@@ -1855,6 +1859,11 @@ test("a run in another repository: the place is this repository's; with the prop
 /** The panel of a commit's details. */
 function details() {
     return page.getByRole('region', { name: 'Commit details' });
+}
+
+/** The width of the details beside the graph: of their column, its line included. */
+function detailsWidth() {
+    return details().element().parentElement?.getBoundingClientRect().width;
 }
 
 /** The handle on the details' left edge. */

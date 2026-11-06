@@ -32,6 +32,8 @@ closeDetails:
   en: Close the details
 resizeGraph:
   en: Resize the commit graph
+resizeDetails:
+  en: Resize the commit details
 lanesFit:
   plural: total
   en:

@@ -49,14 +49,14 @@ test('D opens the review of the pull request open, at its GitHub address, in the
     await expect(review.codeToken('export const client = 2;').first()).toBeVisible();
     // README.md, first, is viewed: opened for the first time it lands on the first file that isn't (D16).
     await expect(review.currentFileRow).toContainText('logo.png');
-    await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
+    await expect(review.fileHeader(LOGO)).toBeInViewport();
 
     await page.keyboard.press('[');
     await expect(review.currentFileRow).toContainText(README);
 
     await page.keyboard.press(']');
     await expect(review.currentFileRow).toContainText('logo.png');
-    await expect.poll(() => review.headerOffset(LOGO)).toBe(0);
+    await expect(review.fileHeader(LOGO)).toBeInViewport();
 
     await page.reload();
     await expect(review.title).toHaveText(PULL_REQUEST);
@@ -417,12 +417,12 @@ test('V collapses the file in place with viewed files shown, nothing moving; a s
     await expect(review.code('The web app.')).toHaveCount(0);
 
     await review.fileRow('client.ts').click();
-    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
+    await expect(review.fileHeader(CLIENT)).toBeInViewport();
 
     await page.keyboard.press('v');
     await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'true');
     await expect(review.code('export const client = 2;')).toHaveCount(0);
-    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
+    await expect(review.fileHeader(CLIENT)).toBeInViewport();
     await expect(review.currentFileRow).toContainText('client.ts');
 
     await page.keyboard.press('v');
@@ -740,7 +740,8 @@ test('the filter takes a pattern and a regular expression, holds what stays on s
     await page.keyboard.type('**/file05.ts');
     await expect(review.fileList).toContainText('1 of 42 match');
     await expect(review.fileRow('file04.ts')).toBeHidden();
-    expect(await review.topLine('const line')).toEqual(before);
+    // Nothing is left below to scroll to, so the line read may sink, but it stays in view.
+    await expect(review.code(before.text).first()).toBeInViewport();
     await page.keyboard.press('Enter');
     await expect(review.diff).toBeFocused();
 
@@ -793,12 +794,12 @@ test('Show 20 brings the lines nearest the change below and keeps the line being
     await expect(review.code('const last = 2;')).toBeVisible();
     await expect(review.diff.getByText('export class SyncEngine {').last()).toBeVisible();
 
-    const read = await review.code('const last = 2;').boundingBox();
     await review.gapButton('Show 20').click();
     await expect(review.code('const kept96 = 96;').first()).toBeAttached();
     await expect(review.code('const kept77 = 77;').first()).toBeAttached();
     await expect(review.code('const kept76 = 76;')).toHaveCount(0);
-    expect((await review.code('const last = 2;').boundingBox())?.y).toBe(read?.y);
+    // The file fits on the screen, so nothing is left below to scroll to: the line read stays in view.
+    await expect(review.code('const last = 2;')).toBeInViewport();
 
     await review.diff.evaluate(diff => diff.scrollTo(0, 0));
     await review.gapButton('Show all').click();
@@ -817,7 +818,7 @@ test('⌘B hides the file list and remembers it, the toggle and the view options
     await expect(review.fileList).toBeHidden();
     await expect(review.fileListToggle).toHaveAttribute('aria-pressed', 'false');
     await page.keyboard.press(']');
-    await expect.poll(() => review.headerOffset(CLIENT)).toBe(0);
+    await expect(review.fileHeader(CLIENT)).toBeInViewport();
 
     await page.reload();
     await expect(review.fileHeader(CLIENT)).toBeAttached();

@@ -1670,6 +1670,7 @@ function readAgain() {
                   :thread-replying="row.kind === 'thread' && isThreadReplying(row.placement.thread.id)"
                   :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
                   :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
+                  :layout="layout"
                   @expand="expandGap"
                   @expand-to-thread="expandToThread"
                   @expand-to-file-end="expandToFileEnd"
@@ -1927,12 +1928,15 @@ function readAgain() {
   visibility: hidden;
 }
 
+// Room over the list, as the files have between them, so the first file's block and a pinned header don't touch the
+// toolbar: outside the scroller, whose offsets start at its rows, and outside what measures the screen of rows.
 .reviewView_diffColumn {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  padding-top: $spacing-12;
 }
 
 .reviewView_diff {

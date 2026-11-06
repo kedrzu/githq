@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), quiet bars while the file is on its way (one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -17,7 +17,7 @@ import Button from '@/components/Button.vue';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
-import { getPlaceholderHeight } from './buildReviewRows.js';
+import { getPlaceholderHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type {
   ReviewCommentRow,
   ReviewDistanceRow as DistanceRow,
@@ -28,17 +28,18 @@ import type {
   ReviewThreadRow as ReviewThreadRowData,
 } from './buildReviewRows.js';
 import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
-import type { DiffLineSide } from './diff/buildDiffRows.js';
+import type { DiffLayout, DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
-import type { ReviewFileSizes } from './ReviewFiles.js';
+import type { ReviewFile, ReviewFileSizes } from './ReviewFiles.js';
 import ReviewDistanceRow from './threads/ReviewDistanceRow.vue';
 import ReviewThreadRow from './threads/ReviewThreadRow.vue';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
+import { getPlaceholderMask } from './utils/getPlaceholderMask.js';
 
 const props = withDefaults(
   defineProps<{
@@ -58,8 +59,10 @@ const props = withDefaults(
     threadFailure?: ReviewWriteFailure | null;
     /** The lines of the file a comment is being written on. */
     commented?: CommentedLines;
+    /** The layout being read, which a file still on its way is drawn in. */
+    layout?: DiffLayout;
   }>(),
-  { commented: () => NO_LINES },
+  { commented: () => NO_LINES, layout: 'unified' },
 );
 
 defineSlots<{
@@ -114,6 +117,17 @@ watch(
   { immediate: true },
 );
 
+function getPlaceholderStyle(file: ReviewFile) {
+  const height = getPlaceholderHeight(file);
+  const mask = getPlaceholderMask({
+    path: file.path,
+    changeType: file.changeType,
+    rows: height / LINE_HEIGHT,
+    layout: props.layout,
+  });
+  return { height: `${height}px`, '--placeholder-mask': mask };
+}
+
 function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   const size = formatFileSizes(sizes);
   if (size === null) {
@@ -132,14 +146,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
 </script>
 
 <template>
-  <div
-    v-if="row.kind === 'tail'"
-    :class="css.reviewDiffRow_tail"
-  />
-  <div
-    v-else
-    :class="css.reviewDiffRow"
-  >
+  <div :class="css.reviewDiffRow">
     <DiffFileHeader
       v-if="row.kind === 'header'"
       :file="row.file"
@@ -267,8 +274,8 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           {{ t(l.fetchingFirst, { path: row.file.path }) }}
         </div>
         <div
-          :class="css.reviewDiffRow_placeholder"
-          :style="{ height: `${getPlaceholderHeight(row.file)}px` }"
+          :class="[css.reviewDiffRow_placeholder, layout === 'split' && css.reviewDiffRow_placeholder_split]"
+          :style="getPlaceholderStyle(row.file)"
         />
       </template>
       <div
@@ -390,12 +397,6 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   height: $spacing-12;
 }
 
-// Under the last file, enough for its header alone to reach the top: the viewport (the screen without the toolbar and
-// the status bar) less the header and its end.
-.reviewDiffRow_tail {
-  height: calc(100vh - #{$status-bar-height} - #{$list-header-height} - 54px);
-}
-
 .reviewDiffRow_gap {
   display: flex;
   gap: $spacing-10;
@@ -474,26 +475,31 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   color: $color-fg-3;
 }
 
-// Quiet bars of six lengths over and over, as tall as the file will about take.
+// A bar for each line, as tall as the file will about take (D38): the bars are a generated mask, so a long file is no
+// more elements than a short one, and the colour stays here.
 .reviewDiffRow_placeholder {
-  $bar: linear-gradient(to bottom, $color-bg-3 8px, transparent 8px);
+  position: relative;
 
-  background-image: $bar, $bar, $bar, $bar, $bar, $bar;
-  background-repeat: repeat-y;
-  background-position:
-    60px 12px,
-    60px 29px,
-    60px 46px,
-    60px 63px,
-    60px 80px,
-    60px 97px;
-  background-size:
-    420px 102px,
-    300px 102px,
-    520px 102px,
-    8px 102px,
-    360px 102px,
-    460px 102px;
+  &::before {
+    position: absolute;
+    inset: 0;
+    content: '';
+    background: $color-bg-3;
+    mask-image: var(--placeholder-mask);
+    mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+  }
+}
+
+// The divider between the halves, as in a split row.
+.reviewDiffRow_placeholder_split {
+  background: linear-gradient(
+    to right,
+    transparent 50%,
+    $color-border 50%,
+    $color-border calc(50% + 1px),
+    transparent calc(50% + 1px)
+  );
 }
 
 .reviewDiffRow_notice {

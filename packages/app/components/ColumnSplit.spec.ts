@@ -185,6 +185,33 @@ test('while not shown, what follows the width has the kept one, not one squeezed
     expect(kept()).toBe('480');
 });
 
+test('on the right: right of the pane with the line on its left, grown by the left arrow and by dragging left, kept, the pane keeping its own minimum', async () => {
+    const view = await mount({ window: SIDEBAR_WIDTH + 1000, side: 'right', paneMin: 600 });
+
+    await expect.poll(view.columnWidth).toBe(280);
+    expect(view.pane().parentElement?.getBoundingClientRect().right).toBe(
+        view.column().parentElement?.getBoundingClientRect().left,
+    );
+    expect(getComputedStyle(view.column().parentElement ?? document.body).borderLeftWidth).toBe('1px');
+    expect(view.pane().compareDocumentPosition(view.column())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    edge.element().focus();
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(view.columnWidth).toBe(380);
+    await expect.poll(kept).toBe('380');
+
+    // At 400 the pane has its 600: what is kept is what was chosen, not the 480 asked for.
+    await userEvent.keyboard('{ArrowLeft}');
+    await expect.poll(view.paneWidth).toBe(600);
+    await expect.poll(kept).toBe('400');
+
+    const drag = press(edge.element());
+    drag.moveBy(100);
+    await expect.poll(view.columnWidth).toBe(300);
+    drag.release();
+    await expect.poll(kept).toBe('300');
+});
+
 test('a split inside the pane of another, one column shown: the same width, and no id twice', async () => {
     const view = await mount({
         window: 1400,
@@ -213,10 +240,19 @@ interface MountOptions {
     readonly kept?: string;
     /** The pane's content, instead of an input. */
     readonly pane?: () => VNode;
+    readonly side?: 'left' | 'right';
+    readonly paneMin?: number;
 }
 
 /** Mounts the split with a sidebar beside it across the whole of a window `window` wide. */
-async function mount({ window: windowWidth, shown: firstShown = true, kept: keptWidth, pane }: MountOptions) {
+async function mount({
+    window: windowWidth,
+    shown: firstShown = true,
+    kept: keptWidth,
+    pane,
+    side,
+    paneMin,
+}: MountOptions) {
     await page.viewport(windowWidth, 800);
     window.localStorage.removeItem(WIDTH_KEY);
     if (keptWidth !== undefined) {
@@ -235,7 +271,7 @@ async function mount({ window: windowWidth, shown: firstShown = true, kept: kept
             h('div', { style: { flex: 'none', width: `${SIDEBAR_WIDTH}px` } }),
             h(
                 ColumnSplit,
-                { shown: shown.value, width: WIDTH, label: LABEL },
+                { shown: shown.value, width: WIDTH, label: LABEL, side, paneMin },
                 {
                     column: () => h('button', { tid: 'column', style: { flex: 1 } }, 'In the column'),
                     default: () =>
