@@ -84,15 +84,18 @@ test('"Track these" lands on My work at once, before any of the work is in, and 
     await expect(firstSignIn.repository(`${LOGIN}/app`)).toBeChecked();
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    // On My work while GitHub still holds the user's work back; the tracked repository waits for its download,
+    // On My work while GitHub still holds the user's work back; the tracked repository waits for its download, which
+    // only the status bar tells (first run and loading D4) — the sidebar shows nothing where its count goes — and
     // which then goes on.
     const shell = new AppShellHarness(page);
     await expect(page).toHaveURL('/');
     const repository = shell.sidebar.getByRole('link', { name: new RegExp(`^${LOGIN}/app`) });
-    await expect(repository.locator('span').last()).toHaveText('waiting');
+    await expect(repository.locator('span').last()).toHaveText('');
+    await expect(shell.downloadProgress).toHaveText('Downloading · counting…');
     myWorkIn.resolve();
     repositoryIn.resolve();
     await expect(repository.locator('span').last()).toHaveText('0');
+    await expect(shell.downloadProgress).toHaveCount(0);
 
     // The choice is kept in this browser: the app opens on the work, with no choosing step.
     await page.reload();

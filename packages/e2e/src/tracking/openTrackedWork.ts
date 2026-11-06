@@ -10,8 +10,8 @@ import { LandingHarness } from '../harnesses/Landing.harness.js';
 
 /**
  * Signs in for the first time with GitHub answering from `world`, tracks what the first sign-in chooses — the
- * viewer's own repositories and open projects — and lands on My work, waiting there until the sidebar has every one's
- * open items and every repository's workflows read.
+ * viewer's own repositories and open projects — and lands on My work, waiting there until every one has all its items —
+ * the status bar no longer tells a download — and every repository's workflows are read.
  */
 export async function openTrackedWork(page: Page, github: GitHubMock, world: GitHubWorld): Promise<AppShellHarness> {
     world.install(github);
@@ -23,7 +23,9 @@ export async function openTrackedWork(page: Page, github: GitHubMock, world: Git
     await firstSignIn.trackAndOpenMyWork();
 
     const shell = new AppShellHarness(page);
-    await expect(shell.sidebar.getByRole('link').filter({ hasText: /(waiting|\d+%)$/u })).toHaveCount(0);
+    // Tracked before the shell is drawn, so a status bar that tells no download has everything in.
+    await expect(shell.statusBar).toBeVisible();
+    await expect(shell.downloadProgress).toHaveCount(0);
     await expect(shell.sidebar.locator('[data-marker="unread"]')).toHaveCount(0);
     return shell;
 }

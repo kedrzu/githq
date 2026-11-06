@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -42,11 +42,15 @@ import { getNewestEdits } from '@/shell/getNewestEdits.js';
 import type { DatedSegmentEdits } from '@/shell/getNewestEdits.js';
 import type { SegmentEdits } from '@/shell/SegmentEdits.js';
 import type { SidebarTracked, SidebarTrackedStatus } from '@/shell/Sidebar.vue';
+import type { SidebarMyWorkCounts } from '@/shell/SidebarTypes.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
+import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
+import { DownloadProgress } from '@/tracking/DownloadProgress.js';
 import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import {
@@ -56,7 +60,7 @@ import {
   isWorkflowRunRoute,
 } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
-import type { TrackedTarget, TrackingProgress } from '@/tracking/TrackingTypes.js';
+import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 import TrackFailedToast from '@/tracking/TrackFailedToast.vue';
 import UntrackToast from '@/tracking/UntrackToast.vue';
 import { ReviewScreenFreshness } from '@/review/ReviewScreenFreshness.js';
@@ -87,6 +91,7 @@ const queue = useService(EditQueue);
 const tracking = useService(TrackingStore);
 const browsed = useService(BrowsedRepositories);
 const pendingUntracks = useService(PendingUntracks);
+const download = useService(DownloadProgress);
 const trackedItems = useService(TrackedItems);
 const answers = useService(ProjectViewAnswers);
 const editTexts = useEditTexts();
@@ -151,20 +156,32 @@ provideContext(MergeContext, {
 
 const collapsed = preferences.sidebarCollapsed;
 
-// The sidebar counts what the list of "my work" shows unfiltered (D11); nothing before the first download.
-const myWorkCounts = computed(() =>
-  items.getSyncState('myWork').lastSuccessAt === null
-    ? null
-    : buildMyWork({
-        membership: items.membership,
-        getItem: id => items.get(id),
-        stacks: groupStacks(items.all),
-        filter: 'all',
-        sort: 'updated',
-      }).counts,
-);
+// The sidebar counts what the list of "my work" shows unfiltered (D11): a group once its search is in, the total once
+// every group is (first run and loading D14); nothing before any is.
+const myWorkCounts = computed((): SidebarMyWorkCounts | null => {
+  const { membership } = items;
+  if (MY_WORK_GROUPS.every(group => membership[group] === undefined)) {
+    return null;
+  }
 
-// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, else how far its download is.
+  const { counts } = buildMyWork({
+    membership,
+    getItem: id => items.get(id),
+    stacks: groupStacks(items.all),
+    filter: 'all',
+    sort: 'updated',
+  });
+  const arrived = (group: MyWorkGroup) => (membership[group] === undefined ? null : counts[group]);
+  return {
+    reviewRequested: arrived('reviewRequested'),
+    authored: arrived('authored'),
+    assigned: arrived('assigned'),
+    mentioned: arrived('mentioned'),
+    total: MY_WORK_GROUPS.every(group => membership[group] !== undefined) ? counts.total : null,
+  };
+});
+
+// Each tracked project and repository — not one being untracked, with Undo on offer — with its open items once they have arrived, blank before (first run and loading D4).
 const tracked = computed((): SidebarTracked => ({
   projects: pendingUntracks.projects.map(project => ({
     key: `project:${project.id}`,
@@ -327,19 +344,11 @@ const itemFreshness = computed((): Freshness | null => {
 });
 
 function getTrackedStatus(target: TrackedTarget, openArrived: boolean): SidebarTrackedStatus {
-  const progress: TrackingProgress = tracking.getProgress(target);
-  if (progress.state === 'hidden') {
+  if (tracking.getProgress(target).state === 'hidden') {
     return { kind: 'hidden' };
   }
 
-  if (openArrived) {
-    return { kind: 'count', count: trackedItems.getOpenCount(target) };
-  }
-
-  return {
-    kind: 'downloading',
-    percent: progress.total ? Math.floor((progress.done / progress.total) * 100) : null,
-  };
+  return openArrived ? { kind: 'count', count: trackedItems.getOpenCount(target) } : { kind: 'downloading' };
 }
 
 function showLastFailure() {
@@ -364,6 +373,7 @@ function showLastFailure() {
     :rate-limit="rateLimits.get('graphql')"
     :notice="sync.notice"
     :last-refreshed-at="items.getSyncState('myWork').lastSuccessAt"
+    :download="download.current"
     :freshness="opened?.onPage ? (itemFreshness ?? shownFreshness) : shownFreshness"
     :item-freshness="opened?.onPage ? null : itemFreshness"
     :my-work-counts="myWorkCounts"

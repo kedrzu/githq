@@ -1,4 +1,4 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -12,10 +12,10 @@ import { APP_KEYS } from '@/commands/CommandRegistry.js';
 import { useCommands } from '@/commands/useCommands.js';
 import ResizeHandle from '@/components/ResizeHandle.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
-import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import { WindowControls } from '@/services/WindowControls.js';
 import type { Freshness } from '@/sync/Freshness.js';
 import type { SyncNotice } from '@/sync/SyncEngine.js';
+import type { OverallDownload } from '@/tracking/DownloadProgress.js';
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
 import * as l from './AppShell.loc.js';
@@ -23,7 +23,7 @@ import FreshnessSegment from './FreshnessSegment.vue';
 import type { SegmentEdits } from './SegmentEdits.js';
 import Sidebar from './Sidebar.vue';
 import type { SidebarTracked } from './Sidebar.vue';
-import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
+import type { SidebarBrokenWorkflows, SidebarMyWorkCounts } from './SidebarTypes.js';
 import StatusBar from './StatusBar.vue';
 
 const props = defineProps<{
@@ -34,6 +34,8 @@ const props = defineProps<{
   notice: SyncNotice | null;
   /** When the app last refreshed from GitHub, for the explanation of a pause; `null` never. */
   lastRefreshedAt?: number | null;
+  /** The download of everything tracked, said in the sidebar's segment while it lasts (first run and loading D4). */
+  download?: OverallDownload | null;
   /** How fresh the screen's list is, for its segment. */
   freshness: Freshness;
   /** How fresh an item opened over the screen is (in the panel or a modal), for a segment of its own. */
@@ -42,8 +44,8 @@ const props = defineProps<{
   edits?: SegmentEdits | null;
   /** The same of the item opened over the screen, in its segment. */
   itemEdits?: SegmentEdits | null;
-  /** The counts of "my work" for the sidebar; `null` until the first download. */
-  myWorkCounts?: MyWorkCounts | null;
+  /** The counts of "my work" for the sidebar, blank while still arriving; `null` before any group arrived. */
+  myWorkCounts?: SidebarMyWorkCounts | null;
   /** The tracked projects and repositories for the sidebar. */
   tracked?: SidebarTracked;
   /** Syncing the settings stopped (settings-sync T9): an amber dot on the user's avatar. */
@@ -255,6 +257,7 @@ function onLayout(sizes: number[]) {
       :notice="notice"
       :collapsed="rail"
       :last-refreshed-at="lastRefreshedAt"
+      :download="download"
     >
       <FreshnessSegment
         :freshness="freshness"
