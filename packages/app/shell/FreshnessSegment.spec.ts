@@ -91,6 +91,12 @@ test('first run and loading D3, D14: a tracked repository names the phase of its
     await expect.element(page.getByText('Downloading items · 0 of 128')).toBeVisible();
 });
 
+test("first run and loading D14: a commit graph's first read says it reads commits, with no count", async () => {
+    mount({ kind: 'partial', readingCommits: true });
+
+    await expect.element(page.getByText('Reading commits', { exact: true })).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

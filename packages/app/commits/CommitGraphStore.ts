@@ -78,7 +78,7 @@ export interface CommitGraph {
     /** Branches whose tips were not loaded are being read down to the loaded history (git-client D19). */
     readonly joining: boolean;
     /**
-     * How current the refs are, for the status bar (githq D15): `partial` until first read, `checking` while read again,
+     * How current the refs are, for the status bar (githq D15): `partial` (reading commits, first run and loading D14) until first read, `checking` while read again,
      * `filling` while a first open's branches are read down (git-client D19), `fresh` once GitHub answered, `stale` when it did not, `paused` when the allowance was spent.
      */
     readonly freshness: Freshness;
@@ -216,7 +216,7 @@ export const CommitGraphStore = defineService({
 
         /** How current the graph of `owner/name` is (see {@link CommitGraph.freshness}); reactive. */
         function getFreshness(nameWithOwner: string): Freshness {
-            return graphsRef.value.get(nameWithOwner)?.freshness ?? { kind: 'partial' };
+            return graphsRef.value.get(nameWithOwner)?.freshness ?? { kind: 'partial', readingCommits: true };
         }
 
         /**
@@ -1008,7 +1008,7 @@ function toFreshness(graph: RepositoryGraph, now: number): Freshness {
 
     const since = graph.refs?.fetchedAt ?? null;
     if (graph.checking) {
-        return since === null ? { kind: 'partial' } : { kind: 'checking', since };
+        return since === null ? { kind: 'partial', readingCommits: true } : { kind: 'checking', since };
     }
 
     const pausedUntil = Math.max(graph.pausedUntil ?? 0, graph.morePausedUntil ?? 0);
@@ -1025,7 +1025,7 @@ function toFreshness(graph: RepositoryGraph, now: number): Freshness {
         return { kind: 'fresh', checkedAt: graph.checkedAt };
     }
 
-    return since === null ? { kind: 'partial' } : { kind: 'checking', since };
+    return since === null ? { kind: 'partial', readingCommits: true } : { kind: 'checking', since };
 }
 
 /** The parameters of a `CommitStates` read. */

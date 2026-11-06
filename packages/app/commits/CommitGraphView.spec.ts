@@ -335,7 +335,7 @@ test('CH40: offline a scroll to the end asks nothing; coming back online reads t
     expect(view.store.getFreshness(REPOSITORY).kind).toBe('fresh');
 });
 
-test('CH38, CH32: before anything arrives, a quiet line; an empty repository says so', async () => {
+test('CH38, CH32, first run and loading D17: before anything arrives, the skeleton, read out as one line; an empty repository says so', async () => {
     const answered = createPromise();
     await mount({
         commits: [],
@@ -343,10 +343,11 @@ test('CH38, CH32: before anything arrives, a quiet line; an empty repository say
         firstOpen: true,
         holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
     });
-    await expect.element(page.getByText('Loading commits…')).toBeVisible();
+    await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
 
     answered.resolve();
     await expect.element(page.getByRole('heading', { name: 'No commits yet' })).toBeVisible();
+    await expect.element(page.getByText('Loading commits…')).not.toBeInTheDocument();
     await expect
         .element(page.getByText('acme/web is empty on GitHub. Commits appear here after the first push.'))
         .toBeVisible();
@@ -581,7 +582,7 @@ test('D15: on a wide window the list is left of the graph from the first draw, i
     expect(getComputedStyle(refList().element()).position).toBe('static');
 });
 
-test('D15: refs arriving on a first open bring the column and the list; a repository without any gives the graph the pane', async () => {
+test('D15, first run and loading D17: a first open holds the column for the list, which the refs land in without moving the graph', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const answered = createPromise();
@@ -590,9 +591,10 @@ test('D15: refs arriving on a first open bring the column and the list; a reposi
         firstOpen: true,
         holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
     });
-    await expect.element(page.getByText('Loading commits…')).toBeVisible();
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).not.toBeInTheDocument();
-    expect(view.scroller().clientWidth).toBe(1200);
+    await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    await expect.element(refList()).not.toBeInTheDocument();
+    expect(view.scroller().clientWidth).toBe(1200 - 280);
 
     answered.resolve();
     await expect.element(refList()).toBeVisible();

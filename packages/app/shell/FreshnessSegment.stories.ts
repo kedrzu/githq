@@ -81,6 +81,9 @@ export const DownloadingItems: Story = {
     args: { freshness: { kind: 'partial', downloading: { phase: 'items', done: 0, total: 128 } } },
 };
 
+/** A commit graph's first read: GitHub gives no cheap count of commits (first run and loading D14, ES21). */
+export const ReadingCommits: Story = { args: { freshness: { kind: 'partial', readingCommits: true } } };
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 

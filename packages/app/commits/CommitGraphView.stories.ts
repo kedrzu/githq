@@ -122,7 +122,7 @@ export const Empty: Story = {
     },
 };
 
-/** A first open, nothing kept yet: a quiet line until the first rows arrive (CH32). */
+/** A first open, nothing kept yet: the skeleton in the graph's shape until the first rows arrive (CH32, first run and loading D17, ES21). */
 export const FirstOpen: Story = {
     render: () =>
         renderOver({
@@ -131,7 +131,7 @@ export const FirstOpen: Story = {
             holdIf: operation => (operation === 'RepositoryCommitRefs' ? NEVER : null),
         }),
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('Loading commits…')).toBeVisible();
+        await expect(await within(canvasElement).findByText('Loading commits…')).toBeInTheDocument();
     },
 };
 

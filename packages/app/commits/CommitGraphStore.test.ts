@@ -272,7 +272,7 @@ test('an answer arriving after the user signed out, or another signed in, is dro
         await session.clock.advance(0);
 
         expect(graphs.get('acme/web')).toBeUndefined();
-        expect(graphs.getFreshness('acme/web')).toEqual({ kind: 'partial' });
+        expect(graphs.getFreshness('acme/web')).toEqual({ kind: 'partial', readingCommits: true });
     }
 });
 

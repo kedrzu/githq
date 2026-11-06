@@ -38,6 +38,8 @@ filling:
   en: Filling in the other branches · {done} of {total}
 downloading:
   en: Downloading · what's here is usable
+readingCommits:
+  en: Reading commits
 downloadingPhase:
   en: Downloading {what}
 downloadingPhaseCounted:
