@@ -22,7 +22,7 @@ import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { useNow } from '@/services/useNow.js';
-import { getRepositoryPath, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
+import { getGitHubUrl, getRepositoryPath, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
 import { getCantBeReadCause } from '@/utils/getCantBeReadCause.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
@@ -148,7 +148,7 @@ const detailsBeside = computed(() => opened.value !== null && !itemOpened.value 
 /** The details under the graph, below about 1,200 px of window (D16). */
 const detailsUnder = computed(() => opened.value !== null && !itemOpened.value && narrowWindow.value);
 const openedUrl = computed(() =>
-  opened.value ? `https://github.com/${props.nameWithOwner}/commit/${opened.value.oid}` : '',
+  opened.value ? getGitHubUrl(`${props.nameWithOwner}/commit/${opened.value.oid}`) : '',
 );
 /** The commit under the cursor: not `selectFirst`, which would follow the newest row and break D19. */
 const cursor = useRowSelection({
@@ -169,7 +169,7 @@ const unreadable = computed(
     getCantBeReadCause({
       freshness: store.getFreshness(props.nameWithOwner),
       retry: askAgain,
-      url: `https://github.com/${props.nameWithOwner}`,
+      url: getGitHubUrl(props.nameWithOwner),
     }),
 );
 /** What the section shows: the graph, or before it, its skeleton, the empty repository, or why nothing arrives. */

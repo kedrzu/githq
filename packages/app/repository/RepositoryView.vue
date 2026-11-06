@@ -273,7 +273,7 @@ const unreadableAlone = computed(() => {
     ? cause
     : null;
 });
-const githubUrl = computed(() => `https://github.com/${props.nameWithOwner}`);
+const githubUrl = computed(() => getGitHubUrl(props.nameWithOwner));
 const commitsUrl = computed(() => `${githubUrl.value}/commits`);
 const workflowsUrl = computed(() => getGitHubUrl(getRepositoryPath(props.nameWithOwner, 'workflows')));
 const columnGitHubUrl = computed(() => {
