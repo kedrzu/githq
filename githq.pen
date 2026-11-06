@@ -24553,18 +24553,14 @@
                   "height": "fill_container",
                   "children": [
                     {
-                      "id": "ud52O",
+                      "id": "AlshC",
                       "type": "ref",
                       "ref": "aMT4O",
                       "name": "Sidebar",
                       "height": "fill_container",
                       "descendants": {
                         "B3L4in": {
-                          "fill": "$bg-3",
-                          "stroke": "$accent",
-                          "strokeWidth": {
-                            "left": 2
-                          }
+                          "fill": "$bg-3"
                         },
                         "hqT6N": {
                           "fill": "$fg"
@@ -24646,18 +24642,14 @@
                   "height": "fill_container",
                   "children": [
                     {
-                      "id": "mXMsE",
+                      "id": "RrnhI",
                       "type": "ref",
                       "ref": "aMT4O",
                       "name": "Sidebar",
                       "height": "fill_container",
                       "descendants": {
                         "B3L4in": {
-                          "fill": "$bg-3",
-                          "stroke": "$accent",
-                          "strokeWidth": {
-                            "left": 2
-                          }
+                          "fill": "$bg-3"
                         },
                         "hqT6N": {
                           "fill": "$fg"
@@ -26790,18 +26782,14 @@
                   "height": "fill_container",
                   "children": [
                     {
-                      "id": "k2K44",
+                      "id": "y1MYBL",
                       "type": "ref",
                       "ref": "aMT4O",
                       "name": "Sidebar",
                       "height": "fill_container",
                       "descendants": {
                         "CdE4K": {
-                          "fill": "$bg-3",
-                          "stroke": "$accent",
-                          "strokeWidth": {
-                            "left": 2
-                          }
+                          "fill": "$bg-3"
                         },
                         "kbagZ": {
                           "stroke": "$accent"
@@ -66749,18 +66737,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "Ss5aW",
+                          "id": "PkS8U",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "CdE4K": {
-                              "fill": "$bg-3",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "fill": "$bg-3"
                             },
                             "kbagZ": {
                               "stroke": "$accent"
@@ -69407,18 +69391,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "f8hdu",
+                          "id": "OMKq9",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "B3L4in": {
-                              "fill": "$bg-3",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "fill": "$bg-3"
                             },
                             "hqT6N": {
                               "fill": "$fg"
@@ -152510,7 +152490,7 @@
                               }
                             },
                             {
-                              "id": "GLY67",
+                              "id": "aoQoI",
                               "type": "ref",
                               "ref": "aMT4O",
                               "name": "Sidebar rail",
@@ -152518,11 +152498,7 @@
                               "descendants": {
                                 "i6mvf": {
                                   "enabled": true,
-                                  "fill": "$bg-3",
-                                  "stroke": "$accent",
-                                  "strokeWidth": {
-                                    "left": 2
-                                  }
+                                  "fill": "$bg-3"
                                 },
                                 "VEk6M": {
                                   "content": "–",
@@ -152613,7 +152589,7 @@
                               }
                             },
                             {
-                              "id": "OnG8r",
+                              "id": "evruM",
                               "type": "ref",
                               "ref": "aMT4O",
                               "name": "Sidebar rail",
@@ -152624,11 +152600,7 @@
                                 },
                                 "i6mvf": {
                                   "enabled": true,
-                                  "fill": "$bg-3",
-                                  "stroke": "$accent",
-                                  "strokeWidth": {
-                                    "left": 2
-                                  }
+                                  "fill": "$bg-3"
                                 },
                                 "VEk6M": {
                                   "content": "1+",
@@ -152801,7 +152773,7 @@
                               }
                             },
                             {
-                              "id": "lJOav",
+                              "id": "kFJgz",
                               "type": "ref",
                               "ref": "aMT4O",
                               "name": "Sidebar rail",
@@ -152812,11 +152784,7 @@
                                 },
                                 "i6mvf": {
                                   "enabled": true,
-                                  "fill": "$bg-3",
-                                  "stroke": "$accent",
-                                  "strokeWidth": {
-                                    "left": 2
-                                  }
+                                  "fill": "$bg-3"
                                 },
                                 "VEk6M": {
                                   "content": "2",
@@ -193674,18 +193642,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "W7VAU",
+                          "id": "QIFDa",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "B3L4in": {
-                              "fill": "$bg-3",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "fill": "$bg-3"
                             },
                             "hqT6N": {
                               "fill": "$fg"
@@ -194092,18 +194056,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "fO7HP",
+                          "id": "HJDX4",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "B3L4in": {
-                              "fill": "$bg-3",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "fill": "$bg-3"
                             },
                             "hqT6N": {
                               "fill": "$fg"
@@ -331778,8 +331738,8 @@
     {
       "type": "frame",
       "id": "O6Vuj8",
-      "x": -12728,
-      "y": 14816,
+      "x": -14959,
+      "y": 14019,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -332634,6 +332594,1237 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "JSICJ",
+              "name": "Still arriving · in each screen's shape",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "gm0Ou",
+                  "name": "Empty / Ghost workflow row",
+                  "reusable": true,
+                  "width": 1204,
+                  "height": 34,
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "ZrNO5",
+                      "name": "State",
+                      "fill": "#222831",
+                      "width": 14,
+                      "height": 14
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vbeF7",
+                      "name": "Name cell",
+                      "width": 230,
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "Ci2Hg",
+                          "name": "Name",
+                          "fill": "#222831",
+                          "width": 120,
+                          "height": 9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qGYnI",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Repository cell",
+                      "enabled": false,
+                      "width": 130,
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "ouddv",
+                          "name": "Repository",
+                          "fill": "#1C2128",
+                          "width": 90,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QPBmR",
+                      "name": "Ref cell",
+                      "width": 130,
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "NwyZn",
+                          "name": "Ref",
+                          "fill": "#1C2128",
+                          "width": 60,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Mxitn",
+                      "name": "Runs",
+                      "gap": 3,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 1,
+                          "id": "UYRRM",
+                          "name": "Run 1",
+                          "fill": "#222831",
+                          "width": 7,
+                          "height": 10
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 1,
+                          "id": "c55nCI",
+                          "name": "Run 2",
+                          "fill": "#222831",
+                          "width": 7,
+                          "height": 10
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 1,
+                          "id": "DDpRR",
+                          "name": "Run 3",
+                          "fill": "#222831",
+                          "width": 7,
+                          "height": 10
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 1,
+                          "id": "HcjSy",
+                          "name": "Run 4",
+                          "fill": "#222831",
+                          "width": 7,
+                          "height": 10
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 1,
+                          "id": "e9lMFC",
+                          "name": "Run 5",
+                          "fill": "#222831",
+                          "width": 7,
+                          "height": 10
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nw5PE",
+                      "name": "Status cell",
+                      "width": "fill_container",
+                      "padding": [
+                        0,
+                        0,
+                        0,
+                        10
+                      ],
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "QUXo7",
+                          "name": "Status",
+                          "fill": "#1C2128",
+                          "width": 150,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "jQhna",
+                      "name": "Last result",
+                      "fill": "#1C2128",
+                      "width": 70,
+                      "height": 8
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "J0Vrj",
+                  "name": "Empty / Ghost commit row",
+                  "reusable": true,
+                  "width": 924,
+                  "height": 32,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    20,
+                    0,
+                    0
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "KkPtK",
+                      "name": "Graph",
+                      "width": 64,
+                      "height": 32,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "Xz9fw",
+                          "x": 20,
+                          "y": 0,
+                          "name": "Lane",
+                          "fill": "#2A3038",
+                          "width": 1.5,
+                          "height": 32
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "zueUx",
+                          "x": 16,
+                          "y": 12,
+                          "name": "Commit",
+                          "fill": "#2A3038",
+                          "width": 9,
+                          "height": 9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "jgFGA",
+                      "name": "Message",
+                      "fill": "#222831",
+                      "width": 320,
+                      "height": 9
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T0TaVj",
+                      "name": "spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "e2jpfQ",
+                      "name": "Author",
+                      "fill": "#222831",
+                      "width": 16,
+                      "height": 16
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "G0g65a",
+                      "name": "Author name",
+                      "fill": "#1C2128",
+                      "width": 80,
+                      "height": 8
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "p2pSMU",
+                      "name": "Date",
+                      "fill": "#1C2128",
+                      "width": 18,
+                      "height": 8
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JlQN2",
+                  "name": "Empty / Ghost ref row",
+                  "reusable": true,
+                  "width": 264,
+                  "height": 26,
+                  "gap": 8,
+                  "padding": [
+                    0,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "K8CzY",
+                      "name": "Icon",
+                      "fill": "#1C2128",
+                      "width": 12,
+                      "height": 12
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "dXesX",
+                      "name": "Name",
+                      "fill": "#222831",
+                      "width": 130,
+                      "height": 8
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EE47R",
+                      "name": "spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "chOiB",
+                      "name": "Age",
+                      "fill": "#1C2128",
+                      "width": 18,
+                      "height": 8
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o3Sicl",
+                  "name": "Empty / Ghost column",
+                  "reusable": true,
+                  "width": 268,
+                  "fill": "$bg-2",
+                  "cornerRadius": 10,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 8,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "C6rXpM",
+                      "name": "Column head",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "padding": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "scPBq",
+                          "name": "Icon",
+                          "fill": "#222831",
+                          "width": 12,
+                          "height": 12
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "UXRsR",
+                          "name": "Name",
+                          "fill": "#222831",
+                          "width": 70,
+                          "height": 9
+                        }
+                      ]
+                    },
+                    {
+                      "id": "pOwlQ",
+                      "type": "ref",
+                      "ref": "G84jw",
+                      "name": "Ghost 1",
+                      "width": "fill_container",
+                      "opacity": 1
+                    },
+                    {
+                      "id": "RFsA4",
+                      "type": "ref",
+                      "ref": "G84jw",
+                      "name": "Ghost 2",
+                      "width": "fill_container",
+                      "opacity": 0.75
+                    },
+                    {
+                      "id": "Lu6jM",
+                      "type": "ref",
+                      "ref": "G84jw",
+                      "name": "Ghost 3",
+                      "width": "fill_container",
+                      "opacity": 0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "HDwJ8",
+                  "name": "Empty / Still arriving · workflows",
+                  "reusable": true,
+                  "width": 1204,
+                  "layout": "vertical",
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BiyLH",
+                      "name": "Ghost group",
+                      "width": "fill_container",
+                      "padding": [
+                        12,
+                        16,
+                        8,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "XzdIo",
+                          "name": "Group",
+                          "fill": "#1C2128",
+                          "width": 64,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "id": "eqj7A",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.92
+                    },
+                    {
+                      "id": "QhstJ",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.84
+                    },
+                    {
+                      "id": "N9O7F",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.77
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VHhLE",
+                      "name": "Ghost group",
+                      "opacity": 0.69,
+                      "width": "fill_container",
+                      "padding": [
+                        12,
+                        16,
+                        8,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "IcT9T",
+                          "name": "Group",
+                          "fill": "#1C2128",
+                          "width": 64,
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "id": "c3vLzw",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.61
+                    },
+                    {
+                      "id": "Y6cOo",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.53
+                    },
+                    {
+                      "id": "PP4v4",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.46
+                    },
+                    {
+                      "id": "QDULl",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.38
+                    },
+                    {
+                      "id": "KfUSD",
+                      "type": "ref",
+                      "ref": "gm0Ou",
+                      "name": "Ghost workflow",
+                      "width": "fill_container",
+                      "opacity": 0.3
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Rp1Rx",
+                  "name": "Empty / Still arriving · commits",
+                  "reusable": true,
+                  "clip": true,
+                  "width": 1204,
+                  "height": 826,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UKc9F",
+                      "name": "Branches and tags",
+                      "width": 280,
+                      "height": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "right": 1
+                      },
+                      "layout": "vertical",
+                      "gap": 4,
+                      "padding": 8,
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 6,
+                          "id": "pSSYd",
+                          "name": "Filter",
+                          "fill": "$bg-2",
+                          "width": "fill_container",
+                          "height": 28,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "cllmc",
+                          "name": "Section",
+                          "width": "fill_container",
+                          "padding": [
+                            12,
+                            8,
+                            6,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 3,
+                              "id": "QDNRX",
+                              "name": "Branches",
+                              "fill": "#1C2128",
+                              "width": 56,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "id": "lF2Sa",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 1,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 150
+                            }
+                          }
+                        },
+                        {
+                          "id": "Bhvs0",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.91,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 110
+                            }
+                          }
+                        },
+                        {
+                          "id": "VaqCc",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.82,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 170
+                            }
+                          }
+                        },
+                        {
+                          "id": "tC60b",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.72,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 130
+                            }
+                          }
+                        },
+                        {
+                          "id": "uGRcG",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.63,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 90
+                            }
+                          }
+                        },
+                        {
+                          "id": "UITr9",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.54,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 140
+                            }
+                          }
+                        },
+                        {
+                          "id": "B8DeBV",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.45,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 120
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xevD5",
+                          "name": "Section",
+                          "width": "fill_container",
+                          "padding": [
+                            12,
+                            8,
+                            6,
+                            8
+                          ],
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 3,
+                              "id": "ehwVe",
+                              "name": "Tags",
+                              "fill": "#1C2128",
+                              "width": 56,
+                              "height": 8
+                            }
+                          ]
+                        },
+                        {
+                          "id": "Kt4Yn",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.6,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "QJLWB",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.504,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 60
+                            }
+                          }
+                        },
+                        {
+                          "id": "Erg9C",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.40800000000000003,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "huG0T",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.312,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 60
+                            }
+                          }
+                        },
+                        {
+                          "id": "Vtx5K",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.216,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "zAPHx",
+                          "type": "ref",
+                          "ref": "JlQN2",
+                          "name": "Ghost ref",
+                          "width": "fill_container",
+                          "opacity": 0.12,
+                          "descendants": {
+                            "dXesX": {
+                              "width": 60
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TVT2R",
+                      "name": "Graph",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "padding": [
+                        2,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "id": "EVDnS",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 1,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 360
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "R9Qcx8",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.96,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 300
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "g5vk7",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.93,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 420
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "hhXP5",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.89,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 280
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "r9eAq",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.86,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 390
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "bCDfb",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.82,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 330
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "a81wT",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.79,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 450
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "J0qPP",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.75,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 310
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "XIkni",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.72,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 370
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "HErPD",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.68,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 260
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "GSpkP",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.65,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 410
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "Tfgxh",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.61,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 340
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "lKhz8",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.57,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 300
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "quAYj",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.54,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 380
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "e31y8",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.5,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 290
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "TsDz5",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.47,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 430
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "kdSqM",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.43,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 320
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "Z6wCvj",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.4,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 350
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "CDMl1",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.36,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 270
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "h3dhP",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.33,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 400
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "g7jUN",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.29,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 330
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        },
+                        {
+                          "id": "s8790",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.26,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 360
+                            },
+                            "G0g65a": {
+                              "width": 96
+                            }
+                          }
+                        },
+                        {
+                          "id": "X1A054",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.22,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 300
+                            },
+                            "G0g65a": {
+                              "width": 70
+                            }
+                          }
+                        },
+                        {
+                          "id": "HUtHU",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.19,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 380
+                            },
+                            "G0g65a": {
+                              "width": 88
+                            }
+                          }
+                        },
+                        {
+                          "id": "X18l5f",
+                          "type": "ref",
+                          "ref": "J0Vrj",
+                          "name": "Ghost commit",
+                          "width": "fill_container",
+                          "opacity": 0.15,
+                          "descendants": {
+                            "jgFGA": {
+                              "width": 350
+                            },
+                            "G0g65a": {
+                              "width": 80
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ArEFN",
+                  "name": "Empty / Still arriving · board",
+                  "reusable": true,
+                  "width": 1384,
+                  "gap": 12,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "id": "PmRXr",
+                      "type": "ref",
+                      "ref": "o3Sicl",
+                      "name": "Ghost column 1",
+                      "opacity": 1,
+                      "descendants": {
+                        "UXRsR": {
+                          "width": 90
+                        }
+                      }
+                    },
+                    {
+                      "id": "djrb7",
+                      "type": "ref",
+                      "ref": "o3Sicl",
+                      "name": "Ghost column 2",
+                      "opacity": 0.8,
+                      "descendants": {
+                        "UXRsR": {
+                          "width": 60
+                        }
+                      }
+                    },
+                    {
+                      "id": "TraXh",
+                      "type": "ref",
+                      "ref": "o3Sicl",
+                      "name": "Ghost column 3",
+                      "opacity": 0.6,
+                      "descendants": {
+                        "UXRsR": {
+                          "width": 110
+                        }
+                      }
+                    },
+                    {
+                      "id": "kujlx",
+                      "type": "ref",
+                      "ref": "o3Sicl",
+                      "name": "Ghost column 4",
+                      "opacity": 0.4,
+                      "descendants": {
+                        "UXRsR": {
+                          "width": 75
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -333411,7 +334602,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "No words: the ghosts alone say it is loading, so they have to move. A soft highlight runs left to right along the skeleton bars themselves, never over the background between them: a full pass every 1.6 s, each row starting 80 ms after the one above, so the block reads as churning, never blinking. A row that arrives fades in over its ghost (150 ms) and the ghosts below move down. With animations off in Display (CH49) the ghosts stand still; they still read as rows to come.",
+                      "content": "No words: the ghosts alone say it is loading, so they have to move. A soft highlight runs left to right along the skeleton bars themselves, never over the background between them: a full pass every 1.6 s, each row starting 80 ms after the one above, so the block reads as churning, never blinking. A row that arrives fades in over its ghost (150 ms) and the ghosts below move down. With animations off in Display (CH49) the ghosts stand still; they still read as rows to come. The same motion runs on every skeleton: list rows, board cards and columns, workflow rows, commit rows and the branch list.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -340180,18 +341371,14 @@
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "KAo1w",
+                          "id": "Df9Yc",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
                           "height": "fill_container",
                           "descendants": {
                             "CdE4K": {
-                              "fill": "$bg-3",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "fill": "$bg-3"
                             },
                             "kbagZ": {
                               "stroke": "$accent"
@@ -340443,312 +341630,653 @@
           "children": [
             {
               "type": "frame",
-              "id": "BLVJl",
-              "name": "Slot · ES21 · A repository's Commits on its first read",
-              "width": 1440,
-              "layout": "vertical",
-              "gap": 14,
+              "id": "MvhxE",
+              "name": "Variants · How Commits show their first read",
+              "fill": "#D299221A",
+              "cornerRadius": 12,
+              "stroke": "$amber",
+              "strokeWidth": 2,
+              "gap": 80,
+              "padding": 24,
               "children": [
                 {
                   "type": "frame",
-                  "id": "UWuMO",
-                  "name": "Caption",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "B85s7",
-                      "name": "Caption title",
-                      "fill": "$fg",
-                      "content": "ES21 · A repository's Commits on its first read",
-                      "fontFamily": "$font",
-                      "fontSize": 15,
-                      "fontWeight": "500"
-                    },
-                    {
-                      "type": "text",
-                      "id": "cLhLg",
-                      "name": "Caption note",
-                      "fill": "$fg-2",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "Fix: today a bare \"Loading commits…\". Ghost rows where the commits will land; the branch list waits with them. Once the first page is in, CH32's own first-second state takes over.",
-                      "lineHeight": 1.45,
-                      "fontFamily": "$font",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "tmLHL",
-                  "name": "ES21 · Commits · First read",
-                  "clip": true,
+                  "id": "BLVJl",
+                  "name": "Slot · ES21 · Variant A · Commits' first read as a skeleton",
                   "width": 1440,
-                  "height": 900,
-                  "fill": "$bg",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
                   "layout": "vertical",
+                  "gap": 14,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "ZjBeR",
-                      "name": "Main",
+                      "id": "UWuMO",
+                      "name": "Caption",
                       "width": "fill_container",
-                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
                       "children": [
                         {
-                          "id": "lyGnj",
-                          "type": "ref",
-                          "ref": "ZPurg",
-                          "name": "Sidebar",
-                          "height": "fill_container",
-                          "descendants": {
-                            "w7B2q": {
-                              "fill": "$bg-3"
-                            },
-                            "j1VWpL": {
-                              "fill": "$fg"
-                            },
-                            "y14orI": {
-                              "fill": "$fg",
-                              "fontWeight": "500"
-                            }
-                          }
+                          "type": "text",
+                          "id": "B85s7",
+                          "name": "Caption title",
+                          "fill": "$fg",
+                          "content": "ES21 · Variant A · Commits' first read as a skeleton",
+                          "fontFamily": "$font",
+                          "fontSize": 15,
+                          "fontWeight": "500"
                         },
                         {
+                          "type": "text",
+                          "id": "cLhLg",
+                          "name": "Caption note",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Recommended. The skeleton takes the graph's own shape: branches and tags on the left, a lane with commit dots and message bars on the right, author and date at the end, so the first page lands in place without a jump. It is on screen for a second or two at most (the first page is small, CH32); a loader would flash for the same second and then the whole layout would appear at once.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tmLHL",
+                      "name": "ES21 · Variant A · Commits · First read, skeleton",
+                      "clip": true,
+                      "width": 1440,
+                      "height": 900,
+                      "fill": "$bg",
+                      "cornerRadius": 10,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
                           "type": "frame",
-                          "id": "OUIU4",
-                          "name": "Pane",
+                          "id": "ZjBeR",
+                          "name": "Main",
                           "width": "fill_container",
                           "height": "fill_container",
-                          "layout": "vertical",
                           "children": [
                             {
+                              "id": "lyGnj",
+                              "type": "ref",
+                              "ref": "ZPurg",
+                              "name": "Sidebar",
+                              "height": "fill_container",
+                              "descendants": {
+                                "w7B2q": {
+                                  "fill": "$bg-3"
+                                },
+                                "j1VWpL": {
+                                  "fill": "$fg"
+                                },
+                                "y14orI": {
+                                  "fill": "$fg",
+                                  "fontWeight": "500"
+                                }
+                              }
+                            },
+                            {
                               "type": "frame",
-                              "id": "hGScI",
-                              "name": "Header",
+                              "id": "OUIU4",
+                              "name": "Pane",
                               "width": "fill_container",
-                              "height": 48,
-                              "stroke": "$border",
-                              "strokeWidth": {
-                                "bottom": 1
-                              },
-                              "gap": 10,
-                              "padding": [
-                                0,
-                                20
-                              ],
-                              "alignItems": "center",
+                              "height": "fill_container",
+                              "layout": "vertical",
                               "children": [
                                 {
-                                  "type": "icon",
-                                  "id": "m0dhV",
-                                  "name": "icon lock",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "lock",
-                                  "library": "lucide",
-                                  "fill": "$fg-2"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "V3qaR7",
-                                  "name": "Title",
-                                  "fill": "$fg",
-                                  "content": "fitloop/webapp",
-                                  "fontFamily": "$font",
-                                  "fontSize": 14,
-                                  "fontWeight": "600"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "cSSkZ",
-                                  "name": "Meta",
-                                  "fill": "$fg-dim",
-                                  "content": "private",
-                                  "fontFamily": "$font",
-                                  "fontSize": 12.5,
-                                  "fontWeight": "normal"
-                                },
-                                {
                                   "type": "frame",
-                                  "id": "f7TSk",
-                                  "name": "Sections",
-                                  "gap": 2,
-                                  "padding": [
-                                    0,
-                                    0,
-                                    0,
-                                    12
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "id": "QmM6Z",
-                                      "type": "ref",
-                                      "ref": "k0cJZ",
-                                      "name": "Section Issues",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Issues",
-                                          "name": "Issues"
-                                        },
-                                        "prKB9": {
-                                          "content": "118"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "taMWN",
-                                      "type": "ref",
-                                      "ref": "k0cJZ",
-                                      "name": "Section Pull requests",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Pull requests",
-                                          "name": "Pull requests"
-                                        },
-                                        "prKB9": {
-                                          "content": "24"
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "EFxIx",
-                                      "type": "ref",
-                                      "ref": "U6PxrM",
-                                      "name": "Section Commits",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Commits",
-                                          "name": "Commits"
-                                        },
-                                        "prKB9": {
-                                          "enabled": false
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "id": "g5l1M",
-                                      "type": "ref",
-                                      "ref": "k0cJZ",
-                                      "name": "Section Workflows",
-                                      "descendants": {
-                                        "JaHcp": {
-                                          "content": "Workflows",
-                                          "name": "Workflows"
-                                        },
-                                        "prKB9": {
-                                          "content": "2"
-                                        }
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "zRMjG",
-                                  "name": "spacer",
+                                  "id": "hGScI",
+                                  "name": "Header",
                                   "width": "fill_container",
-                                  "height": 1
-                                },
-                                {
-                                  "id": "n3ppE",
-                                  "type": "ref",
-                                  "ref": "XJXsm",
-                                  "name": "Tool Branches and tags  B",
-                                  "descendants": {
-                                    "rgTry": {
-                                      "icon": "git-branch"
-                                    },
-                                    "deogH": {
-                                      "content": "Branches and tags"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "FGBJx",
-                                  "type": "ref",
-                                  "ref": "w9kS9",
-                                  "name": "Kbd B",
-                                  "descendants": {
-                                    "luKkY": {
-                                      "content": "B"
-                                    }
-                                  }
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "PRlqh",
-                                  "name": "github",
-                                  "cornerRadius": 6,
-                                  "gap": 6,
+                                  "height": 48,
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 10,
                                   "padding": [
-                                    4,
-                                    8
+                                    0,
+                                    20
                                   ],
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "icon",
-                                      "id": "kHetB",
-                                      "name": "icon github",
-                                      "width": 14,
-                                      "height": 14,
-                                      "icon": "github",
+                                      "id": "m0dhV",
+                                      "name": "icon lock",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "lock",
                                       "library": "lucide",
                                       "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "V3qaR7",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "fitloop/webapp",
+                                      "fontFamily": "$font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "cSSkZ",
+                                      "name": "Meta",
+                                      "fill": "$fg-dim",
+                                      "content": "private",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "f7TSk",
+                                      "name": "Sections",
+                                      "gap": 2,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "QmM6Z",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Issues",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Issues",
+                                              "name": "Issues"
+                                            },
+                                            "prKB9": {
+                                              "content": "118"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "taMWN",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Pull requests",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Pull requests",
+                                              "name": "Pull requests"
+                                            },
+                                            "prKB9": {
+                                              "content": "24"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "EFxIx",
+                                          "type": "ref",
+                                          "ref": "U6PxrM",
+                                          "name": "Section Commits",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Commits",
+                                              "name": "Commits"
+                                            },
+                                            "prKB9": {
+                                              "enabled": false
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "g5l1M",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Workflows",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Workflows",
+                                              "name": "Workflows"
+                                            },
+                                            "prKB9": {
+                                              "content": "2"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "zRMjG",
+                                      "name": "spacer",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "id": "n3ppE",
+                                      "type": "ref",
+                                      "ref": "XJXsm",
+                                      "name": "Tool Branches and tags  B",
+                                      "descendants": {
+                                        "rgTry": {
+                                          "icon": "git-branch"
+                                        },
+                                        "deogH": {
+                                          "content": "Branches and tags"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "FGBJx",
+                                      "type": "ref",
+                                      "ref": "w9kS9",
+                                      "name": "Kbd B",
+                                      "descendants": {
+                                        "luKkY": {
+                                          "content": "B"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "PRlqh",
+                                      "name": "github",
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        4,
+                                        8
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "kHetB",
+                                          "name": "icon github",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "github",
+                                          "library": "lucide",
+                                          "fill": "$fg-2"
+                                        }
+                                      ]
                                     }
                                   ]
+                                },
+                                {
+                                  "id": "GmD8j",
+                                  "type": "ref",
+                                  "ref": "Rp1Rx",
+                                  "name": "Empty state",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
                                 }
                               ]
-                            },
-                            {
-                              "id": "ItbOt",
-                              "type": "ref",
-                              "ref": "aTzHV",
-                              "name": "Empty state",
-                              "width": "fill_container",
-                              "height": "fill_container"
                             }
                           ]
+                        },
+                        {
+                          "id": "hBziW",
+                          "type": "ref",
+                          "ref": "BFhwj",
+                          "name": "Status bar",
+                          "width": "fill_container",
+                          "descendants": {
+                            "IHAUy": {
+                              "width": 236,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "justifyContent": "start"
+                            },
+                            "IHAUy/unZbw": {
+                              "content": "4,812 of 5,000 left this hour"
+                            },
+                            "YBQPD/zYDcH": {
+                              "icon": "loader-circle",
+                              "fill": "$fg-2",
+                              "enabled": true
+                            },
+                            "YBQPD/unZbw": {
+                              "content": "Reading commits",
+                              "fill": "$fg-2"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "gIbF0",
+                  "name": "Slot · ES26 · Variant B · Commits' first read as a loader in the middle",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ET97y",
+                      "name": "Caption",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "NOwNK",
+                          "name": "Caption title",
+                          "fill": "$fg",
+                          "content": "ES26 · Variant B · Commits' first read as a loader in the middle",
+                          "fontFamily": "$font",
+                          "fontSize": 15,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gQVLa",
+                          "name": "Caption note",
+                          "fill": "$fg-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Today's shape, made one of the shared notes: a turning loader, \"Reading commits\", one line. Simpler, and it says the same; but the graph's two columns appear all at once when the first page lands, after a second of a centred icon.",
+                          "lineHeight": 1.45,
+                          "fontFamily": "$font",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
                     {
-                      "id": "hBziW",
-                      "type": "ref",
-                      "ref": "BFhwj",
-                      "name": "Status bar",
-                      "width": "fill_container",
-                      "descendants": {
-                        "IHAUy": {
-                          "width": 236,
-                          "padding": [
-                            0,
-                            12
-                          ],
-                          "justifyContent": "start"
+                      "type": "frame",
+                      "id": "LuKNb",
+                      "name": "ES26 · Variant B · Commits · First read, loader",
+                      "clip": true,
+                      "width": 1440,
+                      "height": 900,
+                      "fill": "$bg",
+                      "cornerRadius": 10,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "xjSFP",
+                          "name": "Main",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "children": [
+                            {
+                              "id": "rStup",
+                              "type": "ref",
+                              "ref": "ZPurg",
+                              "name": "Sidebar",
+                              "height": "fill_container",
+                              "descendants": {
+                                "w7B2q": {
+                                  "fill": "$bg-3"
+                                },
+                                "j1VWpL": {
+                                  "fill": "$fg"
+                                },
+                                "y14orI": {
+                                  "fill": "$fg",
+                                  "fontWeight": "500"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XjLT8",
+                              "name": "Pane",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "DGPqA",
+                                  "name": "Header",
+                                  "width": "fill_container",
+                                  "height": 48,
+                                  "stroke": "$border",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
+                                  "gap": 10,
+                                  "padding": [
+                                    0,
+                                    20
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "V1Gwb",
+                                      "name": "icon lock",
+                                      "width": 16,
+                                      "height": 16,
+                                      "icon": "lock",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "j1EHKV",
+                                      "name": "Title",
+                                      "fill": "$fg",
+                                      "content": "fitloop/webapp",
+                                      "fontFamily": "$font",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "x79FG",
+                                      "name": "Meta",
+                                      "fill": "$fg-dim",
+                                      "content": "private",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12.5,
+                                      "fontWeight": "normal"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TuPJK",
+                                      "name": "Sections",
+                                      "gap": 2,
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        12
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "id": "yNenm",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Issues",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Issues",
+                                              "name": "Issues"
+                                            },
+                                            "prKB9": {
+                                              "content": "118"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "x41dD",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Pull requests",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Pull requests",
+                                              "name": "Pull requests"
+                                            },
+                                            "prKB9": {
+                                              "content": "24"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "Hpv75",
+                                          "type": "ref",
+                                          "ref": "U6PxrM",
+                                          "name": "Section Commits",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Commits",
+                                              "name": "Commits"
+                                            },
+                                            "prKB9": {
+                                              "enabled": false
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "id": "tcuMg",
+                                          "type": "ref",
+                                          "ref": "k0cJZ",
+                                          "name": "Section Workflows",
+                                          "descendants": {
+                                            "JaHcp": {
+                                              "content": "Workflows",
+                                              "name": "Workflows"
+                                            },
+                                            "prKB9": {
+                                              "content": "2"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "hL9dN",
+                                      "name": "spacer",
+                                      "width": "fill_container",
+                                      "height": 1
+                                    },
+                                    {
+                                      "id": "LYOQs",
+                                      "type": "ref",
+                                      "ref": "XJXsm",
+                                      "name": "Tool Branches and tags  B",
+                                      "descendants": {
+                                        "rgTry": {
+                                          "icon": "git-branch"
+                                        },
+                                        "deogH": {
+                                          "content": "Branches and tags"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "H0vf9",
+                                      "type": "ref",
+                                      "ref": "w9kS9",
+                                      "name": "Kbd B",
+                                      "descendants": {
+                                        "luKkY": {
+                                          "content": "B"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "y292WS",
+                                      "name": "github",
+                                      "cornerRadius": 6,
+                                      "gap": 6,
+                                      "padding": [
+                                        4,
+                                        8
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "m8CQt",
+                                          "name": "icon github",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "github",
+                                          "library": "lucide",
+                                          "fill": "$fg-2"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "u7lEez",
+                                  "type": "ref",
+                                  "ref": "hk0U0",
+                                  "name": "Empty state",
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "qEsb9": {
+                                      "icon": "loader-circle",
+                                      "fill": "$fg-3"
+                                    },
+                                    "P3dpQw": {
+                                      "content": "Reading commits"
+                                    },
+                                    "QFwBj": {
+                                      "content": "githq is reading fitloop/webapp's history from GitHub."
+                                    },
+                                    "vFbwf": {
+                                      "enabled": false
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
                         },
-                        "IHAUy/unZbw": {
-                          "content": "4,812 of 5,000 left this hour"
-                        },
-                        "YBQPD/zYDcH": {
-                          "icon": "loader-circle",
-                          "fill": "$fg-2",
-                          "enabled": true
-                        },
-                        "YBQPD/unZbw": {
-                          "content": "Reading commits",
-                          "fill": "$fg-2"
+                        {
+                          "id": "TQTtZ",
+                          "type": "ref",
+                          "ref": "BFhwj",
+                          "name": "Status bar",
+                          "width": "fill_container",
+                          "descendants": {
+                            "IHAUy": {
+                              "width": 236,
+                              "padding": [
+                                0,
+                                12
+                              ],
+                              "justifyContent": "start"
+                            },
+                            "IHAUy/unZbw": {
+                              "content": "4,812 of 5,000 left this hour"
+                            },
+                            "YBQPD/zYDcH": {
+                              "icon": "loader-circle",
+                              "fill": "$fg-2",
+                              "enabled": true
+                            },
+                            "YBQPD/unZbw": {
+                              "content": "Reading commits",
+                              "fill": "$fg-2"
+                            }
+                          }
                         }
-                      }
+                      ]
                     }
                   ]
                 }
@@ -341617,6 +343145,1149 @@
                         "YBQPD/unZbw": {
                           "content": "Up to date · settings saved in mlaine/githq-settings",
                           "fill": "$fg-dim"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "v9ctsv",
+          "name": "Row of screens · Workflows and boards",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "s4QMX",
+              "name": "Slot · ES27 · A repository's Workflows on their first read",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "eCwBq",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hywZ0",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "ES27 · A repository's Workflows on their first read",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UALnQ",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Fix of W16 (\"Not read yet\", a dashed circle in the middle): ghost workflow rows in the section's own columns (state, name, ref, the five-run strip, status, last result) under two ghost group headers.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ax210",
+                  "name": "ES27 · Workflows · First read",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "l1VAB",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "K3M8U",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "CTGG0": {
+                              "content": "0",
+                              "fill": "$fg-dim"
+                            },
+                            "vRVTU": {
+                              "fill": "$bg-3"
+                            },
+                            "s1KTe7": {
+                              "fill": "$fg"
+                            },
+                            "s26v6": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            },
+                            "xwW6r": {
+                              "enabled": true,
+                              "fill": "$bg-2",
+                              "stroke": "$fg-3",
+                              "strokeWidth": 1.5,
+                              "strokeAlignment": "inner"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tjt5p",
+                          "name": "Pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Ipxwn",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "VRzLG",
+                                  "name": "icon book-marked",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "book-marked",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "XlCaq",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "mlaine/tasklet",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "h0V2T",
+                                  "name": "Meta",
+                                  "fill": "$fg-dim",
+                                  "content": "public",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "QvqaA",
+                                  "name": "Sections",
+                                  "gap": 2,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "ndwEv",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Issues",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "name": "Issues",
+                                          "content": "Issues"
+                                        },
+                                        "prKB9": {
+                                          "content": "15"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "jzUPj",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Pull requests",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "content": "Pull requests",
+                                          "name": "Pull requests"
+                                        },
+                                        "prKB9": {
+                                          "content": "3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "TIaTz",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "Section Commits",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "name": "Commits",
+                                          "content": "Commits"
+                                        },
+                                        "prKB9": {
+                                          "content": "3",
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "HgabN",
+                                      "type": "ref",
+                                      "ref": "U6PxrM",
+                                      "name": "Section Workflows",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "name": "Workflows",
+                                          "content": "Workflows"
+                                        },
+                                        "prKB9": {
+                                          "content": "–"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "qdNe1",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                }
+                              ]
+                            },
+                            {
+                              "id": "b7VqH",
+                              "type": "ref",
+                              "ref": "HDwJ8",
+                              "name": "Empty state",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "u4IBm7",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD": {
+                          "name": "Segment · Pane"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "loader-circle",
+                          "fill": "$fg-2",
+                          "enabled": true
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Reading workflows",
+                          "fill": "$fg-2"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wOUnO",
+              "name": "Slot · ES28 · Broken workflows while the first reads run",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "nsR4N",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QcQDb",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "ES28 · Broken workflows while the first reads run",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t1p8m",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Nothing is known about any repository yet: the same ghost rows, with the repository column this list has. As soon as one repository is read and something is broken, rows show; W21 covers \"nothing known broken, still reading\".",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "D2vfen",
+                  "name": "ES28 · Broken workflows · First reads",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "kLuWP",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "vGt7i",
+                          "type": "ref",
+                          "ref": "ZPurg",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "xJU2l": {
+                              "fill": "$bg-3",
+                              "enabled": true
+                            },
+                            "i3Csrm": {
+                              "fill": "$fg"
+                            },
+                            "C37xKB": {
+                              "fill": "$fg",
+                              "fontWeight": "500"
+                            },
+                            "m9ZtIx": {
+                              "enabled": true
+                            },
+                            "CTGG0": {
+                              "content": "6",
+                              "fill": "$red"
+                            },
+                            "xwW6r": {
+                              "enabled": true,
+                              "fill": "$red-quiet"
+                            },
+                            "pxvMV": {
+                              "enabled": true,
+                              "fill": "$red-quiet"
+                            },
+                            "KMmC0": {
+                              "enabled": true
+                            },
+                            "ifNnb": {
+                              "enabled": true
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "EbhBI",
+                          "name": "Pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "w6wuO",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "AldW7",
+                                  "name": "icon workflow",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "workflow",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Jeitj",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "Broken workflows",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cPf96",
+                                  "name": "Meta",
+                                  "fill": "$fg-dim",
+                                  "content": "reading 4 repositories",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "m0K1TT",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "id": "y4QrE",
+                                  "type": "ref",
+                                  "ref": "xfbOl",
+                                  "name": "Hint Open failed run",
+                                  "gap": 5,
+                                  "descendants": {
+                                    "m5wIG9": {
+                                      "name": "Kbd ↵"
+                                    },
+                                    "m5wIG9/luKkY": {
+                                      "content": "↵"
+                                    },
+                                    "IOvfA": {
+                                      "name": "Open failed run",
+                                      "content": "Open failed run"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "id": "oau0Y",
+                              "type": "ref",
+                              "ref": "HDwJ8",
+                              "name": "Empty state",
+                              "width": "fill_container",
+                              "height": "fill_container",
+                              "descendants": {
+                                "eqj7A/qGYnI": {
+                                  "enabled": true
+                                },
+                                "QhstJ/qGYnI": {
+                                  "enabled": true
+                                },
+                                "N9O7F/qGYnI": {
+                                  "enabled": true
+                                },
+                                "c3vLzw/qGYnI": {
+                                  "enabled": true
+                                },
+                                "Y6cOo/qGYnI": {
+                                  "enabled": true
+                                },
+                                "PP4v4/qGYnI": {
+                                  "enabled": true
+                                },
+                                "QDULl/qGYnI": {
+                                  "enabled": true
+                                },
+                                "KfUSD/qGYnI": {
+                                  "enabled": true
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "Ar7Kd",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy": {
+                          "width": 236,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "start"
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "4,812 of 5,000 left this hour"
+                        },
+                        "YBQPD": {
+                          "name": "Segment · Pane"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "loader-circle",
+                          "fill": "$fg-2",
+                          "enabled": true
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Reading workflows · 1 of 4 repositories",
+                          "fill": "$fg-2"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "e4H6pf",
+              "name": "Slot · ES29 · A repository's board before its open issues arrive",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "u3w0P",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h1U7A",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "ES29 · A repository's board before its open issues arrive",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KZH3I",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "When the columns aren't known yet (they come from the items: labels, milestones, assignees), the whole board is ghost columns with ghost cards, fading to the right.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rtl1E",
+                  "name": "ES29 · Repository as Board · Open issues arriving",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "PsKaS",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "rJedo",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "aodv7",
+                          "name": "Pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "d0zuo",
+                              "name": "Header",
+                              "width": "fill_container",
+                              "height": 48,
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 10,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "nikiO",
+                                  "name": "icon lock",
+                                  "width": 16,
+                                  "height": 16,
+                                  "icon": "lock",
+                                  "library": "lucide",
+                                  "fill": "$fg-2"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "yDuEX",
+                                  "name": "Title",
+                                  "fill": "$fg",
+                                  "content": "fitloop/webapp",
+                                  "fontFamily": "$font",
+                                  "fontSize": 14,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "id8i1",
+                                  "name": "Meta",
+                                  "fill": "$fg-dim",
+                                  "content": "private",
+                                  "fontFamily": "$font",
+                                  "fontSize": 12.5,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "G6wZ4y",
+                                  "name": "Views",
+                                  "gap": 2,
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "id": "Oftu0",
+                                      "type": "ref",
+                                      "ref": "U6PxrM",
+                                      "name": "View Issues",
+                                      "descendants": {
+                                        "prKB9": {
+                                          "content": ""
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "BKEqH",
+                                      "type": "ref",
+                                      "ref": "k0cJZ",
+                                      "name": "View Pull requests",
+                                      "descendants": {
+                                        "JaHcp": {
+                                          "name": "Pull requests",
+                                          "content": "Pull requests"
+                                        },
+                                        "prKB9": {
+                                          "content": "24"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Kpme4",
+                                      "type": "ref",
+                                      "ref": "ZW0hL",
+                                      "name": "View Workflows",
+                                      "gap": 6,
+                                      "alignItems": "center",
+                                      "descendants": {
+                                        "F6cSZ": {
+                                          "name": "Workflows",
+                                          "content": "Workflows"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Gd2Hk",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ke7m2",
+                                  "name": "Filter",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "qBY9O",
+                                      "name": "icon list-filter",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "list-filter",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "jWQ6H",
+                                      "name": "Filter",
+                                      "fill": "$fg-2",
+                                      "content": "Filter",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zBJaJ",
+                                  "name": "Group: Issue type",
+                                  "fill": "$bg-3",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rPYXG",
+                                      "name": "icon rows-3",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "rows-3",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "xTLVB",
+                                      "name": "Group: Issue type",
+                                      "fill": "$fg-2",
+                                      "content": "Group: Issue type",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vHU3O",
+                                  "name": "Layout switch",
+                                  "cornerRadius": 6,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "gap": 2,
+                                  "padding": 2,
+                                  "children": [
+                                    {
+                                      "id": "z7hvjS",
+                                      "type": "ref",
+                                      "ref": "loIMo",
+                                      "name": "Mode list",
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "descendants": {
+                                        "dE4cB": {
+                                          "name": "icon list",
+                                          "icon": "list"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "br9cR",
+                                      "type": "ref",
+                                      "ref": "loIMo",
+                                      "name": "Mode columns-3",
+                                      "fill": "$bg-3",
+                                      "padding": [
+                                        3,
+                                        6
+                                      ],
+                                      "descendants": {
+                                        "dE4cB": {
+                                          "name": "icon columns-3",
+                                          "icon": "columns-3",
+                                          "fill": "$fg"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "g88Q4I",
+                                  "name": "Display",
+                                  "cornerRadius": 6,
+                                  "gap": 6,
+                                  "padding": [
+                                    4,
+                                    8
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "rP6SZ",
+                                      "name": "icon sliders-horizontal",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "sliders-horizontal",
+                                      "library": "lucide",
+                                      "fill": "$fg-2"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "CcjcO",
+                                      "name": "Display",
+                                      "fill": "$fg-2",
+                                      "content": "Display",
+                                      "fontFamily": "$font",
+                                      "fontSize": 12,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "id": "a0jih",
+                              "type": "ref",
+                              "ref": "ArEFN",
+                              "name": "Empty state",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "t639So",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "IHAUy/zYDcH": {
+                          "enabled": false
+                        },
+                        "IHAUy/unZbw": {
+                          "content": "2m",
+                          "fill": "$fg-2"
+                        },
+                        "YBQPD": {
+                          "name": "Segment · Pane"
+                        },
+                        "YBQPD/zYDcH": {
+                          "icon": "loader-circle",
+                          "fill": "$fg-2",
+                          "enabled": true
+                        },
+                        "YBQPD/unZbw": {
+                          "content": "Downloading open issues · 40 of 142",
+                          "fill": "$fg-2"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "a2ape",
+              "name": "Slot · ES30 · A project's board while its items arrive",
+              "width": 1440,
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "TUTmx",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DGmj5",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "ES30 · A project's board while its items arrive",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "AAr4d",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "When the columns are known (a project's Status options come with the project, before its items), the real column headers stand with ghost cards under them and no counts; the cards land in their columns.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OTIFA",
+                  "name": "ES30 · Project as Board · Items arriving",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xluXF",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "pjTqM",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "CdE4K": {
+                              "fill": "$bg-3",
+                              "stroke": "$accent",
+                              "strokeWidth": {
+                                "left": 2
+                              }
+                            },
+                            "kbagZ": {
+                              "stroke": "$accent"
+                            },
+                            "LVKfa": {
+                              "fill": "$fg"
+                            }
+                          }
+                        },
+                        {
+                          "id": "ifJgT",
+                          "type": "ref",
+                          "ref": "Wk5sR",
+                          "name": "Project pane",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "descendants": {
+                            "AEdG9": {
+                              "content": "fitloop"
+                            },
+                            "s3v5Zj": {
+                              "enabled": false
+                            },
+                            "nM3HW": {
+                              "content": ""
+                            },
+                            "mUpjv": {
+                              "id": "vRj6G",
+                              "type": "ref",
+                              "ref": "N9HxF",
+                              "name": "Still arriving",
+                              "width": "fill_container"
+                            },
+                            "uk14p": {
+                              "enabled": false
+                            },
+                            "upASh": {
+                              "enabled": false
+                            },
+                            "dJWaF": {
+                              "enabled": false
+                            },
+                            "rNSdd": {
+                              "enabled": false
+                            },
+                            "MkC4X": {
+                              "content": ""
+                            },
+                            "MZnli": {
+                              "id": "CPhik",
+                              "type": "ref",
+                              "ref": "N9HxF",
+                              "name": "Still arriving",
+                              "width": "fill_container"
+                            },
+                            "h3MkO7": {
+                              "enabled": false
+                            },
+                            "xVzL0": {
+                              "enabled": false
+                            },
+                            "TIKGQ": {
+                              "enabled": false
+                            },
+                            "fvezY": {
+                              "content": ""
+                            },
+                            "oGIbW": {
+                              "id": "sQnVJ",
+                              "type": "ref",
+                              "ref": "N9HxF",
+                              "name": "Still arriving",
+                              "width": "fill_container"
+                            },
+                            "J7W6pW": {
+                              "enabled": false
+                            },
+                            "plqVb": {
+                              "enabled": false
+                            },
+                            "ghuCa": {
+                              "content": ""
+                            },
+                            "lGXnB": {
+                              "id": "cgNWX",
+                              "type": "ref",
+                              "ref": "N9HxF",
+                              "name": "Still arriving",
+                              "width": "fill_container"
+                            },
+                            "kY7lW": {
+                              "enabled": false
+                            },
+                            "ASaZx": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "i7OvzH",
+                      "type": "ref",
+                      "ref": "Nopak",
+                      "name": "Status bar",
+                      "width": "fill_container",
+                      "descendants": {
+                        "YIJ0Y": {
+                          "width": 56,
+                          "justifyContent": "center",
+                          "padding": 0
+                        },
+                        "YIJ0Y/zYDcH": {
+                          "enabled": false
+                        },
+                        "YIJ0Y/unZbw": {
+                          "content": "2m",
+                          "fill": "$fg-2"
+                        },
+                        "L7akR": {
+                          "name": "Segment · Project pane",
+                          "width": "fill_container"
+                        },
+                        "L7akR/zYDcH": {
+                          "icon": "loader-circle",
+                          "fill": "$fg-2",
+                          "enabled": true
+                        },
+                        "L7akR/unZbw": {
+                          "content": "Downloading items · 0 of 128",
+                          "fill": "$fg-2"
+                        },
+                        "Q9y1K": {
+                          "enabled": false
                         }
                       }
                     }
