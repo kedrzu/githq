@@ -80,8 +80,8 @@ interface FakeEventListener {
  * The desktop app's native side for the e2e tests (`packages/desktop/src-tauri`): the commands of the app's
  * `NativeBridge` (`packages/app/desktop/NativeBridge.ts`), answered here in the test through what Tauri injects into
  * its window, `window.__TAURI_INTERNALS__` — the OS credential store a field, the system browser a log of the pages it
- * opened, GitHub's device flow answered when the test says, the updater's state, `update-state`, and the window's full
- * screen, sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
+ * opened, GitHub's device flow answered when the test says, the updater's state, `update-state`, the window's full
+ * screen and a trackpad scroll's phases, sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
  */
 export class FakeNativeBridge {
     /** The token in the OS credential store, or `null`. */
@@ -184,6 +184,11 @@ export class FakeNativeBridge {
     async setFullscreen(fullscreen: boolean): Promise<void> {
         this.fullscreen = fullscreen;
         await this.emit('tauri://resize', { width: 1280, height: 800 });
+    }
+
+    /** The fingers came down on the trackpad to scroll, lifted off, or the system cancelled the scroll (`scroll-phase`). */
+    async sendScrollPhase(phase: 'began' | 'ended' | 'cancelled'): Promise<void> {
+        await this.emit('scroll-phase', phase);
     }
 
     /** Throws when the app ran a command the fake does not know, naming each. */

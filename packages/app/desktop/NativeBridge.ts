@@ -66,6 +66,9 @@ export interface JobLogAnswer {
  */
 export type ReadJobLogError = 'invalid' | 'refused' | 'tooLarge' | 'offline' | 'failed';
 
+/** A trackpad scroll's phase (`report_scroll_phases` in `packages/desktop/src-tauri/src/lib.rs`). */
+export type ScrollPhase = 'began' | 'ended' | 'cancelled';
+
 /**
  * The desktop app's native commands (`packages/desktop/src-tauri/src/lib.rs`), one method each. A command that fails
  * rejects with its error code, a bare string.
@@ -114,6 +117,11 @@ export interface NativeBridgeShape {
     onWindowResized(listener: () => void): Promise<void>;
     /** Tauri's `is_fullscreen`: whether the window is in full screen or on its way there. */
     isFullscreen(): Promise<boolean>;
+    /**
+     * Calls `listener` as the fingers come down on a Mac's trackpad to scroll, lift off, or the system cancels the scroll
+     * (the `scroll-phase` event; a payload that isn't one is ignored); resolves once it listens.
+     */
+    onScrollPhase(listener: (phase: ScrollPhase) => void): Promise<void>;
 }
 
 /**
@@ -174,6 +182,12 @@ function createTauriBridge(): NativeBridgeShape {
         },
         onWindowResized: listener => listen('tauri://resize', () => listener()),
         isFullscreen: () => tauri.invoke<boolean>('plugin:window|is_fullscreen'),
+        onScrollPhase: listener =>
+            listen('scroll-phase', payload => {
+                if (payload === 'began' || payload === 'ended' || payload === 'cancelled') {
+                    listener(payload);
+                }
+            }),
     };
 
     /** Calls `handler` with the payload of each `event` the native side emits; resolves once it listens. */
