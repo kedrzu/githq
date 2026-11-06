@@ -24,3 +24,5 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-06 — Owner: on a phone, what githq does not support there hands off to github.com like any other address
   githq does not show (D3). Scope proposed as D4 — owner did not object, not confirmed; merging still open. Still
   unanswered: why the owner wants githq on a phone (what they do with it there).
+- 2026-11-06 — Owner accepted: the window's width decides the mobile layout and hand-offs; resizing never navigates
+  (D5). Proposed, not confirmed: the desktop app's window never gets that narrow (D6).

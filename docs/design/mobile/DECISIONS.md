@@ -55,3 +55,31 @@ command menu from a button. Commits, code review, Actions, tracking settings and
 
 **Why.** The owner asked for the basic functionality first, naming commits and code review as later. The rest of
 the list is inferred from the desktop's first version, not from the owner; merging is the open edge.
+
+## D5
+
+**"On a phone" means a narrow window: below one width the app takes its mobile layout and the hand-offs of
+[D3](#d3), whatever the device. Resizing never navigates — whether an address is handed off is decided when it is
+navigated to, and a screen already open stays and is squeezed.** (2026-11-06, owner, on the design agent's proposal)
+
+**Why.** A narrow window needs the mobile layout anyway: the desktop's side-by-side panes do not fit below about
+650 px. If the feature set followed the device instead, a narrow window on a computer would need mobile versions of
+commits and code review, which are not designed. The width is not fixed here.
+
+> **Checked 2026-11-06:** the shell's screen has a minimum width of 400 px and the sidebar of 180 px —
+> `packages/app/shell/AppShell.vue:85`, `:88`. The landing page already switches to its mobile layout below 720 px
+> of its container — `packages/app/styles/tokens.scss:241`.
+
+**Rejected.**
+- Deciding by device (a touch screen and a narrow screen) — a narrow window on a computer would be a third state,
+  mobile layout with desktop features, that nobody designs. It would win if someone regularly works in a narrow
+  window on a computer and needs commits there; no such case is known.
+- Handing off on resize — narrowing a window during a code review would throw the user out to github.com.
+
+## D6
+
+**The desktop app never takes the mobile layout: its window has a minimum width above the mobile width.**
+(2026-11-06, proposal of the design agent, not confirmed by the owner)
+
+**Why.** Nobody runs the desktop app on a phone, and a narrow desktop window handing commits off to the browser
+would take away what the desktop app is for.
