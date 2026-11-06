@@ -76,6 +76,11 @@ export const DownloadingClosedIssues: Story = {
     args: { freshness: { kind: 'partial', downloading: { phase: 'closedIssues', done: 1200, total: 4000 } } },
 };
 
+/** A tracked project while its items download (first run and loading D14, ES18). */
+export const DownloadingItems: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'items', done: 0, total: 128 } } },
+};
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 

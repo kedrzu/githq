@@ -392,13 +392,21 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * How fresh a tracked project is: `partial` until all its items have arrived — told by the download — then as
-         * its poll goes, the slower GraphQL one while GitHub refuses its REST; reactive.
+         * How fresh a tracked project is: `partial` until all its items have arrived — told by the download —, with how
+         * many are read of how many GitHub counts (first run and loading D14); then as its poll goes, the slower GraphQL
+         * one while GitHub refuses its REST; reactive.
          */
         function getProjectFreshness(id: string): Freshness {
             const state = tracking.getSyncState({ kind: 'project', id });
+            const count = state?.count;
             if (!haveOpenItemsArrived(state)) {
-                return getLoopFreshness('download', null);
+                const freshness = getLoopFreshness('download', null);
+                return freshness.kind === 'partial'
+                    ? {
+                          kind: 'partial',
+                          downloading: { phase: 'items', done: count?.done ?? 0, total: count?.total ?? null },
+                      }
+                    : freshness;
             }
 
             return getLoopFreshness(

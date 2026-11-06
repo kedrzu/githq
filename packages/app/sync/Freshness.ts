@@ -16,7 +16,7 @@ import type { DownloadCount, RepositoryDownloadPhase } from '@/tracking/Tracking
  * - `partial`: what it shows is not all there yet and its first download is under way; for "my work", `arriving` names
  *   the groups whose searches haven't answered yet (first run and loading D14); for a tracked repository, `downloading`
  *   the phase under way and how far it is — its open items first, then its closed ones, while its poll keeps what is in
- *   fresh (first run and loading D3, D14);
+ *   fresh (first run and loading D3, D14); for a tracked project, `downloading` its items, all read in one go (D14);
  * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
  * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
  * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
@@ -55,7 +55,7 @@ export type Freshness =
     | {
           readonly kind: 'partial';
           readonly arriving?: readonly MyWorkGroup[];
-          readonly downloading?: RepositoryDownloading;
+          readonly downloading?: TrackedDownloading;
       }
     | { readonly kind: 'reading'; readonly read: number; readonly total: number }
     | { readonly kind: 'readingLog'; readonly job: string }
@@ -99,10 +99,13 @@ export type Freshness =
           readonly repository: string;
       };
 
-/** A tracked repository's first download as its segment tells it: the phase under way and how far it is. */
-export interface RepositoryDownloading extends DownloadCount {
-    readonly phase: RepositoryDownloadPhase;
+/** A tracked repository's or project's first download as its segment tells it: the phase under way and how far it is. */
+export interface TrackedDownloading extends DownloadCount {
+    readonly phase: TrackedDownloadPhase;
 }
+
+/** What a tracked first download reads now: one of a repository's phases, or a project's items, read in one go. */
+export type TrackedDownloadPhase = RepositoryDownloadPhase | 'items';
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {

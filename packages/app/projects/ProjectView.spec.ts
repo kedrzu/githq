@@ -105,6 +105,31 @@ test('K6: until GitHub answers a view githq can’t evaluate, it waits — no it
     expect(document.querySelectorAll('[data-entry-key]')).toHaveLength(0);
 });
 
+test('first run and loading ES18, ES30: items still downloading show ghosts — on the board the columns’ heads without counts — never an empty project to add to', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { entries: [], arriving: true });
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Add existing issues/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /^Nothing matches/ })).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    await expect.element(page.getByRole('heading', { name: 'Todo', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Done', exact: true })).toBeVisible();
+    expect(document.querySelectorAll('[data-entry-key]')).toHaveLength(0);
+});
+
+test('first run and loading ES18: rows show as soon as some are in while more arrive', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { arriving: true });
+    await expect.element(page.getByRole('listitem').first()).toBeVisible();
+    expect(document.querySelectorAll('[data-entry-key]').length).toBeGreaterThan(0);
+});
+
+test('K8: a project downloaded with nothing in it says so and offers to add items', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { entries: [] });
+    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /Add existing issues/ })).toBeVisible();
+});
+
 test('D15: a stack’s entry shows the field values all its pull requests share, “+N” for the fields where they differ', async () => {
     const pullRequests = sampleStack({ id: 'S_picker', number: 1300, members: [{}, {}] });
     const nested: ListEntry<ProjectEntry>[] = pullRequests.map((content, index) => ({
@@ -158,11 +183,24 @@ interface MountOptions {
     readonly canMove?: boolean;
     /** The groups shown in place of those built from the sample project's items. */
     readonly groups?: readonly ListGroup<ProjectEntry>[];
+    /** The project's entries; the sample project's when not given. */
+    readonly entries?: readonly ProjectEntry[];
+    /** Its items are still downloading. */
+    readonly arriving?: boolean;
 }
 
 /** Mounts the sample project on a saved view, rebuilding the groups from the options it holds, as the page does. */
-function mount(saved: SavedView, { modifiedViews = [], canMove = false, groups }: MountOptions = {}) {
-    const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries: SAMPLE_PROJECT_ENTRIES });
+function mount(
+    saved: SavedView,
+    {
+        modifiedViews = [],
+        canMove = false,
+        groups,
+        entries = SAMPLE_PROJECT_ENTRIES,
+        arriving = false,
+    }: MountOptions = {},
+) {
+    const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries });
     const options = shallowRef<ProjectViewOptions>(initial.options);
     const view = {
         options,
@@ -186,9 +224,10 @@ function mount(saved: SavedView, { modifiedViews = [], canMove = false, groups }
                 ...sampleProjectView({
                     project: SAMPLE_PROJECT,
                     view: saved,
-                    entries: SAMPLE_PROJECT_ENTRIES,
+                    entries,
                     options: options.value,
                     modifiedViews,
+                    arriving,
                 }),
                 ...(groups && { groups }),
                 modified: options.value !== initial.options,

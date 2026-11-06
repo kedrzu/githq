@@ -117,3 +117,13 @@ export const EmptyProject: Story = {
 export const Roadmap: Story = {
     args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_ROADMAP, entries: SAMPLE_PROJECT_ENTRIES }),
 };
+
+/** A tracked project whose items are still downloading, none in yet: a screen of ghost rows, never "no items yet" (ES18). */
+export const ItemsArriving: Story = {
+    args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [], arriving: true }),
+};
+
+/** Its board while its items download: the Status columns' heads, without counts, over ghost cards (ES30). */
+export const BoardItemsArriving: Story = {
+    args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_BOARD, entries: [], arriving: true }),
+};

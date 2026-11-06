@@ -1,4 +1,4 @@
-<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). -->
+<!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -81,6 +81,12 @@ const props = withDefaults(
     groups: readonly ListGroup<ProjectEntry>[] | null;
     /** The project's items, archived ones left out — for its title, and to tell an empty project (K8). */
     itemCount: number;
+    /**
+     * Its items are still downloading: with none in, or none the view matches yet, ghosts stand where they will land —
+     * never an empty project with its add actions (K8), nor a view matching nothing (K9) (first run and loading ES18,
+     * ES30).
+     */
+    arriving?: boolean;
     /** The term of the view's filter githq can't evaluate; `null` when it evaluates the filter itself. */
     answeredTerm?: string | null;
     /** The options differ from the saved view's (D13). */
@@ -106,6 +112,7 @@ const props = withDefaults(
   }>(),
   {
     allItemsTo: null,
+    arriving: false,
     answeredTerm: null,
     modified: false,
     roadmap: false,
@@ -403,9 +410,9 @@ function hasItemView(entry: ProjectEntry) {
       <span :class="css.projectView_sortSummary">{{ t(l.sortedBy, { order: sortSummary }) }}</span>
     </div>
 
-    <!-- K8: nothing in the project at all. -->
+    <!-- K8: nothing in the project at all — not while its items are still on their way (ES18). -->
     <div
-      v-if="itemCount === 0"
+      v-if="itemCount === 0 && !arriving"
       :class="css.projectView_empty"
     >
       <EmptyState
@@ -471,7 +478,7 @@ function hasItemView(entry: ProjectEntry) {
 
     <!-- K9: the view is fine, nothing matches it now. A board keeps its columns, to write a draft into. -->
     <div
-      v-else-if="shownCount === 0 && options.layout === 'list'"
+      v-else-if="shownCount === 0 && options.layout === 'list' && !arriving"
       :class="css.projectView_empty"
     >
       <EmptyState
@@ -510,7 +517,7 @@ function hasItemView(entry: ProjectEntry) {
 
     <template v-else>
       <p
-        v-if="shownCount === 0"
+        v-if="shownCount === 0 && !arriving"
         :class="css.projectView_nothing"
       >
         {{
@@ -523,6 +530,7 @@ function hasItemView(entry: ProjectEntry) {
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
         :groups="groups"
+        :groups-arriving="arriving && groups.length === 0"
         :layout="options.layout"
         :opened-id="openedId"
         :is-edited="isEdited"

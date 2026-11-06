@@ -50,6 +50,8 @@ phaseClosedIssues:
   en: closed issues
 phaseClosedPullRequests:
   en: closed pull requests
+phaseItems:
+  en: items
 fetchingMyWork:
   en: Fetching your work
 myWorkArriving:

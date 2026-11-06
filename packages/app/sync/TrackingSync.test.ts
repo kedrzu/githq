@@ -654,6 +654,26 @@ test('first run and loading D3: a repository whose closed items still download s
     expect(sync.getRepositoryFreshness('acme/web').kind).toBe('fresh');
 });
 
+test('first run and loading D14: a project whose items still download says how far, and is up to date once they are in', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    const firstPage = createPromise();
+    session.github.holdIf = request => (request.operation === 'ProjectFull' ? firstPage.promise : null);
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+
+    // Not counted before its first page.
+    expect(sync.getProjectFreshness('PVT_1')).toEqual({
+        kind: 'partial',
+        downloading: { phase: 'items', done: 0, total: null },
+    });
+
+    firstPage.resolve();
+    await session.clock.advance(0);
+    expect(tracking.getSyncState({ kind: 'project', id: 'PVT_1' })?.downloaded).toBe(true);
+    expect(sync.getProjectFreshness('PVT_1').kind).toBe('fresh');
+});
+
 /** The world of these tests: two repositories, a project holding one of their issues and two others. */
 function sampleWorld(): TrackingWorld {
     const world = createTrackingWorld();
