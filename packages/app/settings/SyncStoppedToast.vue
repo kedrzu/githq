@@ -1,4 +1,4 @@
-<!-- Syncing the settings stopped (settings-sync D12, T9): a toast saying why in short, that githq goes on from what this device has, and "Open settings" (⌥S) to Sync settings. It comes once for each reason syncing stops for — remembered with the saving state, so not again on reload or in another tab — and stays until dismissed; syncing on again, or turned off, takes it away. On Sync settings itself it is not shown: the reason is there in full, and counts as told. -->
+<!-- Syncing the settings stopped (settings-sync D12, T9): a toast saying why in short, that githq goes on from what this device has, and "Open settings" (⌥S, on the newest toast) to Sync settings. It comes once for each reason syncing stops for — remembered with the saving state, so not again on reload or in another tab — and stays until dismissed; syncing on again, or turned off, takes it away. On Sync settings itself it is not shown: the reason is there in full, and counts as told. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -8,7 +8,7 @@ import { Settings } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useCommands } from '@/commands/useCommands.js';
+import type { Command } from '@/commands/CommandTypes.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 
@@ -80,21 +80,17 @@ watch(
   { immediate: true },
 );
 
-useCommands(() =>
-  shown.value
-    ? [
-        {
-          id: 'settings.saving.open',
-          title: t(l.openSyncCommand),
-          section: 'app',
-          key: OPEN_KEY,
-          icon: Settings,
-          menu: false,
-          run: openSync,
-        },
-      ]
-    : [],
-);
+const commands = computed((): Command[] => [
+  {
+    id: 'settings.saving.open',
+    title: t(l.openSyncCommand),
+    section: 'app',
+    key: OPEN_KEY,
+    icon: Settings,
+    menu: false,
+    run: openSync,
+  },
+]);
 
 function openSync() {
   shown.value = null;
@@ -113,17 +109,18 @@ function onOpenChange(open: boolean) {
     v-if="shown"
     :title="t(l.title)"
     tone="warning"
-    :duration="Infinity"
+    lasts="pinned"
+    :commands="commands"
     @update:open="onOpenChange"
   >
     {{ sentence }} {{ t(l.keepsWorking) }}
-    <template #actions>
+    <template #actions="{ active }">
       <Button
         variant="secondary"
         size="sm"
         :icon="Settings"
-        :kbd="OPEN_KEY"
-        :aria-keyshortcuts="OPEN_KEY"
+        :kbd="active ? OPEN_KEY : undefined"
+        :aria-keyshortcuts="active ? OPEN_KEY : undefined"
         @click="openSync"
       >
         {{ t(l.openSettings) }}

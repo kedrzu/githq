@@ -1,11 +1,11 @@
-<!-- The toast of an untrack that can still be taken back (D25, T20): what stopped being tracked, that its copy goes when this closes, and Undo (⌘Z, while it shows). Of several pending it shows the latest; the one before comes back when that one goes. It closes when `PendingUntracks`' time ends, not on `Toast`'s own timer, and dismissing it untracks at once. -->
+<!-- The toasts of untracks that can still be taken back (D25, T20), one for each pending in `PendingUntracks`: what stopped being tracked, that its copy goes when this closes, and Undo (⌘Z, on the newest toast). Its own time (`long`, paused while hovered) is Undo's: closing it in any way — timed out, dismissed, Escape — untracks at once. -->
 <script lang="ts" setup>
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { EyeOff, Undo2 } from 'lucide-vue-next';
 
+import type { Command } from '@/commands/CommandTypes.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 
@@ -20,22 +20,19 @@ const UNDO_KEY = 'Mod+Z';
 const pending = useService(PendingUntracks);
 const t = useTranslate();
 
-useCommands(() => {
-  const { latest } = pending;
-  return latest
-    ? [
-        {
-          id: 'tracking.undoUntrack',
-          title: t(l.undoCommand),
-          section: 'app',
-          key: UNDO_KEY,
-          icon: Undo2,
-          menu: false,
-          run: () => pending.undo(latest.target),
-        },
-      ]
-    : [];
-});
+function getCommands(entry: PendingUntrack): Command[] {
+  return [
+    {
+      id: 'tracking.undoUntrack',
+      title: t(l.undoCommand),
+      section: 'app',
+      key: UNDO_KEY,
+      icon: Undo2,
+      menu: false,
+      run: () => pending.undo(entry.target),
+    },
+  ];
+}
 
 function onOpenChange(entry: PendingUntrack, open: boolean) {
   if (!open) {
@@ -46,22 +43,23 @@ function onOpenChange(entry: PendingUntrack, open: boolean) {
 
 <template>
   <Toast
-    v-if="pending.latest"
-    :key="getTrackedKey(pending.latest.target)"
-    :title="t(l.title, { name: pending.latest.label })"
+    v-for="entry in pending.entries"
+    :key="getTrackedKey(entry.target)"
+    :title="t(l.title, { name: entry.label })"
     tone="neutral"
     :icon="EyeOff"
-    :duration="Infinity"
-    @update:open="onOpenChange(pending.latest, $event)"
+    lasts="long"
+    :commands="getCommands(entry)"
+    @update:open="onOpenChange(entry, $event)"
   >
     {{ t(l.description) }}
-    <template #actions>
+    <template #actions="{ active }">
       <Button
         variant="secondary"
         size="sm"
-        :kbd="UNDO_KEY"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(UNDO_KEY)"
-        @click="pending.undo(pending.latest.target)"
+        :kbd="active ? UNDO_KEY : undefined"
+        :aria-keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
+        @click="pending.undo(entry.target)"
       >
         {{ t(l.undo) }}
       </Button>

@@ -23,6 +23,7 @@ function onOpenChange(open: boolean) {
     v-if="tracker.failedName"
     :key="tracker.failedName"
     :title="t(l.title, { name: tracker.failedName })"
+    lasts="brief"
     @update:open="onOpenChange"
   >
     {{ t(l.description) }}

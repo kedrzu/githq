@@ -3,14 +3,10 @@ import { defineService } from '@nzyme/ioc/Service.js';
 import { computed, shallowRef, watch } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
-import { Clock } from '@/services/Clock.js';
 
 import { TrackingStore } from './TrackingStore.js';
 import type { TrackedTarget } from './TrackingTypes.js';
 import { getTrackedKey } from './utils/getTrackedKey.js';
-
-/** How long Undo is offered (D25, T20). */
-const UNDO_MS = 10_000;
 
 /** A repository or project the user stopped tracking, with Undo still on offer. */
 export interface PendingUntrack {
@@ -20,8 +16,10 @@ export interface PendingUntrack {
 }
 
 /**
- * Untracking with Undo (D25, T20): the entry leaves what the app lists at once, and only when the time is up, the
- * toast is dismissed or the page hides does it become a plain `TrackingStore.untrack`. Until then the settings stay
+ * Untracking with Undo (D25, T20): the entry leaves what the app lists at once, and only when its toast closes
+ * (`UntrackToast`: timed out or dismissed — its own time, which hover pauses) or the page hides does it become a plain
+ * `TrackingStore.untrack`. The toast is the shell's, there whenever someone is signed in to untrack anything; signed
+ * out, what is pending is forgotten (below). Until then the settings stay
  * as they were, so it is kept and synced as ever: anything not tracked is evicted by whichever tab leads sync, and
  * its sync state would keep a later re-track from downloading it again.
  *
@@ -34,14 +32,11 @@ export const PendingUntracks = defineService({
     name: 'PendingUntracks',
     deps: {
         browser: Browser,
-        clock: Clock,
         tracking: TrackingStore,
     },
-    setup({ browser, clock, tracking }) {
+    setup({ browser, tracking }) {
         /** Oldest first. */
         const entriesRef = shallowRef<readonly PendingUntrack[]>([]);
-        /** What cancels each entry's time, by its key. */
-        const timers = new Map<string, () => void>();
         const keys = computed(() => new Set(entriesRef.value.map(entry => getTrackedKey(entry.target))));
         const repositories = computed(() =>
             tracking.repositories.filter(
@@ -70,9 +65,9 @@ export const PendingUntracks = defineService({
             get projects() {
                 return projects.value;
             },
-            /** What the toast shows and ⌘Z undoes, `null` with nothing pending; reactive. */
-            get latest(): PendingUntrack | null {
-                return entriesRef.value.at(-1) ?? null;
+            /** What is pending, oldest first: a toast each. Reactive. */
+            get entries(): readonly PendingUntrack[] {
+                return entriesRef.value;
             },
             isPending,
             untrack,
@@ -85,16 +80,12 @@ export const PendingUntracks = defineService({
             return keys.value.has(getTrackedKey(target));
         }
 
-        /** Starts the time for it; nothing when it is not tracked, or is pending already (it keeps its time). */
+        /** Makes it pending; nothing when it is not tracked, or is pending already (it keeps its toast). */
         function untrack(target: TrackedTarget, label: string) {
             if (!tracking.isTracked(target) || isPending(target)) {
                 return;
             }
 
-            timers.set(
-                getTrackedKey(target),
-                clock.schedule(() => commit(target), UNDO_MS),
-            );
             entriesRef.value = [...entriesRef.value, { target, label }];
         }
 
@@ -120,14 +111,11 @@ export const PendingUntracks = defineService({
 
         /** Returns whether it was pending. */
         function forget(target: TrackedTarget) {
-            const key = getTrackedKey(target);
-            const cancelTimer = timers.get(key);
-            if (!cancelTimer) {
+            if (!isPending(target)) {
                 return false;
             }
 
-            cancelTimer();
-            timers.delete(key);
+            const key = getTrackedKey(target);
             entriesRef.value = entriesRef.value.filter(entry => getTrackedKey(entry.target) !== key);
             return true;
         }

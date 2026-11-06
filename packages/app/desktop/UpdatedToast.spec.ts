@@ -50,7 +50,7 @@ test('U25: going back to an older version says which runs and offers no list, no
     expect(registry.commands.some(candidate => candidate.id === 'updates.whatChanged')).toBe(false);
 });
 
-test('it stays until dismissed, and its command goes with it', async () => {
+test('dismissed, its command goes with it', async () => {
     const { registry } = mount({ version: '0.2.0', previousVersion: '0.1.0' });
     await expect.element(toast()).toBeInTheDocument();
 

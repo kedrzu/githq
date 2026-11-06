@@ -1,4 +1,4 @@
-<!-- The toast of a re-run of a run's failed jobs that did not happen, for a `Toaster` (actions W4l): the app's rejected-edit toast, saying why in GitHub's reason or that GitHub couldn't say, with the way to the run on GitHub — `O` on its page, where that key does it — or, refused by an organisation that has not approved githq, to requesting its approval (G5). One that says the run is running already has nothing to see there: the page follows it. It shows wherever the user went meanwhile; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
+<!-- The toast of a re-run of a run's failed jobs that did not happen, for a `Toaster` (actions W4l): the app's rejected-edit toast, saying why in GitHub's reason or that GitHub couldn't say, with the way to the run on GitHub — `O` on its page, where that key does it, shown on the newest toast — or, refused by an organisation that has not approved githq, to requesting its approval (G5). One that says the run is running already has nothing to see there: the page follows it. It shows wherever the user went meanwhile; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -48,21 +48,22 @@ const link = computed(() => {
     v-if="store.rerunFailure?.toast"
     :key="store.rerunFailure.at"
     :title="texts.title(store.rerunFailure)"
+    lasts="long"
     @update:open="store.setRerunToast($event)"
     @dismiss="store.dismissRerunFailure()"
   >
     {{ texts.detail(store.rerunFailure) }}
     <template
       v-if="link"
-      #actions
+      #actions="{ active }"
     >
       <Button
         variant="secondary"
         size="sm"
         :icon="ArrowUpRight"
         :link="link.url"
-        :kbd="link.kbd"
-        :aria-keyshortcuts="link.kbd"
+        :kbd="active ? link.kbd : undefined"
+        :aria-keyshortcuts="active ? link.kbd : undefined"
         target="_blank"
         rel="noopener noreferrer"
       >

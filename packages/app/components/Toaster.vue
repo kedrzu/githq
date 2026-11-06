@@ -1,9 +1,10 @@
-<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`), the region "Notifications": in the bottom right corner of the window, above the status bar (desktop releases D7). Put the `Toast`s inside it; F8 moves focus to them. -->
+<!-- Where toasts appear (reka-ui's `ToastProvider` and `ToastViewport`), the region "Notifications": in the bottom right corner of the window, above the status bar (desktop releases D7). Put the `Toast`s inside it; F8 moves focus to them. They stack in the order they opened, the newest at the bottom, and only the newest takes keys (`ToasterStack`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ToastProvider, ToastViewport } from 'reka-ui';
 
 import * as l from './Toaster.loc.js';
+import { provideToasterStack } from './ToasterStack.js';
 
 defineSlots<{
   /** The toasts. */
@@ -11,6 +12,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+provideToasterStack();
 </script>
 
 <template>
@@ -32,7 +34,7 @@ const t = useTranslate();
   display: flex;
   flex-direction: column;
   gap: $spacing-8;
-  width: 440px;
+  width: 480px;
   max-width: calc(100vw - #{$spacing-16 * 2});
   padding: 0;
   margin: 0;
