@@ -74,4 +74,5 @@ one column), and how a list row shrinks to a phone's width. The navigation varia
 so far the bottom bar stays off an item's screen ([D10](DECISIONS.md#d10)), links that leave say so
 ([D11](DECISIONS.md#d11)), what is not fresh shows without a status bar ([D12](DECISIONS.md#d12)), and the command
 menu's button is ⌘ ([D13](DECISIONS.md#d13)). The top-right corner holds two buttons for the screen
-([D14](DECISIONS.md#d14)), and the dock sits above Safari's own bar in a browser tab ([D15](DECISIONS.md#d15)).
+([D14](DECISIONS.md#d14)), and the dock sits above Safari's own bar in a browser tab ([D15](DECISIONS.md#d15)). The open command menu rises
+from below ([D16](DECISIONS.md#d16)).

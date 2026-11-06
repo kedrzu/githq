@@ -207,3 +207,18 @@ own measures. The hybrid app of [D8](#d8) gets the difference back.
 **Rejected.**
 
 - Moving the parts to the top in a browser tab (MB20) — a second layout for one case, and the owner accepts the cost.
+
+## D16
+
+**The open command menu rises from below, with its input at the bottom and no keyboard until the input is tapped; the
+first results are the nearest to the thumb.** (2026-11-06, owner, picked from the drawings: `MB38`–`MB40`; `MB41`,
+typing, belongs to the same variant)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: most uses on a phone are tapping an action, not
+typing, and the keyboard would take half the screen.
+
+**Rejected.**
+
+- A half sheet with the input on top (MB42–MB43) — the first action is furthest from the thumb, and the input jumps to
+  the far side of the results when the keyboard comes.
+- Full screen with the keyboard up (MB44–MB45) — about four actions fit above the keyboard.

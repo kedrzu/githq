@@ -43,3 +43,6 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-06 — Owner: the top-right corner gets both drawn options, two icons fit: filters and New issue on lists
   (D14). The dock above Safari's bar is accepted: no control over the browser's interface (D15). Applied to the top
   bar of every list screen in `App · Mobile` except the address-bar variant (MB4) and the root list of MB18.
+- 2026-11-06 — Owner picked the command menu rising from below (D16). Owner is seriously considering a floating
+  command line visible everywhere, with everything from the bottom bar under it and no tab bar; drawn as MB78–MB88,
+  still to be picked.

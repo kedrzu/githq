@@ -14,7 +14,7 @@ nobody listed here, above all for the command menu button.
 
 Picked so far, and gone from this list: where the bottom bar shows ([D10](DECISIONS.md#d10)), whether a link says it
 leaves ([D11](DECISIONS.md#d11)), how "not fresh" shows ([D12](DECISIONS.md#d12)), what the command menu's button looks
-like ([D13](DECISIONS.md#d13)), what the top-right corner holds ([D14](DECISIONS.md#d14)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
+like ([D13](DECISIONS.md#d13)), what the top-right corner holds ([D14](DECISIONS.md#d14)), how the open command menu sits ([D16](DECISIONS.md#d16)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
 
 ## The bottom bar
 
@@ -28,6 +28,9 @@ bottom of the screen, above all an input such as the comment box, and it costs h
   - (b) Fixed and global: My work, repositories, projects; a repository's sections become tabs at the top of its
     screen.
 - **Whether it carries the command menu button** in its middle, if the button is not in a top corner.
+
+The owner's latest idea (2026-11-06): no tab bar at all, and one command line floating over every screen with everything
+the bar held moved under it. Drawn in `Variants · A floating command line instead of the bottom bar`.
 
 ## The hamburger menu and the two top corners
 
