@@ -16,6 +16,18 @@ const TEXTS: RepositoryListTexts = {
     noLabel: 'No label',
     unassigned: 'Unassigned',
     noType: 'No type',
+    noAuthor: 'No author',
+    pullRequestStages: {
+        draft: 'Draft',
+        waitingForReview: 'Waiting for review',
+        needsWork: 'Needs work',
+        checksRunning: 'Checks running',
+        readyToMerge: 'Ready to merge',
+        merging: 'Merging',
+        merged: 'Merged',
+        closed: 'Closed',
+    },
+    issueStatuses: { open: 'Open', closed: 'Closed', notPlanned: 'Not planned' },
     milestoneDetail: ({ closed, total, dueOn }) => `${closed}/${total}${dueOn ? ` due ${dueOn}` : ''}`,
 };
 
@@ -76,6 +88,81 @@ test('grouped by label or assignee, an item with two is under both; by issue typ
         ['Bug', ['I_1']],
         ['', ['I_2']],
     ]);
+});
+
+test('by status, each pull request is under the one stage its row tells, the stages in their order, only those with some', () => {
+    const items = [
+        pullRequest('PR_closed', { state: 'CLOSED' }),
+        pullRequest('PR_merged', { state: 'MERGED', merged: true }),
+        pullRequest('PR_approved', { reviewDecision: 'APPROVED' }),
+        pullRequest('PR_changes', { reviewDecision: 'CHANGES_REQUESTED' }),
+        pullRequest('PR_waiting', { reviewDecision: 'REVIEW_REQUIRED' }),
+        pullRequest('PR_draft', { isDraft: true }),
+        pullRequest('PR_draft2', { isDraft: true }),
+    ];
+
+    const { groups, count } = build(items, { grouping: 'status', state: 'all', kind: 'pullRequest' });
+
+    expect(summarize(groups)).toEqual([
+        ['draft', ['PR_draft', 'PR_draft2']],
+        ['waitingForReview', ['PR_waiting']],
+        ['needsWork', ['PR_changes']],
+        ['readyToMerge', ['PR_approved']],
+        ['merged', ['PR_merged']],
+        ['closed', ['PR_closed']],
+    ]);
+    expect(groups.map(group => group.label)).toEqual([
+        'Draft',
+        'Waiting for review',
+        'Needs work',
+        'Ready to merge',
+        'Merged',
+        'Closed',
+    ]);
+    expect(count).toBe(items.length);
+    expect(groups.every(group => !group.droppable)).toBe(true);
+});
+
+test('by status, an issue is open, closed (completed or with no reason) or not planned (any other reason), in that order', () => {
+    const items = [
+        issue('I_duplicate', { state: 'CLOSED', stateReason: 'DUPLICATE' }),
+        issue('I_notPlanned', { state: 'CLOSED', stateReason: 'NOT_PLANNED' }),
+        issue('I_noReason', { state: 'CLOSED', stateReason: null }),
+        issue('I_completed', { state: 'CLOSED', stateReason: 'COMPLETED' }),
+        issue('I_open'),
+    ];
+
+    const { groups } = build(items, { grouping: 'status', state: 'all' });
+
+    expect(summarize(groups)).toEqual([
+        ['open', ['I_open']],
+        ['closed', ['I_completed', 'I_noReason']],
+        ['notPlanned', ['I_duplicate', 'I_notPlanned']],
+    ]);
+    expect(groups.map(group => group.label)).toEqual(['Open', 'Closed', 'Not planned']);
+    expect(groups.every(group => !group.droppable)).toBe(true);
+
+    // Open only: the other statuses have no items and show no group.
+    expect(summarize(build(items, { grouping: 'status' }).groups)).toEqual([['open', ['I_open']]]);
+});
+
+test('by author, by login, an item whose author is gone last under "No author"; never droppable', () => {
+    const items = [
+        issue('I_gone', { author: null }),
+        issue('I_zed', { author: { login: 'zed', avatarUrl: 'zed.png' } }),
+        issue('I_ada', { author: { login: 'ada', avatarUrl: 'ada.png' } }),
+        issue('I_zed2', { author: { login: 'zed', avatarUrl: 'zed.png' } }),
+    ];
+
+    const { groups } = build(items, { grouping: 'author' });
+
+    expect(summarize(groups)).toEqual([
+        ['ada', ['I_ada']],
+        ['zed', ['I_zed', 'I_zed2']],
+        ['', ['I_gone']],
+    ]);
+    expect(groups.at(-1)?.label).toBe('No author');
+    expect(groups.every(group => !group.droppable)).toBe(true);
 });
 
 test('D14: a section lists one kind of item in the state chosen, newest first, and counts what it lists once', () => {

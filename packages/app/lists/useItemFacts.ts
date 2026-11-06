@@ -1,3 +1,4 @@
+import { assertValue } from '@nzyme/utils/assert.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
@@ -25,6 +26,8 @@ import { getMergeEndLook } from '@/merge/getMergeEndLook.js';
 import { useMergeMethodName } from '@/merge/useMergeMethodName.js';
 import { useMergeQueueTexts } from '@/merge/useMergeQueueTexts.js';
 import type { MergeEnd, MergeRecord } from '@/merge/MergeTypes.js';
+import { getPullRequestPhase } from '@/store/getPullRequestPhase.js';
+import type { PullRequestPhase } from '@/store/getPullRequestPhase.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import type { PullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
@@ -96,6 +99,9 @@ export interface ItemSizeFact {
 /** Where a pull request stands: its status and, apart from it, that its checks passed. */
 type PullRequestStandingFacts = Pick<ItemFactsViewModel, 'status' | 'checks'>;
 
+/** The phases of an open pull request with no merge under way: its standing speaks for it. */
+type StandingPhase = Exclude<PullRequestPhase, 'merged' | 'closed' | 'beingMerged' | 'inQueue' | 'autoMerge'>;
+
 /** What a row and a card of an item show, worked out once for both. */
 export interface ItemFactsViewModel {
     readonly kind: ItemKindFact;
@@ -149,12 +155,7 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
             return { status: null, checks: null };
         }
 
-        let standing: PullRequestStandingFacts = { status: null, checks: null };
-        if (listed.merged) {
-            standing = { status: getMergedStatus(listed), checks: null };
-        } else if (listed.state === 'OPEN') {
-            standing = getOpenFacts(listed);
-        }
+        const standing = getPhaseFacts(listed, getPullRequestPhase(listed, { reviewRequested: reviewRequested.value }));
 
         // D28: until it's sent nothing else about it moves, and a draft outlives the pull request being closed. Only a
         // merge on its way goes first, for the moment it takes. The draft takes the words, not what can be done: `⇧M`
@@ -274,15 +275,49 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         return { icon: Timer, tone: 'accent', text, readyToMerge: false };
     }
 
-    /** The two facts of an open pull request, worked out together so they cannot disagree. */
-    function getOpenFacts(pr: PullRequestItem): PullRequestStandingFacts {
-        const merge = getMergeStatus(pr);
-        if (merge) {
-            return { status: merge, checks: null };
+    /** The two facts of a pull request in its phase, worked out together so they cannot disagree. */
+    function getPhaseFacts(pr: PullRequestItem, phase: PullRequestPhase): PullRequestStandingFacts {
+        switch (phase) {
+            case 'merged':
+                return { status: getMergedStatus(pr), checks: null };
+            case 'closed':
+                return { status: null, checks: null };
+            // What is under way with its merge says all there is, with nothing of its checks.
+            case 'beingMerged':
+                return {
+                    status: { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false },
+                    checks: null,
+                };
+            // GitHub's own state (merging D3).
+            case 'inQueue':
+                return { status: getQueueStatus(assertValue(pr.mergeQueueEntry)), checks: null };
+            case 'autoMerge':
+                return { status: getAutoMergeStatus(pr, assertValue(pr.autoMerge)), checks: null };
+            case 'needsAuthor':
+            case 'checksRunning':
+            case 'approvedReady':
+            case 'readyWithoutReview':
+            case 'approved':
+            case 'reviewRequested':
+            case 'draft':
+            case 'waitingForReview':
+            case 'none':
+                return getOpenFacts(pr, phase);
+            default:
+                return assertNever(phase);
+        }
+    }
+
+    /** How the last merge of an open pull request ended, else its standing and that its checks passed. */
+    function getOpenFacts(pr: PullRequestItem, phase: StandingPhase): PullRequestStandingFacts {
+        // The ending says all there is, with nothing of its checks.
+        const end = getMergeEnd(mergeRecord.value, pr, null);
+        if (end) {
+            return { status: getEndStatus(end), checks: null };
         }
 
         const standing = getPullRequestStanding(pr);
-        const said = getStandingStatus(pr, standing);
+        const said = getStandingStatus(standing, phase);
         // A green status already speaks for the checks.
         return {
             status: said,
@@ -293,78 +328,48 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
         };
     }
 
-    /** What is under way with its merge, or how the last one ended: it says all there is, with nothing of its checks. */
-    function getMergeStatus(pr: PullRequestItem): ItemStatusFact | null {
-        // Merged once GitHub says so (merging D3): until then it stays open, being merged.
-        if (pr.merging) {
-            return { icon: Loader, tone: 'warning', text: t(l.beingMerged), readyToMerge: false };
-        }
+    function getStandingStatus(standing: PullRequestStanding, phase: StandingPhase): ItemStatusFact | null {
+        switch (phase) {
+            case 'needsAuthor': {
+                const parts: string[] = [];
+                if (standing.checksFailing) {
+                    parts.push(
+                        standing.failingChecks > 0
+                            ? t(l.checksFailing, { count: standing.failingChecks })
+                            : t(l.checksFailingUncounted),
+                    );
+                }
 
-        // GitHub's own state (merging D3).
-        if (pr.mergeQueueEntry) {
-            return getQueueStatus(pr.mergeQueueEntry);
-        }
+                if (standing.changesRequested) {
+                    parts.push(t(l.changesRequested));
+                }
 
-        if (pr.autoMerge) {
-            return getAutoMergeStatus(pr, pr.autoMerge);
-        }
+                if (standing.conflicts) {
+                    parts.push(t(l.conflicts));
+                }
 
-        const end = getMergeEnd(mergeRecord.value, pr, null);
-        return end ? getEndStatus(end) : null;
-    }
-
-    function getStandingStatus(pr: PullRequestItem, standing: PullRequestStanding): ItemStatusFact | null {
-        if (standing.needsAuthor) {
-            const parts: string[] = [];
-            if (standing.checksFailing) {
-                parts.push(
-                    standing.failingChecks > 0
-                        ? t(l.checksFailing, { count: standing.failingChecks })
-                        : t(l.checksFailingUncounted),
-                );
+                return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false };
             }
-
-            if (standing.changesRequested) {
-                parts.push(t(l.changesRequested));
+            case 'checksRunning':
+                return { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false };
+            case 'approvedReady':
+                return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
+            case 'readyWithoutReview':
+                return { icon: CircleCheck, tone: 'success', text: t(l.readyToMerge), readyToMerge: true };
+            case 'approved': {
+                const text = standing.checksPassed ? t(l.approvedChecksPassed) : t(l.approved);
+                return { icon: CircleCheck, tone: 'success', text, readyToMerge: false };
             }
-
-            if (standing.conflicts) {
-                parts.push(t(l.conflicts));
-            }
-
-            return { icon: CircleX, tone: 'danger', text: parts.join(' · '), readyToMerge: false };
+            case 'reviewRequested':
+                return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), readyToMerge: false };
+            case 'draft':
+                return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false };
+            case 'waitingForReview':
+                return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false };
+            case 'none':
+                return null;
+            default:
+                return assertNever(phase);
         }
-
-        if (standing.checksRunning) {
-            return { icon: Loader, tone: 'warning', text: t(l.checksRunning), readyToMerge: false };
-        }
-
-        if (standing.readyToMerge) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.approvedReadyToMerge), readyToMerge: true };
-        }
-
-        // A review asked with no decision required stays "waiting for review", although GitHub would merge it.
-        if (standing.mergesWithoutReview && !standing.waitingForReview && !reviewRequested.value) {
-            return { icon: CircleCheck, tone: 'success', text: t(l.readyToMerge), readyToMerge: true };
-        }
-
-        if (standing.approved) {
-            const text = standing.checksPassed ? t(l.approvedChecksPassed) : t(l.approved);
-            return { icon: CircleCheck, tone: 'success', text, readyToMerge: false };
-        }
-
-        if (reviewRequested.value) {
-            return { icon: Eye, tone: 'muted', text: t(l.yourReviewRequested), readyToMerge: false };
-        }
-
-        if (pr.isDraft) {
-            return { icon: GitPullRequestDraft, tone: 'dim', text: t(l.draft), readyToMerge: false };
-        }
-
-        if (standing.waitingForReview) {
-            return { icon: Hourglass, tone: 'muted', text: t(l.waitingForReview), readyToMerge: false };
-        }
-
-        return null;
     }
 }
