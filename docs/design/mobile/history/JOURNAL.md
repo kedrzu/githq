@@ -26,3 +26,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   unanswered: why the owner wants githq on a phone (what they do with it there).
 - 2026-11-06 — Owner accepted: the window's width decides the mobile layout and hand-offs; resizing never navigates
   (D5). Proposed, not confirmed: the desktop app's window never gets that narrow (D6).
+- 2026-11-06 — Owner accepted: the first sign-in (tracking choice, first download) works on a phone; tracking
+  settings later do not (D7).

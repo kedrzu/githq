@@ -49,8 +49,8 @@ addresses.
 ## D4
 
 **The first mobile version is the daily loop: My work, a repository's issues and pull requests, a project as a
-list, an item read and edited (comment, assignees, labels, project fields, open or closed), a new issue, and the
-command menu from a button. Commits, code review, Actions, tracking settings and merging come later.**
+list, an item read and edited (comment, assignees, labels, project fields, open or closed), a new issue, the
+command menu from a button, and the first sign-in ([D7](#d7)). Commits, code review, Actions, tracking settings and merging come later.**
 (2026-11-06, proposal of the design agent; the owner raised no objection but has not confirmed the list)
 
 **Why.** The owner asked for the basic functionality first, naming commits and code review as later. The rest of
@@ -83,3 +83,17 @@ commits and code review, which are not designed. The width is not fixed here.
 
 **Why.** Nobody runs the desktop app on a phone, and a narrow desktop window handing commits off to the browser
 would take away what the desktop app is for.
+
+## D7
+
+**The first sign-in works on a phone: choosing what to track and the first download are part of the first mobile
+version. Changing tracking later, in settings, is not.** (2026-11-06, owner, on the design agent's proposal)
+
+**Why.** GitHub has no such screens, so the hand-off of [D3](#d3) cannot cover them, and someone signing in for the
+first time from a phone would otherwise be stuck. Both are already full-width screens of their own, outside the
+shell's side-by-side panes (`firstSignIn` routes, `packages/app/app/router.options.ts`), so fitting them to a
+phone is cheap.
+
+**Rejected.**
+- Accepting the default choice (your own repositories) without asking on a phone — a member of an organization,
+  whose repositories are not "theirs", would land in an empty My work with no way to fix it from the phone.
