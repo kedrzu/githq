@@ -62,7 +62,8 @@ test('on a Mac the screens with no sidebar move the window too, with nothing und
     native.approveDeviceSignIn(SAMPLE_TOKEN);
 
     await expect(new FirstSignInHarness(page).continueButton).toBeVisible();
-    await expect(page.locator('header[data-tauri-drag-region="deep"]')).toBeVisible();
+    // The first sign-in's top bar is the window's strip, as tall as the sidebar's.
+    await expect(page.locator('header[data-tauri-drag-region="deep"]')).toHaveCSS('height', '36px');
     const name = page.getByRole('img', { name: 'githq' });
     expect((await name.boundingBox())?.x).toBeGreaterThan(70);
 

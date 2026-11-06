@@ -60,7 +60,7 @@ test('a first sign-in chooses what to track: the own repositories chosen, not th
     await expect(choice.root).toContainText("You opened GitHub's page to request approval on");
 });
 
-test('"Track these" goes on to the first download: My work opens as soon as it is in, and the download goes on behind it; signed in again later, the app opens straight on the work', async ({
+test('"Track these" lands on My work at once, before any of the work is in, and the download goes on behind it; signed in again later, the app opens straight on the work', async ({
     page,
     github,
 }) => {
@@ -84,28 +84,23 @@ test('"Track these" goes on to the first download: My work opens as soon as it i
     await expect(firstSignIn.repository(`${LOGIN}/app`)).toBeChecked();
     await page.keyboard.press('ControlOrMeta+Enter');
 
-    await expect(page).toHaveURL('/settings/tracking/download');
-    await expect(firstSignIn.openMyWorkButton).toBeDisabled();
-    myWorkIn.resolve();
-    await expect(firstSignIn.openMyWorkButton).toBeEnabled();
-    await expect(firstSignIn.root).toContainText('Your work is ready');
-    await firstSignIn.openMyWorkButton.click();
-
-    // On My work, the tracked repository still waits for its download, which then goes on.
+    // On My work while GitHub still holds the user's work back; the tracked repository waits for its download,
+    // which then goes on.
     const shell = new AppShellHarness(page);
     await expect(page).toHaveURL('/');
     const repository = shell.sidebar.getByRole('link', { name: new RegExp(`^${LOGIN}/app`) });
     await expect(repository.locator('span').last()).toHaveText('waiting');
+    myWorkIn.resolve();
     repositoryIn.resolve();
     await expect(repository.locator('span').last()).toHaveText('0');
 
-    // The choice is kept in this browser: the app opens on the work, with no choosing or download step.
+    // The choice is kept in this browser: the app opens on the work, with no choosing step.
     await page.reload();
     await expect(page).toHaveURL('/');
     await expect(repository).toBeVisible();
 });
 
-test('the first sign-in tracks the own repositories and projects it chose: their download shows its progress, and once it is done the sidebar counts their open items', async ({
+test('the first sign-in tracks the own repositories and projects it chose: on My work at once, the sidebar counts their open items once they are in', async ({
     page,
     github,
 }) => {
@@ -120,14 +115,6 @@ test('the first sign-in tracks the own repositories and projects it chose: their
     await expect(firstSignIn.project(SAMPLE_PROJECT)).toBeChecked();
 
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
-    // Every item of the repository — the closed one too — and of the project, archived ones left out.
-    await expect(firstSignIn.progress(SAMPLE_REPOSITORY)).toContainText('5 items');
-    await expect(firstSignIn.progress(SAMPLE_REPOSITORY)).toContainText('Done');
-    await expect(firstSignIn.progress(SAMPLE_PROJECT)).toContainText('Done');
-    await expect(firstSignIn.root).toContainText('Everything is here.');
-    await expect(firstSignIn.root).toContainText('Your work is ready');
-    await firstSignIn.openMyWorkButton.click();
 
     const shell = new AppShellHarness(page);
     await expect(page).toHaveURL('/');
@@ -153,7 +140,7 @@ const SAVED_ELSEWHERE = {
     sha: 'saved',
 };
 
-test('settings saved on another device are offered instead of the choice: loaded, they are tracked and downloaded, saving goes on, and the choice is made', async ({
+test('settings saved on another device are offered instead of the choice: loaded, they are tracked, My work opens, saving goes on, and the choice is made', async ({
     page,
     github,
 }) => {
@@ -174,9 +161,6 @@ test('settings saved on another device are offered instead of the choice: loaded
     await expect(firstSignIn.root).not.toContainText(SAMPLE_REPOSITORY);
 
     await page.keyboard.press('ControlOrMeta+Enter');
-    await expect(page).toHaveURL('/settings/tracking/download');
-    await expect(firstSignIn.progress('acme/api')).toContainText('Done');
-    await firstSignIn.openMyWorkButton.click();
 
     const shell = new AppShellHarness(page);
     await expect(page).toHaveURL('/');
@@ -212,7 +196,7 @@ test('declining the saved settings leads to the choice, with no saving offered, 
     );
     await expect(firstSignIn.savingChoice).toHaveCount(0);
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     expect(getSettingsWrites(github)).toEqual([]);
 });
 
@@ -232,7 +216,7 @@ test('a repository named githq-settings that isn’t githq’s says why nothing 
     );
     await expect(firstSignIn.savingChoice).toHaveCount(0);
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     expect(getSettingsWrites(github)).toEqual([]);
 });
 
@@ -254,7 +238,7 @@ test('saving is offered unticked; ticked, "Track these" creates the private repo
     expect(getSettingsWrites(github)).toEqual([]);
 
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     await expect.poll(() => repository.file).not.toBeNull();
     expect(JSON.parse(repository.file?.text ?? 'null')).toMatchObject({
         version: 1,
@@ -273,8 +257,7 @@ test('left unticked, "Track these" creates nothing on GitHub', async ({ page, gi
     const firstSignIn = new FirstSignInHarness(page);
     await expect(firstSignIn.savingChoice).not.toBeChecked();
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
-    await expect(firstSignIn.root).toContainText('Everything is here.');
+    await expect(page).toHaveURL('/');
     expect(getSettingsWrites(github)).toEqual([]);
 });
 
@@ -315,7 +298,7 @@ test('"Track these" goes on once: pressed again while it does, nothing happens, 
     await page.keyboard.press('ControlOrMeta+Enter');
     nextStepIn.resolve();
 
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     createdIn.resolve();
     await expect.poll(() => repository.file).not.toBeNull();
     expect(creationsAsked).toBe(1);
@@ -353,7 +336,7 @@ test('"Only my repositories" does nothing while "Track these" looks at GitHub: w
     await expect(firstSignIn.onlyMineButton).toBeFocused();
     lookedIn.resolve();
 
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     await expect.poll(() => repository.file).not.toBeNull();
     expect(JSON.parse(repository.file?.text ?? 'null')).toMatchObject({
         repositories: [
@@ -390,6 +373,6 @@ test('with the box ticked and GitHub out of reach, "Track these" stays and says 
 
     const repository = answerSettingsRepository(github, { exists: false, file: null });
     await firstSignIn.trackButton.click();
-    await expect(page).toHaveURL('/settings/tracking/download');
+    await expect(page).toHaveURL('/');
     await expect.poll(() => repository.file).not.toBeNull();
 });

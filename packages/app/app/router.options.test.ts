@@ -12,7 +12,6 @@ import { getSettingsPath, readSettingsSection, SETTINGS_PATH, SETTINGS_SECTIONS 
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
     BROKEN_WORKFLOWS_PATH,
-    FIRST_DOWNLOAD_PATH,
     getGitHubUrl,
     getProjectPath,
     getProjectSettingsPath,
@@ -67,7 +66,6 @@ const ADDRESSES: readonly (readonly [string, string])[] = [
     ['/dashboard', 'github-dashboard'],
     ['/dashboard/other', 'github-dashboard'],
     ['/settings/tracking/new', 'tracking-choice'],
-    ['/settings/tracking/download', 'first-download'],
     ['/auth/callback', 'auth-callback'],
     // GitHub's own pages githq does not show.
     ['/orgs/acme', 'github-orgs'],
@@ -273,7 +271,6 @@ test("every address githq makes is GitHub's: under a parameter or a GitHub-reser
         [SETTINGS_PATH, 'settings'],
         ...SETTINGS_SECTIONS.map(section => [getSettingsPath(section), 'settings'] as const),
         [TRACKING_CHOICE_PATH, 'tracking-choice'],
-        [FIRST_DOWNLOAD_PATH, 'first-download'],
     ];
     for (const [path, name] of built) {
         const resolved = router.resolve(path);

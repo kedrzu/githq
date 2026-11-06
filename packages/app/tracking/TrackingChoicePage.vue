@@ -1,4 +1,4 @@
-<!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes on to the first download (G6); choosing nothing goes straight on to where the user was heading (`next`). While the candidates are read, it looks for settings saved to GitHub (settings-sync D3): found, it offers to load them instead (G11); otherwise the choice offers saving them, unticked (G2), and ticked, "Track these" creates the repository (G12). Declined (G13), or in a repository githq can't use (G14), one line says so instead. Nothing is created on GitHub unless the box is ticked, and a file found is loaded only on the user's word; a look that fails never holds the sign-in up, unless the box is ticked: then "Track these" stays and says GitHub couldn't be reached, until it is pressed again or the box unticked. -->
+<!-- `/settings/tracking/new`: choosing what to track on the first sign-in (G2, D20) — the user's own repositories and their open projects chosen at first, nothing of their organisations. "Track these" keeps the choice and goes straight on to where the user was heading (`next`, My work by default), where what was chosen arrives in the background (D1) — choosing nothing too. While the candidates are read, it looks for settings saved to GitHub (settings-sync D3): found, it offers to load them instead (G11); otherwise the choice offers saving them, unticked (G2), and ticked, "Track these" creates the repository (G12). Declined (G13), or in a repository githq can't use (G14), one line says so instead. Nothing is created on GitHub unless the box is ticked, and a file found is loaded only on the user's word; a look that fails never holds the sign-in up, unless the box is ticked: then "Track these" stays and says GitHub couldn't be reached, until it is pressed again or the box unticked. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { SETTINGS_REPOSITORY_NAME } from '@githq/github/settings/getSettingsRepository.js';
@@ -30,7 +30,6 @@ import {
 } from './trackingCandidates.js';
 import TrackingChooser from './TrackingChooser.vue';
 import * as l from './TrackingChoicePage.loc.js';
-import { FIRST_DOWNLOAD_PATH } from './trackingRoutes.js';
 import type { TrackingChoice } from './TrackingStore.js';
 import { TrackingStore } from './TrackingStore.js';
 import type { CandidateProject, CandidateRepository, TrackingCandidates } from './TrackingTypes.js';
@@ -203,35 +202,30 @@ async function track() {
   }
 
   busy.value = true;
-  try {
-    let inspection: NoSettings | null = null;
-    if (save.value) {
-      unreachable.value = false;
-      const looked = await lookAgain();
-      if (!looked) {
-        return;
-      }
-
-      if (!looked.inspection) {
-        unreachable.value = true;
-        return;
-      }
-
-      ({ inspection } = looked);
+  let inspection: NoSettings | null = null;
+  if (save.value) {
+    unreachable.value = false;
+    const looked = await lookAgain();
+    if (!looked?.inspection) {
+      unreachable.value = looked !== null;
+      busy.value = false;
+      return;
     }
 
-    const choice = getChoice();
-    tracking.choose(choice);
-    if (inspection) {
-      sync.turnOn(inspection).catch((error: unknown) => {
-        logger.warn('Saving the settings could not be turned on', { error });
-      });
-    }
-
-    await goOn(choice.repositories.length + choice.projects.length);
-  } finally {
-    busy.value = false;
+    ({ inspection } = looked);
   }
+
+  const choice = getChoice();
+  tracking.choose(choice);
+  if (inspection) {
+    sync.turnOn(inspection).catch((error: unknown) => {
+      logger.warn('Saving the settings could not be turned on', { error });
+    });
+  }
+
+  // The choice is made: it stays busy until the app's shell takes the page over, which may come a moment after the
+  // address changes, so a second press can't choose again.
+  await goOn();
 }
 
 /**
@@ -252,17 +246,12 @@ async function loadSaved() {
     return;
   }
 
-  await goOn(tracking.repositories.length + tracking.projects.length);
+  await goOn();
 }
 
-/** On to the first download of what is tracked; with nothing to download, straight to where the user was heading. */
-async function goOn(tracked: number) {
-  if (tracked === 0) {
-    await router.replace(next.value ?? '/');
-    return;
-  }
-
-  await router.push({ path: FIRST_DOWNLOAD_PATH, query: next.value ? { next: next.value } : {} });
+/** On to where the user was heading, My work unless a safe `next` says otherwise. */
+async function goOn() {
+  await router.replace(next.value ?? '/');
 }
 
 function getChoice(): TrackingChoice {
@@ -290,7 +279,6 @@ function getChoice(): TrackingChoice {
   <FirstSignInFrame
     v-if="auth.viewer"
     :viewer="auth.viewer"
-    :step="saved.kind === 'found' ? 'load' : 'choose'"
   >
     <SavedSettingsOffer
       v-if="saved.kind === 'found'"

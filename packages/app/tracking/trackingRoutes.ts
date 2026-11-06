@@ -1,9 +1,6 @@
 import type { ProjectOwnerKind } from '@/projects/ProjectTypes.js';
 import type { RepositorySection } from '@/repository/RepositorySection.js';
 
-/** The first download (G6), after choosing what to track, under GitHub's reserved `/settings`. */
-export const FIRST_DOWNLOAD_PATH = '/settings/tracking/download';
-
 /**
  * The broken workflows of every tracked repository (actions W2), under a first segment GitHub reserves
  * (`/dashboard`), so the address is never an owner's or a repository's.
