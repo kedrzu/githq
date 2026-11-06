@@ -67,20 +67,25 @@ repository is not "Up to date" while its closed items are still downloading.** (
 **Why.** githq polls constantly; a marker lit by every request would always be lit and mean nothing. What the user
 wants to know is whether what they see is all there is. Changes found by a refresh appear in the list on their own.
 
-> **Checked 2026-11-06:** a tracked repository's freshness turns `fresh` as soon as its open items arrive
-> (`getRepositoryFreshness`, `packages/app/sync/SyncEngine.ts:356`, via `haveOpenItemsArrived`), while the download's
-> later phases go on, counted per phase (`getProgress`, `packages/app/tracking/TrackingStore.ts:479`). A poll running
-> while fresh deliberately reads `fresh` (`packages/app/sync/Freshness.ts`, `getFreshness`).
+While the closed items download, the repository's segment says which phase and how far ("Downloading closed issues ·
+1,200 of 4,000"). Whether it is stale is decided by the repository's own poll: a failure or pause of the download, which
+all tracked repositories share, does not turn it amber. (2026-11-06, owner, at the M2 checkpoint)
 
-The closed-items phase reuses the shape freshness already has for a counted first read (`partial`, or `filling`'s
-`done`/`total`) rather than adding a kind to a union of about twenty; the rest of the rule is what `getFreshness`
-already does.
+> **Checked 2026-11-06:** before this build a tracked repository's freshness turned `fresh` as soon as its open items
+> arrived, while the later phases went on (`getRepositoryFreshness`, `packages/app/sync/SyncEngine.ts`). A poll running
+> while fresh deliberately reads `fresh` (`packages/app/sync/Freshness.ts`, `getFreshness`). No "Synced 14s ago" bar
+> exists in the app — it is only in the mockup (CH1), so there is nothing to hide.
+
+The phases reuse the `partial` shape (an optional `downloading` with the phase, done and total) rather than adding a
+kind to a union of about twenty.
 
 **Rejected.**
 
 - Showing every poll as it runs — constant and meaningless once refresh is frequent.
 - Showing a refresh that found changes while it fetches them — they show up in the list anyway, and it would make the
   marker flicker with ordinary activity.
+- The shared download's failure or pause shown on every repository still downloading — one failed run turned them all
+  amber for a minute while their own polls succeeded (owner).
 
 ## D4
 
@@ -91,7 +96,9 @@ still says what is happening to that screen ([D3](#d3)). It returns to the allow
 paused by the allowance still takes the segment first.** (2026-11-06, owner)
 
 **The sidebar's entries show no download marker:** a tracked repository or project shows nothing in place of its
-count until its open items are in, then its count. (2026-11-06, owner)
+count until its open items are in, then its count. (2026-11-06, owner) Settings' list of tracked repositories keeps
+its note of how far each one is ("downloading 1,200 of 4,000"): there it is about one repository the user manages, not a
+loading marker. (2026-11-06, owner, at the M1 checkpoint)
 
 **Why.** With the download page gone ([D1](#d1)) no screen owns the progress of everything at once, and from My work the
 user would otherwise not know whether the rest takes a minute or twenty. It follows [D3](#d3): it shows only while data
@@ -105,6 +112,7 @@ seconds (`packages/app/tracking/FirstDownloadPage.vue`, `PACE_AFTER_MS`).
   `packages/app/shell/Sidebar.vue`) — the owner wants download progress in one place only, the status bar.
 - No overall progress, each repository speaking only for itself (its sidebar entry, its own status bar) — from My work
   nothing says how much is left.
+- Dropping the per-repository note from Settings too — it is the screen for managing what is tracked (owner).
 
 ## D5
 
@@ -227,6 +235,9 @@ hover title. On the rail (56px): the time left ("2m") once a pace is known, the 
 segment, in order: offline, paused by the allowance, downloading, the allowance.** (2026-11-06, owner picked ES5; the
 rail and the order are the design agent's) — ES5, ES8
 
+The total is what has been counted so far and grows as more repositories and projects count theirs; the time left is
+worked out from it. (2026-11-06, owner, at the M1 checkpoint)
+
 **Why.** The brief's example, "Downloading 4 repositories · 1,240 of 8,000 · about 2 min", is about 330px of text in a
 236px segment. The number and the time are what change, so they stay in sight. Offline and paused tell why nothing
 moves, which matters more than how far it got.
@@ -234,6 +245,8 @@ moves, which matters more than how far it got.
 **Rejected.**
 
 - "Downloading 5 · about 2 min" (ES6, deleted) — items of the total leave sight.
+- The total unknown until every repository and project has counted (the old download page's sum) — the download
+  reads four repositories at a time and projects last, so "counting…" stood for the whole of the open items (owner).
 - A bar along the segment's top edge (ES7, deleted) — it moves backwards when a total grows, which reads as a fault;
   on the rail a percentage does the same.
 
@@ -267,8 +280,11 @@ the right, nothing between, no border under it. On the web and Windows the strip
 
 **While a screen's data is still arriving, its own status bar segment says what it waits for: "Fetching your work",
 "Still arriving · assigned to you, mentions" (My work), "Downloading open issues · 40 of 142" (a repository),
-"Downloading items · 0 of 128" (a project), "Reading commits". My work's total in the sidebar stays blank until every
-group is in.** (2026-11-06, design agent's proposal) — G16, G17, ES14, ES18, ES21
+"Downloading items · 0 of 128" (a project), "Reading commits", "Reading workflows" (a repository's Workflows) and
+"Reading workflows · 1 of 4 repositories" (Broken workflows). My work's total in the sidebar stays blank until every
+group is in, and a repository's Issues or Pull requests tab until that section's open items are in.** (2026-11-06,
+design agent's proposal; the workflows segment and the tab counts confirmed by the owner at the M2 checkpoint) — G16,
+G17, ES14, ES18, ES21, ES27, ES28, ES29
 
 **Why.** D4 gives each screen's segment the screen's own story; a partial total would read as the whole.
 
@@ -300,6 +316,12 @@ the same rows everywhere told nothing about the screen. For commits the skeleton
 (the first page is small, CH32), but a centred loader would flash for that same second and the two-column layout
 would appear all at once.
 
+Which columns are known: a project's come with its first page of items, since its fields arrive with it; a
+repository's never before its items, since they are made of what the items carry. Before a project is in, its views —
+and so whether it is a board — aren't known either, so it shows ghost rows. A board column still arriving shows no count
+on every board, My work's too. Broken workflows' ghosts don't name the repositories not read yet; its header says how
+many. (2026-11-06, the build, shown at the M2 checkpoint)
+
 Components: `Empty / Ghost workflow row`, `Empty / Ghost commit row`, `Empty / Ghost ref row`, `Empty / Ghost column`,
 `Empty / Still arriving · workflows | commits | board`. The motion of D9 runs on all of them.
 
@@ -307,21 +329,16 @@ Components: `Empty / Ghost workflow row`, `Empty / Ghost commit row`, `Empty / G
 
 - A turning loader in the middle of Commits, as today (ES26, deleted) — simpler, but the graph appears all at once after it.
 
+## D18
+
+**"Try again" on an empty state takes the key R, as it already does where settings saving stopped; "Open on GitHub"
+keeps O.** (2026-11-06, the build plan the owner approved)
+
+**Why.** One key for one action across the app; R is the one already in use (`packages/app/settings/SavingStopped.vue`,
+`RETRY_KEY`).
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land
   between rows, not at the end; and the default filter shows open items, which arrive first. Truthful only under
   filters that include what is still arriving.
-
-## Notes for the owner
-
-Raised by the screens, not settled by the brief (2026-11-06, design agent):
-
-- **The repository's "Synced 14s ago"** in the bar above its issues (CH1, `Freshness`) shows every poll, against D3.
-  ES9 hides it; whether it goes for good is the owner's call.
-- **Which board columns are known before the items.** ES30 assumes a project's Status options come with the project
-  and a repository's grouping (labels, milestones, issue types) does not (ES29); the sync engine decides which holds.
-- **A commits total.** GitHub gives no cheap count of a repository's commits, so ES21's segment says "Reading
-  commits" without numbers.
-- **"Try again" has no key in the app yet**; the drawings use R. "Open on GitHub" keeps O, as in J7.
-- **"Downloading 5"** counts repositories and projects together; the hover title names both.

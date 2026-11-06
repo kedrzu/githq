@@ -42,3 +42,9 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Build started (/dev:deliver, #218). Owner: one shared skeleton set, one highlight per wrapper, code
   review's placeholders on it too (D9 sharpened). "What gets built first" removed from README: the approved overview
   replaces it.
+- 2026-11-06 — Build, M1 checkpoint: owner — the left segment's total counts what is counted so far (D11); one uniform
+  duration formatter; Settings keeps its per-repository download note (D4).
+- 2026-11-06 — Build, M2 checkpoint: owner — the shared download's failure doesn't turn a repository amber (D3); tab counts
+  blank until open items are in, "Reading workflows" segments (D14); skeleton wrapper simplified. Recorded the build's
+  board-column and Broken-workflows choices in D17, "Try again" on R as D18; the design agent's notes for the owner are
+  all answered (the "Synced" bar exists only in the mockup) and the section is gone.
