@@ -26,6 +26,12 @@ const swipe = useHistorySwipe();
 </template>
 
 <style lang="scss" module="css">
+// The page never scrolls sideways, so a swipe meets its edge at once: no rubber band of the whole page under the arrow.
+// Elements that do scroll sideways keep theirs, and the page keeps its own up and down.
+:global(html) {
+  overscroll-behavior-x: none;
+}
+
 .historySwipe {
   position: fixed;
   top: 50%;
