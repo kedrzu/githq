@@ -18,15 +18,12 @@ const {
     InstallFailed,
 } = composeStories(stories);
 
-test('U1: the notice waits for the user — Restart restarts, Later dismisses, and nothing happens on its own', async () => {
+test('U50: the quiet trace of a dismissed toast waits for the user — Restart restarts, nothing happens on its own', async () => {
     await Ready.run();
 
-    await expect.element(page.getByText('githq 1.4.0 is ready')).toBeVisible();
-    expect(Ready.args.onRestart).not.toHaveBeenCalled();
-    expect(Ready.args.onLater).not.toHaveBeenCalled();
-
-    await userEvent.click(page.getByRole('button', { name: 'Later' }));
-    expect(Ready.args.onLater).toHaveBeenCalledOnce();
+    await expect.element(page.getByText(/^githq 1\.4\.0 ready$/)).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Later' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Dismiss' })).not.toBeInTheDocument();
     expect(Ready.args.onRestart).not.toHaveBeenCalled();
 
     await userEvent.click(page.getByRole('button', { name: 'Restart' }));
@@ -70,16 +67,14 @@ for (const [name, story, text] of [
     });
 }
 
-test('U40: a failed install offers Try again, which restarts, and Later', async () => {
+test('U51: a failed install, its toast dismissed, keeps Try again, which restarts', async () => {
     await InstallFailed.run();
 
     await expect.element(page.getByText("githq 1.4.0 couldn't be installed")).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Later' })).not.toBeInTheDocument();
     expect(InstallFailed.args.onRestart).not.toHaveBeenCalled();
 
     await userEvent.click(page.getByRole('button', { name: 'Try again' }));
     expect(InstallFailed.args.onRestart).toHaveBeenCalledOnce();
     expect(InstallFailed.args.onCheck).not.toHaveBeenCalled();
-
-    await userEvent.click(page.getByRole('button', { name: 'Later' }));
-    expect(InstallFailed.args.onLater).toHaveBeenCalledOnce();
 });

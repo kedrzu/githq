@@ -32,8 +32,9 @@ export interface UpdateState {
 }
 
 /**
- * What the status bar says about updates (U1, U22, U40). Only what the user asked about or has to decide: a check
- * nobody asked for says nothing until an update is ready.
+ * What the status bar says about updates (U22, U40, U50, U51). Only what the user asked about or has to decide: a check
+ * nobody asked for says nothing until an update is ready. A ready or failed install is said there only once its toast
+ * was dismissed ({@link UpdateOffer}), quietly.
  */
 export type UpdateNotice =
     | { readonly kind: 'checking' }
@@ -45,6 +46,12 @@ export type UpdateNotice =
     | { readonly kind: 'noRelease'; readonly stream: UpdateStream }
     | { readonly kind: 'installing'; readonly version: string }
     | { readonly kind: 'installFailed'; readonly version: string };
+
+/**
+ * An update waiting on the user's word, offered in a toast that stays until dismissed: ready to restart into (U49), or
+ * its install on Restart failed (U51).
+ */
+export type UpdateOffer = Extract<UpdateActivity, { readonly kind: 'ready' | 'installFailed' }>;
 
 /** The version the app now runs and the one it replaced, the first time it runs after they changed. */
 export interface VersionChange {
@@ -61,6 +68,8 @@ export interface AppUpdateShape {
     readonly state: UpdateState | null;
     /** What the status bar shows, if anything; reactive. */
     readonly notice: UpdateNotice | null;
+    /** What the update toast offers, until {@link later} dismisses it; reactive. */
+    readonly offer: UpdateOffer | null;
     /**
      * The version the user had before this update, kept until the next one; `null` until the app has updated once, on the
      * web and before the native side's first answer; reactive.
@@ -79,7 +88,10 @@ export interface AppUpdateShape {
     setStream(stream: UpdateStream): void;
     /** Restarts into the ready version, or tries installing it again. */
     restart(): void;
-    /** Hides the update from the status bar until the app next starts, or until the user checks again. */
+    /**
+     * Dismisses the toast of the {@link offer} until the app next starts, or until the user checks again; the status bar
+     * keeps it, quietly.
+     */
     later(): void;
     /** Closes the outcome of a check; the next check the user asks for can notice again. */
     dismiss(): void;
@@ -91,6 +103,7 @@ export const AppUpdate = defineInterface<AppUpdateShape>({
     default: () => ({
         state: null,
         notice: null,
+        offer: null,
         previousVersion: null,
         untoldChange: null,
         markUpdateTold: () => {},

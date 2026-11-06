@@ -1,4 +1,4 @@
-<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
+<!-- `/owner/name/issues`, `/owner/name/pulls` and `/owner/name/commits`: a repository's view (J1, J2, J5–J7) at GitHub's addresses of its lists and its history, a section each (git-client D14), tracked or not; `/owner/name/actions` a tracked one's workflows (actions W3a, `RepositoryWorkflowsTab`), which the route guard hands off to GitHub for any other; `/owner/name` opens the section it was left on, Issues the first time. Its items come from the item store with their projects' row fields (D12); each section's state, and its layout, grouping, order and properties shown — kept on this device for this repository — are its own, tracked or not. The pull requests of one stack in a group share an entry (`foldStacks`, D3), in the list and on the board. Moving an entry to another group on the board sets that value of each of its items through the edit engine — only where the user may; a stack's card sets it on each of its pull requests, an edit GitHub refuses undone for its own pull request alone. The page holds the repository for its whole life, under each account signed in, so that untracking it here leaves the rows on screen, and while it is known not to be tracked and an item section is shown, has that section read on demand and page by page (`BrowsedRepositories`, D34); GitHub's own name for it replaces the address. The command menu's group of the repository (`AppCommands`) offers tracking it while it is not; its title's and the sidebar's menus no longer tracking it while it is, the rows staying on screen either way (D34). Untracked with Undo on offer (D25), it reads as not tracked already, as in the sidebar, and Track takes it back. Its Commits section is the commit graph (`CommitGraphView`), in any repository, tracked or not (git-client D11); there the item lists are neither built nor asked for. The sections' layout, tabs or a column of the repository's own, is the user's setting (git-client D14); it is known before the page renders, as the route guard waits for the kept settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -27,6 +27,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import { groupStacks } from '@/store/stacks/groupStacks.js';
+import { PendingUntracks } from '@/tracking/PendingUntracks.js';
 import { getProjectPath, getRepositoryPath, getRepositorySection } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
@@ -52,6 +53,7 @@ const accounts = useService(AccountSession);
 const items = useService(ItemStore);
 const projects = useService(ProjectStore);
 const tracking = useService(TrackingStore);
+const pending = useService(PendingUntracks);
 const repositories = useService(RepositoryStore);
 const browsed = useService(BrowsedRepositories);
 const workflows = useService(WorkflowStore);
@@ -122,6 +124,11 @@ const view = useListViewOptions({
   }),
 });
 const tracked = computed(() => tracking.isTracked({ kind: 'repository', nameWithOwner: nameWithOwner.value }));
+// What the screen says: on its way out, with Undo on offer (D25), it reads as not tracked already, as in the sidebar, while
+// it is still kept and synced as ever, so its rows need no reading on demand.
+const trackedShown = computed(
+  () => tracked.value && !pending.isPending({ kind: 'repository', nameWithOwner: nameWithOwner.value }),
+);
 // D12: each row's projects as my work shows them — the tracked ones first, with their row field.
 const repositoryItems = computed(() =>
   items.all
@@ -242,7 +249,8 @@ const projectLinks = computed(() => {
 
 // No longer tracked, here or elsewhere, its Workflows section goes (actions D4): its other sections stay on screen.
 watch(
-  () => section.value === 'workflows' && nameWithOwner.value === repositoryName && tracking.loaded && !tracked.value,
+  () =>
+    section.value === 'workflows' && nameWithOwner.value === repositoryName && tracking.loaded && !trackedShown.value,
   leave => {
     if (leave) {
       section.value = 'issues';
@@ -381,7 +389,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :modified="view.modified"
     :name-with-owner="nameWithOwner"
     :is-private="isPrivate"
-    :tracked="tracked"
+    :tracked="trackedShown"
     :list="itemsShown ? shownList : null"
     :open-counts="openCounts"
     :status="status"
@@ -393,7 +401,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     :is-edited="list.isEdited"
     :undone="list.undone"
     :can-move="canMove"
-    :workflow-count="tracked ? workflowList.count : null"
+    :workflow-count="trackedShown ? workflowList.count : null"
     :layout="tracking.repositoryLayout"
     @update:options="view.set($event)"
     @reset="view.reset()"

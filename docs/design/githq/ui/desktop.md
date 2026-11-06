@@ -45,13 +45,14 @@ getting in my way."
 ## Updating
 
 - The app looks for a new version in the background and downloads it. Nothing interrupts the user.
-- **Ready (U1).** At the right end of the status bar, one quiet segment: "githq X.Y.Z is ready · Restart ·
-  Later". Restart starts the new version. Later hides the segment until the next launch. The same two actions are
-  in the command palette while an update is ready.
+- **Ready (U49).** A pinned toast in the bottom right corner: "githq X.Y.Z is ready", Restart (⌥R) and Dismiss.
+  Restart starts the new version. Dismiss is Later: the toast comes back on the next launch or the next Check for
+  updates, and meanwhile the right end of the status bar keeps a quiet "githq X.Y.Z ready · Restart" (U50). While the
+  toast shows, the status bar says nothing about the update. Restart and Later are in the command palette while an
+  update is ready. U1, the status bar's offer alone, was too easy to miss (owner, 2026-11-06).
 - **Never forced.** Nothing restarts on its own. On macOS a downloaded update also runs from the next launch if the
   user just quits. On Linux it installs only when the user clicks Restart.
-- U2 is an alternative drawn beside it and not chosen. U1's place is the status bar, where githq already says how
-  fresh things are ([D15](../DECISIONS.md#d15)).
+- U2 is an alternative drawn beside U1 and not chosen.
 
 ## Updates in Settings
 
@@ -92,8 +93,8 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
 
 ## After an update
 
-- **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, until
-  dismissed. No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
+- **The toast.** On the first launch after the version changed, in the bottom right corner above the status bar, a brief
+  toast: it goes by itself after 6 seconds, not while hovered or focused ([D40](../DECISIONS.md#d40)). No window opens by itself. Stable (U23) and Development (U24) offer "What changed" (⌥W, also a command in ⌘K
   while the toast shows), which goes to the changelog. After going back to an older Stable (U25) it says which version is
   running and offers nothing.
 - **Changelog.** A section of Settings, after Updates, with the key 7, on the desktop app only. Every version has its own
@@ -108,8 +109,9 @@ Try again or Dismiss. A check nobody asked for says nothing until U1.
 
 ## A refused install on Linux
 
-U1 stays as it is. When the user refuses the system's password prompt, or the install fails, the same segment says so and
-offers Try again and Later (U38), and Settings says the same (U39). While the system is asking, the segment waits and
+When the user refuses the system's password prompt, or the install fails, the ready toast comes back saying so, with Try
+again (⌥R) and Dismiss (U51); after Dismiss the status bar keeps "couldn't be installed · Try again" (U38), and Settings says
+the same (U39). While the system is asking, the segment waits and
 offers nothing. U40 has the whole sequence.
 
 ## Also part of this path

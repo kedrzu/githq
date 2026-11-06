@@ -1,0 +1,16 @@
+readyTitle:
+  en: githq {version} is ready
+readyDetail:
+  en: Restart to switch to it. You're on {current} until then.
+restart:
+  en: Restart
+restartToUpdate:
+  en: Restart to update
+failedTitle:
+  en: githq {version} couldn't be installed
+failedDetail:
+  en: You're still on {current}. Nothing is lost.
+tryAgain:
+  en: Try again
+retryInstall:
+  en: Try again to install the update

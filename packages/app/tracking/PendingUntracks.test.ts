@@ -22,8 +22,6 @@ const WEB_TARGET: TrackedTarget = { kind: 'repository', nameWithOwner: WEB.nameW
 const API_TARGET: TrackedTarget = { kind: 'repository', nameWithOwner: API.nameWithOwner };
 const ROADMAP_TARGET: TrackedTarget = { kind: 'project', id: ROADMAP.id };
 
-const UNDO_MS = 10_000;
-
 test('while pending the entry is gone from what the app lists, and nothing is written, dropped or told', async () => {
     const { pending, tracking, untracked, keptSettings } = await open();
     await tracking.updateSyncState(WEB_TARGET, { phase: 'done' });
@@ -47,36 +45,30 @@ test('while pending the entry is gone from what the app lists, and nothing is wr
     expect(untracked).toEqual([]);
 });
 
-test('the time ending commits a plain untrack, exactly once', async () => {
-    const { pending, tracking, untracked, session } = await open();
-
-    pending.untrack(WEB_TARGET, WEB.nameWithOwner);
-    await session.clock.advance(UNDO_MS - 1);
-    expect(tracking.isTracked(WEB_TARGET)).toBe(true);
-
-    await session.clock.advance(1);
-    expect(tracking.isTracked(WEB_TARGET)).toBe(false);
-    expect(pending.isPending(WEB_TARGET)).toBe(false);
-    expect(pending.latest).toBeNull();
-    expect(untracked).toEqual([WEB_TARGET]);
-
-    await session.clock.advance(UNDO_MS);
-    expect(untracked).toEqual([WEB_TARGET]);
-});
-
-test('committing — the toast dismissed — untracks at once, and the timer does nothing more', async () => {
-    const { pending, tracking, untracked, session } = await open();
+test('committing — its toast closed — untracks at once, exactly once', async () => {
+    const { pending, tracking, untracked } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
     pending.commit(WEB_TARGET);
     expect(tracking.isTracked(WEB_TARGET)).toBe(false);
+    expect(pending.entries).toEqual([]);
     expect(untracked).toEqual([WEB_TARGET]);
 
-    // Tracked again before the first timer would have ended: that timer must not untrack it.
+    // Tracked again: a second commit of the same entry must not untrack it.
     tracking.track({ repository: WEB });
-    await session.clock.advance(UNDO_MS);
+    pending.commit(WEB_TARGET);
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
     expect(untracked).toEqual([WEB_TARGET]);
+});
+
+test('nothing commits by itself: it waits for its toast', async () => {
+    const { pending, tracking, session } = await open();
+
+    pending.untrack(WEB_TARGET, WEB.nameWithOwner);
+    await session.clock.advance(60_000);
+
+    expect(tracking.isTracked(WEB_TARGET)).toBe(true);
+    expect(pending.isPending(WEB_TARGET)).toBe(true);
 });
 
 test('committing what is not pending does nothing', async () => {
@@ -96,7 +88,7 @@ test('the page hiding commits everything pending, kept for the next load', async
     session.tab.close();
 
     expect(untracked).toEqual([WEB_TARGET, ROADMAP_TARGET]);
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
     expect(tracking.isTracked(API_TARGET)).toBe(true);
 
     const { tracking: reloaded } = await open({ login, localStorage: session.localStorage, choose: false });
@@ -104,8 +96,8 @@ test('the page hiding commits everything pending, kept for the next load', async
     expect(reloaded.projects).toEqual([]);
 });
 
-test('Undo forgets it with no write: nothing to download again, and the timer does nothing', async () => {
-    const { pending, tracking, untracked, keptSettings, session } = await open();
+test('Undo forgets it with no write: nothing to download again, and its commit does nothing', async () => {
+    const { pending, tracking, untracked, keptSettings } = await open();
     await tracking.updateSyncState(WEB_TARGET, { phase: 'done' });
     const kept = keptSettings();
 
@@ -113,60 +105,41 @@ test('Undo forgets it with no write: nothing to download again, and the timer do
     pending.undo(WEB_TARGET);
 
     expect(pending.isPending(WEB_TARGET)).toBe(false);
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
     expect(pending.repositories).toEqual([WEB, API]);
 
-    await session.clock.advance(UNDO_MS);
+    pending.commit(WEB_TARGET);
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
     expect(tracking.getSyncState(WEB_TARGET)?.phase).toBe('done');
     expect(keptSettings()).toBe(kept);
     expect(untracked).toEqual([]);
 });
 
-test('a second entry loses neither: each has its own time, and the latest is the one shown', async () => {
-    const { pending, tracking, session } = await open();
+test('several pending are each kept, oldest first, and each commits or undoes on its own', async () => {
+    const { pending, tracking } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
-    await session.clock.advance(5000);
     pending.untrack(API_TARGET, API.nameWithOwner);
-    expect(pending.latest).toEqual({ target: API_TARGET, label: API.nameWithOwner });
-
-    await session.clock.advance(5000);
-    expect(tracking.isTracked(WEB_TARGET)).toBe(false);
-    expect(tracking.isTracked(API_TARGET)).toBe(true);
-    expect(pending.latest).toEqual({ target: API_TARGET, label: API.nameWithOwner });
-
-    await session.clock.advance(5000);
-    expect(tracking.isTracked(API_TARGET)).toBe(false);
-    expect(pending.latest).toBeNull();
-});
-
-test('undoing the latest shows the one before it, still pending on its own time', async () => {
-    const { pending, tracking, session } = await open();
-
-    pending.untrack(WEB_TARGET, WEB.nameWithOwner);
-    await session.clock.advance(5000);
-    pending.untrack(API_TARGET, API.nameWithOwner);
+    expect(pending.entries).toEqual([
+        { target: WEB_TARGET, label: WEB.nameWithOwner },
+        { target: API_TARGET, label: API.nameWithOwner },
+    ]);
 
     pending.undo(API_TARGET);
-    expect(pending.latest).toEqual({ target: WEB_TARGET, label: WEB.nameWithOwner });
-
-    await session.clock.advance(5000);
+    expect(pending.entries).toEqual([{ target: WEB_TARGET, label: WEB.nameWithOwner }]);
+    pending.commit(WEB_TARGET);
     expect(tracking.isTracked(WEB_TARGET)).toBe(false);
     expect(tracking.isTracked(API_TARGET)).toBe(true);
 });
 
-test('untracking again what is pending changes nothing: it keeps its time and its place', async () => {
-    const { pending, tracking, session } = await open();
+test('untracking again what is pending changes nothing: it keeps its place', async () => {
+    const { pending } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
     pending.untrack(API_TARGET, API.nameWithOwner);
-    await session.clock.advance(5000);
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
-    expect(pending.latest).toEqual({ target: API_TARGET, label: API.nameWithOwner });
 
-    await session.clock.advance(5000);
-    expect(tracking.isTracked(WEB_TARGET)).toBe(false);
+    expect(pending.entries.map(entry => entry.target)).toEqual([WEB_TARGET, API_TARGET]);
 });
 
 test('what is not tracked does not become pending', async () => {
@@ -174,19 +147,19 @@ test('what is not tracked does not become pending', async () => {
 
     pending.untrack({ kind: 'repository', nameWithOwner: 'acme/other' }, 'acme/other');
 
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
 });
 
 test('untracked meanwhile in this tab, the pending entry goes without a second untrack', async () => {
-    const { pending, tracking, untracked, session } = await open();
+    const { pending, tracking, untracked } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
     tracking.untrack(WEB_TARGET);
 
     expect(pending.isPending(WEB_TARGET)).toBe(false);
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
 
-    await session.clock.advance(UNDO_MS);
+    pending.commit(WEB_TARGET);
     expect(untracked).toEqual([WEB_TARGET]);
 });
 
@@ -201,25 +174,25 @@ test('untracked meanwhile in another tab, the pending entry goes and its commit 
 
     expect(here.tracking.isTracked(WEB_TARGET)).toBe(false);
     expect(here.pending.isPending(WEB_TARGET)).toBe(false);
-    expect(here.pending.latest).toBeNull();
+    expect(here.pending.entries).toEqual([]);
 
     const kept = here.keptSettings();
-    await here.session.clock.advance(UNDO_MS);
+    here.pending.commit(WEB_TARGET);
     expect(here.keptSettings()).toBe(kept);
     expect(here.untracked).toEqual([]);
 });
 
-test('another account signing in forgets what is pending: no timer writes into its settings', async () => {
+test('another account signing in forgets what is pending: no commit writes into its settings', async () => {
     const { pending, tracking, session } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
     session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
 
     await tracking.ready();
     // The new account tracks the same repository: the first account's untrack must not reach it.
     tracking.track({ repository: WEB });
-    await session.clock.advance(UNDO_MS);
+    pending.commit(WEB_TARGET);
 
     expect(tracking.isTracked(WEB_TARGET)).toBe(true);
     expect(pending.isPending(WEB_TARGET)).toBe(false);
@@ -230,9 +203,9 @@ test('signing out forgets what is pending', async () => {
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
     session.signOutFromAnotherTab();
-    expect(pending.latest).toBeNull();
+    expect(pending.entries).toEqual([]);
 
-    await session.clock.advance(UNDO_MS);
+    pending.commit(WEB_TARGET);
     expect(untracked).toEqual([]);
 });
 

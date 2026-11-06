@@ -1,11 +1,11 @@
-<!-- The toasts of what the user just closed, for a `Toaster` (D29): what closed and Undo (⌘Z takes back the latest, while it shows), which reopens it and asks the cursor back to it (`ItemNavigation`). A close GitHub refuses leaves only its failure's toast (`EditToasts`). -->
+<!-- The toasts of what the user just closed, for a `Toaster` (D29): what closed and Undo (⌘Z, on the newest toast), which reopens it and asks the cursor back to it (`ItemNavigation`). A close GitHub refuses leaves only its failure's toast (`EditToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { CircleCheckBig, Undo2 } from 'lucide-vue-next';
 
+import type { Command } from '@/commands/CommandTypes.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
-import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -16,29 +16,24 @@ import type { UndoableClose } from './ItemEditor.js';
 
 /** The key of "Undo", while a toast shows. */
 const UNDO_KEY = 'Mod+Z';
-/** As long as an untrack's Undo (D25). */
-const UNDO_MS = 10_000;
 
 const editor = useService(ItemEditor);
 const navigation = useService(ItemNavigation);
 const t = useTranslate();
 
-useCommands(() => {
-  const latest = editor.closes.at(-1);
-  return latest
-    ? [
-        {
-          id: 'edits.undoClose',
-          title: t(l.undoCommand),
-          section: 'app',
-          key: UNDO_KEY,
-          icon: Undo2,
-          menu: false,
-          run: () => undo(latest),
-        },
-      ]
-    : [];
-});
+function getCommands(close: UndoableClose): Command[] {
+  return [
+    {
+      id: 'edits.undoClose',
+      title: t(l.undoCommand),
+      section: 'app',
+      key: UNDO_KEY,
+      icon: Undo2,
+      menu: false,
+      run: () => undo(close),
+    },
+  ];
+}
 
 function undo({ id, targets }: UndoableClose) {
   navigation.requestReturn({ ids: targets.map(target => target.itemId), settled: editor.undoClose(id) });
@@ -65,15 +60,16 @@ function onOpenChange(close: UndoableClose, open: boolean) {
     :title="getTitle(close)"
     tone="neutral"
     :icon="CircleCheckBig"
-    :duration="UNDO_MS"
+    lasts="long"
+    :commands="getCommands(close)"
     @update:open="onOpenChange(close, $event)"
   >
-    <template #actions>
+    <template #actions="{ active }">
       <Button
         variant="secondary"
         size="sm"
-        :kbd="UNDO_KEY"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(UNDO_KEY)"
+        :kbd="active ? UNDO_KEY : undefined"
+        :aria-keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
         @click="undo(close)"
       >
         {{ t(l.undo) }}

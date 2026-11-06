@@ -54,3 +54,25 @@ test("a repository view's title opens the same menu: its pull requests", async (
     await menu.getByRole('menuitem', { name: 'Pull requests' }).click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pulls`);
 });
+
+test("Stop tracking in a repository's sidebar menu takes it out at once with the toast's Undo, and Undo keeps it tracked", async ({
+    page,
+    github,
+}) => {
+    const shell = await openTrackedWork(page, github, createSampleTrackedWork().world);
+
+    const menu = await shell.openTrackedMenu(SAMPLE_REPOSITORY);
+    await menu.getByRole('menuitem', { name: 'Stop tracking' }).click();
+
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeHidden();
+    const toast = shell.toasts.filter({ hasText: `Stopped tracking ${SAMPLE_REPOSITORY}` });
+    await expect(toast).toBeVisible();
+
+    await toast.getByRole('button', { name: 'Undo' }).click();
+    await expect(toast).toBeHidden();
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeVisible();
+
+    // Nothing was written: after a reload it is still tracked.
+    await page.reload();
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeVisible();
+});
