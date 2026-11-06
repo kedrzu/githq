@@ -30,3 +30,5 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Rightsize on D6/D7 (3 passes). Taken as build notes in D6: "can't be read" is one pattern with a cause
   line, shown only when the screen has nothing; an empty group among rows keeps "Nothing here.". Put to owner: splitting
   "can't be read" into permanent and transient; fixing only the wrong states instead of the whole table.
+- 2026-11-06 — Owner: one "can't be read" reason (not split), the whole table (not only the wrong states); both
+  recorded as D6 Rejected lines. Added what gets built first to README. Proposed closing.

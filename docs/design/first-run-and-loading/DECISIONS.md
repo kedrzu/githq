@@ -148,6 +148,12 @@ arrived, empty group inside a list that has other rows keeps its "Nothing here."
 
 **Rejected.**
 
+- "Can't be read" split in two, lasting (no access, gone) and passing (offline, paused, failing) — the difference is in
+  the line and the action, not the look; one pattern fewer to design (owner, 2026-11-06).
+
+- Fixing only the screens that say something wrong or show a bare line, the rest left until someone meets them — the
+  owner wants the plain states designed too, and most of the table is "kept" anyway (owner, 2026-11-06).
+
 - Designing each screen's empty state on its own — the wrong ones today are wrong in the same way, and nothing stops the
   next screen repeating it.
 
