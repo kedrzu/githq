@@ -25,18 +25,22 @@ test('nothing tracked, nothing to tell', async () => {
     expect(download.current).toBeNull();
 });
 
-test('sums every tracked repository and project, the total unknown while any has not counted, hidden ones left out', async () => {
+test('sums every tracked repository and project, the total of those counted so far, hidden ones left out', async () => {
     const { download, tracking } = await open();
     tracking.choose({ repositories: [WEB, API], projects: [ROADMAP] });
 
     // Nothing counted yet: "Downloading · counting…".
     expect(download.current).toEqual({ done: 0, total: null, secondsLeft: null, repositories: 2, projects: 1 });
 
+    // One counted: its figures at once, while the others have not counted yet.
     await tracking.updateSyncState(WEB_TARGET, { counts: { openIssues: { done: 100, total: 400 } } });
-    await tracking.updateSyncState(ROADMAP_TARGET, { count: { done: 20, total: 50 } });
-    expect(download.current).toMatchObject({ done: 120, total: null });
+    expect(download.current).toEqual({ done: 100, total: 400, secondsLeft: null, repositories: 2, projects: 1 });
 
-    // GitHub doesn't show `acme/api`: it never holds the total back, nor counts as downloading.
+    // Another counted: the total grows.
+    await tracking.updateSyncState(ROADMAP_TARGET, { count: { done: 20, total: 50 } });
+    expect(download.current).toMatchObject({ done: 120, total: 450 });
+
+    // GitHub doesn't show `acme/api`: it adds nothing, nor counts as downloading.
     await tracking.updateSyncState(API_TARGET, { hidden: true });
     expect(download.current).toEqual({ done: 120, total: 450, secondsLeft: null, repositories: 1, projects: 1 });
 
@@ -66,6 +70,22 @@ test('the time left is told only after five seconds of pace, from when the downl
     await session.clock.advance(1000);
     await tracking.updateSyncState(WEB_TARGET, { counts: { openIssues: { done: 100, total: 1000 } } });
     expect(download.current?.secondsLeft).toBe(45);
+});
+
+test('the time left is of the total counted so far, and grows with it', async () => {
+    const { download, tracking, session } = await open();
+    tracking.choose({ repositories: [WEB, API], projects: [] });
+    await tracking.updateSyncState(WEB_TARGET, { counts: { openIssues: { done: 0, total: 1000 } } });
+
+    // 100 items in 5 s, `acme/api` not counted yet: the 900 left of `acme/web` take 45 s.
+    await session.clock.advance(5000);
+    await tracking.updateSyncState(WEB_TARGET, { counts: { openIssues: { done: 100, total: 1000 } } });
+    expect(download.current).toMatchObject({ total: 1000, secondsLeft: 45 });
+
+    // `acme/api` counts 500 more; 200 items in 10 s: the 1,300 left take 65 s.
+    await session.clock.advance(5000);
+    await tracking.updateSyncState(API_TARGET, { counts: { openIssues: { done: 100, total: 500 } } });
+    expect(download.current).toMatchObject({ done: 200, total: 1500, secondsLeft: 65 });
 });
 
 test('a download that starts after everything arrived counts its pace afresh', async () => {

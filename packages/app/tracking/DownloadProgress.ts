@@ -14,9 +14,12 @@ const PACE_AFTER_MS = 5000;
 export interface OverallDownload {
     /** Items read so far, of every repository and project still downloading or done. */
     readonly done: number;
-    /** Items GitHub counts in all of them; `null` while any has not counted its items yet. */
+    /**
+     * Items GitHub counts in those that have counted theirs so far — a total that grows as the rest count theirs (D11,
+     * "1,310 of 9,450"); `null` while none has counted yet ("Downloading · counting…").
+     */
     readonly total: number | null;
-    /** Roughly how long is left, once a pace is known; `null` before. */
+    /** Roughly how long is left of the total counted so far, once a pace is known; `null` before. */
     readonly secondsLeft: number | null;
     /** How many tracked repositories are still downloading. */
     readonly repositories: number;
@@ -26,8 +29,9 @@ export interface OverallDownload {
 
 /**
  * How far the download of every tracked repository and project is (first run and loading D4): the sum of each one's
- * progress — those GitHub does not show to the user left out — and the time left, from the pace since the download
- * was first seen under way, told only after {@link PACE_AFTER_MS}. App-wide, so a repository tracked later is told
+ * progress — those GitHub does not show to the user left out, those not counted yet adding only what they read — and
+ * the time left of what is counted so far, from the pace since the download was first seen under way, told only after
+ * {@link PACE_AFTER_MS}. App-wide, so a repository tracked later is told
  * the same as the first sign-in's; once everything arrived there is nothing to tell, and the next download starts its
  * pace afresh.
  */
@@ -41,7 +45,7 @@ export const DownloadProgress = defineService({
     setup({ clock, tracking }) {
         const progress = computed(() => {
             let done = 0;
-            let total: number | null = 0;
+            let total: number | null = null;
             let repositories = 0;
             let projects = 0;
             const targets: TrackedTarget[] = [
@@ -58,7 +62,9 @@ export const DownloadProgress = defineService({
                 }
 
                 done += current.done;
-                total = total === null || current.total === null ? null : total + current.total;
+                if (current.total !== null) {
+                    total = (total ?? 0) + current.total;
+                }
                 if (current.state === 'downloading') {
                     if (target.kind === 'repository') {
                         repositories++;
