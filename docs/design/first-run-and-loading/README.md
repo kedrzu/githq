@@ -88,5 +88,6 @@ truthful only under some filters. Postponed by the owner.
 
 ## Still open
 
-- The empty states: which reasons a screen can be empty for, and what each says. The owner designs the screens; this
+- The empty states: which reasons a screen can be empty for, and what each says — [what every screen shows
+  today](empty-states.md). The owner designs the screens; this
   design settles which cases exist.
