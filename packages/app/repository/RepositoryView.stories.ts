@@ -167,7 +167,7 @@ const ARRIVING_LIST = buildRepositoryList({
 
 /** Tracked, its open issues still downloading: ghost rows, never "nothing matches" (first run and loading ES14). */
 export const TrackedArriving: Story = {
-    args: { list: ARRIVING_LIST, openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
+    args: { list: ARRIVING_LIST, openCounts: { issues: null, pullRequests: null }, projects: [] },
 };
 
 /** The same as a board: ghost columns, as its columns come from its items (ES29). */

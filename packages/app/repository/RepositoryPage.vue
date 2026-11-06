@@ -193,12 +193,18 @@ const workflowList = computed(() =>
     now: list.now,
   }),
 );
-/** How many open items each section holds, for its tab. */
-const openCounts = computed((): Record<RepositoryItemSection, number> => {
+/**
+ * How many open items each section holds, for its tab; `null` while its download has yet to read them, as a partial total
+ * would read as the whole (first run and loading D4, D14).
+ */
+const openCounts = computed((): Record<RepositoryItemSection, number | null> => {
   const open = repositoryItems.value.filter(item => item.state === 'OPEN');
+  const sync = tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value });
   return {
-    issues: open.filter(item => item.kind === 'issue').length,
-    pullRequests: open.filter(item => item.kind === 'pullRequest').length,
+    issues: isRepositoryStateArriving(sync, 'issue', 'open') ? null : open.filter(item => item.kind === 'issue').length,
+    pullRequests: isRepositoryStateArriving(sync, 'pullRequest', 'open')
+      ? null
+      : open.filter(item => item.kind === 'pullRequest').length,
   };
 });
 const isPrivate = computed(() => repositoryItems.value[0]?.repository.isPrivate ?? null);

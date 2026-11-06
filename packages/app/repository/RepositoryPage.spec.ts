@@ -67,6 +67,19 @@ test('tracked, nothing is read on demand, and untracked from the screen it goes 
     expect(github.issuePages()).toEqual([{ states: ['OPEN'], after: null }]);
 });
 
+test('first run and loading ES14: tracked, a tab has no count until its download has read its open items', async () => {
+    const { tracking } = await open({ path: `/${WEB}/issues`, tracked: true });
+    const sections = page.getByRole('group', { name: 'Sections' });
+
+    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Pull requests', exact: true })).toBeVisible();
+
+    // Its open issues are in, its open pull requests on their way.
+    await tracking.updateSyncState({ kind: 'repository', nameWithOwner: WEB }, { phase: 'openPullRequests' });
+    await expect.element(sections.getByRole('button', { name: 'Issues 0', exact: true })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Pull requests', exact: true })).toBeVisible();
+});
+
 test("GitHub's own name replaces the address, at the same section with its query and hash, and the rows stay", async () => {
     const { router } = await open({ path: '/ACME/Web/issues?panel=1#top', actualName: WEB });
 
