@@ -198,7 +198,7 @@ Components (`Components · Empty states`): `Empty / Still arriving · screen | g
 
 ## D9
 
-**The ghosts carry the motion alone: a soft highlight sweeps left to right through them, a full pass every 1.6 s,
+**The ghosts carry the motion alone: a soft highlight runs left to right along the skeleton bars themselves, never over the background between them, a full pass every 1.6 s,
 each row 80 ms after the one above; an arriving row fades in over its ghost in 150 ms and the ghosts below move down.
 With animations off (Display, CH49) the ghosts stand still.** (2026-11-06, design agent's proposal; the owner asked
 that it visibly move) — ES4
