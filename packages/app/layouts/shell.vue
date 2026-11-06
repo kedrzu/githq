@@ -70,8 +70,9 @@ import WorkflowRerunToast from '@/workflows/WorkflowRerunToast.vue';
 import { WorkflowRunStore } from '@/workflows/WorkflowRunStore.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 
-// The desktop app's toast, in the desktop build only (`__DESKTOP__`); the web builds drop it.
+// The desktop app's toasts, in the desktop build only (`__DESKTOP__`); the web builds drop them.
 const UpdatedToast = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/UpdatedToast.vue')) : null;
+const UpdateReadyToast = __DESKTOP__ ? defineAsyncComponent(() => import('@/desktop/UpdateReadyToast.vue')) : null;
 
 defineSlots<{
   default(): unknown;
@@ -415,6 +416,10 @@ function showLastFailure() {
     <component
       :is="UpdatedToast"
       v-if="UpdatedToast"
+    />
+    <component
+      :is="UpdateReadyToast"
+      v-if="UpdateReadyToast"
     />
   </Toaster>
   <AppCommands v-if="auth.viewer" />

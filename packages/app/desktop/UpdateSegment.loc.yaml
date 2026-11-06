@@ -7,7 +7,7 @@ downloading:
 downloadingPercent:
   en: Downloading githq {version}, {percent}%
 ready:
-  en: githq {version} is ready
+  en: githq {version} ready
 failedOffline:
   en: "Couldn't check for updates: you're offline"
 failedUnreachable:
@@ -22,8 +22,6 @@ installFailed:
   en: githq {version} couldn't be installed
 restart:
   en: Restart
-later:
-  en: Later
 tryAgain:
   en: Try again
 dismiss:

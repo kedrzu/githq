@@ -26,7 +26,8 @@ export const DEV_SIGN_IN_MARKERS: readonly { text: string; what: string }[] = [
 
 /**
  * Text only the desktop code (`desktop/`) puts into a build: the native side Tauri injects into the desktop app's
- * window, the command the token is read with, the update notice with the command it restarts with, the toast after an update, and
+ * window, the command the token is read with, the update notice with the command it restarts with, the toasts of an update ready
+ * and after an update, and
  * Settings' Updates and Changelog sections. The production build must have none; the desktop build must have all (`checkDesktopBuild.ts`).
  */
 export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
@@ -38,6 +39,7 @@ export const DESKTOP_MARKERS: readonly { text: string; what: string }[] = [
     { text: 'UpdatesSection', what: "Settings' Updates section" },
     { text: 'Official versions, released', what: "the text of Settings' Updates section" },
     { text: 'UpdatedToast', what: 'the toast saying the app updated' },
+    { text: 'UpdateReadyToast', what: 'the toast offering an update' },
     { text: 'ChangelogSection', what: "Settings' Changelog section" },
     { text: 'changelog appears', what: "the text of Settings' Changelog section" },
 ];

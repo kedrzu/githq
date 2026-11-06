@@ -22,6 +22,7 @@ function withChange(change: VersionChange): Decorator {
                 container.set(AppUpdate, {
                     state: null,
                     notice: null,
+                    offer: null,
                     previousVersion: change.previousVersion,
                     get untoldChange() {
                         return untold.value;

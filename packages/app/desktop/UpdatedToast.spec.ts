@@ -73,6 +73,7 @@ function mount(change: VersionChange | null) {
     const update = {
         state: null,
         notice: null,
+        offer: null,
         previousVersion: change?.previousVersion ?? null,
         get untoldChange() {
             return untold.value;
