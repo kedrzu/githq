@@ -22,7 +22,7 @@ How the repo is built and why: `ARCHITECTURE.md`. Read it before changing the la
 
 ## Status
 
-Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`. So do desktop releases and update streams, `docs/design/desktop-releases/`.
+Being built (issue #4, `/dev:deliver`). The design is `docs/design/githq/` (start at its `README.md`; decisions in `DECISIONS.md`, UI briefs in `ui/`, mockups in `githq.pen`). Merging pull requests has its own design, `docs/design/pr-merge/`. So do stacked pull requests, `docs/design/stacked-prs/`. So do commit history and the git client, `docs/design/git-client/`. So do desktop releases and update streams, `docs/design/desktop-releases/`. So does githq on a phone, `docs/design/mobile/`.
 
 ## Stack & commands
 
