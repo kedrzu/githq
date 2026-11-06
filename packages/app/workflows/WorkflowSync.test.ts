@@ -730,6 +730,33 @@ test('the Workflows section’s freshness: the first read’s progress, then the
     expect(sync.getRepositoryWorkflowsFreshness('acme/web').kind).toBe('fresh');
 });
 
+test('first run and loading D14: workflows not read yet are being read — Broken workflows says how many repositories are — then as their poll goes', async () => {
+    const world = sampleWorld();
+    world.actions.repository('other/gone').refusal = 404;
+    const { session, tracking, sync } = await setup(world);
+    const heldApi = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'GET /repos/acme/api/actions/runs' ? heldApi.promise : null;
+    // A repository GitHub shows no Actions of counts in neither.
+    tracking.choose({
+        projects: [],
+        repositories: [
+            { nameWithOwner: 'acme/web', id: 'R_web' },
+            { nameWithOwner: 'other/gone', id: 'R_gone' },
+            { nameWithOwner: 'acme/api', id: 'R_api' },
+        ],
+    });
+    await session.clock.advance(0);
+
+    expect(sync.getRepositoryWorkflowsFreshness('acme/api')).toEqual({ kind: 'partial', readingWorkflows: true });
+    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'partial', readingWorkflows: { read: 1, total: 2 } });
+
+    heldApi.resolve();
+    await session.clock.advance(0);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/api').kind).toBe('fresh');
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+});
+
 test('the Workflows section’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
     const world = sampleWorld();
     world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);

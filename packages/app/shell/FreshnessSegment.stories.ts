@@ -84,6 +84,14 @@ export const DownloadingItems: Story = {
 /** A commit graph's first read: GitHub gives no cheap count of commits (first run and loading D14, ES21). */
 export const ReadingCommits: Story = { args: { freshness: { kind: 'partial', readingCommits: true } } };
 
+/** A repository's Workflows before its workflows are first read (first run and loading D14, ES27). */
+export const ReadingWorkflows: Story = { args: { freshness: { kind: 'partial', readingWorkflows: true } } };
+
+/** Broken workflows while some tracked repositories' workflows are not read yet (first run and loading D14, ES28). */
+export const ReadingWorkflowsOfRepositories: Story = {
+    args: { freshness: { kind: 'partial', readingWorkflows: { read: 1, total: 4 } } },
+};
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 

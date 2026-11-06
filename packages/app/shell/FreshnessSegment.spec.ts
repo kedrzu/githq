@@ -97,6 +97,17 @@ test("first run and loading D14: a commit graph's first read says it reads commi
     await expect.element(page.getByText('Reading commits', { exact: true })).toBeVisible();
 });
 
+test('first run and loading D14: workflows not read yet say so, Broken workflows with how many repositories are', async () => {
+    mount({ kind: 'partial', readingWorkflows: true });
+    await expect.element(page.getByText('Reading workflows', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', readingWorkflows: { read: 1, total: 4 } });
+    await expect.element(page.getByText('Reading workflows · 1 of 4 repositories', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', readingWorkflows: { read: 0, total: 1 } });
+    await expect.element(page.getByText('Reading workflows · 0 of 1 repository', { exact: true })).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

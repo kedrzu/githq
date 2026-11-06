@@ -40,6 +40,13 @@ downloading:
   en: Downloading · what's here is usable
 readingCommits:
   en: Reading commits
+readingWorkflows:
+  en: Reading workflows
+readingWorkflowsCounted:
+  plural: total
+  en:
+    one: 'Reading workflows · {read} of {total} repository'
+    many: 'Reading workflows · {read} of {total} repositories'
 downloadingPhase:
   en: Downloading {what}
 downloadingPhaseCounted:

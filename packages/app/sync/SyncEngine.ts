@@ -414,29 +414,60 @@ export const SyncEngine = defineService({
             );
         }
 
-        /** How fresh the tracked repositories' workflows are, as a screen showing them tells it; reactive. */
+        /**
+         * How fresh the tracked repositories' workflows are, as Broken workflows tells it: `partial` while some of them
+         * are not read yet, with how many are of those GitHub shows the Actions of (first run and loading D14, ES28),
+         * unless GitHub stands in its way; else as their poll goes. Reactive.
+         */
         function getWorkflowsFreshness(): Freshness {
-            return getLoopFreshness('workflows', items.getSyncState('workflows').lastSuccessAt);
+            let read = 0;
+            let total = 0;
+            for (const { state } of workflows.repositories) {
+                if (state.status !== 'unavailable') {
+                    total += 1;
+                    read += state.status === 'read' ? 1 : 0;
+                }
+            }
+
+            return read < total && isWorkflowsReadOnItsWay()
+                ? { kind: 'partial', readingWorkflows: { read, total } }
+                : getWorkflowsPollFreshness();
         }
 
         /**
-         * How fresh a tracked repository's Workflows section is (actions W3c, W3e): `reading` during the first read of its
-         * runs, unless GitHub stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read
-         * are on screen — there is no telling since when, as the loop goes on without it —; else as its poll goes.
-         * Reactive.
+         * How fresh a tracked repository's Workflows section is (actions W3c, W3e): `partial` before its workflows are
+         * first read (first run and loading D14, ES27), then `reading` during the first read of their runs, unless GitHub
+         * stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read are on screen — there
+         * is no telling since when, as the loop goes on without it —; else as its poll goes. Reactive.
          */
         function getRepositoryWorkflowsFreshness(nameWithOwner: string): Freshness {
             const stored = workflows.get(nameWithOwner);
-            if (stored?.unavailable != null) {
+            if (!stored) {
+                return isWorkflowsReadOnItsWay()
+                    ? { kind: 'partial', readingWorkflows: true }
+                    : getWorkflowsPollFreshness();
+            }
+
+            if (stored.unavailable != null) {
                 return stored.workflows.length > 0
                     ? { kind: 'stale', since: null, reason: 'workflowsUnavailable' }
-                    : getWorkflowsFreshness();
+                    : getWorkflowsPollFreshness();
             }
 
             const progress = workflows.getReadProgress(nameWithOwner);
-            return progress && notice.value === null && !statusRef.value.workflows.failing
+            return progress && isWorkflowsReadOnItsWay()
                 ? { kind: 'reading', read: progress.read, total: progress.total }
-                : getWorkflowsFreshness();
+                : getWorkflowsPollFreshness();
+        }
+
+        /** The workflows' poll as it goes, whatever is read of them. */
+        function getWorkflowsPollFreshness(): Freshness {
+            return getLoopFreshness('workflows', items.getSyncState('workflows').lastSuccessAt);
+        }
+
+        /** Nothing stands in the way of a first read of workflows: not the connection, the allowance or GitHub failing. */
+        function isWorkflowsReadOnItsWay() {
+            return notice.value === null && !statusRef.value.workflows.failing;
         }
 
         /**
