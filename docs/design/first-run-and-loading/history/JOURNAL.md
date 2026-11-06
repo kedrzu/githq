@@ -35,3 +35,4 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Owner asked for the design agent's prompt: wrote ui/first-run-and-empty-states.md (brief) and
   ui/design-agent-prompt.md.
 - 2026-11-06 — Prompt sent to the design agent; removed ui/design-agent-prompt.md from the repo (owner).
+- 2026-11-06 — Design agent drew the screens in githq.pen (G15–G17, ES1–ES25), proposed D8–D16, retired G6 and G7.

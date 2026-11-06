@@ -170,8 +170,128 @@ fixed as a bug, not designed.** (2026-11-06, design agent's proposal, owner conf
 
 - Every empty line in the app — dozens of one-liners that already say what they mean.
 
+## D8
+
+**Every empty screen or list tells its reason through one of four components, each drawn for a full screen, a list's
+group and a board column. Proposed: Variant A (ES1) — still arriving draws faint ghost rows (ghost cards on a board)
+where the rows will land, with three pulsing dots and one short line; nothing there, filtered out and can't be read
+are the centred note the app already uses (K4, J7): an icon, a title, one line, at most one action. In a group each is
+one quiet line under the header; in a board column a small centred note.** (2026-11-06, design agent's proposal;
+waiting on the owner's pick among ES1–ES3)
+
+**Why.** Ghost rows say "rows are coming, here" without words, and rows replace them in place, so nothing jumps when
+data lands; the same shape already shows files still arriving in code review (#205). The other three reasons were
+already designed in the centred style on several screens; making them components keeps them alike.
+
+Components (`Components · Empty states`): `Empty A / Arriving · screen | group | column`, `Empty / Nothing there ·
+…`, `Empty / Filtered out · …`, `Empty / Can't be read · …`, built on `Empty / Note · screen | group | column`,
+`Empty / Ghost row`, `Empty / Ghost card`, `Empty / Dots`.
+
+**Rejected (proposed).**
+
+- Variant B, one centred note for all four (ES2) — uniform and calm, but a screen still arriving looks as blank as an
+  empty one until it is read.
+- Variant C, a line at the top for all four (ES3) — dense and honest, and it can tick through My work's groups, but
+  a 1,200px pane stays almost empty above the fold, and the ticker exists only where groups are known.
+
+## D9
+
+**Still arriving moves in two slow, quiet ways: a soft highlight sweeps through the ghost rows every 1.6 s, each row
+80 ms after the one above, and the three dots fade in turn (400 ms each); an arriving row fades in over its ghost in
+150 ms. With animations off (Display, CH49) both stand still. The words: "Fetching {thing}" on a screen ("Fetching
+your work", "Fetching fitloop/webapp's open issues"), "Still arriving" in a group or a column.** (2026-11-06, design
+agent's proposal) — ES4
+
+**Why.** The owner asked for "fetching", "crunching", "churning", light and good-looking, not a spinner on a blank
+page. A sweep through the rows reads as work in progress; a blink reads as a fault.
+
+## D10
+
+**The still-arriving state shows no numbers; the status bar holds them.** (2026-11-06, design agent's proposal)
+
+**Why.** Counts grow while a download runs ("of 8,000" rises once closed items are counted), so a number in two
+places doubles the jitter. The screen's own status bar segment is right below the list and already says "Downloading
+open issues · 40 of 142" (ES14).
+
+## D11
+
+**The left segment while downloading, proposed (ES5): items so far of the total and the time left, e.g. "1,240 of
+8,000 · about 2 min"; "Downloading · counting…" before the first count; how many repositories and projects are
+downloading moves to the hover title. On the rail (56px): the time left ("2m") once a pace is known, the turning icon
+alone before. Who has the segment, in order: offline, paused by the allowance, downloading, the allowance (ES8).**
+(2026-11-06, design agent's proposal; waiting on the owner's pick among ES5–ES7)
+
+**Why.** The brief's example, "Downloading 4 repositories · 1,240 of 8,000 · about 2 min", is about 330px of text in a
+236px segment. The number and the time are what change, so they stay in sight. Offline and paused tell why nothing
+moves, which matters more than how far it got.
+
+**Rejected (proposed).**
+
+- "Downloading 5 · about 2 min" (ES6) — items of the total, which the brief asks for, leave sight.
+- A bar along the segment's top edge (ES7) — it moves backwards when a total grows, which reads as a fault; and on the
+  rail a percentage does the same.
+
+## D12
+
+**"Can't be read" per cause (ES25):** (2026-11-06, design agent's proposal)
+
+- **Offline** — "You're offline"; "{thing} hasn't arrived yet, and githq can't reach GitHub. It carries on by itself as
+  soon as you're back."; no action.
+- **Paused by the allowance** — "Refresh paused until 14:20"; "GitHub's hourly allowance ran out before {thing} was
+  read. It comes in by itself at 14:20."; no action.
+- **GitHub failing** — "GitHub isn't answering"; "githq couldn't read {thing}. It tries again every 30 seconds.";
+  "Try again".
+- **Hidden or gone** — "GitHub doesn't show {thing}"; "It may be private to githq, its organisation may not have
+  approved githq, or it is gone."; "Open on GitHub".
+
+The icon is amber (cloud-off, pause, triangle-alert, eye-off), as the status bar's stale states are.
+
+**Why.** The title is the status bar's own words, so the two read as one; offline and paused resolve by themselves,
+so a button would only invite pressing it.
+
+## D13
+
+**The choosing screen's strip: the wordmark at the left (right after the window buttons on the Mac), the account at
+the right, nothing between, no border under it. On the web and Windows the strip is the same without the buttons.**
+(2026-11-06, design agent's proposal) — G2, G15; `Track / Top bar`, `Track / Top bar · macOS`
+
+**Why.** Above the app's sidebar the strip has no border either; a border would bring back the bar that "jumps".
+
+## D14
+
+**While a screen's data is still arriving, its own status bar segment says what it waits for: "Fetching your work",
+"Still arriving · assigned to you, mentions" (My work), "Downloading open issues · 40 of 142" (a repository),
+"Downloading items · 0 of 128" (a project), "Reading commits". My work's total in the sidebar stays blank until every
+group is in.** (2026-11-06, design agent's proposal) — G16, G17, ES14, ES18, ES21
+
+**Why.** D4 gives each screen's segment the screen's own story; a partial total would read as the whole.
+
+## D15
+
+**My work narrowed to one group from the sidebar, and that group empty, is filtered out: the note says what is
+shown and offers the rest ("Nothing mentions you … Your other 10 items are in My work.", "Show all of My work").**
+(2026-11-06, design agent's proposal) — ES12
+
+**Why.** The brief files it under filtered out. The note keeps it from reading as the whole of My work being empty.
+
+## D16
+
+**G6 (the download page) and G7 (the earlier draft of going straight into the app, with download percentages in the
+sidebar) are deleted from `githq.pen`; G16 and G17 take their place.** (2026-11-06, design agent) — follows D1, D4
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land
   between rows, not at the end; and the default filter shows open items, which arrive first. Truthful only under
   filters that include what is still arriving.
+
+## Notes for the owner
+
+Raised by the screens, not settled by the brief (2026-11-06, design agent):
+
+- **The repository's "Synced 14s ago"** in the bar above its issues (CH1, `Freshness`) shows every poll, against D3.
+  ES9 hides it; whether it goes for good is the owner's call.
+- **A commits total.** GitHub gives no cheap count of a repository's commits, so ES21's segment says "Reading
+  commits" without numbers.
+- **"Try again" has no key in the app yet**; the drawings use R. "Open on GitHub" keeps O, as in J7.
+- **"Downloading 5"** counts repositories and projects together; the hover title names both.

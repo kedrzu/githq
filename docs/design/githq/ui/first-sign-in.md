@@ -2,7 +2,7 @@
 
 Read `README.md` in this folder first.
 
-**Status:** designed in Direction D (screens G1–G10).
+**Status:** designed in Direction D (screens G1–G17). The download step (G6) is retired: "Track these" goes straight to My work ([first-run-and-loading D1](../../first-run-and-loading/DECISIONS.md#d1), G15–G17).
 
 ## Purpose
 
