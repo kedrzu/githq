@@ -12,6 +12,10 @@ screen's edge ([D2](DECISIONS.md#d2)).
 These are starting points, not the boundary. The design agent is expected to be creative and to propose shapes
 nobody listed here, above all for the command menu button.
 
+Picked so far, and gone from this list: where the bottom bar shows ([D10](DECISIONS.md#d10)), whether a link says it
+leaves ([D11](DECISIONS.md#d11)), how "not fresh" shows ([D12](DECISIONS.md#d12)), what the command menu's button looks
+like ([D13](DECISIONS.md#d13)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
+
 ## The bottom bar
 
 A bar of tabs along the bottom of the screen. The owner likes it as a way to move between the important parts of
@@ -23,8 +27,6 @@ bottom of the screen, above all an input such as the comment box, and it costs h
     project's views in a project.
   - (b) Fixed and global: My work, repositories, projects; a repository's sections become tabs at the top of its
     screen.
-- **Where it shows.** Only on list screens (a repository's section, My work, a project view), and not on an
-  item's screen, where the comment box takes the bottom — against everywhere.
 - **Whether it carries the command menu button** in its middle, if the button is not in a top corner.
 
 ## The hamburger menu and the two top corners
@@ -43,7 +45,7 @@ bottom of the screen, above all an input such as the comment box, and it costs h
 
 ## The command menu button
 
-The command menu is opened by ⌘K on a computer; a phone needs a button for it. The top-right corner is the natural
+The command menu is opened by ⌘K on a computer; a phone needs a button for it, shown as ⌘ ([D13](DECISIONS.md#d13)). The top-right corner is the natural
 place, but the owner wants the design agent to look for something smarter (2026-11-06). Known options: top-right
 corner, middle of the bottom bar, a floating button.
 

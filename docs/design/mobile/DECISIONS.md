@@ -126,3 +126,59 @@ project view saved as a board shows on a phone as a list grouped by the board's 
 
 **Why.** The owner set the board aside. A board's columns are the values of the field it groups by, so a list
 grouped by that field holds the same items in the same order of groups, and the view stays usable.
+
+## D10
+
+**The bottom bar shows on list screens only. On an item's screen the bottom belongs to the comment box.**
+(2026-11-06, owner, picked from the drawings: `MB23` in `githq.pen`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: on an item the part of the place you are in
+no longer matters, because back returns to it, and two stacked bars leave little room for reading.
+
+**Rejected.**
+
+- The bar everywhere with the comment box above it (MB24) — two bars take 136 px with the home indicator, for a jump
+  that back and one tap already give.
+- The bar everywhere with the comment box behind a button (MB25) — every reply costs an extra tap.
+
+## D11
+
+**A link that leaves githq for github.com on a phone says so before it is tapped, with a ↗.** Only links the phone
+does not show carry the mark. (2026-11-06, owner, picked from the drawings: `MB49`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: a phone has no hover to tell you where a link
+goes, and the hand-off of [D3](#d3) is otherwise a surprise.
+
+**Rejected.**
+
+- Plain links (MB50) — the first you know of the hand-off is github.com filling the screen.
+
+## D12
+
+**A phone shows that the copy is not fresh in three places: a strip under the top bar that appears only when
+something is off, a toast above the dock for an edit that failed, and the freshness and API allowance always in the
+places panel.** (2026-11-06, owner, picked from the drawings: `MB51`, `MB52`, `MB53`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: a phone has no room for the desktop's status
+bar, while "your edit did not go through" and "githq cannot reach GitHub" must still be seen.
+
+**Rejected.**
+
+- Only a dot on the menu button (MB54) — easy to miss, and stale data is what you should not miss before acting.
+- A strip above the dock (MB55) — it makes the bottom heavier while you read.
+
+## D13
+
+**The command menu's button is ⌘.** (2026-11-06, owner, picked from the drawings: `MB57`; where the button sits is
+still open, [variants.md](variants.md))
+
+**Why.** The owner gave no reason beyond the pick. It names the same thing as ⌘K on the computer.
+
+> **Not settled by this:** ⌘ is a key from Apple keyboards. Someone on Android, or who only knows githq from Windows,
+> has no ⌘ to recognize; no one has tested how they read it.
+
+**Rejected.**
+
+- The violet slash of git/hq (MB56) — the design agent's recommendation; the owner chose otherwise.
+- A magnifying glass (MB58) — it undersells the menu: nobody looks under search for closing an issue.
+- A labelled pill (MB59) — it does not fit beside My work's five tabs.

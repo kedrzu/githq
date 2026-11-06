@@ -69,5 +69,8 @@ with room for shapes nobody listed ([what is to be drawn](variants.md)).
 
 Settled: what makes the app a phone, the first version's scope, what happens to the addresses it does not show,
 and the first sign-in. Not yet touched: the item's screen on a phone (its properties, activity and comment box in
-one column), and how a list row shrinks to a phone's width. The navigation variants are being drawn, from
-[the brief for the design agent](ui/navigate-on-a-phone.md).
+one column), and how a list row shrinks to a phone's width. The navigation variants are drawn in `githq.pen`, frame
+`App · Mobile`, from [the brief for the design agent](ui/navigate-on-a-phone.md); the owner is picking from them, and
+so far the bottom bar stays off an item's screen ([D10](DECISIONS.md#d10)), links that leave say so
+([D11](DECISIONS.md#d11)), what is not fresh shows without a status bar ([D12](DECISIONS.md#d12)), and the command
+menu's button is ⌘ ([D13](DECISIONS.md#d13)).

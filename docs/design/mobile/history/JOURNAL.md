@@ -35,3 +35,8 @@ Append-only. One line per decision, rejection or answer from the owner.
   navigation: brief written as `ui/navigate-on-a-phone.md`, the prompt given inline (AGENTS.md → Design). Open:
   githq's own Settings (`/settings`) is not on GitHub, so the hand-off of D3 would send it to GitHub's settings —
   raised with the owner.
+- 2026-11-06 — Variants drawn in `githq.pen`, frame `App · Mobile`, codes MB. Owner's idea on seeing them: the command
+  menu button leaves once you are inside a task (writing a reply, a drill-down), drawn as MB70–MB77 and still to be
+  picked. Owner picked: MB23 (D10), MB49 (D11), MB51–MB53 (D12), MB57 (D13, against the recommended slash). No reasons
+  given for the picks. MB23 leaves the button's Variant D (MB8–MB9), a bar that stays on the item, without its
+  premise; raised with the owner.
