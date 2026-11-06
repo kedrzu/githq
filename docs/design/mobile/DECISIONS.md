@@ -182,3 +182,28 @@ still open, [variants.md](variants.md))
 - The violet slash of git/hq (MB56) — the design agent's recommendation; the owner chose otherwise.
 - A magnifying glass (MB58) — it undersells the menu: nobody looks under search for closing an issue.
 - A labelled pill (MB59) — it does not fit beside My work's five tabs.
+
+## D14
+
+**The top-right corner holds two buttons for the screen you are on: the list's options (filter, sort, group) and New
+issue on a list, previous and next on an item.** (2026-11-06, owner, picking both drawn options because two icons fit:
+`MB32`, `MB33`, `MB34`)
+
+**Why.** The owner: both options, since two icons fit. Filter, sort and group stay in the command menu too, as on the
+computer; the rule against holding things twice is about a separate menu of an item's actions, and this is not one.
+
+**Rejected.**
+
+- Choosing between New issue and the options menu — two icons fit in the corner beside any title.
+
+## D15
+
+**The dock stays at the bottom in a browser tab too, above Safari's own bar, and takes the height that costs.**
+(2026-11-06, owner: there is no way around it, githq has no control over the browser's interface; `MB69`)
+
+**Why.** About 610 px are left for a list on a 390 × 844 phone, against about 690 in an installed app, by the drawing's
+own measures. The hybrid app of [D8](#d8) gets the difference back.
+
+**Rejected.**
+
+- Moving the parts to the top in a browser tab (MB20) — a second layout for one case, and the owner accepts the cost.

@@ -14,7 +14,7 @@ nobody listed here, above all for the command menu button.
 
 Picked so far, and gone from this list: where the bottom bar shows ([D10](DECISIONS.md#d10)), whether a link says it
 leaves ([D11](DECISIONS.md#d11)), how "not fresh" shows ([D12](DECISIONS.md#d12)), what the command menu's button looks
-like ([D13](DECISIONS.md#d13)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
+like ([D13](DECISIONS.md#d13)), what the top-right corner holds ([D14](DECISIONS.md#d14)). The rest is drawn in `githq.pen`, frame `App · Mobile`, waiting for the owner's pick.
 
 ## The bottom bar
 
@@ -39,7 +39,8 @@ bottom of the screen, above all an input such as the comment box, and it costs h
   corner is about the screen you are on. Candidates for the right corner:
   - the command menu button — the command menu already starts from the screen's subject (the opened item) and
     its actions, so it is the screen's contextual menu already;
-  - a second, right-hand menu with the screen's own options (filters, grouping, list or board).
+  - a second, right-hand menu with the screen's own options (filters, grouping, list or board), now settled as one of
+    the corner's two buttons on a list ([D14](DECISIONS.md#d14)).
 - **The top-left corner on a screen you went into** (an item opened from a list): a back arrow in place of the
   hamburger, the hamburger next to it, or the hamburger only.
 

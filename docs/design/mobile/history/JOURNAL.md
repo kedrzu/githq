@@ -40,3 +40,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   picked. Owner picked: MB23 (D10), MB49 (D11), MB51–MB53 (D12), MB57 (D13, against the recommended slash). No reasons
   given for the picks. MB23 leaves the button's Variant D (MB8–MB9), a bar that stays on the item, without its
   premise; raised with the owner.
+- 2026-11-06 — Owner: the top-right corner gets both drawn options, two icons fit: filters and New issue on lists
+  (D14). The dock above Safari's bar is accepted: no control over the browser's interface (D15). Applied to the top
+  bar of every list screen in `App · Mobile` except the address-bar variant (MB4) and the root list of MB18.
