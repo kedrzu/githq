@@ -12,11 +12,11 @@ import {
   EyeOff,
   ListFilter,
   Milestone,
+  PenLine,
   Shapes,
   SquareKanban,
   Tag,
   User,
-  UserPen,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -211,7 +211,7 @@ const groupings = computed((): ListChoice<RepositoryGrouping>[] => {
     { value: 'none', label: t(l.groupNone), icon: Ban, section: group },
     { value: 'milestone', label: t(l.groupMilestone), icon: Milestone, section: group },
     { value: 'assignee', label: t(l.groupAssignee), icon: User, section: group },
-    { value: 'author', label: t(l.groupAuthor), icon: UserPen, section: group },
+    { value: 'author', label: t(l.groupAuthor), icon: PenLine, section: group },
     { value: 'status', label: t(l.groupStatus), icon: CircleDashed, section: group },
     { value: 'label', label: t(l.groupLabel), icon: Tag, detail: t(l.groupLabelDetail), section: group },
     { value: 'issueType', label: t(l.groupIssueType), icon: Shapes, section: group },
