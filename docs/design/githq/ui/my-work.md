@@ -32,6 +32,9 @@ These rules are settled. The screens must agree with them, including every count
 - **Grouping.** By reason (the four groups above, the default) or by repository ([D22](../DECISIONS.md#d22),
   screen D6): one group per tracked repository in the sidebar's order, rows showing just `#number`, and a
   last group "Other repositories" (not tracked) for everything else, whose rows keep `owner/repo#number`.
+  Also by status ([D39](../DECISIONS.md#d39)): Needs me, Ready to merge, Waiting on others, Draft and Other, where Needs me
+  and Waiting on others hold exactly what the filters below keep; and by author, one group per login. Rows keep
+  `owner/repo#number` in both.
 - **Filters:**
   - **Needs me**: review requested from me, plus my PRs with failing checks, changes requested or
     conflicts, plus issues assigned to me.

@@ -77,6 +77,10 @@ Before changing the design file (`githq.pen`), read and follow `DESIGN.md`, in w
 that a design changelog is on a worktree, read `.context/design/` there and follow "Implementing from a changelog"
 in `DESIGN.md`.
 
+When the owner asks for a prompt for the design agent, give it inline in your reply, as one block to copy, never as
+a file in the repo (no `design-agent-prompt.md`). Point it at the briefs in `ui/` and at `DESIGN.md` instead of
+repeating them.
+
 ## Worktrees and pull requests
 
 Work happens in Paseo worktrees, several at once: one task = one worktree = one branch = one PR. When Paseo

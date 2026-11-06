@@ -1,4 +1,5 @@
 import type { MyWorkGroupRows, MyWorkRow } from './buildMyWork.js';
+import { groupMyWorkRows } from './groupMyWorkRows.js';
 
 /** The rows of "my work" from one tracked repository, or from all the repositories the user doesn't track. */
 export interface MyWorkRepositoryGroup {
@@ -20,25 +21,14 @@ export function groupMyWorkByRepository(
     groups: readonly MyWorkGroupRows[],
     trackedRepositories: readonly string[],
 ): MyWorkRepositoryGroup[] {
-    const rowsByRepository = new Map<string, MyWorkRow[]>(trackedRepositories.map(name => [name, []]));
-    const others: MyWorkRow[] = [];
-    for (const { rows } of groups) {
-        for (const row of rows) {
-            const tracked = rowsByRepository.get(row.item.repository.nameWithOwner);
-            (tracked ?? others).push(row);
-        }
-    }
+    const order = new Map(trackedRepositories.map((name, index) => [name, index]));
+    return groupMyWorkRows<string | null>({
+        groups,
+        keyOf: row => (order.has(row.item.repository.nameWithOwner) ? row.item.repository.nameWithOwner : null),
+        compare: (a, b) => indexOf(a) - indexOf(b),
+    }).map(({ key, rows }) => ({ repository: key, rows }));
 
-    const grouped: MyWorkRepositoryGroup[] = [];
-    for (const [repository, rows] of rowsByRepository) {
-        if (rows.length > 0) {
-            grouped.push({ repository, rows });
-        }
+    function indexOf(repository: string | null) {
+        return (repository === null ? undefined : order.get(repository)) ?? order.size;
     }
-
-    if (others.length > 0) {
-        grouped.push({ repository: null, rows: others });
-    }
-
-    return grouped;
 }

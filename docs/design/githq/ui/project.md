@@ -54,8 +54,9 @@ triage and move things quickly, and don't make me wait."
 
 - **Repository view.** It is the same list or board as a project, without project fields. The interesting
   parts:
-  - What does it group by when there is no project? Labels, assignee, milestone, issue type, issues versus
-    PRs?
+  - What does it group by when there is no project? Milestone (the default), assignee, author, status, label and,
+    for issues, issue type ([D39](../DECISIONS.md#d39) for status and author). Issues and pull requests are
+    sections of their own.
   - How does the user get from a repository to the projects its issues live in?
   - Show a tracked repository, and also what happens when the user opens an untracked one: the full view, read
     on demand (J5, J6; J7 when GitHub does not show it), which replaces J3 for repositories

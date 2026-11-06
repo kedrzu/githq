@@ -186,6 +186,7 @@ function createFakeNative(): FakeNative {
             readJobLog: () => Promise.reject(new Error('Not expected')),
             onWindowResized: () => Promise.reject(new Error('Not expected')),
             isFullscreen: () => Promise.reject(new Error('Not expected')),
+            onScrollPhase: () => Promise.reject(new Error('Not expected')),
         },
         kept: null,
         calls: [],
