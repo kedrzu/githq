@@ -8,8 +8,6 @@ openOnGitHub:
   en: Open on GitHub
 close:
   en: Close the details
-resize:
-  en: Resize the commit details
 notLoaded:
   en: Not in the loaded history. The graph loads as you scroll, so it stayed where it was.
 notLoadedRef:

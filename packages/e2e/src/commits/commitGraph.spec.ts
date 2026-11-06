@@ -372,7 +372,13 @@ test('git-client D14, D15, CH4, CH6, CH42: Settings → Column shows the column 
     await page.keyboard.press('Enter');
     await expect(graph.detailsHeadline).toHaveText('fix: export the CSV header');
     await expect(graph.refList).toBeVisible();
-    await expect(graph.details).toHaveCSS('position', 'relative');
+    // Beside the graph, not over it.
+    const [rows, details] = await Promise.all([graph.root.boundingBox(), graph.details.boundingBox()]);
+    if (!rows || !details) {
+        throw new Error('The graph and the details are not both on screen');
+    }
+
+    expect(rows.x + rows.width).toBeLessThanOrEqual(details.x);
 
     await page.keyboard.press('j');
     await expect(graph.detailsHeadline).toHaveText('docs: describe the setup');
