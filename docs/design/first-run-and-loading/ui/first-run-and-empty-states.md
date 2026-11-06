@@ -23,7 +23,7 @@ really empty, tell me what you checked."
 
 ## Screens, in order
 
-### 1. Choosing what to track (G2, and its variant offering saved settings, G11)
+### 1. Choosing what to track (G2, and its variant offering saved settings, G11; on the Mac, G15)
 
 What it asks and holds does not change. Two things do:
 
@@ -36,14 +36,14 @@ What it asks and holds does not change. Two things do:
 
 "Track these" goes straight to where the user was heading: My work by default.
 
-### 2. My work, seconds after signing in
+### 2. My work, seconds after signing in (G16, G17)
 
 The one screen likely to be wholly empty right after sign-in. The user's own issues and pull requests are on their way
 (groups: review requested, my pull requests, assigned, mentioned). Until the first of them arrives, the screen shows the
 **still arriving** state (below) — not "Nothing on your plate". Rows appear as they come; groups still arriving keep
 saying so in their place.
 
-### 3. The status bar while things download
+### 3. The status bar while things download (ES5–ES10)
 
 The status bar runs along the window's bottom, one segment per surface: the sidebar's segment at the left, the screen's
 segment under the list, the opened item's under its panel.
@@ -61,7 +61,7 @@ segment under the list, the opened item's under its panel.
 - **Nothing shows for background refresh** — not a poll, not a refresh that found changes and is fetching them. Those
   changes just appear in the list.
 
-### 4. Every empty screen and list
+### 4. Every empty screen and list (ES1–ES4, ES11–ES30)
 
 A screen with nothing on it says **why**, and there are four reasons:
 
@@ -99,6 +99,34 @@ Which screen can say which — *kept* means already designed and staying, **new*
 |Workflows section, a run, its log, code review|kept|kept|kept|kept|
 |Broken workflows|kept|kept|—|every tracked repository unavailable (**fix**: blank today)|
 |Settings' tracked repositories / projects|—|none tracked (**fix**: "0 tracked repositories" alone)|—|—|
+
+## Screens in `githq.pen`
+
+The first run is in "App · First sign-in and choosing what to track"; the rest in "App · Loading and empty states"
+(letters `ES`). Decisions: [DECISIONS.md](../DECISIONS.md#d8) D8–D17.
+
+- **G2, G4, G5, G10–G14** — the choosing screens, now under the app's 36px strip without a step indicator
+  (`Track / Top bar` changed); **G15** the same on the macOS desktop app, window buttons in the strip.
+- **G16** — My work seconds after "Track these", nothing arrived; **G17** — some groups in, others arriving.
+- **G6** (the download page) and **G7** (the rejected "straight into the app" draft) are retired.
+- **ES1** — the four patterns on a full screen, a list's group and a board column; **ES4** how still arriving moves.
+  ES2 and ES3 (rejected directions) are deleted.
+- **ES5** — what the left segment says while downloading (ES6, ES7 rejected and deleted); **ES8** who has it;
+  **ES9** a tracked repository while its closed issues arrive; **ES10** the same, up to date.
+- **ES11–ES13** — My work: a filter leaves nothing; one group chosen from the sidebar, empty; offline before anything
+  arrived.
+- **ES14–ES17** — a tracked repository before its open issues arrive; the Closed filter while closed issues arrive;
+  a tracked repository GitHub won't show; an untracked repository with GitHub failing.
+- **ES18–ES20** — a tracked project while its items arrive; its board when the filter leaves nothing; a tracked
+  project GitHub won't show.
+- **ES21** — Commits' first read as a skeleton in the graph's shape (ES26, a loader in the middle, rejected and
+  deleted).
+- **ES22–ES24** — Commits paused by the allowance; Broken workflows when no repository
+  can be read; Settings with no repositories tracked.
+- **ES25** — "can't be read": the title, line and action per cause.
+- **ES27, ES28** — a repository's Workflows and Broken workflows on their first read (fixes W16); **ES29** a
+  repository's board before its open issues arrive, columns not known yet; **ES30** a project's board while its items
+  arrive, columns known.
 
 ## Failures that must be visible
 

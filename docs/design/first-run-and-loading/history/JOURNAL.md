@@ -35,3 +35,7 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Owner asked for the design agent's prompt: wrote ui/first-run-and-empty-states.md (brief) and
   ui/design-agent-prompt.md.
 - 2026-11-06 — Prompt sent to the design agent; removed ui/design-agent-prompt.md from the repo (owner).
+- 2026-11-06 — Design agent drew the screens in githq.pen (G15–G17, ES1–ES25), proposed D8–D16, retired G6 and G7.
+- 2026-11-06 — Owner picked ES1 (Variant A) without its status line, asking for more, wider and less faded ghosts and a visible motion; picked ES5. ES2, ES3, ES6, ES7 deleted; D8, D9, D11 rewritten.
+- 2026-11-06 — Owner: no workflows loading screen, every skeleton looked the same, commits differ, no board skeletons. Drew ES27–ES30 and commits variants ES21/ES26; D17.
+- 2026-11-06 — Owner picked ES21 (commits skeleton); ES26 deleted.
