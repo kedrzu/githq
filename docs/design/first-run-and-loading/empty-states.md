@@ -79,7 +79,7 @@ The reasons each screen has to tell apart, under [the four reasons and their ord
 |A tracked project|the project not in (kept); its items not in (**fix**: "has no items yet" with add actions)|"has no items yet" (kept)|a view or filter, list (kept) and board (**fix**: bare paragraph); a view GitHub answers (kept, it is arriving)|hidden, failing (**new**)|
 |An untracked project|—|"Nothing in {name} concerns you" (kept)|—|—|
 |Draft reviews|—|"No draft reviews" (kept)|—|—|
-|A repository's Commits|first read (**fix**: bare note)|"No commits yet" (kept)|a branch or tag filter (kept, a line)|offline, paused, refused, failing (**fix**: one bare note)|
+|A repository's Commits|first read (**fix**: bare note)|"No commits yet" (kept)|a branch or tag filter (kept, a line)|offline, paused, refused, failing (**fix**: one bare note; one pattern with a cause line, not four designs)|
 |A repository's Workflows, a run, its log, code review|kept|kept|kept|kept|
 |Broken workflows|kept|kept|—|every tracked repository unavailable (**fix**: blank)|
 |Settings' tracked repositories and projects|—|none tracked (**fix**: "0 tracked repositories" alone)|—|—|

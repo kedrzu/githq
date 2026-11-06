@@ -141,6 +141,11 @@ the reason is what separates "empty can be trusted" (githq K4) from a guess. The
 now, so saying "arriving" then would spin forever; what is still arriving may be exactly what a filter asks for (closed
 issues under "Closed"), so "nothing matches" would be false.
 
+"Can't be read" is one pattern whose one line names the cause in the words the status bar already uses (offline,
+paused until a time, GitHub failing, hidden or gone) and offers the action that cause allows; a screen does not get a
+design per cause. It is shown only when the screen has nothing; with rows on screen the status bar alone tells it. An
+arrived, empty group inside a list that has other rows keeps its "Nothing here." line: its header says what it is.
+
 **Rejected.**
 
 - Designing each screen's empty state on its own — the wrong ones today are wrong in the same way, and nothing stops the

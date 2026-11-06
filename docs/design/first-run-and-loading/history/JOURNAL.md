@@ -27,3 +27,6 @@ Append-only; one line per turn that settled something.
   panel/picker lines out).
 - 2026-11-06 — Owner confirmed the four reasons (D6) and the scope line (D7). Added the order between reasons and the
   per-screen table (empty-states.md). Folded into README.
+- 2026-11-06 — Rightsize on D6/D7 (3 passes). Taken as build notes in D6: "can't be read" is one pattern with a cause
+  line, shown only when the screen has nothing; an empty group among rows keeps "Nothing here.". Put to owner: splitting
+  "can't be read" into permanent and transient; fixing only the wrong states instead of the whole table.
