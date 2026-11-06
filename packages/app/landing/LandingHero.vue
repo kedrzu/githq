@@ -95,12 +95,14 @@ const t = useTranslate();
   gap: 28px;
   align-items: center;
   padding-top: 88px;
+  padding-bottom: 100px;
   text-align: center;
   background: radial-gradient(ellipse 55% 35% at 50% 18%, rgba($color-accent, 0.18), rgba($color-accent, 0));
 
   @include landing-mobile {
     gap: 20px;
     padding-top: 32px;
+    padding-bottom: 56px;
   }
 }
 

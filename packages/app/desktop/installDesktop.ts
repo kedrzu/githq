@@ -12,14 +12,16 @@ import { createDesktopTokenVault } from './DesktopTokenVault.js';
 import { createDesktopWindowControls } from './DesktopWindowControls.js';
 import { interceptExternalLinks, withExternalLinks } from './externalLinks.js';
 import type { ExternalLinksOptions } from './externalLinks.js';
+import { installHistoryKeys } from './installHistoryKeys.js';
 import { NativeBridge } from './NativeBridge.js';
 import { withNativeJobLogs } from './withNativeJobLogs.js';
 
 /**
  * Prepares the app for the desktop app's window (`packages/desktop`) before any of its services start: the token
  * from the OS credential store, pages outside the app opened in the system browser, jobs' logs read natively, the
- * app's updates, and on a Mac the window controls over the sidebar. The one way in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`,
- * `plugins/iocPlugin.ts`), so the web builds drop it with everything it imports.
+ * app's updates, and on a Mac the window controls over the sidebar and the keys that go back and forward. The one way
+ * in for the desktop code (`desktop/`): only the desktop build calls it (`__DESKTOP__`, `plugins/iocPlugin.ts`), so the
+ * web builds drop it with everything it imports.
  */
 export async function installDesktop(container: Container) {
     // Throws outside the desktop app, before anything starts.
@@ -40,6 +42,7 @@ export async function installDesktop(container: Container) {
     };
     container.set(Browser, withNativeJobLogs(withExternalLinks(container.resolve(Browser), external), bridge));
     interceptExternalLinks(document, external);
+    installHistoryKeys();
 
     container.set(
         AppUpdate,
