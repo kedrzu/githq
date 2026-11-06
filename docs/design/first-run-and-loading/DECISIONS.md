@@ -126,6 +126,17 @@ knows when it has nothing yet (`partial`), and only a tracked repository has a s
 - An opened issue's or pull request's comments and details as an incomplete screen (design agent's addition) — a
   separate mechanism already covered by githq Q8, and not what the owner asked about.
 
+## D6
+
+**Every empty screen or list says which of four reasons it is empty for — still arriving, nothing there, filtered out,
+or can't be read — and never says "nothing" (the second or third) while the first or fourth holds.** (2026-11-06, design
+agent's proposal, not yet confirmed)
+
+**Why.** The owner wants the "wooden" empty states designed; the inventory ([empty-states.md](empty-states.md)) shows
+that the ones that hurt most are not plain but wrong: a tracked repository still downloading says "No issue matches.
+Try another state", a project still downloading offers to add items, an arriving line spins on while offline. Naming
+the reason is what separates "empty can be trusted" (githq K4) from a guess.
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land

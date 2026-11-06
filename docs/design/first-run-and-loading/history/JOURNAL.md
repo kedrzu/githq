@@ -22,3 +22,6 @@ Append-only; one line per turn that settled something.
   own segment and its empty-while-loading state stay (D3, D5 hold). Taken as the owner's reading: no list behind the
   left segment (D4); the opened item dropped from D5. Scope grows: every empty state, not only loading ones — some are
   "wooden". Dispatched an inventory of the app's empty states.
+- 2026-11-06 — Inventory of empty states written to empty-states.md. Proposed D6 (four reasons; never "nothing" while
+  arriving or unreadable); asked the owner to confirm, and where the line of scope falls (screens and lists in,
+  panel/picker lines out).
