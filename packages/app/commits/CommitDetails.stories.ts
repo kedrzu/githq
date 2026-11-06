@@ -2,7 +2,6 @@ import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, shallowRef } from 'vue';
 
-import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import { SAMPLE_COMMITS_NOW, sampleCheckRun, sampleCommit } from '@/testing/sampleCommits.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
@@ -72,11 +71,14 @@ function renderPanel({ width, failed }: PanelOptions) {
                 failIf: operation => failed === true && operation === 'CommitChecks',
             });
             provideContainer(container);
-            container.resolve(LocalPreferences).getPanelWidth('commitDetails').value = width;
             const shown = shallowRef(false);
             void show();
             return () =>
-                h('div', { style: 'display: flex; height: 100vh' }, shown.value ? [h(CommitDetails, PANEL)] : []);
+                h(
+                    'div',
+                    { style: `display: flex; width: ${width}px; height: 100vh` },
+                    shown.value ? [h(CommitDetails, PANEL)] : [],
+                );
 
             async function show() {
                 await ready;

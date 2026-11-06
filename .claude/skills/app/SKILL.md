@@ -21,6 +21,10 @@ Read `nzyme/plugins/nzyme/skills/ui/SKILL.md` before building a component; it ho
 
 - A story fails its test on a WCAG violation (`a11y.test: 'error'`, `bun run test:stories`).
 - A build target is checked after it builds: `packages/app/scripts/check*Build.ts`.
+- Panels beside each other — a column left or right of a pane, a sidebar, a side panel — are resized through Reka's
+  splitter: `components/ColumnSplit.vue` (`side`, `paneMin`), or where it doesn't fit `SplitterGroup` +
+  `components/ResizeHandle.vue` + `components/usePanelWidth.ts`, as `AppShell` and `ItemView` do. Never a handle
+  of the panel's own: `components/WidthHandle.vue` is only for a dialog centred in the window, widened on both sides.
 
 ## Decisions
 
