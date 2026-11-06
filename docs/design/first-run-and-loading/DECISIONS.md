@@ -129,13 +129,35 @@ knows when it has nothing yet (`partial`), and only a tracked repository has a s
 ## D6
 
 **Every empty screen or list says which of four reasons it is empty for — still arriving, nothing there, filtered out,
-or can't be read — and never says "nothing" (the second or third) while the first or fourth holds.** (2026-11-06, design
-agent's proposal, not yet confirmed)
+or can't be read — and never says "nothing" (the second or third) while the first or fourth holds. When several hold,
+the first in this order wins: can't be read, still arriving, filtered out, nothing there. The owner designs one pattern
+per reason; which screens have which reasons is in [empty-states.md](empty-states.md#what-each-screen-can-say).**
+(2026-11-06, design agent's proposal, owner confirmed; the order is the design agent's)
 
 **Why.** The owner wants the "wooden" empty states designed; the inventory ([empty-states.md](empty-states.md)) shows
 that the ones that hurt most are not plain but wrong: a tracked repository still downloading says "No issue matches.
 Try another state", a project still downloading offers to add items, an arriving line spins on while offline. Naming
-the reason is what separates "empty can be trusted" (githq K4) from a guess.
+the reason is what separates "empty can be trusted" (githq K4) from a guess. The order: what can't be read won't arrive
+now, so saying "arriving" then would spin forever; what is still arriving may be exactly what a filter asks for (closed
+issues under "Closed"), so "nothing matches" would be false.
+
+**Rejected.**
+
+- Designing each screen's empty state on its own — the wrong ones today are wrong in the same way, and nothing stops the
+  next screen repeating it.
+
+## D7
+
+**The empty-state work covers whole screens and lists. Small lines inside panels and pickers ("No comments yet.",
+"Nothing matches" in the command menu) stay as they are; an item's properties reading "None" before they are read is
+fixed as a bug, not designed.** (2026-11-06, design agent's proposal, owner confirmed)
+
+**Why.** A line inside a panel already states its reason in a sentence, which suits its size; the screens are where
+"nothing" is shown big and believed.
+
+**Rejected.**
+
+- Every empty line in the app — dozens of one-liners that already say what they mean.
 
 ## Postponed
 

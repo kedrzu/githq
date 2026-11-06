@@ -74,11 +74,20 @@ are in, then its count). Each screen's own segment still says what is happening 
 the left end goes back to the allowance. Being offline or paused still comes first. This is not only for the first
 sign-in: tracking another repository later shows the same. [Why there and not nowhere](DECISIONS.md#d4).
 
+**Why a screen is empty.** A screen with nothing on it says why, and there are four reasons: its data is still
+arriving; there is nothing there; a filter or view hides everything; or GitHub can't be read — no access, a failure,
+offline, the allowance paused. It never says "nothing" while the data is still coming or can't be read: today a tracked
+repository still downloading says "No issue matches. Try another state", and that is the kind of thing this removes.
+When two reasons hold, what can't be read wins over what is arriving (it won't arrive now), and what is arriving wins
+over a filter (it may be exactly what the filter asks for). Each reason gets one pattern, designed once.
+[The four reasons](DECISIONS.md#d6), and [which screen can say which](empty-states.md#what-each-screen-can-say).
+
 ## How far this goes
 
 In: the first sign-in after the choosing screen, the top bar of the sign-in screens, what the status bar says while a
-screen's data is incomplete, and every empty state — not only a screen still downloading, but one a filter leaves
-empty, one with nothing in it, and the rest. Some are designed already, others are a bare line.
+screen's data is incomplete, and the empty state of every screen and list — not only one still downloading, but one a
+filter leaves empty, one with nothing in it, one GitHub won't show. Small lines inside panels and pickers ("No comments
+yet.") stay as they are ([why](DECISIONS.md#d7)).
 
 Out of it: an opened issue's or pull request's parts fetched separately, which the main design already covers.
 
@@ -88,6 +97,4 @@ truthful only under some filters. Postponed by the owner.
 
 ## Still open
 
-- The empty states: which reasons a screen can be empty for, and what each says — [what every screen shows
-  today](empty-states.md). The owner designs the screens; this
-  design settles which cases exist.
+- The four patterns' look, words and the arriving animation — the owner designs the screens.

@@ -25,3 +25,5 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Inventory of empty states written to empty-states.md. Proposed D6 (four reasons; never "nothing" while
   arriving or unreadable); asked the owner to confirm, and where the line of scope falls (screens and lists in,
   panel/picker lines out).
+- 2026-11-06 — Owner confirmed the four reasons (D6) and the scope line (D7). Added the order between reasons and the
+  per-screen table (empty-states.md). Folded into README.

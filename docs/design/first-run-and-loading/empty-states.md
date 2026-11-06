@@ -65,3 +65,23 @@ tell their reason in a line, which suits their size.
 
 No list's empty state mentions being offline; it is said only in the status bar, the commit graph's foot, Settings'
 updates, the merge panel and the new-issue dialog.
+
+## What each screen can say
+
+The reasons each screen has to tell apart, under [the four reasons and their order](DECISIONS.md#d6). A reason marked
+**new** is one the screen does not tell today; **fix** is one it tells wrongly.
+
+|Screen|Still arriving|Nothing there|Filtered out|Can't be read|
+|-|-|-|-|-|
+|My work (any filter, list or board, grouped either way)|the user's work not in yet; a group not in yet (**fix**: the fixed "search takes a few seconds" line)|"Nothing on your plate" (kept)|a filter, or one group from the sidebar (**fix**: bare "Nothing here.")|offline or GitHub failing before it arrived (**new**)|
+|A tracked repository's Issues, Pull requests|open items not in (**new**, today "Try another state"); closed items not in under a filter that shows them (**new**)|no issues or pull requests at all|the state filter|GitHub hides it, refuses its changes (**new** on the list; told in the status bar today)|
+|An untracked repository being browsed|first read|as tracked|the state filter|not shown (kept); failing, offline, paused (**new**)|
+|A tracked project|the project not in (kept); its items not in (**fix**: "has no items yet" with add actions)|"has no items yet" (kept)|a view or filter, list (kept) and board (**fix**: bare paragraph); a view GitHub answers (kept, it is arriving)|hidden, failing (**new**)|
+|An untracked project|—|"Nothing in {name} concerns you" (kept)|—|—|
+|Draft reviews|—|"No draft reviews" (kept)|—|—|
+|A repository's Commits|first read (**fix**: bare note)|"No commits yet" (kept)|a branch or tag filter (kept, a line)|offline, paused, refused, failing (**fix**: one bare note)|
+|A repository's Workflows, a run, its log, code review|kept|kept|kept|kept|
+|Broken workflows|kept|kept|—|every tracked repository unavailable (**fix**: blank)|
+|Settings' tracked repositories and projects|—|none tracked (**fix**: "0 tracked repositories" alone)|—|—|
+
+An item's properties reading "None" before they are read is a bug to fix, not a state to design ([D7](DECISIONS.md#d7)).
