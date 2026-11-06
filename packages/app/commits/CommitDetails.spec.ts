@@ -5,7 +5,6 @@ import { page } from 'vitest/browser';
 import { createApp, defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
 import type { CommitGraphTestOptions } from '@/testing/createCommitGraphTest.js';
 import {
@@ -28,7 +27,7 @@ interface MountOptions {
     readonly refs?: readonly CommitRowRef[];
     /** `acme/web` is tracked. */
     readonly tracked?: boolean;
-    /** The width kept for the panel. */
+    /** The width of the column the panel fills. */
     readonly width?: number;
 }
 
@@ -340,10 +339,6 @@ async function mount(options: CommitGraphTestOptions, oid: string, panel: MountO
         tracking.choose({ repositories: [{ nameWithOwner: REPOSITORY, id: 'R_web' }], projects: [] });
     }
 
-    if (panel.width !== undefined) {
-        container.resolve(LocalPreferences).getPanelWidth('commitDetails').value = panel.width;
-    }
-
     await store.open(REPOSITORY);
     const commit = { oid, id: `C_${oid}` };
     store.ensureDetail(REPOSITORY, commit);
@@ -357,6 +352,9 @@ async function mount(options: CommitGraphTestOptions, oid: string, panel: MountO
     const host = document.createElement('div');
     host.style.display = 'flex';
     host.style.height = '600px';
+    if (panel.width !== undefined) {
+        host.style.width = `${panel.width}px`;
+    }
     document.body.append(host);
     const app = createApp({
         setup: () => () =>

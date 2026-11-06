@@ -178,7 +178,7 @@ const links = computed(() =>
 }
 
 .landingNav_wordmark {
-  --wordmark-size: 20px;
+  --wordmark-size: 24px;
 }
 
 .landingNav_links {

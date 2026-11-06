@@ -308,6 +308,8 @@ Variants picked among the round-2 screens drawn side by side (user, 2026-10-30, 
 the full form (H3). Rejected: G1a (permission explained only on demand), G3 (no tracking step, suggestions
 later), G7 (straight into the app while downloading), H4 (one full form).
 The G1b part is superseded by [D21](#d21).
+The G6 part is superseded by [first-run-and-loading D1](../first-run-and-loading/DECISIONS.md#d1): the first
+sign-in has no download step.
 
 ### D21
 

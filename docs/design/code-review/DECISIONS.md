@@ -109,8 +109,13 @@ The same position survives switching layout ([D3](#d3)), whitespace ([D4](#d4)) 
 and is what is remembered per pull request when moving through a stack. If the remembered line is hidden (a
 whitespace-only change after hiding whitespace), the view lands on the nearest visible line above it.
 
+Near the end of the diff, where nothing is left below to scroll to, the target lands as far up as the list reaches: it
+must be in view, not at the top, so no room is kept under the last file. (2026-11-06, owner)
+
 **Rejected.**
 
+- Room under the last file, about a screen of it, so that even a short last file could land at the very top — scrolling
+  to the end showed a screen of nothing. (owner, 2026-11-06)
 - Estimate, jump, measure the miss, correct and repeat (owner's first idea) — every correction is a visible jump, and
   an image loading after the last correction moves the target again.
 - Remembering the scroll position in pixels — breaks at the first change of layout or whitespace.
@@ -451,6 +456,10 @@ as in unified.** (2026-11-02, agent, screens CR1–CR6)
 
 **Why.** The same shell as an opened pull request on a full page, so nothing moves when D opens the review; the
 status bar already says how fresh things are and serves for loading and the API allowance (CR60, CR68).
+
+**Amended (2026-11-05, owner).** The left column is 300 px by default and resizable: its right edge is dragged, or moved
+with ←/→, from 200 to 480 px, the width kept on this device. It is the same split as a repository's left column
+(`ColumnSplit`): the diff keeps at least 400 px, the column giving way down to its minimum on a narrow window.
 
 ## D25
 
