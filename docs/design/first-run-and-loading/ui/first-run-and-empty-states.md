@@ -61,7 +61,7 @@ segment under the list, the opened item's under its panel.
 - **Nothing shows for background refresh** — not a poll, not a refresh that found changes and is fetching them. Those
   changes just appear in the list.
 
-### 4. Every empty screen and list (ES1–ES4, ES11–ES25)
+### 4. Every empty screen and list (ES1–ES4, ES11–ES30)
 
 A screen with nothing on it says **why**, and there are four reasons:
 
@@ -103,7 +103,7 @@ Which screen can say which — *kept* means already designed and staying, **new*
 ## Screens in `githq.pen`
 
 The first run is in "App · First sign-in and choosing what to track"; the rest in "App · Loading and empty states"
-(letters `ES`). Decisions: [DECISIONS.md](../DECISIONS.md#d8) D8–D16.
+(letters `ES`). Decisions: [DECISIONS.md](../DECISIONS.md#d8) D8–D17.
 
 - **G2, G4, G5, G10–G14** — the choosing screens, now under the app's 36px strip without a step indicator
   (`Track / Top bar` changed); **G15** the same on the macOS desktop app, window buttons in the strip.
@@ -119,9 +119,14 @@ The first run is in "App · First sign-in and choosing what to track"; the rest 
   a tracked repository GitHub won't show; an untracked repository with GitHub failing.
 - **ES18–ES20** — a tracked project while its items arrive; its board when the filter leaves nothing; a tracked
   project GitHub won't show.
-- **ES21–ES24** — Commits on their first read; Commits paused by the allowance; Broken workflows when no repository
+- **ES21, ES26** — `Variants · How Commits show their first read`: a skeleton in the graph's shape (ES21, recommended)
+  or a loader in the middle (ES26).
+- **ES22–ES24** — Commits paused by the allowance; Broken workflows when no repository
   can be read; Settings with no repositories tracked.
 - **ES25** — "can't be read": the title, line and action per cause.
+- **ES27, ES28** — a repository's Workflows and Broken workflows on their first read (fixes W16); **ES29** a
+  repository's board before its open issues arrive, columns not known yet; **ES30** a project's board while its items
+  arrive, columns known.
 
 ## Failures that must be visible
 

@@ -280,6 +280,28 @@ shown and offers the rest ("Nothing mentions you … Your other 10 items are in 
 **G6 (the download page) and G7 (the earlier draft of going straight into the app, with download percentages in the
 sidebar) are deleted from `githq.pen`; G16 and G17 take their place.** (2026-11-06, design agent) — follows D1, D4
 
+## D17
+
+**Still arriving takes the shape of the screen it stands in, not one list shape for all: list rows for issues, pull
+requests, projects and My work (ES1); a workflow row with its five-run strip for a repository's Workflows and for
+Broken workflows, with the repository column there (ES27, ES28, fixing W16's centred "Not read yet"); a board shows
+ghost columns when its columns aren't known yet (ES29) and the real column headers, without counts, over ghost cards
+when they are (ES30). Commits are proposed as a skeleton in the graph's shape: the branch list on the left, a lane
+with commit dots, message bars, author and date (ES21).** (2026-11-06, owner asked for workflows, commits and boards;
+the shapes are the design agent's; commits wait on the owner's pick between ES21 and ES26)
+
+**Why.** A skeleton is worth having where the data lands in place of it, so it has to be the shape of what lands;
+the same rows everywhere told nothing about the screen. For commits the skeleton is on screen a second or two at most
+(the first page is small, CH32), but a centred loader would flash for that same second and the two-column layout
+would appear all at once.
+
+Components: `Empty / Ghost workflow row`, `Empty / Ghost commit row`, `Empty / Ghost ref row`, `Empty / Ghost column`,
+`Empty / Still arriving · workflows | commits | board`. The motion of D9 runs on all of them.
+
+**Rejected (proposed).**
+
+- A turning loader in the middle of Commits, as today (ES26) — simpler, but the graph appears all at once after it.
+
 ## Postponed
 
 - **A "loading more" row at the end of a list** (owner, 2026-11-06). Lists sort by last update, so arriving items land
@@ -292,6 +314,8 @@ Raised by the screens, not settled by the brief (2026-11-06, design agent):
 
 - **The repository's "Synced 14s ago"** in the bar above its issues (CH1, `Freshness`) shows every poll, against D3.
   ES9 hides it; whether it goes for good is the owner's call.
+- **Which board columns are known before the items.** ES30 assumes a project's Status options come with the project
+  and a repository's grouping (labels, milestones, issue types) does not (ES29); the sync engine decides which holds.
 - **A commits total.** GitHub gives no cheap count of a repository's commits, so ES21's segment says "Reading
   commits" without numbers.
 - **"Try again" has no key in the app yet**; the drawings use R. "Open on GitHub" keeps O, as in J7.
