@@ -96,7 +96,7 @@ test('rows follow the placements: threads under a collapsed header, on their lin
     const view = open([fileRow('a.ts')], [threadOn('a.ts', 10)]);
     const kinds = () => view.rows.value.map(row => row.kind);
 
-    expect(kinds()).toEqual(['header', 'thread', 'placeholder', 'end', 'tail']);
+    expect(kinds()).toEqual(['header', 'thread', 'placeholder', 'end']);
 
     view.setState('a.ts', { kind: 'ready', before: BEFORE, after: AFTER });
     await view.settle();
@@ -110,7 +110,7 @@ test('rows follow the placements: threads under a collapsed header, on their lin
 
     view.setCollapse('a.ts', 'viewed');
     await view.settle();
-    expect(kinds()).toEqual(['header', 'thread', 'end', 'tail']);
+    expect(kinds()).toEqual(['header', 'thread', 'end']);
     view.stop();
 });
 

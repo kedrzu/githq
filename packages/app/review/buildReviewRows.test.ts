@@ -194,7 +194,7 @@ test("a thread that found no line comes first, closed off from the diff; one in 
         getContent: () => ({ kind: 'collapsed' }),
         getThreads: () => placements,
     });
-    expect(rows.map(row => row.kind)).toEqual(['header', 'thread', 'end', 'tail']);
+    expect(rows.map(row => row.kind)).toEqual(['header', 'thread', 'end']);
     expect(rows[0]).toMatchObject({
         collapsed: true,
         threadsUnder: true,
@@ -208,7 +208,7 @@ test("a thread that found no line comes first, closed off from the diff; one in 
         getThreads: () => placements,
         threadsInCollapsed: false,
     });
-    expect(off.map(row => row.kind)).toEqual(['header', 'end', 'tail']);
+    expect(off.map(row => row.kind)).toEqual(['header', 'end']);
     expect(off[0]).toMatchObject({ threadsUnder: false, threads: { open: 1 } });
 });
 
@@ -225,7 +225,6 @@ test('each file is its header, what shows under it and its end; the last is foll
         ['header', B.path],
         ['notice', B.path],
         ['end', B.path],
-        ['tail', B.path],
     ]);
 });
 
@@ -372,18 +371,6 @@ test('a placeholder held gives way to the top of its file, whatever it arrived a
         expect(replacement?.row.key).toBe(getReviewHeaderKey(A.path));
         expect(replacement?.offset).toBe(0);
     }
-});
-
-test('the room under what was the last file gives way to what now follows that file, as more of the list arrives', () => {
-    const previous = buildReviewRows({ files: [A], getContent: () => BINARY });
-    const next = buildReviewRows({ files: [A, B], getContent: () => BINARY });
-    const tail = previous.at(-1);
-    expect(tail?.kind).toBe('tail');
-
-    expect(findReplacementRow({ key: tail?.key ?? '', offset: -40, previous, next })).toMatchObject({
-        row: { key: getReviewHeaderKey(B.path) },
-        offset: -40,
-    });
 });
 
 test('nothing replaces a row still there, or one of a file when no file is left', () => {
@@ -756,7 +743,7 @@ test("a comment box whose line isn't shown stays in sight at the top of its file
         threadsInCollapsed: false,
         getComments: () => [commentOn(2)],
     });
-    expect(collapsed.map(row => row.kind)).toEqual(['header', 'comment', 'end', 'tail']);
+    expect(collapsed.map(row => row.kind)).toEqual(['header', 'comment', 'end']);
     expect(collapsed[0]).toMatchObject({ threadsUnder: true });
 });
 

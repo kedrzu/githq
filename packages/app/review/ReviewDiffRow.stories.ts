@@ -67,13 +67,14 @@ export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 
 /** CR70: lines a comment is being written on are tinted. */
 export const SplitCommented: Story = {
     args: { commented: [{ side: 'after', start: 3, end: 5 }] },
-    render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }), args.commented),
+    render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }), { commented: args.commented }),
 };
 
 /** Unified, the same. */
 export const UnifiedCommented: Story = {
     args: { commented: [{ side: 'after', start: 3, end: 5 }] },
-    render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') }), args.commented),
+    render: args =>
+        renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') }), { commented: args.commented }),
 };
 
 /** Split with its tokens arrived: the colours over the tints and the window, which axe holds to AA. */
@@ -134,8 +135,11 @@ export const ViewedOpened: Story = {
         ),
 };
 
-/** CR60: on its way, quiet bars. */
-export const Placeholder: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder' })) };
+/** CR88: files on their way in split, a bar for each line where its code will start (D38): a modified file mirrors its context, an added one is on the right alone, a deleted one on the left alone. */
+export const PlaceholderSplit: Story = { render: () => renderRows(placeholderRows(), { layout: 'split' }) };
+
+/** CR89: the same files unified, the same lines in one column. */
+export const PlaceholderUnified: Story = { render: () => renderRows(placeholderRows(), { layout: 'unified' }) };
 
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
@@ -226,7 +230,7 @@ export const Paused: Story = {
             buildReviewRows({
                 files: [FILE, file('src/styles/sync.css', 29, 0), file('src/sync/queue.ts', 9, 0)],
                 getContent: () => ({ kind: 'paused', until }),
-            }).filter(row => row.kind !== 'tail'),
+            }),
         );
     },
     play: async ({ canvas }) => {
@@ -338,14 +342,28 @@ function fileRows(
         files: [shown],
         getContent: () => content,
         getCollapseReason: () => collapseReason,
-    }).filter(row => row.kind !== 'tail');
+    });
 }
 
-function renderRows(rows: readonly ReviewRow[], commented?: CommentedLines) {
+/** A modified, an added and a deleted file, all still on their way. */
+function placeholderRows() {
+    return [
+        file('src/sync/engine.ts', 14, 9),
+        file('src/sync/outbox.ts', 22, 0, { changeType: 'ADDED' }),
+        file('src/sync/pending.ts', 0, 18, { changeType: 'DELETED' }),
+    ].flatMap(shown => fileRows(shown, { kind: 'placeholder' }));
+}
+
+interface RenderRowsOptions {
+    readonly commented?: CommentedLines;
+    readonly layout?: DiffLayout;
+}
+
+function renderRows(rows: readonly ReviewRow[], { commented, layout }: RenderRowsOptions = {}) {
     return {
         components: { ReviewDiffRow },
-        setup: () => ({ rows, githubUrl: FILES_URL, commented }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" /></div>`,
+        setup: () => ({ rows, githubUrl: FILES_URL, commented, layout }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" /></div>`,
     };
 }
 
