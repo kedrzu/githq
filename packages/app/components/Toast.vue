@@ -17,6 +17,7 @@ export type ToastLasts = keyof typeof TOAST_LASTS;
 </script>
 
 <script lang="ts" setup>
+import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleX, GitMerge, Info, TriangleAlert, X } from 'lucide-vue-next';
@@ -32,7 +33,7 @@ import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import Button from './Button.vue';
 import IconButton from './IconButton.vue';
 import * as l from './Toast.loc.js';
-import { injectToasterStack } from './ToasterStack.js';
+import { ToasterStack } from './ToasterStack.js';
 
 const props = withDefaults(
   defineProps<{
@@ -74,7 +75,7 @@ defineSlots<{
 
 const open = defineModel<boolean>('open', { default: true });
 const t = useTranslate();
-const stack = injectToasterStack();
+const stack = injectContext(ToasterStack);
 const icons = {
   danger: CircleX,
   done: GitMerge,

@@ -1,6 +1,5 @@
-import { assert } from '@nzyme/utils/assert.js';
-import { inject, provide, ref } from 'vue';
-import type { InjectionKey } from 'vue';
+import { defineContext } from '@nzyme/vue-utils/context.js';
+import { ref } from 'vue';
 
 /**
  * The open toasts of one `Toaster`, in the order they opened. The newest is drawn at the bottom and is the only one
@@ -15,14 +14,12 @@ export interface ToasterStack {
     isNewest(arrival: number): boolean;
 }
 
-const ToasterStackKey: InjectionKey<ToasterStack> = Symbol('ToasterStack');
-
-/** Gives the `Toaster`'s toasts their stack. */
-export function provideToasterStack(): void {
+/** The `Toaster` provides it; a `Toast` outside one is a mistake. */
+export const ToasterStack = defineContext('ToasterStack', (): ToasterStack => {
     const open = ref<number[]>([]);
     let last = 0;
 
-    provide(ToasterStackKey, {
+    return {
         add() {
             last++;
             open.value = [...open.value, last];
@@ -34,12 +31,5 @@ export function provideToasterStack(): void {
         isNewest(arrival) {
             return open.value.at(-1) === arrival;
         },
-    });
-}
-
-/** The stack of the `Toaster` a `Toast` is in; a toast outside one is a mistake. */
-export function injectToasterStack(): ToasterStack {
-    const stack = inject(ToasterStackKey, null);
-    assert(stack, 'A Toast must be inside a Toaster.');
-    return stack;
-}
+    };
+});

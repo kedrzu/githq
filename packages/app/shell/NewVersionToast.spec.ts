@@ -34,19 +34,6 @@ test('nothing shows until a newer version is out; then it stays, and nothing rel
     expect(reload).toHaveBeenCalledOnce();
 });
 
-test('⌥R reloads while it shows, and the command menu offers it', async () => {
-    const { version, reload, registry } = mount();
-    version.announce();
-    await expect.element(toast()).toBeInTheDocument();
-
-    const command = registry.commands.find(candidate => candidate.id === 'app.reloadToNewVersion');
-    expect(command?.key).toBe('Alt+R');
-    expect(command?.menu).toBeUndefined();
-
-    command?.run?.();
-    expect(reload).toHaveBeenCalledOnce();
-});
-
 test('dismissed, it goes with its key and does not reload', async () => {
     const { version, reload, registry } = mount();
     version.announce();

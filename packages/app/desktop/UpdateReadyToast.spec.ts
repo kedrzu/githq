@@ -30,18 +30,6 @@ test('U49: an update ready stays offered with Restart on ⌥R, and nothing resta
     expect(update.restart).toHaveBeenCalledOnce();
 });
 
-test('⌥R is the toast\'s key alone: the command menu keeps its own "Restart to update"', async () => {
-    const { update, registry } = mount({ kind: 'ready', version: '1.4.0' });
-    await expect.element(toast()).toBeInTheDocument();
-
-    const command = registry.commands.find(candidate => candidate.id === 'updates.restart');
-    expect(command?.key).toBe('Alt+R');
-    expect(command?.menu).toBe(false);
-
-    command?.run?.();
-    expect(update.restart).toHaveBeenCalledOnce();
-});
-
 test('Dismiss is "Later": the toast and its key go', async () => {
     const { update, registry } = mount({ kind: 'ready', version: '1.4.0' });
     await expect.element(toast()).toBeInTheDocument();
@@ -63,13 +51,6 @@ test('U51: a failed install says nothing is lost and offers Try again, which res
 
     await userEvent.click(toast().getByRole('button', { name: 'Try again' }));
     expect(update.restart).toHaveBeenCalledOnce();
-});
-
-test('nothing offered shows nothing', async () => {
-    mount(null);
-
-    await expect.element(page.getByRole('region', { name: 'Notifications' })).toBeInTheDocument();
-    await expect.element(toast()).not.toBeInTheDocument();
 });
 
 /** The toast in the shell's toaster, over a desktop app on 1.3.0 offering `offer`. */

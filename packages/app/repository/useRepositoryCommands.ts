@@ -34,7 +34,8 @@ export interface RepositoryCommands {
  * The actions of a repository (`owner/name`): going to its view or one of its sections (its issues, its pull requests,
  * its commits — tracked or not, git-client D11 — and its workflows only while it is tracked, actions D4), a new issue in
  * it, its page on GitHub and the link to it, its settings (T16) and no longer tracking it (both only while it is
- * tracked and not on its way out; untracking offers Undo, `PendingUntracks`), and tracking it (only while it is not). All are of the `repository` section. The sidebar's menu of a
+ * tracked and not on its way out; untracking offers Undo, `PendingUntracks`), and tracking it (only while it is not, or is
+ * on its way out, when it is Undo). All are of the `repository` section. The sidebar's menu of a
  * repository offers them by name, all but tracking it. In the command menu `AppCommands` makes of them the group of the
  * repository the screen belongs to and the level under any repository (D36), both with tracking it last (D34) and without
  * no longer tracking it (D32); the group, unlike the level, has no new issue (`C` starts one there).
@@ -87,7 +88,7 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 title: t(l.workflows),
                 section: 'repository',
                 icon: REPOSITORY_SECTION_ICONS.workflows,
-                when: () => tracking.isTracked({ kind: 'repository', nameWithOwner }),
+                when: isListed,
                 run: () => void router.push(getRepositoryPath(nameWithOwner, 'workflows')),
             },
             newIssue: {
@@ -126,8 +127,15 @@ export function useRepositoryCommands(): (nameWithOwner: string) => RepositoryCo
                 detail: t(l.trackDetail),
                 section: 'repository',
                 icon: CloudDownload,
-                when: () => !tracking.isTracked({ kind: 'repository', nameWithOwner }),
-                run: () => void tracker.track(nameWithOwner),
+                // On its way out it reads as not tracked already: tracking it again is Undo.
+                when: () => !isListed(),
+                run: () => {
+                    if (pending.isPending(target)) {
+                        pending.undo(target);
+                    } else {
+                        void tracker.track(nameWithOwner);
+                    }
+                },
             },
             untrack: {
                 id: 'repository.untrack',
