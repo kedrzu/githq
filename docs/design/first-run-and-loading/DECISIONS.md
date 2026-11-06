@@ -168,8 +168,7 @@ arrived, empty group inside a list that has other rows keeps its "Nothing here."
 ## D7
 
 **The empty-state work covers whole screens and lists. Small lines inside panels and pickers ("No comments yet.",
-"Nothing matches" in the command menu) stay as they are; an item's properties reading "None" before they are read is
-fixed as a bug, not designed.** (2026-11-06, design agent's proposal, owner confirmed)
+"Nothing matches" in the command menu) stay as they are.** (2026-11-06, design agent's proposal, owner confirmed)
 
 **Why.** A line inside a panel already states its reason in a sentence, which suits its size; the screens are where
 "nothing" is shown big and believed.
@@ -177,6 +176,11 @@ fixed as a bug, not designed.** (2026-11-06, design agent's proposal, owner conf
 **Rejected.**
 
 - Every empty line in the app — dozens of one-liners that already say what they mean.
+
+> **Checked 2026-11-06:** an item's properties don't read "None" before they are read, though the first inventory said
+> so: `Item` always carries assignees, labels and milestone, `OpenedItem` draws `ItemView` only once the item exists,
+> and the Type row stays hidden until there is a type or the repository's metadata is read. Pinned by a spec in
+> `packages/app/item/ItemView.spec.ts`; nothing to fix.
 
 ## D8
 
@@ -254,7 +258,7 @@ moves, which matters more than how far it got.
 
 **"Can't be read" per cause (ES25):** (2026-11-06, design agent's proposal)
 
-- **Offline** — "You're offline"; "{thing} hasn't arrived yet, and githq can't reach GitHub. It carries on by itself as
+- **Offline** — "You're offline"; "githq can't reach GitHub, so {thing} hasn't arrived yet. It carries on by itself as
   soon as you're back."; no action.
 - **Paused by the allowance** — "Refresh paused until 14:20"; "GitHub's hourly allowance ran out before {thing} was
   read. It comes in by itself at 14:20."; no action.
