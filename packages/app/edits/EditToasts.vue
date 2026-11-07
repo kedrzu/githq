@@ -1,10 +1,10 @@
-<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment that was not posted back into its box unless it is there already. A change of several items that failed for some selects those alone in the list (⇧F, on the newest toast). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { ArrowUpRight, Undo2 } from 'lucide-vue-next';
 
-import { useCommands } from '@/commands/useCommands.js';
+import type { Command } from '@/commands/CommandTypes.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
@@ -19,6 +19,9 @@ import type { EditFailure } from './EditQueue.js';
 import { useEditTexts } from './useEditTexts.js';
 import * as l from './useEditTexts.loc.js';
 
+/** The key selecting the failed items of a change of several — the list has no ⇧F of its own. */
+const SELECT_FAILED_KEY = 'Shift+F';
+
 const queue = useService(EditQueue);
 const drafts = useService(CommentDrafts);
 const navigation = useService(ItemNavigation);
@@ -26,26 +29,19 @@ const browser = useService(Browser);
 const texts = useEditTexts();
 const t = useTranslate();
 
-// ⇧F: the failed items of the latest change of several showing — the list has no ⇧F of its own.
-useCommands(() => [
-  {
-    id: 'edits.selectFailed',
-    title: t(l.selectFailedCommand),
-    section: 'app',
-    key: 'Shift+F',
-    menu: false,
-    when: () => findSelectable() !== undefined,
-    run: () => {
-      const failure = findSelectable();
-      if (failure) {
-        selectFailed(failure);
-      }
-    },
-  },
-]);
-
-function findSelectable() {
-  return queue.failures.findLast(candidate => candidate.toast && getFailedIds(candidate).length > 0);
+function getCommands(failure: EditFailure): Command[] {
+  return getFailedIds(failure).length > 0
+    ? [
+        {
+          id: 'edits.selectFailed',
+          title: t(l.selectFailedCommand),
+          section: 'app',
+          key: SELECT_FAILED_KEY,
+          menu: false,
+          run: () => selectFailed(failure),
+        },
+      ]
+    : [];
 }
 
 /** The items that failed of a change of several (K2); none for a change of one item. */
@@ -113,17 +109,19 @@ function getLink(failure: EditFailure) {
       v-if="failure.toast && !isMergeFailure(failure)"
       :title="texts.failureTitle(failure)"
       :tone="failure.failed.length < failure.editCount ? 'warning' : 'danger'"
+      lasts="long"
+      :commands="getCommands(failure)"
       @update:open="queue.setToast(failure.id, $event)"
       @dismiss="queue.dismiss(failure.id)"
     >
       {{ texts.failureDetail(failure) }}
-      <template #actions>
+      <template #actions="{ active }">
         <Button
           v-if="getFailedIds(failure).length > 0"
           variant="secondary"
           size="sm"
-          kbd="Shift+F"
-          aria-keyshortcuts="Shift+F"
+          :kbd="active ? SELECT_FAILED_KEY : undefined"
+          :aria-keyshortcuts="active ? SELECT_FAILED_KEY : undefined"
           @click="selectFailed(failure)"
         >
           {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}

@@ -1,4 +1,4 @@
-<!-- The app was updated (desktop releases D7, U23, U24): a toast in the corner saying from which version to which, and "What changed" (⌥W, also in the command menu while it shows) to Settings: Changelog. Going back to an older version (U25) says which one runs and offers nothing to read (D10). It comes once for each update — remembered as told at once, so not again on reload — and stays until dismissed; no window opens by itself. Never at the first ever run, which has nothing before it (`VersionRecord.ts`). -->
+<!-- The app was updated (desktop releases D7, U23, U24): a toast in the corner saying from which version to which, and "What changed" (⌥W on the newest toast; in the command menu while it shows) to Settings: Changelog. Going back to an older version (U25) says which one runs and offers nothing to read (D10). It comes once for each update — remembered as told at once, so not again on reload — and goes by itself after a few seconds; no window opens by itself. Never at the first ever run, which has nothing before it (`VersionRecord.ts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -6,7 +6,7 @@ import { CircleArrowDown, CircleArrowUp, ScrollText } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useCommands } from '@/commands/useCommands.js';
+import type { Command } from '@/commands/CommandTypes.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import { AppUpdate, isOlderVersion } from '@/services/AppUpdate.js';
@@ -38,9 +38,10 @@ watch(
   { immediate: true },
 );
 
-useCommands(() =>
-  shown.value && !older.value
-    ? [
+const commands = computed((): Command[] =>
+  older.value
+    ? []
+    : [
         {
           id: 'updates.whatChanged',
           title: t(l.whatChanged),
@@ -49,8 +50,7 @@ useCommands(() =>
           icon: ScrollText,
           run: openChangelog,
         },
-      ]
-    : [],
+      ],
 );
 
 function openChangelog() {
@@ -71,19 +71,20 @@ function onOpenChange(open: boolean) {
     :title="t(older ? l.olderTitle : l.updatedTitle, { version: shown.version })"
     tone="accent"
     :icon="older ? CircleArrowDown : CircleArrowUp"
-    :duration="Infinity"
+    lasts="brief"
+    :commands="commands"
     @update:open="onOpenChange"
   >
     {{ older ? t(l.olderDetail) : t(l.updatedDetail, { previousVersion: shown.previousVersion }) }}
     <template
       v-if="!older"
-      #actions
+      #actions="{ active }"
     >
       <Button
         variant="secondary"
         size="sm"
-        :kbd="WHAT_CHANGED_KEY"
-        :aria-keyshortcuts="WHAT_CHANGED_KEY"
+        :kbd="active ? WHAT_CHANGED_KEY : undefined"
+        :aria-keyshortcuts="active ? WHAT_CHANGED_KEY : undefined"
         @click="openChangelog"
       >
         {{ t(l.whatChanged) }}

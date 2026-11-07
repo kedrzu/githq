@@ -10,6 +10,7 @@ import { ProjectPersistence } from '@/projects/ProjectPersistence.js';
 import { ProjectViewAnswers } from '@/projects/ProjectViewAnswers.js';
 import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
 import { SettingsSync } from '@/settings/sync/SettingsSync.js';
+import { NewVersion } from '@/shell/NewVersion.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
@@ -42,6 +43,8 @@ export default defineNuxtPlugin({
         }
 
         startServices(container);
+        // A newer deploy, which Nuxt polls for: the toast offers to reload. The desktop app has its own updater.
+        nuxtApp.hook('app:manifest:update', () => container.resolve(NewVersion).announce());
         return undefined;
     },
 });

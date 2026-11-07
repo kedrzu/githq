@@ -7,7 +7,7 @@ import { SettingsScreenHarness } from './SettingsScreen.harness.js';
 
 /**
  * Playwright harness for the signed-in app's frame (`AppShell.vue`): the sidebar (expanded, or collapsed to
- * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`).
+ * the rail) with the account menu and what is tracked, the status bar, and the toasts over it (`CloseToasts.vue`, `EditToasts.vue`, `MergeToasts.vue`, `WorkflowRerunToast.vue`, `SyncStoppedToast.vue`, `UpdatedToast.vue`, `UpdateReadyToast.vue`).
  */
 export class AppShellHarness {
     readonly page: Page;
@@ -170,19 +170,19 @@ export class AppShellHarness {
         return this.statusBar.getByRole('button', { name: /^Paused until/ });
     }
 
-    /** The desktop app's notice of an update ready to run (U1), "githq 1.4.0 is ready". */
+    /** The desktop app's toast offering an update ready to run (U49), "githq 1.4.0 is ready", until dismissed. */
+    get updateReadyToast(): Locator {
+        return this.toasts.filter({ hasText: /githq \S+ is\sready/ });
+    }
+
+    /** The status bar's quiet trace of an update ready to run once its toast was dismissed (U50), "githq 1.4.0 ready". */
     get updateNotice(): Locator {
-        return this.statusBar.getByText(/^githq \S+ is\sready$/);
+        return this.statusBar.getByText(/^githq \S+ ready$/);
     }
 
     /** "Restart" of {@link updateNotice}: into the update. */
     get restartToUpdateButton(): Locator {
         return this.statusBar.getByRole('button', { name: 'Restart', exact: true });
-    }
-
-    /** "Later" of {@link updateNotice}: hides it until the app next starts. */
-    get updateLaterButton(): Locator {
-        return this.statusBar.getByRole('button', { name: 'Later', exact: true });
     }
 
     /** Why refresh is paused, opened from {@link pausedSegment}. */

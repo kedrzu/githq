@@ -1,4 +1,4 @@
-<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35) — refused by an organisation that has not approved githq, it says so and links to requesting access (G5); a merge GitHub confirmed while the panel did not show it says so, small and quiet — a stack's merge how many landed — and goes by itself (PM34), offering to delete or restore its branch (`⌥D`) and to revert it, while it may take them. Reverting says so in a toast of its own, leading to the new pull request. All act on their own pull request, never on the row selected: `⌥M`, not `⇧M`. No answer in time has no toast (PM36). -->
+<!-- The toasts of merges the user moved on from, for a `Toaster` (merging D15): a merge GitHub refused is a failed edit (K1) — the same toast and status bar — that stays until dismissed, says nothing merged and leads back to the merge panel with the edited text (`⌥M`, PM35) — refused by an organisation that has not approved githq, it says so and links to requesting access (G5); a merge GitHub confirmed while the panel did not show it says so, small and quiet — a stack's merge how many landed — and goes by itself (PM34), offering to delete or restore its branch (`⌥D`) and to revert it, while it may take them. Reverting says so in a toast of its own, leading to the new pull request. All act on their own pull request, never on the row selected: `⌥M`, not `⇧M` — the keys of the newest toast only. No answer in time has no toast (PM36). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -7,7 +7,7 @@ import { ArrowRight, ArrowUpRight, GitBranch, GitMerge, Undo2 } from 'lucide-vue
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useCommands } from '@/commands/useCommands.js';
+import type { Command } from '@/commands/CommandTypes.js';
 import Button from '@/components/Button.vue';
 import Toast from '@/components/Toast.vue';
 import type { EditFailure } from '@/edits/EditQueue.js';
@@ -25,10 +25,6 @@ import { MergePanelStore } from './MergePanelStore.js';
 import * as l from './MergeToasts.loc.js';
 import type { PullRequestCommand } from './MergeTypes.js';
 
-/** How long the toast of a merge confirmed stays: a few seconds (PM34). */
-const CONFIRMED_MS = 5000;
-/** How long the toast of a revert opened stays: longer, as it leads somewhere. */
-const REVERTED_MS = 10_000;
 /** The key back to the merge panel of a refused merge: the toast's own, as `⇧M` is the selected row's (D15). */
 const BACK_KEY = 'Alt+M';
 /** The key deleting or restoring the branch of a merge confirmed: the toast's own, as `⇧D` is the selected row's (D15). */
@@ -51,40 +47,34 @@ const refusals = computed(() =>
   }),
 );
 
-useCommands(() => [
-  {
-    id: 'merge.backToMerge',
-    title: t(l.backToMergeCommand),
-    section: 'app',
-    key: BACK_KEY,
-    menu: false,
-    when: () => findLatest() !== undefined,
-    run: () => {
-      const latest = findLatest();
-      if (latest) {
-        backToMerge(latest.failure, latest.itemId);
-      }
-    },
-  },
-  {
-    id: 'merge.mergedBranch',
-    title: t(l.mergedBranchCommand),
-    section: 'app',
-    key: BRANCH_KEY,
-    menu: false,
-    when: () => findLatestWithBranch() !== undefined,
-    run: () => {
-      const latest = findLatestWithBranch();
-      if (latest) {
-        runBranch(latest);
-      }
-    },
-  },
-]);
+function getRefusalCommands(failure: EditFailure, itemId: string): Command[] {
+  return canGoBack(itemId)
+    ? [
+        {
+          id: 'merge.backToMerge',
+          title: t(l.backToMergeCommand),
+          section: 'app',
+          key: BACK_KEY,
+          menu: false,
+          run: () => backToMerge(failure, itemId),
+        },
+      ]
+    : [];
+}
 
-/** The latest merge confirmed showing whose branch can be deleted or restored. */
-function findLatestWithBranch() {
-  return store.confirmations.findLast(confirmation => getBranchCommand(confirmation) !== undefined);
+function getConfirmationCommands(confirmation: MergeConfirmation): Command[] {
+  return getBranchCommand(confirmation)
+    ? [
+        {
+          id: 'merge.mergedBranch',
+          title: t(l.mergedBranchCommand),
+          section: 'app',
+          key: BRANCH_KEY,
+          menu: false,
+          run: () => runBranch(confirmation),
+        },
+      ]
+    : [];
 }
 
 /** The follow-ups are of one pull request: a stack's merge has none here. */
@@ -124,11 +114,6 @@ function openRevert(revert: MergeRevert) {
   }
 }
 
-/** The latest refusal showing that leads back to the panel. */
-function findLatest() {
-  return refusals.value.findLast(({ failure, itemId }) => failure.toast && canGoBack(itemId));
-}
-
 function canGoBack(itemId: string) {
   return merging?.canOpen(itemId) === true;
 }
@@ -165,19 +150,20 @@ function getLink(failure: EditFailure, itemId: string) {
     <Toast
       v-if="failure.toast"
       :title="texts.failureTitle(failure)"
-      :duration="Number.POSITIVE_INFINITY"
+      lasts="pinned"
+      :commands="getRefusalCommands(failure, itemId)"
       @update:open="queue.setToast(failure.id, $event)"
       @dismiss="queue.dismiss(failure.id)"
     >
       {{ texts.failureDetail(failure) }}
-      <template #actions>
+      <template #actions="{ active }">
         <Button
           v-if="canGoBack(itemId)"
-          variant="primary"
+          variant="secondary"
           size="sm"
           :icon="GitMerge"
-          :kbd="BACK_KEY"
-          :aria-keyshortcuts="BACK_KEY"
+          :kbd="active ? BACK_KEY : undefined"
+          :aria-keyshortcuts="active ? BACK_KEY : undefined"
           @click="backToMerge(failure, itemId)"
         >
           {{ t(l.backToMerge) }}
@@ -201,27 +187,28 @@ function getLink(failure: EditFailure, itemId: string) {
     :key="`merged-${confirmation.id}`"
     :title="getConfirmationTitle(confirmation)"
     tone="done"
-    :duration="CONFIRMED_MS"
+    lasts="brief"
+    :commands="getConfirmationCommands(confirmation)"
     @update:open="!$event && store.dismissConfirmation(confirmation.id)"
   >
     <template
       v-if="getBranchCommand(confirmation) || getRevertCommand(confirmation)"
-      #actions
+      #actions="{ active }"
     >
       <Button
         v-if="getBranchCommand(confirmation)"
         variant="secondary"
         size="sm"
         :icon="GitBranch"
-        :kbd="BRANCH_KEY"
-        :aria-keyshortcuts="BRANCH_KEY"
+        :kbd="active ? BRANCH_KEY : undefined"
+        :aria-keyshortcuts="active ? BRANCH_KEY : undefined"
         @click="runBranch(confirmation)"
       >
         {{ getBranchCommand(confirmation)?.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
       </Button>
       <Button
         v-if="getRevertCommand(confirmation)"
-        variant="ghost"
+        variant="secondary"
         size="sm"
         :icon="Undo2"
         @click="runFollowUp(confirmation, { kind: 'revert' })"
@@ -235,7 +222,7 @@ function getLink(failure: EditFailure, itemId: string) {
     :key="`reverted-${revert.id}`"
     :title="t(l.reverted, { reference: revert.reference, number: revert.opened.number })"
     tone="done"
-    :duration="REVERTED_MS"
+    lasts="brief"
     @update:open="!$event && store.dismissRevert(revert.id)"
   >
     <template #actions>
@@ -248,7 +235,7 @@ function getLink(failure: EditFailure, itemId: string) {
         {{ t(l.openRevert) }}
       </Button>
       <Button
-        variant="ghost"
+        variant="secondary"
         size="sm"
         :icon="ArrowUpRight"
         :link="revert.opened.url"

@@ -2,6 +2,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import { getItemComparator } from '@/lists/getItemComparator.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
+import { getPullRequestPhase, PULL_REQUEST_STAGE_OF } from '@/store/getPullRequestPhase.js';
 import { getPullRequestStanding } from '@/store/getPullRequestStanding.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import type { MyWorkGroup, MyWorkMembership } from '@/store/ItemStoreTypes.js';
@@ -15,6 +16,15 @@ export type MyWorkFilter = 'all' | 'needsMe' | 'waitingOnOthers';
 
 /** The filters in the order the tabs show them. */
 export const MY_WORK_FILTERS: readonly MyWorkFilter[] = ['all', 'needsMe', 'waitingOnOthers'];
+
+/**
+ * Where a row of my work stands, as grouping by status shows it: tied to the filters, so that "Needs me" holds exactly
+ * what the "Needs me" filter keeps, and "Waiting on others" what its filter keeps and "Needs me" doesn't.
+ */
+export type MyWorkStatus = (typeof MY_WORK_STATUSES)[number];
+
+/** The statuses in the order their groups are shown. */
+export const MY_WORK_STATUSES = ['needsMe', 'readyToMerge', 'waitingOnOthers', 'draft', 'other'] as const;
 
 /** "My work" as the list shows it: the four groups in order, each with its top-level rows. */
 export interface MyWork {
@@ -229,6 +239,43 @@ export function buildMyWork(params: BuildMyWorkParams): MyWork {
     }
 
     return { groups, counts: { ...counts, total } };
+}
+
+/**
+ * The status of a row of `group`, the first that applies: it needs me (as the filter judges), it is my pull request
+ * ready to merge, it waits on others (as the filter judges), it is my draft, or anything else (a mention, someone's pull
+ * request ready to merge). A stack's entry needs me or waits on others when any of its pull requests would as a row,
+ * as the filters keep it; whether it is ready to merge or a draft is its `item`'s, the pull request `Enter` opens.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getMyWorkStatus(row: MyWorkRow, group: MyWorkGroup): MyWorkStatus {
+    if (matchesAnyMember(row, group, needsMe)) {
+        return 'needsMe';
+    }
+
+    const stage =
+        group === 'authored' && row.item.kind === 'pullRequest'
+            ? PULL_REQUEST_STAGE_OF[getPullRequestPhase(row.item, { reviewRequested: false })]
+            : null;
+    if (stage === 'readyToMerge') {
+        return 'readyToMerge';
+    }
+
+    if (matchesAnyMember(row, group, isWaitingOnOthers)) {
+        return 'waitingOnOthers';
+    }
+
+    return stage === 'draft' ? 'draft' : 'other';
+}
+
+/** The row matches — a stack's entry when any of its pull requests does as a row, as the filter keeps it. */
+function matchesAnyMember(
+    row: MyWorkRow,
+    group: MyWorkGroup,
+    matches: (row: MyWorkRow, group: MyWorkGroup) => boolean,
+): boolean {
+    return row.stack ? row.nested.some(member => matches(toRow(member), group)) : matches(row, group);
 }
 
 /** A pull request as a row of its own, as the filter judges a stack's. */

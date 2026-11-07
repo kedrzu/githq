@@ -1,4 +1,4 @@
-<!-- At the right end of the desktop app's status bar: what there is to say about updates (`AppUpdate.notice`). Ready (U1): "githq 1.4.0 is ready", a small "Restart" button and a plain "Later". Quiet and waiting: nothing restarts until the user clicks Restart. The outcome of a check the user asked for (U21, U22): checking, up to date, downloading, no release, or a failure with "Try again" and "Dismiss". The install (U40): "Installing githq 1.4.0…" offers nothing, so Restart can't be pressed twice; a failed install, amber, offers "Try again" and "Later". -->
+<!-- At the right end of the desktop app's status bar: what there is to say about updates (`AppUpdate.notice`). The outcome of a check the user asked for (U21, U22): checking, up to date, downloading, no release, or a failure with "Try again" and "Dismiss". The install (U40): "Installing githq 1.4.0…" offers nothing, so Restart can't be pressed twice. An update ready or a failed install is the toast's (`UpdateReadyToast.vue`, U49, U51); once that is dismissed, the bar keeps a quiet trace (U50): "githq 1.4.0 ready" with a small "Restart", or, amber, "githq 1.4.0 couldn't be installed" with "Try again". Nothing restarts until the user clicks. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleArrowDown, Info, LoaderCircle, TriangleAlert } from 'lucide-vue-next';
@@ -27,7 +27,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** Restarts into the update, or tries installing it again. */
   restart: [];
-  later: [];
   /** Tries a failed check again. */
   check: [];
   dismiss: [];
@@ -57,7 +56,6 @@ function getView(notice: UpdateNotice): UpdateSegmentView {
         tone: 'accent',
         text: t(l.ready, { version: notice.version }),
         action: { text: t(l.restart), run: () => emit('restart') },
-        secondary: { text: t(l.later), run: () => emit('later') },
       };
     case 'failed':
       return {
@@ -81,7 +79,6 @@ function getView(notice: UpdateNotice): UpdateSegmentView {
         tone: 'warning',
         text: t(l.installFailed, { version: notice.version }),
         action: { text: t(l.tryAgain), run: () => emit('restart') },
-        secondary: { text: t(l.later), run: () => emit('later') },
       };
   }
 }

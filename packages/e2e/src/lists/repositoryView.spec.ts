@@ -145,6 +145,82 @@ test('D34, CH37: an untracked repository lists all of its open items, read from 
     await expect(repository.notTrackedChip).toHaveCount(0);
 });
 
+test('grouped by status, the open pull requests stand each once in the fixed order of the stages; by author, one group per login; the choice stays over a reload, the issues keeping theirs', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.pullRequest({
+        repository: SAMPLE_REPOSITORY,
+        number: 6,
+        title: 'Sketch the plugin API',
+        author: 'hubot',
+        isDraft: true,
+        minutesAgo: 60,
+    });
+    sample.world.pullRequest({
+        repository: SAMPLE_REPOSITORY,
+        number: 7,
+        title: 'Rename the config keys',
+        author: 'monalisa',
+        reviewDecision: 'CHANGES_REQUESTED',
+        minutesAgo: 90,
+    });
+    sample.world.pullRequest({
+        repository: SAMPLE_REPOSITORY,
+        number: 8,
+        title: 'Speed up the cold start',
+        author: 'hubot',
+        reviewDecision: 'APPROVED',
+        minutesAgo: 120,
+    });
+    await openTrackedWork(page, github, sample.world);
+    const repository = new RepositoryScreenHarness(page);
+    await page.goto(`/${SAMPLE_REPOSITORY}/pulls`);
+    await expect(repository.section('Pull requests')).toHaveText(/Pull requests\s*4/);
+
+    await repository.groupingButton.click();
+    await page.getByRole('menuitemradio', { name: 'Status' }).click();
+    await expect(repository.groupingButton).toHaveText('Group: Status');
+    // "Fix the crash on start" waits for the review its repository requires; none checks run or merges.
+    await expect(repository.groups).toHaveText([
+        /^\s*Draft\s*1/,
+        /^\s*Waiting\sfor\sreview\s*1/,
+        /^\s*Needs\swork\s*1/,
+        /^\s*Ready\sto\smerge\s*1/,
+    ]);
+    await expect(repository.rows('Draft')).toHaveText([/Sketch the plugin API/]);
+    await expect(repository.rows('Waiting for review')).toHaveText([/Fix the crash on start/]);
+    await expect(repository.rows('Needs work')).toHaveText([/Rename the config keys/]);
+    await expect(repository.rows('Ready to merge')).toHaveText([/Speed up the cold start/]);
+    for (const title of [
+        'Sketch the plugin API',
+        'Fix the crash on start',
+        'Rename the config keys',
+        'Speed up the cold start',
+    ]) {
+        await expect(repository.row(title)).toHaveCount(1);
+    }
+
+    await repository.groupingButton.click();
+    await page.getByRole('menuitemradio', { name: 'Author' }).click();
+    await expect(repository.groupingButton).toHaveText('Group: Author');
+    await expect(repository.groups).toHaveText([/^\s*hubot\s*2/, /^\s*monalisa\s*1/, /^\s*octocat\s*1/]);
+    await expect(repository.rows('hubot')).toHaveText([/Sketch the plugin API/, /Speed up the cold start/]);
+    await expect(repository.rows('monalisa')).toHaveText([/Rename the config keys/]);
+    await expect(repository.rows('octocat')).toHaveText([/Fix the crash on start/]);
+
+    await page.reload();
+    await expect(repository.groupingButton).toHaveText('Group: Author');
+    await expect(repository.rows('hubot')).toHaveText([/Sketch the plugin API/, /Speed up the cold start/]);
+    await expect(repository.rows('octocat')).toHaveText([/Fix the crash on start/]);
+
+    // The issues are a list of their own: still by milestone.
+    await repository.section('Issues').click();
+    await expect(repository.groupingButton).toHaveText('Group: Milestone');
+    await expect(repository.rows('v1.0')).toHaveText([/Crash on start/]);
+});
+
 /** Selects the first card of the column `group` — `title` — with the board's keys, and presses ⇧→. */
 async function moveFirstRow(repository: RepositoryScreenHarness, group: string, title: string) {
     // Away from the tabs, so the keys are the board's.

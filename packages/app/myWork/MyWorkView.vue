@@ -1,7 +1,17 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11) or by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked — with the reasons still arriving after them); the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason nor a repository is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen the status bar alone tells it. Narrowed to one group that is in and empty, the note says what is shown and offers the rest (`MyWorkGroupEmpty`, D15, ES12). -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen the status bar alone tells it. Narrowed to one group that is in and empty, the note says what is shown and offers the rest (`MyWorkGroupEmpty`, D15, ES12). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CloudOff, ListFilter } from 'lucide-vue-next';
+import { assertNever } from '@nzyme/utils/assertNever.js';
+import type { LucideIcon } from 'lucide-vue-next';
+import {
+  AtSign,
+  CircleAlert,
+  CircleCheck,
+  CloudOff,
+  GitPullRequestDraft,
+  Hourglass,
+  ListFilter,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
@@ -11,6 +21,7 @@ import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
 import { getSelectionSpan } from '@/lists/getSelectionSpan.js';
+import { getAssigneeGroupValue, NO_VALUE } from '@/lists/groupEntries.js';
 import ItemCard from '@/lists/ItemCard.vue';
 import type { ItemProperty } from '@/lists/ItemProperty.js';
 import { ITEM_PROPERTIES } from '@/lists/ItemProperty.js';
@@ -35,9 +46,10 @@ import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import type { PullRequestStack } from '@/store/stacks/groupStacks.js';
 
-import type { MyWork, MyWorkCounts, MyWorkFilter, MyWorkRow } from './buildMyWork.js';
+import type { MyWork, MyWorkCounts, MyWorkFilter, MyWorkRow, MyWorkStatus } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
 import { groupMyWorkByRepository } from './groupMyWorkByRepository.js';
+import { groupMyWorkByAuthor, groupMyWorkByStatus } from './groupMyWorkRows.js';
 import MyWorkEmpty from './MyWorkEmpty.vue';
 import MyWorkGroupEmpty from './MyWorkGroupEmpty.vue';
 import * as groupLabels from './MyWorkGroupLabel.loc.js';
@@ -121,6 +133,13 @@ const choices = useItemListChoices();
 /** The key of the group of repositories the user doesn't track; no repository's `owner/name` can take it. */
 const OTHER_REPOSITORIES = 'otherRepositories';
 const FILTER_KEYS: Readonly<Record<MyWorkFilter, string>> = { all: '1', needsMe: '2', waitingOnOthers: '3' };
+const STATUS_ICONS: Readonly<Record<MyWorkStatus, LucideIcon>> = {
+  needsMe: CircleAlert,
+  readyToMerge: CircleCheck,
+  waitingOnOthers: Hourglass,
+  draft: GitPullRequestDraft,
+  other: AtSign,
+};
 
 const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
   MY_WORK_FILTERS.map(candidate => ({
@@ -132,6 +151,8 @@ const filterOptions = computed((): SegmentedTabsOption<MyWorkFilter>[] =>
 const groupings = computed((): ListChoice[] => [
   { value: 'reason', label: t(l.reason) },
   { value: 'repository', label: t(l.repository) },
+  { value: 'status', label: t(l.status) },
+  { value: 'author', label: t(l.author) },
 ]);
 const title = computed(() => (props.group ? t(groupLabels[props.group]) : t(l.title)));
 const properties = computed(() => {
@@ -181,23 +202,32 @@ const narrowedEmpty = computed(
 /**
  * The groups drawn: none while a note stands for them. By reason: the narrowed one; else, in the list, those still arriving (G17)
  * and those with rows — on the board every column, unless none has anything (the empty state says so instead).
- * By repository: those with rows, then the reasons still arriving.
+ * By repository, status or author: those with rows, then the reasons still arriving.
  */
 const groups = computed((): ListGroup<Item>[] => {
   if (unreadable.value || narrowedEmpty.value) {
     return [];
   }
 
-  if (options.value.grouping === 'repository') {
-    return [...repositoryGroups(), ...reasonGroups.value.filter(entry => !entry.arrived)];
-  }
+  const grouping = options.value.grouping;
+  switch (grouping) {
+    case 'reason': {
+      if (props.group) {
+        return reasonGroups.value;
+      }
 
-  if (props.group) {
-    return reasonGroups.value;
+      const shown = reasonGroups.value.filter(entry => !entry.arrived || entry.rows.length > 0);
+      return options.value.layout === 'board' && shown.length > 0 ? reasonGroups.value : shown;
+    }
+    case 'repository':
+      return [...repositoryGroups(), ...arriving()];
+    case 'status':
+      return [...statusGroups(), ...arriving()];
+    case 'author':
+      return [...authorGroups(), ...arriving()];
+    default:
+      return assertNever(grouping);
   }
-
-  const shown = reasonGroups.value.filter(entry => !entry.arrived || entry.rows.length > 0);
-  return options.value.layout === 'board' && shown.length > 0 ? reasonGroups.value : shown;
 });
 
 // `1`–`3` switch the filters; the command menu offers them too.
@@ -231,6 +261,34 @@ function repositoryGroups(): ListGroup<Item>[] {
     droppable: false,
     rows: rows.map(toListRow),
   }));
+}
+
+function statusGroups(): ListGroup<Item>[] {
+  return groupMyWorkByStatus(reasons.value).map(({ key, rows }) => ({
+    key,
+    label: t(l[key]),
+    marker: { kind: 'icon', icon: STATUS_ICONS[key] },
+    arrived: true,
+    droppable: false,
+    rows: rows.map(toListRow),
+  }));
+}
+
+function authorGroups(): ListGroup<Item>[] {
+  return groupMyWorkByAuthor(reasons.value).map(({ author, rows }) => ({
+    // Keyed apart from the reasons still arriving, whatever the login; a deleted account leaves no author.
+    ...(author
+      ? { ...getAssigneeGroupValue(author), key: `@${author.login}` }
+      : { key: NO_VALUE, label: t(l.noAuthor) }),
+    arrived: true,
+    droppable: false,
+    rows: rows.map(toListRow),
+  }));
+}
+
+/** The reason groups still on their way (G17): drawn after the groups of what has arrived. */
+function arriving() {
+  return reasonGroups.value.filter(entry => !entry.arrived);
 }
 
 /** The repository a group of the list is of: its rows are named by number alone. */

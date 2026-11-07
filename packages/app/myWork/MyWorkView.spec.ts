@@ -269,6 +269,38 @@ test('grouped by repository on the first download: what arrived is in its reposi
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
 });
 
+test('grouped by status: as the filters keep them, rows named in full, the nested pull request under its issue', async () => {
+    mount(D1_ITEMS, D1_MEMBERSHIP, { grouping: 'status' });
+
+    const sections = page.getByRole('region');
+    await expect.element(sections.nth(0)).toHaveAccessibleName('Needs me');
+    // "to merge" and "on others" are held together by a non-breaking space.
+    await expect.element(sections.nth(1)).toHaveAccessibleName(/^Ready to\smerge$/);
+    await expect.element(sections.nth(2)).toHaveAccessibleName(/^Waiting on\sothers$/);
+    await expect.element(sections.nth(3)).toHaveAccessibleName('Other');
+    expect(sections.elements()).toHaveLength(4);
+
+    const needsMe = page.getByRole('region', { name: 'Needs me' }).getByRole('listitem');
+    await expect.element(needsMe.nth(0)).toHaveTextContent('skyline-labs/api#482');
+    await expect.element(needsMe.nth(0)).toHaveTextContent(/your review requested/i);
+    const issue = needsMe.filter({ hasText: 'Calendar shows wrong timezone for recurring bookings' });
+    await expect.element(issue).toBeInTheDocument();
+    await expect.element(needsMe.filter({ hasText: 'Fix timezone offset for recurring bookings' })).toBeInTheDocument();
+    await expect
+        .element(page.getByRole('region', { name: /^Ready to\smerge$/ }))
+        .toHaveTextContent('Retry Stripe webhook delivery on 5xx');
+});
+
+test('grouped by author on the first download: by login, the reasons still arriving after them', async () => {
+    mount(D1_ITEMS, { reviewRequested: new Set(['PR_482', 'PR_1203']) }, { grouping: 'author' });
+
+    const sections = page.getByRole('region');
+    await expect.element(sections.nth(0)).toHaveAccessibleName('olam');
+    await expect.element(sections.nth(1)).toHaveAccessibleName('tw');
+    await expect.element(page.getByRole('region', { name: 'My pull requests' })).toHaveTextContent(/Still arriving/);
+    await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
+});
+
 test('stacked PRs D3: a stack is one collapsed entry, its pull requests outside my work too', async () => {
     mount(STACKED_MY_WORK_ITEMS, STACKED_MY_WORK_MEMBERSHIP);
 

@@ -10,7 +10,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-import type { AppUpdateShape, UpdateNotice, UpdateState } from '@/services/AppUpdate.js';
+import type { AppUpdateShape, UpdateNotice, UpdateOffer, UpdateState } from '@/services/AppUpdate.js';
 import { AppUpdate } from '@/services/AppUpdate.js';
 import { Browser } from '@/services/Browser.js';
 import type { BrowserShape } from '@/services/Browser.js';
@@ -234,7 +234,7 @@ test('after a failed install the menu offers trying again and Later', async () =
 
 test('a failed install put off by Later can still be tried again from the menu', async () => {
     const update = createFakeUpdate({ activity: { kind: 'installFailed', version: '1.4.0' } });
-    mount({ ...update, notice: null });
+    mount({ ...update, offer: null });
 
     await openMenu();
     const menu = page.getByRole('listbox', { name: 'Command menu' });
@@ -567,17 +567,20 @@ async function openMenu() {
     await expect.element(page.getByRole('listbox', { name: 'Command menu' })).toBeInTheDocument();
 }
 
-/** An update ready to run, whose segment `later` hides as the desktop app's does. */
+/** An update ready to run, whose toast `later` dismisses as the desktop app's does, leaving it to the status bar. */
 function createUpdate(version: string) {
-    const hidden = shallowRef(false);
+    const putOff = shallowRef(false);
     const update = createFakeUpdate({ activity: { kind: 'ready', version } });
     return {
         ...update,
         get notice(): UpdateNotice | null {
-            return hidden.value ? null : { kind: 'ready', version };
+            return putOff.value ? { kind: 'ready', version } : null;
+        },
+        get offer(): UpdateOffer | null {
+            return putOff.value ? null : { kind: 'ready', version };
         },
         later: vi.fn(() => {
-            hidden.value = true;
+            putOff.value = true;
         }),
     } satisfies AppUpdateShape;
 }
@@ -596,7 +599,8 @@ function createFakeUpdate(state: Partial<UpdateState>) {
             activity,
             ...state,
         },
-        notice: activity.kind === 'installFailed' || activity.kind === 'ready' ? activity : null,
+        notice: null,
+        offer: activity.kind === 'installFailed' || activity.kind === 'ready' ? activity : null,
         check: vi.fn(),
         setStream: vi.fn(),
         restart: vi.fn(),

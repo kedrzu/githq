@@ -22,6 +22,10 @@ groupMilestone:
   en: Milestone
 groupAssignee:
   en: Assignee
+groupAuthor:
+  en: Author
+groupStatus:
+  en: Status
 groupLabel:
   en: Label
 groupLabelDetail:
@@ -40,6 +44,30 @@ unassigned:
   en: Unassigned
 noType:
   en: No type
+noAuthor:
+  en: No author
+stageDraft:
+  en: Draft
+stageWaitingForReview:
+  en: Waiting for review
+stageNeedsWork:
+  en: Needs work
+stageChecksRunning:
+  en: Checks running
+stageReadyToMerge:
+  en: Ready to merge
+stageMerging:
+  en: Merging
+stageMerged:
+  en: Merged
+stageClosed:
+  en: Closed
+issueOpen:
+  en: Open
+issueClosed:
+  en: Closed
+issueNotPlanned:
+  en: Not planned
 milestoneProgress:
   plural: total
   en:

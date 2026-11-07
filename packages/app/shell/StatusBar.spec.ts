@@ -78,6 +78,7 @@ test('on the web the bar never offers an update, even one said to be ready', asy
             activity: { kind: 'ready', version: '1.4.0' },
         },
         notice: { kind: 'ready', version: '1.4.0' },
+        offer: null,
         check: () => {},
         setStream: () => {},
         restart,

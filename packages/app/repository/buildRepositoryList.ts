@@ -1,12 +1,27 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { Milestone } from 'lucide-vue-next';
+import type { LucideIcon } from 'lucide-vue-next';
+import {
+    CircleCheck,
+    CircleDot,
+    CircleSlash,
+    CircleX,
+    GitMerge,
+    GitPullRequestClosed,
+    GitPullRequestDraft,
+    Hourglass,
+    ListOrdered,
+    Loader,
+    Milestone,
+} from 'lucide-vue-next';
 
 import { getItemComparator } from '@/lists/getItemComparator.js';
 import type { ListGrouping } from '@/lists/groupEntries.js';
 import { getAssigneeGroupValue, getUngroupedGrouping, groupEntries, NO_VALUE } from '@/lists/groupEntries.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListGroup } from '@/lists/ListTypes.js';
-import type { Item } from '@/store/ItemTypes.js';
+import type { PullRequestStage } from '@/store/getPullRequestPhase.js';
+import { getPullRequestPhase, PULL_REQUEST_STAGE_OF, PULL_REQUEST_STAGES } from '@/store/getPullRequestPhase.js';
+import type { IssueItem, Item } from '@/store/ItemTypes.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
 
 import type { RepositoryGrouping } from './repositoryViewOptions.js';
@@ -16,6 +31,12 @@ export type RepositoryState = 'all' | 'closed' | 'open';
 
 /** The states in the order the filter menu lists them. */
 export const REPOSITORY_STATES: readonly RepositoryState[] = ['open', 'closed', 'all'];
+
+/** Where an issue stands, as its row's icon tells: open, closed as completed, or closed for any other reason. */
+export type IssueStatus = (typeof ISSUE_STATUSES)[number];
+
+/** The issue statuses in the order their groups are shown. */
+export const ISSUE_STATUSES = ['open', 'closed', 'notPlanned'] as const;
 
 /** A repository's list as its view shows it. */
 export interface RepositoryList {
@@ -42,6 +63,11 @@ export interface RepositoryListTexts {
     readonly noLabel: string;
     readonly unassigned: string;
     readonly noType: string;
+    readonly noAuthor: string;
+    /** A pull request's "Status" group, by its stage. */
+    readonly pullRequestStages: Readonly<Record<PullRequestStage, string>>;
+    /** An issue's "Status" group. */
+    readonly issueStatuses: Readonly<Record<IssueStatus, string>>;
     /** A milestone's header detail: how far it is and when it is due ("7 of 11 closed · due Nov 15"). */
     milestoneDetail(progress: MilestoneProgress): string;
 }
@@ -73,9 +99,11 @@ export interface BuildRepositoryListParams {
 /**
  * A repository's issues or its pull requests (J1, J2) in the chosen state, grouped by one of GitHub's own
  * properties and ordered within each group. Milestones come by due date, the soonest first, each with its
- * progress; labels, assignees and issue types by name; an item with two labels or assignees is under both. The
- * group of items without the value comes last. Items can be moved between milestones, labels, assignees and
- * issue types (an edit). With none listed while the state is still arriving, no groups at all: they are not known.
+ * progress; labels, assignees, authors and issue types by name; an item with two labels or assignees is under both.
+ * The group of items without the value comes last. By status, each item is under one: a pull request under the stage
+ * its row's status line tells, an issue open, closed or not planned, in that fixed order, only those with items
+ * shown. Items can be moved between milestones, labels, assignees and issue types (an edit), never between statuses
+ * or authors. With none listed while the state is still arriving, no groups at all: they are not known.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -93,7 +121,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
         groups: groupEntries({
             entries: listed,
             getId: item => item.id,
-            grouping: getGrouping(grouping, items, texts),
+            grouping: getGrouping(grouping, kind, items, texts),
         }),
         count: listed.length,
         held: held.length,
@@ -103,6 +131,7 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
 
 function getGrouping(
     grouping: RepositoryGrouping,
+    kind: Item['kind'],
     items: readonly Item[],
     texts: RepositoryListTexts,
 ): ListGrouping<Item> {
@@ -128,6 +157,15 @@ function getGrouping(
                 none: { key: NO_VALUE, label: texts.unassigned },
                 movable: true,
             };
+        case 'author':
+            return {
+                values: item => (item.author ? [getAssigneeGroupValue(item.author)] : []),
+                // A deleted account leaves no author.
+                none: { key: NO_VALUE, label: texts.noAuthor },
+                movable: false,
+            };
+        case 'status':
+            return kind === 'pullRequest' ? getPullRequestStatusGrouping(texts) : getIssueStatusGrouping(texts);
         case 'issueType':
             return {
                 values: item =>
@@ -146,6 +184,85 @@ function getGrouping(
         default:
             return assertNever(grouping);
     }
+}
+
+const PULL_REQUEST_STAGE_ICONS: Readonly<Record<PullRequestStage, LucideIcon>> = {
+    draft: GitPullRequestDraft,
+    waitingForReview: Hourglass,
+    needsWork: CircleX,
+    checksRunning: Loader,
+    readyToMerge: CircleCheck,
+    merging: ListOrdered,
+    merged: GitMerge,
+    closed: GitPullRequestClosed,
+};
+
+const ISSUE_STATUS_ICONS: Readonly<Record<IssueStatus, LucideIcon>> = {
+    open: CircleDot,
+    closed: CircleCheck,
+    notPlanned: CircleSlash,
+};
+
+// Every item has a status: the group of those without one is never shown.
+function getPullRequestStatusGrouping(texts: RepositoryListTexts): ListGrouping<Item> {
+    return {
+        values: item => {
+            if (item.kind !== 'pullRequest') {
+                return [];
+            }
+
+            const stage = PULL_REQUEST_STAGE_OF[getPullRequestPhase(item, { reviewRequested: false })];
+            return [
+                {
+                    key: stage,
+                    label: texts.pullRequestStages[stage],
+                    marker: { kind: 'icon', icon: PULL_REQUEST_STAGE_ICONS[stage] },
+                },
+            ];
+        },
+        none: { key: NO_VALUE, label: texts.all },
+        movable: false,
+        compare: (a, b) => getStageIndex(a.key) - getStageIndex(b.key),
+    };
+}
+
+function getIssueStatusGrouping(texts: RepositoryListTexts): ListGrouping<Item> {
+    return {
+        values: item => {
+            if (item.kind !== 'issue') {
+                return [];
+            }
+
+            const status = getIssueStatus(item);
+            return [
+                {
+                    key: status,
+                    label: texts.issueStatuses[status],
+                    marker: { kind: 'icon', icon: ISSUE_STATUS_ICONS[status] },
+                },
+            ];
+        },
+        none: { key: NO_VALUE, label: texts.all },
+        movable: false,
+        compare: (a, b) => getIssueStatusIndex(a.key) - getIssueStatusIndex(b.key),
+    };
+}
+
+function getStageIndex(key: string) {
+    return PULL_REQUEST_STAGES.findIndex(stage => stage === key);
+}
+
+function getIssueStatusIndex(key: string) {
+    return ISSUE_STATUSES.findIndex(status => status === key);
+}
+
+/** The split of the row's icon (`useItemFacts`): a closed issue with no reason given counts as completed. */
+function getIssueStatus(issue: IssueItem): IssueStatus {
+    if (issue.state === 'OPEN') {
+        return 'open';
+    }
+
+    return issue.stateReason === 'COMPLETED' || issue.stateReason === null ? 'closed' : 'notPlanned';
 }
 
 function getMilestoneGrouping(items: readonly Item[], texts: RepositoryListTexts): ListGrouping<Item> {

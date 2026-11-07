@@ -8,42 +8,52 @@ import { signInOnDesktop } from './desktopSession.js';
 
 const READY = { kind: 'ready', version: '1.4.0' };
 
-test('an update readied while the app runs is offered in the status bar; Restart restarts into it, and so does "Restart to update"', async ({
+test('an update readied while the app runs is offered in a toast, not the status bar; Restart restarts into it, and so do ⌥R and "Restart to update"', async ({
     page,
     github,
     native,
 }) => {
     const shell = await signInOnDesktop({ page, github, native });
     await expect(shell.statusBar).toBeVisible();
-    await expect(shell.updateNotice).toBeHidden();
+    await expect(shell.updateReadyToast).toHaveCount(0);
 
     await expect.poll(() => native.isListening('update-state')).toBe(true);
     await native.sendUpdateState({ activity: READY });
-    await expect(shell.updateNotice).toHaveText('githq 1.4.0 is ready');
+    await expect(shell.updateReadyToast).toContainText("Restart to switch to it. You're on 1.3.0 until then.");
+    await expect(shell.updateNotice).toBeHidden();
+    await expect(shell.restartToUpdateButton).toBeHidden();
 
-    await shell.restartToUpdateButton.click();
+    await shell.updateReadyToast.getByRole('button', { name: 'Restart' }).click();
     await expect.poll(() => native.restartCount).toBe(1);
+
+    await page.keyboard.press('Alt+KeyR');
+    await expect.poll(() => native.restartCount).toBe(2);
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
     await menu.field.pressSequentially('Restart to update');
     await expect(menu.option(/^Restart to update/)).toContainText('githq 1.4.0');
     await page.keyboard.press('Enter');
-    await expect.poll(() => native.restartCount).toBe(2);
+    await expect.poll(() => native.restartCount).toBe(3);
 });
 
-test('an update readied before the app started is offered at once; Later hides the segment and leaves Restart in the menu', async ({
+test('an update readied before the app started is offered at once; Dismiss leaves "ready · Restart" in the status bar and Restart in the menu', async ({
     page,
     github,
     native,
 }) => {
     native.updateState = { ...native.updateState, activity: READY };
     const shell = await signInOnDesktop({ page, github, native });
-    await expect(shell.updateNotice).toHaveText('githq 1.4.0 is ready');
+    await expect(shell.updateReadyToast).toBeVisible();
 
-    await shell.updateLaterButton.click();
-    await expect(shell.updateNotice).toBeHidden();
+    await shell.updateReadyToast.getByRole('button', { name: 'Dismiss' }).first().click();
+    await expect(shell.updateReadyToast).toHaveCount(0);
+    await expect(shell.updateNotice).toHaveText('githq 1.4.0 ready');
+    await expect(shell.statusBar.getByRole('button', { name: 'Later' })).toHaveCount(0);
     expect(native.restartCount).toBe(0);
+
+    await shell.restartToUpdateButton.click();
+    await expect.poll(() => native.restartCount).toBe(1);
 
     const menu = new CommandMenuHarness(page);
     await menu.open();
@@ -52,7 +62,7 @@ test('an update readied before the app started is offered at once; Later hides t
     await expect(menu.option(/^Restart to update/)).toContainText('githq 1.4.0');
     await menu.field.fill('Restart to update');
     await page.keyboard.press('Enter');
-    await expect.poll(() => native.restartCount).toBe(1);
+    await expect.poll(() => native.restartCount).toBe(2);
 });
 
 test('a check nobody asked for says nothing until the update is ready', async ({ page, github, native }) => {
@@ -65,7 +75,7 @@ test('a check nobody asked for says nothing until the update is ready', async ({
     await expect(shell.statusBar.getByText(/Checking for updates|Couldn't check|Downloading/)).toHaveCount(0);
 
     await native.sendUpdateState({ activity: READY });
-    await expect(shell.updateNotice).toBeVisible();
+    await expect(shell.updateReadyToast).toBeVisible();
 });
 
 test('"Check for updates" asks the native side and the bar reports the outcome: up to date goes by itself, a failure waits', async ({
@@ -102,7 +112,7 @@ test('"Check for updates" asks the native side and the bar reports the outcome: 
     await expect(failed).toBeHidden();
 });
 
-test('a failed install says so; Try again restarts, and nothing is offered while it installs', async ({
+test('a failed install says so in a toast with Try again, which restarts; dismissed, the status bar keeps Try again; nothing is offered while it installs', async ({
     page,
     github,
     native,
@@ -113,13 +123,22 @@ test('a failed install says so; Try again restarts, and nothing is offered while
     await native.sendUpdateState({ activity: { kind: 'installing', version: '1.4.0' } });
     await expect(shell.statusBar.getByText('Installing githq 1.4.0…')).toBeVisible();
     await expect(shell.restartToUpdateButton).toBeHidden();
+    await expect(shell.toasts).toHaveCount(0);
 
     await native.sendUpdateState({ activity: { kind: 'installFailed', version: '1.4.0' } });
-    await expect(shell.statusBar.getByText("githq 1.4.0 couldn't be installed")).toBeVisible();
+    const failed = shell.toasts.filter({ hasText: "githq 1.4.0 couldn't be installed" });
+    await expect(failed).toContainText("You're still on 1.3.0. Nothing is lost.");
+    await expect(shell.statusBar.getByText("githq 1.4.0 couldn't be installed")).toBeHidden();
     expect(native.restartCount).toBe(0);
 
-    await shell.statusBar.getByRole('button', { name: 'Try again' }).click();
+    await failed.getByRole('button', { name: 'Try again' }).click();
     await expect.poll(() => native.restartCount).toBe(1);
+
+    await failed.getByRole('button', { name: 'Dismiss' }).first().click();
+    await expect(failed).toHaveCount(0);
+    await expect(shell.statusBar.getByText("githq 1.4.0 couldn't be installed")).toBeVisible();
+    await shell.statusBar.getByRole('button', { name: 'Try again' }).click();
+    await expect.poll(() => native.restartCount).toBe(2);
 });
 
 test('a Development build goes to Stable only through the confirmation; Development to a stable version switches at once', async ({

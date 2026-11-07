@@ -654,9 +654,8 @@ Changelog, the owner's choice ([D17](../desktop-releases/DECISIONS.md#d17)).
   would then need its own states.
 - **Offline, the switch to Stable stands and is not undone.** [D5](../desktop-releases/DECISIONS.md#d5) holds no state, so the
   newest Stable installs once GitHub can be reached.
-- **The update toast stays until dismissed,** unlike the default 12 seconds, because the app has just started. Its key is ⌥W.
-  It sits in the bottom right corner as the owner asked, while `Toaster.vue` centres every other toast: building it needs
-  a second position.
+- **The update toast** has the key ⌥W. It went from "until dismissed" to brief, and a ready update moved from the status bar
+  into a toast, with [D40](#d40). Every toast sits in the bottom right corner ([desktop releases D7](../desktop-releases/DECISIONS.md#d7)).
 
 **Rejected.** A second button for Try again in Settings: Check for updates already is that. Disabling the stream block on
 Windows: a choice that leads nowhere, so it isn't drawn.
@@ -804,6 +803,63 @@ no Transition components, so a screen never knows about the switch.
 
 **Rejected.** Own transition components reading the setting from a provider: reka-ui's `Presence` already follows CSS animations, so they
 would add a wrapper at every overlay for nothing. Animating closing everywhere: keys typed during the close would reach the closing input.
+
+### D39
+
+**Issues and pull requests can be grouped by status and by author, in a repository and in My work.** (user, 2026-11-06.)
+Drawn in `githq.pen`: J2 (the grouping menu), J8 and D8. Both groupings join the existing ones and change no default. Neither
+group can be moved into, because an author can't be changed and a status follows from several GitHub facts.
+
+- **A pull request's status** is the group its row's status line already tells, so the two can never disagree: Draft,
+  Waiting for review, Needs work (failing checks, changes requested or conflicts), Checks running, Ready to merge (approved,
+  or mergeable with no review), Merging (being merged, in the merge queue, auto-merge on), Merged, Closed. A pull request
+  falls in the group of the first state its row would show, so a draft with failing checks is in Needs work and an
+  approved draft in Ready to merge. An open pull request with nothing to say is in Waiting for review. What this session
+  remembers of a refused merge, and an unsent draft review, change the row's words but not the group.
+- **An issue's status** is GitHub's own state, as the row's icon shows it: Open, Closed (completed or no reason), Not
+  planned (any other reason). With the default "Open" filter that is one group.
+- **Author** is who opened the item, by login, with their avatar; an item whose author's account is gone is under "No
+  author", last.
+- **In My work,** status says what the item asks of the user, tied to the filters of [D11](#d11): Needs me (what the
+  "Needs me" filter keeps), Ready to merge (my pull requests), Waiting on others (what that filter keeps and "Needs me"
+  does not), Draft (my drafts), Other. Rows move whole, as by repository ([D22](#d22)): a pull request nested under the
+  issue it closes stays under it, a stack's entry stays whole, and the counts still add up to the total.
+- Only groups with items are shown, in both layouts. In a repository a stack splits across status or author groups, as it
+  does across milestones.
+
+**Rejected.** An issue's status from a project's Status field: its options differ per project, and the project views
+already group by it. A draft always in Draft, whatever else it says: its group would then disagree with its row.
+Moving a pull request between Draft and Ready for review by dragging it: left for later.
+
+### D40
+
+**Toasts follow one set of rules: one stack in arrival order, keys only on the newest, three lifetimes.** (owner,
+2026-11-06.) Drawn in `githq.pen`, App · Toasts (N1–N5) and Desktop · Updates (U49–U51).
+
+- **One component, one corner.** Every toast is `Toast.vue` in the bottom right corner above the status bar, 480 wide:
+  icon in its tone, title, what happened, the actions as small secondary buttons with their keys, Dismiss (Esc) last. No
+  primary or ghost buttons in a toast.
+- **The stack is in arrival order,** the newest at the bottom, nearest the corner, whichever kind it is.
+- **Keys go to the newest toast only.** Its action keys and Esc work and their hints show; the toasts above show no keys,
+  but their buttons still work with the mouse. When the newest goes, the one before takes the keys. So ⌘Z always undoes
+  the last thing done, and one Esc dismisses one toast.
+- **Three lifetimes.** Brief, 6 s: news and outcomes (merged, reverted, updated to a version, a repository that couldn't be
+  tracked, a viewed mark GitHub refused). Long, 10 s: Undo (a close, an untrack) and failures the status bar keeps anyway
+  (an edit, a re-run). Pinned, until acted on or dismissed: what needs a decision (a refused merge, settings sync stopped,
+  a ready desktop update, a new version on the web). Hovering or focusing a toast stops its clock; a timed toast drains an
+  accent ring around its ×.
+- **Updates are toasts.** A ready desktop update is a pinned toast with Restart (⌥R), its Dismiss being Later; a quiet
+  offer stays in the status bar after it. The web says a new version was deployed with a pinned toast and Reload (⌥R);
+  it never reloads the screen in place, though the next move to another screen loads the new version, as Nuxt does to
+  keep the old build's missing files from breaking navigation.
+- **Untracking from the sidebar or ⌘K offers Undo,** as from Settings ([D25](#d25)).
+
+**Why.** Each toast kind had grown its own lifetime (5, 10, 12 seconds or until dismissed) and its own buttons; two Undo
+toasts answered ⌘Z by whichever registered first, and one Esc dismissed every toast, untracking at once. A ready update
+was easy to miss in the status bar.
+
+**Rejected.** Only one toast visible at a time, the rest queued: hides what happened. Actions disabled on older toasts:
+a click is never ambiguous. Every toast in its own lifetime: the reason to have rules.
 
 ## Open questions
 

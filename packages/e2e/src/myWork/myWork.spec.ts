@@ -245,6 +245,69 @@ test('j/k move the selection through the rows, nested ones too, and 1/2/3 switch
     await expect(myWork.groups).toHaveCount(4);
 });
 
+test('grouped by status, my work is under Needs me, Ready to merge, Waiting on others, Draft and Other, in that order, each row once; by author, a group per login', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMyWork();
+    sample.world.pullRequest({
+        repository: 'acme/api',
+        number: 55,
+        title: 'Drop the legacy token format',
+        foundBy: ['authored'],
+        reviewDecision: 'APPROVED',
+        minutesAgo: 25,
+    });
+    sample.world.pullRequest({
+        repository: 'acme/web',
+        number: 21,
+        title: 'Sketch the onboarding tour',
+        foundBy: ['authored'],
+        isDraft: true,
+        minutesAgo: 40,
+    });
+    const { myWork } = await openMyWork(page, github, sample.world);
+
+    await myWork.groupingButton.click();
+    await page.getByRole('menuitemradio', { name: 'Status' }).click();
+    await expect(myWork.groupingButton).toHaveText('Group: Status');
+    await expect(myWork.groups).toHaveText([
+        /^\s*Needs\sme\s*5/,
+        /^\s*Ready\sto\smerge\s*1/,
+        /^\s*Waiting\son\sothers\s*1/,
+        /^\s*Draft\s*1/,
+        /^\s*Other\s*1/,
+    ]);
+    // Reason by reason: the review asked of me, my pull requests that need me, then my issues, the pull request
+    // closing one nested under it — moved whole, although it waits on others.
+    await expect(myWork.rows('Needs me')).toHaveText([
+        /Add rate limit headers to the API/,
+        /Cache search results/,
+        /Move the sidebar state to the store/,
+        /Sign-in loops after the token expires/,
+        /Redirect once after sign-in/,
+        /Document the keyboard shortcuts/,
+    ]);
+    await expect(myWork.rows('Ready to merge')).toHaveText([/Drop the legacy token format/]);
+    await expect(myWork.rows('Waiting on others')).toHaveText([/Retry polls on network errors/]);
+    await expect(myWork.rows('Draft')).toHaveText([/Sketch the onboarding tour/]);
+    await expect(myWork.rows('Other')).toHaveText([/Dark mode for the status bar/]);
+    await expect(myWork.row('Add rate limit headers to the API')).toHaveCount(1);
+
+    await myWork.groupingButton.click();
+    await page.getByRole('menuitemradio', { name: 'Author' }).click();
+    await expect(myWork.groupingButton).toHaveText('Group: Author');
+    await expect(myWork.groups).toHaveText([/^\s*hubot\s*2/, /^\s*monalisa\s*1/, /^\s*octocat\s*6/]);
+    await expect(myWork.rows('hubot')).toHaveText([
+        /Add rate limit headers to the API/,
+        /Dark mode for the status bar/,
+    ]);
+    await expect(myWork.rows('monalisa')).toHaveText([
+        /Sign-in loops after the token expires/,
+        /Redirect once after sign-in/,
+    ]);
+});
+
 test('o opens the selected item on GitHub in a new tab', async ({ page, context, github }) => {
     const sample = createSampleMyWork();
     const { myWork } = await openMyWork(page, github, sample.world);

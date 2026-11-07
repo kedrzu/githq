@@ -1,7 +1,7 @@
 import type { Logger } from '@nzyme/logging/Logger.js';
 import { computed, shallowRef } from 'vue';
 
-import type { AppUpdateShape, UpdateNotice, UpdateState } from '@/services/AppUpdate.js';
+import type { AppUpdateShape, UpdateNotice, UpdateOffer, UpdateState } from '@/services/AppUpdate.js';
 import type { BrowserStorage } from '@/services/Browser.js';
 
 import type { NativeBridgeShape } from './NativeBridge.js';
@@ -24,7 +24,8 @@ export interface CreateDesktopAppUpdateParams {
 /**
  * The desktop app's updates: the native side checks, downloads and installs them (`src-tauri/src/updater.rs`) and
  * sends its whole state on every change; restarting into one is the user's call alone. It listens first and then asks
- * once, so nothing that happened before the app started listening is missed. What the status bar says is derived here.
+ * once, so nothing that happened before the app started listening is missed. What the status bar says and what the
+ * update toast offers are derived here: an update to restart into is the toast's until dismissed, then the bar's.
  * The first state it gets also records the running version, at every launch, signed in or not (`VersionRecord.ts`, D7).
  */
 export function createDesktopAppUpdate({
@@ -39,9 +40,10 @@ export function createDesktopAppUpdate({
      * failure stays until the user closes it.
      */
     const outcome = shallowRef<UpdateNotice | null>(null);
-    /** "Later" was pressed: until the app next starts, or the user checks again. */
-    const hidden = shallowRef(false);
+    /** The offer's toast was dismissed ("Later"): until the app next starts, or the user checks again. */
+    const putOff = shallowRef(false);
     const notice = computed(getNotice);
+    const offer = computed(getOffer);
     const versionRecord = shallowRef<VersionRecord | null>(null);
     /** The last outcome was closed or ran out; the state may still repeat it, until the user checks again. */
     let closed = false;
@@ -55,6 +57,9 @@ export function createDesktopAppUpdate({
         },
         get notice() {
             return notice.value;
+        },
+        get offer() {
+            return offer.value;
         },
         get previousVersion() {
             return versionRecord.value?.previousVersion ?? null;
@@ -83,7 +88,7 @@ export function createDesktopAppUpdate({
             });
         },
         later: () => {
-            hidden.value = true;
+            putOff.value = true;
         },
         dismiss: closeOutcome,
     };
@@ -121,7 +126,7 @@ export function createDesktopAppUpdate({
                     clearTimeout(expiry);
                     closed = false;
                     outcome.value = null;
-                    hidden.value = false;
+                    putOff.value = false;
                 }
 
                 return;
@@ -131,6 +136,11 @@ export function createDesktopAppUpdate({
                 // Something to decide is on offer: an older outcome has no more to say, then or after "Later".
                 clearTimeout(expiry);
                 outcome.value = null;
+                // Only Restart installs: how it ends is news to the user, though they had put the toast off.
+                if (activity.kind === 'installing') {
+                    putOff.value = false;
+                }
+
                 return;
             case 'upToDate':
                 holdOutcome(next, { kind: 'upToDate', version: next.version }, true);
@@ -182,12 +192,22 @@ export function createDesktopAppUpdate({
                 return activity;
             case 'ready':
             case 'installFailed':
-                return hidden.value ? null : activity;
+                // The toast says it until dismissed.
+                return putOff.value ? activity : null;
             case 'checking':
             case 'downloading':
                 return manual ? activity : outcome.value;
             default:
                 return outcome.value;
         }
+    }
+
+    function getOffer(): UpdateOffer | null {
+        const activity = state.value?.activity;
+        if (putOff.value || (activity?.kind !== 'ready' && activity?.kind !== 'installFailed')) {
+            return null;
+        }
+
+        return activity;
     }
 }
