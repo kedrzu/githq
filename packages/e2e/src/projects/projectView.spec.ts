@@ -130,7 +130,7 @@ test('first run and loading ES19: on the board a filter leaving nothing says wha
 
     await project.layout('Board').click();
     await expect(project.root.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
-    await expect(project.root).toContainText('status:Done label:bug hides all 5 items.');
+    await expect(project.root).toContainText('Status is Done and Label is bug hide all 5 items.');
     await expect(project.group('Todo')).toBeVisible();
 
     await project.root.getByRole('button', { name: 'Clear filter' }).click();

@@ -1,7 +1,7 @@
 /** Why it can't be read, as the status bar knows it app-wide, with what the cause's action needs (`CantBeRead`). */
 export type CantBeReadCause =
     | { readonly kind: 'offline' }
-    /** Refresh paused by GitHub's hourly allowance until `until` (epoch ms). */
+    /** Refresh paused until `until` (epoch ms): an allowance ran out or GitHub asked to wait. */
     | { readonly kind: 'paused'; readonly until: number }
     /** GitHub fails; `retry` asks again, the button busy until it settles. */
     | { readonly kind: 'failing'; readonly retry: () => Promise<unknown> }

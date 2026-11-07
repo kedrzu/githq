@@ -1,4 +1,4 @@
-<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen the status bar alone tells it. Narrowed to one group that is in and empty, the note says what is shown and offers the rest (`MyWorkGroupEmpty`, D15, ES12). -->
+<!-- "My work" (D1, D11): the toolbar with the filters, then the groups with their rows — all four, or the one group the sidebar narrowed it to — as a list, or as a board with a column per group (D9). The list engine (`ListView`) keeps the selection and the keys: `j`/`k` or ↓/↑ move it, Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `x` and `⇧↓`/`⇧↑` add rows to the items edited together and Escape empties them; while it holds any, the toolbar shows the `selection` slot — their actions. `1`–`3` switch filters. My work is grouped by reason (D11), by repository (D22: the tracked ones in the sidebar's order, their rows named by number alone, then "Other repositories", not tracked), by status ("Needs me" exactly what that filter keeps, "Waiting on others" what its filter keeps and "Needs me" doesn't, with "Ready to merge", "Draft" and "Other" between and after) or by author (by login, "No author" last) — all but by reason with the reasons still arriving after them, and rows moved whole, a pull request or stack nested under its issue staying there; the order and the properties shown are the user's (`options`). A stack is one entry, whole, in the first reason any of its pull requests has (D3) — in the list a row (`StackRow`, its pull requests nested under it once expanded), on the board a card (`StackCard`, listing them inside it once expanded) — and a column counts it once, as the sidebar does. The last open pull request of a stack is a plain row or card, marked as part of the stack (D16, SP13). A stack of the user's closing an assigned issue sits under it instead, whole (stacked PRs D12): in the list the issue serves as its header — the stack's chevron, pips and state on the issue's row, its pull requests the issue's rows while expanded, Enter opening the issue and, with an item open, `j` walking on into the stack (D23) — and two stacks under one issue each get a header one step in, their rows on a rail below it (SP22). On the board a pull request nested under the issue it closes is a smaller card under the issue's, in the same column, and so is a stack's card closing it; the columns are the groups, and nothing is moved between them — neither a reason, a repository, a status nor an author is a value to set. On the first download, until a search has answered, the list is a full screen of ghosts (G16); then each group still arriving keeps its header with "…" over three ghost rows, or ghost cards in its column (G17): its empty state shows only once every group is in (first run and loading D8). With nothing on screen and a group that can't arrive now — offline, paused, GitHub failing — the can't-be-read note stands instead of ghosts that would spin forever (ES13, D6); with rows on screen each group still on its way says it in a short note in place of its ghosts, in the list and on the board, besides the status bar. Narrowed to one group that is in and shows nothing, the note names the group and offers the rest of My work, or under a filter clears it (`FilteredOut`, D15, ES12). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -15,8 +15,10 @@ import {
 import { computed } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
+import Button from '@/components/Button.vue';
 import CantBeRead from '@/components/CantBeRead.vue';
 import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
+import FilteredOut from '@/components/FilteredOut.vue';
 import SegmentedTabs from '@/components/SegmentedTabs.vue';
 import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import type { SelectionSpan } from '@/lists/getSelectionSpan.js';
@@ -46,12 +48,11 @@ import type { Item } from '@/store/ItemTypes.js';
 import { describeStack } from '@/store/stacks/describeStack.js';
 import type { PullRequestStack } from '@/store/stacks/groupStacks.js';
 
-import type { MyWork, MyWorkCounts, MyWorkFilter, MyWorkRow, MyWorkStatus } from './buildMyWork.js';
+import type { MyWork, MyWorkFilter, MyWorkRow, MyWorkStatus } from './buildMyWork.js';
 import { MY_WORK_FILTERS } from './buildMyWork.js';
 import { groupMyWorkByRepository } from './groupMyWorkByRepository.js';
 import { groupMyWorkByAuthor, groupMyWorkByStatus } from './groupMyWorkRows.js';
 import MyWorkEmpty from './MyWorkEmpty.vue';
-import MyWorkGroupEmpty from './MyWorkGroupEmpty.vue';
 import * as groupLabels from './MyWorkGroupLabel.loc.js';
 import * as l from './MyWorkView.loc.js';
 import { MY_WORK_VIEW_DEFAULTS } from './myWorkViewOptions.js';
@@ -71,8 +72,6 @@ const props = withDefaults(
     now: number;
     /** How many of the user's pull requests wait on others, for the empty "Needs me". */
     waitingCount: number;
-    /** What "my work" holds under no filter, when `work` is under one: what the empty group's note counts. */
-    unfilteredCounts?: MyWorkCounts | null;
     /** Why what hasn't arrived can't arrive now, as the sync tells it; `null` when nothing stands in its way. */
     cantBeRead?: CantBeReadCause | null;
     /** The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, and the empty "my work" (K4). */
@@ -88,7 +87,6 @@ const props = withDefaults(
   }>(),
   {
     group: null,
-    unfilteredCounts: null,
     cantBeRead: null,
     getItem: () => undefined,
     openedId: null,
@@ -244,6 +242,10 @@ useCommands(() =>
     },
   })),
 );
+
+function clearFilter() {
+  filter.value = 'all';
+}
 
 function showAll() {
   filter.value = 'all';
@@ -450,6 +452,15 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :stack="stackMarker"
         />
       </template>
+      <!-- A group that can't arrive now, with rows elsewhere on screen: why, in place of ghosts that would spin forever (D6). -->
+      <template #arriving="{ place }">
+        <CantBeRead
+          v-if="cantBeRead"
+          :place="place"
+          :cause="cantBeRead"
+          :thing="t(l.yourWork)"
+        />
+      </template>
       <template #empty>
         <CantBeRead
           v-if="unreadable"
@@ -457,15 +468,26 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :cause="unreadable"
           :thing="t(l.yourWork)"
         />
-        <MyWorkGroupEmpty
+        <!-- ES12, D15: narrowed to a group that shows nothing — the rest of My work may hold plenty; under a filter it is the filter that goes. -->
+        <FilteredOut
           v-else-if="group"
-          :group="group"
-          :filter="filter"
-          :counts="unfilteredCounts ?? work.counts"
-          :all-arrived="work.groups.every(entry => entry.arrived)"
-          @clear-filter="filter = 'all'"
-          @show-all="showAll"
-        />
+          place="screen"
+          :icon="group === 'mentioned' ? AtSign : undefined"
+          :title="t(l.nothingIn, { group: t(groupLabels[group]) })"
+          :clear="filter === 'all' ? undefined : clearFilter"
+        >
+          <template
+            v-if="filter === 'all'"
+            #action
+          >
+            <Button
+              variant="secondary"
+              @click="showAll"
+            >
+              {{ t(l.showAll) }}
+            </Button>
+          </template>
+        </FilteredOut>
         <MyWorkEmpty
           v-else
           :filter="filter"

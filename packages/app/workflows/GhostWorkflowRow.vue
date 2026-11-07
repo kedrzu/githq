@@ -50,13 +50,16 @@ const RUNS = 5;
       />
     </span>
     <span :class="css.ghostWorkflowRow_runs">
-      <SkeletonBar
+      <span
         v-for="run in RUNS"
         :key="run"
-        :width="7"
-        :height="10"
-        :radius="1"
-      />
+        :class="css.ghostWorkflowRow_tick"
+      >
+        <SkeletonBar
+          :height="10"
+          :radius="1"
+        />
+      </span>
     </span>
     <span :class="css.ghostWorkflowRow_status">
       <SkeletonBar
@@ -74,7 +77,7 @@ const RUNS = 5;
 </template>
 
 <style lang="scss" module="css">
-// `WorkflowRow`'s box: its height, padding and gap, an icon 15px square, and its columns' widths.
+// `WorkflowRow`'s box: its height, padding and gap, its icon, and its columns' widths.
 .ghostWorkflowRow {
   display: flex;
   gap: $spacing-10;
@@ -88,8 +91,8 @@ const RUNS = 5;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 15px;
-  height: 15px;
+  width: $workflow-icon-size;
+  height: $workflow-icon-size;
 }
 
 .ghostWorkflowRow_name {
@@ -111,13 +114,20 @@ const RUNS = 5;
   width: $workflow-ref-width;
 }
 
-// `RunStrip`'s ticks: 7px wide, 3px apart, bottom-aligned in 14px.
+// `RunStrip`'s ticks, each its column with the bar at its bottom.
 .ghostWorkflowRow_runs {
   display: flex;
   flex: none;
-  gap: 3px;
+  gap: $run-tick-gap;
   align-items: flex-end;
-  height: 14px;
+  height: $run-tick-height;
+}
+
+.ghostWorkflowRow_tick {
+  display: flex;
+  align-items: flex-end;
+  width: $run-tick-width;
+  height: 100%;
 }
 
 .ghostWorkflowRow_status {

@@ -39,9 +39,18 @@ const trackedRepositories = computed(() => tracking.repositories.map(repository 
 
 const group = computed(() => route.meta.myWorkGroup ?? null);
 // D12: each row's projects as lists outside them show them — the tracked ones first, with their row field.
-const work = computed(() => buildWork(filter.value));
-// Under a filter, what a narrowed group's empty note counts: it offers the whole of "my work", unfiltered.
-const unfilteredCounts = computed(() => (group.value && filter.value !== 'all' ? buildWork('all').counts : null));
+const work = computed(() =>
+  buildMyWork({
+    membership: items.membership,
+    getItem: id => {
+      const item = items.get(id);
+      return item && projects.withRowFields(item);
+    },
+    stacks: groupStacks(items.all),
+    filter: filter.value,
+    sort: view.options.sort,
+  }),
+);
 const cantBeRead = computed((): CantBeReadCause | null => {
   if (!items.loaded) {
     return null;
@@ -65,19 +74,6 @@ const waitingCount = computed(() => {
 
   return count;
 });
-
-function buildWork(under: MyWorkFilter) {
-  return buildMyWork({
-    membership: items.membership,
-    getItem: id => {
-      const item = items.get(id);
-      return item && projects.withRowFields(item);
-    },
-    stacks: groupStacks(items.all),
-    filter: under,
-    sort: view.options.sort,
-  });
-}
 </script>
 
 <template>
@@ -90,7 +86,6 @@ function buildWork(under: MyWorkFilter) {
     :modified="view.modified"
     :work="work"
     :group="group"
-    :unfiltered-counts="unfilteredCounts"
     :cant-be-read="cantBeRead"
     :viewer-login="auth.viewer.login"
     :get-item="id => items.get(id)"

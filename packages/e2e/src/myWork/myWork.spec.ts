@@ -155,33 +155,27 @@ test('"Waiting on others" with nothing waiting says so', async ({ page, github }
     await expect(myWork.groups).toHaveCount(0);
 });
 
-test('D15: narrowed to a group that is empty, the note counts the rest and offers it; the filter hiding it is told apart', async ({
+test('D15, ES12: narrowed to a group that shows nothing, the note names it and offers the rest; under a filter it clears the filter', async ({
     page,
     github,
 }) => {
     const sample = createSampleMyWork();
     sample.world.leave(sample.mention, 'mentioned');
     const { myWork, shell } = await openMyWork(page, github, sample.world);
-    const total = await shell.myWorkCount('My work').textContent();
 
     await shell.myWorkLink('Mentioned').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing mentions you' })).toBeVisible();
-    await expect(myWork.root).toContainText(`Your other ${total} items are in My work.`);
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Mentioned' })).toBeVisible();
     await expect(myWork.groups).toHaveCount(0);
-
-    // Nothing to hide here, so a filter changes nothing of it; the whole of "my work" is unfiltered.
-    await myWork.filter('Needs me').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing mentions you' })).toBeVisible();
     await myWork.root.getByRole('button', { name: 'Show all of My work' }).click();
     await expect(page).toHaveURL(/\/$/u);
     await expect(myWork.filter('All')).toHaveAttribute('aria-pressed', 'true');
     await expect(myWork.group('Review requested')).toBeVisible();
 
-    // The group holds something the filter hides: the filter is what to clear, and the group stays.
+    // The filter hides what the group holds: the filter is what to clear, and the group stays.
     await shell.myWorkLink('Review requested').click();
     await myWork.filter('Waiting on others').click();
-    await expect(myWork.root.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
-    await expect(myWork.root).toContainText('Waiting on others hides the 1 item in Review requested.');
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Review requested' })).toBeVisible();
+    await expect(myWork.root.getByRole('button', { name: 'Show all of My work' })).toHaveCount(0);
     await myWork.root.getByRole('button', { name: 'Clear filter' }).click();
     await expect(myWork.filter('All')).toHaveAttribute('aria-pressed', 'true');
     await expect(myWork.rows('Review requested')).toHaveCount(1);

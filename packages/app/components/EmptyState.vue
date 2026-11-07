@@ -1,4 +1,4 @@
-<!-- A list with nothing in it, said calmly (K4, K5; first run and loading D8, `Empty / Note · screen | group | column`): on a screen an icon — green when empty is good news, amber when it can't be read — a title, what was checked so "empty" can be trusted, and optionally a way on; in a list's group one quiet line under its header; in a board column a small centred note. -->
+<!-- A list with nothing in it, said calmly (K4, K5; first run and loading D8, `Empty / Note · screen | group | column`): on a screen an icon — grey, green when empty is good news, amber when it can't be read — a title, what was checked so "empty" can be trusted, and optionally a way on; in a list's group one quiet line under its header; in a board column a small centred note. -->
 <script lang="ts" setup>
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -7,10 +7,10 @@ withDefaults(
     /** Optional only in a group or a column, where a plain "Nothing here." has none. */
     icon?: LucideIcon;
     /**
-     * `good`: nothing left is good news (green icon); `calm`: just nothing here (grey); `muted`: the design's quieter
-     * grey, nothing there and filtered out; `warning`: it can't be read (amber, as the status bar's stale states).
+     * `muted`: just nothing here, or filtered out (the design's one quiet grey); `good`: nothing left is good news
+     * (green icon); `warning`: it can't be read (amber, as the status bar's stale states).
      */
-    tone?: 'calm' | 'good' | 'muted' | 'warning';
+    tone?: 'good' | 'muted' | 'warning';
     /** In a group or a column, the one line it says. */
     title: string;
     /** Drawn on a screen only. */
@@ -18,7 +18,7 @@ withDefaults(
     /** `screen`: the centred note filling a screen; `group`: a line under a list's group header; `column`: a board column's. */
     place?: 'screen' | 'group' | 'column';
   }>(),
-  { icon: undefined, tone: 'calm', detail: undefined, place: 'screen' },
+  { icon: undefined, tone: 'muted', detail: undefined, place: 'screen' },
 );
 
 defineSlots<{
@@ -81,10 +81,6 @@ defineSlots<{
 
 .emptyState_icon_good {
   color: $color-green;
-}
-
-.emptyState_icon_calm {
-  color: $color-fg-2;
 }
 
 .emptyState_icon_muted {

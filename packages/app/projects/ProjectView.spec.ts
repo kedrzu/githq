@@ -157,7 +157,9 @@ test('ES19: on the board a filter leaving nothing says what it hides, with the w
     await userEvent.click(page.getByRole('button', { name: 'Board' }));
 
     await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
-    await expect.element(page.getByText(/hides all \d+ items\.$/)).toBeVisible();
+    await expect
+        .element(page.getByText(/^Iteration\sis\s@current\sand\sLabel\sis\sblocked\shide\sall\s\d+\sitems\.$/u))
+        .toBeVisible();
     await expect.element(page.getByRole('heading', { name: /^Todo/ })).toBeVisible();
 
     await userEvent.click(page.getByRole('button', { name: 'Clear filter' }));

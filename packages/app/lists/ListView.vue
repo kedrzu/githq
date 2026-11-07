@@ -1,4 +1,4 @@
-<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way shows its header with "…" and three ghost rows where its rows will land, and with no group arrived at all a full screen of ghosts stands instead (`StillArriving`, first run and loading D8, G16, G17). Board: each group a column with its head and count, cards top to bottom; a column still on its way has its head without a count over ghost cards (D17, ES30). With nothing listed and not even the groups known (`groupsArriving`), a full screen of ghost rows, or on the board ghost columns (D17, ES29). Rows arriving fade in over their ghosts (D9). Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`) and, in the list, all of them (`end`, told how many rows are on screen); the list draws them, their selection and the keys, and says whether a group is collapsed (`someCollapsed`). The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `⇧M` the merge panel for a pull request the viewer may merge, the selected one while nothing is checked or the one checked alone, never several (merging D9) — as its row's "Merge" and its context menu do — and once the merge is sent it is unchecked and the selection moves on to the next row (PM32a). `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and `j`/`k` walk the same steps with an item open or not (D26): a collapsed entry is one step, an expanded one a step and each of its rows another; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), each a step after the card. The list hands over what it shows as `listed` — all its items, a stack's pull requests one by one, collapsed or not, and the steps an opened item takes — and an item opened inside a collapsed entry keeps the entry selected. An opened item leaving the list through the user's own edit moves the selection on, and the next one opens in its place; leaving any other way (a sync, a filter) it stays open with no row selected, and the next step goes to where it stood. With nothing checked and no item open, the command menu and the keys act on the selected row, with the actions of its context menu. While an item is open over the list, an entry that can't open there (`canOpenOver`, a project's draft) is passed over by the keys and by every move of the list's own, as if it weren't there, and a click still opens it. An Undo of a close brings the cursor, and an open panel or modal, back to the undone item (`useItemList`, D29). -->
+<!-- The body of every list (D9) — my work, a repository, a project — as List or Board, over groups its owner built. List: each group a section with its header (collapsible) and rows; a group still on its way shows its header with "…" and three ghost rows where its rows will land, and with no group arrived at all a full screen of ghosts stands instead (`StillArriving`, first run and loading D8, G16, G17). Board: each group a column with its head and count, cards top to bottom; a column still on its way has its head without a count over ghost cards (D17, ES30). With nothing listed and not even the groups known (`groupsArriving`), a full screen of ghost rows, or on the board ghost columns (D17, ES29). Rows arriving fade in over their ghosts (D9). Rows and cards are the owner's (`row`, `card` slots), and so is what follows a group (`groupFooter`), what stands in place of a group's ghosts when it can't arrive now (`arriving`, D6) and, in the list, all of them (`end`, told how many rows are on screen); the list draws them, their selection and the keys, and says whether a group is collapsed (`someCollapsed`). The selected entry is kept by key: when the list changes under it (a sync, an edit) it stays on its entry, follows its item into another group, or moves to the neighbour when its item leaves. `j`/`k` or ↓/↑ move it — on the board within the column, ←/→ to the next column — Enter or a click opens it (an opened item follows the selection), `o` opens it on GitHub, `⇧M` the merge panel for a pull request the viewer may merge, the selected one while nothing is checked or the one checked alone, never several (merging D9) — as its row's "Merge" and its context menu do — and once the merge is sent it is unchecked and the selection moves on to the next row (PM32a). `x` adds it to the items edited together (or takes it out), `⇧↓`/`⇧↑` (`⇧J`/`⇧K`) move on adding, Escape empties them. Right-clicking an entry opens its owner's context menu (`contextMenu`, L1–L4) for the items edited together when it is one of them, else for it alone, which it selects; elsewhere the browser's own menu shows. On the board an entry its owner lets move is dragged to another column or moved with `⇧←`/`⇧→`: `move` asks the owner to set the column's value of each item it moves — a stack's card all its pull requests, and only when each may move (D3). A stack's entry (a row with `stack`, D2, D3) stands for its pull requests in its group — a share of the stack's open ones when they are spread over groups (D16), never the others: collapsed until expanded — a chevron in its gutter, `→`/`←`, `←` on one of its rows selecting it — for the session and in every list (`ExpandedStacks`, D10); Enter opens the pull request it names (D9), and `j`/`k` walk the same steps with an item open or not (D26): a collapsed entry is one step, an expanded one a step and each of its rows another; `x` and the context menu take all its pull requests (D20), and `⇧J`/`⇧K` cross it in one step adding them all — an expanded one row by row — the entry half marked while only some of them are taken (`halfChecked`). Under a filter its rows not matching are de-emphasised (`ListStack.unmatched`, SP25). Stacks' entries may be nested under a row (`ListRow.stacks`, my work's stacks closing an assigned issue: D12, D23): in the list a lone one makes the row its header — the row takes the stack's chevron, `→`/`←` and expanded state, its pull requests are the row's rows, on a rail; Enter and `x` are the row's own item's — while two or more are entries one step in, each with its pull requests on a rail below it; on the board each is a nested card. On the board it is one card (SP26, SP27), `j`/`k` stepping over it as over any: expanded — its chevron, or Space, as ←/→ step between columns there — it lists its pull requests inside it (the owner's card draws them, from `expanded`, `selectedMember`, `toggleStack` and `openMember`), each a step after the card. The list hands over what it shows as `listed` — all its items, a stack's pull requests one by one, collapsed or not, and the steps an opened item takes — and an item opened inside a collapsed entry keeps the entry selected. An opened item leaving the list through the user's own edit moves the selection on, and the next one opens in its place; leaving any other way (a sync, a filter) it stays open with no row selected, and the next step goes to where it stood. With nothing checked and no item open, the command menu and the keys act on the selected row, with the actions of its context menu. While an item is open over the list, an entry that can't open there (`canOpenOver`, a project's draft) is passed over by the keys and by every move of the list's own, as if it weren't there, and a click still opens it. An Undo of a close brings the cursor, and an open panel or modal, back to the undone item (`useItemList`, D29). -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -122,6 +122,11 @@ const slots = defineSlots<{
   end?(props: ListEndProps): unknown;
   /** After a group's rows, or at the bottom of its column: a project's "New draft" there. */
   groupFooter?(props: { group: ListGroup<T> }): unknown;
+  /**
+   * In place of a group's ghosts while it is on its way: what stands in its way when it can't arrive now (first run
+   * and loading D6). Without it, or empty, the ghosts.
+   */
+  arriving?(props: { group: ListGroup<T>; place: 'group' | 'column' }): unknown;
   /** The entries of the menu a right-click on an entry opens; without it the browser's own menu shows. */
   contextMenu?(props: ListContextMenuProps): unknown;
 }>();
@@ -1508,7 +1513,13 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                 <span :class="css.listView_count">{{ t(l.countArriving) }}</span>
               </span>
             </h2>
-            <StillArriving place="group" />
+            <slot
+              name="arriving"
+              :group="group"
+              place="group"
+            >
+              <StillArriving place="group" />
+            </slot>
           </template>
           <template v-else>
             <h2
@@ -1624,10 +1635,14 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
               {{ group.rows.length }}
             </span>
           </h2>
-          <StillArriving
+          <slot
             v-if="!group.arrived"
+            name="arriving"
+            :group="group"
             place="column"
-          />
+          >
+            <StillArriving place="column" />
+          </slot>
           <NothingThere
             v-else-if="group.rows.length === 0"
             place="column"
@@ -1850,16 +1865,9 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 }
 
 .listView_column {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  gap: $spacing-8;
-  width: 268px;
+  @include board-column;
+
   max-height: 100%;
-  padding: $spacing-8;
-  background: $color-bg-2;
-  border: 1px solid transparent;
-  border-radius: $radius-xl;
 }
 
 .listView_column_target {
@@ -1867,11 +1875,9 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 }
 
 .listView_columnHead {
-  display: flex;
+  @include board-column-head;
+
   flex: none;
-  gap: $spacing-8;
-  align-items: center;
-  padding: $spacing-4 $spacing-6 $spacing-6;
   font-size: $font-size-md;
   font-weight: $font-weight-medium;
   color: $color-fg;

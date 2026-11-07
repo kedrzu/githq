@@ -1,11 +1,11 @@
-<!-- A commit's row still on its way (first run and loading D17, `Empty / Ghost commit row`): a lane with a commit's dot on the graph's first lane, a message bar, the author's avatar and name and the age, laid out to the metrics of `CommitRow`, so the row that replaces it lands without a jump. The graph is `--commit-graph-width` wide, as the real rows' is; a narrow row drops the name, as theirs does. -->
+<!-- A commit's row still on its way (first run and loading D17, `Empty / Ghost commit row`): a lane with a commit's dot on the graph's first lane, a message bar, the author's avatar and name and the age, laid out to the metrics of `CommitRow`, so the row that replaces it lands without a jump. The graph is as wide as four lanes, a guess at the graph to come, so its rows land close to where it was; a narrow row drops the name, as theirs does. -->
 <script lang="ts" setup>
 import Skeleton from '@/components/Skeleton.vue';
 import SkeletonBar from '@/components/SkeletonBar.vue';
 import SkeletonCircle from '@/components/SkeletonCircle.vue';
 
 import { COMMIT_ROW_HEIGHT } from './CommitRow.vue';
-import { COMMIT_GRAPH_LANE_WIDTH, COMMIT_GRAPH_PADDING } from './fitCommitGraph.js';
+import { COMMIT_GRAPH_LANE_WIDTH, COMMIT_GRAPH_PADDING, getCommitGraphWidth } from './fitCommitGraph.js';
 
 withDefaults(
   defineProps<{
@@ -20,6 +20,8 @@ withDefaults(
 
 /** The middle of the graph's first lane, where the default branch's dots are drawn (`CommitGraphCell`). */
 const FIRST_LANE_X = COMMIT_GRAPH_PADDING + COMMIT_GRAPH_LANE_WIDTH / 2;
+/** The graph's width: four lanes. */
+const GRAPH_WIDTH = getCommitGraphWidth(4);
 </script>
 
 <template>
@@ -30,7 +32,7 @@ const FIRST_LANE_X = COMMIT_GRAPH_PADDING + COMMIT_GRAPH_LANE_WIDTH / 2;
   >
     <span
       :class="css.ghostCommitRow_graph"
-      :style="{ '--ghost-commit-lane-x': `${FIRST_LANE_X}px` }"
+      :style="{ width: `${GRAPH_WIDTH}px`, '--ghost-commit-lane-x': `${FIRST_LANE_X}px` }"
     >
       <SkeletonBar
         :class="css.ghostCommitRow_lane"
@@ -68,17 +70,14 @@ const FIRST_LANE_X = COMMIT_GRAPH_PADDING + COMMIT_GRAPH_LANE_WIDTH / 2;
 </template>
 
 <style lang="scss" module="css">
-// `CommitRow`'s box: its gap, the room at its right, the author 110px wide and the age 30px, right-aligned.
+// `CommitRow`'s box: its gap, the room at its right, the author's and the age's columns.
 .ghostCommitRow {
-  display: flex;
+  @include commit-row;
+
   flex: none;
-  gap: $spacing-8;
-  align-items: center;
-  padding-right: $spacing-20;
-  container-type: inline-size;
 }
 
-// `CommitGraphCell`'s width; the lane and the dot in the lines' tone, a step above the bars'.
+// The lane and the dot in the lines' tone, a step above the bars'.
 .ghostCommitRow_graph {
   --skeleton-strong: #{$color-skeleton-card-strong};
   --skeleton-strong-highlight: #{$color-skeleton-card-strong-highlight};
@@ -86,7 +85,6 @@ const FIRST_LANE_X = COMMIT_GRAPH_PADDING + COMMIT_GRAPH_LANE_WIDTH / 2;
   position: relative;
   flex: none;
   align-self: stretch;
-  width: var(--commit-graph-width);
 }
 
 .ghostCommitRow_lane,
@@ -114,18 +112,18 @@ const FIRST_LANE_X = COMMIT_GRAPH_PADDING + COMMIT_GRAPH_LANE_WIDTH / 2;
   flex: none;
   gap: $spacing-6;
   align-items: center;
-  width: 110px;
+  width: $commit-row-author-width;
 }
 
 .ghostCommitRow_age {
   display: flex;
   flex: none;
   justify-content: flex-end;
-  width: 30px;
+  width: $commit-row-age-width;
 }
 
 // As `CommitRow`: the author's name gives way to the avatar.
-@container (max-width: 640px) {
+@container (max-width: #{$commit-row-narrow-width}) {
   .ghostCommitRow_author {
     width: auto;
   }

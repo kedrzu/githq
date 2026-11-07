@@ -71,7 +71,7 @@ export const NothingWaiting: Story = {
     args: { filter: 'waitingOnOthers', work: sampleMyWork([], sampleMembership({}), 'waitingOnOthers') },
 };
 
-/** ES12, D15: narrowed to a group in and empty: says what is shown, counts the rest and offers it. */
+/** ES12, D15: narrowed to a group in and empty: names the group and offers the rest of My work, counting nothing. */
 export const GroupEmpty: Story = {
     args: {
         group: 'mentioned',
@@ -80,8 +80,7 @@ export const GroupEmpty: Story = {
     },
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: /^Nothing\smentions\syou$/u })).toBeVisible();
-        await expect(canvas.getByText(/Your\sother\s\d+\sitems\sare\sin\sMy\swork\.$/u)).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
         await expect(canvas.queryByText('Nothing here.')).toBeNull();
         await userEvent.click(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u }));
         await expect(args.onShowAll).toHaveBeenCalledOnce();
@@ -95,42 +94,21 @@ export const GroupEmptyOnBoard: Story = {
         options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
     },
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\smentions\syou$/u })).toBeVisible();
+        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
     },
 };
 
-/** D15 with nothing else in "my work": nothing to offer. */
-export const GroupEmptyNothingElse: Story = {
-    args: { group: 'assigned', work: sampleMyWork([], sampleMembership({}), 'all') },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: /^Nothing\sassigned\sto\syou$/u })).toBeVisible();
-        await expect(canvas.queryByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeNull();
-    },
-};
-
-/** D15 while other groups still arrive: the rest is offered, not counted (D14). */
-export const GroupEmptyOthersArriving: Story = {
-    args: { group: 'mentioned', work: sampleMyWork([], { mentioned: new Set() }, 'all') },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await expect(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeVisible();
-        await expect(canvas.queryByText(/Your\sother/u)).toBeNull();
-    },
-};
-
-/** ES11: the filter hides everything the narrowed group holds: it is named, and clearing it keeps the group. */
+/** ES11: under a filter the narrowed group shows nothing: clearing the filter keeps the group. */
 export const GroupHiddenByFilter: Story = {
     args: {
         group: 'mentioned',
         filter: 'needsMe',
         work: sampleMyWork([], sampleMembership({}), 'needsMe'),
-        unfilteredCounts: { reviewRequested: 2, authored: 3, assigned: 5, mentioned: 3, total: 13 },
     },
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: /^Nothing\smatches\sthis\sfilter$/u })).toBeVisible();
-        await expect(canvas.getByText(/^Needs\sme\shides\sall\s3\sitems\sin\sMentioned\.$/u)).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeNull();
         await userEvent.click(canvas.getByRole('button', { name: /^Clear\sfilter$/u }));
         await expect(args['onUpdate:filter']).toHaveBeenCalledWith('all');
     },
@@ -162,7 +140,7 @@ export const FailingNothingArrived: Story = {
     },
 };
 
-/** D6: with rows on screen the status bar alone tells it: what arrived stands, the rest keeps its ghosts. */
+/** D6, G: with rows on screen, a group that can't arrive now says why in a short note instead of ghosts that would spin forever. */
 export const OfflineSomeArrived: Story = {
     args: {
         work: sampleMyWork(D1_ITEMS, { authored: D1_MEMBERSHIP.authored }, 'all'),
@@ -172,6 +150,23 @@ export const OfflineSomeArrived: Story = {
         const canvas = within(canvasElement);
         await expect(canvas.queryByRole('heading', { name: "You're offline" })).toBeNull();
         await expect(canvas.getByRole('region', { name: /^My\spull\srequests$/u })).toBeVisible();
+        const assigned = canvas.getByRole('region', { name: /^Assigned\sto\sme$/u });
+        await expect(within(assigned).getByText("Offline. Fills in when you're back.")).toBeVisible();
+        await expect(within(assigned).queryByText('Still arriving from GitHub')).toBeNull();
+    },
+};
+
+/** D6, G: on the board, a column that can't arrive now says why under its head, instead of ghost cards. */
+export const PausedSomeArrivedOnBoard: Story = {
+    args: {
+        work: sampleMyWork(D1_ITEMS, { authored: D1_MEMBERSHIP.authored }, 'all'),
+        cantBeRead: { kind: 'paused', until: SAMPLE_NOW + 600_000 },
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+    play: async ({ canvasElement }) => {
+        const assigned = within(canvasElement).getByRole('region', { name: /^Assigned\sto\sme$/u });
+        await expect(within(assigned).getByText(/^Refresh\spaused\./u)).toBeVisible();
+        await expect(within(assigned).queryByText('Still arriving from GitHub')).toBeNull();
     },
 };
 

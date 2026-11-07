@@ -19,7 +19,7 @@ const root = useTemplateRef<HTMLElement>('root');
 let observer: ResizeObserver | undefined;
 
 // The observer's first call comes before the first paint, so no band is ever drawn out of place; the wrapper resizing
-// calls it again. Its shapes are found by their `data-skeleton-shape`, those of a wrapper inside it left to that one.
+// calls it again. Its shapes are found by their `data-skeleton-shape`; no wrapper is nested in another.
 onMounted(() => {
   observer = new ResizeObserver(measure);
   if (root.value) {
@@ -39,9 +39,7 @@ function measure() {
   element.style.setProperty('--skeleton-span', `${span.width}px`);
   element.style.setProperty('--skeleton-travel', `${-1.5 * span.width}px`);
   for (const shape of element.querySelectorAll<HTMLElement>('[data-skeleton-shape]')) {
-    if (shape.closest('[data-skeleton]') === element) {
-      shape.style.setProperty('--skeleton-x', `${shape.getBoundingClientRect().left - span.left}px`);
-    }
+    shape.style.setProperty('--skeleton-x', `${shape.getBoundingClientRect().left - span.left}px`);
   }
 }
 </script>
@@ -49,7 +47,6 @@ function measure() {
 <template>
   <div
     ref="root"
-    data-skeleton
     aria-hidden="true"
     :style="{ '--skeleton-row': props.row }"
   >

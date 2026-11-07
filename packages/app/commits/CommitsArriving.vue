@@ -1,4 +1,4 @@
-<!-- What stands in a repository's Commits section while its first read runs (first run and loading D17, ES21, `Empty / Still arriving · commits`): the graph's shape, no words on screen, fading down the set. `refs` is the list of branches and tags in its column — the filter's box, a group of branches and one of tags; `graph` the graph's rows, as many as fit, `graphWidth` wide in their lane. Each place stands where the real one lands, laid out to its metrics. -->
+<!-- What stands in a repository's Commits section while its first read runs (first run and loading D17, ES21, `Empty / Still arriving · commits`): the graph's shape, no words on screen, fading down the set. `refs` is the list of branches and tags in its column — the filter's box, a group of branches and one of tags; `graph` the graph's rows, as many as fit. Each place stands where the real one lands, laid out to its metrics. -->
 <script lang="ts">
 /** The design's rows, so a set looks the same on every render: widths varied, strength fading in even steps. */
 const BRANCH_ROWS: readonly { nameWidth: number; opacity: number }[] = [
@@ -59,8 +59,6 @@ import GhostRefRow from './GhostRefRow.vue';
 defineProps<{
   /** `refs`: the list of branches and tags; `graph`: the graph's rows. */
   place: 'graph' | 'refs';
-  /** The graph's width in px, as its rows will have it (`fitCommitGraph`); for `graph`. */
-  graphWidth?: number;
 }>();
 </script>
 
@@ -108,7 +106,6 @@ defineProps<{
   <div
     v-else
     :class="css.commitsArriving_graph"
-    :style="{ '--commit-graph-width': `${graphWidth ?? 0}px` }"
     aria-hidden="true"
   >
     <GhostCommitRow

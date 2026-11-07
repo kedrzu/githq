@@ -34,7 +34,6 @@ const t = useTranslate();
   <EmptyState
     :place="place"
     :icon="icon ?? FunnelX"
-    tone="muted"
     :title="
       title ?? (place === 'screen' || filter == null ? t(l.nothingMatchesThisFilter) : t(l.nothingMatches, { filter }))
     "

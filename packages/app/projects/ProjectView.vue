@@ -1,5 +1,6 @@
 <!-- A tracked project's view (D4, D5, `ui/project.md`): its saved views from GitHub as tabs (D13), each with its own filter, grouping, order, layout and fields — the filter's terms shown under the toolbar — as a List or a Board through the list engine. A tab changed in githq is marked "modified locally", with "Reset" to GitHub's version; the display options say they stay on this device, and set the project's row field (D12), also a command of the command menu ("Row field…"). A view whose filter githq can't evaluate is answered by GitHub: its tab and the term carry a cloud (K6), and until GitHub answers it waits instead of showing the unfiltered items. Rows and cards show the project's fields; draft issues show as drafts; a stack's entry the list was given shows as one — a row (`StackRow`) with the field values its pull requests share (D15), its pull requests nested under it once expanded, or on the board a card (`StackCard`) listing them inside it once expanded — and a pull request listed alone out of its stack carries its marker. With the right to update the project, "New draft" at the end of a group or the bottom of a column writes a draft there, with that group's value; on the board items move between columns by drag or `⇧←`/`⇧→`, a stack's card with all its pull requests. Next to it "New issue" opens the quick capture adding the issue to the project with that group's value (H5). A project with nothing to make columns of offers no board (K7); an empty project (K8) offers to add existing issues (in the command menu), a new issue or a draft; a view nothing matches (K9) says so, with the ways out: all the project's items, or its filter cleared here (a change kept on this device, undone by Reset); on the board the note stands over the columns, which stay to write a draft into (ES19). While its items are still downloading, with none in or none the view matches yet, it is neither: ghosts stand where they will land — a screen of ghost rows, on the board its columns' heads without counts over ghost cards (first run and loading D5, D17, ES18, ES30) — and rows show as soon as they are in. With nothing on screen, first of all it says what stands in the way (D6, ES20; `CantBeRead`): GitHub not showing it whatever has arrived, offline, paused or GitHub failing only while its items are on their way; with rows on screen the status bar alone tells. -->
 <script lang="ts" setup>
+import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
   Ban,
@@ -49,7 +50,9 @@ import ListView from '@/lists/ListView.vue';
 import StackCard from '@/lists/StackCard.vue';
 import StackRow from '@/lists/StackRow.vue';
 import type { ProjectField } from '@/store/ItemDetailTypes.js';
+import { formatList } from '@/utils/formatList.js';
 
+import { describeProjectFilter } from './filter/describeProjectFilter.js';
 import { parseProjectFilter } from './filter/parseProjectFilter.js';
 import ProjectDraft from './ProjectDraft.vue';
 import ProjectDraftComposer from './ProjectDraftComposer.vue';
@@ -168,6 +171,7 @@ defineSlots<{
 const NO_ROW_FIELD = '';
 
 const t = useTranslate();
+const language = useLanguage();
 /** The group a draft is being written in; `null` for the empty project's. */
 const composing = ref<string | null | undefined>(undefined);
 
@@ -221,6 +225,17 @@ const filter = computed(() => options.value.filter ?? '');
 const filterTerms = computed(() => {
   const applied = filter.value;
   return applied ? (parseProjectFilter(applied) ?? [{ text: applied }]).map(term => term.text) : [];
+});
+/** ES19: what the filter hides, in words — "Iteration is Sprint 15 and State is open hide all 128 items." */
+const filterHides = computed(() => {
+  if (!filter.value) {
+    return null;
+  }
+
+  const phrases = describeProjectFilter({ filter: filter.value, fields: props.project.fields, lang: language.value });
+  return phrases.length === 1
+    ? t(l.filterHidesItems, { filter: phrases[0], count: props.itemCount })
+    : t(l.filtersHideItems, { filters: formatList(phrases), count: props.itemCount });
 });
 const groupingField = computed(() => getGroupingField(props.project, options.value.grouping));
 /** "New draft" in a group: only where the group's value can be given to a draft, or there are no groups. */
@@ -550,11 +565,7 @@ function hasItemView(entry: ProjectEntry) {
       >
         <FilteredOut
           place="screen"
-          :detail="
-            filter
-              ? t(l.filterHidesItems, { filter, count: itemCount })
-              : t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })
-          "
+          :detail="filterHides ?? t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })"
           :clear="filter ? () => emit('clearFilter') : undefined"
         />
       </div>

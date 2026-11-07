@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 /** Offline before it arrived: no action, it carries on by itself (D12). */
 export const Offline: Story = {};
 
-/** Paused by GitHub's hourly allowance: no action, it comes in at the time. */
+/** Paused, GitHub having asked githq to wait: no action, it comes in at the time. */
 export const Paused: Story = { args: { cause: { kind: 'paused', until: UNTIL } } };
 
 /** GitHub failing: "Try again" (R). */

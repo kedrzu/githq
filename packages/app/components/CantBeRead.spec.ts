@@ -18,7 +18,7 @@ test('offline and paused say when it resolves and offer nothing to press (D12)',
     await expect.element(page.getByRole('heading', { name: `Refresh paused until ${time}` })).toBeVisible();
     await expect
         .element(
-            page.getByText(`before fitloop/webapp's issues was read. It comes in by itself at ${time}.`, {
+            page.getByText(`before fitloop/webapp's issues could be read. It comes in by itself at ${time}.`, {
                 exact: false,
             }),
         )

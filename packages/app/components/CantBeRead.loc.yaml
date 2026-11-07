@@ -9,9 +9,9 @@ offlineNote:
 pausedTitle:
   en: Refresh paused until {time}
 pausedLine:
-  en: GitHub's hourly allowance ran out before {thing} was read. It comes in by itself at {time}.
+  en: GitHub asked githq to wait before {thing} could be read. It comes in by itself at {time}.
 pausedLinePlural:
-  en: GitHub's hourly allowance ran out before {thing} were read. They come in by themselves at {time}.
+  en: GitHub asked githq to wait before {thing} could be read. They come in by themselves at {time}.
 pausedNote:
   en: Refresh paused. Fills in at {time}.
 failingTitle:

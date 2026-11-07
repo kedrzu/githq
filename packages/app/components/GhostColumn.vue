@@ -39,22 +39,13 @@ withDefaults(
 <style lang="scss" module="css">
 // A board's column (`ListView`): its width, padding, gap, fill and radius.
 .ghostColumn {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  gap: $spacing-8;
-  width: 268px;
-  padding: $spacing-8;
-  background: $color-bg-2;
-  border: 1px solid transparent;
-  border-radius: $radius-xl;
+  @include board-column;
 }
 
 // The column's head: its padding and gap, a line of its name's height.
 .ghostColumn_head {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
+  @include board-column-head;
+
   height: 18px;
   padding: $spacing-4 $spacing-6 $spacing-6;
   box-sizing: content-box;

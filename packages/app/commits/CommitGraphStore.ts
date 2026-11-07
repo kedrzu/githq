@@ -161,14 +161,16 @@ interface Session {
     readonly checksInFlight: Map<string, Set<string>>;
     /** Where the section was left for a run's page, by `owner/name`; in memory alone, gone with the session. */
     readonly places: Map<string, CommitGraphPlace>;
+    /** How many views show each graph, by `owner/name` ({@link CommitGraphStore} `hold`); absent when none does. */
+    readonly onScreen: Map<string, number>;
     cancelStatesBatch: (() => void) | null;
 }
 
 /**
  * The commit graphs of the repositories the signed-in user opens the Commits section of (git-client D9), in any
  * repository they can see, tracked or not (D11). Nothing is read in the background: a graph is read when it opens
- * ({@link open}) — and again by itself once its check failed or waited for the allowance, and when the connection comes
- * back (first run and loading D12) — and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
+ * ({@link open}) — and again by itself, while a view shows it ({@link hold}), once its check failed or waited for the
+ * allowance, and when the connection comes back (first run and loading D12) — and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
  * state ({@link ensureStates}, D8), and a commit whose details open asks for its full message ({@link ensureDetail},
  * D13) and its checks ({@link ensureChecks}).
  *
@@ -213,6 +215,7 @@ export const CommitGraphStore = defineService({
             getDetail,
             getChecks,
             open,
+            hold,
             loadMore,
             ensureStates,
             ensureDetail,
@@ -297,6 +300,40 @@ export const CommitGraphStore = defineService({
             });
             graph.refreshing = refreshing;
             return refreshing;
+        }
+
+        /**
+         * Marks the graph of `owner/name` as shown until the returned function is called. Only a shown graph is read
+         * again by itself — after a failure, a pause or a reconnect — so a repository left asks GitHub nothing more;
+         * the last release drops its retry, and showing it again opens it anyway.
+         */
+        function hold(nameWithOwner: string): () => void {
+            const current = session;
+            if (!current) {
+                return () => {};
+            }
+
+            current.onScreen.set(nameWithOwner, (current.onScreen.get(nameWithOwner) ?? 0) + 1);
+            let released = false;
+            return () => {
+                if (released || session !== current) {
+                    return;
+                }
+
+                released = true;
+                const count = (current.onScreen.get(nameWithOwner) ?? 1) - 1;
+                if (count > 0) {
+                    current.onScreen.set(nameWithOwner, count);
+                    return;
+                }
+
+                current.onScreen.delete(nameWithOwner);
+                const graph = current.graphs.get(nameWithOwner);
+                graph?.cancelRetry?.();
+                if (graph) {
+                    graph.cancelRetry = null;
+                }
+            };
         }
 
         /**
@@ -451,17 +488,22 @@ export const CommitGraphStore = defineService({
                 statesInFlight: new Map(),
                 checksInFlight: new Map(),
                 places: new Map(),
+                onScreen: new Map(),
                 cancelStatesBatch: null,
             };
         }
 
-        /** The connection came back: the graphs that could not be read for want of it are read again. */
+        /** The connection came back: the shown graphs that could not be read for want of it are read again. */
         function reopenOffline() {
             if (!session || !browser.isOnline()) {
                 return;
             }
 
             for (const [nameWithOwner, graph] of session.graphs) {
+                if (!session.onScreen.has(nameWithOwner)) {
+                    continue;
+                }
+
                 if (graph.problem === 'offline' || graph.moreProblem === 'offline') {
                     void open(nameWithOwner);
                 }
@@ -984,9 +1026,14 @@ export const CommitGraphStore = defineService({
             }
         }
 
-        /** Checks the graph's refs again in `delayMs`, once: an earlier such check is dropped. */
+        /** Checks the graph's refs again in `delayMs`, once, if it is shown: an earlier such check is dropped. */
         function retryLater(graph: RepositoryGraph, delayMs: number) {
             graph.cancelRetry?.();
+            graph.cancelRetry = null;
+            if (!graph.session.onScreen.has(graph.nameWithOwner)) {
+                return;
+            }
+
             graph.cancelRetry = clock.schedule(
                 () => {
                     graph.cancelRetry = null;
