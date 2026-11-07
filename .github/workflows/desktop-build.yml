@@ -9,6 +9,7 @@
 # is `plugins.updater.pubkey` in `tauri.conf.json`). The Apple ones (`APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`,
 # `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`) sign and notarize the macOS app; without them it
 # is ad-hoc signed (`bundle.macOS.signingIdentity: "-"`), which macOS opens as from an "unidentified developer".
+# `APPLE_PROVISIONING_PROFILE` (base64) adds Universal Links to a signed macOS app; without it the app has none.
 name: Desktop build
 
 on:
@@ -147,6 +148,28 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      # Universal Links only in an app signed with the Developer ID and carrying the profile: macOS kills at launch an app
+      # with the Associated Domains entitlement and no profile authorising it, so none of this is in the committed config.
+      - name: Use the Universal Links profile if it is set
+        if: runner.os == 'macOS'
+        run: |
+          if [ -z "$APPLE_PROVISIONING_PROFILE" ] || [ -z "$APPLE_CERTIFICATE" ]; then
+            echo "Universal Links: off"
+            exit 0
+          fi
+
+          tauri=packages/desktop/src-tauri
+          printf %s "$APPLE_PROVISIONING_PROFILE" | base64 --decode > "$tauri/embedded.provisionprofile"
+          jq '.bundle.macOS.files["embedded.provisionprofile"] = "./embedded.provisionprofile"
+            | .bundle.macOS.entitlements = "Entitlements.plist"
+            | .plugins["deep-link"].desktop.domains = ["githq.dev"]' \
+            "$tauri/tauri.conf.json" > "$RUNNER_TEMP/tauri.conf.json"
+          mv "$RUNNER_TEMP/tauri.conf.json" "$tauri/tauri.conf.json"
+          echo "Universal Links: on"
+        env:
+          APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
 
       - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:

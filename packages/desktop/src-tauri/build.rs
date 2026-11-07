@@ -30,6 +30,7 @@ fn main() {
             "token_load",
             "token_save",
             "token_delete",
+            "link_take",
             "device_start",
             "device_finish",
             "open_external",
