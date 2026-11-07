@@ -233,3 +233,35 @@ saved views have room in a menu, where tabs had to scroll sideways.
 - The line shrinking to a bubble while scrolling (MB87) — a moving target for the thumb.
 - The button elsewhere: the title as the button (MB4–MB5), the top-right corner (MB6–MB7), a bar that stays on the item
   (MB8–MB9), floating alone (MB10–MB11), one box at the bottom (MB12–MB13).
+
+## D18
+
+**The ⌘ button belongs to a screen at rest. Inside a task — writing a reply, picking a value, creating an issue — it
+leaves and the task gets its room; it comes back as soon as the screen is at rest again, with a draft kept in the
+comment box.** (2026-11-07, the owner's idea, picked from the drawings: `MB70`–`MB74`)
+
+**Why.** The owner: the button should disappear once the comment input is expanded, and in other drill-downs alike.
+The drawing's case: inside a task you have already answered "what can I do here?", the box gains the button's width,
+and Send no longer sits beside a button that opens something else.
+
+> **The known cost:** assigning someone in the middle of a reply takes one tap more, putting the keyboard away first.
+
+**Rejected.**
+
+- The button staying while you write and in the new issue form (MB76–MB77) — one tap away mid-reply, but the box is
+  narrower and a wrong tap beside Send opens the menu.
+
+## D19
+
+**The top-left corner on a list opens the places as a panel from the left, by a tap: flat, as the desktop sidebar is,
+with where you are marked, and the freshness and the account at its foot.** (2026-11-07, owner, picked from the
+drawings: `MB26`, `MB27`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: a place's parts are already under the command
+line ([D17](#d17)), so nothing needs to drill, and a panel needs no address of its own, so it takes no step in history.
+
+**Rejected.**
+
+- One menu that drills from the places into a repository's parts (MB28–MB29) — the parts would be in two menus.
+- The places as a screen of their own, the top-left always back (MB30–MB31) — the screen needs an address GitHub does
+  not have, and it is one more step in history between every two places.

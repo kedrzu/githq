@@ -71,4 +71,5 @@ one column), and how a list row shrinks to a phone's width. The navigation is dr
 `App · Mobile`, from [the brief for the design agent](ui/navigate-on-a-phone.md). The owner has picked the command line
 instead of a bottom bar ([D17](DECISIONS.md#d17)), the command menu rising from below ([D16](DECISIONS.md#d16)), its
 button as ⌘ ([D13](DECISIONS.md#d13)), two buttons in the top-right corner ([D14](DECISIONS.md#d14)), links that say
-they leave ([D11](DECISIONS.md#d11)) and what shows when the copy is not fresh ([D12](DECISIONS.md#d12)).
+they leave ([D11](DECISIONS.md#d11)), what shows when the copy is not fresh ([D12](DECISIONS.md#d12)), the button
+leaving inside a task ([D18](DECISIONS.md#d18)) and the places as a panel from the left ([D19](DECISIONS.md#d19)).

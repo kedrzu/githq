@@ -50,3 +50,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   an item (D17). It replaces D10, now in `RETIRED.md`, and answers where the button lives, what the bottom bar holds
   and the parts on the bar (MB47), so those frames and all dock components were removed. All remaining screens moved
   onto the line. Four questions left, in `variants.md`.
+- 2026-11-07 — Owner picked the button leaving inside a task (D18) and the places as a panel (D19). Two questions left:
+  the top-left corner on an item, and whether Commits and Actions are offered.
