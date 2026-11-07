@@ -260,8 +260,9 @@ moves, which matters more than how far it got.
 
 - **Offline** — "You're offline"; "githq can't reach GitHub, so {thing} hasn't arrived yet. It carries on by itself as
   soon as you're back."; no action.
-- **Paused by the allowance** — "Refresh paused until 14:20"; "GitHub's hourly allowance ran out before {thing} was
-  read. It comes in by itself at 14:20."; no action.
+- **Paused** — "Refresh paused until 14:20"; "GitHub asked githq to wait before {thing} could be read. It comes in by
+  itself at 14:20."; no action. The line names no allowance: a pause also comes from GitHub asking to slow down, or from
+  the per-minute search allowance. (2026-11-07, owner, at the M3 checkpoint)
 - **GitHub failing** — "GitHub isn't answering"; "githq couldn't read {thing}. It tries again by itself."; "Try
   again". Each surface asks again at its own pace — a sync loop at its interval, the commit graph after 30 seconds —
   rather than every surface every 30 seconds. (2026-11-07, owner, at the M3 checkpoint)
@@ -270,8 +271,20 @@ moves, which matters more than how far it got.
 
 The icon is amber (cloud-off, pause, triangle-alert, eye-off), as the status bar's stale states are.
 
+A hidden repository or project, or a commit graph GitHub answers 404 for, is a status of its own on the bar too
+("GitHub doesn't show this repository"), so note and bar read as one. A tracked repository GitHub refuses to list the
+changes of shows the note only for what hasn't arrived; what has keeps its own reason. A screen whose rows are partly in
+and a group that can't arrive shows the note in that group or column instead of ghosts. Try again asks only the poll the
+screen's state came from. (2026-11-07, owner, at the M3 checkpoint)
+
 **Why.** The title is the status bar's own words, so the two read as one; offline and paused resolve by themselves,
 so a button would only invite pressing it.
+
+**Rejected.**
+
+- "It tries again every 30 seconds" — true only on My work; repositories and projects ask every minute, and keeping
+  the promise elsewhere took a timer that polled every repository every 30 seconds behind a screen with rows (owner).
+- "GitHub's hourly allowance ran out" for every pause — false for a slow-down request or the search allowance (owner).
 
 ## D13
 
@@ -295,11 +308,17 @@ G17, ES14, ES18, ES21, ES27, ES28, ES29
 
 ## D15
 
-**My work narrowed to one group from the sidebar, and that group empty, is filtered out: the note says what is
-shown and offers the rest ("Nothing mentions you … Your other 10 items are in My work.", "Show all of My work").**
-(2026-11-06, design agent's proposal) — ES12
+**My work narrowed to one group from the sidebar, and that group empty, is filtered out: "Nothing in Mentioned" with
+"Show all of My work" (under a tab filter, "Clear filter").** (2026-11-06, design agent's proposal; simplified by the
+owner at the M3 checkpoint, 2026-11-07) — ES12
 
 **Why.** The brief files it under filtered out. The note keeps it from reading as the whole of My work being empty.
+
+**Rejected.**
+
+- "Nothing mentions you … Your other 10 items are in My work." (ES12 as drawn) — an item sits only in its first reason's
+  group, so a mention that is also a review request leaves Mentioned empty and the sentence false; the count took a
+  second build of My work (owner).
 
 ## D16
 

@@ -50,3 +50,6 @@ Append-only; one line per turn that settled something.
   all answered (the "Synced" bar exists only in the mockup) and the section is gone.
 - 2026-11-06 — Build, M3: the "None" bug of D7 doesn't exist (checked in code; spec pins it). The offline line reworded so a
   sentence never starts with a lower-case {thing} (D12).
+- 2026-11-07 — Build, M3 checkpoint: owner took every recommendation. D12: failing "tries again by itself", pause
+  words neutral, hidden a status of its own, refused only over what hasn't arrived, group notes, one poll per Try
+  again. D15 simplified ("Nothing in Mentioned", no counts). Ghosts share the real rows' and columns' sizes.
