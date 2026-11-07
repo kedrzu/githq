@@ -10,7 +10,6 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
-import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleStoredWorkflows } from '@/testing/sampleWorkflows.js';
@@ -42,35 +41,13 @@ test("Enter opens the selected workflow's latest failed run on its page in githq
     await expect.poll(() => router.currentRoute.value.path).toBe(`/${WEB}/actions/runs/7001`);
 });
 
-test.each([
-    ['failing', { kind: 'stale', since: null, reason: 'failing' }, 30_000],
-    ['paused', { kind: 'paused', since: null, until: Date.now() + 60_000 }, 60_000],
-] satisfies [string, Freshness, number][])(
-    'first run and loading D12: GitHub in the way is asked again as the note says: %s',
-    async (_name, freshness, delayMs) => {
-        const { poll, timers } = await open(freshness);
-        poll.mockClear();
-
-        // The sync loops' own timers come at such intervals too; only this one polls the workflows.
-        for (const timer of timers.filter(entry => Math.abs(entry.delayMs - delayMs) < 1000)) {
-            timer.callback();
-        }
-
-        expect(poll).toHaveBeenCalledTimes(1);
-    },
-);
-
-/** The screen, tracking one repository, signed in, with GitHub answering nothing; `freshness` is its workflows'. */
-async function open(freshness?: Freshness) {
-    const timers: { readonly callback: () => void; readonly delayMs: number }[] = [];
+/** The screen, tracking one repository, signed in, with GitHub answering nothing and no timer going off. */
+async function open() {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
     container.set(Clock, {
         now: () => Date.now(),
-        schedule: (callback, delayMs) => {
-            timers.push({ callback, delayMs });
-            return () => {};
-        },
+        schedule: () => () => {},
     });
     container.set(Browser, createSignedInBrowser());
     setIndexedDbPersistence(container);
@@ -80,10 +57,7 @@ async function open(freshness?: Freshness) {
     const store = container.resolve(WorkflowStore);
     await store.ready();
     const sync = container.resolve(SyncEngine);
-    const poll = vi.spyOn(sync, 'pollWorkflowsNow').mockImplementation(() => Promise.resolve());
-    if (freshness) {
-        vi.spyOn(sync, 'getWorkflowsFreshness').mockReturnValue(freshness);
-    }
+    const poll = vi.spyOn(sync, 'pollNow').mockImplementation(() => Promise.resolve());
 
     const host = document.createElement('div');
     document.body.append(host);
@@ -100,5 +74,5 @@ async function open(freshness?: Freshness) {
         host.remove();
     });
 
-    return { store, poll, router, timers };
+    return { store, poll, router };
 }

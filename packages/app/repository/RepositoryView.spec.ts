@@ -391,6 +391,23 @@ test('ES16: tracked, GitHub not showing it stands over nothing there and a state
     await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
 });
 
+test('ES16: tracked, GitHub refusing its changes leaves what has arrived its own reason, the status bar telling the refusal', async () => {
+    mount({
+        items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN'),
+        cantBeRead: { kind: 'refused', url: GITHUB_URL },
+    });
+
+    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^GitHub doesn't show/ })).not.toBeInTheDocument();
+});
+
+test("ES16: tracked, GitHub refusing its changes is told over what hasn't arrived", async () => {
+    mount({ items: [], arriving: true, cantBeRead: { kind: 'refused', url: GITHUB_URL } });
+
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
+});
+
 test('filtered out: the state hiding all the section holds is named, with a way to clear it to both states', async () => {
     const closed = SAMPLE_REPOSITORY_ITEMS.filter(item => item.kind === 'issue' && item.state !== 'OPEN');
     const view = mount({ items: closed });

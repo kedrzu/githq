@@ -147,6 +147,11 @@ export const Failing: Story = { args: { freshness: { kind: 'stale', since: AT_14
 /** GitHub refusing a repository's changes (a 403): amber, asked again hourly. */
 export const Refused: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'refused' } } };
 
+/** ES16, ES20: GitHub doesn't show a tracked repository or project — no access, or gone — whatever has arrived. */
+export const Hidden: Story = {
+    args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'hidden', of: 'repository' } },
+};
+
 /** W3e: GitHub no longer lists a repository's workflows; the rows below are the last known ones. */
 export const WorkflowsUnavailable: Story = {
     args: { freshness: { kind: 'stale', since: null, reason: 'workflowsUnavailable' } },

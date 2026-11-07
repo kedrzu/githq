@@ -1,4 +1,4 @@
-<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); with nothing to draw and GitHub in the way the pane says why — offline, paused until a time, GitHub failing or hiding it (`CantBeRead`, first run and loading D6, D12, ES22), staying up while it is asked again, every 30 seconds when failing and at the end of a pause — while a graph already on screen stays, the status bar alone telling it; a first open with nothing kept yet is a skeleton in the graph's shape until the first rows arrive — the branches and tags' where their list will be, the rows' in the pane, no words on screen, and the status bar's segment says "Reading commits" (first run and loading D14, D17, ES21). `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph in a column of their own width (`ColumnSplit`, 440 px by default, at least 320), the list staying and the graph keeping 240 px of the pane, the details giving up width for it down to their least; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. A branch's pull request number in the list opens it as any item opens, the list giving way (D15). Left for a run's page with the details open, the section comes back to the same commit under the cursor and in the details (D24). -->
+<!-- A repository's Commits section (git-client D9, D18, CH3): its commit graph, in any repository the user can see, tracked or not (D11). Opening it opens the graph in `CommitGraphStore` — the kept copy at once, then GitHub asked in the background — and only the rows near the viewport are drawn, so thousands of commits scroll as fast as a hundred. The rows on screen ask for their pull request and CI state; coming within a screen of the last loaded row reads the next page, "Loading older commits…" under the rows meanwhile (CH35), and the first commit of the repository ends the graph with "The beginning of its history" (CH36); offline, what is kept stays and the last row says older commits wait (CH40). An empty repository says so (CH38); with nothing to draw and GitHub in the way the pane says why — offline, paused until a time, GitHub failing or hiding it (`CantBeRead`, first run and loading D6, D12, ES22), staying up while it is asked again — the store asks again by itself when GitHub failed and at the end of a pause — while a graph already on screen stays, the status bar alone telling it; a first open with nothing kept yet is a skeleton in the graph's shape until the first rows arrive — the branches and tags' where their list will be, the rows' in the pane, no words on screen, and the status bar's segment says "Reading commits" (first run and loading D14, D17, ES21). `J`/`K` or ↓/↑ move a cursor row, kept in view, which starts on the newest commit of the default branch, else the top row (CH23); a click moves it there. Commits arriving above its row, moved or not, leave that row where it was on screen (D19), a scroll up away; when its commit is gone it moves to its nearest neighbour, like every list, at the same height. A divider sets the graph's share of the pane, a tenth by default and kept on this device: dragged, or by a lane with ←/→, from two lanes to every lane; a double-click or `Enter` resets it, and the lanes that don't fit fold onto the last (D17). Left of the graph, the branches and tags (`CommitRefList`, D15) in a left column of their own width (`RepositoryColumnSplit`), folding away below about 1,200 px of window; `B` or the header's tool (`openRefList`) puts the cursor in their filter, the list opening over the graph from its left when folded. Choosing one with its commit loaded scrolls the graph to it, a third of the way down, with the cursor on it (D12); with its commit not loaded the graph stays and that commit's details open (CH16); either way the keys are back on the graph and the list's filter cleared. The cursor's commit's details are open from the start, right of the graph in a column of their own width (`ColumnSplit`, 440 px by default, at least 320), the list staying and the graph keeping 240 px of the pane, the details giving up width for it down to their least; below the same 1,200 px they dock under the graph at 45% of the section's height, the list over the graph when open, the two not in each other's way (`CommitDetails`, D16). They are held here and in no address: `J`/`K` and a click go on moving the cursor and they follow, showing them again when `Esc` closed them, as do `Enter` and a chosen ref, `P` and `Shift+P` go to a parent — selected in the graph when it is a row, opened beside it when not — `Shift+Enter` opens the pull request as any item opens, in their place until it closes, `O` opens GitHub, and `Esc` closes them until the next move, focus on the graph, though in the list's filter it leaves the list first. A commit gone from the graph (a branch force-pushed) stays open, saying so, until the keys move on (CH41); while the details show a commit that isn't the cursor's (CH16, CH41) no row is drawn as the cursor, which `J`/`K` still move from. While an item is opened over the section the keys are the item's. In a repository's column layout (`refListInColumn`, D14, D15, CH6, CH42) the list lives in the repository's column — this view still holds it and all its state, it just renders there — and the graph has the pane: never folded, never in the way, whatever the window's width, with the details as anywhere else. Wherever it renders it is one instance, its filter going with it. A branch's pull request number in the list opens it as any item opens, the list giving way (D15). Left for a run's page with the details open, the section comes back to the same commit under the cursor and in the details (D24). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -11,7 +11,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { AccountSession } from '@/auth/AccountSession.js';
 import { useCommands } from '@/commands/useCommands.js';
 import CantBeRead from '@/components/CantBeRead.vue';
-import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import ColumnSplit from '@/components/ColumnSplit.vue';
 import EmptyState from '@/components/EmptyState.vue';
 import { getOpenedItemRoute, parseItemUrl } from '@/item/itemRoutes.js';
@@ -28,7 +27,6 @@ import { isLayerOpen } from '@/utils/isLayerOpen.js';
 import { isScreenCovered } from '@/utils/isScreenCovered.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
-import { useCantBeReadRetry } from '@/utils/useCantBeReadRetry.js';
 import { useRowSelection } from '@/utils/useRowSelection.js';
 
 import CommitDetails, { COMMIT_DETAILS_KEYS } from './CommitDetails.vue';
@@ -160,17 +158,13 @@ const cursor = useRowSelection({
 });
 /** The cursor is drawn on its row, unless the details show a commit it isn't on (CH16, CH41). */
 const cursorDrawn = computed(() => !opened.value || opened.value.oid === cursor.selectedKey);
-/** Why asking again found it, while it is asked again: the note stays, rather than the skeleton every 30 seconds. */
-const askedAgainOf = shallowRef<CantBeReadCause | null>(null);
-/** What stands between GitHub and the graph, whether or not anything is on screen. */
-const unreadable = computed(
-  () =>
-    askedAgainOf.value ??
-    getCantBeReadCause({
-      freshness: store.getFreshness(props.nameWithOwner),
-      retry: askAgain,
-      url: getGitHubUrl(props.nameWithOwner),
-    }),
+/** What stands between GitHub and the graph, whether or not anything is on screen; told while it is asked again. */
+const unreadable = computed(() =>
+  getCantBeReadCause({
+    freshness: store.getFreshness(props.nameWithOwner),
+    retry: () => store.open(props.nameWithOwner),
+    url: getGitHubUrl(props.nameWithOwner),
+  }),
 );
 /** What the section shows: the graph, or before it, its skeleton, the empty repository, or why nothing arrives. */
 const shown = computed(() => {
@@ -253,8 +247,6 @@ const refsByOid = computed(() => {
   return byOid;
 });
 
-useCantBeReadRetry({ cause: () => (shown.value === 'unavailable' ? unreadable.value : null), retry: askAgain });
-
 // The graph is asked of GitHub only through the store, which answers from its kept copy first. Another account signed
 // in has emptied the store: the graph is opened again for them.
 watch(
@@ -266,7 +258,6 @@ watch(
 
     opened.value = null;
     detailsPending = true;
-    askedAgainOf.value = null;
     void store.open(nameWithOwner);
   },
   { immediate: true },
@@ -507,16 +498,6 @@ defineExpose({
   /** Puts the cursor in the filter of the list of branches and tags, opening the list first when it is folded away. */
   openRefList,
 });
-
-/** Reads the graph again, the note saying why it could not staying up until it is told how that went. */
-async function askAgain() {
-  askedAgainOf.value = unreadable.value;
-  try {
-    await store.open(props.nameWithOwner);
-  } finally {
-    askedAgainOf.value = null;
-  }
-}
 
 /**
  * Within a screen of the last loaded row, the next page — and the one after it while a page leaves the end that near,

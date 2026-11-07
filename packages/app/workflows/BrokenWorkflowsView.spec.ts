@@ -15,6 +15,7 @@ const {
     NothingBrokenOneRefused,
     NothingTracked,
     PartlyKnown,
+    SomeRepositoriesCantBeRead,
 } = composeStories(stories);
 
 const group = (name: string) => page.getByRole('region', { name, exact: true });
@@ -38,7 +39,7 @@ test('ES23: GitHub failing with no repository read says so instead of ghosts; R 
         .element(
             page.getByText(
                 matchText(
-                    "githq couldn't read the workflows of any of your 4 tracked repositories, so it can't tell what is broken. It tries again every 30 seconds.",
+                    "githq couldn't read the workflows of 4 of your tracked repositories, so it can't tell what is broken there. It tries again by itself.",
                 ),
             ),
         )
@@ -56,9 +57,21 @@ test('ES23: offline or paused with no repository read says that, in the plural, 
 
     await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
     await expect
-        .element(page.getByText(/so\sthe\sworkflows\sof\syour\s4\stracked\srepositories\shaven't\sarrived\syet/u))
+        .element(page.getByText(/so\sthe\sworkflows\sof\s4\sof\syour\stracked\srepositories\shaven't\sarrived\syet/u))
         .toBeVisible();
     await expect.element(page.getByRole('button', { name: /Try again/u })).not.toBeInTheDocument();
+});
+
+test('ES23: GitHub in the way with some repositories read and nothing to list says so for the rest instead of ghosts', async () => {
+    await SomeRepositoriesCantBeRead.run();
+
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect
+        .element(page.getByText(/so\sthe\sworkflows\sof\s3\sof\syour\stracked\srepositories\shaven't\sarrived\syet/u))
+        .toBeVisible();
+    await expect.element(page.getByText(matchText('4 repositories'))).toBeVisible();
+    await expect.element(page.getByText(/reading/u)).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /All green/u })).not.toBeInTheDocument();
 });
 
 test('GitHub showing none of them says so over the list saying why, and claims nothing green', async () => {

@@ -108,6 +108,14 @@ test('first run and loading D14: workflows not read yet say so, Broken workflows
     await expect.element(page.getByText('Reading workflows · 0 of 1 repository', { exact: true })).toBeVisible();
 });
 
+test("ES16, ES20: a repository or project GitHub doesn't show says so, with no promise to ask again", async () => {
+    mount({ kind: 'stale', since: NOW, reason: 'hidden', of: 'repository' });
+    await expect.element(page.getByText("GitHub doesn't show this repository", { exact: true })).toBeVisible();
+
+    mount({ kind: 'stale', since: null, reason: 'hidden', of: 'project' });
+    await expect.element(page.getByText("GitHub doesn't show this project", { exact: true })).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

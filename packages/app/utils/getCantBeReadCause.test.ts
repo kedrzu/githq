@@ -7,12 +7,16 @@ import { getCantBeReadCause } from './getCantBeReadCause.js';
 const URL = 'https://github.com/acme/web';
 const retry = () => Promise.resolve();
 
-test('GitHub refusing is "hidden" with the way to its page, and no cause where there is no page to go to', () => {
-    const freshness = { kind: 'stale', since: null, reason: 'refused' } as const;
-    const hidden: CantBeReadCause = { kind: 'hidden', url: URL };
+test('GitHub not showing it is "hidden" and refusing its changes "refused", both with the way to its page; no cause where there is no page to go to', () => {
+    const hidden = { kind: 'stale', since: null, reason: 'hidden', of: 'repository' } as const;
+    const refused = { kind: 'stale', since: 1, reason: 'refused' } as const;
+    const hiddenCause: CantBeReadCause = { kind: 'hidden', url: URL };
+    const refusedCause: CantBeReadCause = { kind: 'refused', url: URL };
 
-    expect(getCantBeReadCause({ freshness, retry, url: URL })).toEqual(hidden);
-    expect(getCantBeReadCause({ freshness, retry })).toBeNull();
+    expect(getCantBeReadCause({ freshness: hidden, retry, url: URL })).toEqual(hiddenCause);
+    expect(getCantBeReadCause({ freshness: refused, retry, url: URL })).toEqual(refusedCause);
+    expect(getCantBeReadCause({ freshness: hidden, retry })).toBeNull();
+    expect(getCantBeReadCause({ freshness: refused, retry })).toBeNull();
 });
 
 test('a poll merely late, and what is on its way, stand in the way of nothing', () => {

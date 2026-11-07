@@ -31,8 +31,10 @@ export function getCantBeReadCause({ freshness, retry, url }: GetCantBeReadCause
             return { kind: 'offline' };
         case 'failing':
             return { kind: 'failing', retry };
-        case 'refused':
+        case 'hidden':
             return url === undefined ? null : { kind: 'hidden', url };
+        case 'refused':
+            return url === undefined ? null : { kind: 'refused', url };
         default:
             return null;
     }

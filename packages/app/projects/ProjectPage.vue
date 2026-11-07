@@ -130,9 +130,11 @@ const cantBeRead = computed((): CantBeReadCause | null => {
   }
 
   const { id } = tracked.value;
-  return tracking.getSyncState({ kind: 'project', id })?.hidden
-    ? { kind: 'hidden', url: githubUrl.value }
-    : getCantBeReadCause({ freshness: sync.getProjectFreshness(id), retry: () => sync.pollTrackedNow() });
+  return getCantBeReadCause({
+    freshness: sync.getProjectFreshness(id),
+    retry: () => sync.pollNow([sync.getProjectLoop(id)]),
+    url: githubUrl.value,
+  });
 });
 /** Not tracked, the copy holds what concerns the user: the open items of my work that say they are in it (J4). */
 const concerning = computed(() => {

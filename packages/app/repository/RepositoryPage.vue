@@ -180,7 +180,12 @@ const browsedName = computed(() =>
 const status = computed(() =>
   browsedName.value === null ? null : browsed.getStatus(browsedName.value, listSection.value, state.value),
 );
-/** Why what the section lacks can't arrive now; `null` when nothing stands in its way. */
+/**
+ * Why what the section lacks can't arrive now; `null` when nothing stands in its way. Tracked, with nothing listed of a
+ * state its download still reads (closed items, say), it is the download that stands in the way, failing or paused,
+ * however fresh the repository's own poll keeps the rest — the status bar alone not turning amber for it (first run
+ * and loading D3, D6).
+ */
 const cantBeRead = computed((): CantBeReadCause | null => {
   if (!itemsShown.value || !items.loaded || !tracking.loaded) {
     return null;
@@ -197,13 +202,21 @@ const cantBeRead = computed((): CantBeReadCause | null => {
     });
   }
 
-  return tracking.getSyncState({ kind: 'repository', nameWithOwner: nameWithOwner.value })?.hidden
-    ? { kind: 'hidden', url }
-    : getCantBeReadCause({
-        freshness: sync.getRepositoryFreshness(nameWithOwner.value),
-        retry: () => sync.pollTrackedNow(),
-        url,
-      });
+  const repository = nameWithOwner.value;
+  const own = getCantBeReadCause({
+    freshness: sync.getRepositoryFreshness(repository),
+    retry: () => sync.pollNow([sync.getRepositoryLoop(repository)]),
+    url,
+  });
+  if (own || !repositoryList.value.arriving) {
+    return own;
+  }
+
+  return getCantBeReadCause({
+    freshness: sync.getDownloadFreshness(),
+    retry: () => sync.pollNow([sync.getDownloadLoop()]),
+    url,
+  });
 });
 const repositoryList = computed(() =>
   buildRepositoryList({

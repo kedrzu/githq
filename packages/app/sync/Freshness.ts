@@ -9,7 +9,8 @@ import type { DownloadCount, RepositoryDownloadPhase } from '@/tracking/Tracking
  * - `checking`: a poll is running and the last success is no longer fresh (while fresh, a running poll still
  *   reads `fresh`: the marker stays quiet);
  * - `stale`: the last success is older than expected — offline, requests failing (retried every interval), or
- *   a poll simply overdue (`late`), GitHub refusing to say what changed for a reason that lasts (`refused`), or a
+ *   a poll simply overdue (`late`), GitHub refusing to say what changed for a reason that lasts (`refused`, asked again
+ *   hourly), GitHub not showing the repository or project `of` at all — no access, or gone (`hidden`) —, or a
  *   repository's workflows GitHub no longer lists, the last known ones staying on screen (`workflowsUnavailable`);
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
@@ -54,6 +55,12 @@ export type Freshness =
           readonly reason: 'offline' | 'failing' | 'refused' | 'workflowsUnavailable';
       }
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
+    | {
+          readonly kind: 'stale';
+          readonly since: number | null;
+          readonly reason: 'hidden';
+          readonly of: 'repository' | 'project';
+      }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
     | {
           readonly kind: 'partial';

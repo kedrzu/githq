@@ -129,7 +129,8 @@ export const BrowsedRepositories = defineService({
         const sectionsRef = shallowRef(new Map<string, BrowsedSectionState>());
         /** GitHub's name of each address it was asked by, lower-cased; read along with `sectionsRef`. */
         const settledNames = new Map<string, string>();
-        const shows = new Set<BrowsedSectionView>();
+        /** What the screens show; a new set on every change, so what reads it follows. */
+        const showsRef = shallowRef<ReadonlySet<BrowsedSectionView>>(new Set());
         /** The repositories whose fresh start waits for the kept copy, which alone says what else keeps a row. */
         const waitingFreshStart = new Set<string>();
         const onlineRef = shallowRef(browser.isOnline());
@@ -147,7 +148,16 @@ export const BrowsedRepositories = defineService({
         browser.onOnlineChange(followPresence);
         watch(copyLoaded, followPresence, { flush: 'sync' });
 
-        return { hold, show, loadMore, readNow, getStatus, getFreshness: getSectionFreshness, isTabVisible };
+        return {
+            hold,
+            show,
+            loadMore,
+            readNow,
+            getStatus,
+            getShownState,
+            getFreshness: getSectionFreshness,
+            isTabVisible,
+        };
 
         /**
          * Holds the repository for a screen's whole life; returns the release. With no tab holding it yet, what is kept
@@ -167,13 +177,17 @@ export const BrowsedRepositories = defineService({
          * was read over {@link BROWSE_FRESH_MS} ago is checked, and it is checked again every {@link BROWSE_POLL_MS}.
          */
         function show(view: BrowsedSectionView) {
-            shows.add(view);
+            showsRef.value = new Set(showsRef.value).add(view);
             enter(view);
 
             return () => {
-                if (!shows.delete(view)) {
+                if (!showsRef.value.has(view)) {
                     return;
                 }
+
+                const left = new Set(showsRef.value);
+                left.delete(view);
+                showsRef.value = left;
 
                 const section = findSection(view.nameWithOwner, view.section);
                 if (section && !isShown(section)) {
@@ -224,6 +238,16 @@ export const BrowsedRepositories = defineService({
         }
 
         /**
+         * The state a screen shows of the section, for what tells of that screen elsewhere — the status bar — to read the
+         * same freshness as its note (first run and loading D6); `undefined` while none shows it. Reactive.
+         */
+        function getShownState(nameWithOwner: string, sectionName: RepositoryItemSection): RepositoryState | undefined {
+            const section = findSection(nameWithOwner, sectionName);
+            // With two screens on it, the one shown last.
+            return section ? getShownStates(section).at(-1) : undefined;
+        }
+
+        /**
          * How fresh the section is, by this service's own reads; `partial` with nothing read yet. Reactive. For one `state`
          * of it, that state with no page read yet has nothing fresh to stand on, whatever the section's others had: what
          * stands in its way tells at once, not once they are stale.
@@ -239,7 +263,7 @@ export const BrowsedRepositories = defineService({
             }
 
             if (section.notShown) {
-                return { kind: 'stale', since: section.checkedAt, reason: 'refused' };
+                return { kind: 'stale', since: section.checkedAt, reason: 'hidden', of: 'repository' };
             }
 
             return getFreshness({
@@ -748,11 +772,13 @@ export const BrowsedRepositories = defineService({
         }
 
         function getShownSections() {
-            return new Set(filterNotNull([...shows].map(view => findSection(view.nameWithOwner, view.section))));
+            return new Set(
+                filterNotNull([...showsRef.value].map(view => findSection(view.nameWithOwner, view.section))),
+            );
         }
 
         function getShownStates(section: BrowsedSectionState) {
-            return [...shows]
+            return [...showsRef.value]
                 .filter(view => findSection(view.nameWithOwner, view.section) === section)
                 .map(view => view.state);
         }

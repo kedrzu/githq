@@ -396,6 +396,12 @@ test('a check answered 404 says the repository is not shown, and stops the check
     await tab.session.clock.advance(BROWSE_POLL_MS);
     expect(tab.asked()).toEqual([`GET /repos/${WEB}/issues`]);
     expect(tab.browsed.getStatus(WEB, 'issues', 'open').notShown).toBe(true);
+    // Told as GitHub not showing it, which asks nothing again hourly (first run and loading D12).
+    expect(tab.browsed.getFreshness(WEB, 'issues')).toMatchObject({
+        kind: 'stale',
+        reason: 'hidden',
+        of: 'repository',
+    });
     tab.clear();
 
     await tab.session.clock.advance(5 * BROWSE_POLL_MS);
@@ -532,6 +538,27 @@ test('for one state, what stands in its way tells at once with no page of it rea
         since: null,
         reason: 'offline',
     });
+});
+
+test('first run and loading D6: the state a screen shows is known beyond it, so the status bar reads the freshness its note does', async () => {
+    const tab = await openTab();
+    tab.world.addPage('RepositoryIssues OPEN', [issue('I_1', 1)]);
+    const leaveOpen = tab.browsed.show(VIEW);
+    await tab.session.clock.advance(0);
+    expect(tab.browsed.getShownState(WEB, 'issues')).toBe('open');
+
+    // The screen moves to Closed, which GitHub fails on.
+    tab.world.failing = true;
+    leaveOpen();
+    const leaveClosed = tab.browsed.show({ ...VIEW, state: 'closed' });
+    await tab.session.clock.advance(0);
+
+    const shown = tab.browsed.getShownState(WEB, 'issues');
+    expect(shown).toBe('closed');
+    expect(tab.browsed.getFreshness(WEB, 'issues', shown)).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    leaveClosed();
+    expect(tab.browsed.getShownState(WEB, 'issues')).toBeUndefined();
 });
 
 test('the freshness turns with time alone: checks failing stay fresh for the slack, then say so', async () => {

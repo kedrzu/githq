@@ -255,7 +255,8 @@ const screenFreshness = computed((): Freshness => {
     }
 
     if (shown !== 'workflows') {
-      return browsed.getFreshness(nameWithOwner, shown);
+      // The state the page shows, so the bar and the page's note read the same freshness.
+      return browsed.getFreshness(nameWithOwner, shown, browsed.getShownState(nameWithOwner, shown));
     }
   }
 

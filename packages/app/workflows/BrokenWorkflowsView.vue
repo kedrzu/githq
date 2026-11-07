@@ -1,4 +1,4 @@
-<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. While some repositories are still being read, ghost workflow rows with the repository's column follow (`WorkflowsArriving`, first run and loading D17), and nothing claims them healthy — the header says "reading 4 repositories" (ES28); those GitHub shows nothing of follow under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). No repository read and GitHub in the way, the screen says why instead of ghosts (`CantBeRead`, first run and loading D6, D12, ES23); every repository under "Can't tell", it says GitHub shows none of them above that list. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
+<!-- Every broken workflow of the tracked repositories (actions W2): the header with how many are broken in how many repositories, then the rows (`WorkflowRow`, the repository named) under "New" — broken less than a day ago — and "Ongoing", the newest break first, so an old failure cannot hide a fresh one. While some repositories are still being read, ghost workflow rows with the repository's column follow (`WorkflowsArriving`, first run and loading D17), and nothing claims them healthy — the header says "reading 4 repositories" (ES28); those GitHub shows nothing of follow under "Can't tell", out of the total (W2c). With nothing broken and everything read, the all-green state says so (W2b). Repositories left to read, no rows and GitHub in the way, the screen says why instead of ghosts — however many are read already — (`CantBeRead`, first run and loading D6, D12, ES23); every repository under "Can't tell", it says GitHub shows none of them above that list. Keys while it is shown and no layer is open, never from a field — it takes the focus as it opens: J/K and ↓/↑ move the selection — on the first row until moved — and Enter opens the selected workflow's latest failed run, as a click on its row does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ban, Coffee, EyeOff, Workflow } from 'lucide-vue-next';
@@ -63,9 +63,12 @@ const trackedCount = computed(
 );
 /** Nothing broken and every repository that shows its workflows read: the all-green state. */
 const allGreen = computed(() => props.broken.brokenCount === 0 && props.broken.unread.length === 0);
-/** No repository read, nothing to list and GitHub in the way: what is said instead of ghosts. Rows on screen stay. */
+/**
+ * Repositories left to read, nothing to list and GitHub in the way: what is said instead of ghosts, which would wait
+ * forever, however many are read already. Rows on screen stay.
+ */
 const unreadable = computed(() =>
-  trackedCount.value > 0 && props.broken.readCount === 0 && rows.value.length === 0 ? (props.cantBeRead ?? null) : null,
+  props.broken.unread.length > 0 && rows.value.length === 0 ? (props.cantBeRead ?? null) : null,
 );
 /** Read to the end, and GitHub shows nothing of any of them: there is nothing to call green. */
 const noneShown = computed(
@@ -73,7 +76,7 @@ const noneShown = computed(
 );
 const unreadableThing = computed(() =>
   t(unreadable.value?.kind === 'failing' ? l.workflowsOfAnyTracked : l.workflowsOfTracked, {
-    count: trackedCount.value,
+    count: props.broken.unread.length,
   }),
 );
 const meta = computed(() => {

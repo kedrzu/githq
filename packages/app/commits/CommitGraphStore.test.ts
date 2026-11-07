@@ -605,6 +605,79 @@ test('coming back online leaves a graph that failed for another reason alone', a
     expect(requests()).toHaveLength(asked);
 });
 
+test('D12: GitHub failing is asked again by itself after 30 seconds, once per failure, until it answers', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let failing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    const checks = () => requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+    expect(checks()).toBe(1);
+
+    await session.clock.advance(29_999);
+    expect(checks()).toBe(1);
+    await session.clock.advance(1);
+    expect(checks()).toBe(2);
+
+    failing = false;
+    await session.clock.advance(30_000);
+    expect(checks()).toBe(3);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+
+    await session.clock.advance(120_000);
+    expect(checks()).toBe(3);
+});
+
+test('D12: a check GitHub refused for the rate is asked again by itself when the pause ends', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let refusing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request =>
+            refusing
+                ? { data: null, errors: [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }] }
+                : world.answer(request),
+    });
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web').kind).toBe('paused');
+
+    refusing = false;
+    await session.clock.advance(60_000);
+
+    expect(requests().filter(request => request.operation === 'RepositoryCommitRefs')).toHaveLength(2);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('D12: what stood in the way of the last check is told while the next one runs, until GitHub answers it', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let failing = true;
+    const { graphs, session } = setup(uniqueLogin(), {
+        answer: request => (failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    failing = false;
+    const held = createPromise();
+    session.github.holdIf = () => held.promise;
+    const opened = graphs.open('acme/web');
+    await session.clock.advance(0);
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    held.resolve();
+    await opened;
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
 test('GitHub hiding the repository, or it being gone, is told apart from GitHub failing', async () => {
     const { graphs } = setup(uniqueLogin(), {
         answer: () => ({
@@ -615,7 +688,9 @@ test('GitHub hiding the repository, or it being gone, is told apart from GitHub 
 
     await graphs.open('acme/web');
 
-    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'refused' });
+    // GitHub doesn't show it: nothing to ask again hourly (first run and loading D12).
+    const hidden: Freshness = { kind: 'stale', since: null, reason: 'hidden', of: 'repository' };
+    expect(graphs.getFreshness('acme/web')).toEqual(hidden);
 });
 
 test('a later good page clears what a failed one said, a failure and a pause alike', async () => {

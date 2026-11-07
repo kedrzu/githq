@@ -393,6 +393,32 @@ test('a project hidden during its first download is downloaded once GitHub shows
     expect(projects.getStoredItems('PVT_1').map(item => item.itemId)).toEqual(['PVTI_1', 'PVTI_2', 'PVTI_3']);
 });
 
+test("ES16, ES20: a repository or project GitHub doesn't show is told so, before its items arrived and after", async () => {
+    const world = sampleWorld();
+    world.project.shown = false;
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+
+    // Never "Downloading items" for good, nor unchecked.
+    expect(sync.getProjectFreshness('PVT_1')).toMatchObject({ kind: 'stale', reason: 'hidden', of: 'project' });
+
+    // Hidden before its open items arrived, and after all of it did: never "Downloading open issues", nor "Up to date".
+    const web = { kind: 'repository', nameWithOwner: 'acme/web' } as const;
+    await tracking.updateSyncState(web, { phase: 'openIssues', hidden: true });
+    expect(sync.getRepositoryFreshness('acme/web')).toMatchObject({
+        kind: 'stale',
+        reason: 'hidden',
+        of: 'repository',
+    });
+    await tracking.updateSyncState(web, { phase: 'done', hidden: true });
+    expect(sync.getRepositoryFreshness('acme/web')).toMatchObject({
+        kind: 'stale',
+        reason: 'hidden',
+        of: 'repository',
+    });
+});
+
 test('a pull request of a tracked repository with a draft review, found deleted by the read of the statuses, goes', async () => {
     const world = sampleWorld();
     world.items.set('PR_draft', {
@@ -607,6 +633,23 @@ test('a repository whose changes GitHub refuses is said so, and asked again an h
     await session.clock.advance(0);
     expect(restPolls(session.github.requests)).toContain('GET /repos/acme/web/issues unconditional');
     expect(sync.getRepositoryFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('first run and loading D12: "Try again" asks the loop the freshness came from, once the items are in their own poll alone', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    tracking.choose(TRACK_ALL);
+    await session.clock.advance(0);
+    expect(sync.getRepositoryLoop('acme/web')).toBe('repositories');
+    expect(sync.getProjectLoop('PVT_1')).toBe('projects');
+
+    session.github.requests.length = 0;
+    await sync.pollNow([sync.getRepositoryLoop('acme/web')]);
+
+    expect(session.github.requests.map(request => request.operation)).toEqual([
+        'GET /repos/acme/web/issues',
+        'GET /repos/acme/api/issues',
+    ]);
 });
 
 test('a poll failing for one repository does not hide that another is still downloading', async () => {

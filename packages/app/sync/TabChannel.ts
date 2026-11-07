@@ -46,13 +46,10 @@ export type TabMessage =
     /** A repository's workflows as read, or `null` once they are dropped. */
     | { readonly kind: 'workflows'; readonly nameWithOwner: string; readonly workflows: RepositoryWorkflows | null }
     /**
-     * A screen showing workflows opened in a tab that does not sync: the syncing tab polls them at once (actions D2).
+     * A screen showing workflows opened (actions D2), or a "Try again" (first run and loading D12), in a tab that does
+     * not sync: the syncing tab polls `loops` at once.
      */
-    | { readonly kind: 'pollWorkflows' }
-    /** "Try again" on My work in a tab that does not sync: the syncing tab polls it at once (first run and loading D12). */
-    | { readonly kind: 'pollMyWork' }
-    /** "Try again" on a tracked repository or project in a tab that does not sync: the syncing tab polls them at once (D12). */
-    | { readonly kind: 'pollTracked' }
+    | { readonly kind: 'poll'; readonly loops: readonly SyncLoop[] }
     /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
     | { readonly kind: 'pollPendingReviews' };
 

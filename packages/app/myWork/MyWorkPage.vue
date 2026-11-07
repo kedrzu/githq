@@ -47,7 +47,7 @@ const cantBeRead = computed((): CantBeReadCause | null => {
     return null;
   }
 
-  return getCantBeReadCause({ freshness: sync.myWorkFreshness, retry: () => sync.pollMyWorkNow() });
+  return getCantBeReadCause({ freshness: sync.myWorkFreshness, retry: () => sync.pollNow(['myWork']) });
 });
 // "Needs me" empty points at the user's open pull requests waiting on others, nested ones included.
 const waitingCount = computed(() => {

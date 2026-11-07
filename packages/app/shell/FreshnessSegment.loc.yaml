@@ -28,6 +28,10 @@ refused:
   en: As of {time} · GitHub refuses to list its changes, asking again hourly
 refusedNothingYet:
   en: GitHub refuses to list its changes, asking again hourly
+hiddenRepository:
+  en: GitHub doesn't show this repository
+hiddenProject:
+  en: GitHub doesn't show this project
 workflowsUnavailable:
   en: Last known workflows · GitHub doesn't list them now
 notRefreshedSince:

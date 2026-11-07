@@ -10,6 +10,7 @@ import {
   CircleX,
   Cloud,
   CloudOff,
+  EyeOff,
   History,
   LoaderCircle,
   MessageSquare,
@@ -210,6 +211,12 @@ const look = computed((): SegmentLook => {
             tone: 'warning',
             text:
               freshness.since === null ? t(l.refusedNothingYet) : t(l.refused, { time: formatTime(freshness.since) }),
+          };
+        case 'hidden':
+          return {
+            icon: EyeOff,
+            tone: 'warning',
+            text: t(freshness.of === 'project' ? l.hiddenProject : l.hiddenRepository),
           };
         case 'workflowsUnavailable':
           return { icon: TriangleAlert, tone: 'warning', text: t(l.workflowsUnavailable) };

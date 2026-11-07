@@ -5,5 +5,10 @@ export type CantBeReadCause =
     | { readonly kind: 'paused'; readonly until: number }
     /** GitHub fails; `retry` asks again, the button busy until it settles. */
     | { readonly kind: 'failing'; readonly retry: () => Promise<unknown> }
-    /** No access or gone, which look the same from GitHub; `url` is its page there. */
-    | { readonly kind: 'hidden'; readonly url: string };
+    /** No access or gone, which look the same from GitHub; `url` is its page there. Nothing more arrives. */
+    | { readonly kind: 'hidden'; readonly url: string }
+    /**
+     * GitHub refuses a tracked copy's changes (a lasting 403, asked again hourly): told as `hidden`, but only for what
+     * hasn't arrived, as what has stays and may be trusted.
+     */
+    | { readonly kind: 'refused'; readonly url: string };

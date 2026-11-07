@@ -262,8 +262,9 @@ moves, which matters more than how far it got.
   soon as you're back."; no action.
 - **Paused by the allowance** — "Refresh paused until 14:20"; "GitHub's hourly allowance ran out before {thing} was
   read. It comes in by itself at 14:20."; no action.
-- **GitHub failing** — "GitHub isn't answering"; "githq couldn't read {thing}. It tries again every 30 seconds.";
-  "Try again".
+- **GitHub failing** — "GitHub isn't answering"; "githq couldn't read {thing}. It tries again by itself."; "Try
+  again". Each surface asks again at its own pace — a sync loop at its interval, the commit graph after 30 seconds —
+  rather than every surface every 30 seconds. (2026-11-07, owner, at the M3 checkpoint)
 - **Hidden or gone** — "GitHub doesn't show {thing}"; "It may be private to githq, its organisation may not have
   approved githq, or it is gone."; "Open on GitHub".
 

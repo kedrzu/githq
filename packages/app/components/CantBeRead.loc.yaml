@@ -17,9 +17,9 @@ pausedNote:
 failingTitle:
   en: GitHub isn't answering
 failingLine:
-  en: githq couldn't read {thing}. It tries again every 30 seconds.
+  en: githq couldn't read {thing}. It tries again by itself.
 failingNote:
-  en: GitHub isn't answering. It tries again every 30 seconds.
+  en: GitHub isn't answering. It tries again by itself.
 hiddenTitle:
   en: GitHub doesn't show {thing}
 hiddenLine:

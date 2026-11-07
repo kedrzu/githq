@@ -26,15 +26,9 @@ repositories:
     one: '{count} repository'
     many: '{count} repositories'
 workflowsOfTracked:
-  plural: count
-  en:
-    one: the workflows of your tracked repository
-    many: the workflows of your {count} tracked repositories
+  en: the workflows of {count} of your tracked repositories
 workflowsOfAnyTracked:
-  plural: count
-  en:
-    one: the workflows of your tracked repository, so it can't tell what is broken
-    many: the workflows of any of your {count} tracked repositories, so it can't tell what is broken
+  en: the workflows of {count} of your tracked repositories, so it can't tell what is broken there
 noneShownTitle:
   en: GitHub doesn't show the workflows
 noneShownDetail:

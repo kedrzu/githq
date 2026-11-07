@@ -174,11 +174,11 @@ test('"Try again" polls my work at once: it tells failing until the search answe
     const { items, sync } = await setup(github, 'alice');
     expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
 
-    await sync.pollMyWorkNow();
+    await sync.pollNow(['myWork']);
     expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
 
     github.failSearch = null;
-    await sync.pollMyWorkNow();
+    await sync.pollNow(['myWork']);
     expect(items.membership.assigned).toEqual(new Set(['I_1']));
     expect(sync.myWorkFreshness.kind).toBe('fresh');
 });
@@ -191,7 +191,7 @@ test('"Try again" in a tab that does not sync has the syncing tab poll my work',
     const browsing = await setup(github, 'alice', { tabs });
     const searches = github.searches().length;
 
-    await browsing.sync.pollMyWorkNow();
+    await browsing.sync.pollNow(['myWork']);
     await syncing.clock.advance(0);
     expect(github.searches().length).toBeGreaterThan(searches);
 });
@@ -202,9 +202,11 @@ test('the download waits for my work, so my work failing tells on what it has ye
     const { sync } = await setup(github, 'alice');
     expect(sync.getRepositoryFreshness('acme/web')).toEqual({ kind: 'stale', since: null, reason: 'failing' });
 
+    // What it waits for is what "Try again" asks.
+    expect(sync.getRepositoryLoop('acme/web')).toBe('myWork');
     const searches = github.searches().length;
     github.failSearch = null;
-    await sync.pollTrackedNow();
+    await sync.pollNow([sync.getRepositoryLoop('acme/web')]);
     expect(github.searches().length).toBeGreaterThan(searches);
     expect(sync.getRepositoryFreshness('acme/web').kind).toBe('partial');
 });
@@ -217,7 +219,7 @@ test('"Try again" on a tracked repository in a tab that does not sync has the sy
     const browsing = await setup(github, 'alice', { tabs });
     const searches = github.searches().length;
 
-    await browsing.sync.pollTrackedNow();
+    await browsing.sync.pollNow([browsing.sync.getRepositoryLoop('acme/web')]);
     await syncing.clock.advance(0);
     expect(github.searches().length).toBeGreaterThan(searches);
 });

@@ -144,7 +144,7 @@ export const Unavailable: Story = {
             failIf: operation => operation === 'RepositoryCommitRefs',
         }),
     play: async ({ canvasElement }) => {
-        const notice = "githq couldn't read the commits. It tries again every 30 seconds.";
+        const notice = "githq couldn't read the commits. It tries again by itself.";
         await expect(await within(canvasElement).findByText(notice)).toBeVisible();
     },
 };

@@ -166,6 +166,19 @@ export const NoRepositoryCanBeRead: Story = {
     },
 };
 
+/** ES23: GitHub fails after one repository's workflows were read, none broken: the note for the rest, no ghosts. */
+export const SomeRepositoriesCantBeRead: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', workflows: [PROBE] }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/mdlint', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/webapp', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/api', unread: true }),
+        ]),
+        cantBeRead: { kind: 'offline' },
+    },
+};
+
 /** GitHub answers, and shows nothing of any tracked repository: the note over "Can't tell", which says why of each. */
 export const NoneShown: Story = {
     args: {
