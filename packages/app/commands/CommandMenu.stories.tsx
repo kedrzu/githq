@@ -83,20 +83,28 @@ const MOBILE_METADATA: RepositoryMetadata = {
 const FOUND_REPOSITORIES: RepositoryBrowseSearchQuery = {
     search: {
         nodes: [
-            {
-                nameWithOwner: 'vitejs/vite',
-                description: "Next generation frontend tooling. It's fast!",
-                isPrivate: false,
-            },
-            {
-                nameWithOwner: 'fitloop/vite-plugin-billing',
-                description: 'Billing pages as a Vite plugin',
-                isPrivate: true,
-            },
-            { nameWithOwner: 'vitejs/no-description', description: null, isPrivate: false },
+            foundRepository('vitejs/vite', "Next generation frontend tooling. It's fast!", false),
+            foundRepository('fitloop/vite-plugin-billing', 'Billing pages as a Vite plugin', true),
+            foundRepository('vitejs/no-description', null, false),
         ],
     },
 };
+
+/** A repository as GitHub's search answers with it. */
+function foundRepository(nameWithOwner: string, description: string | null, isPrivate: boolean) {
+    return {
+        id: `R_${nameWithOwner}`,
+        nameWithOwner,
+        description,
+        isPrivate,
+        isArchived: false,
+        pushedAt: null,
+        viewerPermission: null,
+        owner: { login: nameWithOwner.split('/')[0] ?? '' },
+        issues: { totalCount: 0 },
+        pullRequests: { totalCount: 0 },
+    };
+}
 
 /** E4: three issues in Platform Q4, one of them in a repository where the user only reads. */
 const SELECTED: readonly Item[] = [

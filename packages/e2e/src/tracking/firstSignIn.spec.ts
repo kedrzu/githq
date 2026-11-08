@@ -130,6 +130,31 @@ test('the first sign-in tracks the own repositories and projects it chose: on My
     await expect(shell.trackedCount(SAMPLE_REPOSITORY)).toHaveText('4');
 });
 
+test("the choice's filter also searches GitHub: someone else's repository found there is ticked and tracked with the rest", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.repository('vitejs/vite', { description: 'Next generation frontend tooling' });
+    sample.world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    const firstSignIn = new FirstSignInHarness(page);
+    await expect(firstSignIn.repository(SAMPLE_REPOSITORY)).toBeChecked();
+
+    await firstSignIn.root.getByRole('textbox', { name: 'Filter repositories' }).fill('vite');
+    await expect(firstSignIn.root.getByRole('heading', { name: 'On GitHub' })).toBeVisible();
+    await firstSignIn.repository('vitejs/vite').click();
+    await expect(firstSignIn.repository('vitejs/vite')).toBeChecked();
+    await firstSignIn.trackAndOpenMyWork();
+
+    const shell = new AppShellHarness(page);
+    await expect(shell.tracked('vitejs/vite')).toBeVisible();
+    await expect(shell.tracked(SAMPLE_REPOSITORY)).toBeVisible();
+});
+
 /** A settings file tracking `acme/api` and nothing of the user's own. */
 const SAVED_ELSEWHERE = {
     text: JSON.stringify({

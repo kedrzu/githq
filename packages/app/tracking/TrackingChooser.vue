@@ -1,4 +1,4 @@
-<!-- Choosing what to track (G2, D20), on the first sign-in and in a modal afterwards (T18, D25; `TrackRepositoriesDialog`): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. On the first sign-in the projects sit beside the repositories; with nothing at all to pick, it offers tracking someone else's repository or project by name (G10); the `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). As the picker (`tracked` given, T18) it has no heading, projects, footer or G10, and the model is only what is picked: the tracked repositories show with a grey, fixed tick and "tracked", no key or group action changes them, an owner with all of them tracked folds to its header, counts say "tracked", J and K move too, and a filter naming a repository nothing listed matches looks it up (latest wins) and offers it; ticked, it is handed on (`found`). -->
+<!-- Choosing what to track (G2, D20), on the first sign-in and in a modal afterwards (T18, D25; `TrackRepositoriesDialog`): the user's repositories and their organisations', newest push first, each owner's group with how many are chosen — the long ones folded, opened in full by picking the owner on the left, by "Show all" or by typing a filter (G4: an organisation may have hundreds; more pages are asked for as they are needed). An organisation hiding its private repositories from githq says so in its group and explains itself when picked (G5). Keys: `/` the filter, ↑/↓ between the rows, Space chooses, Shift+click or Shift+Space sets the rows shown from the last one clicked to this one, ⌘A all that match, Esc clears the filter, ⌘↵ tracks. The filter also asks GitHub (mobile D34, G18, G19): from two typed characters, once typing pauses and over all owners, GitHub's repository search follows the user's own matches under "On GitHub", with what the filter names by its address looked up first; what the user's lists show is not repeated there, a row found ticks like any other and is handed on (`found`), and while GitHub answers one line says so. On the first sign-in the projects sit beside the repositories; with nothing at all to pick (G10), the field is that search, a project's address looked up too; the `saving` slot holds what the page says about saving to GitHub (settings-sync G2, G12–G14), in a band above the footer, or above "Continue to My work" (G10). As the picker (`tracked` given, T18) it has no heading, projects, footer or G10, and the model is only what is picked: the tracked repositories show with a grey, fixed tick and "tracked", no key or group action changes them, an owner with all of them tracked folds to its header, counts say "tracked", and J and K move too. -->
 <script lang="ts" setup>
 import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -18,10 +18,11 @@ import { findMatches, prepareMatchTexts } from '@/utils/findMatches.js';
 import { isSingleKeyShortcut } from '@/utils/isSingleKeyShortcut.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import { useFilteredListKeys } from '@/utils/useFilteredListKeys.js';
+import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
 
 import CandidateRepositoryRow from './CandidateRepositoryRow.vue';
+import FoundOnGitHub from './FoundOnGitHub.vue';
 import HiddenOrganizationNotice from './HiddenOrganizationNotice.vue';
-import TrackByName from './TrackByName.vue';
 import { getCandidateProjects, getCandidateRepositories } from './trackingCandidates.js';
 import * as l from './TrackingChooser.loc.js';
 import type {
@@ -39,6 +40,8 @@ import type { TrackingReference } from './utils/parseTrackingReference.js';
 const FOLDED_PROJECTS = 6;
 /** How many rows a folded owner's group shows (an organisation's chosen ones besides). */
 const FOLDED_ROWS = 4;
+/** G10: what its field takes besides a search. */
+const EXAMPLES = ['vitejs/vite', 'github.com/orgs/tauri-apps/projects/2'];
 
 /** A repository a row shows: offered by GitHub's lists, or (the picker) tracked yet not among what they gave so far. */
 type ListedRepository = CandidateRepository | TrackedRepositoryEntry;
@@ -91,14 +94,16 @@ const props = defineProps<{
   /** What the rows' "active 12m ago" are counted from. */
   now: number;
   /**
-   * Repositories and projects found by name, offered besides the user's: on sign-in through G10's field; in the picker,
-   * a looked-up one the user ticked (the `found` event), kept by the parent so confirming can track it.
+   * Repositories and projects found on GitHub that the user ticked (the `found` event), offered besides the user's: kept
+   * by the parent so confirming can track them.
    */
   found: readonly (CandidateProject | CandidateRepository)[];
   /** When the user opened GitHub's page to request each organisation's approval (epoch ms). */
   approvals: Readonly<Record<string, number>>;
-  /** Looks up a repository or project the user names (G10; in the picker, typed in the filter). */
+  /** Looks up a repository or project the filter names by its address, once nothing listed matches it. */
   find: (reference: TrackingReference) => Promise<CandidateProject | CandidateRepository | null>;
+  /** GitHub's repository search for what the filter holds (mobile D34, G18): anyone's repositories. */
+  search: (text: string) => Promise<readonly CandidateRepository[]>;
   /** The settings repository "Track these" creates, `owner/githq-settings`, when saving is ticked (G12). */
   creates?: string | null;
   /**
@@ -137,7 +142,7 @@ const emit = defineEmits<{
   /** More of the owner's repositories are needed: the next page. */
   loadMore: [owner: string];
   requestApproval: [organization: string];
-  /** Found by name and chosen: on sign-in through G10's field; in the picker, a looked-up one ticked. */
+  /** Found on GitHub — by the search or by its address — and ticked. */
   found: [candidate: CandidateProject | CandidateRepository];
 }>();
 
@@ -189,20 +194,14 @@ const listedLogins = computed(() => new Set(listedGroups.value.map(group => grou
 const trackedUnderListed = computed(() =>
   (props.tracked ?? []).filter(entry => listedLogins.value.has(parseRepositoryName(entry.nameWithOwner).owner)),
 );
+// Under their owners: what is tracked but not read yet (the picker), and what was found on GitHub and ticked — unless
+// On GitHub shows it now.
 const extraRepositories = computed(() => {
-  if (!picker.value) {
-    return [];
-  }
-
   const read = new Set(readRepositories.value.map(repository => repository.nameWithOwner));
   const extras = new Map<string, ListedRepository>();
   // A candidate found later tells more than what is tracked: it wins.
-  for (const repository of [
-    ...trackedUnderListed.value,
-    ...foundRepositories.value,
-    ...(lookedUp.value ? [lookedUp.value] : []),
-  ]) {
-    if (!read.has(repository.nameWithOwner)) {
+  for (const repository of [...trackedUnderListed.value, ...foundRepositories.value]) {
+    if (!read.has(repository.nameWithOwner) && !gitHubNames.value.has(repository.nameWithOwner)) {
       extras.set(repository.nameWithOwner, repository);
     }
   }
@@ -231,9 +230,9 @@ const groups = computed((): OwnerGroup[] => {
 const chosenRepositories = computed(() => new Set(repositories.value));
 const chosenProjects = computed(() => new Set(projects.value));
 const needle = computed(() => filter.value.trim());
-/** The picker: the repository the filter names by its address. */
+/** The repository the filter names by its address. */
 const reference = computed(() => {
-  const named = picker.value ? parseTrackingReference(needle.value) : null;
+  const named = parseTrackingReference(needle.value);
   return named?.kind === 'repository' ? named : null;
 });
 /** The groups of the owner picked, as the filter leaves them. */
@@ -253,20 +252,27 @@ const pagedGroups = computed(() => {
     return [];
   }
 
-  const named = reference.value?.owner.toLowerCase();
+  const named = picker.value ? reference.value?.owner.toLowerCase() : undefined;
   return filteredGroups.value.filter(
     group => group.list?.nextCursor != null && (named === undefined || group.login.toLowerCase().endsWith(named)),
   );
 });
 /** The repositories' rows in the order shown, which a range follows. */
-const shownRepositoryNames = computed(() =>
-  empty.value
-    ? foundRepositories.value.map(repository => repository.nameWithOwner)
-    : shownGroups.value.flatMap(group => group.rows.map(row => row.nameWithOwner)),
-);
+const shownRepositoryNames = computed(() => [
+  ...(empty.value
+    ? shownFoundRepositories.value
+    : noneOfYours.value
+      ? []
+      : shownGroups.value.flatMap(group => group.rows)
+  ).map(row => row.nameWithOwner),
+  ...gitHubRepositories.value.map(repository => repository.nameWithOwner),
+]);
 /** The projects' rows in the order shown. */
 const shownProjectIds = computed(() =>
-  (empty.value ? foundProjects.value : shownProjects.value).map(project => project.id),
+  (empty.value
+    ? [...shownFoundProjects.value, ...(lookedUpProject.value ? [lookedUpProject.value] : [])]
+    : shownProjects.value
+  ).map(project => project.id),
 );
 const ownerOptions = computed((): ChoiceListOption<string>[] => [
   ownerOption(
@@ -298,6 +304,13 @@ const foundRepositories = computed(() =>
 );
 const foundProjects = computed(() =>
   props.found.filter((candidate): candidate is CandidateProject => !('nameWithOwner' in candidate)),
+);
+/** G10: the ones found and ticked, but those On GitHub shows now. */
+const shownFoundRepositories = computed(() =>
+  foundRepositories.value.filter(repository => !gitHubNames.value.has(repository.nameWithOwner)),
+);
+const shownFoundProjects = computed(() =>
+  foundProjects.value.filter(project => project.id !== lookedUpProject.value?.id),
 );
 const allRepositories = computed(
   () =>
@@ -341,9 +354,13 @@ const summaryDetail = computed(() => {
   const detail = t(l.summaryDetail, { count: openToCopy.value });
   return props.creates ? t(l.summaryThenCreates, { detail, repository: props.creates }) : detail;
 });
-// What the filter names, once nothing listed matches it (the picker): not while the lists are first read — after
-// reading them failed it still is — and not under an owner picked that it doesn't name.
+// What the filter names, once nothing listed matches it: not while the lists are first read — after reading them
+// failed it still is — and not under an owner picked that it doesn't name. G10 looks a project's address up too.
 const lookupReference = computed(() => {
+  if (empty.value) {
+    return parseTrackingReference(needle.value);
+  }
+
   const named = reference.value;
   if (
     !named ||
@@ -355,22 +372,57 @@ const lookupReference = computed(() => {
 
   return isListed() ? null : named;
 });
-/** The picker: what the filter names, looked up once nothing listed matches it; `null` while looking or not found. */
-const { lookedUp, lookingUp } = useCandidateLookup({
+/** What the filter names by its address, looked up once nothing listed matches it; `null` while looking or not found. */
+const { lookedUp } = useCandidateLookup({
   reference: () => lookupReference.value,
   find: named => props.find(named),
-  accept: candidate => ('nameWithOwner' in candidate ? candidate : null),
+  accept: candidate => candidate,
 });
-/** The picker: the filter matched nothing, nothing was found by its name, and nothing is left to read. */
-const nothingMatches = computed(
+const lookedUpRepository = computed(() =>
+  lookedUp.value && 'nameWithOwner' in lookedUp.value ? lookedUp.value : null,
+);
+const lookedUpProject = computed(() =>
+  lookedUp.value && !('nameWithOwner' in lookedUp.value) ? lookedUp.value : null,
+);
+/** GitHub's search for what the filter holds (mobile D34, G18), over all owners only. */
+const gitHubSearch = useGitHubSearch({
+  text: () => (owner.value === 'all' ? needle.value : ''),
+  ask: () => props.search,
+});
+/**
+ * What the user's lists show already: GitHub's search doesn't repeat it. What is tracked of an owner GitHub doesn't list
+ * shows there with its fixed tick.
+ */
+const listedNames = computed(
+  () => new Set([...readRepositories.value, ...trackedUnderListed.value].map(repository => repository.nameWithOwner)),
+);
+/** On GitHub's rows: what the filter's address found, then what GitHub's search did, not in the user's lists. */
+const gitHubRepositories = computed(() => {
+  const search = gitHubSearch.value;
+  const rows = new Map<string, CandidateRepository>();
+  for (const repository of [
+    ...(lookedUpRepository.value ? [lookedUpRepository.value] : []),
+    ...(search.kind === 'answered' ? search.result : []),
+  ]) {
+    if (!listedNames.value.has(repository.nameWithOwner) && !rows.has(repository.nameWithOwner)) {
+      rows.set(repository.nameWithOwner, repository);
+    }
+  }
+
+  return [...rows.values()];
+});
+const gitHubNames = computed(() => new Set(gitHubRepositories.value.map(repository => repository.nameWithOwner)));
+/** On GitHub shows: GitHub is asked, or the filter's address found something. */
+const showsGitHub = computed(
+  () => gitHubSearch.value.kind !== 'tooShort' || gitHubRepositories.value.length > 0 || lookedUpProject.value !== null,
+);
+/** A filter typed, and none of the user's own match it with nothing of theirs left to read (G18). */
+const noneOfYours = computed(
   () =>
-    picker.value &&
     needle.value !== '' &&
-    !props.reading &&
-    shownGroups.value.every(group => group.matching.length === 0) &&
-    pagedGroups.value.length === 0 &&
-    !lookingUp.value &&
-    !lookedUp.value,
+    props.candidates !== null &&
+    filteredGroups.value.every(group => group.matching.length === 0) &&
+    pagedGroups.value.length === 0,
 );
 
 /** Whether the click toggling a checkbox held Shift; read in the capture phase, before the checkbox toggles. */
@@ -519,7 +571,7 @@ function countTracked(group: OwnerGroup) {
 }
 
 function groupDetail(group: ShownGroup) {
-  if (picker.value) {
+  if (picker.value || group.unlisted) {
     return pickerGroupDetail(group);
   }
 
@@ -633,9 +685,17 @@ function setRepositories(names: readonly string[], chosen: boolean) {
   }
 
   repositories.value = [...next];
-  const looked = lookedUp.value;
-  if (chosen && looked && !trackedNames.value.has(looked.nameWithOwner) && names.includes(looked.nameWithOwner)) {
-    emit('found', looked);
+  if (chosen) {
+    const found = new Set(foundRepositories.value.map(repository => repository.nameWithOwner));
+    for (const repository of gitHubRepositories.value) {
+      if (
+        names.includes(repository.nameWithOwner) &&
+        !found.has(repository.nameWithOwner) &&
+        !trackedNames.value.has(repository.nameWithOwner)
+      ) {
+        emit('found', repository);
+      }
+    }
   }
 }
 
@@ -646,6 +706,10 @@ function setProject(id: string, chosen: boolean) {
     ? [...new Set([...projects.value, ...range])]
     : projects.value.filter(other => !range.has(other));
   projectAnchor.value = id;
+  const looked = lookedUpProject.value;
+  if (chosen && looked && range.has(looked.id) && !foundProjects.value.some(project => project.id === looked.id)) {
+    emit('found', looked);
+  }
 }
 
 /** The rows a click on `row` sets: with Shift, all shown from the anchor to it; else, or with no anchor shown, itself. */
@@ -701,17 +765,32 @@ function projectMeta(project: CandidateProject) {
       />
       <h1 :class="css.trackingChooser_emptyTitle">{{ t(l.emptyTitle) }}</h1>
       <p :class="css.trackingChooser_subtitle">{{ t(l.emptyDetail) }}</p>
-      <TrackByName
-        :find="find"
-        @found="emit('found', $event)"
-      />
+      <div :class="css.trackingChooser_search">
+        <SearchField
+          ref="filterField"
+          v-model="filter"
+          :class="css.trackingChooser_searchField"
+          :label="t(l.searchLabel)"
+          :placeholder="t(l.searchPlaceholder)"
+          @keydown="onFilterKeydown"
+        />
+        <p :class="css.trackingChooser_examples">
+          {{ t(l.examples) }}
+          <code
+            v-for="example in EXAMPLES"
+            :key="example"
+            :class="css.trackingChooser_example"
+            >{{ example }}</code
+          >
+        </p>
+      </div>
       <section
-        v-if="found.length > 0"
+        v-if="shownFoundRepositories.length > 0 || shownFoundProjects.length > 0"
         :class="css.trackingChooser_found"
         :aria-label="t(l.chosen)"
       >
         <CandidateRepositoryRow
-          v-for="repository in foundRepositories"
+          v-for="repository in shownFoundRepositories"
           :key="repository.nameWithOwner"
           :repository="repository"
           :now="now"
@@ -719,7 +798,7 @@ function projectMeta(project: CandidateProject) {
           @update:model-value="setRepository(repository.nameWithOwner, $event)"
         />
         <div
-          v-for="project in foundProjects"
+          v-for="project in shownFoundProjects"
           :key="project.id"
           :class="css.trackingChooser_project"
           data-tracking-row
@@ -737,6 +816,44 @@ function projectMeta(project: CandidateProject) {
             </span>
           </Checkbox>
         </div>
+      </section>
+      <section
+        v-if="showsGitHub"
+        :class="css.trackingChooser_found"
+        :aria-label="t(l.onGitHub)"
+      >
+        <FoundOnGitHub
+          :state="gitHubSearch.kind"
+          :text="needle"
+          :count="gitHubRepositories.length + (lookedUpProject ? 1 : 0)"
+        >
+          <div
+            v-if="lookedUpProject"
+            :class="css.trackingChooser_project"
+            data-tracking-row
+          >
+            <Checkbox
+              :model-value="chosenProjects.has(lookedUpProject.id)"
+              @update:model-value="setProject(lookedUpProject.id, $event)"
+            >
+              <span :class="css.trackingChooser_projectTitle">
+                <SquareKanban
+                  :class="css.trackingChooser_projectIcon"
+                  aria-hidden="true"
+                />
+                {{ lookedUpProject.title }}
+              </span>
+            </Checkbox>
+          </div>
+          <CandidateRepositoryRow
+            v-for="repository in gitHubRepositories"
+            :key="repository.nameWithOwner"
+            :repository="repository"
+            :now="now"
+            :model-value="chosenRepositories.has(repository.nameWithOwner)"
+            @update:model-value="setRepository(repository.nameWithOwner, $event)"
+          />
+        </FoundOnGitHub>
       </section>
       <slot name="saving" />
       <div>
@@ -818,8 +935,18 @@ function projectMeta(project: CandidateProject) {
                 @request-approval="emit('requestApproval', pickedHidden.login)"
               />
 
+              <div
+                v-if="noneOfYours"
+                :class="css.trackingChooser_group"
+              >
+                <h2 :class="css.trackingChooser_groupName">{{ t(l.yourOwn) }}</h2>
+                <span :class="css.trackingChooser_groupDetail">{{
+                  t(l.noneOfYours, { total: sumOver(filteredGroups, group => group.total), filter: needle })
+                }}</span>
+              </div>
+
               <template
-                v-for="group in shownGroups"
+                v-for="group in noneOfYours ? [] : shownGroups"
                 :key="group.login"
               >
                 <div :class="[css.trackingChooser_group, pickedHidden && css.trackingChooser_group_meanwhile]">
@@ -911,20 +1038,24 @@ function projectMeta(project: CandidateProject) {
                 >
                   {{ t(l.showMore, { count: group.total - (group.list?.repositories.length ?? 0) }) }}
                 </Button>
-                <p
-                  v-else-if="!picker && needle !== '' && group.matching.length === 0 && owner !== 'all'"
-                  :class="css.trackingChooser_moreText"
-                >
-                  {{ t(l.noMatch, { filter: filter.trim() }) }}
-                </p>
               </template>
 
-              <p
-                v-if="nothingMatches"
-                :class="css.trackingChooser_moreText"
+              <FoundOnGitHub
+                v-if="showsGitHub"
+                :state="gitHubSearch.kind"
+                :text="needle"
+                :count="gitHubRepositories.length"
               >
-                {{ t(l.nothingMatches, { filter: needle }) }}
-              </p>
+                <CandidateRepositoryRow
+                  v-for="repository in gitHubRepositories"
+                  :key="repository.nameWithOwner"
+                  :repository="repository"
+                  :now="now"
+                  :tracked="trackedNames.has(repository.nameWithOwner)"
+                  :model-value="chosenRepositories.has(repository.nameWithOwner)"
+                  @update:model-value="setRepository(repository.nameWithOwner, $event)"
+                />
+              </FoundOnGitHub>
 
               <p
                 v-if="needle !== ''"
@@ -1285,6 +1416,35 @@ function projectMeta(project: CandidateProject) {
   font-size: 22px;
   font-weight: $font-weight-semibold;
   color: $color-fg;
+}
+
+.trackingChooser_search {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-12;
+}
+
+.trackingChooser_searchField {
+  padding: 5px 6px 5px 12px;
+  background: $color-bg-2;
+  border-radius: $radius-lg;
+}
+
+.trackingChooser_examples {
+  display: flex;
+  gap: $spacing-8;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $color-fg-dim;
+}
+
+.trackingChooser_example {
+  padding: 2px $spacing-6;
+  font-family: $font-family-mono;
+  font-size: $font-size-2xs;
+  color: $color-fg-2;
+  background: $color-bg-3;
+  border-radius: $radius-sm;
 }
 
 .trackingChooser_found {

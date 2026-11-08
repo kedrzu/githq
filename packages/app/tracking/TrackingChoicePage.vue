@@ -297,6 +297,7 @@ function getChoice(): TrackingChoice {
       :found="found"
       :approvals="approvals.requests"
       :find="tracking.findCandidate"
+      :search="tracking.searchCandidates"
       :creates="save ? settingsRepository : null"
       :busy="busy"
       @track="track"
