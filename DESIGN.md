@@ -58,9 +58,9 @@ cite screens by code. So a screen's name says which screen it is, and whether a 
 
 Keep a changelog of what you change, so a coding agent can build it without being told what to look for.
 
-- **One file per feature:** `.context/design/<feature>.md` in the worktree holding the document, named in
-  kebab-case after the feature, e.g. `context-menu.md`. Look in the folder first: continue your feature's file
-  if it exists, and leave other features' files alone, because parallel agents are writing them.
+- **One file per feature:** `docs/design/githq/changelog/<feature>.md` in the worktree holding the document,
+  named in kebab-case after the feature, e.g. `context-menu.md`. Look in the folder first: continue your feature's
+  file if it exists, and leave other features' files alone, because parallel agents are writing them.
 - **The first line is the document's absolute path.** Worktrees have separate copies of the file.
 - **Record every change, however small,** in the same turn you make it. A small colour change next to a new
   screen is exactly what gets missed.
@@ -77,18 +77,19 @@ Document: /Users/kedrzu/.paseo/worktrees/3kktpz0d/some-worktree/githq.pen
   stays, and the reversal is a new entry.
 - **It covers what agents change.** The owner's own edits on the canvas are not in it unless they tell you about
   them; then record them too.
-- **It is not committed and disappears with the worktree,** because `.context` is gitignored. Keep the design
-  worktree until its changelogs are built.
+- **It is committed with the design,** in the same commit as the `githq.pen` change it records, so it lands on
+  `main` with the design and outlives the worktree.
 
 ## Implementing from a changelog
 
 For a coding agent told that a changelog is on a given worktree:
 
-1. Look in that worktree's `.context/design/`. Take the file for your feature; if it isn't clear which one that
-   is, ask.
+1. Look in `docs/design/githq/changelog/` on that worktree (or on your own branch, once the design reached `main`).
+   Take the file for your feature; if it isn't clear which one that is, ask.
 2. Read the design from the document on the file's first line, not from your own copy of `githq.pen`, which may
    be behind. Check with `get_app_state` that it is the active document, and pass its path to the tools. If you
    can't reach it, ask the owner to open it.
 3. Build every unticked entry, the small ones too.
-4. Tick each entry in that file as you build it, so the next agent knows what is left.
+4. Tick each entry in the copy you read as you build it, so the next agent knows what is left; the ticks are
+   committed with whichever branch holds that copy.
 5. Say in your reply what you left unticked and why.
