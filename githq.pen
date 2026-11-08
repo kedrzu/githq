@@ -6184,6 +6184,27 @@
                       ]
                     },
                     {
+                      "id": "ZFTNG",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "Jdpz4",
+                      "name": "Brand / Wordmark · large",
+                      "descendants": {
+                        "vRWIQ": {
+                          "fontSize": 20,
+                          "letterSpacing": -0.9
+                        },
+                        "LgB4e": {
+                          "fontSize": 20,
+                          "letterSpacing": -0.9
+                        },
+                        "N78Orz": {
+                          "fontSize": 20,
+                          "letterSpacing": -0.9
+                        }
+                      }
+                    },
+                    {
                       "id": "iY8t0",
                       "type": "ref",
                       "reusable": true,
@@ -349534,7 +349555,12 @@
                       "id": "a3kCD",
                       "type": "ref",
                       "ref": "G5xXSH",
-                      "name": "Left"
+                      "name": "Left",
+                      "descendants": {
+                        "LG7b7": {
+                          "icon": "panel-left-open"
+                        }
+                      }
                     },
                     {
                       "id": "oHtoi",
@@ -352027,7 +352053,7 @@
                     0,
                     14,
                     0,
-                    44
+                    29
                   ],
                   "alignItems": "center",
                   "children": [
@@ -352097,41 +352123,42 @@
                 },
                 {
                   "type": "frame",
-                  "id": "v8tmn1",
-                  "name": "Phone / Places filter",
+                  "id": "W0JcH",
+                  "name": "Phone / Places head",
                   "reusable": true,
                   "width": 322,
-                  "height": 40,
-                  "fill": "$bg-3",
-                  "cornerRadius": 10,
-                  "stroke": "$border",
-                  "strokeWidth": 1,
-                  "gap": 8,
                   "padding": [
-                    0,
-                    12
+                    6,
+                    4,
+                    6,
+                    22
                   ],
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "cTIgU",
-                      "name": "Icon",
-                      "width": 16,
-                      "height": 16,
-                      "icon": "search",
-                      "library": "lucide",
-                      "fill": "$fg-dim"
+                      "id": "ag3ZZ",
+                      "type": "ref",
+                      "ref": "ZFTNG",
+                      "name": "Logo"
                     },
                     {
-                      "type": "text",
-                      "id": "Mvlkr",
-                      "name": "Text",
-                      "fill": "$fg-dim",
-                      "content": "Filter places",
-                      "fontFamily": "$font",
-                      "fontSize": 16,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "NDpUJ",
+                      "name": "spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "id": "a1FRpR",
+                      "type": "ref",
+                      "ref": "G5xXSH",
+                      "name": "Collapse",
+                      "descendants": {
+                        "LG7b7": {
+                          "icon": "panel-left-close",
+                          "fill": "$fg-2"
+                        }
+                      }
                     }
                   ]
                 },
@@ -352529,25 +352556,11 @@
                   ],
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "vjnJP",
+                      "id": "mAw6r",
+                      "type": "ref",
+                      "ref": "W0JcH",
                       "name": "Head",
-                      "width": "fill_container",
-                      "padding": [
-                        6,
-                        14,
-                        8,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "id": "xkcxo",
-                          "type": "ref",
-                          "ref": "v8tmn1",
-                          "name": "Filter",
-                          "width": "fill_container"
-                        }
-                      ]
+                      "width": "fill_container"
                     },
                     {
                       "id": "RoTBa",
@@ -352598,25 +352611,11 @@
                   ],
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "GKwVa",
+                      "id": "Y2BaAS",
+                      "type": "ref",
+                      "ref": "W0JcH",
                       "name": "Head",
-                      "width": "fill_container",
-                      "padding": [
-                        6,
-                        14,
-                        8,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "id": "aj9qt",
-                          "type": "ref",
-                          "ref": "v8tmn1",
-                          "name": "Filter",
-                          "width": "fill_container"
-                        }
-                      ]
+                      "width": "fill_container"
                     },
                     {
                       "id": "KYQi4",
@@ -352667,25 +352666,11 @@
                   ],
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "NtYAS",
+                      "id": "bf8qc",
+                      "type": "ref",
+                      "ref": "W0JcH",
                       "name": "Head",
-                      "width": "fill_container",
-                      "padding": [
-                        6,
-                        14,
-                        8,
-                        14
-                      ],
-                      "children": [
-                        {
-                          "id": "A3Ccc",
-                          "type": "ref",
-                          "ref": "v8tmn1",
-                          "name": "Filter",
-                          "width": "fill_container"
-                        }
-                      ]
+                      "width": "fill_container"
                     },
                     {
                       "id": "HalRk",
@@ -360533,7 +360518,7 @@
                           "id": "THgi2",
                           "layoutPosition": "absolute",
                           "x": 0,
-                          "y": 0,
+                          "y": 7,
                           "name": "Holder",
                           "width": 390,
                           "height": 844,
@@ -362963,310 +362948,6 @@
                           "fill": "$fg-3",
                           "width": 3,
                           "height": 44
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "BDnJW",
-                  "name": "Slot · MB64 · Dozens of repositories, filtered",
-                  "layout": "vertical",
-                  "gap": 14,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "Rub9j",
-                      "name": "Caption",
-                      "width": 390,
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "F39UY9",
-                          "name": "Caption title",
-                          "fill": "$fg",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "MB64 · Dozens of repositories, filtered",
-                          "fontFamily": "$font",
-                          "fontSize": 15,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "fQiEK",
-                          "name": "Caption note",
-                          "fill": "$fg-2",
-                          "textGrowth": "fixed-width",
-                          "width": "fill_container",
-                          "content": "The field at the top of the panel narrows all the places at once. It opens the keyboard only when tapped. It filters what is tracked; tracking more is not on a phone yet.",
-                          "lineHeight": 1.45,
-                          "fontFamily": "$font",
-                          "fontSize": 13,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "hcHqK",
-                      "name": "MB64 · Dozens of repositories, filtered",
-                      "clip": true,
-                      "width": 390,
-                      "height": 844,
-                      "fill": "$bg",
-                      "cornerRadius": 24,
-                      "stroke": "$border",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "children": [
-                        {
-                          "id": "bryPn",
-                          "type": "ref",
-                          "ref": "BpXu0",
-                          "name": "Status strip",
-                          "width": "fill_container"
-                        },
-                        {
-                          "id": "Ad5gZ",
-                          "type": "ref",
-                          "ref": "mVWVs",
-                          "name": "Top bar",
-                          "width": "fill_container",
-                          "descendants": {
-                            "LaOVG": {
-                              "content": "My work"
-                            },
-                            "f6G1s": {
-                              "enabled": true
-                            },
-                            "f6G1s/LG7b7": {
-                              "icon": "sliders-horizontal"
-                            },
-                            "yCsSA/LG7b7": {
-                              "icon": "plus"
-                            }
-                          }
-                        },
-                        {
-                          "id": "lwny2",
-                          "type": "ref",
-                          "ref": "B9fFBr",
-                          "name": "Pane",
-                          "width": "fill_container",
-                          "height": "fill_container"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "EkgMV",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Holder",
-                          "width": 390,
-                          "height": 844,
-                          "layout": "vertical",
-                          "justifyContent": "end",
-                          "children": [
-                            {
-                              "id": "Z1yxA",
-                              "type": "ref",
-                              "ref": "RGShR",
-                              "name": "Command line",
-                              "width": "fill_container",
-                              "descendants": {
-                                "s3BoH2/YDESO": {
-                                  "content": "All"
-                                },
-                                "s3BoH2/c0AlY1": {
-                                  "content": "13"
-                                }
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "type": "rectangle",
-                          "id": "Osqxz",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Scrim",
-                          "fill": "#00000099",
-                          "width": 390,
-                          "height": 844
-                        },
-                        {
-                          "type": "frame",
-                          "id": "yzVc5",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Places",
-                          "width": 322,
-                          "height": 844,
-                          "fill": "$bg-2",
-                          "stroke": "$border",
-                          "strokeWidth": {
-                            "right": 1
-                          },
-                          "layout": "vertical",
-                          "padding": [
-                            50,
-                            0,
-                            0,
-                            0
-                          ],
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "XdiOo",
-                              "name": "Head",
-                              "width": "fill_container",
-                              "padding": [
-                                6,
-                                14,
-                                8,
-                                14
-                              ],
-                              "children": [
-                                {
-                                  "id": "a7KTdm",
-                                  "type": "ref",
-                                  "ref": "v8tmn1",
-                                  "name": "Filter",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "Mvlkr": {
-                                      "content": "fit",
-                                      "fill": "$fg"
-                                    }
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "xknrz",
-                              "name": "Matches",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "padding": [
-                                4,
-                                8
-                              ],
-                              "children": [
-                                {
-                                  "id": "IJQL7",
-                                  "type": "ref",
-                                  "ref": "dwQ2N",
-                                  "name": "Section Repositories",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "yyQkZ": {
-                                      "content": "Repositories"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "MJHWf",
-                                  "type": "ref",
-                                  "ref": "iYE61",
-                                  "name": "fitloop/webapp",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "fgoPG": {
-                                      "icon": "lock"
-                                    },
-                                    "skvfu": {
-                                      "content": "fitloop/webapp"
-                                    },
-                                    "ljwVo": {
-                                      "content": "142"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "sgS1P",
-                                  "type": "ref",
-                                  "ref": "iYE61",
-                                  "name": "fitloop/api",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "fgoPG": {
-                                      "icon": "lock"
-                                    },
-                                    "skvfu": {
-                                      "content": "fitloop/api"
-                                    },
-                                    "ljwVo": {
-                                      "content": "96"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "p8XV2R",
-                                  "type": "ref",
-                                  "ref": "iYE61",
-                                  "name": "fitloop/mobile",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "fgoPG": {
-                                      "icon": "lock"
-                                    },
-                                    "skvfu": {
-                                      "content": "fitloop/mobile"
-                                    },
-                                    "ljwVo": {
-                                      "content": "31"
-                                    }
-                                  }
-                                },
-                                {
-                                  "id": "X9jga",
-                                  "type": "ref",
-                                  "ref": "iYE61",
-                                  "name": "fitloop/infra",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "fgoPG": {
-                                      "icon": "lock"
-                                    },
-                                    "skvfu": {
-                                      "content": "fitloop/infra"
-                                    },
-                                    "ljwVo": {
-                                      "content": "9"
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "FOHDI",
-                          "layoutPosition": "absolute",
-                          "x": 0,
-                          "y": 0,
-                          "name": "Keyboard holder",
-                          "width": 390,
-                          "height": 844,
-                          "layout": "vertical",
-                          "justifyContent": "end",
-                          "children": [
-                            {
-                              "id": "Sn0Vc",
-                              "type": "ref",
-                              "ref": "qEkWs",
-                              "name": "Keyboard",
-                              "width": "fill_container"
-                            }
-                          ]
                         }
                       ]
                     }

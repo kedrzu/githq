@@ -45,4 +45,4 @@ Only what is under Screens is settled: every amber frame still waits for the own
 - [ ] New `Phone / Places head` (`W0JcH`): the wordmark (`Brand / Wordmark`) on the left, a `Phone / Corner button` with `panel-left-close` (`$fg-2`) on the right, the desktop sidebar's collapse icon; padding 6/4/6/22, so the logo lines up with the row icons. It replaces the filter head in all three `Phone / Places panel · …` (`zikRv`, `crSUU`, `UBTsr`).
 - [ ] `Phone / Place row · group` (`dWgb5`): left padding 44 → 29, My work's groups indented half as far.
 - [ ] `Phone / Top bar` (`mVWVs`): the top-left button (`a3kCD`) icon `menu` → `panel-left-open`, the desktop collapsed sidebar's expand icon. Every list screen changes.
-- [ ] New `Brand / Wordmark · large` (`ZFTNG`): an instance of `Brand / Wordmark` (`Jdpz4`) at 20 px, letter spacing −0.9 (was 16 px, −0.72). `Phone / Places head` (`W0JcH`) uses it for its logo (`ag3ZZ`).
+- [ ] New `Brand / Wordmark · large` (`ZFTNG`): an instance of `Brand / Wordmark` (`Jdpz4`) at 24 px, letter spacing −1.08 (was 16 px, −0.72). `Phone / Places head` (`W0JcH`) uses it for its logo (`ag3ZZ`).
