@@ -119,10 +119,7 @@ function runMainAction() {
     />
     <main :class="css.desktopSignIn_body">
       <div :class="css.desktopSignIn_column">
-        <Wordmark
-          size="lg"
-          :class="css.desktopSignIn_logo"
-        />
+        <Wordmark :class="css.desktopSignIn_logo" />
 
         <template v-if="state.kind === 'waiting'">
           <h1 :class="css.desktopSignIn_headline">{{ t(l.codeHeadline) }}</h1>
@@ -298,12 +295,13 @@ function runMainAction() {
   height: $window-controls-height;
 }
 
+// Centred in a tall window, but never closer to the top than the padding: in a shorter one the logo keeps its air
+// and the rest (the permission explainer) goes below the fold, where the page scrolls.
 .desktopSignIn_body {
   display: flex;
   flex: 1;
-  align-items: center;
   justify-content: center;
-  padding: $spacing-24 $spacing-24 56px;
+  padding: clamp(80px, 14vh, 128px) $spacing-24 56px;
 }
 
 .desktopSignIn_column {
@@ -312,10 +310,13 @@ function runMainAction() {
   gap: 22px;
   width: 440px;
   max-width: 100%;
+  margin-block: auto;
 }
 
 // The design's 26px under the logo, on top of the column's gap.
 .desktopSignIn_logo {
+  --wordmark-size: 34px;
+
   align-self: flex-start;
   margin-bottom: 26px;
 }
