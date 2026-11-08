@@ -179,7 +179,11 @@ Links and everything else works. Only the workflows use it: `bun run build:deskt
    ID `dev.githq.desktop` (register it if it is missing) and tick **Associated Domains**.
 
 2. Under Profiles, create a **Developer ID** profile (Distribution → Developer ID) for that App ID and the Developer ID
-   Application certificate the app is signed with, and download it.
+   Application certificate the app is signed with, and download it. Two such certificates can look the same in the list
+   (same name and expiry date): download them and pick the one whose serial matches the one in `APPLE_CERTIFICATE`
+   (`openssl x509 -inform DER -in <file>.cer -noout -serial`). Before signing, the build checks the profile with
+   `packages/desktop/scripts/check-provisioning-profile.sh` and fails if it names another certificate or another App ID,
+   as macOS would kill that app at launch.
 
 3. Put it in the secret store and in the repository secrets:
 
