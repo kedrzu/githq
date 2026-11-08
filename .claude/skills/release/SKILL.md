@@ -59,6 +59,7 @@ gh release edit <tag> --notes-file .context/release-body.md
 ```bash
 gh release edit <tag> --draft=false --latest
 curl -sL https://github.com/kedrzu/githq/releases/latest/download/latest.json | jq -r .version   # must print the new version
+curl -sI https://githq.dev/download/windows | grep -i '^location'   # the new version's installer, within 5 minutes
 ```
 
 ## 6. Report

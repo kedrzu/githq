@@ -39,6 +39,7 @@ to its users.
    tag pushed by hand builds nothing.
 
 3. The run (`.github/workflows/release.yml`) has these jobs:
+
    - `prepare` works out the version and the notes, creates the tag at the commit the run started on, and a draft
      release `githq v0.2.0` with the generated notes;
    - `spa` builds the desktop SPA once on Ubuntu (`bun --cwd packages/app build:desktop`, with `GITHQ_ENV=prod`);
@@ -47,8 +48,11 @@ to its users.
      (`.sig`) and uploads them;
    - `updater-manifest` runs after every build and composes the release's `latest.json` from what they uploaded;
    - `updater-json` fails the release if `latest.json` lacks a platform: an app on that platform would never
-     update. It also copies each installer to a name without the version (`githq_aarch64.dmg`), which is where the
-     landing page and `/download` link: `releases/latest/download/` needs a name that stays the same.
+     update.
+
+   The release keeps the installers under the names Tauri gives them, with the version (`githq_0.3.0_aarch64.dmg`).
+   The landing page and `/download` link to `githq.dev/download/<build>` instead, which the Worker redirects to that
+   file of the latest release (`packages/worker/src/download.ts`), so the links never change.
 
 4. Check the draft under [Releases](https://github.com/kedrzu/githq/releases):
    - the installers for every platform, each updater bundle with its `.sig`;
@@ -61,7 +65,8 @@ to its users.
    when opened, so a correction reaches everyone.
 
 6. **Publish** the draft, once the run is green. Published and not a prerelease, it becomes GitHub's "latest". Installed apps
-   read `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours.
+   read `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours. The download
+   links on githq.dev follow within 5 minutes, the time the Worker caches which release is the latest.
 
 ### If a build fails
 
