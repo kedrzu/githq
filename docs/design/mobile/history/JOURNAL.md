@@ -73,3 +73,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   layout). The GitHub search in the tracking chooser (D34) goes to its own issue, #231, built by a separate agent in
   worktree `feat/231-search-github-when-tracking` from the changelog entry for G18–G19. Brief for the last round:
   `ui/lists-and-new-issue-on-a-phone.md`.
+- 2026-11-08 — Owner asked for a review of all phone screens for defects and for mechanisms incompatible with the
+  desktop. Findings in `history/2026-11-08-review-against-the-desktop.md`: D37, D41, D38, D40, D26 and D20 rest on wrong
+  beliefs about the desktop; about 30 screen defects. Put to the owner; no decision changed yet.
