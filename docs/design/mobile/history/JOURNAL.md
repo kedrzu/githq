@@ -69,3 +69,7 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-08 — Setup round came back drawn and picked (D31–D35, recorded by the design session). README's screens and
   status rewritten as story. Left undrawn: the list options sheet, a board view as a grouped list, the new issue form's
   choices.
+- 2026-11-08 — Owner confirmed D6 (the desktop app never takes the phone layout) and D8 (the hybrid app shows this
+  layout). The GitHub search in the tracking chooser (D34) goes to its own issue, #231, built by a separate agent in
+  worktree `feat/231-search-github-when-tracking` from the changelog entry for G18–G19. Brief for the last round:
+  `ui/lists-and-new-issue-on-a-phone.md`.

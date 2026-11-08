@@ -90,7 +90,7 @@ commits and code review, which are not designed. The width is not fixed here.
 ## D6
 
 **The desktop app never takes the mobile layout: its window has a minimum width above the mobile width.**
-(2026-11-06, proposal of the design agent, not confirmed by the owner)
+(2026-11-06, proposal of the design agent; confirmed by the owner 2026-11-08)
 
 **Why.** Nobody runs the desktop app on a phone, and a narrow desktop window handing commits off to the browser
 would take away what the desktop app is for.
@@ -116,8 +116,8 @@ first time from a phone would otherwise be stuck.
 ## D8
 
 **The mobile layout is also what a future hybrid mobile app will show, the way the desktop app bundles the same
-app; building that app is not part of this design.** (2026-11-06, owner said a hybrid phone app comes later; that
-it reuses this layout is the design agent's proposal)
+app; building that app is not part of this design.** (2026-11-06, owner said a hybrid phone app comes later; that it reuses this layout was the design agent's proposal,
+confirmed by the owner 2026-11-08)
 
 **Why.** The owner's aim is access to all of their GitHub work from the phone as comfortable as from the computer,
 and a hybrid app is where that ends. Designing the phone layout once, for the browser, and reusing it there avoids a

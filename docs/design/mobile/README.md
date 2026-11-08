@@ -95,4 +95,5 @@ of its own ([Settings](DECISIONS.md#d33)); what you track is listed there and ad
 Everything drawn so far has been picked; the decisions are in [the record](DECISIONS.md). A repository's list, a project with
 hundreds of items and the new issue form were drawn with the navigation. Not drawn yet: the sheet behind the list's
 options (filter, sort, group), a project view saved as a board shown as a grouped list, and the new issue form's choices
-(which repository, its properties).
+(which repository, its properties). They are the last round
+([its brief](ui/lists-and-new-issue-on-a-phone.md)).
