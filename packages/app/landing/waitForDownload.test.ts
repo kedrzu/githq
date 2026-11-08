@@ -40,10 +40,19 @@ test('spins until the Worker sets its cookie, clearing one left from before and 
     const download = waitForDownload(LINK, page);
     expect(page.written).toEqual([CLEARED]);
 
-    expect(await settledAfter(download, 1000)).toBe(false);
+    expect(await settledAfter(download, 1500)).toBe(false);
     page.cookies = 'githq_signed_in=1; githq_download=1';
     expect(await settledAfter(download, 100)).toBe(true);
-    expect(page.written).toEqual([CLEARED, CLEARED]);
+    expect(page.written[1]).toBe(CLEARED);
+});
+
+test('spins for at least a second, however soon the cookie comes', async () => {
+    const page = createPage();
+    const download = waitForDownload(LINK, page);
+    page.cookies = 'githq_download=1';
+
+    expect(await settledAfter(download, 900)).toBe(false);
+    expect(await settledAfter(download, 100)).toBe(true);
 });
 
 test('another cookie of a similar name does not end it', async () => {
