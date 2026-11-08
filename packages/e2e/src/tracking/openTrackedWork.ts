@@ -25,7 +25,8 @@ export async function openTrackedWork(page: Page, github: GitHubMock, world: Git
     const shell = new AppShellHarness(page);
     // Tracked before the shell is drawn, so a status bar that tells no download has everything in.
     await expect(shell.statusBar).toBeVisible();
-    await expect(shell.downloadProgress).toHaveCount(0);
+    // The whole download, closed items too, grows with what is tracked: forty repositories take a while on CI.
+    await expect(shell.downloadProgress).toHaveCount(0, { timeout: 30_000 });
     await expect(shell.sidebar.locator('[data-marker="unread"]')).toHaveCount(0);
     return shell;
 }
