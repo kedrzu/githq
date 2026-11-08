@@ -53,7 +53,7 @@ test('"Star on GitHub" opens the repository on GitHub, in a tab of its own', asy
 
 test('"Download the app" downloads the build for the system, or opens /download with none to install on', async () => {
     const downloadLinks = () => page.getByRole('main').getByRole('link', { name: 'Download the app' }).elements();
-    const installer = (name: string) => `${REPOSITORY_URL}/releases/latest/download/${name}`;
+    const installer = (name: string) => `https://githq.dev/download/${name}`;
     const expectEvery = (href: string) => {
         // The hero and the last call to action.
         expect(downloadLinks().map(link => link.getAttribute('href'))).toEqual([href, href]);
@@ -61,15 +61,15 @@ test('"Download the app" downloads the build for the system, or opens /download 
 
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
-    expectEvery(installer('githq_aarch64.dmg'));
+    expectEvery(installer('macos-silicon'));
 
     await OnWindows.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
-    expectEvery(installer('githq_x64-setup.exe'));
+    expectEvery(installer('windows'));
 
     await OnLinux.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
-    expectEvery(installer('githq_amd64.AppImage'));
+    expectEvery(installer('linux-appimage'));
 
     await SystemNotKnown.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -85,7 +85,7 @@ test('the page says nothing of the signatures or the permissions: /download does
     await expect.element(main).not.toHaveTextContent('GitHub will ask for full repository access');
 });
 
-test('every way off the page goes to githq on GitHub, and every link within it lands on a section', async () => {
+test('every way off the page goes to githq on GitHub or to its installers on githq.dev, and every link within it lands on a section', async () => {
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 
@@ -93,7 +93,9 @@ test('every way off the page goes to githq on GitHub, and every link within it l
     const links = [...root.querySelectorAll('a')].map(link => link.getAttribute('href') ?? '');
     const outside = links.filter(href => !href.startsWith('#') && href !== '/download');
     expect(outside).toContain(REPOSITORY_URL);
-    expect(outside.filter(href => !href.startsWith(REPOSITORY_URL))).toEqual([]);
+    expect(
+        outside.filter(href => !href.startsWith(REPOSITORY_URL) && !href.startsWith('https://githq.dev/download/')),
+    ).toEqual([]);
     expect(root.textContent).not.toContain('mlaine');
 
     // The navigation's, then the footer's.
