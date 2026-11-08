@@ -290,6 +290,46 @@ test('CH35, CH36: under the rows, the next page on its way, then the beginning o
     await expect.element(page.getByText('Commit c0')).toBeVisible();
 });
 
+test('ES22: GitHub failing with nothing to draw says so, stays up while asked again, and R draws the graph', async () => {
+    let failing = true;
+    let held = Promise.resolve();
+    await mount({
+        commits: [sampleCommit('c1', 10)],
+        branches: [sampleCommitRef('main', 'c1')],
+        firstOpen: true,
+        failIf: () => failing,
+        holdIf: () => held,
+    });
+    const heading = page.getByRole('heading', { name: "GitHub isn't answering" });
+    await expect.element(heading).toBeVisible();
+
+    failing = false;
+    const answer = createPromise();
+    held = answer.promise;
+    await userEvent.keyboard('r');
+    // Asked again, the note stays and no skeleton comes between.
+    await expect.element(page.getByRole('button', { name: /Try again/u })).toHaveAttribute('aria-busy', 'true');
+    await expect.element(heading).toBeVisible();
+
+    answer.resolve();
+    await expect.element(graphText('Commit c1')).toBeVisible();
+    await expect.element(heading).not.toBeInTheDocument();
+});
+
+test('ES22: GitHub failing leaves a graph already on screen on screen: the status bar alone tells it', async () => {
+    const commits = [sampleCommit('c1', 10)];
+    const view = await mount({
+        commits,
+        branches: [sampleCommitRef('main', 'c1')],
+        kept: commits,
+        failIf: () => true,
+    });
+
+    await expect.poll(() => view.store.getFreshness(REPOSITORY)).toMatchObject({ kind: 'stale', reason: 'failing' });
+    await expect.element(graphText('Commit c1')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "GitHub isn't answering" })).not.toBeInTheDocument();
+});
+
 test('CH40: offline, what is kept stays and the last row says older commits wait', async () => {
     const commits = [sampleCommit('c2', 20, ['c1']), sampleCommit('c1', 10, ['c0'])];
     const view = await mount({
@@ -335,7 +375,7 @@ test('CH40: offline a scroll to the end asks nothing; coming back online reads t
     expect(view.store.getFreshness(REPOSITORY).kind).toBe('fresh');
 });
 
-test('CH38, CH32: before anything arrives, a quiet line; an empty repository says so', async () => {
+test('CH38, CH32, first run and loading D17: before anything arrives, the skeleton, read out as one line; an empty repository says so', async () => {
     const answered = createPromise();
     await mount({
         commits: [],
@@ -343,10 +383,11 @@ test('CH38, CH32: before anything arrives, a quiet line; an empty repository say
         firstOpen: true,
         holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
     });
-    await expect.element(page.getByText('Loading commits…')).toBeVisible();
+    await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
 
     answered.resolve();
     await expect.element(page.getByRole('heading', { name: 'No commits yet' })).toBeVisible();
+    await expect.element(page.getByText('Loading commits…')).not.toBeInTheDocument();
     await expect
         .element(page.getByText('acme/web is empty on GitHub. Commits appear here after the first push.'))
         .toBeVisible();
@@ -581,7 +622,7 @@ test('D15: on a wide window the list is left of the graph from the first draw, i
     expect(getComputedStyle(refList().element()).position).toBe('static');
 });
 
-test('D15: refs arriving on a first open bring the column and the list; a repository without any gives the graph the pane', async () => {
+test('D15, first run and loading D17: a first open holds the column for the list, which the refs land in without moving the graph', async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const answered = createPromise();
@@ -590,9 +631,10 @@ test('D15: refs arriving on a first open bring the column and the list; a reposi
         firstOpen: true,
         holdIf: operation => (operation === 'RepositoryCommitRefs' ? answered.promise : null),
     });
-    await expect.element(page.getByText('Loading commits…')).toBeVisible();
-    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).not.toBeInTheDocument();
-    expect(view.scroller().clientWidth).toBe(1200);
+    await expect.element(page.getByText('Loading commits…')).toBeInTheDocument();
+    await expect.element(page.getByRole('separator', { name: 'Resize the left column' })).toBeInTheDocument();
+    await expect.element(refList()).not.toBeInTheDocument();
+    expect(view.scroller().clientWidth).toBe(1200 - 280);
 
     answered.resolve();
     await expect.element(refList()).toBeVisible();
@@ -1886,10 +1928,10 @@ function cursor() {
     return document.querySelector('li[aria-current="true"]');
 }
 
-/** Whether the row under the cursor looks it: its accent edge, as a list's selected row. */
+/** Whether the row under the cursor looks it: its surface outlined in the accent, as a list's selected row. */
 function cursorDrawn() {
     const row = cursor();
-    return row !== null && getComputedStyle(row).boxShadow !== 'none';
+    return row !== null && getComputedStyle(row, '::after').boxShadow !== 'none';
 }
 
 /** The rows' slices of the graph, each the first drawing of its row. */

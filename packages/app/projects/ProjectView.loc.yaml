@@ -78,6 +78,16 @@ emptyViewTitle:
   en: Nothing matches “{view}”
 emptyViewDetail:
   en: '“{view}” is a view defined on GitHub: {filter}. No items match it right now.'
+filterHidesItems:
+  plural: count
+  en:
+    one: '{filter} hides the 1 item.'
+    many: '{filter} hides all {count} items.'
+filtersHideItems:
+  plural: count
+  en:
+    one: '{filters} hide the 1 item.'
+    many: '{filters} hide all {count} items.'
 showAllItems:
   en: Show all items
 clearFilters:
@@ -86,3 +96,5 @@ emptyViewDetailNoFilter:
   en: “{view}” is a view defined on GitHub. No items match it right now.
 rowFieldCommand:
   en: Row field…
+itemsOf:
+  en: "{project}'s items"

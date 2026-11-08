@@ -28,6 +28,10 @@ refused:
   en: As of {time} · GitHub refuses to list its changes, asking again hourly
 refusedNothingYet:
   en: GitHub refuses to list its changes, asking again hourly
+hiddenRepository:
+  en: GitHub doesn't show this repository
+hiddenProject:
+  en: GitHub doesn't show this project
 workflowsUnavailable:
   en: Last known workflows · GitHub doesn't list them now
 notRefreshedSince:
@@ -38,6 +42,41 @@ filling:
   en: Filling in the other branches · {done} of {total}
 downloading:
   en: Downloading · what's here is usable
+readingCommits:
+  en: Reading commits
+readingWorkflows:
+  en: Reading workflows
+readingWorkflowsCounted:
+  plural: total
+  en:
+    one: 'Reading workflows · {read} of {total} repository'
+    many: 'Reading workflows · {read} of {total} repositories'
+downloadingPhase:
+  en: Downloading {what}
+downloadingPhaseCounted:
+  en: Downloading {what} · {done} of {total}
+phaseOpenIssues:
+  en: open issues
+phaseOpenPullRequests:
+  en: open pull requests
+phaseClosedIssues:
+  en: closed issues
+phaseClosedPullRequests:
+  en: closed pull requests
+phaseItems:
+  en: items
+fetchingMyWork:
+  en: Fetching your work
+myWorkArriving:
+  en: Still arriving · {groups}
+arrivingReviewRequested:
+  en: review requests
+arrivingAuthored:
+  en: your pull requests
+arrivingAssigned:
+  en: assigned to you
+arrivingMentioned:
+  en: mentions
 checkedAgo:
   en: Checked {age} ago
 answered:

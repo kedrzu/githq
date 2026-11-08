@@ -1,4 +1,4 @@
-<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items, or how far its first download is; a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
+<!-- The app's sidebar (D9): on top the logo and the collapse button, then search, "Draft reviews" with their count while there is any (code review D28; an amber pencil with a badge on the rail), "My work" and its groups with their counts — the same as the list's (D11), a group's blank while it is still arriving and the total until every group is in (first run and loading D14) — then "Broken workflows" with their total while any is known broken or its screen is open (actions W1: a red dot and count for a break under a day old, quiet ones after), and the tracked projects and repositories in the user's order — a private repository with a lock, a repository's icon marked when its workflows are broken (bright or quiet red) or not read yet (a hollow ring) — each with its open items once they are in, blank before (first run and loading D4: how far downloads are is the status bar's to say); a section with nothing in it is not drawn, and with nothing tracked at all a note and a link to Settings stand in their place. These lists scroll under the logo and search; the signed-in user, with their menu, stays at the very bottom — with an amber dot on the avatar while syncing the settings stopped. Expanded, or collapsed to a rail of icons — "Broken workflows" with its total in a badge — with a mark for each tracked project (tracked repositories are reached by ⌘K from there). Search opens the command menu (⌘K). Right-clicking a tracked project or repository opens its menu (`trackedMenu`); without one, the browser's own. On a link Tab focused, ↑/↓ move to the previous or next link, which holds the screen's keys back as it did (`useTabFocus`). In the macOS desktop app a strip along its top holds the window controls and moves the window, staying put above everything else. -->
 <script lang="ts">
 import type { TrackedTarget } from '@/tracking/TrackingTypes.js';
 
@@ -8,8 +8,8 @@ import type { SidebarWorkflowMarker } from './SidebarTypes.js';
 export type SidebarTrackedStatus =
   /** Its open issues, pull requests and draft issues. */
   | { readonly kind: 'count'; readonly count: number }
-  /** Its first download, `percent` done; `null` before it counted its items. */
-  | { readonly kind: 'downloading'; readonly percent: number | null }
+  /** Its open items are not all in yet: nothing shows where its count goes. */
+  | { readonly kind: 'downloading' }
   /** GitHub does not show it to the user (gone, or hidden by its organisation). */
   | { readonly kind: 'hidden' };
 
@@ -63,7 +63,6 @@ import ContextMenu from '@/components/ContextMenu.vue';
 import IconButton from '@/components/IconButton.vue';
 import Sygnet from '@/components/Sygnet.vue';
 import Wordmark from '@/components/Wordmark.vue';
-import type { MyWorkCounts } from '@/myWork/buildMyWork.js';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { DRAFT_REVIEWS_PATH, getMyWorkGroupPath } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
@@ -75,7 +74,7 @@ import { moveTabFocus } from '@/utils/useTabFocus.js';
 
 import AccountMenu from './AccountMenu.vue';
 import * as l from './Sidebar.loc.js';
-import type { SidebarBrokenWorkflows } from './SidebarTypes.js';
+import type { SidebarBrokenWorkflows, SidebarMyWorkCounts } from './SidebarTypes.js';
 
 const props = defineProps<{
   viewer: Viewer;
@@ -85,8 +84,8 @@ const props = defineProps<{
   railForced?: boolean;
   /** Keep the top free for macOS's window controls, while they sit over it (`WindowControls`). */
   windowControls?: boolean;
-  /** The rows of each "my work" group, as its list counts them; `null` until the first download. */
-  counts?: MyWorkCounts | null;
+  /** The rows of each "my work" group, as its list counts them, blank while still arriving; `null` before any group arrived. */
+  counts?: SidebarMyWorkCounts | null;
   /** The tracked projects and repositories; none when not given. */
   tracked?: SidebarTracked;
   /** Syncing the settings stopped (settings-sync T9, T10): the user's avatar and menu say so. */
@@ -147,7 +146,8 @@ function moveBetweenLinks(event: KeyboardEvent) {
 }
 
 function countText(group: MyWorkGroup | 'total') {
-  return props.counts ? String(props.counts[group]) : t(l.countArriving);
+  const count = props.counts?.[group] ?? null;
+  return count === null ? '' : String(count);
 }
 
 function statusText(status: SidebarTrackedStatus) {
@@ -155,7 +155,7 @@ function statusText(status: SidebarTrackedStatus) {
     case 'count':
       return String(status.count);
     case 'downloading':
-      return status.percent === null ? t(l.waiting) : `${status.percent}%`;
+      return '';
     case 'hidden':
       return t(l.hidden);
     default:

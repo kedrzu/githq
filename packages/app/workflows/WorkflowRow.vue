@@ -253,17 +253,14 @@ function withRunning(status: string) {
 
 <style lang="scss" module="css">
 .workflowRow {
-  position: relative;
+  @include row-surface;
+
   display: flex;
   gap: $spacing-10;
   align-items: center;
   height: $workflow-row-height;
   padding: 0 $spacing-16;
   cursor: default;
-
-  &:hover {
-    background: $color-bg-2;
-  }
 }
 
 .workflowRow_selected {
@@ -272,8 +269,8 @@ function withRunning(status: string) {
 
 .workflowRow_icon {
   flex: none;
-  width: 15px;
-  height: 15px;
+  width: $workflow-icon-size;
+  height: $workflow-icon-size;
 }
 
 .workflowRow_icon_new {

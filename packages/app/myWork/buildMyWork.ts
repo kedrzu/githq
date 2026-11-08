@@ -41,7 +41,7 @@ export interface MyWorkCounts extends Readonly<Record<MyWorkGroup, number>> {
 /** A group of "my work" and its rows; empty groups are kept, the list decides whether to show them. */
 export interface MyWorkGroupRows {
     readonly group: MyWorkGroup;
-    /** Its search has answered at least once; until then it has no rows and is still arriving (G7). */
+    /** Its search has answered at least once; until then it has no rows and is still arriving (first run and loading G16, G17). */
     readonly arrived: boolean;
     readonly rows: readonly MyWorkRow[];
 }

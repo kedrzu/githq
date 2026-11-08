@@ -1,9 +1,5 @@
-arriving:
-  en: Still arriving. The search on GitHub takes a few seconds more.
 countArriving:
   en: …
-groupEmpty:
-  en: Nothing here.
 next:
   en: Next item
 previous:
@@ -26,10 +22,6 @@ moveToColumn:
   en: Move to the next or previous column
 toggleStack:
   en: Expand or collapse a stack
-expandStack:
-  en: Expand the stack
-collapseStack:
-  en: Collapse the stack
 merge:
   en: Merge…
 mergeStack:

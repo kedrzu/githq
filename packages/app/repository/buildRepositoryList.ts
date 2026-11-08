@@ -43,6 +43,16 @@ export interface RepositoryList {
     readonly groups: readonly ListGroup<Item>[];
     /** How many items are listed, each once whichever groups it is under. */
     readonly count: number;
+    /**
+     * How many of the section's items the copy holds in any state: with none listed, whether the state hides them
+     * (filtered out) or there is nothing to hide (nothing there; first run and loading D6).
+     */
+    readonly held: number;
+    /**
+     * Nothing is listed and what the state holds is still on its way, so not even its groups are known: ghosts stand
+     * for all of it, never a list saying there is nothing (first run and loading D8, D17).
+     */
+    readonly arriving: boolean;
 }
 
 /** What the groups are called — the caller's translations. */
@@ -79,7 +89,10 @@ export interface BuildRepositoryListParams {
     readonly grouping: RepositoryGrouping;
     readonly sort: ItemSort;
     readonly texts: RepositoryListTexts;
-    /** GitHub has not said yet what the state holds (a browsed repository's first page): none listed means not known. */
+    /**
+     * What the state holds is still on its way — a browsed repository's first page, a tracked one's download not past
+     * it yet: none listed means not known.
+     */
     readonly arriving?: boolean;
 }
 
@@ -90,22 +103,18 @@ export interface BuildRepositoryListParams {
  * The group of items without the value comes last. By status, each item is under one: a pull request under the stage
  * its row's status line tells, an issue open, closed or not planned, in that fixed order, only those with items
  * shown. Items can be moved between milestones, labels, assignees and issue types (an edit), never between statuses
- * or authors.
+ * or authors. With none listed while the state is still arriving, no groups at all: they are not known.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function buildRepositoryList(params: BuildRepositoryListParams): RepositoryList {
     const { items, state, kind, grouping, sort, texts, arriving = false } = params;
 
-    const listed = items
-        .filter(item => item.kind === kind && matchesState(item, state))
-        .toSorted(getItemComparator(sort));
+    const held = items.filter(item => item.kind === kind);
+    const listed = held.filter(item => matchesState(item, state)).toSorted(getItemComparator(sort));
 
     if (arriving && listed.length === 0) {
-        return {
-            groups: [{ key: 'arriving', label: texts.all, arrived: false, droppable: false, rows: [] }],
-            count: 0,
-        };
+        return { groups: [], count: 0, held: held.length, arriving: true };
     }
 
     return {
@@ -115,6 +124,8 @@ export function buildRepositoryList(params: BuildRepositoryListParams): Reposito
             grouping: getGrouping(grouping, kind, items, texts),
         }),
         count: listed.length,
+        held: held.length,
+        arriving: false,
     };
 }
 

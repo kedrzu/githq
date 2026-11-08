@@ -284,7 +284,10 @@ test('"/login?next=" leads to the landing page keeping where to go, and signing 
     await expect(page).toHaveURL('/settings/tracking/new?next=/pulls');
     await new FirstSignInHarness(page).continueButton.click();
     await expect(page).toHaveURL('/pulls');
-    await expect(new MyWorkScreenHarness(page).group('My pull requests')).toBeVisible();
+    // Nothing tracked, the group is empty: its note names it (D15, ES12).
+    await expect(
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+    ).toBeVisible();
 });
 
 test('under reduced motion the landing page plays nothing: no section waits to reveal, nothing animates', async ({

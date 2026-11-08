@@ -1,8 +1,10 @@
 import { expect, test } from '../fixtures.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
 import { GitHubWorld } from '../github/GitHubWorld.js';
 import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
-import { MY_WORK_GROUP_NAMES } from '../harnesses/MyWorkScreen.harness.js';
+import { MY_WORK_GROUP_NAMES, MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
+import { signIn } from '../session.js';
 
 import { expectMyWorkCounts } from './expectMyWorkCounts.js';
 import { openMyWork } from './openMyWork.js';
@@ -151,6 +153,60 @@ test('"Waiting on others" with nothing waiting says so', async ({ page, github }
     await myWork.filter('Waiting on others').click();
     await expect(myWork.root.getByRole('heading', { name: 'Nothing is waiting on others' })).toBeVisible();
     await expect(myWork.groups).toHaveCount(0);
+});
+
+test('D15, ES12: narrowed to a group that shows nothing, the note names it and offers the rest; under a filter it clears the filter', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMyWork();
+    sample.world.leave(sample.mention, 'mentioned');
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+
+    await shell.myWorkLink('Mentioned').click();
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Mentioned' })).toBeVisible();
+    await expect(myWork.groups).toHaveCount(0);
+    await myWork.root.getByRole('button', { name: 'Show all of My work' }).click();
+    await expect(page).toHaveURL(/\/$/u);
+    await expect(myWork.filter('All')).toHaveAttribute('aria-pressed', 'true');
+    await expect(myWork.group('Review requested')).toBeVisible();
+
+    // The filter hides what the group holds: the filter is what to clear, and the group stays.
+    await shell.myWorkLink('Review requested').click();
+    await myWork.filter('Waiting on others').click();
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing in Review requested' })).toBeVisible();
+    await expect(myWork.root.getByRole('button', { name: 'Show all of My work' })).toHaveCount(0);
+    await myWork.root.getByRole('button', { name: 'Clear filter' }).click();
+    await expect(myWork.filter('All')).toHaveAttribute('aria-pressed', 'true');
+    await expect(myWork.rows('Review requested')).toHaveCount(1);
+});
+
+test('first run and loading D6, ES13: GitHub failing, then offline, before anything arrived says so instead of ghosts; each clears by itself or on Try again', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleMyWork();
+    sample.world.install(github);
+    const answer = github.searchIssues;
+    github.searchIssues = () => new GitHubHttpError(502, 'Bad gateway');
+    const shell = await signIn(page, github);
+    const myWork = new MyWorkScreenHarness(page);
+
+    await expect(myWork.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect(myWork.root).toContainText("githq couldn't read your work.");
+    await expect(myWork.root.getByRole('heading', { name: 'Nothing on your plate' })).toHaveCount(0);
+
+    await page.context().setOffline(true);
+    await expect(myWork.root.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect(myWork.root.getByRole('button', { name: 'Try again' })).toHaveCount(0);
+
+    await page.context().setOffline(false);
+    await expect(myWork.root.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+
+    github.searchIssues = answer;
+    await myWork.root.getByRole('button', { name: 'Try again' }).click();
+    await expect(myWork.group('Review requested')).toBeVisible();
+    await expect(shell.myWorkCount('My work')).toHaveText(/^\d+$/u);
 });
 
 test('j/k move the selection through the rows, nested ones too, and 1/2/3 switch filters', async ({ page, github }) => {

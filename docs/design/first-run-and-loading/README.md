@@ -72,7 +72,8 @@ projects, how many items of how many, and roughly how long is left. It is the on
 repositories: the sidebar's entries show no download marker of their own (an entry shows nothing until its open items
 are in, then its count). Each screen's own segment still says what is happening to that screen. When all has arrived
 the left end goes back to the allowance. Being offline or paused still comes first. This is not only for the first
-sign-in: tracking another repository later shows the same. [Why there and not nowhere](DECISIONS.md#d4).
+sign-in: tracking another repository later shows the same. Settings' list of tracked repositories still says how far each one is: that is where the user
+manages them. [Why there and not nowhere](DECISIONS.md#d4).
 
 **Why a screen is empty.** A screen with nothing on it says why, and there are four reasons: its data is still
 arriving; there is nothing there; a filter or view hides everything; or GitHub can't be read — no access, a failure,
@@ -94,14 +95,6 @@ Out of it: an opened issue's or pull request's parts fetched separately, which t
 Out for now: a "loading more" row at the end of a list. Lists are sorted by last update, so arriving items land between
 existing rows rather than at the end, and the default filter shows open items, which arrive first — such a row would be
 truthful only under some filters. Postponed by the owner.
-
-## What gets built first
-
-The first sign-in without the download page, and the choosing screen in the app's top strip — together with the
-"still arriving" pattern on My work, because without it the user lands on a screen that looks empty. Then the status
-bar: a tracked repository no longer "Up to date" while its closed items arrive, the left end telling the progress of
-everything, and the sidebar's download percentages gone. Then the rest of the empty states, screen by screen from
-[the table](empty-states.md#what-each-screen-can-say), once the owner has drawn the four patterns.
 
 ## Still open
 

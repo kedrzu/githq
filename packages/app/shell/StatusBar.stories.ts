@@ -80,3 +80,30 @@ export const SlowedDown: Story = {
 
 /** Paused under the rail: the icon alone, the sentence as its tooltip. */
 export const PausedCollapsed: Story = { args: { ...Paused.args, collapsed: true } };
+
+const DOWNLOAD = { done: 1240, total: 8000, secondsLeft: 130, repositories: 3, projects: 2 };
+
+/** First run and loading D11: the download under way, paced — items so far of the total and the time left. */
+export const Downloading: Story = { args: { download: DOWNLOAD } };
+
+/** Before any repository or project counted its items: "Downloading · counting…". */
+export const DownloadingCounting: Story = {
+    args: { download: { ...DOWNLOAD, done: 0, total: null, secondsLeft: null, projects: 0 } },
+};
+
+/** Counted, but no pace yet (the first five seconds): no time left. */
+export const DownloadingNoPace: Story = { args: { download: { ...DOWNLOAD, secondsLeft: null } } };
+
+/** Under the rail: the time left alone. */
+export const DownloadingCollapsed: Story = { args: { download: DOWNLOAD, collapsed: true } };
+
+/** Under the rail before a pace is known: the turning icon alone. */
+export const DownloadingCollapsedNoPace: Story = {
+    args: { download: { ...DOWNLOAD, secondsLeft: null }, collapsed: true },
+};
+
+/** D11: offline takes the segment first, even while downloading. */
+export const OfflineWhileDownloading: Story = { args: { ...Offline.args, download: DOWNLOAD } };
+
+/** D11: paused by the allowance takes the segment before the download. */
+export const PausedWhileDownloading: Story = { args: { ...Paused.args, download: DOWNLOAD } };

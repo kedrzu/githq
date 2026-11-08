@@ -28,14 +28,15 @@ export class AppShellHarness {
         return this.sidebar.getByRole('link').filter({ has: this.page.getByText(name, { exact: true }) });
     }
 
-    /** The count next to a sidebar link of "my work": its top-level rows, or "…" before the first download. */
+    /** The count next to a sidebar link of "my work": its top-level rows, blank while its group is still arriving. */
     myWorkCount(name: 'My work' | MyWorkGroupName): Locator {
         return this.myWorkLink(name).locator('span').last();
     }
 
     /** The sidebar's link to a tracked repository (`owner/name`) or project (its title). */
     tracked(name: string): Locator {
-        return this.sidebar.getByRole('link', { name: new RegExp(`^${escapeRegExp(name)} `) });
+        // Its count follows its name, blank while its open items are still arriving.
+        return this.sidebar.getByRole('link', { name: new RegExp(`^${escapeRegExp(name)}(\\s|$)`) });
     }
 
     /** Right-clicks a tracked repository (`owner/name`) or project (its title) in the sidebar: its context menu. */
@@ -45,8 +46,8 @@ export class AppShellHarness {
     }
 
     /**
-     * What the sidebar says of a tracked repository or project: its open items, "waiting" or how far its download
-     * is ("40%"), or "hidden".
+     * What the sidebar says of a tracked repository or project: its open items, nothing while they are still arriving,
+     * or "hidden".
      */
     trackedCount(name: string): Locator {
         return this.tracked(name).locator('span').last();
@@ -116,6 +117,14 @@ export class AppShellHarness {
     /** The status bar along the bottom; its first segment holds GitHub's allowance. */
     get statusBar(): Locator {
         return this.page.getByRole('contentinfo', { name: 'Status' });
+    }
+
+    /**
+     * The status bar's first segment while anything tracked is downloading (first run and loading D4, D11), "1,240 of
+     * 8,000 · about 2 min"; gone once every tracked repository and project has all its items.
+     */
+    get downloadProgress(): Locator {
+        return this.statusBar.getByTestId('download-progress');
     }
 
     /** The account menu's button while syncing the settings stopped: its avatar carries an amber dot (T9). */

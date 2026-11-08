@@ -8,6 +8,8 @@ import { computed, ref, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
 import Kbd from '@/components/Kbd.vue';
+import Skeleton from '@/components/Skeleton.vue';
+import SkeletonBar from '@/components/SkeletonBar.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
 import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
@@ -285,12 +287,17 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
       aria-hidden="true"
       tid="workflow-log-placeholder"
     >
-      <span
+      <Skeleton
         v-for="(width, index) in PLACEHOLDER_LINES"
         :key="index"
         :class="css.workflowRunLogPane_placeholder"
-        :style="{ width: `${width}%` }"
-      />
+        :row="index"
+      >
+        <SkeletonBar
+          :width="`${width}%`"
+          tone="weak"
+        />
+      </Skeleton>
     </div>
     <div
       v-else-if="message"
@@ -378,8 +385,6 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
 }
 
 .workflowRunLogPane_placeholder {
-  @include placeholder-bar;
-
   flex: none;
 }
 

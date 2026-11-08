@@ -121,8 +121,11 @@ const taken = computed(() => {
   }
 }
 
-.workflowLogStepRow_cursor {
-  @include row-selected;
+// The log's cursor, as on its lines (`WorkflowJobLog`): a line of text, not a row of a list.
+.workflowLogStepRow_cursor,
+.workflowLogStepRow_cursor:hover {
+  background: $color-sel;
+  box-shadow: inset 2px 0 0 $color-accent;
 }
 
 .workflowLogStepRow_chevron,

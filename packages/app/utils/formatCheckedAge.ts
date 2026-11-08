@@ -1,9 +1,7 @@
-import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
-
 import { formatAge } from './formatAge.js';
+import { formatDuration } from './formatDuration.js';
 
 const MINUTE = 60_000;
-const SECONDS = new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'second', unitDisplay: 'narrow' });
 
 /**
  * How long ago something was last checked — `12s` under a minute, as the polls go every minute, then as a row's
@@ -14,5 +12,5 @@ const SECONDS = new Intl.NumberFormat(APP_LANGUAGE, { style: 'unit', unit: 'seco
  */
 export function formatCheckedAge(at: number, now: number) {
     const elapsed = Math.max(0, now - at);
-    return elapsed < MINUTE ? SECONDS.format(Math.floor(elapsed / 1000)) : formatAge(at, now);
+    return elapsed < MINUTE ? formatDuration(elapsed, { units: 1 }) : formatAge(at, now);
 }

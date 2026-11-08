@@ -54,18 +54,23 @@ type Story = StoryObj<typeof meta>;
  */
 export const Expanded: Story = {};
 
-/** Before the first download of "my work": its counts are still arriving. */
+/** Before any group of "my work" arrived: no counts (first run and loading G16). */
 export const CountsArriving: Story = { args: { counts: null } };
 
-/** The first download of the tracked ones under way: how far each is, or waiting for its turn. */
+/** Some groups of "my work" in: their counts; the others' and the total blank until every group is (G17, D14). */
+export const SomeCountsArriving: Story = {
+    args: { counts: { reviewRequested: 2, authored: 3, assigned: null, mentioned: null, total: null } },
+};
+
+/** The first download of the tracked ones under way: blank where the count goes until its open items are in (D4). */
 export const Downloading: Story = {
     args: {
         tracked: {
             projects: [project('githq Roadmap', 'kedrzu', 2, { kind: 'count', count: 34 })],
             repositories: [
                 repository('kedrzu/githq', { kind: 'count', count: 18 }),
-                repository('skyline-labs/portal', { kind: 'downloading', percent: 62 }, true),
-                repository('skyline-labs/api', { kind: 'downloading', percent: null }, true),
+                repository('skyline-labs/portal', { kind: 'downloading' }, true),
+                repository('skyline-labs/api', { kind: 'downloading' }, true),
                 repository('acme-health/vault', { kind: 'hidden' }),
             ],
         },

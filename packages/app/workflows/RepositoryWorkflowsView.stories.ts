@@ -122,7 +122,7 @@ export const NotKnownYet: Story = {
     },
 };
 
-/** Nothing read of the repository yet. */
+/** Nothing read of the repository yet: ghost workflow rows (first run and loading D17, ES27). */
 export const NotReadYet: Story = { args: { list: sampleList({ unread: true }) } };
 
 /** W3d: the repository has no workflows. */

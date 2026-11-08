@@ -438,32 +438,29 @@ function openRow(row: StackMapRow) {
   align-items: center;
   width: 100%;
   min-width: 0;
-  height: 24px;
+  height: 28px;
   padding: 0 $spacing-6;
 }
 
+// Its surface inset only above and below: the map's own padding is the row's edge, its text 6px into the surface.
 .stackMap_row {
+  @include row-surface($color-bg-3);
+  @include focus-ring;
+
   font: inherit;
   color: $color-fg-2;
   text-align: left;
   cursor: pointer;
   background: none;
   border: none;
-  border-radius: $radius-sm;
-
-  @include focus-ring;
-
-  &:hover {
-    background: $color-bg-3;
-  }
+  --row-surface-inset: #{$spacing-2} 0;
 }
 
-.stackMap_row_current,
-.stackMap_row_current:hover {
+.stackMap_row_current {
+  @include row-selected;
+
   color: $color-fg;
   cursor: default;
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
 }
 
 .stackMap_rowIcon {

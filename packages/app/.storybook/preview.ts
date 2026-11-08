@@ -7,6 +7,7 @@ import { ConfigProvider } from 'reka-ui';
 import { defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import { syncSkeletonClock } from '@/components/skeletonClock.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { ACCESSIBILITY_TAGS } from '@/testing/accessibilityTags.js';
 
@@ -25,6 +26,9 @@ setup(app => {
         }),
     );
 });
+
+// Like `plugins/skeletonClockPlugin.client.ts`.
+syncSkeletonClock();
 
 const preview: Preview = {
     parameters: {

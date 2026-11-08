@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
-import { Check, ChevronDown, ChevronRight, Layers, Minus } from 'lucide-vue-next';
+import { Check, Layers, Minus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
@@ -13,6 +13,7 @@ import type { ListStack } from './ListTypes.js';
 import PullRequestSize from './PullRequestSize.vue';
 import * as l from './StackCard.loc.js';
 import StackState from './StackState.vue';
+import StackToggle from './StackToggle.vue';
 import StackTone from './StackTone.vue';
 import { useStackFacts } from './useStackFacts.js';
 
@@ -104,21 +105,10 @@ const nameWithOwner = computed(() => {
           >
         </template>
       </span>
-      <!-- Toggling it opens nothing; neither it nor a pull request inside takes the focus, so the board's keys stay. -->
-      <button
-        type="button"
-        tabindex="-1"
-        :class="css.stackCard_toggle"
-        :aria-expanded="expanded"
-        :aria-label="t(expanded ? l.collapse : l.expand)"
-        @mousedown.prevent
-        @click.stop="emit('toggle')"
-      >
-        <component
-          :is="expanded ? ChevronDown : ChevronRight"
-          aria-hidden="true"
-        />
-      </button>
+      <StackToggle
+        :expanded="expanded"
+        @toggle="emit('toggle')"
+      />
     </div>
     <span :class="css.stackCard_title">{{ stack.description.name.title }}</span>
     <div :class="css.stackCard_state">
@@ -235,30 +225,6 @@ const nameWithOwner = computed(() => {
   flex: none;
   font-family: $font-family-mono;
   color: $color-fg-dim;
-}
-
-.stackCard_toggle {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  padding: 0;
-  color: $color-fg-3;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: $radius-sm;
-
-  &:hover {
-    color: $color-fg-2;
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
 }
 
 .stackCard_title {

@@ -9,6 +9,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 import { COMMIT_REF_LIST_TARGET_ID } from '@/commits/CommitTypes.js';
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ItemSort } from '@/lists/ItemSort.js';
 import type { ListEntry, ListViewOptions } from '@/lists/ListTypes.js';
@@ -31,6 +32,7 @@ import { REPOSITORY_VIEW_DEFAULTS } from './repositoryViewOptions.js';
 type Options = ListViewOptions<RepositoryGrouping, ItemSort>;
 
 const COLUMN_WIDTH_KEY = 'githq.panelWidth.repositoryColumn';
+const GITHUB_URL = `https://github.com/${SAMPLE_REPOSITORY}`;
 
 const TEXTS: RepositoryListTexts = {
     all: 'All',
@@ -337,13 +339,130 @@ test('the first page on its way shows the list arriving, not that there is nothi
     await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
 });
 
-test('J7: GitHub does not show it: the name, the chip and the way to GitHub, none of the list or its tools', async () => {
-    mount({ tracked: false, items: [], status: browsedStatus({ notShown: true }) });
+test('first run and loading ES14, ES29: tracked, a state still downloading shows ghosts — rows, on the board columns — never that nothing matches', async () => {
+    mount({ items: [], arriving: true });
 
-    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect.element(page.getByText(/Still arriving/)).toBeVisible();
+    await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
+
+    // The board's columns come from its items: none is named before they are in.
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    await expect.element(page.getByText(/Still arriving/)).toBeVisible();
+    await expect.element(page.getByRole('heading', { level: 2 })).not.toBeInTheDocument();
+    await expect.element(page.getByText('Nothing here', { exact: true })).not.toBeInTheDocument();
+});
+
+test('first run and loading D6, ES14: offline, paused or failing with nothing listed never shows ghosts, on the board neither; with rows the status bar alone tells', async () => {
+    mount({ items: [], arriving: true, cantBeRead: { kind: 'offline' } });
+
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect.element(page.getByText(/Still arriving/)).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect.element(page.getByText(/Still arriving/)).not.toBeInTheDocument();
+});
+
+test("first run and loading D6: with rows on screen, what stands in the way is the status bar's alone, GitHub not showing a tracked repository too", async () => {
+    mount({ cantBeRead: { kind: 'hidden', url: GITHUB_URL } });
+
+    await expect.element(page.getByRole('listitem').first()).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^GitHub doesn't show/ })).not.toBeInTheDocument();
+});
+
+test('first run and loading D6: what has all arrived and holds nothing says so, offline or not, as nothing more would come', async () => {
+    mount({ items: [], cantBeRead: { kind: 'offline' } });
+
+    await expect.element(page.getByRole('heading', { name: 'No open issues' })).toBeVisible();
+    await expect.element(page.getByText(`GitHub lists none in ${SAMPLE_REPOSITORY}.`, { exact: true })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+});
+
+test('ES16: tracked, GitHub not showing it stands over nothing there and a state that hides all, under the toolbar', async () => {
+    mount({
+        items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN'),
+        cantBeRead: { kind: 'hidden', url: GITHUB_URL },
+    });
+
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
+});
+
+test('ES16: tracked, GitHub refusing its changes leaves what has arrived its own reason, the status bar telling the refusal', async () => {
+    mount({
+        items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN'),
+        cantBeRead: { kind: 'refused', url: GITHUB_URL },
+    });
+
+    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^GitHub refuses/ })).not.toBeInTheDocument();
+});
+
+test("ES16: tracked, GitHub refusing its changes is told over what hasn't arrived, naming only that", async () => {
+    mount({ items: [], arriving: true, cantBeRead: { kind: 'refused', url: GITHUB_URL } });
+
     await expect
-        .element(page.getByText('It may be private or gone, or this name may be wrong.', { exact: true }))
+        .element(page.getByRole('heading', { name: `GitHub refuses to list ${SAMPLE_REPOSITORY}'s open issues` }))
         .toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
+});
+
+test('filtered out: the state hiding all the section holds is named, with a way to clear it to both states', async () => {
+    const closed = SAMPLE_REPOSITORY_ITEMS.filter(item => item.kind === 'issue' && item.state !== 'OPEN');
+    const view = mount({ items: closed });
+
+    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect
+        .element(
+            page.getByText(
+                `State is open hides ${closed.length === 1 ? 'the 1 issue' : `all ${closed.length} issues`}.`,
+            ),
+        )
+        .toBeVisible();
+    await userEvent.click(page.getByRole('button', { name: 'Clear filter' }));
+    expect(view.state.value.issues).toBe('all');
+});
+
+test('filtered out, not tracked: no count, as the copy holds only what githq has read of it', async () => {
+    mount({ tracked: false, items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN') });
+
+    await expect
+        .element(page.getByText('State is open hides the issues githq has read.', { exact: true }))
+        .toBeVisible();
+    await expect.element(page.getByText(/hides all|hides the 1/)).not.toBeInTheDocument();
+});
+
+test('ES17: not tracked, GitHub failing with nothing held leaves the name, the chip and Try again, on R', async () => {
+    const retry = vi.fn(() => Promise.resolve());
+    mount({ tracked: false, items: [], arriving: true, cantBeRead: { kind: 'failing', retry } });
+
+    await expect.element(page.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect.element(page.getByText(`githq couldn't read ${SAMPLE_REPOSITORY}.`, { exact: false })).toBeVisible();
+    await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
+    await userEvent.keyboard('r');
+    expect(retry).toHaveBeenCalledTimes(1);
+});
+
+test('not tracked, a state that can not be read while the section holds others keeps the toolbar to go back to them', async () => {
+    const closed = SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN');
+    mount({ tracked: false, items: closed, arriving: true, cantBeRead: { kind: 'offline' } });
+
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    // Only the state's issues are missing, not the repository.
+    await expect
+        .element(page.getByText(`so ${SAMPLE_REPOSITORY}'s open issues haven't arrived yet.`, { exact: false }))
+        .toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
+});
+
+test('J7: GitHub does not show it: the name, the chip and the way to GitHub, none of the list or its tools', async () => {
+    mount({ tracked: false, items: [], cantBeRead: { kind: 'hidden', url: GITHUB_URL } });
+
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
     await expect.element(page.getByRole('heading', { name: SAMPLE_REPOSITORY, level: 1 })).toBeVisible();
     await expect.element(page.getByText('not tracked', { exact: true })).toBeVisible();
     await expect
@@ -478,10 +597,10 @@ test("D14, D20: not tracked, in the column layout the chip is in the column, and
 });
 
 test('J7 in the column layout: the name of the section over what GitHub does not show, the sections staying in the column', async () => {
-    mount({ layout: 'column', tracked: false, items: [], status: browsedStatus({ notShown: true }) });
+    mount({ layout: 'column', tracked: false, items: [], cantBeRead: { kind: 'hidden', url: GITHUB_URL } });
 
     await expect.element(page.getByRole('heading', { name: 'Issues', level: 1 })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
     await expect.element(page.getByRole('group', { name: 'Sections' })).toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Group:/ })).not.toBeInTheDocument();
 });
@@ -586,6 +705,8 @@ interface MountOptions {
     readonly items?: readonly Item[] | Ref<readonly Item[]>;
     /** As the page tells it; `view.status` changes it while mounted. */
     readonly status?: BrowsedStatus | null;
+    /** What stands in the way, as the page tells it. */
+    readonly cantBeRead?: CantBeReadCause | null;
     /** The list is told GitHub has not answered yet, as the page tells it. */
     readonly arriving?: boolean;
     readonly canMove?: (entry: ListEntry<Item>, from: string, to: string) => boolean;
@@ -607,6 +728,7 @@ function mount({
     tracked = true,
     items = SAMPLE_REPOSITORY_ITEMS,
     status = null,
+    cantBeRead = null,
     arriving = false,
     canMove,
     hostHeight = '100vh',
@@ -664,6 +786,7 @@ function mount({
                         : null,
                     openCounts,
                     status: statusRef.value,
+                    cantBeRead,
                     onReadMore: readMore,
                     canMove,
                     layout: unref(layout),
@@ -806,7 +929,7 @@ test('the state is a command wherever the toolbar shows it: an untracked reposit
     const workflows = mount({ section: 'workflows', workflowCount: 2 });
     expect(viewCommands(workflows.container).map(command => command.id)).toEqual([]);
 
-    const notShown = mount({ tracked: false, status: browsedStatus({ notShown: true }) });
+    const notShown = mount({ tracked: false, cantBeRead: { kind: 'hidden', url: GITHUB_URL } });
     expect(viewCommands(notShown.container).map(command => command.id)).toEqual([]);
 });
 

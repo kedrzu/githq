@@ -102,7 +102,7 @@ type Story = StoryObj<typeof meta>;
 /** W2: broken in three of four repositories — two breaks under a day old, three older. */
 export const Everything: Story = {};
 
-/** W2c: two repositories still being read, one with Actions off — the total is "1 so far". */
+/** W2c: two repositories still being read, one with Actions off — the total is "1 so far", ghost rows below. */
 export const PartlyKnown: Story = {
     args: {
         broken: buildBrokenWorkflows([
@@ -117,7 +117,7 @@ export const PartlyKnown: Story = {
     },
 };
 
-/** Nothing read yet: no zero, nothing claimed healthy. */
+/** Nothing read yet: no zero, nothing claimed healthy, ghost rows with the repository's column (ES28). */
 export const NotKnownYet: Story = {
     args: {
         broken: buildBrokenWorkflows([
@@ -144,6 +144,49 @@ export const NothingBrokenOneRefused: Story = {
     args: {
         broken: buildBrokenWorkflows([
             sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', workflows: [PROBE] }),
+            sampleRepositoryWorkflows({
+                nameWithOwner: 'fitloop/api',
+                unavailable: { reason: 'refused', status: 403 },
+            }),
+        ]),
+    },
+};
+
+/** ES23: GitHub fails before any repository's workflows were read: the note and Try again, no ghosts. */
+export const NoRepositoryCanBeRead: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/mdlint', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/webapp', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/api', unread: true }),
+        ]),
+        checkedAt: null,
+        cantBeRead: { kind: 'failing', retry: fn(() => Promise.resolve()) },
+    },
+};
+
+/** ES23: GitHub fails after one repository's workflows were read, none broken: the note for the rest, no ghosts. */
+export const SomeRepositoriesCantBeRead: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/tasklet', workflows: [PROBE] }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'mlaine/mdlint', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/webapp', unread: true }),
+            sampleRepositoryWorkflows({ nameWithOwner: 'fitloop/api', unread: true }),
+        ]),
+        cantBeRead: { kind: 'offline' },
+    },
+};
+
+/** GitHub answers, and shows nothing of any tracked repository: the note over "Can't tell", which says why of each. */
+export const NoneShown: Story = {
+    args: {
+        broken: buildBrokenWorkflows([
+            sampleRepositoryWorkflows({
+                nameWithOwner: 'mlaine/tasklet',
+                unavailable: { reason: 'disabled', status: 404 },
+            }),
             sampleRepositoryWorkflows({
                 nameWithOwner: 'fitloop/api',
                 unavailable: { reason: 'refused', status: 403 },

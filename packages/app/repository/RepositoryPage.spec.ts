@@ -2,7 +2,7 @@ import type { RepositoryIssuesQuery } from '@githq/github/generated.gen.js';
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { createApp, defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-router';
@@ -11,6 +11,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { RepositoryHolds } from '@/repos/RepositoryHolds.js';
 import { Browser } from '@/services/Browser.js';
+import { SyncEngine } from '@/sync/SyncEngine.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
@@ -67,6 +68,47 @@ test('tracked, nothing is read on demand, and untracked from the screen it goes 
     expect(github.issuePages()).toEqual([{ states: ['OPEN'], after: null }]);
 });
 
+test('first run and loading ES14: tracked, a tab has no count until its download has read its open items', async () => {
+    const { tracking } = await open({ path: `/${WEB}/issues`, tracked: true });
+    const sections = page.getByRole('group', { name: 'Sections' });
+
+    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Pull requests', exact: true })).toBeVisible();
+
+    // Its open issues are in, its open pull requests on their way.
+    await tracking.updateSyncState({ kind: 'repository', nameWithOwner: WEB }, { phase: 'openPullRequests' });
+    await expect.element(sections.getByRole('button', { name: 'Issues 0', exact: true })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Pull requests', exact: true })).toBeVisible();
+});
+
+test('first run and loading ES16: tracked, one GitHub stops showing says so instead of nothing, with no count on its tabs', async () => {
+    const { tracking } = await open({ path: `/${WEB}/issues`, tracked: true });
+    const sections = page.getByRole('group', { name: 'Sections' });
+
+    await tracking.updateSyncState({ kind: 'repository', nameWithOwner: WEB }, { phase: 'done', hidden: true });
+
+    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${WEB}` })).toBeVisible();
+    await expect.element(sections.getByRole('button', { name: 'Issues', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
+});
+
+test("first run and loading D3, D6: tracked, a state still downloading with nothing listed tells what stands in the download's way, though the repository's own poll is fresh", async () => {
+    const { tracking, sync } = await open({ path: `/${WEB}/issues`, tracked: true });
+    // Its open items in and polled; its closed ones the shared download's, which GitHub fails.
+    vi.spyOn(sync, 'getRepositoryFreshness').mockReturnValue({
+        kind: 'partial',
+        downloading: { phase: 'closedIssues', done: 0, total: null },
+    });
+    vi.spyOn(sync, 'getDownloadFreshness').mockReturnValue({ kind: 'stale', since: null, reason: 'failing' });
+    await tracking.updateSyncState({ kind: 'repository', nameWithOwner: WEB }, { phase: 'closedIssues' });
+
+    await userEvent.click(page.getByRole('button', { name: 'Open', exact: true }));
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Closed', exact: true }));
+
+    await expect.element(page.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect.element(page.getByText(/Still arriving/u)).not.toBeInTheDocument();
+});
+
 test("GitHub's own name replaces the address, at the same section with its query and hash, and the rows stay", async () => {
     const { router } = await open({ path: '/ACME/Web/issues?panel=1#top', actualName: WEB });
 
@@ -80,7 +122,7 @@ test('the page holds the repository, tracked or not, and leaving it stops the re
     await expect.element(rowOf('Issue I_open')).toBeVisible();
 
     await router.push('/acme/hidden/issues');
-    await expect.element(page.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "GitHub doesn't show acme/hidden" })).toBeVisible();
     expect(holds.isHeld(WEB)).toBe(true);
     expect(holds.isHeld('acme/hidden')).toBe(true);
     // One first page each: leaving, the page never asked anything more of the repository it left.
@@ -184,6 +226,7 @@ async function open({ path, tracked = false, actualName = WEB, hidden = false }:
         github,
         tracking,
         router,
+        sync: container.resolve(SyncEngine),
         holds: container.resolve(RepositoryHolds),
         auth: container.resolve(AuthStore),
         setVisible: (value: boolean) => {

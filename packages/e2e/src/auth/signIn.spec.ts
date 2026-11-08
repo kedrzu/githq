@@ -89,12 +89,14 @@ test('signing in with GitHub ends in the app, where the user was heading', async
     await authorize;
 
     // The first sign-in chooses what to track first (here nothing: the user has no repositories), then goes on to
-    // where the user was heading: "My pull requests".
+    // where the user was heading: "My pull requests", empty, its note naming it (D15, ES12).
     await expect(page).toHaveURL('/settings/tracking/new?next=/pulls');
     await new FirstSignInHarness(page).continueButton.click();
     await expect(new AppShellHarness(page).account(LOGIN)).toBeVisible();
     await expect(page).toHaveURL('/pulls');
-    await expect(new MyWorkScreenHarness(page).groups).toHaveCount(1);
+    await expect(
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+    ).toBeVisible();
     expect(await readStoredToken(page)).toBe(SAMPLE_TOKEN);
 });
 

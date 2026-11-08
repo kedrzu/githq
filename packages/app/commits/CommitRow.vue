@@ -124,12 +124,9 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
 
 <style lang="scss" module="css">
 .commitRow {
-  display: flex;
-  gap: $spacing-8;
-  align-items: center;
+  @include commit-row;
+
   height: 100%;
-  padding-right: $spacing-20;
-  container-type: inline-size;
 }
 
 .commitRow_marks {
@@ -166,7 +163,7 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
   flex: none;
   gap: $spacing-6;
   align-items: center;
-  width: 110px;
+  width: $commit-row-author-width;
 }
 
 .commitRow_authorName {
@@ -180,7 +177,7 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
 
 .commitRow_age {
   flex: none;
-  width: 30px;
+  width: $commit-row-age-width;
   font-size: $font-size-xs;
   color: $color-fg-dim;
   text-align: right;
@@ -188,7 +185,7 @@ const age = computed(() => formatAge(Date.parse(props.commit.committedDate), pro
 }
 
 // Narrow rows (details open, the column layout): the author's name gives way to the avatar.
-@container (max-width: 640px) {
+@container (max-width: #{$commit-row-narrow-width}) {
   .commitRow_author {
     width: auto;
   }

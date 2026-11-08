@@ -52,6 +52,7 @@ test('on the first download the groups that answered are usable while the others
         /Retry polls on network errors/,
     ]);
     await expect(myWork.group('Assigned to me')).toContainText('Still arriving');
+    await expect(shell.statusBar).toContainText('Still arriving · assigned to you');
     await expect(myWork.rows('Mentioned')).toHaveText([/Dark mode for the status bar/]);
     await page.keyboard.press('j');
     await expect(myWork.selectedRow).toContainText('Add rate limit headers to the API');

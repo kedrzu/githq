@@ -1,4 +1,4 @@
-<!-- What "my work" says when a filter leaves nothing (K4, K5): a calm, good state that names what was checked, so "empty" can be trusted. With nothing at all, it offers the next useful keys — a new issue, the command menu to jump to a project (K4); with nothing needing the user, it points at the pull requests waiting on others, if any (K5). -->
+<!-- What "my work", with all its groups shown, says when every group is in and a filter leaves nothing (K4, K5; first run and loading's `Empty / Nothing there`): a calm, good state that names what was checked, so "empty" can be trusted. With nothing at all, it offers the next useful keys — a new issue, the command menu to jump to a project (K4); with nothing needing the user, it points at the pull requests waiting on others, if any (K5). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -10,7 +10,7 @@ import { computed } from 'vue';
 import { APP_KEYS, CommandRegistry, NEW_ISSUE_KEY } from '@/commands/CommandRegistry.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Button from '@/components/Button.vue';
-import EmptyState from '@/components/EmptyState.vue';
+import NothingThere from '@/components/NothingThere.vue';
 
 import type { MyWorkFilter } from './buildMyWork.js';
 import * as l from './MyWorkEmpty.loc.js';
@@ -36,7 +36,7 @@ const registry = useService(CommandRegistry);
 /** "New issue" from the app's commands, when it can run here. */
 const newIssue = computed(() => registry.commands.find(command => command.key === NEW_ISSUE_KEY) ?? null);
 
-const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: string; detail: string } => {
+const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: string; detail: string } => {
   switch (props.filter) {
     case 'all':
       return {
@@ -46,9 +46,9 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: stri
         detail: props.trackedCount > 0 ? t(l.nothingTrackedDetail, { count: props.trackedCount }) : t(l.nothingDetail),
       };
     case 'needsMe':
-      return { icon: Coffee, tone: 'calm', title: t(l.nothingNeedsYouTitle), detail: t(l.nothingNeedsYouDetail) };
+      return { icon: Coffee, tone: 'muted', title: t(l.nothingNeedsYouTitle), detail: t(l.nothingNeedsYouDetail) };
     case 'waitingOnOthers':
-      return { icon: Hourglass, tone: 'calm', title: t(l.nothingWaitingTitle), detail: t(l.nothingWaitingDetail) };
+      return { icon: Hourglass, tone: 'muted', title: t(l.nothingWaitingTitle), detail: t(l.nothingWaitingDetail) };
     default:
       return assertNever(props.filter);
   }
@@ -56,7 +56,8 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: stri
 </script>
 
 <template>
-  <EmptyState
+  <NothingThere
+    place="screen"
     :icon="look.icon"
     :tone="look.tone"
     :title="look.title"
@@ -109,7 +110,7 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'calm'; title: stri
         >
       </Button>
     </template>
-  </EmptyState>
+  </NothingThere>
 </template>
 
 <style lang="scss" module="css">

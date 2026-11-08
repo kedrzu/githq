@@ -68,6 +68,54 @@ test('W4i: a log that failed to read says so, whichever job', async () => {
     await expect.element(page.getByText("The log of build didn't load")).toBeVisible();
 });
 
+test('first run and loading D14: my work says it is fetching until a group is in, then names the groups still arriving', async () => {
+    mount({ kind: 'partial', arriving: ['reviewRequested', 'authored', 'assigned', 'mentioned'] });
+    await expect.element(page.getByText('Fetching your work')).toBeVisible();
+
+    mount({ kind: 'partial', arriving: ['assigned', 'mentioned'] });
+    await expect.element(page.getByText('Still arriving · assigned to you, mentions')).toBeVisible();
+
+    mount({ kind: 'partial', arriving: ['reviewRequested'] });
+    await expect.element(page.getByText('Still arriving · review requests')).toBeVisible();
+});
+
+test('first run and loading D3, D14: a tracked repository names the phase of its download, a project its items, counted once GitHub has', async () => {
+    mount({ kind: 'partial', downloading: { phase: 'openPullRequests', done: 0, total: null } });
+    await expect.element(page.getByText('Downloading open pull requests', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', downloading: { phase: 'closedIssues', done: 1200, total: 4000 } });
+    await expect.element(page.getByText('Downloading closed issues · 1,200 of 4,000')).toBeVisible();
+
+    // A tracked project has one phase, its items.
+    mount({ kind: 'partial', downloading: { phase: 'items', done: 0, total: 128 } });
+    await expect.element(page.getByText('Downloading items · 0 of 128')).toBeVisible();
+});
+
+test("first run and loading D14: a commit graph's first read says it reads commits, with no count", async () => {
+    mount({ kind: 'partial', readingCommits: true });
+
+    await expect.element(page.getByText('Reading commits', { exact: true })).toBeVisible();
+});
+
+test('first run and loading D14: workflows not read yet say so, Broken workflows with how many repositories are', async () => {
+    mount({ kind: 'partial', readingWorkflows: true });
+    await expect.element(page.getByText('Reading workflows', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', readingWorkflows: { read: 1, total: 4 } });
+    await expect.element(page.getByText('Reading workflows · 1 of 4 repositories', { exact: true })).toBeVisible();
+
+    mount({ kind: 'partial', readingWorkflows: { read: 0, total: 1 } });
+    await expect.element(page.getByText('Reading workflows · 0 of 1 repository', { exact: true })).toBeVisible();
+});
+
+test("ES16, ES20: a repository or project GitHub doesn't show says so, with no promise to ask again", async () => {
+    mount({ kind: 'stale', since: NOW, reason: 'hidden', of: 'repository' });
+    await expect.element(page.getByText("GitHub doesn't show this repository", { exact: true })).toBeVisible();
+
+    mount({ kind: 'stale', since: null, reason: 'hidden', of: 'project' });
+    await expect.element(page.getByText("GitHub doesn't show this project", { exact: true })).toBeVisible();
+});
+
 test('PM35, PM36: a merge refused is red and brings its toast back; one GitHub has not answered is grey, with nothing to click', async () => {
     const refused = mount(FRESH, { kind: 'failed', text: 'Merge refused · fitloop/api#477' });
     await userEvent.click(page.getByRole('button', { name: 'Merge refused · fitloop/api#477' }));

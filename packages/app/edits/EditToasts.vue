@@ -11,6 +11,7 @@ import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { isMergeFailure } from '@/merge/isMergeFailure.js';
 import { Browser } from '@/services/Browser.js';
 import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
@@ -89,12 +90,12 @@ function getLink(failure: EditFailure) {
   switch (edit.subject.kind) {
     case 'labelAdded':
     case 'labelRemoved':
-      return { url: `https://github.com/${repository}/labels`, text: t(l.openLabels) };
+      return { url: getGitHubUrl(`${repository}/labels`), text: t(l.openLabels) };
     case 'milestone':
-      return { url: `https://github.com/${repository}/milestones`, text: t(l.openMilestones) };
+      return { url: getGitHubUrl(`${repository}/milestones`), text: t(l.openMilestones) };
     default:
       // GitHub sends `/issues/N` on to a pull request's own address.
-      return { url: `https://github.com/${repository}/issues/${number}`, text: t(l.openOnGitHub) };
+      return { url: getGitHubUrl(`${repository}/issues/${number}`), text: t(l.openOnGitHub) };
   }
 }
 </script>

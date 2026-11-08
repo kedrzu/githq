@@ -14,6 +14,7 @@ import { formatBytes } from '@/utils/formatBytes.js';
 import { formatCheckedAge } from '@/utils/formatCheckedAge.js';
 import { formatShortDate } from '@/utils/formatShortDate.js';
 import { formatTime } from '@/utils/formatTime.js';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import * as l from './AccountView.loc.js';
 
@@ -155,7 +156,7 @@ function isApproved(organization: AccountOrganization) {
           <Button
             variant="secondary"
             :icon="ArrowUpRight"
-            :link="`https://github.com/${viewer.login}`"
+            :link="getGitHubUrl(viewer.login)"
             target="_blank"
           >
             {{ t(l.openProfile) }}
