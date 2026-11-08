@@ -186,7 +186,8 @@ export const RebaseNotSelected: Story = {
     args: { stack: sampleListStack(SAMPLE_STACKS.needsRebase) },
     decorators: [withMerging],
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).queryByRole('button')).toBeNull();
+        // No follow-up to act on: its chevron is its only button.
+        await expect(within(canvasElement).getByRole('button')).toHaveAccessibleName('Expand the stack');
     },
 };
 
@@ -201,7 +202,8 @@ export const BeingMerged: Story = {
         const row = within(canvasElement);
         await expect(row.getByText('Being merged · 3 going · not merged yet')).toBeVisible();
         await expect(row.queryByText(/Merged/u)).toBeNull();
-        await expect(row.queryByRole('button')).toBeNull();
+        // No follow-up to act on: its chevron is its only button.
+        await expect(row.getByRole('button')).toHaveAccessibleName('Expand the stack');
     },
 };
 

@@ -39,6 +39,7 @@ import type {
     ListStack,
 } from './ListTypes.js';
 import ListView from './ListView.vue';
+import StackToggle from './StackToggle.vue';
 
 // Mounted by hand rather than from a story: these tests change the groups under the list, as a sync or an edit does.
 
@@ -272,13 +273,15 @@ test('list: ←/→ move nothing, ↓ crosses into the next group', async () => 
     await expect.poll(selectedCard).toBe('b1');
 });
 
-test('the selected row keeps the brand: the indigo edge on the selection background', async () => {
+test('the selected row keeps the brand: a surface inset in the row, the selection background in a faint indigo outline', async () => {
     mount(BOARD, 'list');
 
     await userEvent.keyboard('j');
     await expect.poll(selectedCard).toBe('a1');
-    const style = getComputedStyle(document.querySelector('[aria-current="true"]')!);
-    expect(style.boxShadow).toBe('rgb(123, 135, 247) 2px 0px 0px 0px inset');
+    const style = getComputedStyle(document.querySelector('[aria-current="true"]')!, '::after');
+    expect(style.inset).toBe('2px 8px');
+    expect(style.borderRadius).toBe('6px');
+    expect(style.boxShadow).toBe('rgba(123, 135, 247, 0.3) 0px 0px 0px 1px inset');
     expect(style.backgroundColor).toBe('rgb(24, 29, 46)');
 });
 
@@ -661,6 +664,8 @@ interface RowProps {
     readonly stack: ListStack | null;
     readonly checked: boolean;
     readonly halfChecked: boolean;
+    readonly expanded: boolean;
+    readonly toggleStack: () => void;
 }
 
 /** How a stack's entry in the test says it is selected. */
@@ -1863,9 +1868,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 onListed: (items: ListedItems) => listed.push(items),
             },
             {
-                row: ({ entry, stack, checked, halfChecked }: RowProps) =>
+                row: ({ entry, stack, checked, halfChecked, expanded, toggleStack }: RowProps) =>
                     stack
-                        ? h('span', `stack ${stack.id}${getMark(checked, halfChecked)}`)
+                        ? h('span', [
+                              `stack ${stack.id}${getMark(checked, halfChecked)}`,
+                              h(StackToggle, { expanded, onToggle: toggleStack }),
+                          ])
                         : h('span', [entry.value, h(MergeButton, { id: entry.id })]),
                 card: (props: CardProps) =>
                     props.stack

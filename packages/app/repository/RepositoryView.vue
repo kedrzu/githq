@@ -587,7 +587,9 @@ function getSectionCount(value: RepositorySection) {
             @move="emit('move', $event)"
             @some-collapsed="someCollapsed = $event"
           >
-            <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker }">
+            <template
+              #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, expanded, toggleStack }"
+            >
               <StackRow
                 v-if="stack"
                 :stack="stack"
@@ -597,7 +599,9 @@ function getSectionCount(value: RepositorySection) {
                 :selected="selected"
                 :checked="checked"
                 :half-checked="halfChecked"
+                :expanded="expanded"
                 :opened-id="openedId"
+                @toggle="toggleStack"
               />
               <ItemRow
                 v-else

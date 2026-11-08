@@ -1572,6 +1572,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :class="[
                     css.listView_row,
                     current.rail && css[`listView_row_rail${current.depth}`],
+                    current.depth > 0 && css[`listView_row_depth${current.depth}`],
                     selectedKey === current.entry.key && css.listView_row_selected,
                     isChecked(current.entry.key) && css.listView_row_checked,
                     isUnmatched(current) && css.listView_row_unmatched,
@@ -1580,21 +1581,6 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :data-entry-key="current.entry.key"
                   @click="openEntry(current.entry.key)"
                 >
-                  <!-- In the row's gutter (SP10, SP20, SP22); toggling it opens nothing. -->
-                  <button
-                    v-if="getToggled(current)"
-                    type="button"
-                    tabindex="-1"
-                    :class="[css.listView_stackToggle, current.depth > 0 && css.listView_stackToggle_nested]"
-                    :aria-expanded="isToggledExpanded(current)"
-                    :aria-label="t(isToggledExpanded(current) ? l.collapseStack : l.expandStack)"
-                    @click.stop="toggleOf(current)"
-                  >
-                    <component
-                      :is="isToggledExpanded(current) ? ChevronDown : ChevronRight"
-                      aria-hidden="true"
-                    />
-                  </button>
                   <slot
                     name="row"
                     v-bind="getSlotProps({ current, row, group })"
@@ -1791,12 +1777,19 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 }
 
 .listView_row {
-  position: relative;
-  cursor: default;
+  @include row-surface;
 
-  &:hover {
-    background: $color-bg-2;
-  }
+  cursor: default;
+}
+
+// A row indented under another (`ItemRow`, `StackRow`: its text 42px in, a pull request of a nested stack's 66px): its
+// surface starts 8px before its text, clear of the rail.
+.listView_row_depth1 {
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 34px;
+}
+
+.listView_row_depth2 {
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 58px;
 }
 
 // A stack's pull requests under an issue (D12, D23): a rail below the icon of what expands them — the issue's, or a
@@ -1819,44 +1812,12 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   left: 42px + 7px;
 }
 
-// In the 16px gutter left of the row's icon, level with it: the row's padding and the icon's own offset.
-.listView_stackToggle {
-  position: absolute;
-  top: $spacing-7 + $spacing-2;
-  left: calc(($spacing-16 - 14px) / 2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  padding: 0;
-  color: $color-fg-3;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: $radius-sm;
-
-  &:hover {
-    color: $color-fg-2;
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-// A nested stack's header (D23): in the gutter left of its icon, 42px in.
-.listView_stackToggle_nested {
-  left: calc(42px - $spacing-16 + ($spacing-16 - 14px) / 2);
-}
-
 .listView_row_selected {
   @include row-selected;
 }
 
-.listView_row_checked,
-.listView_row_checked:hover {
+.listView_row_checked::after,
+.listView_row_checked:hover::after {
   background: rgba($color-accent, 0.1);
 }
 

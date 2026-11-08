@@ -109,7 +109,7 @@ const groups = computed((): ListGroup<Item>[] => [
         @open="emit('open', $event)"
         @listed="emit('listed', $event)"
       >
-        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker }">
+        <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker, expanded, toggleStack }">
           <StackRow
             v-if="stack"
             :stack="stack"
@@ -117,7 +117,9 @@ const groups = computed((): ListGroup<Item>[] => [
             :now="now"
             :checked="checked"
             :half-checked="halfChecked"
+            :expanded="expanded"
             :opened-id="openedId"
+            @toggle="toggleStack"
           />
           <ItemRow
             v-else

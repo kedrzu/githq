@@ -1928,10 +1928,10 @@ function cursor() {
     return document.querySelector('li[aria-current="true"]');
 }
 
-/** Whether the row under the cursor looks it: its accent edge, as a list's selected row. */
+/** Whether the row under the cursor looks it: its surface outlined in the accent, as a list's selected row. */
 function cursorDrawn() {
     const row = cursor();
-    return row !== null && getComputedStyle(row).boxShadow !== 'none';
+    return row !== null && getComputedStyle(row, '::after').boxShadow !== 'none';
 }
 
 /** The rows' slices of the graph, each the first drawing of its row. */

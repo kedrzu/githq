@@ -1032,14 +1032,14 @@ function resetShare() {
 }
 
 .commitGraphView_row {
+  @include row-surface;
+
   position: absolute;
   right: 0;
   left: 0;
   cursor: default;
-
-  &:hover {
-    background: $color-bg-2;
-  }
+  // The graph stays outside the surface, so its lanes run unbroken from row to row.
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} var(--commit-graph-width);
 }
 
 // D18.
@@ -1048,10 +1048,8 @@ function resetShare() {
 }
 
 // As a list's selected row.
-.commitGraphView_row_cursor,
-.commitGraphView_row_cursor:hover {
-  background: $color-sel;
-  box-shadow: inset 2px 0 0 $color-accent;
+.commitGraphView_row_cursor {
+  @include row-selected;
 }
 
 // D17, CH45: a line at the graph's edge, with room to take hold of it either side. It runs the height of the rows, so
