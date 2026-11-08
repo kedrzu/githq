@@ -22,6 +22,7 @@ import type { ListStack } from './ListTypes.js';
 import PullRequestSize from './PullRequestSize.vue';
 import StackMarker from './StackMarker.vue';
 import StackSummary from './StackSummary.vue';
+import StackToggle from './StackToggle.vue';
 import { useItemFacts } from './useItemFacts.js';
 
 const props = withDefaults(
@@ -43,8 +44,10 @@ const props = withDefaults(
     parent?: Item | null;
     /** Nested two steps in: a pull request of a stack with a header of its own under an issue (D23). */
     deep?: boolean;
-    /** The stack this issue serves as the header of (`ListRow.stacks`, D12): its pips and state. */
+    /** The stack this issue serves as the header of (`ListRow.stacks`, D12): its pips and state, and its chevron. */
     header?: ListStack | null;
+    /** The stack it is the header of is listed under it: its chevron points down. */
+    expanded?: boolean;
     /** The item opened over the list: a pull request of the stack the row is the header of has its pip tall (D14). */
     openedId?: string | null;
     /** In the selection several items are edited together in (`x`). */
@@ -63,11 +66,17 @@ const props = withDefaults(
     parent: null,
     deep: false,
     header: null,
+    expanded: false,
     openedId: null,
     undone: null,
     stack: null,
   },
 );
+
+const emit = defineEmits<{
+  /** The chevron of the stack it is the header of was clicked: the list expands or collapses it, opening nothing. */
+  toggle: [];
+}>();
 
 defineSlots<{
   /** Before the labels: a project's field values, in a project's view. */
@@ -114,7 +123,14 @@ const waitingDraft = computed(() =>
     />
     <div :class="css.itemRow_content">
       <div :class="css.itemRow_line">
-        <span :class="css.itemRow_title">{{ item.title }}</span>
+        <span :class="css.itemRow_name">
+          <span :class="css.itemRow_title">{{ item.title }}</span>
+          <StackToggle
+            v-if="header"
+            :expanded="expanded"
+            @toggle="emit('toggle')"
+          />
+        </span>
         <template v-if="shown.has('people')">
           <Avatar
             v-for="person in facts.people"
@@ -322,8 +338,14 @@ const waitingDraft = computed(() =>
   }
 }
 
-.itemRow_title {
+.itemRow_name {
+  display: flex;
   flex: 1;
+  gap: $spacing-8;
+  min-width: 0;
+}
+
+.itemRow_title {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -343,7 +343,20 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       @listed="emit('listed', $event)"
     >
       <template
-        #row="{ entry, parent, group: listGroup, selected, checked, halfChecked, stack, stackMarker, header, depth }"
+        #row="{
+          entry,
+          parent,
+          group: listGroup,
+          selected,
+          checked,
+          halfChecked,
+          stack,
+          stackMarker,
+          header,
+          depth,
+          expanded,
+          toggleStack,
+        }"
       >
         <StackRow
           v-if="stack"
@@ -357,7 +370,9 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :selected="selected"
           :checked="checked"
           :half-checked="halfChecked"
+          :expanded="expanded"
           :opened-id="openedId"
+          @toggle="toggleStack"
         />
         <ItemRow
           v-else
@@ -365,6 +380,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :parent="parent?.value"
           :deep="depth > 1"
           :header="header"
+          :expanded="expanded"
           :opened-id="openedId"
           :properties="properties"
           :repository="repositoryOf(listGroup)"
@@ -374,6 +390,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
           :checked="checked"
           :undone="undone.get(entry.id)"
           :stack="stackMarker"
+          @toggle="toggleStack"
         />
       </template>
       <template

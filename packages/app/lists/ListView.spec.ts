@@ -39,6 +39,7 @@ import type {
     ListStack,
 } from './ListTypes.js';
 import ListView from './ListView.vue';
+import StackToggle from './StackToggle.vue';
 
 // Mounted by hand rather than from a story: these tests change the groups under the list, as a sync or an edit does.
 
@@ -663,6 +664,8 @@ interface RowProps {
     readonly stack: ListStack | null;
     readonly checked: boolean;
     readonly halfChecked: boolean;
+    readonly expanded: boolean;
+    readonly toggleStack: () => void;
 }
 
 /** How a stack's entry in the test says it is selected. */
@@ -1865,14 +1868,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                 onListed: (items: ListedItems) => listed.push(items),
             },
             {
-                row: ({ entry, stack, checked, halfChecked }: RowProps) =>
+                row: ({ entry, stack, checked, halfChecked, expanded, toggleStack }: RowProps) =>
                     stack
-                        ? // As tall as a real row's content, so the chevron in its gutter stays inside it.
-                          h(
-                              'span',
-                              { style: 'display: block; height: 36px' },
+                        ? h('span', [
                               `stack ${stack.id}${getMark(checked, halfChecked)}`,
-                          )
+                              h(StackToggle, { expanded, onToggle: toggleStack }),
+                          ])
                         : h('span', [entry.value, h(MergeButton, { id: entry.id })]),
                 card: (props: CardProps) =>
                     props.stack

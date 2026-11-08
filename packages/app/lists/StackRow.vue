@@ -19,6 +19,7 @@ import type { ListStack } from './ListTypes.js';
 import * as l from './StackRow.loc.js';
 import PullRequestSize from './PullRequestSize.vue';
 import StackState from './StackState.vue';
+import StackToggle from './StackToggle.vue';
 import { useStackFacts } from './useStackFacts.js';
 
 const props = withDefaults(
@@ -44,9 +45,16 @@ const props = withDefaults(
     halfChecked?: boolean;
     /** The item opened over the list: when one of its pull requests, its pip is tall (D14). */
     openedId?: string | null;
+    /** Its pull requests are listed under it: its chevron points down. */
+    expanded?: boolean;
   }>(),
-  { repository: null, parent: null, people: 'assignees', viewerLogin: null, openedId: null },
+  { repository: null, parent: null, people: 'assignees', viewerLogin: null, openedId: null, expanded: false },
 );
+
+const emit = defineEmits<{
+  /** Its chevron was clicked: the list expands or collapses it, opening nothing. */
+  toggle: [];
+}>();
 
 defineSlots<{
   /** In a project's view, the values of its fields its pull requests share (D15), as `ItemRow`'s. */
@@ -122,6 +130,10 @@ const nameWithOwner = computed(() => {
         <span :class="css.stackRow_name">
           <span :class="css.stackRow_title">{{ description.name.title }}</span>
           <span :class="css.stackRow_count">{{ stackFacts.count }}</span>
+          <StackToggle
+            :expanded="expanded"
+            @toggle="emit('toggle')"
+          />
         </span>
         <template v-if="shown.has('people')">
           <Avatar

@@ -533,7 +533,9 @@ function hasItemView(entry: ProjectEntry) {
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >
-        <template #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, nested }">
+        <template
+          #row="{ entry, parent, selected, checked, halfChecked, stack, stackMarker, nested, expanded, toggleStack }"
+        >
           <StackRow
             v-if="stack"
             :stack="stack"
@@ -542,7 +544,9 @@ function hasItemView(entry: ProjectEntry) {
             :selected="selected"
             :checked="checked"
             :half-checked="halfChecked"
+            :expanded="expanded"
             :opened-id="openedId"
+            @toggle="toggleStack"
           >
             <template #fields>
               <ProjectEntryFields

@@ -1530,21 +1530,6 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :data-entry-key="current.entry.key"
                   @click="openEntry(current.entry.key)"
                 >
-                  <!-- In the row's gutter (SP10, SP20, SP22); toggling it opens nothing. -->
-                  <button
-                    v-if="getToggled(current)"
-                    type="button"
-                    tabindex="-1"
-                    :class="[css.listView_stackToggle, current.depth > 0 && css.listView_stackToggle_nested]"
-                    :aria-expanded="isToggledExpanded(current)"
-                    :aria-label="t(isToggledExpanded(current) ? l.collapseStack : l.expandStack)"
-                    @click.stop="toggleOf(current)"
-                  >
-                    <component
-                      :is="isToggledExpanded(current) ? ChevronDown : ChevronRight"
-                      aria-hidden="true"
-                    />
-                  </button>
                   <slot
                     name="row"
                     v-bind="getSlotProps({ current, row, group })"
@@ -1776,38 +1761,6 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 
 .listView_row_rail2::before {
   left: 42px + 7px;
-}
-
-// In the 16px gutter left of the row's icon, level with it: the row's inset, its surface's padding and the icon's own offset.
-.listView_stackToggle {
-  position: absolute;
-  top: $spacing-2 + $spacing-8 + $spacing-2;
-  left: calc(($spacing-16 - 14px) / 2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  padding: 0;
-  color: $color-fg-3;
-  cursor: pointer;
-  background: none;
-  border: none;
-  border-radius: $radius-sm;
-
-  &:hover {
-    color: $color-fg-2;
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-// A nested stack's header (D23): in the gutter left of its icon, 42px in.
-.listView_stackToggle_nested {
-  left: calc(42px - $spacing-16 + ($spacing-16 - 14px) / 2);
 }
 
 .listView_row_selected {
