@@ -272,13 +272,15 @@ test('list: ←/→ move nothing, ↓ crosses into the next group', async () => 
     await expect.poll(selectedCard).toBe('b1');
 });
 
-test('the selected row keeps the brand: the indigo edge on the selection background', async () => {
+test('the selected row keeps the brand: a surface inset in the row, the selection background in a faint indigo outline', async () => {
     mount(BOARD, 'list');
 
     await userEvent.keyboard('j');
     await expect.poll(selectedCard).toBe('a1');
-    const style = getComputedStyle(document.querySelector('[aria-current="true"]')!);
-    expect(style.boxShadow).toBe('rgb(123, 135, 247) 2px 0px 0px 0px inset');
+    const style = getComputedStyle(document.querySelector('[aria-current="true"]')!, '::after');
+    expect(style.inset).toBe('2px 8px');
+    expect(style.borderRadius).toBe('6px');
+    expect(style.boxShadow).toBe('rgba(123, 135, 247, 0.3) 0px 0px 0px 1px inset');
     expect(style.backgroundColor).toBe('rgb(24, 29, 46)');
 });
 
@@ -1865,7 +1867,12 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
             {
                 row: ({ entry, stack, checked, halfChecked }: RowProps) =>
                     stack
-                        ? h('span', `stack ${stack.id}${getMark(checked, halfChecked)}`)
+                        ? // As tall as a real row's content, so the chevron in its gutter stays inside it.
+                          h(
+                              'span',
+                              { style: 'display: block; height: 36px' },
+                              `stack ${stack.id}${getMark(checked, halfChecked)}`,
+                          )
                         : h('span', [entry.value, h(MergeButton, { id: entry.id })]),
                 card: (props: CardProps) =>
                     props.stack
