@@ -3,6 +3,12 @@ import { DESKTOP_DOWNLOAD_COOKIE } from '@githq/github/desktopInstallers.js';
 /** How often the cookie is looked for, in milliseconds. */
 const POLL_MS = 100;
 
+/**
+ * The shortest a download is shown as under way, in milliseconds, however soon it starts: a spinner gone within a tenth
+ * of a second reads as a flicker, and a click should visibly do something.
+ */
+const SHORTEST_MS = 1000;
+
 /** The longest a download is shown as under way when the Worker's cookie never comes (GitHub slow or unreachable). */
 const LONGEST_MS = 15_000;
 
@@ -33,9 +39,9 @@ const DOCUMENT_PAGE: DownloadPage = {
 
 /**
  * Resolves once the download behind `url`, a link to githq.dev's `/download/<build>` the visitor just followed, has
- * been handed to GitHub: the Worker's redirect to the installer sets {@link DESKTOP_DOWNLOAD_COOKIE}. A button returns
- * it from its `click` listener to spin until then (`useButton`); the browser shows the download from there on. The
- * browser itself tells a page nothing of a download, hence the cookie.
+ * been handed to GitHub, and a second has passed: the Worker's redirect to the installer sets
+ * {@link DESKTOP_DOWNLOAD_COOKIE}. A button returns it from its `click` listener to spin until then (`useButton`); the
+ * browser shows the download from there on. The browser itself tells a page nothing of a download, hence the cookie.
  */
 export function waitForDownload(url: string, page: DownloadPage = DOCUMENT_PAGE): Promise<void> {
     if (new URL(url).origin !== page.origin) {
@@ -51,12 +57,20 @@ export function waitForDownload(url: string, page: DownloadPage = DOCUMENT_PAGE)
 
     return new Promise(resolve => {
         const started = Date.now();
+        let handedOff = false;
         const timer = setInterval(() => {
-            const handedOff = page
-                .readCookies()
-                .split(';')
-                .some(pair => pair.trim() === `${name}=${value}`);
-            if (handedOff || Date.now() - started >= LONGEST_MS) {
+            if (
+                !handedOff &&
+                page
+                    .readCookies()
+                    .split(';')
+                    .some(pair => pair.trim() === `${name}=${value}`)
+            ) {
+                handedOff = true;
+                clear();
+            }
+            const waited = Date.now() - started;
+            if ((handedOff && waited >= SHORTEST_MS) || waited >= LONGEST_MS) {
                 clearInterval(timer);
                 clear();
                 resolve();
