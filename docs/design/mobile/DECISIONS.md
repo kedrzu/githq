@@ -311,3 +311,76 @@ is the exception ([D7](#d7)).
 
 - No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
   fitting a simple page.
+
+## D23
+
+**My work's filters (Needs me, Waiting on others, All, each with its count) sit in a strip under the top bar. A row at
+a phone's width keeps the type, the title on up to two lines, the repository without its owner when it is tracked
+(with it when not), the project's row field with +N, labels as colour dots, one avatar, and for a pull request its
+checks and review state, or Draft.** (2026-11-08, owner, picked from the drawings: `MB89`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: the filter is the first choice on every visit,
+and behind the corner menu nobody would see which one is on; the desktop row's labels, milestone and assignee names
+do not fit in about 350 px, and they are one tap away in the item.
+
+## D24
+
+**A pull request of mine nested under the issue it closes shows as one line indented to the issue's title: an arrow,
+its number, as much of its title as fits, and its checks. It is not counted.** (2026-11-08, owner, picked from the
+drawings: `MB100`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: it reads as part of the issue and costs about
+28 px.
+
+**Rejected.**
+
+- A chip on the issue's row (MB101) — a small target, and the pull request's title is gone.
+- The full row, indented (MB102) — two near-identical rows read as two items.
+
+## D25
+
+**An item's properties are rows under the title, but only the first ones: assignees, labels and the first project's
+row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands". A More row says
+in one line what else there is and unfolds the rest in place — every other property, every project with all its
+fields, Add to a project — with Fewer to fold it back.** (2026-11-08, owner: variant B with only the most important
+properties first and the rest unfolding inline, not hidden; drawn in `MB124`–`MB126`)
+
+**Why.** The owner preferred the desktop's rows to chips, but not all of them before the conversation. The drawing's
+case: the activity starts about 570 px down instead of under the fold, and nothing slides over the item to see the
+rest.
+
+**Rejected.**
+
+- A summary line of chips with a sheet for every property (MB103–MB105) — the design agent's recommendation; the owner
+  preferred rows.
+- The properties after the body (MB107) — the newest comment is as far as with all rows at the top, and a long body
+  hides the properties.
+
+## D26
+
+**A property is changed both by tapping it on the item, which opens the command menu straight at its step, and through
+⌘ from the item. Every property row shows › to say it can be tapped; the state pill opens closing or reopening.**
+(2026-11-08, owner, on the drawings `MB108`–`MB112`)
+
+**Why.** The owner: for a good affordance a property should be changed where it is seen, and the command menu stays
+the place where everything is. Both are the same sheet, so there is one mechanism to learn.
+
+**Rejected.**
+
+- A picker of its own dropping from the property (MB111) — a second kind of menu, covering the item, without search.
+- Changing only through ⌘ (alone) — a value you can see but not touch.
+
+## D27
+
+**Swiping a list row to the left reveals Status, Assign and Close; each opens the same step of the command menu as on
+the item. Everything stays reachable by opening the item.** (2026-11-08, owner, picked from the drawings: `MB114`)
+
+**Why.** The owner: a great idea. Swiping a row is not an edge swipe ([D2](#d2)), and it makes triage from the list
+fast.
+
+> **Not settled by this:** which three actions a pull request's row reveals; the drawing shows an issue's.
+
+**Rejected.**
+
+- A long press opening the command menu at the row (MB113) — the design agent's recommendation.
+- Nothing, open the item first (MB115).
