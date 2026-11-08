@@ -384,3 +384,32 @@ fast.
 
 - A long press opening the command menu at the row (MB113) — the design agent's recommendation.
 - Nothing, open the item first (MB115).
+
+## D28
+
+**Several items can be selected on a phone in the first version. Select, in the list's options in the top-right
+corner, turns the rows into checkboxes; the top bar says how many are selected and × leaves. The command line's chip
+becomes the selection, so ⌘ acts on all of them and offers only what applies to every one, with mixed values said as
+such, as on the computer. When some of them fail, the toast names which and why, and the selection stays.**
+(2026-11-08, owner, picked from the drawings: `MB117`–`MB119`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: triage of My work often touches several items
+at once, and the selection reuses the command menu instead of a toolbar of its own.
+
+**Rejected.**
+
+- Not in the first version (MB116) — the design agent's recommendation.
+
+## D29
+
+**A stacked pull request shows its place in the stack in a strip under the top bar: the stack's icon, "Stack · 2 of
+4", the pips coloured by state, and ← and → to the previous member (towards the base) and the next.**
+(2026-11-08, owner: variant B, with the arrows pointing left and right instead of down and up; drawn in `MB122`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: always in view and quick to step through, the
+desktop's stack bar shrunk to a phone. Left and right read as moving along the stack, the way its pips run.
+
+**Rejected.**
+
+- A row in the properties that opens the stack in a sheet (MB120–MB121) — the design agent's recommendation.
+- A section of its own after the properties (MB123).
