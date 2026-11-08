@@ -40,6 +40,7 @@ import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import SavingChoice from './SavingChoice.vue';
 import SavingStopped from './SavingStopped.vue';
@@ -89,7 +90,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 const combining = ref(false);
 
 const repository = computed(() => getSettingsNameWithOwner(props.login));
-const repositoryUrl = computed(() => `https://github.com/${repository.value}`);
+const repositoryUrl = computed(() => getGitHubUrl(repository.value));
 
 const ticked = computed({
   get: () => props.connect.kind === 'busy' || props.connect.kind === 'found',

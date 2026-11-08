@@ -32,7 +32,7 @@ export const Good: Story = {};
 export const WithAction: Story = {
     args: {
         icon: Coffee,
-        tone: 'calm',
+        tone: 'muted',
         title: 'Nothing needs you right now',
         detail: 'No review requests, no assigned issues, and none of your pull requests are failing, blocked or asked to change.',
     },

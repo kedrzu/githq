@@ -167,6 +167,63 @@ test('each group is written as its search answers: one that fails leaves the oth
     expect(items.getSyncState('myWork')).toMatchObject({ lastSuccessAt: null, lastError: expect.any(String) });
 });
 
+test('"Try again" polls my work at once: it tells failing until the search answers, then what arrived', async () => {
+    const github = fakeGitHub();
+    github.found.assigned = [issueNode('I_1', MONDAY)];
+    github.failSearch = 'assigned';
+    const { items, sync } = await setup(github, 'alice');
+    expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    await sync.pollNow('myWork');
+    expect(sync.myWorkFreshness).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    github.failSearch = null;
+    await sync.pollNow('myWork');
+    expect(items.membership.assigned).toEqual(new Set(['I_1']));
+    expect(sync.myWorkFreshness.kind).toBe('fresh');
+});
+
+test('"Try again" in a tab that does not sync has the syncing tab poll my work', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const tabs = createTestTabs();
+    const syncing = await setup(github, 'alice', { tabs });
+    const browsing = await setup(github, 'alice', { tabs });
+    const searches = github.searches().length;
+
+    await browsing.sync.pollNow('myWork');
+    await syncing.clock.advance(0);
+    expect(github.searches().length).toBeGreaterThan(searches);
+});
+
+test('the download waits for my work, so my work failing tells on what it has yet to read, and "Try again" asks it again', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const { sync } = await setup(github, 'alice');
+    expect(sync.getRepositoryFreshness('acme/web')).toEqual({ kind: 'stale', since: null, reason: 'failing' });
+
+    // What it waits for is what "Try again" asks.
+    expect(sync.getRepositoryLoop('acme/web')).toBe('myWork');
+    const searches = github.searches().length;
+    github.failSearch = null;
+    await sync.pollNow(sync.getRepositoryLoop('acme/web'));
+    expect(github.searches().length).toBeGreaterThan(searches);
+    expect(sync.getRepositoryFreshness('acme/web').kind).toBe('partial');
+});
+
+test('"Try again" on a tracked repository in a tab that does not sync has the syncing tab poll', async () => {
+    const github = fakeGitHub();
+    github.failSearch = 'assigned';
+    const tabs = createTestTabs();
+    const syncing = await setup(github, 'alice', { tabs });
+    const browsing = await setup(github, 'alice', { tabs });
+    const searches = github.searches().length;
+
+    await browsing.sync.pollNow(browsing.sync.getRepositoryLoop('acme/web'));
+    await syncing.clock.advance(0);
+    expect(github.searches().length).toBeGreaterThan(searches);
+});
+
 test('an item two groups hold, found deleted by the read of one, leaves both', async () => {
     const github = fakeGitHub();
     github.found.authored = [pullRequestNode('PR_9', MONDAY)];
@@ -684,6 +741,27 @@ test('a slow poll is never overlapped by the next one — not by its timer, the 
     expect(github.searches()).toHaveLength(8);
 });
 
+test('first run and loading D14: on the first download my work says which groups are still arriving', async () => {
+    const github = fakeGitHub();
+    const all = createPromise();
+    github.holdSearch = all.promise;
+    const later = createPromise();
+    github.holdGroups = { groups: ['assigned', 'mentioned'], until: later.promise };
+    const { sync, clock } = await setup(github, 'alice');
+
+    const nothingYet: Freshness = { kind: 'partial', arriving: [...MY_WORK_GROUPS] };
+    expect(sync.myWorkFreshness).toEqual(nothingYet);
+
+    all.resolve();
+    await clock.advance(0);
+    const someIn: Freshness = { kind: 'partial', arriving: ['assigned', 'mentioned'] };
+    expect(sync.myWorkFreshness).toEqual(someIn);
+
+    later.resolve();
+    await clock.advance(0);
+    expect(sync.myWorkFreshness).toEqual({ kind: 'fresh', checkedAt: START });
+});
+
 test('freshness: up to date after a poll, still up to date while the next one runs, stale "as of" the last success when offline', async () => {
     const github = fakeGitHub();
     const { sync, clock, browser } = await setup(github, 'alice');
@@ -889,6 +967,8 @@ interface FakeGitHub {
     hold: Promise<void> | null;
     /** Searches wait for it. */
     holdSearch: Promise<void> | null;
+    /** The search of these groups waits for it. */
+    holdGroups: { readonly groups: readonly MyWorkGroup[]; readonly until: Promise<void> } | null;
     fetch(input: string | URL | Request, init?: RequestInit): Promise<Response>;
     /** The queries searched, in order. */
     searches(): string[];
@@ -914,6 +994,7 @@ function fakeGitHub(): FakeGitHub {
         failSearch: null,
         hold: null,
         holdSearch: null,
+        holdGroups: null,
         fetch,
         searches: () =>
             github.requests.filter(request => request.url.includes('/search/')).map(request => request.name),
@@ -929,6 +1010,11 @@ function fakeGitHub(): FakeGitHub {
             const q = url.searchParams.get('q') ?? '';
             github.requests.push({ url: url.href, token, name: q, ids: [] });
             await github.holdSearch;
+            const held = github.holdGroups;
+            if (held && held.groups.some(group => QUERIES[group] === q)) {
+                await held.until;
+            }
+
             return searchAnswer(q);
         }
 

@@ -1,9 +1,5 @@
-arriving:
-  en: Still arriving. The search on GitHub takes a few seconds more.
 countArriving:
   en: …
-groupEmpty:
-  en: Nothing here.
 next:
   en: Next item
 previous:

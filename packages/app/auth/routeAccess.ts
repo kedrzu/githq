@@ -20,9 +20,9 @@ export type RouteAuth =
 
 /**
  * A step of the first sign-in (D20): choosing what to track (G2), which a user who made the choice no longer
- * gets, and the first download (G6), which stays open to come back to.
+ * gets.
  */
-export type FirstSignInStep = 'choose' | 'download';
+export type FirstSignInStep = 'choose';
 
 declare module 'vue-router' {
     interface RouteMeta {

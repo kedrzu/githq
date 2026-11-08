@@ -238,7 +238,10 @@ test('signing in for the first time from a link with GitHub\'s "return_to" choos
     await new FirstSignInHarness(page).continueButton.click();
 
     await expect(page).toHaveURL('/pulls');
-    await expect(new MyWorkScreenHarness(page).group('My pull requests')).toBeVisible();
+    // Nothing tracked, the group is empty: its note names it (D15, ES12).
+    await expect(
+        new MyWorkScreenHarness(page).root.getByRole('heading', { name: 'Nothing in My pull requests' }),
+    ).toBeVisible();
 });
 
 test('an address githq does not show leaves for the same address on github.com, query and fragment kept', async ({

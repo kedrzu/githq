@@ -8,8 +8,6 @@ search:
   en: Search or jump to…
 myWork:
   en: My work
-countArriving:
-  en: …
 projects:
   en: Projects
 repositories:
@@ -18,8 +16,6 @@ nothingTracked:
   en: Repositories and projects you track appear here.
 settings:
   en: Settings
-waiting:
-  en: waiting
 hidden:
   en: hidden
 brokenWorkflows:

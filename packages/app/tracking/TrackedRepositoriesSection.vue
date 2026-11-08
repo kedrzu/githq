@@ -103,6 +103,7 @@ function openPicker(owner?: string) {
     kind="repositories"
     :groups="groups"
     :get-key="getKey"
+    :loaded="tracking.loaded"
     @open="openSettings"
     @untrack="untrack"
     @add="openPicker"

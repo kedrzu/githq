@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 
 /** The groups of the broken workflows' screen, top to bottom. */
-export type BrokenWorkflowsGroupName = 'New' | 'Ongoing' | 'Not known yet' | "Can't tell";
+export type BrokenWorkflowsGroupName = 'New' | 'Ongoing' | "Can't tell";
 
 /**
  * Playwright harness for the broken workflows of every tracked repository (`BrokenWorkflowsView.vue`, actions W2):

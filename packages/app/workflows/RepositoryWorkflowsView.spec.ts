@@ -12,6 +12,7 @@ const {
     Default,
     NoWorkflows,
     NotKnownYet,
+    NotReadYet,
     Refused,
     Unfolded,
     UnfoldedNotRead,
@@ -277,6 +278,14 @@ test('W3b: a failed read says so under the runs, and Enter on it asks again; the
     const asked = vi.fn();
     await UnfoldedNotRead.run({ args: { ...UnfoldedNotRead.args, onReadMore: asked } });
     await vi.waitFor(() => expect(asked).toHaveBeenCalled());
+});
+
+test('first run and loading D17, ES27: before the first read, ghost workflow rows, read out as one line — no message, no bar', async () => {
+    await NotReadYet.run();
+
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    await expect.element(page.getByRole('heading')).not.toBeInTheDocument();
+    await expect.element(bar()).not.toBeInTheDocument();
 });
 
 test('W3d: no workflows — a neutral empty state, no bar, and a way to GitHub', async () => {

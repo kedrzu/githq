@@ -80,7 +80,7 @@ export class RepositoryScreenHarness {
 
     /** What a repository GitHub does not show says instead of its list. */
     get notShown(): Locator {
-        return this.root.getByText('GitHub does not show this repository', { exact: true });
+        return this.root.getByRole('heading', { name: /^GitHub doesn't show / });
     }
 
     /** The way to the repository on GitHub, instead of its list when GitHub does not show it. */

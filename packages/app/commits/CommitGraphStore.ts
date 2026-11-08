@@ -7,6 +7,7 @@ import type {
     RepositoryCommitRefsQuery,
     RepositoryCommitRefsQueryVariables,
 } from '@githq/github/generated.gen.js';
+import { isGitHubNotFound } from '@githq/github/isGitHubNotFound.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -54,6 +55,11 @@ const MORE_PAGE = 100;
 const MAX_IDS = 100;
 /** How long a commit's pull request and CI state, or its checks, are used before they are read again. */
 const STATES_TTL_MS = 60_000;
+/**
+ * How long after GitHub failed a graph's refs check it is checked again by itself, as its note says (first run and
+ * loading D12).
+ */
+const FAILED_CHECK_RETRY_MS = 30_000;
 /** How long the rows asking for their state are gathered into one request. */
 const STATES_BATCH_MS = 50;
 
@@ -78,7 +84,7 @@ export interface CommitGraph {
     /** Branches whose tips were not loaded are being read down to the loaded history (git-client D19). */
     readonly joining: boolean;
     /**
-     * How current the refs are, for the status bar (githq D15): `partial` until first read, `checking` while read again,
+     * How current the refs are, for the status bar (githq D15): `partial` (reading commits, first run and loading D14) until first read, `checking` while read again,
      * `filling` while a first open's branches are read down (git-client D19), `fresh` once GitHub answered, `stale` when it did not, `paused` when the allowance was spent.
      */
     readonly freshness: Freshness;
@@ -107,12 +113,20 @@ interface RepositoryGraph {
     checking: boolean;
     /** When the refs were last read in this session (epoch ms). */
     checkedAt: number | null;
-    /** Why the last refs check, or the joining after it, failed; `null` when it did not. */
-    problem: 'offline' | 'failing' | null;
-    /** The last refs check, or the joining after it, was not sent: the allowance is spent until then. */
+    /**
+     * Why the last refs check, or the joining after it, failed; `null` when it did not. Kept while the next check runs,
+     * until GitHub answers it, so what stood in the way is told until it no longer does.
+     */
+    problem: GraphProblem | null;
+    /** The last refs check, or the joining after it, was not sent: the allowance is spent until then. Kept as `problem`. */
     pausedUntil: number | null;
-    /** Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. */
-    moreProblem: 'offline' | 'failing' | null;
+    /** The check GitHub failing or the allowance asked for by itself; cancels it. */
+    cancelRetry: (() => void) | null;
+    /**
+     * Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. A settled
+     * refs check clears it, for what it found replaces it.
+     */
+    moreProblem: GraphProblem | null;
     /** The last older page was refused: the allowance is spent until then. */
     morePausedUntil: number | null;
     joining: boolean;
@@ -150,13 +164,16 @@ interface Session {
     readonly checksInFlight: Map<string, Set<string>>;
     /** Where the section was left for a run's page, by `owner/name`; in memory alone, gone with the session. */
     readonly places: Map<string, CommitGraphPlace>;
+    /** How many views show each graph, by `owner/name` ({@link CommitGraphStore} `hold`); absent when none does. */
+    readonly onScreen: Map<string, number>;
     cancelStatesBatch: (() => void) | null;
 }
 
 /**
  * The commit graphs of the repositories the signed-in user opens the Commits section of (git-client D9), in any
  * repository they can see, tracked or not (D11). Nothing is read in the background: a graph is read when it opens
- * ({@link open}) and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
+ * ({@link open}) — and again by itself, while a view shows it ({@link hold}), once its check failed or waited for the
+ * allowance, and when the connection comes back (first run and loading D12) — and scrolls down ({@link loadMore}), the rows on screen ask for their pull request and CI
  * state ({@link ensureStates}, D8), and a commit whose details open asks for its full message ({@link ensureDetail},
  * D13) and its checks ({@link ensureChecks}).
  *
@@ -201,6 +218,7 @@ export const CommitGraphStore = defineService({
             getDetail,
             getChecks,
             open,
+            hold,
             loadMore,
             ensureStates,
             ensureDetail,
@@ -216,7 +234,7 @@ export const CommitGraphStore = defineService({
 
         /** How current the graph of `owner/name` is (see {@link CommitGraph.freshness}); reactive. */
         function getFreshness(nameWithOwner: string): Freshness {
-            return graphsRef.value.get(nameWithOwner)?.freshness ?? { kind: 'partial' };
+            return graphsRef.value.get(nameWithOwner)?.freshness ?? { kind: 'partial', readingCommits: true };
         }
 
         /**
@@ -285,6 +303,40 @@ export const CommitGraphStore = defineService({
             });
             graph.refreshing = refreshing;
             return refreshing;
+        }
+
+        /**
+         * Marks the graph of `owner/name` as shown until the returned function is called. Only a shown graph is read
+         * again by itself — after a failure, a pause or a reconnect — so a repository left asks GitHub nothing more;
+         * the last release drops its retry, and showing it again opens it anyway.
+         */
+        function hold(nameWithOwner: string): () => void {
+            const current = session;
+            if (!current) {
+                return () => {};
+            }
+
+            current.onScreen.set(nameWithOwner, (current.onScreen.get(nameWithOwner) ?? 0) + 1);
+            let released = false;
+            return () => {
+                if (released || session !== current) {
+                    return;
+                }
+
+                released = true;
+                const count = (current.onScreen.get(nameWithOwner) ?? 1) - 1;
+                if (count > 0) {
+                    current.onScreen.set(nameWithOwner, count);
+                    return;
+                }
+
+                current.onScreen.delete(nameWithOwner);
+                const graph = current.graphs.get(nameWithOwner);
+                graph?.cancelRetry?.();
+                if (graph) {
+                    graph.cancelRetry = null;
+                }
+            };
         }
 
         /**
@@ -419,6 +471,10 @@ export const CommitGraphStore = defineService({
         /** Another account signed in, or none: the graphs of whoever was before leave memory. */
         function follow(account: Account | null) {
             session?.cancelStatesBatch?.();
+            for (const graph of session?.graphs.values() ?? []) {
+                graph.cancelRetry?.();
+            }
+
             session = null;
             graphsRef.value = new Map();
             statesRef.value = new Map();
@@ -435,17 +491,22 @@ export const CommitGraphStore = defineService({
                 statesInFlight: new Map(),
                 checksInFlight: new Map(),
                 places: new Map(),
+                onScreen: new Map(),
                 cancelStatesBatch: null,
             };
         }
 
-        /** The connection came back: the graphs that could not be read for want of it are read again. */
+        /** The connection came back: the shown graphs that could not be read for want of it are read again. */
         function reopenOffline() {
             if (!session || !browser.isOnline()) {
                 return;
             }
 
             for (const [nameWithOwner, graph] of session.graphs) {
+                if (!session.onScreen.has(nameWithOwner)) {
+                    continue;
+                }
+
                 if (graph.problem === 'offline' || graph.moreProblem === 'offline') {
                     void open(nameWithOwner);
                 }
@@ -466,6 +527,7 @@ export const CommitGraphStore = defineService({
                 checkedAt: null,
                 problem: null,
                 pausedUntil: null,
+                cancelRetry: null,
                 moreProblem: null,
                 morePausedUntil: null,
                 joining: false,
@@ -505,22 +567,23 @@ export const CommitGraphStore = defineService({
             regraph(graph);
         }
 
-        /** Reads the refs again, unless the allowance is spent. */
+        /**
+         * Reads the refs again, unless the allowance is spent. What stood in the way of the last check stays until
+         * GitHub answers this one ({@link readRefs}).
+         */
         async function refresh(graph: RepositoryGraph) {
             await graph.ready;
             if (!isCurrent(graph.session)) {
                 return;
             }
 
+            graph.cancelRetry?.();
+            graph.cancelRetry = null;
             if (rateLimits.remaining('graphql') === 0) {
                 pause(graph);
                 return;
             }
 
-            graph.pausedUntil = null;
-            graph.problem = null;
-            graph.morePausedUntil = null;
-            graph.moreProblem = null;
             graph.checking = true;
             publish(graph);
             await readRefs(graph);
@@ -547,6 +610,12 @@ export const CommitGraphStore = defineService({
                 if (!first) {
                     return;
                 }
+
+                // GitHub answered: what stood in the way of the last check, or of an older page, no longer does.
+                graph.problem = null;
+                graph.pausedUntil = null;
+                graph.moreProblem = null;
+                graph.morePausedUntil = null;
 
                 const target = first.defaultBranchRef?.target;
                 if (target && 'history' in target && target.history) {
@@ -930,20 +999,58 @@ export const CommitGraphStore = defineService({
             publish(graph);
         }
 
-        /** The allowance is spent, or GitHub asked to wait: says until when, and publishes it. */
+        /**
+         * The allowance is spent, or GitHub asked to wait: says until when, publishes it, and checks the refs again
+         * then by itself. Like any settled check, it replaces what an older page said.
+         */
         function pause(graph: RepositoryGraph, until = rateLimits.get('graphql')?.resetAt.getTime() ?? clock.now()) {
+            graph.problem = null;
             graph.pausedUntil = until;
+            graph.moreProblem = null;
+            graph.morePausedUntil = null;
+            retryLater(graph, until - clock.now());
             publish(graph);
         }
 
-        /** Says why the refs check, or the joining after it, failed: GitHub refusing for the rate is a pause. */
+        /**
+         * Says why the refs check, or the joining after it, failed: GitHub refusing for the rate is a pause. GitHub
+         * failing is asked again by itself; offline waits for the connection ({@link reopenOffline}), a repository
+         * GitHub doesn't show for the user to open again. The failure replaces what an older page said: an older page
+         * failed offline would otherwise have a reconnect read the graph again at once, and again, after every failure.
+         */
         function noteFailure(graph: RepositoryGraph, error: unknown) {
             const failure = readFailure(error);
-            if (failure.pausedUntil === null) {
-                graph.problem = failure.problem;
-            } else {
+            if (failure.pausedUntil !== null) {
                 pause(graph, failure.pausedUntil);
+                return;
             }
+
+            graph.problem = failure.problem;
+            graph.pausedUntil = null;
+            graph.moreProblem = null;
+            graph.morePausedUntil = null;
+            if (failure.problem === 'failing') {
+                retryLater(graph, FAILED_CHECK_RETRY_MS);
+            }
+        }
+
+        /** Checks the graph's refs again in `delayMs`, once, if it is shown: an earlier such check is dropped. */
+        function retryLater(graph: RepositoryGraph, delayMs: number) {
+            graph.cancelRetry?.();
+            graph.cancelRetry = null;
+            if (!graph.session.onScreen.has(graph.nameWithOwner)) {
+                return;
+            }
+
+            graph.cancelRetry = clock.schedule(
+                () => {
+                    graph.cancelRetry = null;
+                    if (isCurrent(graph.session)) {
+                        void open(graph.nameWithOwner);
+                    }
+                },
+                Math.max(0, delayMs),
+            );
         }
 
         /** What a read's failure says: GitHub refusing for the rate is a pause, anything else a problem. */
@@ -951,7 +1058,15 @@ export const CommitGraphStore = defineService({
             const refusal = getRefusalPause({ error, limits: [rateLimits.get('graphql')], now: clock.now() });
             return refusal
                 ? { problem: null, pausedUntil: refusal.until }
-                : { problem: browser.isOnline() ? 'failing' : 'offline', pausedUntil: null };
+                : { problem: readProblem(error), pausedUntil: null };
+        }
+
+        function readProblem(error: unknown): GraphProblem {
+            if (isGitHubNotFound(error)) {
+                return 'hidden';
+            }
+
+            return browser.isOnline() ? 'failing' : 'offline';
         }
 
         /** Publishes the graph's state for the view. */
@@ -988,9 +1103,12 @@ type RefsPage = Partial<Omit<RepositoryCommitRefsQueryVariables, 'owner' | 'name
 /** The repository as a `RepositoryCommitRefs` request answers it. */
 type ReadRepository = NonNullable<RepositoryCommitRefsQuery['repository']>;
 
+/** Why GitHub gave no answer; `hidden`: it doesn't show the repository, or the repository is gone. */
+type GraphProblem = 'offline' | 'failing' | 'hidden';
+
 /** What a read's failure says; one of the two is set. */
 interface ReadFailure {
-    readonly problem: 'offline' | 'failing' | null;
+    readonly problem: GraphProblem | null;
     readonly pausedUntil: number | null;
 }
 
@@ -1001,31 +1119,39 @@ interface ReadHistoriesParams {
     readonly first: number;
 }
 
+/**
+ * What the status bar and the section say of the graph. What stood in the way of the last check is told while the next
+ * one runs, until GitHub answers it, rather than "Reading commits" in between.
+ */
 function toFreshness(graph: RepositoryGraph, now: number): Freshness {
     if (graph.filling) {
         return { kind: 'filling', ...graph.filling };
     }
 
     const since = graph.refs?.fetchedAt ?? null;
-    if (graph.checking) {
-        return since === null ? { kind: 'partial' } : { kind: 'checking', since };
-    }
-
     const pausedUntil = Math.max(graph.pausedUntil ?? 0, graph.morePausedUntil ?? 0);
     if (pausedUntil > now) {
         return { kind: 'paused', since, until: pausedUntil };
     }
 
     const problem = graph.problem ?? graph.moreProblem;
+    if (problem === 'hidden') {
+        return { kind: 'stale', since, reason: 'hidden', of: 'repository' };
+    }
+
     if (problem) {
         return { kind: 'stale', since, reason: problem };
+    }
+
+    if (graph.checking) {
+        return since === null ? { kind: 'partial', readingCommits: true } : { kind: 'checking', since };
     }
 
     if (graph.checkedAt !== null) {
         return { kind: 'fresh', checkedAt: graph.checkedAt };
     }
 
-    return since === null ? { kind: 'partial' } : { kind: 'checking', since };
+    return since === null ? { kind: 'partial', readingCommits: true } : { kind: 'checking', since };
 }
 
 /** The parameters of a `CommitStates` read. */

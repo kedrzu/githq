@@ -20,6 +20,22 @@ reading:
   en:
     one: reading {count} repository
     many: reading {count} repositories
+repositories:
+  plural: count
+  en:
+    one: '{count} repository'
+    many: '{count} repositories'
+workflowsOfTracked:
+  en: the workflows of {count} of your tracked repositories
+workflowsOfAnyTracked:
+  en: the workflows of {count} of your tracked repositories, so it can't tell what is broken there
+noneShownTitle:
+  en: GitHub doesn't show the workflows
+noneShownDetail:
+  plural: count
+  en:
+    one: GitHub shows nothing of the workflows of your tracked repository, so githq can't tell what is broken. It says why below.
+    many: GitHub shows nothing of the workflows of any of your {count} tracked repositories, so githq can't tell what is broken. Each says why below.
 openFailedRun:
   en: Open failed run
 next:
@@ -32,16 +48,10 @@ freshNote:
   en: broke in the last 24 hours
 ongoing:
   en: Ongoing
-notKnownYet:
-  en: Not known yet
 cantTell:
   en: Can't tell
 cantTellNote:
   en: not in the total
-readingRow:
-  en: Reading…
-notReadYet:
-  en: not read yet
 actionsOff:
   en: Actions turned off
 actionsRefused:

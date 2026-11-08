@@ -19,12 +19,14 @@ const {
     CollapsedNothingTracked,
     CollapsedOnProject,
     CollapsedTrackedMenu,
+    Downloading,
     Expanded,
     LongLists,
     NoProjects,
     NoRepositories,
     NothingTracked,
     OnRepositoryIssues,
+    SomeCountsArriving,
     SyncStopped,
     CollapsedSyncStopped,
     TrackedMenu,
@@ -398,4 +400,22 @@ test('W1: on the rail the entry has a badge — filled red for a new break, outl
     badge = entry.element().querySelector('span');
     expect(badge?.textContent).toBe('1+');
     expect(getComputedStyle(badge as Element).backgroundColor).not.toBe(RED);
+});
+
+test('first run and loading D4: an entry still downloading shows nothing where its count goes — no percentage, no "waiting"', async () => {
+    await Downloading.run();
+
+    await expect.element(page.getByRole('link', { name: /^kedrzu\/githq/ })).toHaveTextContent(/18$/);
+    await expect.element(page.getByRole('link', { name: 'skyline-labs/portal', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: 'skyline-labs/api', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /^acme-health\/vault/ })).toHaveTextContent(/hidden$/);
+});
+
+test('D14: a group of my work counts once its search is in; the others and the total stay blank until every group is', async () => {
+    await SomeCountsArriving.run();
+
+    await expect.element(page.getByRole('link', { name: /^Review requested 2$/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /^My\spull requests 3$/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /^Assigned to\sme$/ })).toBeVisible();
+    await expect.element(page.getByRole('link', { name: /^My\swork$/ })).toBeVisible();
 });

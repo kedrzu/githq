@@ -6,6 +6,8 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Check, CircleCheck, CircleDashed, CircleSlash, CircleX, Loader } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import Skeleton from '@/components/Skeleton.vue';
+import SkeletonBar from '@/components/SkeletonBar.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { formatDuration } from '@/utils/formatDuration.js';
 
@@ -119,11 +121,13 @@ function describeStepTime(step: GitHubWorkflowStep) {
       aria-hidden="true"
       tid="workflow-jobs-placeholder"
     >
-      <span
+      <Skeleton
         v-for="row in PLACEHOLDER_ROWS"
         :key="row"
-        :class="css.workflowRunJobs_placeholder"
-      />
+        :row="row - 1"
+      >
+        <SkeletonBar tone="weak" />
+      </Skeleton>
     </div>
     <ul
       v-else
@@ -255,10 +259,6 @@ $jobs-width: 268px;
   flex-direction: column;
   gap: $spacing-12;
   padding: $spacing-8;
-}
-
-.workflowRunJobs_placeholder {
-  @include placeholder-bar;
 }
 
 .workflowRunJobs_list {

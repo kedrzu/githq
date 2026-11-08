@@ -91,12 +91,30 @@ test("before GitHub's lists are read the tracked rows already show, counted with
     await expect.element(page.getByRole('button', { name: 'Track more' })).not.toBeInTheDocument();
 });
 
-test('nothing tracked: the head with its count and button', async () => {
-    await NothingTracked.run();
+test('ES24: nothing tracked: the note says what tracking does, and its button and A add the first', async () => {
+    const onAdd = vi.fn();
+    await NothingTracked.run({ args: { ...NothingTracked.args, onAdd } });
 
-    await expect.element(page.getByRole('heading', { name: '0 tracked repositories', level: 2 })).toBeVisible();
-    await expect.element(page.getByRole('button', { name: 'Track repositories' })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'No repositories tracked', level: 2 })).toBeVisible();
+    await expect.element(page.getByText(/^0\stracked/u)).not.toBeInTheDocument();
     await expect.element(page.getByRole('listitem')).not.toBeInTheDocument();
+
+    await page.getByRole('button', { name: 'Track repositories' }).click();
+    await userEvent.keyboard('a');
+    expect(onAdd).toHaveBeenCalledTimes(2);
+});
+
+test('ES24: before what is tracked is known, nothing says none', async () => {
+    await NothingTracked.run({ args: { ...NothingTracked.args, loaded: false } });
+
+    await expect.element(page.getByRole('heading', { name: 'No repositories tracked' })).not.toBeInTheDocument();
+});
+
+test('ES24: no projects tracked has its own words', async () => {
+    await NothingTracked.run({ args: { ...NothingTracked.args, kind: 'projects' } });
+
+    await expect.element(page.getByRole('heading', { name: 'No projects tracked', level: 2 })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Track projects' })).toBeVisible();
 });
 
 test('J/K and ↑/↓ move the selection, Enter opens the selected row, a click opens a row', async () => {

@@ -85,6 +85,33 @@ test('by a number field: its values in order', () => {
     ]);
 });
 
+test('first run and loading ES30: items still arriving and none in, the columns known from the project stand arriving; rows shown as soon as any are in', () => {
+    const arriving = (entries: readonly ProjectEntry[], grouping: ProjectGrouping) =>
+        buildProjectList({
+            project: SAMPLE_PROJECT,
+            entries,
+            grouping,
+            sort: MANUAL_SORT,
+            texts: TEXTS,
+            today: SAMPLE_TODAY,
+            arriving: true,
+        });
+
+    const columns = arriving([], 'field:F_status');
+    expect(columns.map(group => [group.label, group.arrived])).toEqual([
+        ['Todo', false],
+        ['In progress', false],
+        ['In review', false],
+        ['Done', false],
+    ]);
+    // Nothing known from the project alone: no groups, the view stands for all of it.
+    expect(arriving([], 'repository')).toEqual([]);
+
+    const some = arriving(SHOWN.slice(0, 2), 'field:F_status');
+    expect(some.every(group => group.arrived)).toBe(true);
+    expect(some.flatMap(group => group.rows)).toHaveLength(2);
+});
+
 function build(grouping: ProjectGrouping, sort: ProjectSort) {
     return buildProjectList({
         project: SAMPLE_PROJECT,

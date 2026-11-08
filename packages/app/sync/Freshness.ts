@@ -1,4 +1,6 @@
 import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
+import type { MyWorkGroup } from '@/store/ItemStoreTypes.js';
+import type { DownloadCount, RepositoryDownloadPhase } from '@/tracking/TrackingTypes.js';
 
 /**
  * How current what a surface shows is (D15), for its segment of the status bar. Times are epoch ms.
@@ -7,11 +9,18 @@ import type { SettingsSaving } from '@/settings/sync/SettingsSaving.js';
  * - `checking`: a poll is running and the last success is no longer fresh (while fresh, a running poll still
  *   reads `fresh`: the marker stays quiet);
  * - `stale`: the last success is older than expected — offline, requests failing (retried every interval), or
- *   a poll simply overdue (`late`), GitHub refusing to say what changed for a reason that lasts (`refused`), or a
+ *   a poll simply overdue (`late`), GitHub refusing to say what changed for a reason that lasts (`refused`, asked again
+ *   hourly), GitHub not showing the repository or project `of` at all — no access, or gone (`hidden`) —, or a
  *   repository's workflows GitHub no longer lists, the last known ones staying on screen (`workflowsUnavailable`);
  *   `since` is `null` when nothing was ever downloaded;
  * - `paused`: the API allowance is used up; polling resumes at `until`;
- * - `partial`: nothing was ever downloaded for it and the first download is under way;
+ * - `partial`: what it shows is not all there yet and its first download is under way; for "my work", `arriving` names
+ *   the groups whose searches haven't answered yet (first run and loading D14); for a tracked repository, `downloading`
+ *   the phase under way and how far it is — its open items first, then its closed ones, while its poll keeps what is in
+ *   fresh (first run and loading D3, D14); for a tracked project, `downloading` its items, all read in one go (D14); for
+ *   a repository's commit graph, `readingCommits`: its first read, with no count to tell (D14); `readingWorkflows`
+ *   workflows not read yet: `true` for a repository's Workflows section, for Broken workflows how many tracked
+ *   repositories' workflows are read of those GitHub shows the Actions of (D14);
  * - `reading`: a repository's workflows are listed and the first read of their runs is under way (actions W3c);
  * - `readingLog`: a run's page is waiting for the log of `job` (actions W4e);
  * - `logFailed`: the log of `job` on a run's page failed to read (actions W4i);
@@ -46,8 +55,20 @@ export type Freshness =
           readonly reason: 'offline' | 'failing' | 'refused' | 'workflowsUnavailable';
       }
     | { readonly kind: 'stale'; readonly since: number; readonly reason: 'late' }
+    | {
+          readonly kind: 'stale';
+          readonly since: number | null;
+          readonly reason: 'hidden';
+          readonly of: 'repository' | 'project';
+      }
     | { readonly kind: 'paused'; readonly since: number | null; readonly until: number }
-    | { readonly kind: 'partial' }
+    | {
+          readonly kind: 'partial';
+          readonly arriving?: readonly MyWorkGroup[];
+          readonly downloading?: TrackedDownloading;
+          readonly readingCommits?: boolean;
+          readonly readingWorkflows?: true | { readonly read: number; readonly total: number };
+      }
     | { readonly kind: 'reading'; readonly read: number; readonly total: number }
     | { readonly kind: 'readingLog'; readonly job: string }
     | { readonly kind: 'logFailed'; readonly job: string }
@@ -89,6 +110,14 @@ export type Freshness =
           readonly saving: SettingsSaving['state'];
           readonly repository: string;
       };
+
+/** A tracked repository's or project's first download as its segment tells it: the phase under way and how far it is. */
+export interface TrackedDownloading extends DownloadCount {
+    readonly phase: TrackedDownloadPhase;
+}
+
+/** What a tracked first download reads now: one of a repository's phases, or a project's items, read in one go. */
+export type TrackedDownloadPhase = RepositoryDownloadPhase | 'items';
 
 /** What a surface's freshness is told from: its poll and the browser now. */
 export interface GetFreshnessParams {

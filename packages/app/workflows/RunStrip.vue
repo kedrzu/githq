@@ -133,11 +133,6 @@ function getRunTitle(run: GitHubWorkflowRun) {
 </template>
 
 <style lang="scss" module="css">
-// The design's tick: 7 wide, 3 apart, bottom-aligned in 14.
-$tick-width: 7px;
-$tick-gap: 3px;
-$tick-height: 14px;
-
 .runStrip {
   position: relative;
   display: inline-flex;
@@ -150,16 +145,16 @@ $tick-height: 14px;
 
 .runStrip_ticks {
   display: flex;
-  gap: $tick-gap;
+  gap: $run-tick-gap;
   align-items: flex-end;
-  height: $tick-height;
+  height: $run-tick-height;
 }
 
 // The whole column is the tick's target, not just its bar.
 .runStrip_tick {
   display: flex;
   align-items: flex-end;
-  width: $tick-width;
+  width: $run-tick-width;
   height: 100%;
 }
 
@@ -169,12 +164,12 @@ $tick-height: 14px;
 }
 
 .runStrip_bar_failedNew {
-  height: $tick-height;
+  height: $run-tick-height;
   background: $color-red;
 }
 
 .runStrip_bar_failed {
-  height: $tick-height;
+  height: $run-tick-height;
   background: $color-red-quiet;
 }
 
@@ -189,7 +184,7 @@ $tick-height: 14px;
 }
 
 .runStrip_bar_running {
-  height: $tick-height;
+  height: $run-tick-height;
   border: 1px solid $color-amber;
 }
 

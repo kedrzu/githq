@@ -7,12 +7,14 @@ import { page, userEvent } from 'vitest/browser';
 import { createApp, h, shallowRef } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
+import type { CantBeReadCause } from '@/components/CantBeReadCause.js';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import type { ListEntry, ListGroup, ListMove } from '@/lists/ListTypes.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import {
     SAMPLE_PROJECT,
     SAMPLE_PROJECT_ENTRIES,
+    SAMPLE_VIEW_BLOCKED,
     SAMPLE_VIEW_BOARD,
     SAMPLE_VIEW_NEXT,
     SAMPLE_VIEW_SPRINT,
@@ -105,6 +107,81 @@ test('K6: until GitHub answers a view githq can’t evaluate, it waits — no it
     expect(document.querySelectorAll('[data-entry-key]')).toHaveLength(0);
 });
 
+test('first run and loading ES18, ES30: items still downloading show ghosts — on the board the columns’ heads without counts — never an empty project to add to', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { entries: [], arriving: true });
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: /Add existing issues/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /^Nothing matches/ })).not.toBeInTheDocument();
+
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+    await expect.element(page.getByRole('heading', { name: 'Todo', exact: true })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: 'Done', exact: true })).toBeVisible();
+    expect(document.querySelectorAll('[data-entry-key]')).toHaveLength(0);
+});
+
+test('first run and loading D6, ES18: offline with its items on their way and none in stands for the ghosts', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { entries: [], arriving: true, cantBeRead: { kind: 'offline' } });
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    // The project and its views are in: only its items are missing.
+    await expect
+        .element(page.getByText(`so ${SAMPLE_PROJECT.title}'s items haven't arrived yet.`, { exact: false }))
+        .toBeVisible();
+    await expect.element(page.getByText('Still arriving from GitHub')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
+});
+
+test("first run and loading D6: with rows in, what stands in the way is the status bar's alone", async () => {
+    mount(SAMPLE_VIEW_SPRINT, { arriving: true, cantBeRead: { kind: 'offline' } });
+    await expect.element(page.getByRole('listitem').first()).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+});
+
+test('ES20: GitHub not showing it stands over an empty project and a view matching nothing, and the view with no items, its way to GitHub', async () => {
+    mount(SAMPLE_VIEW_BLOCKED, { cantBeRead: { kind: 'hidden', url: SAMPLE_PROJECT.url } });
+    await expect
+        .element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_PROJECT.title}` }))
+        .toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^Nothing matches/ })).not.toBeInTheDocument();
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', SAMPLE_PROJECT.url);
+});
+
+test('K9 stands while a poll fails: what has arrived can be trusted', async () => {
+    mount(SAMPLE_VIEW_BLOCKED, { cantBeRead: { kind: 'offline' } });
+    await expect
+        .element(page.getByRole('heading', { name: `Nothing matches “${SAMPLE_VIEW_BLOCKED.name}”` }))
+        .toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Clear filters here' })).toBeVisible();
+});
+
+test('ES19: on the board a filter leaving nothing says what it hides, with the way to clear it, and the columns stay', async () => {
+    const view = mount(SAMPLE_VIEW_BLOCKED, { grouping: 'field:F_status' });
+    await userEvent.click(page.getByRole('button', { name: 'Board' }));
+
+    await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
+    await expect
+        .element(page.getByText(/^Iteration\sis\s@current\sand\sLabel\sis\sblocked\shide\sall\s\d+\sitems\.$/u))
+        .toBeVisible();
+    await expect.element(page.getByRole('heading', { name: /^Todo/ })).toBeVisible();
+
+    await userEvent.click(page.getByRole('button', { name: 'Clear filter' }));
+    expect(view.clearedFilter).toBe(1);
+});
+
+test('first run and loading ES18: rows show as soon as some are in while more arrive', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { arriving: true });
+    await expect.element(page.getByRole('listitem').first()).toBeVisible();
+    expect(document.querySelectorAll('[data-entry-key]').length).toBeGreaterThan(0);
+});
+
+test('K8: a project downloaded with nothing in it says so and offers to add items', async () => {
+    mount(SAMPLE_VIEW_SPRINT, { entries: [] });
+    await expect.element(page.getByRole('heading', { name: /has no items yet/ })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: /Add existing issues/ })).toBeVisible();
+});
+
 test('D15: a stack’s entry shows the field values all its pull requests share, “+N” for the fields where they differ', async () => {
     const pullRequests = sampleStack({ id: 'S_picker', number: 1300, members: [{}, {}] });
     const nested: ListEntry<ProjectEntry>[] = pullRequests.map((content, index) => ({
@@ -158,18 +235,38 @@ interface MountOptions {
     readonly canMove?: boolean;
     /** The groups shown in place of those built from the sample project's items. */
     readonly groups?: readonly ListGroup<ProjectEntry>[];
+    /** The project's entries; the sample project's when not given. */
+    readonly entries?: readonly ProjectEntry[];
+    /** Its items are still downloading. */
+    readonly arriving?: boolean;
+    /** What stands in the way, as the page tells it. */
+    readonly cantBeRead?: CantBeReadCause | null;
+    /** The grouping shown in place of the view's own. */
+    readonly grouping?: ProjectViewOptions['grouping'];
 }
 
 /** Mounts the sample project on a saved view, rebuilding the groups from the options it holds, as the page does. */
-function mount(saved: SavedView, { modifiedViews = [], canMove = false, groups }: MountOptions = {}) {
-    const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries: SAMPLE_PROJECT_ENTRIES });
-    const options = shallowRef<ProjectViewOptions>(initial.options);
+function mount(
+    saved: SavedView,
+    {
+        modifiedViews = [],
+        canMove = false,
+        groups,
+        entries = SAMPLE_PROJECT_ENTRIES,
+        arriving = false,
+        cantBeRead = null,
+        grouping,
+    }: MountOptions = {},
+) {
+    const initial = sampleProjectView({ project: SAMPLE_PROJECT, view: saved, entries });
+    const options = shallowRef<ProjectViewOptions>(grouping ? { ...initial.options, grouping } : initial.options);
     const view = {
         options,
         resets: 0,
         moves: [] as ListMove[],
         drafts: [] as [string, string | null][],
         rowFields: [] as (string | null)[],
+        clearedFilter: 0,
     };
 
     const container = createContainer();
@@ -186,11 +283,14 @@ function mount(saved: SavedView, { modifiedViews = [], canMove = false, groups }
                 ...sampleProjectView({
                     project: SAMPLE_PROJECT,
                     view: saved,
-                    entries: SAMPLE_PROJECT_ENTRIES,
+                    entries,
                     options: options.value,
                     modifiedViews,
+                    arriving,
                 }),
                 ...(groups && { groups }),
+                cantBeRead,
+                onClearFilter: () => view.clearedFilter++,
                 modified: options.value !== initial.options,
                 rowFieldId: 'F_status',
                 viewerLogin: SAMPLE_VIEWER.login,

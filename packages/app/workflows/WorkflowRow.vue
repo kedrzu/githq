@@ -269,8 +269,8 @@ function withRunning(status: string) {
 
 .workflowRow_icon {
   flex: none;
-  width: 15px;
-  height: 15px;
+  width: $workflow-icon-size;
+  height: $workflow-icon-size;
 }
 
 .workflowRow_icon_new {

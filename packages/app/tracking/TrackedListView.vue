@@ -1,10 +1,14 @@
-<!-- Settings' Repositories and Projects (G8, T17, D25): the head (`TrackedListHead`, "15 tracked repositories" and "Track repositories A"), then only what is tracked, by owner (`groupTrackedByOwner`), each group under its header (`TrackedOwnerHeader`) with its rows in the `row` slot. A row opens its settings on click or Enter. Keys while it is shown and no layer is open, never from a field: J/K and ↑/↓ move the selection, Enter opens the selected row, ⌫ untracks it — the selection moving to the next row, the previous one after the last — and A adds more (the picker); `1` to `4` stay Settings'. Nothing tracked, it is the head alone. -->
+<!-- Settings' Repositories and Projects (G8, T17, D25): the head (`TrackedListHead`, "15 tracked repositories" and "Track repositories A"), then only what is tracked, by owner (`groupTrackedByOwner`), each group under its header (`TrackedOwnerHeader`) with its rows in the `row` slot. A row opens its settings on click or Enter. Keys while it is shown and no layer is open, never from a field: J/K and ↑/↓ move the selection, Enter opens the selected row, ⌫ untracks it — the selection moving to the next row, the previous one after the last — and A adds more (the picker); `1` to `4` stay Settings'. Nothing tracked, the note in its place says what tracking does, its button adding the first (`NothingThere`, first run and loading D6, ES24), once what is tracked is known: nothing says "none" before. -->
 <script lang="ts" setup generic="T">
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
+import { BookMarked, Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, useTemplateRef } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { useCommands } from '@/commands/useCommands.js';
+import Button from '@/components/Button.vue';
+import NothingThere from '@/components/NothingThere.vue';
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { isActivatableTarget } from '@/utils/isActivatableTarget.js';
 import { isScreenKey } from '@/utils/isScreenKey.js';
@@ -24,6 +28,8 @@ const props = defineProps<{
   groups: readonly TrackedOwnerGroup<T>[];
   /** What tells the rows apart, kept while the list changes under the selection. */
   getKey: (row: T) => string;
+  /** What is tracked is known: until then, no rows says nothing. */
+  loaded: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -82,7 +88,29 @@ function onRowClick(event: MouseEvent, row: T) {
     ref="root"
     :class="css.trackedListView"
   >
-    <div :class="css.trackedListView_content">
+    <NothingThere
+      v-if="loaded && rows.length === 0"
+      place="screen"
+      :icon="projects ? SquareKanban : BookMarked"
+      :title="t(projects ? l.noProjectsTitle : l.noRepositoriesTitle)"
+      :detail="t(projects ? l.noProjectsDetail : l.noRepositoriesDetail)"
+    >
+      <template #action>
+        <Button
+          variant="secondary"
+          :icon="Plus"
+          :kbd="ADD_KEY"
+          :aria-keyshortcuts="formatAriaKeyShortcuts(ADD_KEY)"
+          @click="emit('add')"
+        >
+          {{ addLabel }}
+        </Button>
+      </template>
+    </NothingThere>
+    <div
+      v-else-if="rows.length > 0"
+      :class="css.trackedListView_content"
+    >
       <TrackedListHead
         :title="
           t(projects ? l.projectsTitle : l.repositoriesTitle, {
@@ -131,7 +159,9 @@ function onRowClick(event: MouseEvent, row: T) {
 
 <style lang="scss" module="css">
 .trackedListView {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-height: 0;
   padding: 20px $spacing-12;
   overflow-y: auto;

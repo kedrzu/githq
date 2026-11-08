@@ -38,18 +38,21 @@ export interface BuildProjectListParams {
     readonly texts: ProjectListTexts;
     /** Today's UTC day, `YYYY-MM-DD`: which iteration is current. */
     readonly today: string;
+    /** The project's items are still downloading: none listed means not known yet (first run and loading D5). */
+    readonly arriving?: boolean;
 }
 
 /**
  * A project view's groups (D4, D5): its entries in the order asked, under the grouped field's values. A single
  * select's options and the current and coming iterations are groups in the project's order even when empty, so
  * every column of a board is there to drop into; entries can be moved between them (setting the field). Other
- * values come in their order, the entries without one last.
+ * values come in their order, the entries without one last. With none listed while the items are still arriving, the
+ * groups known from the project alone — a board's columns — still on their way, and no others (ES30).
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function buildProjectList(params: BuildProjectListParams): ListGroup<ProjectEntry>[] {
-    const { project, entries, grouping, sort, texts, today } = params;
+    const { project, entries, grouping, sort, texts, today, arriving = false } = params;
     const levels = parseProjectSort(project, sort);
     // Ties — and the manual order — keep GitHub's order of the project.
     const position = new Map(entries.map((entry, index) => [entry.item.itemId, index]));
@@ -59,11 +62,12 @@ export function buildProjectList(params: BuildProjectListParams): ListGroup<Proj
             (position.get(a.item.itemId) ?? 0) - (position.get(b.item.itemId) ?? 0),
     );
 
-    return groupEntries({
+    const groups = groupEntries({
         entries: sorted,
         getId: getProjectEntryId,
         grouping: getGrouping(project, grouping, texts, today),
     });
+    return arriving && entries.length === 0 ? groups.map(group => ({ ...group, arrived: false })) : groups;
 }
 
 /**

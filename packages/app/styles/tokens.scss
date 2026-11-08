@@ -188,6 +188,28 @@ $settings-column-width: 680px;
 $window-controls-height: 36px;
 
 // ---------------------------------------------------------------------------------------------------
+// Skeletons: what stands in for data on its way (first run and loading D9; `components/Skeleton.vue`)
+// ---------------------------------------------------------------------------------------------------
+
+// Two tones, each a base and the lighter band that runs along it: strong for what stands in for a title or an icon, weak
+// for meta and an age. Outside the palette: shades of the surfaces, never text.
+$color-skeleton-strong: #222831;
+$color-skeleton-strong-highlight: #3a414b;
+$color-skeleton-weak: $color-bg-3;
+$color-skeleton-weak-highlight: #2e353e;
+// The same tones on a ghost card, which is a surface of its own: the base the design gives, the band lifted as much
+// as the tones above lift theirs.
+$color-skeleton-card: rgba($color-bg-3, 0.6);
+$color-skeleton-card-strong: #2a3038;
+$color-skeleton-card-strong-highlight: #424952;
+$color-skeleton-card-weak: rgba($color-border, 0.6);
+$color-skeleton-card-weak-highlight: rgba(#414953, 0.6);
+$radius-skeleton: 3px;
+// A full pass of the band, and how much later each row starts than the one above.
+$skeleton-pass: 1.6s;
+$skeleton-row-stagger: 80ms;
+
+// ---------------------------------------------------------------------------------------------------
 // The workflows (`workflows/`)
 // ---------------------------------------------------------------------------------------------------
 
@@ -204,6 +226,22 @@ $workflow-run-line-height: 34px;
 // What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
 // icon and the gap after it.
 $workflow-run-indent: 41px;
+// A workflow row's state icon, square (`WorkflowRow`, its ghost `GhostWorkflowRow`).
+$workflow-icon-size: 15px;
+// A tick of the strip of runs (`RunStrip`, its ghost in `GhostWorkflowRow`): 7 wide, 3 apart, bottom-aligned in 14.
+$run-tick-width: 7px;
+$run-tick-gap: 3px;
+$run-tick-height: 14px;
+
+// ---------------------------------------------------------------------------------------------------
+// The commit graph (`commits/`)
+// ---------------------------------------------------------------------------------------------------
+
+// A commit's row (`CommitRow`, its ghost `GhostCommitRow`): the author's column and the age's, right-aligned, and the
+// row's width under which the author's name gives way to the avatar.
+$commit-row-author-width: 110px;
+$commit-row-age-width: 30px;
+$commit-row-narrow-width: 640px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
@@ -396,11 +434,71 @@ $row-surface-inset: $spacing-2 $spacing-8;
     border-radius: 50%;
 }
 
-// A bar standing in for text on its way.
-@mixin placeholder-bar {
-    height: 10px;
-    background: $color-bg-3;
-    border-radius: $radius-sm;
+// The fill of a skeleton's shape, `strong` or `weak`: its tone, and with motion on a lighter band running left to right
+// within the fill alone (D9), a pass every `$skeleton-pass`, `--skeleton-row` rows times `$skeleton-row-stagger` late,
+// on the page's one clock (`components/skeletonClock.ts`).
+// The band is laid out across `--skeleton-span` (a width in px) from `--skeleton-x` (where the element starts in it),
+// which `Skeleton` sets for its shapes, so every shape of one wrapper shows the same band; without them the element
+// is a span of its own, as a code review placeholder's masked `::before` is. A surface may retone it through
+// `--skeleton-strong`, `--skeleton-weak` and their `-highlight`s (`GhostCard`).
+@mixin skeleton-fill($tone: strong) {
+    $base: $color-skeleton-strong;
+    $highlight: $color-skeleton-strong-highlight;
+    @if $tone == weak {
+        $base: $color-skeleton-weak;
+        $highlight: $color-skeleton-weak-highlight;
+    }
+
+    background-color: var(--skeleton-#{$tone}, #{$base});
+
+    @include motion {
+        background-image: linear-gradient(
+            90deg,
+            transparent 46%,
+            var(--skeleton-#{$tone}-highlight, #{$highlight}) 50%,
+            transparent 54%
+        );
+        background-repeat: no-repeat;
+        // The band's image is 2.5 spans wide, so it starts and ends each pass out of sight (`@keyframes skeleton-sweep`).
+        background-size: calc(var(--skeleton-span, 100%) * 2.5) 100%;
+        animation-name: global(skeleton-sweep);
+        animation-duration: $skeleton-pass;
+        animation-timing-function: linear;
+        // A pass early, which is the same phase: a delay under zero starts the animation at once, so `syncSkeletonClock`
+        // puts it on the shared clock before it shows, not after its delay (rows 0–19).
+        animation-delay: calc(var(--skeleton-row, 0) * #{$skeleton-row-stagger} - #{$skeleton-pass});
+        animation-iteration-count: infinite;
+        animation-fill-mode: backwards;
+    }
+}
+
+// A board's column (`ListView`) and its head, as the ghost column (`GhostColumn`) stands in for them too.
+@mixin board-column {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: $spacing-8;
+    width: 268px;
+    padding: $spacing-8;
+    background: $color-bg-2;
+    border: 1px solid transparent;
+    border-radius: $radius-xl;
+}
+
+@mixin board-column-head {
+    display: flex;
+    gap: $spacing-8;
+    align-items: center;
+    padding: $spacing-4 $spacing-6 $spacing-6;
+}
+
+// A commit's row (`CommitRow`, `GhostCommitRow`): its gap and the room at its right; its width is what narrows it.
+@mixin commit-row {
+    display: flex;
+    gap: $spacing-8;
+    align-items: center;
+    padding-right: $spacing-20;
+    container-type: inline-size;
 }
 
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.

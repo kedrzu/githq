@@ -10,6 +10,7 @@ import { AccountSession } from '@/auth/AccountSession.js';
 import { GitHubRestFactory } from '@/services/GitHubRestFactory.js';
 import type { IndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
+import type { Freshness } from '@/sync/Freshness.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { TabChannel } from '@/sync/TabChannel.js';
 import type { TrackingSyncContext } from '@/sync/TrackingSync.js';
@@ -462,7 +463,7 @@ test('a repository coming on screen while a poll runs past it is read at the end
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/api/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     sync.watchAnyRef('acme/web');
     held.resolve();
@@ -730,6 +731,82 @@ test('the Workflows section’s freshness: the first read’s progress, then the
     expect(sync.getRepositoryWorkflowsFreshness('acme/web').kind).toBe('fresh');
 });
 
+test('first run and loading D14: workflows not read yet are being read — Broken workflows says how many repositories are — then as their poll goes', async () => {
+    const world = sampleWorld();
+    world.actions.repository('other/gone').refusal = 404;
+    const { session, tracking, sync } = await setup(world);
+    const heldApi = createPromise();
+    session.github.holdIf = request =>
+        request.operation === 'GET /repos/acme/api/actions/runs' ? heldApi.promise : null;
+    // A repository GitHub shows no Actions of counts in neither.
+    tracking.choose({
+        projects: [],
+        repositories: [
+            { nameWithOwner: 'acme/web', id: 'R_web' },
+            { nameWithOwner: 'other/gone', id: 'R_gone' },
+            { nameWithOwner: 'acme/api', id: 'R_api' },
+        ],
+    });
+    await session.clock.advance(0);
+
+    expect(sync.getRepositoryWorkflowsFreshness('acme/api')).toEqual({ kind: 'partial', readingWorkflows: true });
+    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'partial', readingWorkflows: { read: 1, total: 2 } });
+
+    heldApi.resolve();
+    await session.clock.advance(0);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/api').kind).toBe('fresh');
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+});
+
+test('ES23: a repository just tracked that GitHub fails on is told at once on Broken workflows, however recently the poll last succeeded', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync } = await setup(world);
+    // Polled with nothing tracked: a success, and fresh for minutes.
+    await session.clock.advance(0);
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+
+    world.failing.add('GET /repos/acme/web/actions/runs');
+    tracking.choose({ projects: [], repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
+    void sync.pollNow('workflows');
+    await session.clock.advance(0);
+
+    expect(sync.getWorkflowsFreshness()).toMatchObject({ kind: 'stale', reason: 'failing' });
+});
+
+test('Broken workflows counts a repository whose runs are still being read as not read, as its list does', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync, workflows } = await setup(world);
+    const heldCi = createPromise();
+    session.github.holdIf = request =>
+        request.operation === `GET /repos/acme/web/actions/workflows/${CI}/runs` ? heldCi.promise : null;
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+
+    expect(workflows.getState('acme/web')).toMatchObject({ status: 'read', reading: true });
+    expect(sync.getWorkflowsFreshness()).toEqual({ kind: 'partial', readingWorkflows: { read: 0, total: 2 } });
+
+    heldCi.resolve();
+    await session.clock.advance(0);
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+});
+
+test('ES23: offline with repositories not read is told on Broken workflows and their Workflows sections, however recently the poll last succeeded', async () => {
+    const world = sampleWorld();
+    const { session, tracking, sync, items } = await setup(world);
+    // Polled with nothing tracked: a success, and fresh for minutes.
+    await session.clock.advance(0);
+    const polledAt = items.getSyncState('workflows').lastSuccessAt;
+    expect(sync.getWorkflowsFreshness().kind).toBe('fresh');
+
+    session.setOnline(false);
+    tracking.choose(TRACK_BOTH);
+    await session.clock.advance(0);
+
+    const offline: Freshness = { kind: 'stale', since: polledAt, reason: 'offline' };
+    expect(sync.getWorkflowsFreshness()).toEqual(offline);
+    expect(sync.getRepositoryWorkflowsFreshness('acme/web')).toEqual(offline);
+});
+
 test('the Workflows section’s freshness: GitHub failing during the first read says so instead of reading forever', async () => {
     const world = sampleWorld();
     world.failing.add(`GET /repos/acme/web/actions/workflows/${CI}/runs`);
@@ -821,7 +898,7 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(10_000);
 
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
@@ -835,10 +912,10 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    sync.pollWorkflowsNow();
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
-    sync.pollWorkflowsNow();
-    sync.pollWorkflowsNow();
+    void sync.pollNow('workflows');
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     held.resolve();
     await session.clock.advance(0);
@@ -874,7 +951,7 @@ test('a screen asking for the workflows does not wait for the open items', async
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([]);
 
-    sync.pollWorkflowsNow();
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     expect(workflows.getState('acme/web').status).toBe('read');
 });
