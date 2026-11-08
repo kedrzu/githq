@@ -7915,103 +7915,113 @@
                           "name": "List row",
                           "reusable": true,
                           "width": 644,
-                          "gap": 10,
                           "padding": [
-                            7,
-                            16
+                            2,
+                            8
                           ],
                           "children": [
                             {
-                              "id": "Ro9CD",
-                              "type": "ref",
-                              "ref": "E9ePx",
-                              "name": "Type",
-                              "descendants": {
-                                "TZbKU": {
-                                  "name": "icon circle-dot",
-                                  "icon": "circle-dot"
-                                }
-                              }
-                            },
-                            {
                               "type": "frame",
-                              "id": "h6cWl",
-                              "name": "Content",
+                              "id": "XODhV",
+                              "name": "Surface",
                               "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 5,
+                              "gap": 10,
+                              "padding": 8,
+                              "cornerRadius": 6,
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "L5H3Tl",
-                                  "name": "Line 1",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "v0RPVZ",
-                                      "name": "Title",
-                                      "fill": "$fg",
-                                      "content": "Calendar shows wrong timezone for recurring classes",
-                                      "fontFamily": "$font",
-                                      "fontSize": 13.5,
-                                      "fontWeight": "500"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "XFLYs",
-                                      "name": "spacer",
-                                      "width": "fill_container",
-                                      "height": 1
-                                    },
-                                    {
-                                      "id": "M2264f",
-                                      "type": "ref",
-                                      "ref": "of5Pp",
-                                      "name": "Avatar DK",
-                                      "width": 16,
-                                      "height": 16,
-                                      "fill": "#81C995",
-                                      "cornerRadius": 8,
-                                      "enabled": false,
-                                      "descendants": {
-                                        "zeZzP": {
-                                          "content": "DK",
-                                          "fontSize": 7
-                                        }
-                                      }
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "cwGZc",
-                                      "name": "Updated",
-                                      "fill": "$fg-dim",
-                                      "content": "20m",
-                                      "fontFamily": "$font",
-                                      "fontSize": 11.5,
-                                      "fontWeight": "normal"
+                                  "id": "Ro9CD",
+                                  "type": "ref",
+                                  "ref": "E9ePx",
+                                  "name": "Type",
+                                  "descendants": {
+                                    "TZbKU": {
+                                      "name": "icon circle-dot",
+                                      "icon": "circle-dot"
                                     }
-                                  ]
+                                  }
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "l21xrk",
-                                  "name": "Line 2",
+                                  "id": "h6cWl",
+                                  "name": "Content",
                                   "width": "fill_container",
-                                  "gap": 10,
-                                  "alignItems": "center",
+                                  "layout": "vertical",
+                                  "gap": 5,
                                   "children": [
                                     {
-                                      "type": "text",
-                                      "id": "pysua",
-                                      "name": "fitloop/webapp#1187",
-                                      "fill": "$fg-dim",
-                                      "content": "fitloop/webapp#1187",
-                                      "fontFamily": "$mono",
-                                      "fontSize": 11.5,
-                                      "fontWeight": "normal"
+                                      "type": "frame",
+                                      "id": "L5H3Tl",
+                                      "name": "Line 1",
+                                      "width": "fill_container",
+                                      "gap": 8,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "v0RPVZ",
+                                          "name": "Title",
+                                          "fill": "$fg",
+                                          "content": "Calendar shows wrong timezone for recurring classes",
+                                          "fontFamily": "$font",
+                                          "fontSize": 13.5,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "XFLYs",
+                                          "name": "spacer",
+                                          "width": "fill_container",
+                                          "height": 1
+                                        },
+                                        {
+                                          "id": "M2264f",
+                                          "type": "ref",
+                                          "ref": "of5Pp",
+                                          "name": "Avatar DK",
+                                          "width": 16,
+                                          "height": 16,
+                                          "fill": "#81C995",
+                                          "cornerRadius": 8,
+                                          "enabled": false,
+                                          "descendants": {
+                                            "zeZzP": {
+                                              "content": "DK",
+                                              "fontSize": 7
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "cwGZc",
+                                          "name": "Updated",
+                                          "fill": "$fg-dim",
+                                          "content": "20m",
+                                          "fontFamily": "$font",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "l21xrk",
+                                      "name": "Line 2",
+                                      "width": "fill_container",
+                                      "gap": 10,
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "pysua",
+                                          "name": "fitloop/webapp#1187",
+                                          "fill": "$fg-dim",
+                                          "content": "fitloop/webapp#1187",
+                                          "fontFamily": "$mono",
+                                          "fontSize": 11.5,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -8314,10 +8324,10 @@
                           "ref": "TNgbS",
                           "name": "List row / PR · checks, in repo",
                           "padding": [
-                            7,
-                            16,
-                            7,
-                            42
+                            2,
+                            8,
+                            2,
+                            34
                           ],
                           "descendants": {
                             "Ro9CD/TZbKU": {
@@ -8498,11 +8508,6 @@
                           "reusable": true,
                           "ref": "TNgbS",
                           "name": "List row / Issue · assignee, field, label",
-                          "fill": "$sel",
-                          "stroke": "$accent",
-                          "strokeWidth": {
-                            "left": 2
-                          },
                           "descendants": {
                             "M2264f": {
                               "enabled": true
@@ -8571,6 +8576,11 @@
                                   "name": "Label bug"
                                 }
                               ]
+                            },
+                            "XODhV": {
+                              "fill": "$sel",
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1
                             }
                           }
                         },
@@ -8920,7 +8930,6 @@
                           "ref": "TNgbS",
                           "name": "List row / PR · approved, merge, wide",
                           "width": 760,
-                          "stroke": "#00000000",
                           "descendants": {
                             "Ro9CD/TZbKU": {
                               "name": "icon git-pull-request",
@@ -9016,6 +9025,9 @@
                                   }
                                 }
                               ]
+                            },
+                            "XODhV": {
+                              "stroke": "#00000000"
                             }
                           }
                         },
@@ -9026,11 +9038,6 @@
                           "ref": "TNgbS",
                           "name": "List row / Issue · field, two labels",
                           "width": 1204,
-                          "fill": "$sel",
-                          "stroke": "$accent",
-                          "strokeWidth": {
-                            "left": 2
-                          },
                           "descendants": {
                             "M2264f": {
                               "name": "Avatar ML",
@@ -9118,6 +9125,11 @@
                                   }
                                 }
                               ]
+                            },
+                            "XODhV": {
+                              "fill": "$sel",
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1
                             }
                           }
                         },
@@ -10898,7 +10910,6 @@
                                       "ref": "jzfoH",
                                       "name": "Row fitloop/api#477",
                                       "width": "fill_container",
-                                      "stroke": "#00000000",
                                       "descendants": {
                                         "v0RPVZ": {
                                           "content": "Retry Stripe webhook delivery on 5xx"
@@ -10926,6 +10937,9 @@
                                         },
                                         "Rx2ve/Cb3Zq": {
                                           "content": "−9"
+                                        },
+                                        "XODhV": {
+                                          "stroke": "#00000000"
                                         }
                                       }
                                     },
@@ -10935,10 +10949,12 @@
                                       "ref": "Oo1Zf",
                                       "name": "Row vitejs/vite#18842",
                                       "width": "fill_container",
-                                      "fill": "$sel",
-                                      "stroke": "$accent",
-                                      "strokeWidth": {
-                                        "left": 2
+                                      "descendants": {
+                                        "XODhV": {
+                                          "fill": "$sel",
+                                          "stroke": "#7B87F74D",
+                                          "strokeWidth": 1
+                                        }
                                       }
                                     },
                                     {
@@ -10964,8 +10980,12 @@
                                       "ref": "L0fP2E",
                                       "name": "Row fitloop/webapp#1187",
                                       "width": "fill_container",
-                                      "fill": "#00000000",
-                                      "strokeWidth": 0
+                                      "descendants": {
+                                        "XODhV": {
+                                          "fill": "#00000000",
+                                          "strokeWidth": 0
+                                        }
+                                      }
                                     },
                                     {
                                       "id": "n9mkhN",
@@ -25195,8 +25215,8 @@
                               "name": "Row vitejs/vite#18842",
                               "width": "fill_container",
                               "padding": [
-                                7,
-                                16
+                                2,
+                                8
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -25236,8 +25256,8 @@
                               "name": "Row tanstack/query#8120",
                               "width": "fill_container",
                               "padding": [
-                                7,
-                                16
+                                2,
+                                8
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -27126,14 +27146,9 @@
                                       "ref": "fT1ix",
                                       "name": "Row vitejs/vite#18842",
                                       "width": "fill_container",
-                                      "fill": "$sel",
-                                      "stroke": "$accent",
-                                      "strokeWidth": {
-                                        "left": 2
-                                      },
                                       "padding": [
-                                        7,
-                                        16
+                                        2,
+                                        8
                                       ],
                                       "descendants": {
                                         "Ro9CD/TZbKU": {
@@ -27163,6 +27178,11 @@
                                         "i369o/uYfBa": {
                                           "fill": "$red",
                                           "content": "Changes requested by SR"
+                                        },
+                                        "XODhV": {
+                                          "fill": "$sel",
+                                          "stroke": "#7B87F74D",
+                                          "strokeWidth": 1
                                         }
                                       }
                                     }
@@ -31329,14 +31349,9 @@
                                       "ref": "fT1ix",
                                       "name": "Row vitejs/vite#18842",
                                       "width": "fill_container",
-                                      "fill": "$sel",
-                                      "stroke": "$accent",
-                                      "strokeWidth": {
-                                        "left": 2
-                                      },
                                       "padding": [
-                                        7,
-                                        16
+                                        2,
+                                        8
                                       ],
                                       "descendants": {
                                         "Ro9CD/TZbKU": {
@@ -31366,6 +31381,11 @@
                                         "i369o/uYfBa": {
                                           "fill": "$red",
                                           "content": "Changes requested by SR"
+                                        },
+                                        "XODhV": {
+                                          "fill": "$sel",
+                                          "stroke": "#7B87F74D",
+                                          "strokeWidth": 1
                                         }
                                       }
                                     }
@@ -35758,14 +35778,12 @@
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "i1LPH": {
+                            "i1LPH/XODhV": {
                               "fill": "$sel",
-                              "stroke": "$accent",
-                              "strokeWidth": {
-                                "left": 2
-                              }
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1
                             },
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -36246,7 +36264,7 @@
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -41763,7 +41781,6 @@
                               "ref": "TNgbS",
                               "name": "Row api#455",
                               "width": "fill_container",
-                              "fill": "$sel",
                               "descendants": {
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
@@ -41849,6 +41866,9 @@
                                       }
                                     }
                                   ]
+                                },
+                                "XODhV": {
+                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -41858,7 +41878,6 @@
                               "ref": "TNgbS",
                               "name": "Row webapp#1210",
                               "width": "fill_container",
-                              "fill": "$sel",
                               "descendants": {
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
@@ -41944,6 +41963,9 @@
                                       }
                                     }
                                   ]
+                                },
+                                "XODhV": {
+                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -41953,7 +41975,6 @@
                               "ref": "TNgbS",
                               "name": "Row mobile#91",
                               "width": "fill_container",
-                              "fill": "$sel",
                               "descendants": {
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
@@ -42039,6 +42060,9 @@
                                       }
                                     }
                                   ]
+                                },
+                                "XODhV": {
+                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -65958,7 +65982,7 @@
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -73249,7 +73273,11 @@
                                   "ref": "Oo1Zf",
                                   "name": "Row vitejs/vite#18842",
                                   "width": "fill_container",
-                                  "stroke": "$accent"
+                                  "descendants": {
+                                    "XODhV": {
+                                      "stroke": "#7B87F74D"
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "ZsI3d",
@@ -74181,7 +74209,6 @@
                                   "ref": "TNgbS",
                                   "name": "Row webapp#1203",
                                   "width": "fill_container",
-                                  "fill": "$sel",
                                   "descendants": {
                                     "Ro9CD/TZbKU": {
                                       "name": "icon check",
@@ -74300,6 +74327,9 @@
                                           }
                                         }
                                       ]
+                                    },
+                                    "XODhV": {
+                                      "fill": "$sel"
                                     }
                                   }
                                 },
@@ -74309,7 +74339,6 @@
                                   "ref": "TNgbS",
                                   "name": "Row api#470",
                                   "width": "fill_container",
-                                  "fill": "$sel",
                                   "descendants": {
                                     "Ro9CD/TZbKU": {
                                       "name": "icon check",
@@ -74424,6 +74453,9 @@
                                           }
                                         }
                                       ]
+                                    },
+                                    "XODhV": {
+                                      "fill": "$sel"
                                     }
                                   }
                                 },
@@ -75780,10 +75812,10 @@
                           "width": "fill_container",
                           "height": "fill_container",
                           "descendants": {
-                            "i1LPH": {
-                              "stroke": "$accent"
+                            "i1LPH/XODhV": {
+                              "stroke": "#7B87F74D"
                             },
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -119331,7 +119363,7 @@
                                 }
                               }
                             },
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -119493,7 +119525,7 @@
                                 }
                               }
                             },
-                            "Z9BxYw": {
+                            "Z9BxYw/XODhV": {
                               "fill": "#00000000",
                               "strokeWidth": 0
                             }
@@ -141165,11 +141197,6 @@
                                   "ref": "jzfoH",
                                   "name": "Row fitloop/api#477",
                                   "width": "fill_container",
-                                  "fill": "$sel",
-                                  "stroke": "$accent",
-                                  "strokeWidth": {
-                                    "left": 2
-                                  },
                                   "descendants": {
                                     "v0RPVZ": {
                                       "content": "Retry Stripe webhook delivery on 5xx"
@@ -141197,6 +141224,11 @@
                                     },
                                     "Rx2ve/Cb3Zq": {
                                       "content": "−9"
+                                    },
+                                    "XODhV": {
+                                      "fill": "$sel",
+                                      "stroke": "#7B87F74D",
+                                      "strokeWidth": 1
                                     }
                                   }
                                 },
@@ -141230,8 +141262,12 @@
                                   "ref": "L0fP2E",
                                   "name": "Row fitloop/webapp#1187",
                                   "width": "fill_container",
-                                  "fill": "#00000000",
-                                  "strokeWidth": 0
+                                  "descendants": {
+                                    "XODhV": {
+                                      "fill": "#00000000",
+                                      "strokeWidth": 0
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "X1P4Wl",
@@ -144008,7 +144044,6 @@
                       "ref": "jzfoH",
                       "name": "Row fitloop/api#477",
                       "width": "fill_container",
-                      "stroke": "#00000000",
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Retry Stripe webhook delivery on 5xx"
@@ -144036,6 +144071,9 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
+                        },
+                        "XODhV": {
+                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144045,7 +144083,6 @@
                       "ref": "jzfoH",
                       "name": "Row mlaine/tasklet#30",
                       "width": "fill_container",
-                      "stroke": "#00000000",
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Sync: read conditional requests first"
@@ -144073,6 +144110,9 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
+                        },
+                        "XODhV": {
+                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144133,7 +144173,6 @@
                       "ref": "jzfoH",
                       "name": "Row fitloop/webapp#1199",
                       "width": "fill_container",
-                      "stroke": "#00000000",
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Member search: fuzzy matching"
@@ -144161,6 +144200,9 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
+                        },
+                        "XODhV": {
+                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144170,7 +144212,6 @@
                       "ref": "jzfoH",
                       "name": "Row fitloop/webapp#1203",
                       "width": "fill_container",
-                      "stroke": "#00000000",
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Migrate class calendar to new date picker"
@@ -144198,6 +144239,9 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
+                        },
+                        "XODhV": {
+                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144207,11 +144251,6 @@
                       "ref": "G4z7b",
                       "name": "Row fitloop/mobile#94",
                       "width": "fill_container",
-                      "fill": "$sel",
-                      "stroke": "$red",
-                      "strokeWidth": {
-                        "left": 2
-                      },
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Offline queue for booking edits"
@@ -144250,6 +144289,11 @@
                               "content": "M"
                             }
                           }
+                        },
+                        "XODhV": {
+                          "fill": "$sel",
+                          "stroke": "#F851494D",
+                          "strokeWidth": 1
                         }
                       }
                     },
@@ -144306,7 +144350,6 @@
                       "ref": "jzfoH",
                       "name": "Row mlaine/tasklet#22",
                       "width": "fill_container",
-                      "stroke": "#00000000",
                       "descendants": {
                         "v0RPVZ": {
                           "content": "Stale data after window refocus"
@@ -144334,6 +144377,9 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
+                        },
+                        "XODhV": {
+                          "stroke": "#00000000"
                         }
                       }
                     }
@@ -199979,10 +200025,10 @@
                                           "name": "Row #1203",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -200026,10 +200072,10 @@
                                           "name": "Row #1204",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -200076,10 +200122,10 @@
                                           "name": "Row #1206",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -200120,10 +200166,10 @@
                                           "name": "Row #1207",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -210857,10 +210903,10 @@
                               "name": "Row #1203",
                               "width": "fill_container",
                               "padding": [
-                                6,
-                                16,
-                                6,
-                                18
+                                1,
+                                8,
+                                1,
+                                10
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -210904,10 +210950,10 @@
                               "name": "Row #1204",
                               "width": "fill_container",
                               "padding": [
-                                6,
-                                16,
-                                6,
-                                18
+                                1,
+                                8,
+                                1,
+                                10
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -210954,10 +211000,10 @@
                               "name": "Row #1206",
                               "width": "fill_container",
                               "padding": [
-                                6,
-                                16,
-                                6,
-                                18
+                                1,
+                                8,
+                                1,
+                                10
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -210998,10 +211044,10 @@
                               "name": "Row #1207",
                               "width": "fill_container",
                               "padding": [
-                                6,
-                                16,
-                                6,
-                                18
+                                1,
+                                8,
+                                1,
+                                10
                               ],
                               "descendants": {
                                 "Ro9CD/TZbKU": {
@@ -214040,10 +214086,10 @@
                                           "name": "Row #29",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -214090,10 +214136,10 @@
                                           "name": "Row #30",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -214140,10 +214186,10 @@
                                           "name": "Row #31",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -215961,10 +216007,10 @@
                                           "name": "Row #498",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -216011,10 +216057,10 @@
                                           "name": "Row #499",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -216061,10 +216107,10 @@
                                           "name": "Row #501",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -218233,8 +218279,8 @@
                                   "name": "Row #1190",
                                   "width": "fill_container",
                                   "padding": [
-                                    7,
-                                    16
+                                    2,
+                                    8
                                   ],
                                   "descendants": {
                                     "Ro9CD/TZbKU": {
@@ -218699,10 +218745,10 @@
                                           "opacity": 1,
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -218755,10 +218801,10 @@
                                           "opacity": 1,
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -218810,10 +218856,10 @@
                                           "name": "Row #1206",
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -218869,10 +218915,10 @@
                                           "opacity": 1,
                                           "width": "fill_container",
                                           "padding": [
-                                            6,
-                                            16,
-                                            6,
-                                            18
+                                            1,
+                                            8,
+                                            1,
+                                            10
                                           ],
                                           "descendants": {
                                             "Ro9CD/TZbKU": {
@@ -242935,8 +242981,8 @@
                           "name": "Row fitloop/api#471",
                           "width": "fill_container",
                           "padding": [
-                            7,
-                            16
+                            2,
+                            8
                           ],
                           "descendants": {
                             "Ro9CD/TZbKU": {
@@ -242968,8 +243014,8 @@
                           "name": "Row fitloop/api#473",
                           "width": "fill_container",
                           "padding": [
-                            7,
-                            16
+                            2,
+                            8
                           ],
                           "descendants": {
                             "Ro9CD/TZbKU": {
@@ -243253,8 +243299,8 @@
                                   "name": "Row fitloop/api#477",
                                   "width": "fill_container",
                                   "padding": [
-                                    7,
-                                    16
+                                    2,
+                                    8
                                   ],
                                   "descendants": {
                                     "Ro9CD/TZbKU": {
@@ -305768,7 +305814,6 @@
                                   "ref": "p5nAi",
                                   "name": "Row fitloop/webapp#1202",
                                   "width": "fill_container",
-                                  "fill": "$sel",
                                   "descendants": {
                                     "v0RPVZ": {
                                       "content": "Sync: queue edits made offline"
@@ -305790,6 +305835,9 @@
                                     },
                                     "j2aAGy/Cb3Zq": {
                                       "content": "−312"
+                                    },
+                                    "XODhV": {
+                                      "fill": "$sel"
                                     }
                                   }
                                 },
@@ -343988,7 +344036,11 @@
                                   "ref": "Oo1Zf",
                                   "name": "Row vitejs/vite#18842",
                                   "width": "fill_container",
-                                  "stroke": "$accent"
+                                  "descendants": {
+                                    "XODhV": {
+                                      "stroke": "#7B87F74D"
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "sMUCj",
@@ -344757,7 +344809,11 @@
                                   "ref": "Oo1Zf",
                                   "name": "Row vitejs/vite#18842",
                                   "width": "fill_container",
-                                  "stroke": "$accent"
+                                  "descendants": {
+                                    "XODhV": {
+                                      "stroke": "#7B87F74D"
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "nlJbL",
@@ -345524,7 +345580,11 @@
                                   "ref": "Oo1Zf",
                                   "name": "Row vitejs/vite#18842",
                                   "width": "fill_container",
-                                  "stroke": "$accent"
+                                  "descendants": {
+                                    "XODhV": {
+                                      "stroke": "#7B87F74D"
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "D0hVS",
@@ -346193,7 +346253,11 @@
                                   "ref": "Oo1Zf",
                                   "name": "Row vitejs/vite#18842",
                                   "width": "fill_container",
-                                  "stroke": "$accent"
+                                  "descendants": {
+                                    "XODhV": {
+                                      "stroke": "#7B87F74D"
+                                    }
+                                  }
                                 },
                                 {
                                   "id": "g6BKZI",
