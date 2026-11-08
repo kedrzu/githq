@@ -9,6 +9,7 @@
         "allow-token-load",
         "allow-token-save",
         "allow-token-delete",
+        "allow-link-take",
         "allow-device-start",
         "allow-device-finish",
         "allow-open-external",

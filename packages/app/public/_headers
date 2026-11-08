@@ -23,3 +23,10 @@
 
 /_ipx/*
   Cache-Control: public, max-age=86400
+
+# Which of githq.dev's addresses the desktop app on macOS opens itself (Universal Links, `docs/desktop/RELEASING.md`). A
+# file with no extension, which Apple's CDN wants as JSON. Its `*` crosses `/`, so static files are excluded by name: a
+# `/*.*` would also take away a repository with a dot in its name (`/vercel/next.js`).
+
+/.well-known/apple-app-site-association
+  Content-Type: application/json

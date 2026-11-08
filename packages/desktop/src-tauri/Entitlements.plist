@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- What a macOS app with Universal Links is signed with: which App ID it is, for the provisioning profile to authorise it.
+     Named by no committed config, only by the workflow's step that adds the profile (`desktop-build.yml`), as macOS kills
+     an app with these and no profile at launch. Tauri's CLI adds `applinks:githq.dev` from `plugins.deep-link.desktop.domains`. -->
+<plist version="1.0">
+<dict>
+    <key>com.apple.application-identifier</key>
+    <string>36227N57ZP.dev.githq.desktop</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>36227N57ZP</string>
+</dict>
+</plist>

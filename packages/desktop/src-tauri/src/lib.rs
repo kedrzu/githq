@@ -1,6 +1,7 @@
 //! The githq desktop app: the app's desktop build (`bun --cwd packages/app build:desktop`) in one native window.
 
 mod credentials;
+mod deep_link;
 mod device_flow;
 mod external;
 mod job_logs;
@@ -10,8 +11,10 @@ use tauri::webview::NewWindowResponse;
 use tauri::{AppHandle, Url, WebviewUrl, WebviewWindowBuilder};
 #[cfg(target_os = "macos")]
 use tauri::{Webview, WebviewWindow, WindowEvent};
+use tauri_plugin_deep_link::DeepLinkExt;
 
 use credentials::Credentials;
+use deep_link::PendingLink;
 use device_flow::DeviceFlow;
 use job_logs::JobLogs;
 
@@ -25,16 +28,25 @@ const DEV_SERVER_PORT: u16 = 8787;
 /// Starts the app and blocks until it quits.
 pub fn run() {
     tauri::Builder::default()
+        // First, so that a second launch hands its link to this one and quits before anything else starts. The link
+        // reaches `deep_link::open` through the deep-link plugin (the `deep-link` feature); this brings the window up
+        // for a launch with none.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            deep_link::show_window(app);
+        }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(Credentials::os())
         .manage(DeviceFlow::github())
         .manage(JobLogs::github())
+        .manage(PendingLink::default())
         // Each one is also listed in `build.rs` and allowed for the window in `capabilities/default.json`.
         .invoke_handler(tauri::generate_handler![
             credentials::token_load,
             credentials::token_save,
             credentials::token_delete,
+            deep_link::link_take,
             device_flow::device_start,
             device_flow::device_finish,
             external::open_external,
@@ -48,6 +60,7 @@ pub fn run() {
             // First, as it sets up the state the window's commands reach for.
             updater::start(app.handle());
             open_main_window(app.handle())?;
+            open_links(app.handle());
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -55,7 +68,8 @@ pub fn run() {
 }
 
 /// The app's one window. Created here rather than in `tauri.conf.json`, which cannot say where the webview may
-/// navigate: it stays on the app, and every other address opens in the system browser instead.
+/// navigate: it stays on the app, a githq.dev page opens as the app's own (`deep_link::open`), and every other
+/// address opens in the system browser instead.
 fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
     let navigation_app = app.clone();
     let new_window_app = app.clone();
@@ -69,6 +83,10 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
             if is_app_url(url) {
                 return true;
             }
+            if deep_link::is_web_app_url(url) {
+                deep_link::open(&navigation_app, url);
+                return false;
+            }
 
             // Refused or failed, the webview stays where it is; `external::open` logs a failure.
             let _ = external::open(&navigation_app, url);
@@ -76,7 +94,11 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
         })
         // Also a backstop: WebView2 does not report every `target="_blank"` link here.
         .on_new_window(move |url, _features| {
-            let _ = external::open(&new_window_app, &url);
+            if deep_link::is_web_app_url(&url) {
+                deep_link::open(&new_window_app, &url);
+            } else {
+                let _ = external::open(&new_window_app, &url);
+            }
             NewWindowResponse::Deny
         });
 
@@ -99,6 +121,32 @@ fn open_main_window(app: &AppHandle) -> tauri::Result<()> {
     window.build()?;
 
     Ok(())
+}
+
+/// Opens in the app the links it is asked to: those opened while it runs, and the one it was launched with.
+fn open_links(app: &AppHandle) {
+    let open_app = app.clone();
+    app.deep_link().on_open_url(move |event| {
+        for url in event.urls() {
+            deep_link::open(&open_app, &url);
+        }
+    });
+
+    match app.deep_link().get_current() {
+        Ok(urls) => {
+            for url in urls.unwrap_or_default() {
+                deep_link::open(app, &url);
+            }
+        }
+        Err(error) => eprintln!("Could not read the link the app was launched with: {error}"),
+    }
+
+    // An AppImage is not installed, so nothing has told the system about the scheme; the installers do it for the
+    // other bundles.
+    #[cfg(target_os = "linux")]
+    if let Err(error) = app.deep_link().register_all() {
+        eprintln!("Could not register the githq scheme: {error}");
+    }
 }
 
 /// Gives the keyboard back to the webview whenever the native side may have taken it. Leaving full screen hands it to

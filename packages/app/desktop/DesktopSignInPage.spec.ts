@@ -111,6 +111,8 @@ function mount() {
         onWindowResized: () => Promise.reject(new Error('Not expected')),
         isFullscreen: () => Promise.reject(new Error('Not expected')),
         onScrollPhase: () => Promise.reject(new Error('Not expected')),
+        takeOpenedLink: () => Promise.reject(new Error('Not expected')),
+        onLinkOpened: () => Promise.reject(new Error('Not expected')),
     });
 
     const host = document.createElement('div');

@@ -1,6 +1,8 @@
 import type { Page } from '@playwright/test';
 
-import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import { DesktopSignInScreenHarness } from '../harnesses/DesktopSignInScreen.harness.js';
+import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { AccountScreenHarness } from '../harnesses/AccountScreen.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
@@ -87,6 +89,95 @@ test("an organisation's \"Request approval\" opens GitHub's page of githq's OAut
         .toEqual([`https://github.com/settings/connections/applications/${E2E_CLIENT_ID}`]);
     await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.organization('secretive')).toContainText('You requested approval on');
+    expect(page.context().pages()).toHaveLength(1);
+});
+
+test('a githq link opened while the app runs shows its screen without reloading the page', async ({
+    page,
+    github,
+    native,
+}) => {
+    await signInOnDesktop({ page, github, native, world: createSampleMyWork().world });
+    await page.evaluate(() => {
+        window.name = 'before-the-link';
+    });
+    const origin = await page.evaluate(() => performance.timeOrigin);
+    // Listening: the page has asked for the link events.
+    await expect.poll(() => native.isListening('link-opened')).toBe(true);
+
+    await native.openLink(ISSUE_PATH);
+
+    await expect(new ItemViewHarness(page).title).toHaveText(ISSUE);
+    await expect(page).toHaveURL(ISSUE_PATH);
+    // The same document: it was not loaded again.
+    expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+    expect(await page.evaluate(() => window.name)).toBe('before-the-link');
+    expect(native.pendingLink).toBeNull();
+});
+
+test('an app started with a githq link opens on its screen', async ({ page, github, native }) => {
+    await signInOnDesktop({ page, github, native, world: createSampleMyWork().world });
+
+    native.pendingLink = ISSUE_PATH;
+    await page.reload();
+
+    await expect(new ItemViewHarness(page).title).toHaveText(ISSUE);
+    await expect(page).toHaveURL(ISSUE_PATH);
+    expect(native.pendingLink).toBeNull();
+});
+
+test('signed out, a githq link shows the sign-in and the screen of the link follows the sign-in', async ({
+    page,
+    github,
+    native,
+}) => {
+    createSampleMyWork().world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    answerTrackingCandidates(github, { login: LOGIN });
+    native.pendingLink = ISSUE_PATH;
+
+    await page.goto('/');
+    const signIn = new DesktopSignInScreenHarness(page);
+    await expect(signIn.signInButton).toBeVisible();
+    await expect(page).toHaveURL(`/?next=${ISSUE_PATH}`);
+
+    await signIn.signInButton.click();
+    await expect(signIn.deviceCode).toHaveText(native.deviceCode.userCode);
+    native.approveDeviceSignIn(SAMPLE_TOKEN);
+    // The first sign-in's choice comes first, then the screen of the link.
+    await new FirstSignInHarness(page).continueButton.click();
+
+    await expect(new ItemViewHarness(page).title).toHaveText(ISSUE);
+    await expect(page).toHaveURL(ISSUE_PATH);
+});
+
+test('a click on a githq.dev link in an item opens that screen in the app, while a github.com link still opens in the system browser', async ({
+    page,
+    github,
+    native,
+}) => {
+    const sample = createSampleMyWork();
+    sample.world.issue({
+        repository: 'acme/web',
+        number: 30,
+        title: 'Explain how tokens expire',
+        foundBy: ['assigned'],
+        minutesAgo: 40,
+        bodyHtml: `<p>See <a href="https://githq.dev${ISSUE_PATH}?x=1">the sign-in issue</a> and <a href="https://github.com/acme/web/issues/12">its GitHub page</a>.</p>`,
+    });
+    await signInOnDesktop({ page, github, native, world: sample.world });
+    await page.goto('/acme/web/issues/30');
+    const item = new ItemViewHarness(page);
+    await expect(item.title).toHaveText('Explain how tokens expire');
+
+    await item.root.getByRole('link', { name: 'its GitHub page' }).click();
+    await expect.poll(() => native.opened).toEqual(['https://github.com/acme/web/issues/12']);
+    await expect(page).toHaveURL('/acme/web/issues/30');
+
+    await item.root.getByRole('link', { name: 'the sign-in issue' }).click();
+    await expect(item.title).toHaveText(ISSUE);
+    await expect(page).toHaveURL(`${ISSUE_PATH}?x=1`);
+    expect(native.opened).toEqual(['https://github.com/acme/web/issues/12']);
     expect(page.context().pages()).toHaveLength(1);
 });
 

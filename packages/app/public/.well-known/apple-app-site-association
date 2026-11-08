@@ -1,0 +1,34 @@
+{
+    "applinks": {
+        "details": [
+            {
+                "appIDs": ["36227N57ZP.dev.githq.desktop"],
+                "components": [
+                    { "/": "/", "exclude": true },
+                    { "/": "/download", "exclude": true },
+                    { "/": "/login", "exclude": true },
+                    { "/": "/auth/*", "exclude": true },
+                    { "/": "/api/*", "exclude": true },
+                    { "/": "/_landing", "exclude": true },
+                    { "/": "/_nuxt/*", "exclude": true },
+                    { "/": "/_ipx/*", "exclude": true },
+                    { "/": "/.well-known/*", "exclude": true },
+                    { "/": "/landing/*", "exclude": true },
+                    { "/": "/200.html", "exclude": true },
+                    { "/": "/404.html", "exclude": true },
+                    { "/": "/index.html", "exclude": true },
+                    { "/": "/_landing.html", "exclude": true },
+                    { "/": "/apple-touch-icon.png", "exclude": true },
+                    { "/": "/favicon.svg", "exclude": true },
+                    { "/": "/icon-192.png", "exclude": true },
+                    { "/": "/icon-512.png", "exclude": true },
+                    { "/": "/icon-maskable-512.png", "exclude": true },
+                    { "/": "/manifest.webmanifest", "exclude": true },
+                    { "/": "/og.png", "exclude": true },
+                    { "/": "/robots.txt", "exclude": true },
+                    { "/": "/*" }
+                ]
+            }
+        ]
+    }
+}
