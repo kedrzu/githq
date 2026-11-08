@@ -1,4 +1,4 @@
-<!-- `/download` (githq.pen "Landing · Download page", LP17–LP19): every desktop build, one row each, the visitor's system highlighted without changing any size; what the landing page leaves out lives here — the Windows warnings and, under "Sign in with GitHub", what GitHub will ask for (D35). Then What's new, one link to the Development stream and the browser path, which comes first on a phone, where nothing installs. Someone signed in gets "Open githq" in place of signing in. -->
+<!-- `/download` (githq.pen "Landing · Download page", LP17–LP19): every desktop build, one row each, the visitor's system highlighted without changing any size, each button spinning until its download has started; what the landing page leaves out lives here — the Windows warnings and, under "Sign in with GitHub", what GitHub will ask for (D35). Then What's new, one link to the Development stream and the browser path, which comes first on a phone, where nothing installs. Someone signed in gets "Open githq" in place of signing in. -->
 <script lang="ts">
 const BUILDS = [
   { id: 'macosSilicon', logo: 'apple', name: l.macosSilicon, note: l.macosSiliconNote },
@@ -24,6 +24,7 @@ import LandingFooter from './LandingFooter.vue';
 import LandingNav from './LandingNav.vue';
 import LandingPermission from './LandingPermission.vue';
 import { RELEASES_URL } from './landingLinks.js';
+import { waitForDownload } from './waitForDownload.js';
 
 const props = defineProps<{
   /** The visitor's system, `null` while unknown or when there is nothing to install on it. */
@@ -119,6 +120,7 @@ function isVisitorsBuild(id: (typeof BUILDS)[number]['id']) {
               :icon="Download"
               :link="DESKTOP_BUILDS[build.id].url"
               :aria-label="t(l.downloadBuild, { build: `${t(build.name)} ${DESKTOP_BUILDS[build.id].file}` })"
+              @click="waitForDownload(DESKTOP_BUILDS[build.id].url)"
             >
               {{ t(l.download) }}
             </Button>

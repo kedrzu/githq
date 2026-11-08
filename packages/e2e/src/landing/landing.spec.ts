@@ -68,20 +68,20 @@ for (const { name, userAgent, system, href } of [
         userAgent:
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
         system: 'macos',
-        href: 'githq_aarch64.dmg',
+        href: 'macos-silicon',
     },
     {
         name: 'Windows',
         userAgent:
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
         system: 'windows',
-        href: 'githq_x64-setup.exe',
+        href: 'windows',
     },
     {
         name: 'Linux',
         userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
         system: 'linux',
-        href: 'githq_amd64.AppImage',
+        href: 'linux-appimage',
     },
     {
         name: 'a phone',
@@ -101,7 +101,7 @@ for (const { name, userAgent, system, href } of [
         }) => {
             // As served, whoever asks: the page can't know the system yet.
             const html = await (await request.get('/', { headers: { 'user-agent': userAgent } })).text();
-            expect(html).not.toContain('releases/latest/download');
+            expect(html).not.toContain('githq.dev/download/');
             expect(html).toContain('href="/download"');
             expect(html).not.toContain('landing-download-logo-');
 
@@ -130,10 +130,7 @@ for (const { name, userAgent, system, href } of [
             const landing = new LandingHarness(page);
             if (system && href) {
                 await expect(landing.downloadLogo(system)).toBeVisible();
-                await expect(landing.downloadLink).toHaveAttribute(
-                    'href',
-                    `https://github.com/kedrzu/githq/releases/latest/download/${href}`,
-                );
+                await expect(landing.downloadLink).toHaveAttribute('href', `https://githq.dev/download/${href}`);
             } else {
                 await expect(landing.downloadLink).toHaveAttribute('href', '/download');
                 await expect(landing.root.locator('[tid^="landing-download-logo-"]')).toHaveCount(0);

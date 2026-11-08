@@ -5,8 +5,9 @@
 # GitHub release, builds macOS (Apple Silicon and Intel), Windows and Linux (`desktop-build.yml`), and uploads the
 # installers, the signed updater bundles and the updater's `latest.json` to the draft. Publishing the draft is a separate
 # step (`docs/desktop/RELEASING.md`); apps on the Stable stream look for updates at
-# `releases/latest/download/latest.json`, so a release reaches them once it is published and GitHub's "latest". Builds
-# from main are `development.yml`.
+# `releases/latest/download/latest.json`, so a release reaches them once it is published and GitHub's "latest"; so do the
+# landing page's download links, `githq.dev/download/<build>`, which the Worker redirects to the latest release's
+# installer by its versioned name (`packages/worker/src/download.ts`). Builds from main are `development.yml`.
 #
 # Secrets: `desktop-build.yml`.
 name: Release
@@ -146,28 +147,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_ID: ${{ needs.prepare.outputs.release-id }}
-      # `releases/latest/download/<name>` needs a name that survives a new version; the landing page and `/download`
-      # link to these (`packages/app/landing/desktopBuilds.ts`). A re-run replaces the copies it finds.
-      - name: Copy the installers to names without the version
-        run: |
-          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets" --paginate > assets.json
-          for ending in aarch64.dmg x64.dmg x64-setup.exe amd64.AppImage amd64.deb; do
-            source="githq_${VERSION}_$ending"
-            target="githq_$ending"
-            source_id=$(jq -r --arg name "$source" '.[] | select(.name == $name) | .id' assets.json)
-            if [ -z "$source_id" ]; then
-              echo "::error::The release has no $source"
-              exit 1
-            fi
-            target_id=$(jq -r --arg name "$target" '.[] | select(.name == $name) | .id' assets.json)
-            if [ -n "$target_id" ]; then
-              gh api --method DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$target_id"
-            fi
-            gh api -H 'Accept: application/octet-stream' "repos/$GITHUB_REPOSITORY/releases/assets/$source_id" > "$target"
-            gh api --method POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$target" \
-              -H 'Content-Type: application/octet-stream' --input "$target" > /dev/null
-          done
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_ID: ${{ needs.prepare.outputs.release-id }}
-          VERSION: ${{ needs.prepare.outputs.version }}
