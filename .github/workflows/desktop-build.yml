@@ -151,8 +151,10 @@ jobs:
 
       # Universal Links only in an app signed with the Developer ID and carrying the profile: macOS kills at launch an app
       # with the Associated Domains entitlement and no profile authorising it, so none of this is in the committed config.
+      # A profile for another certificate or App ID fails the build here, before such an app reaches the updater.
       - name: Use the Universal Links profile if it is set
         if: runner.os == 'macOS'
+        shell: bash
         run: |
           if [ -z "$APPLE_PROVISIONING_PROFILE" ] || [ -z "$APPLE_CERTIFICATE" ]; then
             echo "Universal Links: off"
@@ -161,6 +163,16 @@ jobs:
 
           tauri=packages/desktop/src-tauri
           printf %s "$APPLE_PROVISIONING_PROFILE" | base64 --decode > "$tauri/embedded.provisionprofile"
+
+          # The signing certificate out of the .p12; OpenSSL 3 reads one exported with older ciphers only with `-legacy`.
+          printf %s "$APPLE_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          { openssl pkcs12 -in "$RUNNER_TEMP/certificate.p12" -passin env:APPLE_CERTIFICATE_PASSWORD -nokeys -clcerts 2>/dev/null ||
+            openssl pkcs12 -legacy -in "$RUNNER_TEMP/certificate.p12" -passin env:APPLE_CERTIFICATE_PASSWORD -nokeys -clcerts; } |
+            openssl x509 -outform DER > "$RUNNER_TEMP/certificate.der"
+          rm "$RUNNER_TEMP/certificate.p12"
+          packages/desktop/scripts/check-provisioning-profile.sh \
+            "$tauri/embedded.provisionprofile" "$RUNNER_TEMP/certificate.der" "$tauri/Entitlements.plist"
+
           jq '.bundle.macOS.files["embedded.provisionprofile"] = "./embedded.provisionprofile"
             | .bundle.macOS.entitlements = "Entitlements.plist"
             | .plugins["deep-link"].desktop.domains = ["githq.dev"]' \
@@ -170,6 +182,7 @@ jobs:
         env:
           APPLE_PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       - uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
