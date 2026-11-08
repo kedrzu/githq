@@ -509,3 +509,105 @@ down — and adding may use the sign-in's screen. One choosing screen to learn, 
 
 - A picker rising from below for adding (MB169–MB170) — a second way of choosing, without owners' groups or Select
   all.
+
+## D36
+
+**A list's options button opens one sheet rising from below with the list's filter, grouping and sort together, each a
+row of chips changed in place while the list behind follows; a field's values are picked in the command menu's step.
+A repository offers GitHub's own groupings (milestone first), a project its fields first, My work reason, repository,
+status and author.** (2026-11-08, owner, picked from the drawings: `MB173`–`MB176`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: one tap per change, every setting in view, and
+the sheet opens the same way as the command menu.
+
+**Rejected.**
+
+- The command menu opened at a View step (MB177–MB178) — every change two taps, one setting in view at a time.
+- A screen of its own (MB179) — the list it changes is out of sight.
+
+## D37
+
+**A view changed on a phone stays this device's own: it is not saved in the synced settings, it carries no mark, and
+there is no way back to GitHub's version to offer.** (2026-11-08, owner: view preferences are not in synced settings, so
+there is no need for "back to GitHub"; the question `MB180`–`MB184` was dropped)
+
+**Why.** The owner did not see what the mark and the reset were for: nothing about a view's shape leaves the device.
+
+> **Not settled by this:** the computer's project brief still asks for a locally modified tab with a reset
+> (`docs/design/githq/ui/project.md`); whether the computer drops it too is the owner's call there.
+
+**Rejected.**
+
+- A dot on the command line's chip with Back to GitHub's view in the options (MB180–MB182), a strip under the top bar
+  (MB183), the reset only inside the options (MB184).
+
+## D38
+
+**A new issue's repository is chosen first: New issue opens on the repository step, keyboard up, the place's repository
+at its top, Draft issue leading in a project, a repository that takes no issues dimmed with the reason; the title comes
+after.** (2026-11-08, owner: as on the desktop; `MB193`)
+
+**Why.** The owner: it is the same on the computer. Saying a repository won't take issues before anything is written
+falls out of it, in the list itself.
+
+**Rejected.**
+
+- Filled in from the place and changed from its row in the form (MB191–MB192) — the design agent's recommendation.
+
+## D39
+
+**A repository's issue templates rise as a step once the repository is chosen: a markdown template fills the body, an
+issue form fills in only where the user can push and otherwise opens GitHub's own form ↗, and turned-off blank issues
+stay listed, dimmed.** (2026-11-08, owner, picked from the drawings: `MB200`, with `MB213`)
+
+**Why.** The owner gave no reason beyond the pick. It is the computer's H7, and someone contributing to a project that
+asks for a template does not miss it.
+
+**Rejected.**
+
+- A Template row in the form (MB201) — easy to miss before sending a bare issue.
+
+## D40
+
+**Create always closes the form. The toast that follows is the computer's toast on a phone — a title saying what was
+created, a detail line, a countdown, and real buttons: Create another, which opens the form again with the same
+repository, project and labels, and Open.** (2026-11-08, owner: the toast, but its action must clearly be a button with
+a verb, the toast larger and like the other toasts; drawn in `MB204`, `MB215`, `MB217`)
+
+**Why.** The owner picked the toast over a switch in the form, and asked that the action read as a button.
+
+**Rejected.**
+
+- A Create another switch in the form (MB202–MB203) — the design agent's recommendation.
+- A one-line toast with a bold word as its action — not visibly a button.
+
+## D41
+
+**A phone shows no board, and a project view's layout saved on GitHub does not reach it: view preferences are not
+synced with GitHub, so there is no board view to turn into a grouped list. A project's list is grouped as set on this
+device (D36, D37).** (2026-11-08, owner: view preferences aren't synced with GitHub, so the case does not happen; the
+question `MB185`–`MB190` was dropped)
+
+**Why.** The owner: there is no board view on a phone, and the board saved on GitHub never arrives as one.
+
+> **Not settled by this:** [D9](#d9) and the README still say a view saved as a board shows as a list grouped by its
+> column field; that sentence is superseded here.
+
+**Rejected.**
+
+- Groups that fold with a pinned header (MB185–MB187), a strip of groups (MB188), plain headers (MB189), a long group
+  showing its first three (MB190) — all answered a case that does not happen.
+
+## D42
+
+**A new issue's details are set as on an item: under the title the rows that need their name — Assignees with Assign
+to me at its end, the project's field when there is one, the parent — then the rest as chips, empty ones saying what
+they would hold; tapping any of them opens the command menu at its step.** (2026-11-08, owner, picked from the drawings:
+`MB194`–`MB196`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
+([D25](#d25)), changed the same way ([D26](#d26)), and assigning yourself is one tap.
+
+**Rejected.**
+
+- One Add details row (MB197), only through ⌘ (MB198), icons above the keyboard (MB199, what MB67 showed until now).

@@ -74,7 +74,7 @@ at the end; the entries above naming deleted variants no longer apply.
       lists` with nuxt/nuxt (ticked), nuxt/ui, nuxt/content, nuxt-modules/i18n — GitHub's search, not only an exact
       owner/name. While GitHub answers the group's place reads "Searching GitHub…"; with no results "Nothing on GitHub
       matches".
-- [ ] App · First sign-in and choosing what to track (`Zk4sa`): new row `Row of screens · Found on GitHub` (`XBrlh`)
+- [x] App · First sign-in and choosing what to track (`Zk4sa`): new row `Row of screens · Found on GitHub` (`XBrlh`)
       with G18 · Choose what to track · a repository found on GitHub (`rxISf`) and G19 · Choose what to track · searching
       GitHub (`SiKWs`), copies of G4. The chooser's filter also asks GitHub (as Search repositories…, E8: from two
       characters once typing pauses, qualifiers work); its results follow the user's matches under a second header "On

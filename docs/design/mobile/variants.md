@@ -21,4 +21,6 @@ parts a phone does not have ([D21](DECISIONS.md#d21)).
 
 ## Still to be picked
 
-Nothing: every drawn question has been picked (2026-11-08). A new idea about the navigation goes here first.
+Nothing: every drawn question has been picked (2026-11-08), the last round in [D36](DECISIONS.md#d36)–[D42](DECISIONS.md#d42).
+
+A new idea about the navigation goes here first.

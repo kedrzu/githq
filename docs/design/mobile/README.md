@@ -30,8 +30,8 @@ github.com, the same way every address githq does not show at all already does.
 
 ## What the first version does
 
-The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list — no board on a phone yet, and a view saved as a board shows as a list grouped the same way
-([the board](DECISIONS.md#d9));
+The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list — no board on a phone yet, and a view's layout saved on GitHub does not reach the phone
+([the board](DECISIONS.md#d9), [D41](DECISIONS.md#d41));
 opening an item, reading it, commenting, changing its assignees, labels and project fields, opening or closing it;
 creating an issue; the command menu from a button. And signing in for the first time, because someone whose first
 contact with githq is on a phone has to be able to choose what to track
@@ -92,8 +92,9 @@ of its own ([Settings](DECISIONS.md#d33)); what you track is listed there and ad
 
 ## Where this stands
 
-Everything drawn so far has been picked; the decisions are in [the record](DECISIONS.md). A repository's list, a project with
-hundreds of items and the new issue form were drawn with the navigation. Not drawn yet: the sheet behind the list's
-options (filter, sort, group), a project view saved as a board shown as a grouped list, and the new issue form's choices
-(which repository, its properties). They are the last round
-([its brief](ui/lists-and-new-issue-on-a-phone.md)).
+Everything drawn has been picked; the decisions are in [the record](DECISIONS.md). A repository's list, a project with
+hundreds of items and the new issue form were drawn with the navigation. The last round settled the list's options as
+a sheet ([D36](DECISIONS.md#d36)); a view changed on a phone stays this device's own ([D37](DECISIONS.md#d37)) and no
+board reaches the phone ([D41](DECISIONS.md#d41)); a new issue starts with its repository ([D38](DECISIONS.md#d38)),
+sets its details as on an item ([D42](DECISIONS.md#d42)), gets its template after the repository
+([D39](DECISIONS.md#d39)), and the toast after Create offers Create another ([D40](DECISIONS.md#d40)).
