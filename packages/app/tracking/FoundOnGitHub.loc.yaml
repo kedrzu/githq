@@ -1,0 +1,12 @@
+heading:
+  en: On GitHub
+detail:
+  en: not in your lists · from GitHub's search
+searching:
+  en: searching…
+asking:
+  en: Searching GitHub for “{text}”…
+nothing:
+  en: Nothing on GitHub matches “{text}”
+failed:
+  en: GitHub did not answer. Change the search to try again.

@@ -218,6 +218,7 @@ export const TrackingStore = defineService({
             loadCandidates,
             loadMoreRepositories,
             findCandidate,
+            searchCandidates,
         };
 
         /**
@@ -588,6 +589,28 @@ export const TrackingStore = defineService({
 
                 return null;
             }
+        }
+
+        /**
+         * GitHub's repository search for what the user typed in the tracking chooser (mobile D34, G18), qualifiers
+         * included — anyone's repositories, without the user's settings repository. Rejects when GitHub cannot be
+         * reached; empty when signed out, or signed in as someone else meanwhile.
+         */
+        async function searchCandidates(text: string): Promise<CandidateRepository[]> {
+            const current = session;
+            if (!current) {
+                return [];
+            }
+
+            const { search } = await current.account.sdk.RepositoryBrowseSearch({ query: text });
+            if (!isCurrent(current)) {
+                return [];
+            }
+
+            return filterNotNull(search.nodes ?? [])
+                .filter(isFoundRepository)
+                .filter(repository => !isSettingsRepository(repository.nameWithOwner, current.account.login))
+                .map(toCandidateRepository);
         }
 
         async function readCandidates(current: Session) {
@@ -990,6 +1013,11 @@ function toCandidateRepositories(page: TrackingRepositoryPageFieldsFragment, log
  */
 function isSettingsRepository(nameWithOwner: string, login: string) {
     return nameWithOwner.toLowerCase() === getSettingsNameWithOwner(login).toLowerCase();
+}
+
+/** A repository among what GitHub's search answers, not one of the union's other kinds of result. */
+function isFoundRepository<T extends object>(node: T): node is Extract<T, { nameWithOwner: string }> {
+    return 'nameWithOwner' in node;
 }
 
 function toCandidateRepository(repository: TrackingRepositoryFieldsFragment): CandidateRepository {

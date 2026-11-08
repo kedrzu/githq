@@ -147,6 +147,7 @@ function getAdded() {
       :found="found"
       :approvals="approvals.requests"
       :find="tracking.findCandidate"
+      :search="tracking.searchCandidates"
       @track="track"
       @load-more="tracking.loadMoreRepositories"
       @request-approval="approvals.record"

@@ -3328,7 +3328,18 @@ export type RepositoryBrowseSearchQueryVariables = Exact<{
 export type RepositoryBrowseSearchQuery = {
     search: {
         nodes: Array<
-            | { nameWithOwner: string; description: string | null; isPrivate: boolean }
+            | {
+                  description: string | null;
+                  id: string;
+                  nameWithOwner: string;
+                  isPrivate: boolean;
+                  isArchived: boolean;
+                  pushedAt: string | null;
+                  viewerPermission: RepositoryPermission | null;
+                  owner: { login: string } | { login: string };
+                  issues: { totalCount: number };
+                  pullRequests: { totalCount: number };
+              }
             | Record<PropertyKey, never>
             | null
         > | null;
@@ -12622,14 +12633,29 @@ export const RepositoryBrowseSearchDocument = new TypedDocumentString(`
   search(query: $query, type: REPOSITORY, first: 20) {
     nodes {
       ... on Repository {
-        nameWithOwner
         description
-        isPrivate
+        ...TrackingRepositoryFields
       }
     }
   }
 }
-    `);
+    fragment TrackingRepositoryFields on Repository {
+  id
+  nameWithOwner
+  isPrivate
+  isArchived
+  pushedAt
+  viewerPermission
+  owner {
+    login
+  }
+  issues(states: OPEN) {
+    totalCount
+  }
+  pullRequests(states: OPEN) {
+    totalCount
+  }
+}`);
 export const RepositoryCommitRefsDocument = new TypedDocumentString(`
     query RepositoryCommitRefs($owner: String!, $name: String!, $withHistory: Boolean!, $withBranches: Boolean!, $withTags: Boolean!, $branchesAfter: String, $tagsAfter: String) {
   repository(owner: $owner, name: $name) {

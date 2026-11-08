@@ -3,12 +3,13 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { BookMarked, Lock, Search } from 'lucide-vue-next';
-import { ref, shallowRef, watch } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
 import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
+import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
 
 import type { Command, CommandOptions } from './CommandTypes.js';
 import * as l from './useRepositorySearchCommand.loc.js';
@@ -19,23 +20,9 @@ type FoundRepository = Extract<
     { nameWithOwner: string }
 >;
 
-/** Where the search stands for what is typed now. */
-type RepositorySearch =
-    | { readonly kind: 'tooShort' }
-    | { readonly kind: 'asking' }
-    | { readonly kind: 'failed' }
-    | { readonly kind: 'answered'; readonly repositories: readonly FoundRepository[] };
-
-/** Fewer typed characters ask GitHub nothing. */
-const MIN_LENGTH = 2;
-
-/** How long what is typed must stay as it is before GitHub is asked. */
-const SEARCH_DELAY_MS = 300;
-
 /**
  * "Search repositories…" (D34, E6–E10): its submenu sends what is typed to GitHub's repository search, as typed so
- * its qualifiers work, once typing pauses; picking a repository goes to its screen. Latest wins: a change cancels the
- * wait, and what was asked before it, or for an account no longer signed in, is dropped when it answers.
+ * its qualifiers work (`useGitHubSearch`); picking a repository goes to its screen.
  */
 export function useRepositorySearchCommand(): () => Command {
     const t = useTranslate();
@@ -43,27 +30,7 @@ export function useRepositorySearchCommand(): () => Command {
     const repositoryTabs = useService(LastRepositoryTab);
     const router = useRouter();
     const typed = ref('');
-    const state = shallowRef<RepositorySearch>({ kind: 'tooShort' });
-
-    // Synchronous, so nothing can answer between the change and the older question being dropped.
-    watch(
-        [typed, () => accounts.current],
-        ([text, account], _before, onCleanup) => {
-            if (!account || text.length < MIN_LENGTH) {
-                state.value = { kind: 'tooShort' };
-                return;
-            }
-
-            state.value = { kind: 'asking' };
-            let stale = false;
-            const timer = setTimeout(() => void ask(account, text, () => stale), SEARCH_DELAY_MS);
-            onCleanup(() => {
-                stale = true;
-                clearTimeout(timer);
-            });
-        },
-        { flush: 'sync' },
-    );
+    const state = useGitHubSearch({ text: () => typed.value, ask: () => getAsk(accounts.current) });
 
     return () => ({
         id: 'app.searchRepositories',
@@ -77,17 +44,13 @@ export function useRepositorySearchCommand(): () => Command {
         },
     });
 
-    async function ask(account: Account, text: string, isStale: () => boolean) {
-        const answered = await account.sdk
-            .RepositoryBrowseSearch({ query: text })
-            .then((answer): RepositorySearch => ({
-                kind: 'answered',
-                repositories: (answer.search.nodes ?? []).filter(isRepository),
-            }))
-            .catch((): RepositorySearch => ({ kind: 'failed' }));
-        if (!isStale()) {
-            state.value = answered;
-        }
+    function getAsk(account: Account | null) {
+        return account
+            ? async (text: string) => {
+                  const answer = await account.sdk.RepositoryBrowseSearch({ query: text });
+                  return (answer.search.nodes ?? []).filter(isRepository);
+              }
+            : null;
     }
 
     function getOptions(): CommandOptions {
@@ -105,7 +68,7 @@ export function useRepositorySearchCommand(): () => Command {
                     ...shared,
                     heading: t(l.heading),
                     message: t(l.nothing, { text: typed.value }),
-                    options: search.repositories.map(repository => ({
+                    options: search.result.map(repository => ({
                         value: repository.nameWithOwner,
                         label: repository.nameWithOwner,
                         detail: repository.description ?? undefined,

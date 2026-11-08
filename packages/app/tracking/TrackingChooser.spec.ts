@@ -11,6 +11,7 @@ import type { TrackingReference } from './utils/parseTrackingReference.js';
 
 const {
     Choose,
+    FoundOnGitHub,
     HiddenOrganisation,
     NothingToPick,
     NothingToPickWithSaving,
@@ -19,6 +20,7 @@ const {
     PickerNotRead,
     PickerReading,
     PickerSearching,
+    SearchingGitHub,
 } = composeStories(stories);
 
 const ANY = { ago: 0, open: 0 };
@@ -454,7 +456,7 @@ test('while the lists are read it says so and looks nothing up; failed, it says 
     await PickerNotRead.run({ args: { ...PickerNotRead.args, find, filter: 'rust-lang/rust' } });
     await expect.element(page.getByRole('alert')).toHaveTextContent("GitHub didn't list your repositories.");
     await expect.element(pickerRow('rust-lang/rust')).not.toBeChecked();
-    await expect.element(page.getByRole('heading', { name: 'rust-lang' })).toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: 'On GitHub' })).toBeInTheDocument();
 });
 
 test("`?q=`: someone else's repository is looked up and offered; ticked, it is picked and handed on", async () => {
@@ -470,7 +472,7 @@ test("`?q=`: someone else's repository is looked up and offered; ticked, it is p
     expect(rowText('rust-lang/rust')).toContain('88 open');
     await userEvent.click(pickerRow('rust-lang/rust'));
     expect(onFound).toHaveBeenCalledWith(rust);
-    await expect.element(page.getByText('1 match for “rust-lang/rust” · 1 picked')).toBeInTheDocument();
+    await expect.element(pickerRow('rust-lang/rust')).toBeChecked();
 });
 
 test("someone else's repository already tracked looks up to a fixed tick; one listed is not looked up", async () => {
@@ -522,10 +524,11 @@ test('lookups cannot race: one per name, and a stale answer never replaces the c
     await expect.element(pickerRow('first/one')).not.toBeInTheDocument();
 });
 
-test('not found: the line says nothing matches', async () => {
+test("not found: none of the user's match, and nothing on GitHub does", async () => {
     await Picker.run({ args: { ...Picker.args, filter: 'nobody/nothing' } });
 
-    await expect.element(page.getByText('Nothing you can see matches “nobody/nothing”.')).toBeInTheDocument();
+    await expect.element(page.getByText('match “nobody/nothing”')).toBeInTheDocument();
+    await expect.element(page.getByText('Nothing on GitHub matches “nobody/nothing”')).toBeInTheDocument();
 });
 
 test('the filter counts what it looks through: one repository, or many', async () => {
@@ -543,4 +546,76 @@ test('the filter counts what it looks through: one repository, or many', async (
 
     await Choose.run();
     await expect.element(filter).toHaveAttribute('placeholder', expect.stringMatching(/^Filter 327\srepositories…$/u));
+});
+
+test("G18: GitHub's search follows the user's own matches, without repeating them; ticked, a result is handed on", async () => {
+    const other = sampleCandidateRepository('someone/notes', { ago: 60_000, open: 7 });
+    const listed = sampleCandidateRepository('skyline-labs/notes', ANY);
+    const search = vi.fn(() => Promise.resolve([listed, other]));
+    const onFound = vi.fn();
+    const onPick = vi.fn();
+    await FoundOnGitHub.run({
+        args: {
+            ...FoundOnGitHub.args,
+            candidates: FILTERED,
+            filter: 'notes',
+            found: [],
+            repositories: [],
+            search,
+            onFound,
+            'onUpdate:repositories': onPick,
+        },
+    });
+
+    await expect.element(page.getByRole('heading', { name: 'On GitHub' })).toBeInTheDocument();
+    await expect.element(page.getByText("not in your lists · from GitHub's search")).toBeInTheDocument();
+    expect(search).toHaveBeenCalledWith('notes');
+    await expect.element(pickerRow('someone/notes')).not.toBeChecked();
+    expect(rowText('someone/notes')).toContain('7 open');
+    expect(pickerRow('skyline-labs/notes').elements()).toHaveLength(1);
+
+    await userEvent.click(pickerRow('someone/notes'));
+    expect(onFound).toHaveBeenCalledWith(other);
+    expect(onPick).toHaveBeenLastCalledWith(['someone/notes']);
+});
+
+test("G19: while GitHub answers one line says so; the user's own matches are there already", async () => {
+    await SearchingGitHub.run();
+
+    await expect.element(page.getByText('Searching GitHub for “nuxt”…')).toBeInTheDocument();
+    await expect.element(page.getByText('searching…')).toBeInTheDocument();
+});
+
+test('GitHub is asked nothing under two characters, nor with an owner picked', async () => {
+    const search = vi.fn(() => Promise.resolve([]));
+    await Choose.run({ args: { ...Choose.args, filter: 'n', search } });
+    await sleep(400);
+    expect(search).not.toHaveBeenCalled();
+    await expect.element(page.getByRole('heading', { name: 'On GitHub' })).not.toBeInTheDocument();
+
+    await Choose.run({ args: { ...Choose.args, filter: 'nuxt', initialOwner: 'skyline-labs', search } });
+    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toBeChecked();
+    await sleep(400);
+    expect(search).not.toHaveBeenCalled();
+});
+
+test("GitHub's search that fails says so, and the rest of the list still works", async () => {
+    await FoundOnGitHub.run({ args: { ...FoundOnGitHub.args, search: () => Promise.reject(new Error('offline')) } });
+
+    await expect.element(page.getByRole('alert')).toHaveTextContent('GitHub did not answer.');
+});
+
+test('G10: the field searches GitHub; a result ticked is handed on', async () => {
+    const vite = sampleCandidateRepository('vitejs/vite', { ago: 60_000, open: 12 });
+    const search = vi.fn(() => Promise.resolve([vite]));
+    const onFound = vi.fn();
+    await NothingToPick.run({ args: { ...NothingToPick.args, search, onFound } });
+
+    await userEvent.type(
+        page.getByRole('textbox', { name: "Search GitHub for a repository, or paste a project's address" }),
+        'vite',
+    );
+    await expect.element(pickerRow('vitejs/vite')).toBeInTheDocument();
+    await userEvent.click(pickerRow('vitejs/vite'));
+    expect(onFound).toHaveBeenCalledWith(vite);
 });
