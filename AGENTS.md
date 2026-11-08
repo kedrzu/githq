@@ -74,8 +74,8 @@ Commands (from the repo root; checks and their order are in the `verify` skill):
 ## Design
 
 Before changing the design file (`githq.pen`), read and follow `DESIGN.md`, in whichever client you run. When told
-that a design changelog is on a worktree, read `.context/design/` there and follow "Implementing from a changelog"
-in `DESIGN.md`.
+that a design changelog is on a worktree, read `docs/design/githq/changelog/` there and follow "Implementing from a
+changelog" in `DESIGN.md`.
 
 When the owner asks for a prompt for the design agent, give it inline in your reply, as one block to copy, never as
 a file in the repo (no `design-agent-prompt.md`). Point it at the briefs in `ui/` and at `DESIGN.md` instead of
