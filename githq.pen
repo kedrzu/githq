@@ -357670,6 +357670,7 @@
                       "reusable": true,
                       "ref": "iceKP",
                       "name": "Phone / Command sheet / Close · from below",
+                      "height": 290,
                       "descendants": {
                         "u4Vxad": {
                           "content": "Close issue"
@@ -369215,7 +369216,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": 1200,
-                      "content": "What decides it is how much scrolling stands between opening an item and its latest comment. Measured on #1187 at 390 × 844: with A the first comment starts about 390 px down, with B about 560 px, with C about 660 px, below the fold.",
+                      "content": "What decides it is how much scrolling stands between opening an item and its latest comment. Measured on #1187 at 390 × 844, the activity starts 435 px down with A and 570 px with B and C, and every further project adds about 130 px to B and C. C only trades the order of body and properties.",
                       "lineHeight": 1.5,
                       "fontFamily": "$font",
                       "fontSize": 13.5,
@@ -369873,6 +369874,3096 @@
                                   "children": [
                                     {
                                       "id": "cm85Q",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "X85aVB",
+                  "name": "Variants · How a property is changed",
+                  "fill": "#D299221A",
+                  "cornerRadius": 12,
+                  "stroke": "#D29922",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hDowG",
+                      "name": "Question",
+                      "fill": "$fg",
+                      "content": "Variants · How a property is changed",
+                      "fontFamily": "$font",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KvL7C",
+                      "name": "Note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 1200,
+                      "content": "On the computer these are submenus of the command menu, the item's menu and the right-click menu, with the same entries. Shown on Variant A of the properties; the same choice applies with B or C.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13.5,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RCmfQ",
+                      "name": "Screens",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "z6dZx",
+                          "name": "Slot · MB108 · Variant A · Tapping a chip opens the command menu at its picker",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WRcJ3",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "WrEG2",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB108 · Variant A · Tapping a chip opens the command menu at its picker",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mTZ17",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Recommended. Tapping Labels opens the command menu from below straight at its Labels step, the same sheet ⌘ → Labels reaches (MB40, MB74). Ticking applies at once; Back goes up to the item's actions, a tap outside closes. One mechanism for every property.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "A4p6c",
+                              "name": "MB108 · Variant A · Tapping a chip opens the command menu at its picker",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "VuVg1",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "GE43U",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "swWwW",
+                                  "type": "ref",
+                                  "ref": "qZhtg",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "N7fdOM",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "F5zQ9",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "X53PiT",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BrMka",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "cDVIy",
+                                      "type": "ref",
+                                      "ref": "xBrsD",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PJnNz",
+                          "name": "Slot · MB109 · Variant A · Closing",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "JyIte",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "EC56T",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB109 · Variant A · Closing",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wFxBu",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The state pill is a chip too: tapping Open offers Close as completed or as not planned; on a closed item, Reopen. The same step as ⌘ → Close issue.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "S91byt",
+                              "name": "MB109 · Variant A · Closing",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "BeRiM",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "S6bl0",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "zhg2a",
+                                  "type": "ref",
+                                  "ref": "qZhtg",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RVCLM",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "vPZJV",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "oyCuN",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "IOlkE",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "xTlig",
+                                      "type": "ref",
+                                      "ref": "lBgtP",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T4uqcS",
+                          "name": "Slot · MB110 · Variant A · Requesting a reviewer",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "w1HZ9B",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "NEjst",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB110 · Variant A · Requesting a reviewer",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "Sgxsl",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "On a pull request the reviewers chip opens the Reviewers step: people who touched these files first, with their latest verdict, and the ones already asked ticked.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "UlxQo",
+                              "name": "MB110 · Variant A · Requesting a reviewer",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "m9cwD3",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "e6kGC",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "dZXUg",
+                                  "type": "ref",
+                                  "ref": "j4OTf",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Y3rfQD",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "LK2xP",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "I868B",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Z86VN0",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "sZaBY",
+                                      "type": "ref",
+                                      "ref": "kdXH0",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P0HAjq",
+                          "name": "Slot · MB111 · Variant B · A picker of its own, from the chip",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "nlUJM",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "qEbK4",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB111 · Variant B · A picker of its own, from the chip",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "nW9cX",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "A small menu drops from the tapped chip, without the command menu around it. Quicker to read for a short list, but a second kind of menu to learn, it covers the item rather than rising to the thumb, and a long list (assignees in a big organisation) needs the search it lacks.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "P1Eid",
+                              "name": "MB111 · Variant B · A picker of its own, from the chip",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "vdt1W",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "Cz9UA",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "z2TB9V",
+                                  "type": "ref",
+                                  "ref": "qZhtg",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "etBRD",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "vxI08",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "N1Obh",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000066",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "id": "Hvu6C",
+                                  "type": "ref",
+                                  "ref": "buTBe",
+                                  "name": "Labels picker",
+                                  "layoutPosition": "absolute",
+                                  "x": 105,
+                                  "y": 268
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KrE4l",
+                          "name": "Slot · MB112 · Variant C · Only through ⌘",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Wor5L",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "IsFxx",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB112 · Variant C · Only through ⌘",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "HkH0n",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The chips only show; every change goes through ⌘ → the property → its step. Nothing new, but two taps where one would do, and a value you can see but not touch.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "B8jzTF",
+                              "name": "MB112 · Variant C · Only through ⌘",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "uIi0s",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "FQpnn",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "GRGgZ",
+                                  "type": "ref",
+                                  "ref": "qZhtg",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "KgE1f",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "Z9mTy",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "yTs9B",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "fI5g3",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "L17VVZ",
+                                      "type": "ref",
+                                      "ref": "vTKkt",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M1fwt",
+                  "name": "Variants · Acting on a row without opening it",
+                  "fill": "#D299221A",
+                  "cornerRadius": 12,
+                  "stroke": "#D29922",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "z26hSl",
+                      "name": "Question",
+                      "fill": "$fg",
+                      "content": "Variants · Acting on a row without opening it",
+                      "fontFamily": "$font",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yKuVU",
+                      "name": "Note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 1200,
+                      "content": "The computer has a right-click menu on a row. The owner is wary of gestures nobody can see; whichever is picked, everything stays reachable by opening the item.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13.5,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d6qJ5t",
+                      "name": "Screens",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "xZYx7",
+                          "name": "Slot · MB113 · Variant A · A long press opens the command menu at the row",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RSEC4",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "mkood",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB113 · Variant A · A long press opens the command menu at the row",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "qY1V1",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Recommended. Pressing a row lights it and raises the command menu with that row as its subject, the same entries as the item's ⌘ and the computer's right-click menu, plus Open. Hidden, but it hides nothing: it is a shortcut to what opening the item offers.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iW03u",
+                              "name": "MB113 · Variant A · A long press opens the command menu at the row",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "yZfIL",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "xrleV",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "LaOVG": {
+                                      "content": "My work"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "sliders-horizontal"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "plus"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "g0qUvm",
+                                  "type": "ref",
+                                  "ref": "l2aPa4",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "Fuv72": {
+                                      "fill": "$sel"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "He66w",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "KaFhI",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "All"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "8"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "EMeRo",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000080",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "tTa1c",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "KnIqQ",
+                                      "type": "ref",
+                                      "ref": "O65RZJ",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "h3PXYG",
+                          "name": "Slot · MB114 · Variant B · Swiping a row reveals actions",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "c1lsF",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "if7ST",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB114 · Variant B · Swiping a row reveals actions",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "c8UHhs",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Swiping left slides the row aside for Status, Assign and Close. Fast for triage, but the three slots are fixed whatever the item needs, it competes with scrolling, and nothing on screen says it exists.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "LA3Ov",
+                              "name": "MB114 · Variant B · Swiping a row reveals actions",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "AEnBQ",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "VMW4A",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "LaOVG": {
+                                      "content": "My work"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "sliders-horizontal"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "plus"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "XiYO1",
+                                  "type": "ref",
+                                  "ref": "l2aPa4",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "descendants": {
+                                    "X3ZIP": {
+                                      "id": "W3gS6W",
+                                      "type": "ref",
+                                      "ref": "fzBjl",
+                                      "name": "Row webapp#1190",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "Vwbl3/JjNDf": {
+                                          "content": "Waitlist promotion skips members with an expired pass"
+                                        },
+                                        "Vwbl3/gL1eY": {
+                                          "content": "webapp#1190"
+                                        },
+                                        "Vwbl3/mt12T": {
+                                          "fill": "$purple"
+                                        },
+                                        "Vwbl3/csCon": {
+                                          "content": "In review"
+                                        },
+                                        "Vwbl3/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "Vwbl3/x0HfR": {
+                                          "enabled": false
+                                        },
+                                        "Vwbl3/NKqu4": {
+                                          "content": "3h"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "q3xDAE",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "avaR8",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "All"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "8"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Mfmaf",
+                          "name": "Slot · MB115 · Variant C · Nothing: open the item first",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lJYsB",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "MOFID",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB115 · Variant C · Nothing: open the item first",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "AMPkj",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "A row only opens. Every action is one tap further, on the item, where you also see what you are changing. No gesture to discover, and nothing in the list to press by mistake.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "yDsbM",
+                              "name": "MB115 · Variant C · Nothing: open the item first",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "O5gCE",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "rSmrt",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "LaOVG": {
+                                      "content": "My work"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "sliders-horizontal"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "plus"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "SKQrA",
+                                  "type": "ref",
+                                  "ref": "l2aPa4",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "ffM5X",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "MdqEF",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "All"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "8"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "g1Xbwf",
+                  "name": "Variants · Selecting several items",
+                  "fill": "#D299221A",
+                  "cornerRadius": 12,
+                  "stroke": "#D29922",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tJ2hS",
+                      "name": "Question",
+                      "fill": "$fg",
+                      "content": "Variants · Selecting several items",
+                      "fontFamily": "$font",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Yz31e",
+                      "name": "Note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 1200,
+                      "content": "The computer selects several rows and acts on all of them. Whether a phone has it in the first version at all, and if so how you get in and out.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13.5,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sKMfp",
+                      "name": "Screens",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "eWk2S",
+                          "name": "Slot · MB116 · Variant A · Not in the first version",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "X4z4L",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Pu29F",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB116 · Variant A · Not in the first version",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "SGMGd",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Recommended. One item at a time: the list's options stay Filter, Sort and Group. Triage of many items at once is a computer task, the long press (MB113) already acts without opening, and it keeps a whole mode out of the first version.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "YGrnH",
+                              "name": "MB116 · Variant A · Not in the first version",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "jvoIa",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "mRxNy",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "LaOVG": {
+                                      "content": "My work"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "sliders-horizontal"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "plus"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "YgVzt",
+                                  "type": "ref",
+                                  "ref": "l2aPa4",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "g9osn",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "lC8gs",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "All"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "8"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "C9wERL",
+                                  "layoutPosition": "absolute",
+                                  "x": 130,
+                                  "y": 97,
+                                  "name": "Options menu",
+                                  "width": 250,
+                                  "fill": "$bg-2",
+                                  "cornerRadius": 12,
+                                  "stroke": "$border-2",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#000000A0",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 12
+                                    },
+                                    "blur": 32
+                                  },
+                                  "layout": "vertical",
+                                  "padding": 4,
+                                  "children": [
+                                    {
+                                      "id": "sx9xt",
+                                      "type": "ref",
+                                      "ref": "iYE61",
+                                      "name": "Filter",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "fgoPG": {
+                                          "icon": "list-filter"
+                                        },
+                                        "skvfu": {
+                                          "content": "Filter"
+                                        },
+                                        "ljwVo": {
+                                          "content": "Needs me"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "r0dz3W",
+                                      "type": "ref",
+                                      "ref": "iYE61",
+                                      "name": "Sort",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "fgoPG": {
+                                          "icon": "arrow-down-wide-narrow"
+                                        },
+                                        "skvfu": {
+                                          "content": "Sort"
+                                        },
+                                        "ljwVo": {
+                                          "content": "Updated"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Mgfxz",
+                                      "type": "ref",
+                                      "ref": "iYE61",
+                                      "name": "Group",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "fgoPG": {
+                                          "icon": "layers"
+                                        },
+                                        "skvfu": {
+                                          "content": "Group"
+                                        },
+                                        "ljwVo": {
+                                          "content": "Reason"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n6l82S",
+                          "name": "Slot · MB117 · Variant B · Select, from the list's options",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "vHI2T",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FJpqL",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB117 · Variant B · Select, from the list's options",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "uDp93",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Select in the top-right options turns the rows into checkboxes; the top bar says how many and × leaves. The command line's chip becomes the selection, so ⌘ acts on all of them.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Pgjzg",
+                              "name": "MB117 · Variant B · Select, from the list's options",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "v8QKk3",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "C2cD8",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD/LG7b7": {
+                                      "icon": "x"
+                                    },
+                                    "LaOVG": {
+                                      "content": "3 selected"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": false
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "list-checks"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "c2jZK",
+                                  "name": "Pane",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "RsCu3",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Assigned to me",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Assigned to me"
+                                        },
+                                        "rrRjL": {
+                                          "content": "5"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "q9ojs",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1187",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Calendar shows wrong timezone for recurring classes"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1187"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$amber"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In progress"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "RQuAX",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1190",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Waitlist promotion skips members with an expired pass"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1190"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$purple"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In review"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "i8VrGF",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row tasklet#97",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Sync subtasks when a task is archived"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "tasklet#97"
+                                        },
+                                        "A70Zi/YvlXC": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "No project"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#3FB950"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "feV3h",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1176",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Document the studio timezone setting"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1176"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#58A6FF"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Km2cu",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row api#302",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Retry failed trainer payouts"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "api#302"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#DB61A2"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "apT8b",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Mentioned",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Mentioned"
+                                        },
+                                        "rrRjL": {
+                                          "content": "3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "XcXNk",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row webapp#1199",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Studio admins can't export last month's bookings"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1199"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#D29922"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aXefS",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "y2oZp",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "3 selected"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "13",
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OMiVt",
+                          "name": "Slot · MB118 · Variant B · Acting on three",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "cJSQb",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "k5VWx7",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB118 · Variant B · Acting on three",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "rskbA",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "⌘ over a selection offers only what applies to every selected item, with mixed values said as such, as on the computer.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "k0RhL",
+                              "name": "MB118 · Variant B · Acting on three",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "HoHeG",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "A1X6Ho",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD/LG7b7": {
+                                      "icon": "x"
+                                    },
+                                    "LaOVG": {
+                                      "content": "3 selected"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": false
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "list-checks"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "y8FUHw",
+                                  "name": "Pane",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "pyUMS",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Assigned to me",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Assigned to me"
+                                        },
+                                        "rrRjL": {
+                                          "content": "5"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "GupK5",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1187",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Calendar shows wrong timezone for recurring classes"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1187"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$amber"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In progress"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "RoQF0",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1190",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Waitlist promotion skips members with an expired pass"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1190"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$purple"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In review"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "PrDDa",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row tasklet#97",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Sync subtasks when a task is archived"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "tasklet#97"
+                                        },
+                                        "A70Zi/YvlXC": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "No project"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#3FB950"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "U1J3q",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1176",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Document the studio timezone setting"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1176"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#58A6FF"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "KHOps",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row api#302",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Retry failed trainer payouts"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "api#302"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#DB61A2"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "tYB7H",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Mentioned",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Mentioned"
+                                        },
+                                        "rrRjL": {
+                                          "content": "3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "N3MJqO",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row webapp#1199",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Studio admins can't export last month's bookings"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1199"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#D29922"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "l46o0",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "xpeEL",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "3 selected"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "13",
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "L04gGQ",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "Xr0H4",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "HjP3T",
+                                      "type": "ref",
+                                      "ref": "Cz3JY",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R4pibM",
+                          "name": "Slot · MB119 · Variant B · One of three failed",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "xy4ki",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ZJdAE",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB119 · Variant B · One of three failed",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "sEgCJ",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The label went onto two; the third was undone, and the toast names it and why. The selection stays so the user can see which.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QOBkd",
+                              "name": "MB119 · Variant B · One of three failed",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "u7EemV",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "hYj8U",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD/LG7b7": {
+                                      "icon": "x"
+                                    },
+                                    "LaOVG": {
+                                      "content": "3 selected"
+                                    },
+                                    "f6G1s": {
+                                      "enabled": false
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "list-checks"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "mPS0B",
+                                  "name": "Pane",
+                                  "clip": true,
+                                  "width": "fill_container",
+                                  "height": "fill_container",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "id": "uTe1X",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Assigned to me",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Assigned to me"
+                                        },
+                                        "rrRjL": {
+                                          "content": "5"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "KXUBl",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1187",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Calendar shows wrong timezone for recurring classes"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1187"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$amber"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In progress"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "w4OEX",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1190",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Waitlist promotion skips members with an expired pass"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1190"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$purple"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "In review"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#E5534B"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "iN3qu",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row tasklet#97",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Sync subtasks when a task is archived"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "tasklet#97"
+                                        },
+                                        "A70Zi/YvlXC": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "No project"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#3FB950"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "thAAg",
+                                      "type": "ref",
+                                      "ref": "h9ZxKZ",
+                                      "name": "Row webapp#1176",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Document the studio timezone setting"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1176"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#58A6FF"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "riQ9P",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row api#302",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Retry failed trainer payouts"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "api#302"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#DB61A2"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "Q00le",
+                                      "type": "ref",
+                                      "ref": "uIaHH",
+                                      "name": "Group Mentioned",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "U3GQyY": {
+                                          "content": "Mentioned"
+                                        },
+                                        "rrRjL": {
+                                          "content": "3"
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "id": "bAhPo",
+                                      "type": "ref",
+                                      "ref": "S2UMc",
+                                      "name": "Row webapp#1199",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "A70Zi/JjNDf": {
+                                          "content": "Studio admins can't export last month's bookings"
+                                        },
+                                        "A70Zi/gL1eY": {
+                                          "content": "webapp#1199"
+                                        },
+                                        "A70Zi/mt12T": {
+                                          "fill": "$fg-3"
+                                        },
+                                        "A70Zi/csCon": {
+                                          "content": "Todo"
+                                        },
+                                        "A70Zi/Iki8G": {
+                                          "enabled": false
+                                        },
+                                        "A70Zi/B34G7": {
+                                          "fill": "#D29922"
+                                        },
+                                        "A70Zi/EHtBT": {
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "DwTa8",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "GWsiD",
+                                      "name": "Toast holder",
+                                      "width": "fill_container",
+                                      "padding": [
+                                        0,
+                                        12,
+                                        4,
+                                        12
+                                      ],
+                                      "children": [
+                                        {
+                                          "id": "DZa8S",
+                                          "type": "ref",
+                                          "ref": "KchF8",
+                                          "name": "Toast",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "dAcfW": {
+                                              "content": "Label docs added to 2 of 3. Not on #1190: no permission in fitloop/webapp"
+                                            },
+                                            "T8mz7c": {
+                                              "content": "OK"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "t5zS4I",
+                                      "type": "ref",
+                                      "ref": "RGShR",
+                                      "name": "Command line",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "s3BoH2/YDESO": {
+                                          "content": "3 selected"
+                                        },
+                                        "s3BoH2/c0AlY1": {
+                                          "content": "13",
+                                          "enabled": false
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "H9ZDbK",
+                  "name": "Variants · Where a pull request's place in its stack goes",
+                  "fill": "#D299221A",
+                  "cornerRadius": 12,
+                  "stroke": "#D29922",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fmOz0",
+                      "name": "Question",
+                      "fill": "$fg",
+                      "content": "Variants · Where a pull request's place in its stack goes",
+                      "fontFamily": "$font",
+                      "fontSize": 18,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "c70IsY",
+                      "name": "Note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": 1200,
+                      "content": "On the computer the stack bar sits across the top of the pull request, every member side by side. At 390 px four members' titles do not fit across.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 13.5,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "D76xt7",
+                      "name": "Screens",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "rrGiw",
+                          "name": "Slot · MB120 · Variant A · A chip in the summary",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fdHUi",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "I3tNqv",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB120 · Variant A · A chip in the summary",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "W2Thmc",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Recommended. Stack, 2 of 4, is the first chip, because where it stands in the stack decides what to do next. It costs no extra row on an unstacked pull request, and a tap opens the whole stack (MB121).",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "pmYKK",
+                              "name": "MB120 · Variant A · A chip in the summary",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "fia6X",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "k9gnl",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "WJ5G2",
+                                  "type": "ref",
+                                  "ref": "U05wa2",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "I4mhC0",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "n229Tj",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "t6o64",
+                          "name": "Slot · MB121 · Variant A · The stack, opened",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WcJV0",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "azmud",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB121 · Variant A · The stack, opened",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "QW2Mq",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "Every member top to bottom as GitHub stacks them, the open one lit, each with its state; a tap opens that pull request in its place. Merging the stack leaves for github.com, as all merging does on a phone (D4).",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NnvWa",
+                              "name": "MB121 · Variant A · The stack, opened",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "k5e3X",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "tIWj4",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "bAmkt",
+                                  "type": "ref",
+                                  "ref": "U05wa2",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "vdred",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "PwaCz",
+                                      "type": "ref",
+                                      "ref": "D7Os7W",
+                                      "name": "Command line",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "id": "OOiFR",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Scrim",
+                                  "fill": "#00000099",
+                                  "width": 390,
+                                  "height": 844
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "zdpJ4",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "MVB1c",
+                                      "type": "ref",
+                                      "ref": "NcUYf",
+                                      "name": "Sheet",
+                                      "width": "fill_container"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "PrSxh",
+                          "name": "Slot · MB122 · Variant B · A strip under the top bar",
+                          "layout": "vertical",
+                          "gap": 14,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "aHzNH",
+                              "name": "Caption",
+                              "width": 390,
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "vi3y8",
+                                  "name": "Caption title",
+                                  "fill": "$fg",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "MB122 · Variant B · A strip under the top bar",
+                                  "fontFamily": "$font",
+                                  "fontSize": 15,
+                                  "fontWeight": "500"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "J6PVc",
+                                  "name": "Caption note",
+                                  "fill": "$fg-2",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "The desktop's bar shrunk to a strip: the place, the pips coloured by state, and arrows to the member below and above. Always in view and quick to step through, but a row of chrome on every stacked pull request, and the pips alone don't say which member is which.",
+                                  "lineHeight": 1.45,
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BuaQp",
+                              "name": "MB122 · Variant B · A strip under the top bar",
+                              "clip": true,
+                              "width": 390,
+                              "height": 844,
+                              "fill": "$bg",
+                              "cornerRadius": 24,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "children": [
+                                {
+                                  "id": "lHX21",
+                                  "type": "ref",
+                                  "ref": "BpXu0",
+                                  "name": "Status strip",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "A8Tv58",
+                                  "type": "ref",
+                                  "ref": "mVWVs",
+                                  "name": "Top bar",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a3kCD": {
+                                      "enabled": false
+                                    },
+                                    "oHtoi": {
+                                      "enabled": true
+                                    },
+                                    "oHtoi/ioLYI": {
+                                      "content": "My work"
+                                    },
+                                    "LaOVG": {
+                                      "enabled": false
+                                    },
+                                    "f6G1s": {
+                                      "enabled": true
+                                    },
+                                    "f6G1s/LG7b7": {
+                                      "icon": "chevron-up"
+                                    },
+                                    "yCsSA/LG7b7": {
+                                      "icon": "chevron-down"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "g96zGw",
+                                  "type": "ref",
+                                  "ref": "GSjJM",
+                                  "name": "Pane",
+                                  "width": "fill_container",
+                                  "height": "fill_container"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "czgf9",
+                                  "layoutPosition": "absolute",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Holder",
+                                  "width": 390,
+                                  "height": 844,
+                                  "layout": "vertical",
+                                  "justifyContent": "end",
+                                  "children": [
+                                    {
+                                      "id": "TUuFQ",
                                       "type": "ref",
                                       "ref": "D7Os7W",
                                       "name": "Command line",
