@@ -52,9 +52,9 @@ addresses.
 
 **The first mobile version is the daily loop: My work, a repository's issues and pull requests, a project as a
 list, an item read and edited (comment, assignees, labels, project fields, open or closed), a new issue, the
-command menu from a button, and the first sign-in ([D7](#d7)). Commits, code review, Actions, tracking settings and merging come later.**
-(2026-11-06, proposal of the design agent; the owner confirmed merging as later and raised no objection to the
-rest)
+command menu from a button, the first sign-in ([D7](#d7)) and Settings, tracking included ([D30](#d30)). Commits, code
+review, Actions and merging come later.** (2026-11-06, proposal of the design agent; the owner confirmed merging as
+later and raised no objection to the rest; 2026-11-08, the owner moved tracking settings in)
 
 **Why.** The owner asked for the basic functionality first, naming commits and code review as later, and put
 merging later too. The rest of the list is inferred from the desktop's first version, not from the owner.
@@ -63,6 +63,8 @@ merging later too. The rest of the list is inferred from the desktop's first ver
 
 - Merging a green pull request from the phone in the first version — the owner put it later; on the desktop it is a
   whole panel of conditions, checks and stacks.
+- Tracking settings later — the owner: the technical settings must be the same on a phone, and a phone's settings are
+  not necessarily synced from the computer ([D30](#d30)).
 
 ## D5
 
@@ -95,13 +97,16 @@ would take away what the desktop app is for.
 
 ## D7
 
-**The first sign-in works on a phone: choosing what to track and the first download are part of the first mobile
-version. Changing tracking later, in settings, is not.** (2026-11-06, owner, on the design agent's proposal)
+**The first sign-in works on a phone: signing in, and choosing what to track.** (2026-11-06, owner, on the design
+agent's proposal)
 
 **Why.** GitHub has no such screens, so the hand-off of [D3](#d3) cannot cover them, and someone signing in for the
-first time from a phone would otherwise be stuck. Both are already full-width screens of their own, outside the
-shell's side-by-side panes (`firstSignIn` routes, `packages/app/app/router.options.ts`), so fitting them to a
-phone is cheap.
+first time from a phone would otherwise be stuck.
+
+> **Checked 2026-11-08:** the first download's screen no longer exists; after choosing what to track the app lands on
+> My work at once, and each screen says itself what is still arriving —
+> [the first-run design](../../first-run-and-loading/README.md). The choice is a route of its own outside the shell
+> (`firstSignIn: 'choose'`, `packages/app/app/router.options.ts:103`).
 
 **Rejected.**
 
@@ -293,25 +298,6 @@ does not know about them, and the mark says before the tap that they leave ([D11
 
 - Hidden everywhere (MB48) — you could no longer tell they are a tap away, on github.com.
 
-## D22
-
-**githq's own Settings works on a phone, all but its tracking section: the sections that make sense on a phone
-(display, where settings are saved) fit the narrow screen, and the repositories-and-projects section is not offered
-there.** (2026-11-08, owner, on the design agent's proposal)
-
-**Why.** Settings has a GitHub-reserved address (`/settings`) that on github.com is GitHub's own account settings, so
-the hand-off of [D3](#d3) would land somewhere else entirely. Settings is one column of sections, so fitting it is
-cheaper than an exception to the hand-off. Tracking stays off the phone as [D4](#d4) says; the first sign-in's choice
-is the exception ([D7](#d7)).
-
-> **Checked 2026-11-08:** the sections are repositories (tracking, the default one), display, saving, code review,
-> and the desktop app's updates and changelog — `packages/app/settings/settingsRoutes.ts:24`.
-
-**Rejected.**
-
-- No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
-  fitting a simple page.
-
 ## D23
 
 **My work's filters (Needs me, Waiting on others, All, each with its count) sit in a strip under the top bar. A row at
@@ -420,3 +406,30 @@ desktop's stack bar shrunk to a phone. Left and right read as moving along the s
 
 - A row in the properties that opens the stack in a sheet (MB120–MB121) — the design agent's recommendation.
 - A section of its own after the properties (MB123).
+
+## D30
+
+**Settings on a phone has the same sections as on the computer, tracking included — which repositories and projects
+are tracked, and each tracked one's own settings. Left out are only the settings about the computer's layout: the
+repository layout (sections as tabs, or a column beside the sidebar). Code review's comment setting stays, though code
+review itself is not on a phone.** (2026-11-08, owner: the same options, minus those about layout; which exactly is the
+design agent's proposal)
+
+**Why.** The owner: the technical settings must be the same on a phone, and the user will not necessarily configure
+the phone through settings synced from the computer. A phone that cannot change what it tracks is stuck with its
+first sign-in's choice. The repository layout chooses between two desktop arrangements a phone does not have. Code
+review's setting is kept because it is the user's choice about GitHub, synced with the rest, and hiding it would make
+the phone's Settings a different list to learn.
+
+> **Checked 2026-11-08:** the sections are repositories, projects, display (repository layout, animations), code
+> review (comments sent at once or into a draft review), saving of settings (sync) and account; the desktop app adds
+> updates and changelog — `packages/app/settings/settingsRoutes.ts:30`, `packages/app/settings/DisplayView.loc.yaml`,
+> `packages/app/settings/CodeReviewView.loc.yaml`. A tracked repository and a tracked project each have a settings
+> screen of their own. There are no notification settings: githq has no notifications.
+
+**Rejected.**
+
+- Settings without the tracking sections ([history](history/RETIRED.md#d22)) — a phone could not change what it
+  tracks, and its settings are not necessarily synced from the computer.
+- No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
+  fitting a simple page.

@@ -35,9 +35,12 @@ The daily loop, and nothing around it: My work; a repository's issues and pull r
 opening an item, reading it, commenting, changing its assignees, labels and project fields, opening or closing it;
 creating an issue; the command menu from a button. And signing in for the first time, because someone whose first
 contact with githq is on a phone has to be able to choose what to track
-([why the first sign-in cannot wait](DECISIONS.md#d7)).
+([why the first sign-in cannot wait](DECISIONS.md#d7)). And Settings, with the same sections as on the computer,
+what you track included: a phone's settings are not necessarily synced from the computer, and a phone that could not
+change what it tracks would be stuck with its first choice. Only the computer's layout settings are left out
+([what Settings holds on a phone](DECISIONS.md#d30)).
 
-Commits, code review, Actions, changing what you track, and merging come later
+Commits, code review, Actions and merging come later
 ([the scope](DECISIONS.md#d4)). Until then their addresses go to github.com
 ([why not a "not on mobile yet" screen](DECISIONS.md#d3)).
 
@@ -76,12 +79,13 @@ leaving inside a task ([D18](DECISIONS.md#d18)) the places as a panel from the l
 ([D20](DECISIONS.md#d20)) and Commits and Actions offered in the command menu as leaving ([D21](DECISIONS.md#d21)).
 Nothing drawn is left to pick.
 
-githq's own Settings works on a phone too, all but its tracking section, because its address on github.com is
-GitHub's account settings and handing it off would land somewhere else ([Settings](DECISIONS.md#d22)). The screens
-come next, path by path, starting with the one githq on a phone exists for: seeing what needs you and acting on it
+The screens come next, path by path, starting with the one githq on a phone exists for: seeing what needs you and acting on it
 ([its brief](ui/act-on-my-work-on-a-phone.md)). Its screens are drawn in `App · Mobile` (MB89–MB130): the owner has picked My work's filter strip and the row at a
 phone's width ([D23](DECISIONS.md#d23)), a nested pull request as one indented line ([D24](DECISIONS.md#d24)), the
 properties as a few rows then chips, unfolding in place ([D25](DECISIONS.md#d25)), changing a property by tapping it
 or through ⌘ ([D26](DECISIONS.md#d26)), swiping a row for its actions ([D27](DECISIONS.md#d27)), selecting several
 items from the list's options ([D28](DECISIONS.md#d28)) and a strip under the top bar for a pull request's stack
 ([D29](DECISIONS.md#d29)).
+
+Setting githq up on a phone — signing in, choosing what to track, and Settings — is the next path
+([its brief](ui/set-up-on-a-phone.md)).

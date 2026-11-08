@@ -59,3 +59,10 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-08 — Owner: the places panel loses its filter field, which the desktop sidebar does not have (MB64, the
   filtered panel, deleted); its head is the logo with the sidebar's collapse button, the top-left corner on a list
   takes the sidebar's icon instead of the hamburger, and My work's groups are indented half as far.
+- 2026-11-08 — Owner: Settings on a phone was never drawn; it must have the same options as on the computer, minus
+  those about layout; the technical ones — which repositories are tracked — must be the same, since a phone's
+  settings are not necessarily synced. This reverses D22 (tracking off the phone) and part of D4 and D7: D22 retired,
+  D4 and D7 rewritten (the first download's screen was removed meanwhile by the first-run design), D30 added. Which
+  settings drop out (only the repository layout) is the design agent's proposal. Owner also asked why the first
+  sign-in screens were never drawn: no brief had been written for them. Brief for both: `ui/set-up-on-a-phone.md`.
+  The owner mentioned notification settings: githq has none.
