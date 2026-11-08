@@ -81,7 +81,7 @@ interface FakeEventListener {
  * `NativeBridge` (`packages/app/desktop/NativeBridge.ts`), answered here in the test through what Tauri injects into
  * its window, `window.__TAURI_INTERNALS__` — the OS credential store a field, the system browser a log of the pages it
  * opened, GitHub's device flow answered when the test says, the updater's state, `update-state`, the window's full
- * screen and a trackpad scroll's phases, sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
+ * screen, a trackpad scroll's phases and the githq links opened in the app ({@link openLink}), sent when the test says. One per test; a command it does not know is recorded and fails the test ({@link assertKnownCommands}).
  */
 export class FakeNativeBridge {
     /** The token in the OS credential store, or `null`. */
@@ -110,6 +110,12 @@ export class FakeNativeBridge {
         checkedAt: null,
         activity: { kind: 'idle' },
     };
+
+    /**
+     * The app address of the githq link opened and not taken yet, which `link_take` answers and clears. Set before the
+     * first page load for an app started with a link.
+     */
+    pendingLink: string | null = null;
 
     /** What `plugin:window|is_fullscreen` answers; set by {@link setFullscreen}. */
     private fullscreen = false;
@@ -191,6 +197,12 @@ export class FakeNativeBridge {
         await this.emit('scroll-phase', phase);
     }
 
+    /** A githq link was opened in the app: `link_take` answers `address`, and every page listening hears `link-opened`. */
+    async openLink(address: string): Promise<void> {
+        this.pendingLink = address;
+        await this.emit('link-opened', null);
+    }
+
     /** Throws when the app ran a command the fake does not know, naming each. */
     assertKnownCommands(): void {
         if (this.unknownCommands.length > 0) {
@@ -264,6 +276,11 @@ export class FakeNativeBridge {
                 }
 
                 return { ok: true, value: null };
+            case 'link_take': {
+                const address = this.pendingLink;
+                this.pendingLink = null;
+                return { ok: true, value: address };
+            }
             case 'plugin:window|is_fullscreen':
                 return { ok: true, value: this.fullscreen };
             case 'plugin:event|listen': {

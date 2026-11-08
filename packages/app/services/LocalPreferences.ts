@@ -12,6 +12,7 @@ import { Browser } from './Browser.js';
 
 const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
+const OPEN_LINKS_IN_DESKTOP_KEY = 'githq.openLinksInDesktop';
 const LOG_WRAP_KEY = 'githq.logWrap';
 const LOG_TIMES_KEY = 'githq.logTimes';
 const PANEL_WIDTH_KEY_PREFIX = 'githq.panelWidth.';
@@ -24,7 +25,7 @@ const REVIEW_THREADS_IN_COLLAPSED_KEY = 'githq.reviewThreadsInCollapsed';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
+ * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, whether githq links open in the desktop app, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
@@ -49,6 +50,7 @@ export const LocalPreferences = defineService({
         });
         const flags = new Map<string, StorageRef<boolean>>();
         const sidebarCollapsed = getFlag(SIDEBAR_COLLAPSED_KEY);
+        const openLinksInDesktop = getFlag(OPEN_LINKS_IN_DESKTOP_KEY);
         const logWrap = getFlag(LOG_WRAP_KEY);
         const logTimes = getFlag(LOG_TIMES_KEY);
         const reviewHideWhitespace = getFlag(REVIEW_HIDE_WHITESPACE_KEY);
@@ -104,6 +106,8 @@ export const LocalPreferences = defineService({
             itemArrangement,
             /** Whether the sidebar is collapsed to its icons. */
             sidebarCollapsed,
+            /** Whether this browser opens githq links in the desktop app (web only): off until the user opts in. */
+            openLinksInDesktop,
             /** Whether a job's log wraps its long lines (actions W4d); off, so that lines stay scannable. */
             logWrap,
             /** Whether a job's log shows each line's own time (actions W4d). */

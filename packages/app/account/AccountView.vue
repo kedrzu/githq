@@ -63,6 +63,11 @@ const props = defineProps<{
   approvalUrl: string;
 }>();
 
+defineSlots<{
+  /** More of what this browser keeps, under its facts: a switch of the web builds. */
+  browser?(): unknown;
+}>();
+
 const emit = defineEmits<{
   /** The user opened GitHub's page to request the organisation's approval. */
   requestApproval: [organization: string];
@@ -280,6 +285,7 @@ function isApproved(organization: AccountOrganization) {
               <dd tid="account-allowance">{{ allowanceText }}</dd>
             </div>
           </dl>
+          <slot name="browser" />
         </section>
 
         <section

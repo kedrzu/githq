@@ -25,6 +25,11 @@ export class AccountScreenHarness {
         return this.root.getByTestId('account-copy');
     }
 
+    /** The switch to open githq links in the desktop app (web only), in "This browser". */
+    get openLinksSwitch(): Locator {
+        return this.root.getByRole('switch', { name: 'Open links in the desktop app' });
+    }
+
     /** "Sign out and clear". */
     get signOutButton(): Locator {
         return this.root.getByRole('button', { name: 'Sign out and clear' });

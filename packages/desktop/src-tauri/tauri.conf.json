@@ -37,6 +37,11 @@
         }
     },
     "plugins": {
+        "deep-link": {
+            "desktop": {
+                "schemes": ["githq"]
+            }
+        },
         "updater": {
             "endpoints": ["https://github.com/kedrzu/githq/releases/latest/download/latest.json"],
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI5Njg1MzM1REU4MUI2N0IKUldSN3RvSGVOVk5vdVNYVnRRU1NRSzNrYXEwb1NTalkrMm0zRUVLeFFyMFl1cStqRGgrS2F2elQK"

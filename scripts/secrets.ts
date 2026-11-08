@@ -41,6 +41,8 @@ export const GithqSecrets = defineService({
                     APPLE_ID: 'GITHQ_APPLE_ID_PROD',
                     APPLE_PASSWORD: 'GITHQ_APPLE_PASSWORD_PROD',
                     APPLE_TEAM_ID: 'GITHQ_APPLE_TEAM_ID_PROD',
+                    // Read by the release workflow only (Universal Links); a local build stays without them.
+                    APPLE_PROVISIONING_PROFILE: 'GITHQ_APPLE_PROVISIONING_PROFILE_PROD',
                 }),
             },
         };
