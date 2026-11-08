@@ -634,11 +634,27 @@ function createGitHubSearch() {
     function answer(query: string, names: readonly string[]) {
         const data: RepositoryBrowseSearchQuery = {
             search: {
-                nodes: names.map(nameWithOwner => ({ nameWithOwner, description: null, isPrivate: false })),
+                nodes: names.map(nameWithOwner => foundRepository(nameWithOwner)),
             },
         };
         waiting.get(query)?.(Response.json({ data }));
     }
+}
+
+/** A repository as GitHub's search answers with it. */
+function foundRepository(nameWithOwner: string) {
+    return {
+        id: `R_${nameWithOwner}`,
+        nameWithOwner,
+        description: null,
+        isPrivate: false,
+        isArchived: false,
+        pushedAt: null,
+        viewerPermission: null,
+        owner: { login: nameWithOwner.split('/')[0] ?? '' },
+        issues: { totalCount: 0 },
+        pullRequests: { totalCount: 0 },
+    };
 }
 
 async function openRepositorySearch() {

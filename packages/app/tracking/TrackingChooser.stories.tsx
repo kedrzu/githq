@@ -27,6 +27,7 @@ const meta = {
         found: [],
         approvals: {},
         find: fn(() => Promise.resolve(null)),
+        search: fn(() => Promise.resolve([])),
         repositories: [...SAMPLE_OWN_CHOICE.repositories, 'skyline-labs/portal', 'skyline-labs/api'],
         projects: SAMPLE_OWN_CHOICE.projects,
         onTrack: fn(),
@@ -65,7 +66,38 @@ export const HiddenOrganisation: Story = {
     },
 };
 
-/** G10: nothing to pick; someone else's repository or project can be tracked by name. */
+/** What GitHub's search finds for "nuxt" in G18. */
+const NUXT_REPOSITORIES = [
+    sampleCandidateRepository('nuxt/nuxt', { ago: 2 * 60_000, open: 812, isPrivate: false }),
+    sampleCandidateRepository('nuxt/ui', { ago: 60 * 60_000, open: 214, isPrivate: false }),
+    sampleCandidateRepository('nuxt/content', { ago: 5 * 60 * 60_000, open: 96, isPrivate: false }),
+    sampleCandidateRepository('nuxt-modules/i18n', { ago: 86_400_000, open: 78, isPrivate: false }),
+    sampleCandidateRepository('danielroe/nuxt-workers', { ago: 21 * 86_400_000, open: 4, isPrivate: false }),
+];
+
+/**
+ * G18: none of the user's repositories match "nuxt"; GitHub's search finds some, one of them ticked, under On GitHub.
+ */
+export const FoundOnGitHub: Story = {
+    args: {
+        filter: 'nuxt',
+        search: fn(() => Promise.resolve(NUXT_REPOSITORIES)),
+        found: [NUXT_REPOSITORIES[0]!],
+        repositories: [...SAMPLE_OWN_CHOICE.repositories, 'nuxt/nuxt'],
+    },
+};
+
+/** A search GitHub never answers. */
+function noAnswer() {
+    // Left pending.
+}
+
+/** G19: while GitHub answers, one line says so; the user's own matches are already there. */
+export const SearchingGitHub: Story = {
+    args: { filter: 'nuxt', search: fn(() => new Promise<never>(noAnswer)) },
+};
+
+/** G10: nothing to pick; the field searches GitHub, and takes a repository's or a project's address. */
 export const NothingToPick: Story = {
     args: { candidates: EMPTY_CANDIDATES, repositories: [], projects: [] },
 };

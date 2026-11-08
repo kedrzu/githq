@@ -1,12 +1,11 @@
 # GitHub's repository search as the user typed it, qualifiers (`org:`, `stars:`) included: the command menu's
-# "Search repositories…" (D34, E8), with what its rows show.
+# "Search repositories…" (D34, E8) and the tracking chooser's "On GitHub" (mobile D34, G18), with what their rows show.
 query RepositoryBrowseSearch($query: String!) {
     search(query: $query, type: REPOSITORY, first: 20) {
         nodes {
             ... on Repository {
-                nameWithOwner
                 description
-                isPrivate
+                ...TrackingRepositoryFields
             }
         }
     }

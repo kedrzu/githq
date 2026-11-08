@@ -1494,9 +1494,8 @@ export class GitHubWorld {
                             );
                         })
                         .map(repository => ({
-                            nameWithOwner: repository.nameWithOwner,
+                            ...this.toCandidate(repository),
                             description: repository.description,
-                            isPrivate: repository.isPrivate,
                         })),
                 },
             };

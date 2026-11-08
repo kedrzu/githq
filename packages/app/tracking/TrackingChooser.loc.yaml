@@ -52,8 +52,6 @@ noneSelected:
   en: none selected
 someSelected:
   en: '{count} selected'
-noMatch:
-  en: No repository matches “{filter}”.
 loading:
   en: Reading more from GitHub…
 visibleMeanwhile:
@@ -142,8 +140,6 @@ matches:
     many: '{count} matches for “{filter}”'
 reading:
   en: Reading your repositories…
-nothingMatches:
-  en: Nothing you can see matches “{filter}”.
 notRead:
   en: GitHub didn't list your repositories. Type one's name, owner/name, to find it.
 show:
@@ -152,3 +148,15 @@ allTracked:
   en: all {count} tracked
 pickedCount:
   en: '{count} picked'
+yourOwn:
+  en: Your repositories
+noneOfYours:
+  en: none of {total} match “{filter}”
+onGitHub:
+  en: On GitHub
+searchLabel:
+  en: Search GitHub for a repository, or paste a project's address
+searchPlaceholder:
+  en: Search GitHub, owner/repository, or a project URL
+examples:
+  en: e.g.
