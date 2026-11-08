@@ -16,7 +16,18 @@ import * as stories from './StatusBar.stories.js';
 const SEGMENT = /^Paused until\s14:32 · 100 left$/;
 const EXPLANATION = /^Background refresh is\spaused$/;
 
-const { Exhausted, Paused, PausedCollapsed } = composeStories(stories);
+const {
+    Downloading,
+    DownloadingCollapsed,
+    DownloadingCollapsedNoPace,
+    DownloadingCounting,
+    DownloadingNoPace,
+    Exhausted,
+    OfflineWhileDownloading,
+    Paused,
+    PausedCollapsed,
+    PausedWhileDownloading,
+} = composeStories(stories);
 
 test('refresh paused (K3): the segment opens why — editing still works, other changes wait — and Escape closes it', async () => {
     await Paused.run();
@@ -97,3 +108,53 @@ test('on the web the bar never offers an update, even one said to be ready', asy
     await expect.element(bar.getByRole('button', { name: 'Restart' })).not.toBeInTheDocument();
     expect(restart).not.toHaveBeenCalled();
 });
+
+test('downloading (first run and loading D11): items so far of the total and the time left in place of the allowance; hovering names how many repositories and projects', async () => {
+    await Downloading.run();
+
+    const segment = page.getByTestId('download-progress');
+    await expect.element(segment).toHaveTextContent(/^1,240 of\s8,000 · about\s2\smin$/);
+    await expect.element(page.getByText(/left this hour/)).not.toBeInTheDocument();
+
+    await userEvent.hover(segment);
+    await expect.element(tooltip(/^Downloading 3\srepositories and 2\sprojects$/)).toBeVisible();
+});
+
+test('before the first count it says it is counting; with no pace yet no time is promised', async () => {
+    await DownloadingCounting.run();
+    await expect.element(page.getByTestId('download-progress')).toHaveTextContent(/^Downloading · counting…$/);
+    await userEvent.hover(page.getByTestId('download-progress'));
+    await expect.element(tooltip(/^Downloading 3\srepositories$/)).toBeVisible();
+
+    await DownloadingNoPace.run();
+    await expect.element(page.getByTestId('download-progress')).toHaveTextContent(/^1,240 of\s8,000$/);
+});
+
+test('under the rail: the time left alone once a pace is known, the turning icon alone before; the tooltip tells the rest', async () => {
+    await DownloadingCollapsed.run();
+    const segment = page.getByTestId('download-progress');
+    await expect.element(segment).toHaveTextContent(/^2m$/);
+    await userEvent.hover(segment);
+    await expect
+        .element(tooltip(/^Downloading 3\srepositories and 2\sprojects · 1,240 of\s8,000 · about\s2\smin$/))
+        .toBeVisible();
+
+    await DownloadingCollapsedNoPace.run();
+    // The icon alone; screen readers get the sentence.
+    await expect.element(page.getByTestId('download-progress').getByText(/^\d/)).not.toBeInTheDocument();
+});
+
+test('offline, then paused by the allowance, take the segment before the download (D11)', async () => {
+    await OfflineWhileDownloading.run();
+    await expect.element(page.getByText(/^Offline since/)).toBeVisible();
+    await expect.element(page.getByTestId('download-progress')).not.toBeInTheDocument();
+
+    await PausedWhileDownloading.run();
+    await expect.element(page.getByRole('button', { name: SEGMENT })).toBeVisible();
+    await expect.element(page.getByTestId('download-progress')).not.toBeInTheDocument();
+});
+
+/** The open tooltip, by what it says — the first match: reka-ui keeps a hidden copy of its text inside it. */
+function tooltip(text: RegExp) {
+    return page.getByText(text).first();
+}

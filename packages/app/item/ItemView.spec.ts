@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 
 import { D1_ISSUE_DETAIL, F1_PULL_REQUEST, F3_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
+import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
 
 import * as stories from './ItemView.stories.js';
@@ -78,6 +79,20 @@ test("the body and comments show GitHub's rendering only, never the markdown as 
         // A link in GitHub's rendering is the brand's indigo.
         expect(getComputedStyle(link.element()).color).toBe('rgb(123, 135, 247)');
     }
+});
+
+test('first run and loading D7: a row comes whole, so with its detail and its repository not read yet empty still reads empty', async () => {
+    await LoadingComments.run({
+        args: {
+            ...LoadingComments.args,
+            item: { ...D1_ISSUE_DETAIL.item, assignees: [], labels: [], milestone: null },
+            editing: { ...SAMPLE_MAINTAINER_EDITING, metadata: null },
+        },
+    });
+
+    await expect.element(page.getByRole('button', { name: 'Assignees: No one' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Labels: None' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Milestone: None' })).toBeVisible();
 });
 
 test('J/K step through the list, Esc closes, R puts the cursor in the comment box and Esc there leaves it without closing', async () => {

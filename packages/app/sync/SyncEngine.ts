@@ -28,6 +28,7 @@ import type { PullRequestItem } from '@/store/ItemTypes.js';
 import { toPendingReview, toPullRequestStatus } from '@/store/toItem.js';
 import { TrackedItems } from '@/tracking/TrackedItems.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
+import type { RepositorySyncState } from '@/tracking/TrackingTypes.js';
 import { haveOpenItemsArrived } from '@/tracking/utils/haveOpenItemsArrived.js';
 import { WorkflowStore } from '@/workflows/WorkflowStore.js';
 import { WorkflowSync } from '@/workflows/WorkflowSync.js';
@@ -151,7 +152,7 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  *   when the user tracks more;
  * - `workflows`: the tracked repositories' GitHub Actions workflows and runs ({@link WorkflowSync}, REST, free 304s),
  *   every 3 minutes (actions D2), waiting for the open items of the first download (D27), once more when they are in,
- *   and at once when a screen showing them opens ({@link pollWorkflowsNow}). What a screen has on screen of a
+ *   and at once when a screen showing them opens ({@link pollNow}). What a screen has on screen of a
  *   repository's runs on any ref is read at every poll for as long as it does, in whichever tab ({@link watchAnyRef});
  * - `pendingReviews`: whether the viewer has a draft review on the open pull requests only a tracked repository or
  *   project holds (`PullRequestPendingReviews`, code review D21), as a draft moves nothing the polls watch: every 5
@@ -161,8 +162,9 @@ const LOOP_BUCKETS: Readonly<Record<SyncLoop, readonly string[]>> = {
  * in the background ({@link TrackedItems}' `isSynced`). My work's clean-up leaves it while any tab holds it.
  *
  * Each loop polls at once when it starts, then every interval (longer while the tab is hidden), again when the
- * tab is shown with its last success older than an interval, and when the connection comes back. A loop never
- * overlaps itself. Before every request it checks the allowance of the bucket it draws on, and waits for the
+ * tab is shown with its last success older than an interval, and when the connection comes back; any of them also
+ * when the user asks ("Try again": {@link pollNow}, the loop the surface's freshness came from). A loop never overlaps
+ * itself. Before every request it checks the allowance of the bucket it draws on, and waits for the
  * reset while one is used up. GitHub asking to slow down (`retry-after`, or a refusal naming no used-up bucket) is
  * about the user rather than a bucket, so every loop waits that out.
  *
@@ -224,7 +226,13 @@ export const SyncEngine = defineService({
         // Freshness changes with time alone; this moves when it may have (`touch`).
         const nowRef = shallowRef(clock.now());
 
-        const myWorkFreshness = computed(() => getLoopFreshness('myWork', items.getSyncState('myWork').lastSuccessAt));
+        // On the first download, which groups are still on their way (first run and loading D14).
+        const myWorkFreshness = computed((): Freshness => {
+            const freshness = getLoopFreshness('myWork', items.getSyncState('myWork').lastSuccessAt);
+            return freshness.kind === 'partial'
+                ? { kind: 'partial', arriving: MY_WORK_GROUPS.filter(group => items.membership[group] === undefined) }
+                : freshness;
+        });
 
         const notice = computed((): SyncNotice | null => {
             if (!activeRef.value) {
@@ -342,38 +350,100 @@ export const SyncEngine = defineService({
                 return notice.value;
             },
             getRepositoryFreshness,
+            getRepositoryLoop,
+            getDownloadFreshness,
+            getDownloadLoop,
             getProjectFreshness,
+            getProjectLoop,
             getWorkflowsFreshness,
             getRepositoryWorkflowsFreshness,
-            pollWorkflowsNow,
+            pollNow,
             watchAnyRef,
         };
 
         /**
-         * How fresh a tracked repository is: `partial` until its open items have arrived — told by the download, not
-         * by the poll of the others — then as its poll goes, or `refused` while GitHub refuses its changes; reactive.
+         * How fresh a tracked repository is: `hidden` while GitHub doesn't show it, whatever has arrived; else `partial`
+         * until its open items have arrived — told by the download, not by the poll of the others —, with the phase under
+         * way and how far it is; then as its poll goes, or `refused` while GitHub refuses its changes. While its closed
+         * items still download and the poll keeps the rest fresh, `partial` with that phase, never "Up to date" before it
+         * is complete (first run and loading D3) — its own poll, not the shared download's, tells whether it is stale
+         * then; reactive.
          */
         function getRepositoryFreshness(nameWithOwner: string): Freshness {
             const state = tracking.getSyncState({ kind: 'repository', nameWithOwner });
+            if (state?.hidden) {
+                return { kind: 'stale', since: state.lastSuccessAt, reason: 'hidden', of: 'repository' };
+            }
+
             if (!haveOpenItemsArrived(state)) {
-                return getLoopFreshness('download', null);
+                const downloaded = getDownloadFreshness();
+                return downloaded.kind === 'partial' ? getDownloading(state) : downloaded;
             }
 
             if (state.refused) {
                 return { kind: 'stale', since: state.lastSuccessAt, reason: 'refused' };
             }
 
-            return getLoopFreshness('repositories', state.lastSuccessAt);
+            const polled = getLoopFreshness('repositories', state.lastSuccessAt);
+            if (state.phase === 'done' || (polled.kind !== 'fresh' && polled.kind !== 'checking')) {
+                return polled;
+            }
+
+            return getDownloading(state);
         }
 
         /**
-         * How fresh a tracked project is: `partial` until all its items have arrived — told by the download — then as
-         * its poll goes, the slower GraphQL one while GitHub refuses its REST; reactive.
+         * The loop a tracked repository's freshness comes from now ({@link getRepositoryFreshness}), which its "Try again"
+         * asks (first run and loading D12): the download's until its open items arrived, then its own poll. Reactive.
+         */
+        function getRepositoryLoop(nameWithOwner: string): SyncLoop {
+            const state = tracking.getSyncState({ kind: 'repository', nameWithOwner });
+            return state?.hidden || haveOpenItemsArrived(state) ? 'repositories' : getDownloadLoop();
+        }
+
+        /**
+         * How the first download stands, for what still waits for it: it waits for "my work" (G6), so until that has
+         * answered once, what stands in my work's way stands in its own (first run and loading D6). Reactive.
+         */
+        function getDownloadFreshness(): Freshness {
+            return getLoopFreshness(getDownloadLoop(), null);
+        }
+
+        /** The loop {@link getDownloadFreshness} comes from now: "my work" while it stands in the download's way. */
+        function getDownloadLoop(): SyncLoop {
+            return getLoopFreshness('download', null).kind === 'partial' &&
+                items.getSyncState('myWork').lastSuccessAt === null
+                ? 'myWork'
+                : 'download';
+        }
+
+        /** A repository's first download under way: the phase it reads and how far, its open issues before it started. */
+        function getDownloading(state: RepositorySyncState | undefined): Freshness {
+            const phase = state && state.phase !== 'done' ? state.phase : 'openIssues';
+            const count = state?.counts[phase];
+            return { kind: 'partial', downloading: { phase, done: count?.done ?? 0, total: count?.total ?? null } };
+        }
+
+        /**
+         * How fresh a tracked project is: `hidden` while GitHub doesn't show it; else `partial` until all its items have
+         * arrived — told by the download —, with how many are read of how many GitHub counts (first run and loading D14);
+         * then as its poll goes, the slower GraphQL one while GitHub refuses its REST; reactive.
          */
         function getProjectFreshness(id: string): Freshness {
             const state = tracking.getSyncState({ kind: 'project', id });
+            if (state?.hidden) {
+                return { kind: 'stale', since: state.lastSuccessAt, reason: 'hidden', of: 'project' };
+            }
+
+            const count = state?.count;
             if (!haveOpenItemsArrived(state)) {
-                return getLoopFreshness('download', null);
+                const freshness = getDownloadFreshness();
+                return freshness.kind === 'partial'
+                    ? {
+                          kind: 'partial',
+                          downloading: { phase: 'items', done: count?.done ?? 0, total: count?.total ?? null },
+                      }
+                    : freshness;
             }
 
             return getLoopFreshness(
@@ -383,40 +453,98 @@ export const SyncEngine = defineService({
             );
         }
 
-        /** How fresh the tracked repositories' workflows are, as a screen showing them tells it; reactive. */
+        /** The loop a tracked project's freshness comes from now, as {@link getRepositoryLoop}. Reactive. */
+        function getProjectLoop(id: string): SyncLoop {
+            const state = tracking.getSyncState({ kind: 'project', id });
+            return state?.hidden || haveOpenItemsArrived(state) ? 'projects' : getDownloadLoop();
+        }
+
+        /**
+         * How fresh the tracked repositories' workflows are, as Broken workflows tells it: `partial` while some of them
+         * are not read yet — or their runs are still being read, which Broken workflows counts as unread too —, with how
+         * many are of those GitHub shows the Actions of (first run and loading D14, ES28), unless GitHub stands in its
+         * way, which then shows however recently the poll last succeeded (D6, ES23); else as their poll goes. Reactive.
+         */
         function getWorkflowsFreshness(): Freshness {
+            let read = 0;
+            let total = 0;
+            for (const { state } of workflows.repositories) {
+                if (state.status !== 'unavailable') {
+                    total += 1;
+                    read += state.status === 'read' && !state.reading ? 1 : 0;
+                }
+            }
+
+            return read === total
+                ? getWorkflowsPollFreshness()
+                : getUnreadWorkflowsFreshness({ kind: 'partial', readingWorkflows: { read, total } });
+        }
+
+        /**
+         * How fresh a tracked repository's Workflows section is (actions W3c, W3e): `partial` before its workflows are
+         * first read (first run and loading D14, ES27), then `reading` during the first read of their runs, unless GitHub
+         * stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read are on screen — there
+         * is no telling since when, as the loop goes on without it —; else as its poll goes. Reactive.
+         */
+        function getRepositoryWorkflowsFreshness(nameWithOwner: string): Freshness {
+            const stored = workflows.get(nameWithOwner);
+            if (!stored) {
+                return getUnreadWorkflowsFreshness({ kind: 'partial', readingWorkflows: true });
+            }
+
+            if (stored.unavailable != null) {
+                return stored.workflows.length > 0
+                    ? { kind: 'stale', since: null, reason: 'workflowsUnavailable' }
+                    : getWorkflowsPollFreshness();
+            }
+
+            const progress = workflows.getReadProgress(nameWithOwner);
+            return progress && isWorkflowsReadOnItsWay()
+                ? { kind: 'reading', read: progress.read, total: progress.total }
+                : getWorkflowsPollFreshness();
+        }
+
+        /** The workflows' poll as it goes, whatever is read of them. */
+        function getWorkflowsPollFreshness(): Freshness {
             return getLoopFreshness('workflows', items.getSyncState('workflows').lastSuccessAt);
         }
 
         /**
-         * How fresh a tracked repository's Workflows section is (actions W3c, W3e): `reading` during the first read of its
-         * runs, unless GitHub stands in its way; `refused` while GitHub shows nothing of its Actions and rows last read
-         * are on screen — there is no telling since when, as the loop goes on without it —; else as its poll goes.
-         * Reactive.
+         * Workflows some of which are not read yet: `reading` while nothing stands in the way, else what does — offline,
+         * paused, GitHub failing — with when the poll last succeeded. A success says nothing of what it hasn't read, and a
+         * tracking just begun has one from before, so a recent one never reads "Up to date" over what is missing.
          */
-        function getRepositoryWorkflowsFreshness(nameWithOwner: string): Freshness {
-            const stored = workflows.get(nameWithOwner);
-            if (stored?.unavailable != null) {
-                return stored.workflows.length > 0
-                    ? { kind: 'stale', since: null, reason: 'workflowsUnavailable' }
-                    : getWorkflowsFreshness();
+        function getUnreadWorkflowsFreshness(reading: Freshness): Freshness {
+            const unread = getLoopFreshness('workflows', null);
+            const since = items.getSyncState('workflows').lastSuccessAt;
+            switch (unread.kind) {
+                case 'partial':
+                    return reading;
+                case 'paused':
+                    return { ...unread, since };
+                case 'stale':
+                    return unread.reason === 'late' ? unread : { ...unread, since };
+                default:
+                    return unread;
             }
+        }
 
-            const progress = workflows.getReadProgress(nameWithOwner);
-            return progress && notice.value === null && !statusRef.value.workflows.failing
-                ? { kind: 'reading', read: progress.read, total: progress.total }
-                : getWorkflowsFreshness();
+        /** Nothing stands in the way of a first read of workflows: not the connection, the allowance or GitHub failing. */
+        function isWorkflowsReadOnItsWay() {
+            return notice.value === null && !statusRef.value.workflows.failing;
         }
 
         /**
-         * Polls the workflows now — a screen showing them opened (actions D2) — unless a poll of them is running. In a
-         * tab that does not sync, the syncing tab is asked to.
+         * Polls `loop` at once, here or in the tab that syncs, unless it is polling already, and as asked for:
+         * the workflows not waiting for the open items' download. A screen showing workflows opened (actions D2), or the
+         * "Try again" of a surface GitHub failed on, which asks the loop its freshness came from (first run and loading
+         * D12). Settles when this tab's poll has; at once when another tab polls, whose status then tells how it went.
          */
-        function pollWorkflowsNow() {
+        async function pollNow(loop: SyncLoop) {
             if (session) {
-                void run(session, 'workflows', true);
+                await run(session, loop, true);
             } else if (followed) {
-                tabs.publish({ kind: 'pollWorkflows' });
+                tabs.publish({ kind: 'poll', loop });
             }
         }
 
@@ -430,7 +558,7 @@ export const SyncEngine = defineService({
         function watchAnyRef(nameWithOwner: string) {
             anyRefWatchers.set(nameWithOwner, (anyRefWatchers.get(nameWithOwner) ?? 0) + 1);
             tabs.setAnyRefRepositories([...anyRefWatchers.keys()]);
-            pollWorkflowsNow();
+            void pollNow('workflows');
 
             return () => {
                 const left = (anyRefWatchers.get(nameWithOwner) ?? 0) - 1;
@@ -511,9 +639,9 @@ export const SyncEngine = defineService({
                 case 'rateLimit':
                     rateLimits.merge(message.rateLimit);
                     break;
-                case 'pollWorkflows':
+                case 'poll':
                     if (session) {
-                        void run(session, 'workflows', true);
+                        void pollNow(message.loop);
                     }
 
                     break;

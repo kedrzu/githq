@@ -99,7 +99,7 @@ export interface ListGroup<T> {
     readonly detailIcon?: LucideIcon | null;
     /** The label is a name from code, set in the monospaced font (a repository's `owner/name`). */
     readonly monospace?: boolean;
-    /** `false` while its rows are still on their way (my work's first download, G7): it has none yet. */
+    /** `false` while its rows are still on their way (my work's first download, an untracked repository's first read; first run and loading G17): it has none yet. */
     readonly arrived: boolean;
     readonly rows: readonly ListRow<T>[];
     /**

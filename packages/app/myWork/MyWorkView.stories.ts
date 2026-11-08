@@ -71,10 +71,125 @@ export const NothingWaiting: Story = {
     args: { filter: 'waitingOnOthers', work: sampleMyWork([], sampleMembership({}), 'waitingOnOthers') },
 };
 
-/** G7: the first download is under way; every group says it is still arriving. */
+/** ES12, D15: narrowed to a group in and empty: names the group and offers the rest of My work, counting nothing. */
+export const GroupEmpty: Story = {
+    args: {
+        group: 'mentioned',
+        work: sampleMyWork(D1_ITEMS, { ...D1_MEMBERSHIP, mentioned: new Set() }, 'all'),
+        onShowAll: fn(),
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(canvas.queryByText('Nothing here.')).toBeNull();
+        await userEvent.click(canvas.getByRole('button', { name: /^Show\sall\sof\sMy\swork$/u }));
+        await expect(args.onShowAll).toHaveBeenCalledOnce();
+    },
+};
+
+/** The same on the board: no column standing for a group that says nothing else. */
+export const GroupEmptyOnBoard: Story = {
+    args: {
+        ...GroupEmpty.args,
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+    },
+};
+
+/** ES11: under a filter the narrowed group shows nothing: clearing the filter keeps the group. */
+export const GroupHiddenByFilter: Story = {
+    args: {
+        group: 'mentioned',
+        filter: 'needsMe',
+        work: sampleMyWork([], sampleMembership({}), 'needsMe'),
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: /^Nothing\sin\sMentioned$/u })).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /^Show\sall\sof\sMy\swork$/u })).toBeNull();
+        await userEvent.click(canvas.getByRole('button', { name: /^Clear\sfilter$/u }));
+        await expect(args['onUpdate:filter']).toHaveBeenCalledWith('all');
+    },
+};
+
+/** ES13: offline before anything arrived: why, instead of ghosts that would spin forever (D6). */
+export const OfflineNothingArrived: Story = {
+    args: { work: sampleMyWork([], {}, 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('heading', { name: "You're offline" })).toBeVisible();
+        await expect(canvas.getByText(/your\swork\shasn't\sarrived\syet/u)).toBeVisible();
+    },
+};
+
+/** D12: the allowance ran out before anything arrived: it says until when. */
+export const PausedNothingArrived: Story = {
+    args: { work: sampleMyWork([], {}, 'all'), cantBeRead: { kind: 'paused', until: SAMPLE_NOW + 600_000 } },
+};
+
+/** D12: GitHub fails before anything arrived: "Try again" asks at once. */
+export const FailingNothingArrived: Story = {
+    args: {
+        work: sampleMyWork([], {}, 'all'),
+        cantBeRead: { kind: 'failing', retry: fn(() => Promise.resolve()) },
+    },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    },
+};
+
+/** D6, G: with rows on screen, a group that can't arrive now says why in a short note instead of ghosts that would spin forever. */
+export const OfflineSomeArrived: Story = {
+    args: {
+        work: sampleMyWork(D1_ITEMS, { authored: D1_MEMBERSHIP.authored }, 'all'),
+        cantBeRead: { kind: 'offline' },
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.queryByRole('heading', { name: "You're offline" })).toBeNull();
+        await expect(canvas.getByRole('region', { name: /^My\spull\srequests$/u })).toBeVisible();
+        const assigned = canvas.getByRole('region', { name: /^Assigned\sto\sme$/u });
+        await expect(within(assigned).getByText("Offline. Fills in when you're back.")).toBeVisible();
+        await expect(within(assigned).queryByText('Still arriving from GitHub')).toBeNull();
+    },
+};
+
+/** D6, G: on the board, a column that can't arrive now says why under its head, instead of ghost cards. */
+export const PausedSomeArrivedOnBoard: Story = {
+    args: {
+        work: sampleMyWork(D1_ITEMS, { authored: D1_MEMBERSHIP.authored }, 'all'),
+        cantBeRead: { kind: 'paused', until: SAMPLE_NOW + 600_000 },
+        options: { ...MY_WORK_VIEW_DEFAULTS, layout: 'board' },
+    },
+    play: async ({ canvasElement }) => {
+        const assigned = within(canvasElement).getByRole('region', { name: /^Assigned\sto\sme$/u });
+        await expect(within(assigned).getByText(/^Refresh\spaused\./u)).toBeVisible();
+        await expect(within(assigned).queryByText('Still arriving from GitHub')).toBeNull();
+    },
+};
+
+/** D6: nothing shown and offline with a group still on its way: the note, though another group is in and empty. */
+export const OfflineArrivedEmpty: Story = {
+    args: { work: sampleMyWork([], { authored: new Set() }, 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: "You're offline" })).toBeVisible();
+    },
+};
+
+/** D6: everything in, nothing there: a cause doesn't change what is known. */
+export const OfflineNothingOnYourPlate: Story = {
+    args: { work: sampleMyWork([], sampleMembership({}), 'all'), cantBeRead: { kind: 'offline' } },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('heading', { name: /^Nothing\son\syour\splate$/u })).toBeVisible();
+    },
+};
+
+/** G16: the first download is under way and no search has answered: a full screen of ghosts. */
 export const StillArriving: Story = { args: { work: sampleMyWork([], {}, 'all') } };
 
-/** G7: two searches have answered — their groups are listed and usable — and the other two are still arriving. */
+/** G17: two searches have answered — their groups are listed and usable — and the other two show their ghosts. */
 export const PartlyArrived: Story = {
     args: {
         work: sampleMyWork(

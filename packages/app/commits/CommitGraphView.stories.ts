@@ -122,7 +122,7 @@ export const Empty: Story = {
     },
 };
 
-/** A first open, nothing kept yet: a quiet line until the first rows arrive (CH32). */
+/** A first open, nothing kept yet: the skeleton in the graph's shape until the first rows arrive (CH32, first run and loading D17, ES21). */
 export const FirstOpen: Story = {
     render: () =>
         renderOver({
@@ -131,11 +131,11 @@ export const FirstOpen: Story = {
             holdIf: operation => (operation === 'RepositoryCommitRefs' ? NEVER : null),
         }),
     play: async ({ canvasElement }) => {
-        await expect(await within(canvasElement).findByText('Loading commits…')).toBeVisible();
+        await expect(await within(canvasElement).findByText('Loading commits…')).toBeInTheDocument();
     },
 };
 
-/** GitHub does not answer and nothing is kept: the section says so, instead of loading for good. */
+/** ES22, D12: GitHub does not answer and nothing is kept: the section says so, instead of loading for good. */
 export const Unavailable: Story = {
     render: () =>
         renderOver({
@@ -144,8 +144,19 @@ export const Unavailable: Story = {
             failIf: operation => operation === 'RepositoryCommitRefs',
         }),
     play: async ({ canvasElement }) => {
-        const notice = "GitHub can't be asked for the commits right now. They appear here once it can.";
+        const notice = "githq couldn't read the commits. It tries again by itself.";
         await expect(await within(canvasElement).findByText(notice)).toBeVisible();
+    },
+};
+
+/** ES22, D12: offline with nothing kept: the same note, its line the cause's, and nothing to press. */
+export const OfflineNothingKept: Story = {
+    render: () => renderOver({ commits: [], firstOpen: true, failIf: () => true, online: false }),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(await canvas.findByRole('heading', { name: "You're offline" })).toBeVisible();
+        await expect(canvas.getByText(/so the commits haven't arrived yet/u)).toBeVisible();
+        await expect(canvas.queryByRole('button', { name: /Try again/u })).toBeNull();
     },
 };
 

@@ -58,6 +58,40 @@ export const Checking: Story = { args: { freshness: { kind: 'checking', since: A
 /** The first download: grey, nothing is wrong. */
 export const Partial: Story = { args: { freshness: { kind: 'partial' } } };
 
+/** My work's first download, no search answered yet (first run and loading D14, G16). */
+export const FetchingMyWork: Story = {
+    args: { freshness: { kind: 'partial', arriving: ['reviewRequested', 'authored', 'assigned', 'mentioned'] } },
+};
+
+/** My work's first download, two groups in: the others named (D14, G17). */
+export const MyWorkArriving: Story = { args: { freshness: { kind: 'partial', arriving: ['assigned', 'mentioned'] } } };
+
+/** A tracked repository before its open issues are in (first run and loading D14, ES14). */
+export const DownloadingOpenIssues: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'openIssues', done: 40, total: 142 } } },
+};
+
+/** A tracked repository whose closed issues still arrive: not "Up to date" yet (D3, ES9). */
+export const DownloadingClosedIssues: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'closedIssues', done: 1200, total: 4000 } } },
+};
+
+/** A tracked project while its items download (first run and loading D14, ES18). */
+export const DownloadingItems: Story = {
+    args: { freshness: { kind: 'partial', downloading: { phase: 'items', done: 0, total: 128 } } },
+};
+
+/** A commit graph's first read: GitHub gives no cheap count of commits (first run and loading D14, ES21). */
+export const ReadingCommits: Story = { args: { freshness: { kind: 'partial', readingCommits: true } } };
+
+/** A repository's Workflows before its workflows are first read (first run and loading D14, ES27). */
+export const ReadingWorkflows: Story = { args: { freshness: { kind: 'partial', readingWorkflows: true } } };
+
+/** Broken workflows while some tracked repositories' workflows are not read yet (first run and loading D14, ES28). */
+export const ReadingWorkflowsOfRepositories: Story = {
+    args: { freshness: { kind: 'partial', readingWorkflows: { read: 1, total: 4 } } },
+};
+
 /** Files of a review selected together: the keys that act on them (CR23). */
 export const FilesSelected: Story = { args: { freshness: { kind: 'filesSelected' } } };
 
@@ -112,6 +146,11 @@ export const Failing: Story = { args: { freshness: { kind: 'stale', since: AT_14
 
 /** GitHub refusing a repository's changes (a 403): amber, asked again hourly. */
 export const Refused: Story = { args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'refused' } } };
+
+/** ES16, ES20: GitHub doesn't show a tracked repository or project — no access, or gone — whatever has arrived. */
+export const Hidden: Story = {
+    args: { freshness: { kind: 'stale', since: AT_14_06, reason: 'hidden', of: 'repository' } },
+};
 
 /** W3e: GitHub no longer lists a repository's workflows; the rows below are the last known ones. */
 export const WorkflowsUnavailable: Story = {

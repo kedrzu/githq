@@ -34,3 +34,27 @@ atAgo:
   en: '{time} · {age} ago'
 never:
   en: Not yet
+downloadingCounting:
+  en: Downloading · counting…
+downloadedOf:
+  en: '{done} of {total}'
+downloadedOfLeft:
+  en: '{done} of {total} · about {time}'
+downloading:
+  en: Downloading {targets}
+downloadingWithProgress:
+  en: Downloading {targets} · {progress}
+repositoriesCount:
+  plural: count
+  en:
+    one: 1 repository
+    many: '{count} repositories'
+projectsCount:
+  plural: count
+  en:
+    one: 1 project
+    many: '{count} projects'
+repositoriesAndProjects:
+  en: '{repositories} and {projects}'
+counting:
+  en: counting…

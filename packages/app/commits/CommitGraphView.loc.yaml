@@ -6,8 +6,8 @@ loadingMore:
   en: Loading older commits…
 beginning:
   en: The beginning of {name}'s history
-unavailable:
-  en: GitHub can't be asked for the commits right now. They appear here once it can.
+theCommits:
+  en: the commits
 emptyTitle:
   en: No commits yet
 emptyDetail:

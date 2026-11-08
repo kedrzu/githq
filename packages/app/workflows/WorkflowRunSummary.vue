@@ -5,6 +5,8 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
 
+import Skeleton from '@/components/Skeleton.vue';
+import SkeletonBar from '@/components/SkeletonBar.vue';
 import { formatDuration } from '@/utils/formatDuration.js';
 import { getElapsedUnit } from '@/utils/getElapsedUnit.js';
 
@@ -111,11 +113,15 @@ const event = computed(() => {
       </span>
       <span :class="css.workflowRunSummary_when">{{ when }}</span>
     </template>
-    <span
+    <Skeleton
       v-else
       :class="css.workflowRunSummary_placeholder"
-      aria-hidden="true"
-    />
+    >
+      <SkeletonBar
+        :width="320"
+        tone="weak"
+      />
+    </Skeleton>
   </div>
 </template>
 
@@ -191,8 +197,7 @@ const event = computed(() => {
 }
 
 .workflowRunSummary_placeholder {
-  @include placeholder-bar;
-
-  width: 320px;
+  flex: 0 1 320px;
+  min-width: 0;
 }
 </style>

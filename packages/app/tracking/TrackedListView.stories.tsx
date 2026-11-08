@@ -38,6 +38,7 @@ interface TrackedListArgs {
     readonly onOpen: (row: unknown) => void;
     readonly onUntrack: (row: unknown) => void;
     readonly onAdd: (owner?: string) => void;
+    readonly loaded: boolean;
 }
 
 /** One owner's group. */
@@ -148,6 +149,7 @@ const meta = {
         onOpen: fn(),
         onUntrack: fn(),
         onAdd: fn(),
+        loaded: true,
     },
     // As tall as Settings' section, like in the app; an untracked row leaves, as the section's would.
     render: args =>
@@ -164,6 +166,7 @@ const meta = {
                                 kind="repositories"
                                 groups={repositories.value}
                                 getKey={row => row.nameWithOwner}
+                                loaded={args.loaded}
                                 onOpen={args.onOpen}
                                 onUntrack={row => untrack(row.nameWithOwner, row)}
                                 onAdd={args.onAdd}
@@ -184,6 +187,7 @@ const meta = {
                                 kind="projects"
                                 groups={projects.value}
                                 getKey={row => row.id}
+                                loaded={args.loaded}
                                 onOpen={args.onOpen}
                                 onUntrack={row => untrack(row.id, row)}
                                 onAdd={args.onAdd}
@@ -237,5 +241,5 @@ export const BeforeListsRead: Story = {
     },
 };
 
-/** Nothing tracked: the head and its button alone. */
+/** ES24: nothing tracked: the note and its button alone. */
 export const NothingTracked: Story = { args: { repositories: [], projects: [] } };

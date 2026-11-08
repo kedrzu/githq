@@ -33,7 +33,9 @@ test("Repositories lists what is tracked by owner; ⌫ untracks the selected row
     await page.keyboard.press('Backspace');
 
     await expect(row).toHaveCount(0);
-    await expect(list.heading).toHaveText(/^0\stracked\srepositories$/u);
+    // ES24: the note in the head's place, its button the way on.
+    await expect(list.nothingTracked).toHaveText('No repositories tracked');
+    await expect(list.root.getByRole('button', { name: 'Track repositories' })).toBeVisible();
     const toast = shell.toasts.filter({ hasText: `Stopped tracking ${SAMPLE_REPOSITORY}` });
     await expect(toast).toBeVisible();
 

@@ -39,3 +39,17 @@ Append-only; one line per turn that settled something.
 - 2026-11-06 — Owner picked ES1 (Variant A) without its status line, asking for more, wider and less faded ghosts and a visible motion; picked ES5. ES2, ES3, ES6, ES7 deleted; D8, D9, D11 rewritten.
 - 2026-11-06 — Owner: no workflows loading screen, every skeleton looked the same, commits differ, no board skeletons. Drew ES27–ES30 and commits variants ES21/ES26; D17.
 - 2026-11-06 — Owner picked ES21 (commits skeleton); ES26 deleted.
+- 2026-11-06 — Build started (/dev:deliver, #218). Owner: one shared skeleton set, one highlight per wrapper, code
+  review's placeholders on it too (D9 sharpened). "What gets built first" removed from README: the approved overview
+  replaces it.
+- 2026-11-06 — Build, M1 checkpoint: owner — the left segment's total counts what is counted so far (D11); one uniform
+  duration formatter; Settings keeps its per-repository download note (D4).
+- 2026-11-06 — Build, M2 checkpoint: owner — the shared download's failure doesn't turn a repository amber (D3); tab counts
+  blank until open items are in, "Reading workflows" segments (D14); skeleton wrapper simplified. Recorded the build's
+  board-column and Broken-workflows choices in D17, "Try again" on R as D18; the design agent's notes for the owner are
+  all answered (the "Synced" bar exists only in the mockup) and the section is gone.
+- 2026-11-06 — Build, M3: the "None" bug of D7 doesn't exist (checked in code; spec pins it). The offline line reworded so a
+  sentence never starts with a lower-case {thing} (D12).
+- 2026-11-07 — Build, M3 checkpoint: owner took every recommendation. D12: failing "tries again by itself", pause
+  words neutral, hidden a status of its own, refused only over what hasn't arrived, group notes, one poll per Try
+  again. D15 simplified ("Nothing in Mentioned", no counts). Ghosts share the real rows' and columns' sizes.

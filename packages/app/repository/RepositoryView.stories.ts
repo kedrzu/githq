@@ -162,9 +162,51 @@ export const StackOnBoard: Story = {
     },
 };
 
-/** Nothing of the section matches the state chosen. */
-export const NothingMatches: Story = {
+/** It has all arrived and holds nothing (first run and loading D6). */
+export const NothingThere: Story = {
     args: { list: sampleList([], 'milestone'), openCounts: { issues: 0, pullRequests: 0 }, projects: [] },
+};
+
+/** The state hides all the section holds: named, with a way to clear it (first run and loading D6). */
+export const StateHidesAll: Story = {
+    args: {
+        list: sampleList(
+            SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN'),
+            'milestone',
+        ),
+        openCounts: { issues: 0, pullRequests: 0 },
+        projects: [],
+    },
+};
+
+/** ES16: tracked, GitHub won't show it, or refuses its changes: the toolbar stays over why, with the way to GitHub. */
+export const TrackedNotShown: Story = {
+    args: {
+        list: sampleList([], 'milestone'),
+        openCounts: { issues: null, pullRequests: null },
+        projects: [],
+        cantBeRead: { kind: 'hidden', url: 'https://github.com/fitloop/webapp' },
+    },
+};
+
+const ARRIVING_LIST = buildRepositoryList({
+    items: [],
+    state: 'open',
+    kind: 'issue',
+    grouping: 'milestone',
+    sort: 'updated',
+    texts: TEXTS,
+    arriving: true,
+});
+
+/** Tracked, its open issues still downloading: ghost rows, never "nothing matches" (first run and loading ES14). */
+export const TrackedArriving: Story = {
+    args: { list: ARRIVING_LIST, openCounts: { issues: null, pullRequests: null }, projects: [] },
+};
+
+/** The same as a board: ghost columns, as its columns come from its items (ES29). */
+export const TrackedArrivingBoard: Story = {
+    args: { ...TrackedArriving.args, options: options('board', 'milestone') },
 };
 
 const NOT_TRACKED = {
@@ -208,16 +250,19 @@ export const NotTrackedBoard: Story = {
 export const NotTrackedArriving: Story = {
     args: {
         ...NOT_TRACKED,
-        list: buildRepositoryList({
-            items: [],
-            state: 'open',
-            kind: 'issue',
-            grouping: 'milestone',
-            sort: 'updated',
-            texts: TEXTS,
-            arriving: true,
-        }),
+        list: ARRIVING_LIST,
         status: browsedStatus({ reading: true }),
+    },
+};
+
+/** ES17: GitHub failing on one not tracked with nothing held: the name, the chip and "Try again". */
+export const NotTrackedFailing: Story = {
+    args: {
+        ...NOT_TRACKED,
+        isPrivate: null,
+        list: ARRIVING_LIST,
+        status: browsedStatus({}),
+        cantBeRead: { kind: 'failing', retry: fn() },
     },
 };
 
@@ -228,10 +273,11 @@ export const NotTrackedNotShown: Story = {
         isPrivate: null,
         list: sampleList([], 'none'),
         status: browsedStatus({ notShown: true }),
+        cantBeRead: { kind: 'hidden', url: 'https://github.com/vitejs/vite' },
     },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('heading', { name: 'GitHub does not show this repository' })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: /^GitHub doesn't show / })).toBeVisible();
         await expect(canvas.getByRole('link', { name: /^Open on\sGitHub$/ })).toHaveAttribute(
             'href',
             'https://github.com/vitejs/vite',

@@ -272,7 +272,7 @@ test('an answer arriving after the user signed out, or another signed in, is dro
         await session.clock.advance(0);
 
         expect(graphs.get('acme/web')).toBeUndefined();
-        expect(graphs.getFreshness('acme/web')).toEqual({ kind: 'partial' });
+        expect(graphs.getFreshness('acme/web')).toEqual({ kind: 'partial', readingCommits: true });
     }
 });
 
@@ -574,6 +574,7 @@ test('CH40: coming back online reads a graph left offline again, and clears it; 
         answer: request => (failing ? undefined : world.answer(request)),
     });
     session.setOnline(false);
+    graphs.hold('acme/web');
     await graphs.open('acme/web');
     const offline: Freshness = { kind: 'stale', since: null, reason: 'offline' };
     expect(graphs.getFreshness('acme/web')).toEqual(offline);
@@ -596,6 +597,7 @@ test('coming back online leaves a graph that failed for another reason alone', a
     web.line('c', 0, 5);
     web.branch('main', 'c4');
     const { graphs, session, requests } = setup(uniqueLogin(), { answer: () => undefined });
+    graphs.hold('acme/web');
     await graphs.open('acme/web');
     expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
 
@@ -603,6 +605,123 @@ test('coming back online leaves a graph that failed for another reason alone', a
     session.setOnline(true);
     await session.clock.advance(0);
     expect(requests()).toHaveLength(asked);
+});
+
+test('D12: GitHub failing is asked again by itself after 30 seconds, once per failure, until it answers', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let failing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request => (failing ? undefined : world.answer(request)),
+    });
+    graphs.hold('acme/web');
+    await graphs.open('acme/web');
+    const checks = () => requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+    expect(checks()).toBe(1);
+
+    await session.clock.advance(29_999);
+    expect(checks()).toBe(1);
+    await session.clock.advance(1);
+    expect(checks()).toBe(2);
+
+    failing = false;
+    await session.clock.advance(30_000);
+    expect(checks()).toBe(3);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+
+    await session.clock.advance(120_000);
+    expect(checks()).toBe(3);
+});
+
+test('D12: a check GitHub refused for the rate is asked again by itself when the pause ends', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let refusing = true;
+    const { graphs, session, requests } = setup(uniqueLogin(), {
+        answer: request =>
+            refusing
+                ? { data: null, errors: [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }] }
+                : world.answer(request),
+    });
+    graphs.hold('acme/web');
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web').kind).toBe('paused');
+
+    refusing = false;
+    await session.clock.advance(60_000);
+
+    expect(requests().filter(request => request.operation === 'RepositoryCommitRefs')).toHaveLength(2);
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('D12: only a graph on screen is asked again by itself; leaving it drops its retry, a reconnect passes it by', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    const { graphs, session, requests } = setup(uniqueLogin(), { answer: () => undefined });
+    const checks = () => requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+
+    const release = graphs.hold('acme/web');
+    const other = graphs.hold('acme/web');
+    await graphs.open('acme/web');
+    release();
+    release();
+    await session.clock.advance(30_000);
+    expect(checks()).toBe(2);
+
+    other();
+    await session.clock.advance(120_000);
+    expect(checks()).toBe(2);
+
+    session.setOnline(false);
+    await graphs.open('acme/web');
+    session.setOnline(true);
+    await session.clock.advance(0);
+    expect(checks()).toBe(3);
+});
+
+test('D12: what stood in the way of the last check is told while the next one runs, until GitHub answers it', async () => {
+    const world = fakeCommitGitHub();
+    const web = world.repository('acme/web');
+    web.line('c', 0, 5);
+    web.branch('main', 'c4');
+    let failing = true;
+    const { graphs, session } = setup(uniqueLogin(), {
+        answer: request => (failing ? undefined : world.answer(request)),
+    });
+    await graphs.open('acme/web');
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    failing = false;
+    const held = createPromise();
+    session.github.holdIf = () => held.promise;
+    const opened = graphs.open('acme/web');
+    await session.clock.advance(0);
+    expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'failing' });
+
+    held.resolve();
+    await opened;
+    expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test('GitHub hiding the repository, or it being gone, is told apart from GitHub failing', async () => {
+    const { graphs } = setup(uniqueLogin(), {
+        answer: () => ({
+            data: null,
+            errors: [{ type: 'NOT_FOUND', path: ['repository'], message: 'Could not resolve to a Repository.' }],
+        }),
+    });
+
+    await graphs.open('acme/web');
+
+    // GitHub doesn't show it: nothing to ask again hourly (first run and loading D12).
+    const hidden: Freshness = { kind: 'stale', since: null, reason: 'hidden', of: 'repository' };
+    expect(graphs.getFreshness('acme/web')).toEqual(hidden);
 });
 
 test('a later good page clears what a failed one said, a failure and a pause alike', async () => {
@@ -660,6 +779,7 @@ test('coming back online reads a graph again when only its older page failed for
     const { graphs, session } = setup(uniqueLogin(), {
         answer: request => (request.operation === 'CommitHistories' && failing ? undefined : world.answer(request)),
     });
+    graphs.hold('acme/web');
     await graphs.open('acme/web');
     session.setOnline(false);
     await graphs.loadMore('acme/web');
@@ -669,6 +789,55 @@ test('coming back online reads a graph again when only its older page failed for
     session.setOnline(true);
     await session.clock.advance(0);
     expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
+});
+
+test("a refs check failing after a reconnect replaces the older page's offline: it is not read again at once", async () => {
+    const hidden = {
+        data: null,
+        errors: [{ type: 'NOT_FOUND', path: ['repository'], message: 'Could not resolve to a Repository.' }],
+    };
+    for (const failure of [undefined, hidden]) {
+        const world = fakeCommitGitHub();
+        const web = world.repository('acme/web');
+        web.line('c', 0, 250);
+        web.branch('main', 'c249');
+        let historiesFailing = false;
+        let refsFailing = false;
+        const { graphs, session, requests } = setup(uniqueLogin(), {
+            answer: request => {
+                switch (request.operation) {
+                    case 'CommitHistories':
+                        return historiesFailing ? undefined : world.answer(request);
+                    case 'RepositoryCommitRefs':
+                        return refsFailing ? failure : world.answer(request);
+                    default:
+                        return world.answer(request);
+                }
+            },
+        });
+        const checks = () => requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+        // A loop would never let the clock settle: from the fifth check on GitHub never answers.
+        const never = createPromise();
+        session.github.holdIf = request =>
+            request.operation === 'RepositoryCommitRefs' && checks() > 4 ? never.promise : null;
+        graphs.hold('acme/web');
+        await graphs.open('acme/web');
+        historiesFailing = true;
+        session.setOnline(false);
+        await graphs.loadMore('acme/web');
+        expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'offline' });
+
+        refsFailing = true;
+        const asked = checks();
+        session.setOnline(true);
+        await session.clock.advance(0);
+
+        expect(checks()).toBe(asked + 1);
+        expect(graphs.getFreshness('acme/web')).toMatchObject({
+            kind: 'stale',
+            reason: failure ? 'hidden' : 'failing',
+        });
+    }
 });
 
 test('a reconnect during a running check reads the graph again once it ended, left offline', async () => {
@@ -688,6 +857,7 @@ test('a reconnect during a running check reads the graph again once it ended, le
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'CommitHistories' ? held.promise : null);
     session.setOnline(false);
+    graphs.hold('acme/web');
     const opened = graphs.open('acme/web');
     await session.clock.advance(0);
 
@@ -714,6 +884,7 @@ test('a reconnect with the allowance spent does not spin on a graph left offline
     const { graphs, session, requests } = setup(uniqueLogin(), { answer: () => undefined });
     await session.clock.advance(0);
     session.setOnline(false);
+    graphs.hold('acme/web');
     await graphs.open('acme/web');
     expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'offline' });
 

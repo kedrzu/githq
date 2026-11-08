@@ -36,10 +36,6 @@ disabledNote:
   en: doesn't count
 soFar:
   en: so far
-notReadTitle:
-  en: Not read yet
-notReadText:
-  en: githq hasn't read the workflows of {name} yet. They show up here as soon as the first read finishes.
 noWorkflowsTitle:
   en: No workflows here, yet
 noWorkflowsText:

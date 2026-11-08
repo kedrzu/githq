@@ -129,7 +129,8 @@ export const BrowsedRepositories = defineService({
         const sectionsRef = shallowRef(new Map<string, BrowsedSectionState>());
         /** GitHub's name of each address it was asked by, lower-cased; read along with `sectionsRef`. */
         const settledNames = new Map<string, string>();
-        const shows = new Set<BrowsedSectionView>();
+        /** What the screens show; a new set on every change, so what reads it follows. */
+        const showsRef = shallowRef<ReadonlySet<BrowsedSectionView>>(new Set());
         /** The repositories whose fresh start waits for the kept copy, which alone says what else keeps a row. */
         const waitingFreshStart = new Set<string>();
         const onlineRef = shallowRef(browser.isOnline());
@@ -147,7 +148,16 @@ export const BrowsedRepositories = defineService({
         browser.onOnlineChange(followPresence);
         watch(copyLoaded, followPresence, { flush: 'sync' });
 
-        return { hold, show, loadMore, getStatus, getFreshness: getSectionFreshness, isTabVisible };
+        return {
+            hold,
+            show,
+            loadMore,
+            readNow,
+            getStatus,
+            getShownState,
+            getFreshness: getSectionFreshness,
+            isTabVisible,
+        };
 
         /**
          * Holds the repository for a screen's whole life; returns the release. With no tab holding it yet, what is kept
@@ -167,13 +177,17 @@ export const BrowsedRepositories = defineService({
          * was read over {@link BROWSE_FRESH_MS} ago is checked, and it is checked again every {@link BROWSE_POLL_MS}.
          */
         function show(view: BrowsedSectionView) {
-            shows.add(view);
+            showsRef.value = new Set(showsRef.value).add(view);
             enter(view);
 
             return () => {
-                if (!shows.delete(view)) {
+                if (!showsRef.value.has(view)) {
                     return;
                 }
+
+                const left = new Set(showsRef.value);
+                left.delete(view);
+                showsRef.value = left;
 
                 const section = findSection(view.nameWithOwner, view.section);
                 if (section && !isShown(section)) {
@@ -190,6 +204,17 @@ export const BrowsedRepositories = defineService({
             const section = findSection(nameWithOwner, sectionName);
             if (section && canAsk() && isShown(section) && !section.notShown && section.pages[state].cursor !== null) {
                 await readPage(section, state);
+            }
+        }
+
+        /**
+         * "Try again" on a section GitHub failed on (first run and loading ES17): asks now what it would ask at its next
+         * refresh, settling when GitHub has answered. Nothing while it can't be asked or isn't on screen.
+         */
+        async function readNow(nameWithOwner: string, sectionName: RepositoryItemSection) {
+            const section = findSection(nameWithOwner, sectionName);
+            if (section && isShown(section) && !section.notShown) {
+                await refresh(section, 0);
             }
         }
 
@@ -212,20 +237,38 @@ export const BrowsedRepositories = defineService({
             };
         }
 
-        /** How fresh the section is, by this service's own reads; `partial` with nothing read yet. Reactive. */
-        function getSectionFreshness(nameWithOwner: string, sectionName: RepositoryItemSection): Freshness {
+        /**
+         * The state a screen shows of the section, for what tells of that screen elsewhere — the status bar — to read the
+         * same freshness as its note (first run and loading D6); `undefined` while none shows it. Reactive.
+         */
+        function getShownState(nameWithOwner: string, sectionName: RepositoryItemSection): RepositoryState | undefined {
+            const section = findSection(nameWithOwner, sectionName);
+            // With two screens on it, the one shown last.
+            return section ? getShownStates(section).at(-1) : undefined;
+        }
+
+        /**
+         * How fresh the section is, by this service's own reads; `partial` with nothing read yet. Reactive. For one `state`
+         * of it, that state with no page read yet has nothing fresh to stand on, whatever the section's others had: what
+         * stands in its way tells at once, not once they are stale.
+         */
+        function getSectionFreshness(
+            nameWithOwner: string,
+            sectionName: RepositoryItemSection,
+            state?: RepositoryState,
+        ): Freshness {
             const section = findSection(nameWithOwner, sectionName);
             if (!section) {
                 return { kind: 'partial' };
             }
 
             if (section.notShown) {
-                return { kind: 'stale', since: section.checkedAt, reason: 'refused' };
+                return { kind: 'stale', since: section.checkedAt, reason: 'hidden', of: 'repository' };
             }
 
             return getFreshness({
                 now: nowRef.value,
-                lastSuccessAt: section.checkedAt,
+                lastSuccessAt: state && section.pages[state].total === null ? null : section.checkedAt,
                 intervalMs: BROWSE_POLL_MS,
                 checking: section.running > 0,
                 online: onlineRef.value,
@@ -256,15 +299,16 @@ export const BrowsedRepositories = defineService({
                 triggerRef(sectionsRef);
             }
 
-            refresh(section, BROWSE_FRESH_MS);
+            void refresh(section, BROWSE_FRESH_MS);
             touch();
         }
 
         /**
          * What the section needs now, given it was last checked: the first page of a state shown without one — all
-         * over, if its rows have gone — else a check when older than `minAgeMs`. Then its timer.
+         * over, if its rows have gone — else a check when older than `minAgeMs`. Then its timer. Settles when what it
+         * asked has been answered, however that went: the section's freshness tells.
          */
-        function refresh(section: BrowsedSectionState, minAgeMs: number) {
+        async function refresh(section: BrowsedSectionState, minAgeMs: number) {
             if (!canAsk()) {
                 cancelTimer(section);
                 return;
@@ -284,17 +328,17 @@ export const BrowsedRepositories = defineService({
 
             const now = clock.now();
             const missing = getShownStates(section).filter(state => section.pages[state].total === null);
+            const asked: Promise<void>[] = [];
             if (missing.length > 0) {
                 section.askedAt = now;
-                for (const state of missing) {
-                    void readPage(section, state);
-                }
+                asked.push(...missing.map(state => readPage(section, state)));
             } else if (section.checkCutShort || now - (section.checkedAt ?? 0) >= minAgeMs) {
                 section.askedAt = now;
-                void check(section);
+                asked.push(check(section));
             }
 
             arm(section);
+            await Promise.all(asked);
         }
 
         /** Sets the section's next refresh: an interval after the last, or when its pause ends; none while it can't be. */
@@ -312,7 +356,7 @@ export const BrowsedRepositories = defineService({
             section.cancelTimer = clock.schedule(
                 () => {
                     section.cancelTimer = null;
-                    refresh(section, 0);
+                    void refresh(section, 0);
                 },
                 Math.max(0, at - now),
             );
@@ -658,7 +702,7 @@ export const BrowsedRepositories = defineService({
                     continue;
                 }
 
-                refresh(section, BROWSE_POLL_MS);
+                void refresh(section, BROWSE_POLL_MS);
             }
 
             touch();
@@ -728,11 +772,13 @@ export const BrowsedRepositories = defineService({
         }
 
         function getShownSections() {
-            return new Set(filterNotNull([...shows].map(view => findSection(view.nameWithOwner, view.section))));
+            return new Set(
+                filterNotNull([...showsRef.value].map(view => findSection(view.nameWithOwner, view.section))),
+            );
         }
 
         function getShownStates(section: BrowsedSectionState) {
-            return [...shows]
+            return [...showsRef.value]
                 .filter(view => findSection(view.nameWithOwner, view.section) === section)
                 .map(view => view.state);
         }

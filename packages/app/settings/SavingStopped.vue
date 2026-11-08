@@ -9,6 +9,7 @@ import { computed, ref, useId } from 'vue';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import type { StoppedReason } from './sync/SettingsSaving.js';
 import * as l from './SavingStopped.loc.js';
@@ -34,7 +35,7 @@ const titleId = useId();
 const retrying = ref(false);
 
 const repository = computed(() => getSettingsNameWithOwner(props.login));
-const repositoryUrl = computed(() => `https://github.com/${repository.value}`);
+const repositoryUrl = computed(() => getGitHubUrl(repository.value));
 
 const sentence = computed(() => {
   const { reason } = props;

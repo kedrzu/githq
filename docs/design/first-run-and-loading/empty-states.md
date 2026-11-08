@@ -39,7 +39,6 @@ A screen can be empty for four reasons:
   offline, so it can spin forever.
 - **An untracked repository GitHub fails on, or offline**: no state of its own; the list shows the arriving line or
   "Nothing here" (`packages/app/repos/BrowsedRepositories.ts`, `BrowsedStatus` has no failing or offline).
-- **An item's properties not yet read** read "None", the same as truly empty (`packages/app/item/ItemProperties.vue`).
 - **Broken workflows when every tracked repository is unavailable**: neither empty state, only the "Can't tell" section
   (`packages/app/workflows/BrokenWorkflowsView.vue:59`).
 
@@ -83,5 +82,3 @@ The reasons each screen has to tell apart, under [the four reasons and their ord
 |A repository's Workflows, a run, its log, code review|kept|kept|kept|kept|
 |Broken workflows|kept|kept|—|every tracked repository unavailable (**fix**: blank)|
 |Settings' tracked repositories and projects|—|none tracked (**fix**: "0 tracked repositories" alone)|—|—|
-
-An item's properties reading "None" before they are read is a bug to fix, not a state to design ([D7](DECISIONS.md#d7)).

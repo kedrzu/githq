@@ -135,6 +135,36 @@ test('on the first download the groups arrive one by one: those that answered ar
     await expect.element(page.getByRole('region', { name: 'Mentioned' })).toHaveTextContent(/Still arriving/);
 });
 
+test('first run and loading G16, G17: a full screen of ghosts while nothing has arrived, then ghosts under each group still arriving', async () => {
+    const view = mount(D1_ITEMS, {});
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    expect(page.getByRole('region').elements()).toHaveLength(0);
+
+    view.arrive({ reviewRequested: D1_MEMBERSHIP.reviewRequested });
+    await expect
+        .element(page.getByRole('region', { name: 'Review requested' }))
+        .toHaveTextContent(/Add rate-limit backoff to webhook worker/);
+    const mentioned = page.getByRole('region', { name: 'Mentioned' });
+    await expect.element(mentioned.getByRole('heading')).toHaveTextContent(/…$/);
+    await expect.element(mentioned).toHaveTextContent('Still arriving from GitHub');
+});
+
+test('first run and loading D8: "Nothing on your plate" never while a group is still arriving, only once every group is in and empty', async () => {
+    const view = mount([], {});
+    const nothing = page.getByText('Nothing on your plate');
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    await expect.element(nothing).not.toBeInTheDocument();
+
+    // Three answered with nothing; what is left to show is still on its way.
+    view.arrive({ reviewRequested: new Set(), authored: new Set(), assigned: new Set() });
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    await expect.element(nothing).not.toBeInTheDocument();
+
+    view.arrive({ mentioned: new Set() });
+    await expect.element(nothing).toBeVisible();
+    await expect.element(page.getByText('Still arriving from GitHub')).not.toBeInTheDocument();
+});
+
 test('Enter or a click opens the selected item; while one is open, moving the selection opens the next in its place', async () => {
     const view = mount(D1_ITEMS);
 

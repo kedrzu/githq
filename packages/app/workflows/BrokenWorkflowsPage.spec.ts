@@ -9,6 +9,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import { SyncEngine } from '@/sync/SyncEngine.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleStoredWorkflows } from '@/testing/sampleWorkflows.js';
@@ -40,10 +41,14 @@ test("Enter opens the selected workflow's latest failed run on its page in githq
     await expect.poll(() => router.currentRoute.value.path).toBe(`/${WEB}/actions/runs/7001`);
 });
 
-/** The screen, tracking one repository, signed in, with GitHub answering nothing. */
+/** The screen, tracking one repository, signed in, with GitHub answering nothing and no timer going off. */
 async function open() {
     const container = createContainer();
     container.set(LanguageContext, () => APP_LANGUAGE);
+    container.set(Clock, {
+        now: () => Date.now(),
+        schedule: () => () => {},
+    });
     container.set(Browser, createSignedInBrowser());
     setIndexedDbPersistence(container);
     const tracking = container.resolve(TrackingStore);
@@ -51,7 +56,8 @@ async function open() {
     tracking.choose({ repositories: [{ nameWithOwner: WEB, id: 'R_web' }], projects: [] });
     const store = container.resolve(WorkflowStore);
     await store.ready();
-    const poll = vi.spyOn(container.resolve(SyncEngine), 'pollWorkflowsNow').mockImplementation(() => {});
+    const sync = container.resolve(SyncEngine);
+    const poll = vi.spyOn(sync, 'pollNow').mockImplementation(() => Promise.resolve());
 
     const host = document.createElement('div');
     document.body.append(host);

@@ -1,38 +1,23 @@
-<!-- The frame of the first sign-in's steps (G2, G6), outside the app's shell: githq's name, where the user is among "Sign in → Choose what to track → First download" — the second step "Load your settings" while saved settings are offered (settings-sync G11) — and who is signed in; the step's screen below. -->
+<!-- The frame of the first sign-in's screen — choosing what to track (G2), or loading the settings saved to GitHub instead (settings-sync G11) — outside the app's shell: along the top the window's strip, as tall as the sidebar's, with githq's name at the left (clear of macOS's window controls in the desktop app, where the strip moves the window) and who is signed in at the right; the screen below. -->
 <script lang="ts" setup>
-import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { computed } from 'vue';
 
 import type { Viewer } from '@/auth/AuthStore.js';
 import Avatar from '@/components/Avatar.vue';
-import Stepper from '@/components/Stepper.vue';
 import Wordmark from '@/components/Wordmark.vue';
 import { WindowControls } from '@/services/WindowControls.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
-import * as l from './FirstSignInFrame.loc.js';
-
-const props = defineProps<{
+defineProps<{
   viewer: Viewer;
-  /** `load`: the choosing step, offering the settings saved to GitHub instead (settings-sync G11). */
-  step: 'choose' | 'load' | 'download';
 }>();
 
 defineSlots<{
-  /** The step's screen; it scrolls under the top bar. */
+  /** The screen; it scrolls under the top bar. */
   default(): unknown;
 }>();
 
-const t = useTranslate();
 const windowControls = useService(WindowControls);
-
-const steps = computed(() => [
-  t(l.signIn),
-  props.step === 'load' ? t(l.loadYourSettings) : t(l.chooseWhatToTrack),
-  t(l.firstDownload),
-]);
-const current = computed(() => (props.step === 'download' ? 2 : 1));
 </script>
 
 <template>
@@ -42,11 +27,6 @@ const current = computed(() => (props.step === 'download' ? 2 : 1));
       v-bind="WINDOW_DRAG_REGION"
     >
       <Wordmark :class="windowControls.overlaid && css.firstSignInFrame_name_clearOfControls" />
-      <Stepper
-        :steps="steps"
-        :current="current"
-        :label="t(l.steps)"
-      />
       <span :class="css.firstSignInFrame_account">
         <Avatar
           :name="viewer.login"
@@ -71,25 +51,24 @@ const current = computed(() => (props.step === 'download' ? 2 : 1));
 }
 
 .firstSignInFrame_top {
-  display: grid;
+  display: flex;
   flex: none;
-  grid-template-columns: 1fr auto 1fr;
+  gap: $spacing-12;
   align-items: center;
-  height: 56px;
-  padding: 0 $spacing-24;
-  border-bottom: 1px solid $color-border;
+  justify-content: space-between;
+  height: $window-controls-height;
+  padding: 0 $spacing-20;
 }
 
-// Past macOS's window controls, with the stepper still in the middle.
+// Past macOS's window controls: the design's three 12px buttons 8px apart, 8px after them, and the strip's gap.
 .firstSignInFrame_name_clearOfControls {
-  margin-left: 56px;
+  margin-left: 64px;
 }
 
 .firstSignInFrame_account {
   display: inline-flex;
   gap: $spacing-8;
   align-items: center;
-  justify-self: end;
   font-size: $font-size-sm;
   color: $color-fg-2;
 }

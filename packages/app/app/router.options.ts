@@ -13,7 +13,6 @@ import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
     BROKEN_WORKFLOWS_PATH,
-    FIRST_DOWNLOAD_PATH,
     GITHUB_RESERVED_SEGMENTS,
     PROJECT_PATHS,
     PROJECT_SETTINGS_PATHS,
@@ -99,19 +98,12 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             redirect: to => getItemPageRedirect(to, index === 0 ? 'item-issue' : 'item-pull'),
         };
     }
-    // The first sign-in (D20): choosing what to track (G2), then the first download (G6) — full screens of their
-    // own, before the shell.
+    // The first sign-in (D20): choosing what to track (G2) — a full screen of its own, before the shell.
     yield {
         path: TRACKING_CHOICE_PATH,
         name: 'tracking-choice',
         component: () => import('@/tracking/TrackingChoicePage.vue'),
         meta: { auth: 'signedIn', firstSignIn: 'choose' },
-    };
-    yield {
-        path: FIRST_DOWNLOAD_PATH,
-        name: 'first-download',
-        component: () => import('@/tracking/FirstDownloadPage.vue'),
-        meta: { auth: 'signedIn', firstSignIn: 'download' },
     };
     // Settings, one screen (D15), its section in `?tab=`. The address tracking used to have settles on it, so an
     // old link never hands off to github.com.

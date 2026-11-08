@@ -6,8 +6,17 @@ import { matchText } from '@/testing/matchText.js';
 
 import * as stories from './BrokenWorkflowsView.stories.js';
 
-const { Everything, NotKnownYet, NothingBroken, NothingBrokenOneRefused, NothingTracked, PartlyKnown } =
-    composeStories(stories);
+const {
+    Everything,
+    NoRepositoryCanBeRead,
+    NoneShown,
+    NotKnownYet,
+    NothingBroken,
+    NothingBrokenOneRefused,
+    NothingTracked,
+    PartlyKnown,
+    SomeRepositoriesCantBeRead,
+} = composeStories(stories);
 
 const group = (name: string) => page.getByRole('region', { name, exact: true });
 /** The workflows' names, in the order the rows show them. */
@@ -18,6 +27,72 @@ const rowNames = () =>
         .map(button => button.firstElementChild?.textContent);
 /** The name of the selected row's workflow; `null` with none. */
 const selected = () => document.querySelector('button[aria-current="true"]')?.firstElementChild?.textContent ?? null;
+
+test('ES23: GitHub failing with no repository read says so instead of ghosts; R asks again', async () => {
+    const retry = vi.fn(() => Promise.resolve());
+    await NoRepositoryCanBeRead.run({
+        args: { ...NoRepositoryCanBeRead.args, cantBeRead: { kind: 'failing', retry } },
+    });
+
+    await expect.element(page.getByRole('heading', { name: "GitHub isn't answering" })).toBeVisible();
+    await expect
+        .element(
+            page.getByText(
+                matchText(
+                    "githq couldn't read the workflows of 4 of your tracked repositories, so it can't tell what is broken there. It tries again by itself.",
+                ),
+            ),
+        )
+        .toBeVisible();
+    await expect.element(page.getByText(matchText('4 repositories'))).toBeVisible();
+
+    await userEvent.keyboard('r');
+    expect(retry).toHaveBeenCalledTimes(1);
+});
+
+test('ES23: offline or paused with no repository read says that, in the plural, with nothing to press', async () => {
+    await NoRepositoryCanBeRead.run({
+        args: { ...NoRepositoryCanBeRead.args, cantBeRead: { kind: 'offline' } },
+    });
+
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect
+        .element(page.getByText(/so\sthe\sworkflows\sof\s4\sof\syour\stracked\srepositories\shaven't\sarrived\syet/u))
+        .toBeVisible();
+    await expect.element(page.getByRole('button', { name: /Try again/u })).not.toBeInTheDocument();
+});
+
+test('ES23: GitHub in the way with some repositories read and nothing to list says so for the rest instead of ghosts', async () => {
+    await SomeRepositoriesCantBeRead.run();
+
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    await expect
+        .element(page.getByText(/so\sthe\sworkflows\sof\s3\sof\syour\stracked\srepositories\shaven't\sarrived\syet/u))
+        .toBeVisible();
+    await expect.element(page.getByText(matchText('4 repositories'))).toBeVisible();
+    await expect.element(page.getByText(/reading/u)).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /All green/u })).not.toBeInTheDocument();
+});
+
+test('GitHub showing none of them says so over the list saying why, and claims nothing green', async () => {
+    await NoneShown.run();
+
+    await expect.element(page.getByRole('heading', { name: "GitHub doesn't show the workflows" })).toBeVisible();
+    await expect.element(group("Can't tell")).toHaveTextContent(/Actions turned off.*GitHub refused/u);
+    await expect.element(page.getByRole('heading', { name: /All green/u })).not.toBeInTheDocument();
+    await expect.element(page.getByText(matchText('2 repositories'))).toBeVisible();
+});
+
+test('with a repository read, GitHub in the way changes nothing: rows, ghosts and the green stay', async () => {
+    const cantBeRead = { kind: 'offline' } as const;
+    await PartlyKnown.run({ args: { ...PartlyKnown.args, cantBeRead } });
+    await expect.element(group("Can't tell")).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+
+    await NothingBrokenOneRefused.run({ args: { ...NothingBrokenOneRefused.args, cantBeRead } });
+    await expect.element(page.getByRole('heading', { name: /All green/u })).toBeVisible();
+    await expect.element(page.getByRole('heading', { name: "You're offline" })).not.toBeInTheDocument();
+});
 
 test('W2: broken workflows grouped by how new the break is, newest first, each naming its repository', async () => {
     await Everything.run();
@@ -85,8 +160,7 @@ test('W2c: while some repositories are unread the total is "so far" and nothing 
     await PartlyKnown.run();
 
     await expect.element(page.getByText(matchText('1 so far · reading 2 repositories'))).toBeVisible();
-    await expect.element(group('Not known yet')).toHaveTextContent(/mlaine\/tasklet.*not read yet/u);
-    await expect.element(group('Not known yet')).toHaveTextContent(/fitloop\/webapp/u);
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
     await expect.element(page.getByText('All green, exit code 0')).not.toBeInTheDocument();
 });
 
@@ -101,10 +175,12 @@ test("W2c: a repository GitHub shows nothing of is under Can't tell, at the bott
     expect(regions.at(-1)?.getAttribute('aria-label')).toBe("Can't tell");
 });
 
-test('nothing read yet: no zero and no green', async () => {
+test('first run and loading ES28: nothing read yet — ghost rows, no zero and no green', async () => {
     await NotKnownYet.run();
 
     await expect.element(page.getByText(matchText('reading 2 repositories'))).toBeVisible();
+    await expect.element(page.getByText('Still arriving from GitHub')).toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { level: 2 })).not.toBeInTheDocument();
     await expect.element(page.getByText(/^none\s/u)).not.toBeInTheDocument();
     await expect.element(page.getByText('All green, exit code 0')).not.toBeInTheDocument();
 });

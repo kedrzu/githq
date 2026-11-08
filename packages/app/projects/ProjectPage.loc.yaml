@@ -26,14 +26,6 @@ sortMilestone:
   en: Milestone
 sortAssignees:
   en: Assignees
-arrivingTitle:
-  en: '{name} is still arriving'
-arrivingDetail:
-  plural: count
-  en:
-    zero: githq is copying its items; they show here as soon as they have arrived.
-    one: githq is copying its items; 1 open item has arrived so far.
-    many: githq is copying its items; {count} open items have arrived so far.
 onlyWhatConcerns:
   plural: count
   en:

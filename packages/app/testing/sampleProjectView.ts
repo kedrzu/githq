@@ -35,6 +35,8 @@ export interface SampleProjectViewParams {
     readonly answered?: ReadonlySet<string> | null;
     /** The tabs marked modified locally. */
     readonly modifiedViews?: readonly number[];
+    /** The project's items are still downloading (first run and loading ES18, ES30). */
+    readonly arriving?: boolean;
 }
 
 /**
@@ -42,7 +44,7 @@ export interface SampleProjectViewParams {
  * evaluated (or GitHub's answer), the groups, the tabs and the orders.
  */
 export function sampleProjectView(params: SampleProjectViewParams) {
-    const { project, view, entries, answered = null, modifiedViews = [] } = params;
+    const { project, view, entries, answered = null, modifiedViews = [], arriving = false } = params;
     const defaults = view
         ? getProjectViewDefaults(project, view)
         : {
@@ -91,8 +93,10 @@ export function sampleProjectView(params: SampleProjectViewParams) {
                   sort: options.sort,
                   texts: TEXTS,
                   today: SAMPLE_TODAY,
+                  arriving,
               })
             : null,
+        arriving,
         itemCount: entries.filter(entry => !entry.item.isArchived).length,
         answeredTerm: filter.kind === 'github' ? filter.term : null,
         sorts,

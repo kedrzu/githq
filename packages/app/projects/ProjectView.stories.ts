@@ -18,6 +18,7 @@ import { sampleProjectView } from '@/testing/sampleProjectView.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import ProjectView from './ProjectView.vue';
+import { getProjectViewDefaults } from './projectViewOptions.js';
 
 const meta = {
     component: ProjectView,
@@ -113,7 +114,47 @@ export const EmptyProject: Story = {
     },
 };
 
+/** ES19: on the board a filter leaves nothing: what it hides and the way to clear it, over the columns that stay. */
+export const BoardFilteredOut: Story = {
+    args: sampleProjectView({
+        project: SAMPLE_PROJECT,
+        view: SAMPLE_VIEW_BLOCKED,
+        entries: SAMPLE_PROJECT_ENTRIES,
+        options: {
+            ...getProjectViewDefaults(SAMPLE_PROJECT, SAMPLE_VIEW_BLOCKED).options,
+            layout: 'board',
+            grouping: 'field:F_status',
+        },
+    }),
+};
+
+/** ES20: GitHub won't show it: the toolbar over why, with the way to GitHub. */
+export const NotShown: Story = {
+    args: {
+        ...sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [] }),
+        cantBeRead: { kind: 'hidden', url: SAMPLE_PROJECT.url },
+    },
+};
+
+/** Its items on their way and GitHub failing: why, in place of ghosts that would spin on (D6). */
+export const ItemsFailing: Story = {
+    args: {
+        ...sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [], arriving: true }),
+        cantBeRead: { kind: 'failing', retry: fn() },
+    },
+};
+
 /** A roadmap on GitHub, shown as a list. */
 export const Roadmap: Story = {
     args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_ROADMAP, entries: SAMPLE_PROJECT_ENTRIES }),
+};
+
+/** A tracked project whose items are still downloading, none in yet: a screen of ghost rows, never "no items yet" (ES18). */
+export const ItemsArriving: Story = {
+    args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_SPRINT, entries: [], arriving: true }),
+};
+
+/** Its board while its items download: the Status columns' heads, without counts, over ghost cards (ES30). */
+export const BoardItemsArriving: Story = {
+    args: sampleProjectView({ project: SAMPLE_PROJECT, view: SAMPLE_VIEW_BOARD, entries: [], arriving: true }),
 };

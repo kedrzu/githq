@@ -74,6 +74,7 @@ import { formatList } from '@/utils/formatList.js';
 import { formatTime } from '@/utils/formatTime.js';
 import { goBack } from '@/utils/goBack.js';
 import { isLayerOpen } from '@/utils/isLayerOpen.js';
+import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
 import AnchoredList from './AnchoredList.vue';
 import type { AnchoredListExposed } from './AnchoredList.vue';
@@ -394,7 +395,7 @@ const rows = computed((): readonly ReviewRow[] => {
 useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, arrival });
 const githubUrl = computed(() => {
   const { owner, name, number } = props.reference;
-  return `https://github.com/${owner}/${name}/pull/${number}/files`;
+  return getGitHubUrl(`${owner}/${name}/pull/${number}/files`);
 });
 /** The file in view, unless it is a gone one's entry, which can't be marked, selected or collapsed. */
 const currentFile = computed(() => {

@@ -1,6 +1,9 @@
 import { expect, test } from '../fixtures.js';
+import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { BrokenWorkflowsScreenHarness } from '../harnesses/BrokenWorkflowsScreen.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
+import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
+import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
 import { TrackedSettingsScreenHarness } from '../harnesses/TrackedSettingsScreen.harness.js';
 import { WorkflowRunScreenHarness } from '../harnesses/WorkflowRunScreen.harness.js';
@@ -42,6 +45,33 @@ test('a workflow failing on the default branch: the sidebar counts it and marks 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL('/dashboard/workflows');
     await expect(screen.workflow('Deploy')).toHaveAttribute('aria-current', 'true');
+});
+
+test('first run and loading D6, ES23: GitHub failing before any repository is read says so instead of ghosts, and R reads them', async ({
+    page,
+    github,
+}) => {
+    const { world } = createSampleTrackedWork();
+    world.workflow({ repository: SAMPLE_REPOSITORY, name: 'Probe', runs: [{ conclusion: 'success', minutesAgo: 20 }] });
+    world.install(github);
+    github.graphql('Viewer', SAMPLE_VIEWER);
+    const workflows = `/repos/${SAMPLE_REPOSITORY}/actions/workflows`;
+    github.rest('GET', workflows, () => ({ status: 502, json: { message: 'Bad gateway' } }));
+    await page.goto('/');
+    await new LandingHarness(page).signInWithToken(SAMPLE_TOKEN);
+    await new FirstSignInHarness(page).trackAndOpenMyWork();
+
+    // Its sidebar's entry is drawn only with something known broken (actions W1).
+    await page.goto('/dashboard/workflows');
+    const screen = new BrokenWorkflowsScreenHarness(page);
+    const failing = screen.root.getByRole('heading', { name: "GitHub isn't answering" });
+    await expect(failing).toBeVisible();
+    await expect(screen.root).toContainText(/so\sit\scan't\stell\swhat\sis\sbroken/u);
+
+    world.install(github);
+    await page.keyboard.press('r');
+    await expect(screen.allGreen).toBeVisible();
+    await expect(failing).toHaveCount(0);
 });
 
 test('back from a run, the row moved to is still the selected one', async ({ page, github }) => {

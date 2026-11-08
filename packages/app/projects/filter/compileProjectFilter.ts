@@ -5,6 +5,7 @@ import { escapeRegExp } from '@/utils/escapeRegExp.js';
 
 import type { ProjectEntry } from '../ProjectTypes.js';
 import type { ProjectFilterOperator, ProjectFilterTerm, ProjectFilterValue } from './parseProjectFilter.js';
+import { getProjectFieldsNamed } from './getProjectFieldsNamed.js';
 import { parseProjectFilter } from './parseProjectFilter.js';
 
 // What githq evaluates of GitHub's project filter syntax, as GitHub documents it in "Filtering projects"
@@ -130,7 +131,9 @@ function compileTerm(term: ProjectFilterTerm, params: CompileProjectFilterParams
 
     if (BUILT_IN.has(qualifier)) {
         // A project field of the same name: which of the two GitHub means is unknown.
-        return getFieldsNamed(params.fields, qualifier).length > 0 ? null : compileBuiltIn(qualifier, values, params);
+        return getProjectFieldsNamed(params.fields, qualifier).length > 0
+            ? null
+            : compileBuiltIn(qualifier, values, params);
     }
 
     const field = findField(params.fields, qualifier);
@@ -230,7 +233,7 @@ function compileIs(value: ProjectFilterValue, params: CompileProjectFilterParams
 
 /** `has:<name>`: the entry has a value of it. */
 function compilePresence(name: string, fields: readonly ProjectField[]): Predicate | null {
-    if (RESERVED.has(name) && (!BUILT_IN.has(name) || getFieldsNamed(fields, name).length > 0)) {
+    if (RESERVED.has(name) && (!BUILT_IN.has(name) || getProjectFieldsNamed(fields, name).length > 0)) {
         return null;
     }
 
@@ -395,16 +398,9 @@ function anyOf(
 
 /** The field a qualifier names: by name, case-insensitive, spaces written as `-` or the name quoted. */
 function findField(fields: readonly ProjectField[], qualifier: string) {
-    const matching = getFieldsNamed(fields, qualifier);
+    const matching = getProjectFieldsNamed(fields, qualifier);
     // Two fields answering to the name: which one GitHub means is unknown.
     return matching.length === 1 ? (matching[0] ?? null) : null;
-}
-
-function getFieldsNamed(fields: readonly ProjectField[], qualifier: string) {
-    return fields.filter(field => {
-        const name = field.name.toLowerCase();
-        return name === qualifier || name.replaceAll(/\s+/g, '-') === qualifier;
-    });
 }
 
 /**

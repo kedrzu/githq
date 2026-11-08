@@ -1,0 +1,26 @@
+assignee:
+  en: Assignee
+label:
+  en: Label
+milestone:
+  en: Milestone
+repo:
+  en: Repository
+type:
+  en: Type
+title:
+  en: Title
+is:
+  en: State
+equals:
+  en: '{subject} is {values}'
+notEquals:
+  en: '{subject} is not {values}'
+empty:
+  en: '{subject} is empty'
+set:
+  en: '{subject} is set'
+text:
+  en: Text contains “{text}”
+notText:
+  en: Text doesn't contain “{text}”

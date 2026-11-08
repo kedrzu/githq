@@ -30,3 +30,9 @@ notTracked:
   en: not tracked
 showFilter:
   en: 'Filter: {filter}'
+yourWork:
+  en: your work
+nothingIn:
+  en: Nothing in {group}
+showAll:
+  en: Show all of My work
