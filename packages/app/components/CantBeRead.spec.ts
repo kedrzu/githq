@@ -6,7 +6,7 @@ import { formatTime } from '@/utils/formatTime.js';
 
 import * as stories from './CantBeRead.stories.js';
 
-const { Failing, FailingGroup, Hidden, Offline, Paused } = composeStories(stories);
+const { Failing, FailingGroup, Hidden, Offline, Paused, Refused, RefusedGroup } = composeStories(stories);
 
 test('offline and paused say when it resolves and offer nothing to press (D12)', async () => {
     await Offline.run();
@@ -72,4 +72,18 @@ test('hidden or gone links to GitHub, and O opens it (D18)', async () => {
     await expect.element(link).toHaveAttribute('aria-keyshortcuts', 'O');
     await userEvent.keyboard('o');
     expect(open).toHaveBeenCalledWith('https://github.com/fitloop/webapp', '_blank', 'noopener,noreferrer');
+});
+
+test("GitHub refusing a tracked copy's changes says so, not that it hides it, and links to GitHub (D18)", async () => {
+    await Refused.run();
+
+    await expect
+        .element(page.getByRole('heading', { name: "GitHub refuses to list fitloop/webapp's closed issues" }))
+        .toBeVisible();
+    await expect.element(page.getByText('It asks again hourly.', { exact: false })).toBeVisible();
+    await expect.element(page.getByText("GitHub doesn't show", { exact: false })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('aria-keyshortcuts', 'O');
+
+    await RefusedGroup.run();
+    await expect.element(page.getByText('GitHub refuses to list this.', { exact: true })).toBeVisible();
 });

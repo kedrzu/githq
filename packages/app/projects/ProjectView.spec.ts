@@ -123,6 +123,10 @@ test('first run and loading ES18, ES30: items still downloading show ghosts — 
 test('first run and loading D6, ES18: offline with its items on their way and none in stands for the ghosts', async () => {
     mount(SAMPLE_VIEW_SPRINT, { entries: [], arriving: true, cantBeRead: { kind: 'offline' } });
     await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    // The project and its views are in: only its items are missing.
+    await expect
+        .element(page.getByText(`so ${SAMPLE_PROJECT.title}'s items haven't arrived yet.`, { exact: false }))
+        .toBeVisible();
     await expect.element(page.getByText('Still arriving from GitHub')).not.toBeInTheDocument();
     await expect.element(page.getByRole('heading', { name: /has no items yet/ })).not.toBeInTheDocument();
 });

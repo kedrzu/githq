@@ -122,7 +122,10 @@ interface RepositoryGraph {
     pausedUntil: number | null;
     /** The check GitHub failing or the allowance asked for by itself; cancels it. */
     cancelRetry: (() => void) | null;
-    /** Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. */
+    /**
+     * Why the last older page failed; apart from {@link problem}, for a good page says nothing of the refs. A settled
+     * refs check clears it, for what it found replaces it.
+     */
     moreProblem: GraphProblem | null;
     /** The last older page was refused: the allowance is spent until then. */
     morePausedUntil: number | null;
@@ -998,11 +1001,13 @@ export const CommitGraphStore = defineService({
 
         /**
          * The allowance is spent, or GitHub asked to wait: says until when, publishes it, and checks the refs again
-         * then by itself.
+         * then by itself. Like any settled check, it replaces what an older page said.
          */
         function pause(graph: RepositoryGraph, until = rateLimits.get('graphql')?.resetAt.getTime() ?? clock.now()) {
             graph.problem = null;
             graph.pausedUntil = until;
+            graph.moreProblem = null;
+            graph.morePausedUntil = null;
             retryLater(graph, until - clock.now());
             publish(graph);
         }
@@ -1010,7 +1015,8 @@ export const CommitGraphStore = defineService({
         /**
          * Says why the refs check, or the joining after it, failed: GitHub refusing for the rate is a pause. GitHub
          * failing is asked again by itself; offline waits for the connection ({@link reopenOffline}), a repository
-         * GitHub doesn't show for the user to open again.
+         * GitHub doesn't show for the user to open again. The failure replaces what an older page said: an older page
+         * failed offline would otherwise have a reconnect read the graph again at once, and again, after every failure.
          */
         function noteFailure(graph: RepositoryGraph, error: unknown) {
             const failure = readFailure(error);
@@ -1021,6 +1027,8 @@ export const CommitGraphStore = defineService({
 
             graph.problem = failure.problem;
             graph.pausedUntil = null;
+            graph.moreProblem = null;
+            graph.morePausedUntil = null;
             if (failure.problem === 'failing') {
                 retryLater(graph, FAILED_CHECK_RETRY_MS);
             }

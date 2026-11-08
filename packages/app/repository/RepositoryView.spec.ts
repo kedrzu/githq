@@ -398,13 +398,15 @@ test('ES16: tracked, GitHub refusing its changes leaves what has arrived its own
     });
 
     await expect.element(page.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
-    await expect.element(page.getByRole('heading', { name: /^GitHub doesn't show/ })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: /^GitHub refuses/ })).not.toBeInTheDocument();
 });
 
-test("ES16: tracked, GitHub refusing its changes is told over what hasn't arrived", async () => {
+test("ES16: tracked, GitHub refusing its changes is told over what hasn't arrived, naming only that", async () => {
     mount({ items: [], arriving: true, cantBeRead: { kind: 'refused', url: GITHUB_URL } });
 
-    await expect.element(page.getByRole('heading', { name: `GitHub doesn't show ${SAMPLE_REPOSITORY}` })).toBeVisible();
+    await expect
+        .element(page.getByRole('heading', { name: `GitHub refuses to list ${SAMPLE_REPOSITORY}'s open issues` }))
+        .toBeVisible();
     await expect.element(page.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute('href', GITHUB_URL);
 });
 
@@ -424,6 +426,15 @@ test('filtered out: the state hiding all the section holds is named, with a way 
     expect(view.state.value.issues).toBe('all');
 });
 
+test('filtered out, not tracked: no count, as the copy holds only what githq has read of it', async () => {
+    mount({ tracked: false, items: SAMPLE_REPOSITORY_ITEMS.filter(item => item.state !== 'OPEN') });
+
+    await expect
+        .element(page.getByText('State is open hides the issues githq has read.', { exact: true }))
+        .toBeVisible();
+    await expect.element(page.getByText(/hides all|hides the 1/)).not.toBeInTheDocument();
+});
+
 test('ES17: not tracked, GitHub failing with nothing held leaves the name, the chip and Try again, on R', async () => {
     const retry = vi.fn(() => Promise.resolve());
     mount({ tracked: false, items: [], arriving: true, cantBeRead: { kind: 'failing', retry } });
@@ -441,6 +452,10 @@ test('not tracked, a state that can not be read while the section holds others k
     mount({ tracked: false, items: closed, arriving: true, cantBeRead: { kind: 'offline' } });
 
     await expect.element(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
+    // Only the state's issues are missing, not the repository.
+    await expect
+        .element(page.getByText(`so ${SAMPLE_REPOSITORY}'s open issues haven't arrived yet.`, { exact: false }))
+        .toBeVisible();
     await expect.element(page.getByRole('button', { name: /^Group:/ })).toBeVisible();
 });
 

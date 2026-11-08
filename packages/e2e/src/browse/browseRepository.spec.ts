@@ -269,7 +269,7 @@ test('filtered out, nothing there: a state hiding all a section holds offers to 
     await page.getByRole('button', { name: 'Open', exact: true }).click();
     await page.getByRole('menuitemradio', { name: 'Closed', exact: true }).click();
     await expect(repository.root.getByRole('heading', { name: 'Nothing matches this filter' })).toBeVisible();
-    await expect(repository.root).toContainText('State is closed hides the 1 issue.');
+    await expect(repository.root).toContainText('State is closed hides the issues githq has read.');
     await repository.root.getByRole('button', { name: 'Clear filter' }).click();
     await expect(repository.row('Issue 001')).toBeVisible();
 

@@ -791,6 +791,55 @@ test('coming back online reads a graph again when only its older page failed for
     expect(graphs.getFreshness('acme/web').kind).toBe('fresh');
 });
 
+test("a refs check failing after a reconnect replaces the older page's offline: it is not read again at once", async () => {
+    const hidden = {
+        data: null,
+        errors: [{ type: 'NOT_FOUND', path: ['repository'], message: 'Could not resolve to a Repository.' }],
+    };
+    for (const failure of [undefined, hidden]) {
+        const world = fakeCommitGitHub();
+        const web = world.repository('acme/web');
+        web.line('c', 0, 250);
+        web.branch('main', 'c249');
+        let historiesFailing = false;
+        let refsFailing = false;
+        const { graphs, session, requests } = setup(uniqueLogin(), {
+            answer: request => {
+                switch (request.operation) {
+                    case 'CommitHistories':
+                        return historiesFailing ? undefined : world.answer(request);
+                    case 'RepositoryCommitRefs':
+                        return refsFailing ? failure : world.answer(request);
+                    default:
+                        return world.answer(request);
+                }
+            },
+        });
+        const checks = () => requests().filter(request => request.operation === 'RepositoryCommitRefs').length;
+        // A loop would never let the clock settle: from the fifth check on GitHub never answers.
+        const never = createPromise();
+        session.github.holdIf = request =>
+            request.operation === 'RepositoryCommitRefs' && checks() > 4 ? never.promise : null;
+        graphs.hold('acme/web');
+        await graphs.open('acme/web');
+        historiesFailing = true;
+        session.setOnline(false);
+        await graphs.loadMore('acme/web');
+        expect(graphs.getFreshness('acme/web')).toMatchObject({ kind: 'stale', reason: 'offline' });
+
+        refsFailing = true;
+        const asked = checks();
+        session.setOnline(true);
+        await session.clock.advance(0);
+
+        expect(checks()).toBe(asked + 1);
+        expect(graphs.getFreshness('acme/web')).toMatchObject({
+            kind: 'stale',
+            reason: failure ? 'hidden' : 'failing',
+        });
+    }
+});
+
 test('a reconnect during a running check reads the graph again once it ended, left offline', async () => {
     const world = fakeCommitGitHub();
     const web = world.repository('acme/web');

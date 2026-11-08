@@ -1,4 +1,4 @@
-<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none; GitHub failing offers "Try again" (R), hidden or gone — or refusing a tracked copy's changes, told alike — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
+<!-- What a screen, a list's group or a board column says when GitHub won't show its data or can't be reached (first run and loading D6, D8, D12, D18, `Empty / Can't be read · screen | group | column`, ES25): one pattern, its cause picking an amber icon, the status bar's own words for the title, a line and the one action the cause allows — offline and paused resolve by themselves, so they offer none; GitHub failing offers "Try again" (R), hidden or gone, or GitHub refusing to list a tracked copy's changes — in words of its own, close to the status bar's, as the repository is shown — "Open on GitHub" (O). In a group or a column one short line, the header saying what it is; the keys are a screen's only, as a list may have several groups. What it says of a `thing` that is many reads as many (`plural`): "before the commits were read. They come in by themselves at 14:20." (ES22). -->
 <script lang="ts">
 /** The key of "Try again" (D18), as where settings saving stopped. */
 const RETRY_KEY = 'R';
@@ -65,12 +65,18 @@ const look = computed((): { icon: LucideIcon; title: string; detail: string; not
         note: t(l.failingNote),
       };
     case 'hidden':
-    case 'refused':
       return {
         icon: EyeOff,
         title: t(l.hiddenTitle, { thing }),
         detail: t(l.hiddenLine),
         note: t(l.hiddenNote),
+      };
+    case 'refused':
+      return {
+        icon: EyeOff,
+        title: t(l.refusedTitle, { thing }),
+        detail: t(l.refusedLine, { thing }),
+        note: t(l.refusedNote),
       };
     default:
       return assertNever(cause);

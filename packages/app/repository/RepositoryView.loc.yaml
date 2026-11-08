@@ -112,6 +112,22 @@ stateHidesPullRequests:
   en:
     one: '{state} hides the 1 pull request.'
     many: '{state} hides all {count} pull requests.'
+stateHidesReadIssues:
+  en: '{state} hides the issues githq has read.'
+stateHidesReadPullRequests:
+  en: '{state} hides the pull requests githq has read.'
+issuesOf:
+  en: "{repository}'s issues"
+openIssuesOf:
+  en: "{repository}'s open issues"
+closedIssuesOf:
+  en: "{repository}'s closed issues"
+pullRequestsOf:
+  en: "{repository}'s pull requests"
+openPullRequestsOf:
+  en: "{repository}'s open pull requests"
+closedPullRequestsOf:
+  en: "{repository}'s closed pull requests"
 readCount:
   en: '{read} of {total}'
 readMore:

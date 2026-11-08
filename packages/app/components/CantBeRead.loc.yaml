@@ -26,6 +26,12 @@ hiddenLine:
   en: It may be private to githq, its organisation may not have approved githq, or it is gone.
 hiddenNote:
   en: GitHub doesn't show this.
+refusedTitle:
+  en: GitHub refuses to list {thing}
+refusedLine:
+  en: GitHub won't say what changed in {thing}, so githq can't read what's missing. It asks again hourly.
+refusedNote:
+  en: GitHub refuses to list this.
 tryAgain:
   en: Try again
 openOnGitHub:

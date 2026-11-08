@@ -33,6 +33,14 @@ export const Hidden: Story = {
     args: { cause: { kind: 'hidden', url: 'https://github.com/fitloop/webapp' }, thing: 'fitloop/webapp' },
 };
 
+/** GitHub refusing to list a tracked repository's changes, its copy kept: "Open on GitHub" (O). */
+export const Refused: Story = {
+    args: {
+        cause: { kind: 'refused', url: 'https://github.com/fitloop/webapp' },
+        thing: "fitloop/webapp's closed issues",
+    },
+};
+
 /** A group not in yet while offline: one amber line. */
 export const OfflineGroup: Story = { args: { place: 'group' }, decorators: [GROUP] };
 
@@ -42,6 +50,8 @@ export const PausedGroup: Story = { args: { ...Paused.args, place: 'group' }, de
 export const FailingGroup: Story = { args: { ...Failing.args, place: 'group' }, decorators: [GROUP] };
 
 export const HiddenGroup: Story = { args: { ...Hidden.args, place: 'group' }, decorators: [GROUP] };
+
+export const RefusedGroup: Story = { args: { ...Refused.args, place: 'group' }, decorators: [GROUP] };
 
 /** A board column not in yet while offline: a small amber note. */
 export const OfflineColumn: Story = { args: { place: 'column' }, decorators: [COLUMN] };
