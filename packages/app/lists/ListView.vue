@@ -1521,6 +1521,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
                   :class="[
                     css.listView_row,
                     current.rail && css[`listView_row_rail${current.depth}`],
+                    current.depth > 0 && css[`listView_row_depth${current.depth}`],
                     selectedKey === current.entry.key && css.listView_row_selected,
                     isChecked(current.entry.key) && css.listView_row_checked,
                     isUnmatched(current) && css.listView_row_unmatched,
@@ -1742,12 +1743,19 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
 }
 
 .listView_row {
-  position: relative;
-  cursor: default;
+  @include row-surface;
 
-  &:hover {
-    background: $color-bg-2;
-  }
+  cursor: default;
+}
+
+// A row indented under another (`ItemRow`, `StackRow`: its text 42px in, a pull request of a nested stack's 66px): its
+// surface starts 8px before its text, clear of the rail.
+.listView_row_depth1 {
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 34px;
+}
+
+.listView_row_depth2 {
+  --row-surface-inset: #{$spacing-2} #{$spacing-8} #{$spacing-2} 58px;
 }
 
 // A stack's pull requests under an issue (D12, D23): a rail below the icon of what expands them — the issue's, or a
@@ -1770,10 +1778,10 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   left: 42px + 7px;
 }
 
-// In the 16px gutter left of the row's icon, level with it: the row's padding and the icon's own offset.
+// In the 16px gutter left of the row's icon, level with it: the row's inset, its surface's padding and the icon's own offset.
 .listView_stackToggle {
   position: absolute;
-  top: $spacing-7 + $spacing-2;
+  top: $spacing-2 + $spacing-8 + $spacing-2;
   left: calc(($spacing-16 - 14px) / 2);
   display: flex;
   align-items: center;
@@ -1806,8 +1814,8 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
   @include row-selected;
 }
 
-.listView_row_checked,
-.listView_row_checked:hover {
+.listView_row_checked::after,
+.listView_row_checked:hover::after {
   background: rgba($color-accent, 0.1);
 }
 

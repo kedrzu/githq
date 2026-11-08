@@ -196,9 +196,11 @@ $window-controls-height: 36px;
 $workflow-name-width: 230px;
 $workflow-repository-width: 130px;
 $workflow-ref-width: 130px;
-$workflow-row-height: 34px;
-// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`).
-$workflow-run-line-height: 30px;
+// A row's height: its 34px line and the 2px its surface is inset by above and below.
+$workflow-row-height: 38px;
+// A line of an unfolded workflow, under its row (`WorkflowRunLine`, `UnfoldedWorkflowRuns`): 30px and the 2px its
+// surface is inset by above and below.
+$workflow-run-line-height: 34px;
 // What an unfolded workflow's lines are indented by, so they start under the name of its row: the row's padding, its
 // icon and the gap after it.
 $workflow-run-indent: 41px;
@@ -338,24 +340,50 @@ $motion-slide-distance: 4px;
     }
 }
 
-// The selected row of a list: on hover too, with the accent's edge.
-@mixin row-selected {
-    &,
-    &:hover {
-        background: $color-sel;
-        box-shadow: inset 2px 0 0 $color-accent;
+// A row of a list: the whole row is the hit area, rows touch with no gap between them, and what
+// the row's state lights up — hover, selection — is a rounded surface inset in it, under its content. A row indented
+// under another moves its surface's left edge with `--row-surface-inset`, 8px before its text. The surface is the
+// row's `::after`: a row keeps `::before` for itself (a stack's rail).
+$row-surface-inset: $spacing-2 $spacing-8;
+
+@mixin row-surface($hover: $color-bg-2) {
+    position: relative;
+    isolation: isolate;
+
+    &::after {
+        position: absolute;
+        inset: var(--row-surface-inset, #{$row-surface-inset});
+        z-index: -1;
+        pointer-events: none;
+        content: '';
+        border-radius: $radius-md;
+    }
+
+    &:hover::after {
+        background: $hover;
     }
 }
 
-// A line of an unfolded workflow that is its own button: the whole line lights up, the ring stays inside it.
-@mixin workflow-line-button {
-    &:hover {
-        background: $color-bg-3;
+// The selected row of a list (on a `row-surface`), hovered or not: its surface filled, in a faint outline of the accent.
+@mixin row-selected {
+    &::after,
+    &:hover::after {
+        background: $color-sel;
+        box-shadow: inset 0 0 0 1px rgba($color-accent, 0.3);
     }
+}
+
+// A line of an unfolded workflow that is its own button: the whole line is the hit area, its surface lights up, and
+// the keyboard's ring goes round the surface.
+@mixin workflow-line-button {
+    @include row-surface($color-bg-3);
 
     &:focus-visible {
+        outline: none;
+    }
+
+    &:focus-visible::after {
         outline: 2px solid $color-focus;
-        outline-offset: -2px;
     }
 }
 

@@ -236,10 +236,11 @@ const waitingDraft = computed(() =>
 </template>
 
 <style lang="scss" module="css">
+// Inside the list's row (`ListView`): its 2px by 8px inset, then 8px into the surface its selection lights up.
 .itemRow {
   display: flex;
   gap: $spacing-10;
-  padding: $spacing-7 $spacing-16;
+  padding: $spacing-10 $spacing-16;
 }
 
 .itemRow_nested {
