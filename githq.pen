@@ -63,7 +63,7 @@
       "type": "frame",
       "id": "pUvet",
       "x": 1560,
-      "y": 0,
+      "y": -776,
       "name": "App · Components",
       "fill": "#08090B",
       "layout": "vertical",
@@ -7925,9 +7925,9 @@
                               "id": "XODhV",
                               "name": "Surface",
                               "width": "fill_container",
+                              "cornerRadius": 6,
                               "gap": 10,
                               "padding": 8,
-                              "cornerRadius": 6,
                               "children": [
                                 {
                                   "id": "Ro9CD",
@@ -8509,6 +8509,11 @@
                           "ref": "TNgbS",
                           "name": "List row / Issue · assignee, field, label",
                           "descendants": {
+                            "XODhV": {
+                              "fill": "$sel",
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1
+                            },
                             "M2264f": {
                               "enabled": true
                             },
@@ -8576,11 +8581,6 @@
                                   "name": "Label bug"
                                 }
                               ]
-                            },
-                            "XODhV": {
-                              "fill": "$sel",
-                              "stroke": "#7B87F74D",
-                              "strokeWidth": 1
                             }
                           }
                         },
@@ -8931,6 +8931,9 @@
                           "name": "List row / PR · approved, merge, wide",
                           "width": 760,
                           "descendants": {
+                            "XODhV": {
+                              "stroke": "#00000000"
+                            },
                             "Ro9CD/TZbKU": {
                               "name": "icon git-pull-request",
                               "icon": "git-pull-request"
@@ -9025,9 +9028,6 @@
                                   }
                                 }
                               ]
-                            },
-                            "XODhV": {
-                              "stroke": "#00000000"
                             }
                           }
                         },
@@ -9039,6 +9039,11 @@
                           "name": "List row / Issue · field, two labels",
                           "width": 1204,
                           "descendants": {
+                            "XODhV": {
+                              "fill": "$sel",
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1
+                            },
                             "M2264f": {
                               "name": "Avatar ML",
                               "fill": "#C9A26B",
@@ -9125,11 +9130,6 @@
                                   }
                                 }
                               ]
-                            },
-                            "XODhV": {
-                              "fill": "$sel",
-                              "stroke": "#7B87F74D",
-                              "strokeWidth": 1
                             }
                           }
                         },
@@ -10911,6 +10911,9 @@
                                       "name": "Row fitloop/api#477",
                                       "width": "fill_container",
                                       "descendants": {
+                                        "XODhV": {
+                                          "stroke": "#00000000"
+                                        },
                                         "v0RPVZ": {
                                           "content": "Retry Stripe webhook delivery on 5xx"
                                         },
@@ -10937,9 +10940,6 @@
                                         },
                                         "Rx2ve/Cb3Zq": {
                                           "content": "−9"
-                                        },
-                                        "XODhV": {
-                                          "stroke": "#00000000"
                                         }
                                       }
                                     },
@@ -27151,6 +27151,11 @@
                                         8
                                       ],
                                       "descendants": {
+                                        "XODhV": {
+                                          "fill": "$sel",
+                                          "stroke": "#7B87F74D",
+                                          "strokeWidth": 1
+                                        },
                                         "Ro9CD/TZbKU": {
                                           "width": 15,
                                           "height": 15
@@ -27178,11 +27183,6 @@
                                         "i369o/uYfBa": {
                                           "fill": "$red",
                                           "content": "Changes requested by SR"
-                                        },
-                                        "XODhV": {
-                                          "fill": "$sel",
-                                          "stroke": "#7B87F74D",
-                                          "strokeWidth": 1
                                         }
                                       }
                                     }
@@ -31354,6 +31354,11 @@
                                         8
                                       ],
                                       "descendants": {
+                                        "XODhV": {
+                                          "fill": "$sel",
+                                          "stroke": "#7B87F74D",
+                                          "strokeWidth": 1
+                                        },
                                         "Ro9CD/TZbKU": {
                                           "width": 15,
                                           "height": 15
@@ -31381,11 +31386,6 @@
                                         "i369o/uYfBa": {
                                           "fill": "$red",
                                           "content": "Changes requested by SR"
-                                        },
-                                        "XODhV": {
-                                          "fill": "$sel",
-                                          "stroke": "#7B87F74D",
-                                          "strokeWidth": 1
                                         }
                                       }
                                     }
@@ -41782,6 +41782,9 @@
                               "name": "Row api#455",
                               "width": "fill_container",
                               "descendants": {
+                                "XODhV": {
+                                  "fill": "$sel"
+                                },
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
                                   "icon": "check",
@@ -41866,9 +41869,6 @@
                                       }
                                     }
                                   ]
-                                },
-                                "XODhV": {
-                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -41879,6 +41879,9 @@
                               "name": "Row webapp#1210",
                               "width": "fill_container",
                               "descendants": {
+                                "XODhV": {
+                                  "fill": "$sel"
+                                },
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
                                   "icon": "check",
@@ -41963,9 +41966,6 @@
                                       }
                                     }
                                   ]
-                                },
-                                "XODhV": {
-                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -41976,6 +41976,9 @@
                               "name": "Row mobile#91",
                               "width": "fill_container",
                               "descendants": {
+                                "XODhV": {
+                                  "fill": "$sel"
+                                },
                                 "Ro9CD/TZbKU": {
                                   "name": "icon check",
                                   "icon": "check",
@@ -42060,9 +42063,6 @@
                                       }
                                     }
                                   ]
-                                },
-                                "XODhV": {
-                                  "fill": "$sel"
                                 }
                               }
                             },
@@ -74210,6 +74210,9 @@
                                   "name": "Row webapp#1203",
                                   "width": "fill_container",
                                   "descendants": {
+                                    "XODhV": {
+                                      "fill": "$sel"
+                                    },
                                     "Ro9CD/TZbKU": {
                                       "name": "icon check",
                                       "icon": "check",
@@ -74327,9 +74330,6 @@
                                           }
                                         }
                                       ]
-                                    },
-                                    "XODhV": {
-                                      "fill": "$sel"
                                     }
                                   }
                                 },
@@ -74340,6 +74340,9 @@
                                   "name": "Row api#470",
                                   "width": "fill_container",
                                   "descendants": {
+                                    "XODhV": {
+                                      "fill": "$sel"
+                                    },
                                     "Ro9CD/TZbKU": {
                                       "name": "icon check",
                                       "icon": "check",
@@ -74453,9 +74456,6 @@
                                           }
                                         }
                                       ]
-                                    },
-                                    "XODhV": {
-                                      "fill": "$sel"
                                     }
                                   }
                                 },
@@ -141198,6 +141198,11 @@
                                   "name": "Row fitloop/api#477",
                                   "width": "fill_container",
                                   "descendants": {
+                                    "XODhV": {
+                                      "fill": "$sel",
+                                      "stroke": "#7B87F74D",
+                                      "strokeWidth": 1
+                                    },
                                     "v0RPVZ": {
                                       "content": "Retry Stripe webhook delivery on 5xx"
                                     },
@@ -141224,11 +141229,6 @@
                                     },
                                     "Rx2ve/Cb3Zq": {
                                       "content": "−9"
-                                    },
-                                    "XODhV": {
-                                      "fill": "$sel",
-                                      "stroke": "#7B87F74D",
-                                      "strokeWidth": 1
                                     }
                                   }
                                 },
@@ -144045,6 +144045,9 @@
                       "name": "Row fitloop/api#477",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "stroke": "#00000000"
+                        },
                         "v0RPVZ": {
                           "content": "Retry Stripe webhook delivery on 5xx"
                         },
@@ -144071,9 +144074,6 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
-                        },
-                        "XODhV": {
-                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144084,6 +144084,9 @@
                       "name": "Row mlaine/tasklet#30",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "stroke": "#00000000"
+                        },
                         "v0RPVZ": {
                           "content": "Sync: read conditional requests first"
                         },
@@ -144110,9 +144113,6 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
-                        },
-                        "XODhV": {
-                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144174,6 +144174,9 @@
                       "name": "Row fitloop/webapp#1199",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "stroke": "#00000000"
+                        },
                         "v0RPVZ": {
                           "content": "Member search: fuzzy matching"
                         },
@@ -144200,9 +144203,6 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
-                        },
-                        "XODhV": {
-                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144213,6 +144213,9 @@
                       "name": "Row fitloop/webapp#1203",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "stroke": "#00000000"
+                        },
                         "v0RPVZ": {
                           "content": "Migrate class calendar to new date picker"
                         },
@@ -144239,9 +144242,6 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
-                        },
-                        "XODhV": {
-                          "stroke": "#00000000"
                         }
                       }
                     },
@@ -144252,6 +144252,11 @@
                       "name": "Row fitloop/mobile#94",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "fill": "$sel",
+                          "stroke": "#F851494D",
+                          "strokeWidth": 1
+                        },
                         "v0RPVZ": {
                           "content": "Offline queue for booking edits"
                         },
@@ -144289,11 +144294,6 @@
                               "content": "M"
                             }
                           }
-                        },
-                        "XODhV": {
-                          "fill": "$sel",
-                          "stroke": "#F851494D",
-                          "strokeWidth": 1
                         }
                       }
                     },
@@ -144351,6 +144351,9 @@
                       "name": "Row mlaine/tasklet#22",
                       "width": "fill_container",
                       "descendants": {
+                        "XODhV": {
+                          "stroke": "#00000000"
+                        },
                         "v0RPVZ": {
                           "content": "Stale data after window refocus"
                         },
@@ -144377,9 +144380,6 @@
                         },
                         "Rx2ve/Cb3Zq": {
                           "content": "−9"
-                        },
-                        "XODhV": {
-                          "stroke": "#00000000"
                         }
                       }
                     }
@@ -305815,6 +305815,9 @@
                                   "name": "Row fitloop/webapp#1202",
                                   "width": "fill_container",
                                   "descendants": {
+                                    "XODhV": {
+                                      "fill": "$sel"
+                                    },
                                     "v0RPVZ": {
                                       "content": "Sync: queue edits made offline"
                                     },
@@ -305835,9 +305838,6 @@
                                     },
                                     "j2aAGy/Cb3Zq": {
                                       "content": "−312"
-                                    },
-                                    "XODhV": {
-                                      "fill": "$sel"
                                     }
                                   }
                                 },
