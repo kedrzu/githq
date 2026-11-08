@@ -56,3 +56,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   ↗ (D21). Every drawn question is picked; `App · Mobile` has no amber frame left.
 - 2026-11-08 — Owner: Settings works on a phone without its tracking section (D22). Owner: the navigation is
   designed, the screens come next. Brief for the first path written: `ui/act-on-my-work-on-a-phone.md`.
+- 2026-11-08 — Owner: the places panel loses its filter field, which the desktop sidebar does not have (MB64, the
+  filtered panel, deleted); its head is the logo with the sidebar's collapse button, the top-left corner on a list
+  takes the sidebar's icon instead of the hamburger, and My work's groups are indented half as far.

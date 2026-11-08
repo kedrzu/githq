@@ -355781,36 +355781,6 @@
                           }
                         },
                         {
-                          "id": "iYBjS",
-                          "type": "ref",
-                          "ref": "VILkz",
-                          "name": "Property Labels",
-                          "width": "fill_container",
-                          "descendants": {
-                            "xs5At": {
-                              "content": "Labels"
-                            },
-                            "x35FX1": {
-                              "enabled": true
-                            },
-                            "x35FX1/PssNv": {
-                              "content": "bug"
-                            },
-                            "h9jnGq": {
-                              "enabled": true
-                            },
-                            "h9jnGq/nzkCm": {
-                              "fill": "#D29922"
-                            },
-                            "h9jnGq/PssNv": {
-                              "content": "calendar"
-                            },
-                            "PaU0Q": {
-                              "enabled": false
-                            }
-                          }
-                        },
-                        {
                           "id": "gespw",
                           "type": "ref",
                           "ref": "VILkz",
@@ -355829,10 +355799,10 @@
                           }
                         },
                         {
-                          "id": "x5TMo",
+                          "id": "X7Knck",
                           "type": "ref",
-                          "ref": "gKSlh",
-                          "name": "More",
+                          "ref": "EywvE",
+                          "name": "Chips",
                           "width": "fill_container"
                         }
                       ]
@@ -355905,16 +355875,11 @@
                           }
                         },
                         {
-                          "id": "X9JES",
+                          "id": "Y5nYZx",
                           "type": "ref",
-                          "ref": "gKSlh",
-                          "name": "More",
-                          "width": "fill_container",
-                          "descendants": {
-                            "Dr0bO": {
-                              "content": "branch, size, closes #1187, labels"
-                            }
-                          }
+                          "ref": "ozxE4",
+                          "name": "Chips",
+                          "width": "fill_container"
                         }
                       ]
                     },
@@ -356478,6 +356443,332 @@
                           "ref": "DYbxw",
                           "name": "Fewer",
                           "width": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oEda7",
+                      "name": "Phone / Chip",
+                      "reusable": true,
+                      "cornerRadius": 12,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "gap": 5,
+                      "padding": [
+                        3,
+                        8
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "l3ZA4",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Dot",
+                          "enabled": false,
+                          "fill": "#E5534B",
+                          "width": 7,
+                          "height": 7
+                        },
+                        {
+                          "type": "icon",
+                          "id": "j5WbT",
+                          "name": "Icon",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "milestone",
+                          "library": "lucide",
+                          "fill": "$fg-dim"
+                        },
+                        {
+                          "type": "text",
+                          "id": "X1Ffj",
+                          "name": "Text",
+                          "fill": "$fg-2",
+                          "content": "v4.2",
+                          "fontFamily": "$font",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EywvE",
+                      "name": "Phone / Property chips · issue",
+                      "reusable": true,
+                      "width": 390,
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        4,
+                        10,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "raQQV",
+                          "name": "Chips",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "e1OXkt",
+                              "name": "Line 1",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "BL6Q8",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip bug",
+                                  "descendants": {
+                                    "l3ZA4": {
+                                      "enabled": true,
+                                      "fill": "#E5534B"
+                                    },
+                                    "j5WbT": {
+                                      "enabled": false
+                                    },
+                                    "X1Ffj": {
+                                      "content": "bug"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "A1XCrD",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip calendar",
+                                  "descendants": {
+                                    "l3ZA4": {
+                                      "enabled": true,
+                                      "fill": "#D29922"
+                                    },
+                                    "j5WbT": {
+                                      "enabled": false
+                                    },
+                                    "X1Ffj": {
+                                      "content": "calendar"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "U9RKOr",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip v4.2",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "milestone"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "v4.2"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Z79e7r",
+                              "name": "Line 2",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "U59iPP",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip 3 of 5 sub-issues",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "list-tree"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "3 of 5 sub-issues"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "hcgli",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip Bug triage · Confirmed",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "table-2"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "Bug triage · Confirmed"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "k6tJ2",
+                          "type": "ref",
+                          "ref": "G5xXSH",
+                          "name": "Every property",
+                          "descendants": {
+                            "LG7b7": {
+                              "icon": "chevron-down",
+                              "fill": "$fg-2",
+                              "width": 20,
+                              "height": 20
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ozxE4",
+                      "name": "Phone / Property chips · pull request",
+                      "reusable": true,
+                      "width": 390,
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 4,
+                      "padding": [
+                        10,
+                        4,
+                        10,
+                        16
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "tO2eD",
+                          "name": "Chips",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fRIz3",
+                              "name": "Line 1",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "SYGDx",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip fix/series-timezone → main",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "git-branch"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "fix/series-timezone → main"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "f9m8OT",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip +84 −12",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "diff"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "+84 −12"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WsivE",
+                              "name": "Line 2",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "id": "bh2Ed",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip Closes #1187",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "circle-dot"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "Closes #1187"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "N5Ef1",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip calendar",
+                                  "descendants": {
+                                    "l3ZA4": {
+                                      "enabled": true,
+                                      "fill": "#D29922"
+                                    },
+                                    "j5WbT": {
+                                      "enabled": false
+                                    },
+                                    "X1Ffj": {
+                                      "content": "calendar"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "oKlvZ",
+                                  "type": "ref",
+                                  "ref": "oEda7",
+                                  "name": "Chip v4.2",
+                                  "descendants": {
+                                    "j5WbT": {
+                                      "icon": "milestone"
+                                    },
+                                    "X1Ffj": {
+                                      "content": "v4.2"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "KO9Uf",
+                          "type": "ref",
+                          "ref": "G5xXSH",
+                          "name": "Every property",
+                          "descendants": {
+                            "LG7b7": {
+                              "icon": "chevron-down",
+                              "fill": "$fg-2",
+                              "width": 20,
+                              "height": 20
+                            }
+                          }
                         }
                       ]
                     }
@@ -359549,7 +359840,7 @@
                           }
                         },
                         {
-                          "id": "aPCha",
+                          "id": "Y39abV",
                           "type": "ref",
                           "ref": "Mg3Qu",
                           "name": "Properties",
@@ -359562,23 +359853,26 @@
                               "content": "No one",
                               "fill": "$fg-dim"
                             },
-                            "iYBjS/x35FX1/nzkCm": {
-                              "fill": "#DB61A2"
-                            },
-                            "iYBjS/x35FX1/PssNv": {
-                              "content": "payments"
-                            },
-                            "iYBjS/h9jnGq": {
-                              "enabled": false
-                            },
                             "gespw/HR9f7": {
                               "fill": "$fg-3"
                             },
                             "gespw/PaU0Q": {
                               "content": "Todo · Platform Q4"
                             },
-                            "x5TMo/Dr0bO": {
-                              "content": "type, milestone"
+                            "X7Knck/BL6Q8/l3ZA4": {
+                              "fill": "#DB61A2"
+                            },
+                            "X7Knck/BL6Q8/X1Ffj": {
+                              "content": "payments"
+                            },
+                            "X7Knck/A1XCrD": {
+                              "enabled": false
+                            },
+                            "X7Knck/U9RKOr": {
+                              "enabled": false
+                            },
+                            "X7Knck/Z79e7r": {
+                              "enabled": false
                             }
                           }
                         },
@@ -366619,19 +366913,6 @@
                                 },
                                 "Qifsd": {
                                   "enabled": false
-                                },
-                                "M5WUcK/Nn69c/EkBUG": {
-                                  "enabled": false
-                                },
-                                "M5WUcK/Nn69c/PaU0Q": {
-                                  "content": "No one asked yet",
-                                  "fill": "$fg-dim"
-                                },
-                                "M5WUcK/V5Tpc/HR9f7": {
-                                  "fill": "$amber"
-                                },
-                                "M5WUcK/V5Tpc/PaU0Q": {
-                                  "content": "3 of 5, 2 running"
                                 }
                               }
                             },
@@ -366982,14 +367263,14 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "JSnCE",
-                      "name": "Slot · MB124 · An issue, opened",
+                      "id": "Cx98x",
+                      "name": "Slot · MB128 · Rows, then chips",
                       "layout": "vertical",
                       "gap": 14,
                       "children": [
                         {
                           "type": "frame",
-                          "id": "fgsKf",
+                          "id": "vlQrg",
                           "name": "Caption",
                           "width": 390,
                           "layout": "vertical",
@@ -366997,24 +367278,24 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "LGBlZ",
+                              "id": "klc5C",
                               "name": "Caption title",
                               "fill": "$fg",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "MB124 · An issue, opened",
+                              "content": "MB128 · Rows, then chips",
                               "fontFamily": "$font",
                               "fontSize": 15,
                               "fontWeight": "500"
                             },
                             {
                               "type": "text",
-                              "id": "mC8vA",
+                              "id": "s7xiv",
                               "name": "Caption note",
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "The properties as rows under the title, as on the computer's side column turned into one: the first ones only — assignees, labels and the row field of the first project. More lists in one line what else there is. Every row is tappable (›) and opens its picker (MB108). The activity starts about 570 px down.",
+                              "content": "What needs its name stays a row: who it is on, where it stands in the project. What reads on its own — labels, the milestone, sub-issues, another project — follows as chips without names. Tapping a row or a chip opens the command menu at its step (D26). The chevron at the right of the chips unfolds every property as rows (MB125).",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -367024,8 +367305,8 @@
                         },
                         {
                           "type": "frame",
-                          "id": "KHwNz",
-                          "name": "MB124 · An issue, opened",
+                          "id": "x5PLpW",
+                          "name": "MB128 · Rows, then chips",
                           "clip": true,
                           "width": 390,
                           "height": 844,
@@ -367036,14 +367317,14 @@
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "LkbJo",
+                              "id": "e2V0g",
                               "type": "ref",
                               "ref": "BpXu0",
                               "name": "Status strip",
                               "width": "fill_container"
                             },
                             {
-                              "id": "IRvoP",
+                              "id": "o9QtS6",
                               "type": "ref",
                               "ref": "mVWVs",
                               "name": "Top bar",
@@ -367073,7 +367354,7 @@
                               }
                             },
                             {
-                              "id": "p0f0Y",
+                              "id": "KE2Ye",
                               "type": "ref",
                               "ref": "qZhtg",
                               "name": "Pane",
@@ -367082,7 +367363,7 @@
                             },
                             {
                               "type": "frame",
-                              "id": "f6yxQ",
+                              "id": "s6Cb4m",
                               "layoutPosition": "absolute",
                               "x": 0,
                               "y": 0,
@@ -367093,7 +367374,7 @@
                               "justifyContent": "end",
                               "children": [
                                 {
-                                  "id": "sePdj",
+                                  "id": "nIlTh",
                                   "type": "ref",
                                   "ref": "D7Os7W",
                                   "name": "Command line",
@@ -367139,7 +367420,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "More unfolds the rest in place, nothing slides over the item: type, milestone, sub-issues, then every project the item is in with all of its fields, and Add to a project. Fewer folds it back; the choice is remembered for the next item.",
+                              "content": "The chevron beside the chips unfolds every property in place as rows, and the chips go: assignees, labels, type, milestone, sub-issues, then every project with all of its fields, the empty ones too, and Add to a project. This is where something not set yet is set. Fewer folds it back to rows and chips.",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -367264,7 +367545,7 @@
                               "fill": "$fg-2",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "Where it stands first, then reviewers with their latest verdict, checks and the row field; More holds branch, size, the issues it closes, assignees and labels. Checks open the list of checks (MB98).",
+                              "content": "Where it stands first, then Reviewers, Checks and the row field as rows, then the branch, its size, the issues it closes, labels and the milestone as chips. The chevron unfolds them all as rows. Checks open the list of checks (MB98).",
                               "lineHeight": 1.45,
                               "fontFamily": "$font",
                               "fontSize": 13,
@@ -369189,1638 +369470,6 @@
                               "children": [
                                 {
                                   "id": "TUuFQ",
-                                  "type": "ref",
-                                  "ref": "D7Os7W",
-                                  "name": "Command line",
-                                  "width": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "wKAWs",
-              "name": "Variants · Which properties are rows and which are chips",
-              "fill": "#D299221A",
-              "stroke": "#D29922",
-              "strokeWidth": 2,
-              "layout": "vertical",
-              "gap": 20,
-              "padding": 24,
-              "children": [
-                {
-                  "type": "text",
-                  "id": "s2tY2O",
-                  "name": "Question",
-                  "fill": "$fg",
-                  "content": "Variants · Which properties are rows and which are chips",
-                  "fontFamily": "$font",
-                  "fontSize": 20,
-                  "fontWeight": "600"
-                },
-                {
-                  "type": "text",
-                  "id": "f4QtH2",
-                  "name": "Note",
-                  "fill": "$fg-2",
-                  "textGrowth": "fixed-width",
-                  "width": 1400,
-                  "content": "A hybrid of D25: what isn't clear from the context stays a row with its name (who it's on, where it stands in the project), and what reads on its own — labels, the milestone, sub-issues, another project — becomes chips without a name. The question is where the chips go. Tapping a chip opens the command menu at its step, as a row does (D26). The More row goes: the chips are the rest.",
-                  "lineHeight": 1.5,
-                  "fontFamily": "$font",
-                  "fontSize": 14,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "frame",
-                  "id": "hMMjD",
-                  "name": "Screens",
-                  "gap": 40,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "T3e4DG",
-                      "name": "Slot · MB127 · Variant A · Chips under the title",
-                      "layout": "vertical",
-                      "gap": 14,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "rC81H",
-                          "name": "Caption",
-                          "width": 390,
-                          "layout": "vertical",
-                          "gap": 4,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "E6D1H",
-                              "name": "Caption title",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "MB127 · Variant A · Chips under the title",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "DSvbJ",
-                              "name": "Caption note",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Recommended. The chips join the Open and Bug pills under the title: what the item is, read in one glance with the title. The rows below are only what needs a name: Assignees and Status. The Labels and More rows go, so the activity starts about 30 px higher than in MB124.",
-                              "lineHeight": 1.45,
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "Dpe8K",
-                          "name": "MB127 · Variant A · Chips under the title",
-                          "clip": true,
-                          "width": 390,
-                          "height": 844,
-                          "fill": "$bg",
-                          "cornerRadius": 24,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "id": "WCli3",
-                              "type": "ref",
-                              "ref": "BpXu0",
-                              "name": "Status strip",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "N9fWUz",
-                              "type": "ref",
-                              "ref": "mVWVs",
-                              "name": "Top bar",
-                              "width": "fill_container",
-                              "descendants": {
-                                "a3kCD": {
-                                  "enabled": false
-                                },
-                                "oHtoi": {
-                                  "enabled": true
-                                },
-                                "oHtoi/ioLYI": {
-                                  "content": "My work"
-                                },
-                                "LaOVG": {
-                                  "enabled": false
-                                },
-                                "f6G1s": {
-                                  "enabled": true
-                                },
-                                "f6G1s/LG7b7": {
-                                  "icon": "chevron-up"
-                                },
-                                "yCsSA/LG7b7": {
-                                  "icon": "chevron-down"
-                                }
-                              }
-                            },
-                            {
-                              "id": "rD87d",
-                              "type": "ref",
-                              "ref": "qZhtg",
-                              "name": "Pane",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "descendants": {
-                                "dvU6H/FdTPX/Y13KxY": {
-                                  "type": "frame",
-                                  "id": "oH5mw",
-                                  "name": "State and chips",
-                                  "layout": "vertical",
-                                  "gap": 8,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "AIAht",
-                                      "name": "State",
-                                      "gap": 10,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "PGSSO",
-                                          "name": "Open pill",
-                                          "fill": "#3FB9501F",
-                                          "cornerRadius": 12,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "bM264",
-                                              "name": "icon circle-dot",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "circle-dot",
-                                              "library": "lucide",
-                                              "fill": "$green"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "RFv6f",
-                                              "name": "Open",
-                                              "fill": "$green",
-                                              "content": "Open",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "z6VPyg",
-                                          "name": "Issue type",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "N2QqA",
-                                              "name": "icon bug",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "bug",
-                                              "library": "lucide",
-                                              "fill": "$red"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Wjq2S",
-                                              "name": "Bug",
-                                              "fill": "$fg-2",
-                                              "content": "Bug",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "t1e0iU",
-                                          "name": "Avatar DK",
-                                          "width": 16,
-                                          "height": 16,
-                                          "fill": "#81C995",
-                                          "cornerRadius": 8,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "drYyL",
-                                              "name": "Initials",
-                                              "fill": "#0D1117",
-                                              "content": "DK",
-                                              "fontFamily": "$font",
-                                              "fontSize": 7,
-                                              "fontWeight": "600"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "RLdT5",
-                                          "name": "dkim · 3 days ago",
-                                          "fill": "$fg-dim",
-                                          "content": "dkim · 3 days ago",
-                                          "fontFamily": "$font",
-                                          "fontSize": 12,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "QjfCB",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "Ojiv9",
-                                          "name": "Chip bug",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "zzf1i",
-                                              "name": "dot",
-                                              "fill": "#E5534B",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Xkzoz",
-                                              "name": "bug",
-                                              "fill": "$fg-2",
-                                              "content": "bug",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "gpQUX",
-                                          "name": "Chip calendar",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "PvBHr",
-                                              "name": "dot",
-                                              "fill": "#D29922",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Q3LN2",
-                                              "name": "calendar",
-                                              "fill": "$fg-2",
-                                              "content": "calendar",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "hZPOe",
-                                          "name": "Chip v4.2",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "CEjyf",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "milestone",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "WjMI1",
-                                              "name": "v4.2",
-                                              "fill": "$fg-2",
-                                              "content": "v4.2",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "H64ge",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "O75q6",
-                                          "name": "Chip 2 of 5 sub-issues",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "rlQKc",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "list-tree",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "stiP5",
-                                              "name": "2 of 5 sub-issues",
-                                              "fill": "$fg-2",
-                                              "content": "2 of 5 sub-issues",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "AIMo4",
-                                          "name": "Chip Bug triage · Todo",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "YWEpK",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "table-2",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "KcacK",
-                                              "name": "Bug triage · Todo",
-                                              "fill": "$fg-2",
-                                              "content": "Bug triage · Todo",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                "N4tkj/iYBjS": {
-                                  "enabled": false
-                                },
-                                "N4tkj/x5TMo": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "F5kre",
-                              "layoutPosition": "absolute",
-                              "x": 0,
-                              "y": 0,
-                              "name": "Holder",
-                              "width": 390,
-                              "height": 844,
-                              "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "NVCNn",
-                                  "type": "ref",
-                                  "ref": "D7Os7W",
-                                  "name": "Command line",
-                                  "width": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Cx98x",
-                      "name": "Slot · MB128 · Variant B · Chips after the rows",
-                      "layout": "vertical",
-                      "gap": 14,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "vlQrg",
-                          "name": "Caption",
-                          "width": 390,
-                          "layout": "vertical",
-                          "gap": 4,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "klc5C",
-                              "name": "Caption title",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "MB128 · Variant B · Chips after the rows",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "s7xiv",
-                              "name": "Caption note",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "The rows first, then one block of chips where the More row was. The head stays as it is today; the chips sit with the other properties, but further from the title they describe.",
-                              "lineHeight": 1.45,
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "x5PLpW",
-                          "name": "MB128 · Variant B · Chips after the rows",
-                          "clip": true,
-                          "width": 390,
-                          "height": 844,
-                          "fill": "$bg",
-                          "cornerRadius": 24,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "id": "e2V0g",
-                              "type": "ref",
-                              "ref": "BpXu0",
-                              "name": "Status strip",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "o9QtS6",
-                              "type": "ref",
-                              "ref": "mVWVs",
-                              "name": "Top bar",
-                              "width": "fill_container",
-                              "descendants": {
-                                "a3kCD": {
-                                  "enabled": false
-                                },
-                                "oHtoi": {
-                                  "enabled": true
-                                },
-                                "oHtoi/ioLYI": {
-                                  "content": "My work"
-                                },
-                                "LaOVG": {
-                                  "enabled": false
-                                },
-                                "f6G1s": {
-                                  "enabled": true
-                                },
-                                "f6G1s/LG7b7": {
-                                  "icon": "chevron-up"
-                                },
-                                "yCsSA/LG7b7": {
-                                  "icon": "chevron-down"
-                                }
-                              }
-                            },
-                            {
-                              "id": "d5M6y",
-                              "type": "ref",
-                              "ref": "qZhtg",
-                              "name": "Pane",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "descendants": {
-                                "N4tkj/iYBjS": {
-                                  "enabled": false
-                                },
-                                "N4tkj/x5TMo": {
-                                  "type": "frame",
-                                  "id": "Zvf1D",
-                                  "name": "Chips",
-                                  "width": "fill_container",
-                                  "stroke": "$border",
-                                  "strokeWidth": {
-                                    "bottom": 1
-                                  },
-                                  "layout": "vertical",
-                                  "gap": 6,
-                                  "padding": [
-                                    12,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "QowOS",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "Mhvaj",
-                                          "name": "Chip bug",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "ytQiw",
-                                              "name": "dot",
-                                              "fill": "#E5534B",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "I0VWH8",
-                                              "name": "bug",
-                                              "fill": "$fg-2",
-                                              "content": "bug",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "PzcmA",
-                                          "name": "Chip calendar",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "A32Q9",
-                                              "name": "dot",
-                                              "fill": "#D29922",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "S6uUkJ",
-                                              "name": "calendar",
-                                              "fill": "$fg-2",
-                                              "content": "calendar",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "EmV3a",
-                                          "name": "Chip v4.2",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "RVArS",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "milestone",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "wlDHQ",
-                                              "name": "v4.2",
-                                              "fill": "$fg-2",
-                                              "content": "v4.2",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "XZFNm",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "OLBvx",
-                                          "name": "Chip 2 of 5 sub-issues",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "aSXXw",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "list-tree",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "YkhOW",
-                                              "name": "2 of 5 sub-issues",
-                                              "fill": "$fg-2",
-                                              "content": "2 of 5 sub-issues",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "LOf6L",
-                                          "name": "Chip Bug triage · Todo",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "cXFlI",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "table-2",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "xHCHg",
-                                              "name": "Bug triage · Todo",
-                                              "fill": "$fg-2",
-                                              "content": "Bug triage · Todo",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "s6Cb4m",
-                              "layoutPosition": "absolute",
-                              "x": 0,
-                              "y": 0,
-                              "name": "Holder",
-                              "width": 390,
-                              "height": 844,
-                              "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "nIlTh",
-                                  "type": "ref",
-                                  "ref": "D7Os7W",
-                                  "name": "Command line",
-                                  "width": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "epmaI",
-                      "name": "Slot · MB129 · Variant C · Chips after the body",
-                      "layout": "vertical",
-                      "gap": 14,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "Zog2K",
-                          "name": "Caption",
-                          "width": 390,
-                          "layout": "vertical",
-                          "gap": 4,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "w7lMVA",
-                              "name": "Caption title",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "MB129 · Variant C · Chips after the body",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "J8ViN",
-                              "name": "Caption note",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "Rows under the title, the body, then the chips just before the activity, like a footer of labels. The head stays clean, but on a long body the labels and milestone are out of sight.",
-                              "lineHeight": 1.45,
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "YIzJ5",
-                          "name": "MB129 · Variant C · Chips after the body",
-                          "clip": true,
-                          "width": 390,
-                          "height": 844,
-                          "fill": "$bg",
-                          "cornerRadius": 24,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "id": "YotJc",
-                              "type": "ref",
-                              "ref": "BpXu0",
-                              "name": "Status strip",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "M9RONu",
-                              "type": "ref",
-                              "ref": "mVWVs",
-                              "name": "Top bar",
-                              "width": "fill_container",
-                              "descendants": {
-                                "a3kCD": {
-                                  "enabled": false
-                                },
-                                "oHtoi": {
-                                  "enabled": true
-                                },
-                                "oHtoi/ioLYI": {
-                                  "content": "My work"
-                                },
-                                "LaOVG": {
-                                  "enabled": false
-                                },
-                                "f6G1s": {
-                                  "enabled": true
-                                },
-                                "f6G1s/LG7b7": {
-                                  "icon": "chevron-up"
-                                },
-                                "yCsSA/LG7b7": {
-                                  "icon": "chevron-down"
-                                }
-                              }
-                            },
-                            {
-                              "id": "NY7gH",
-                              "type": "ref",
-                              "ref": "qZhtg",
-                              "name": "Pane",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "descendants": {
-                                "N4tkj/iYBjS": {
-                                  "enabled": false
-                                },
-                                "N4tkj/x5TMo": {
-                                  "enabled": false
-                                },
-                                "K3gLO": {
-                                  "type": "frame",
-                                  "id": "viKDe",
-                                  "name": "Body",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
-                                  "gap": 14,
-                                  "padding": [
-                                    14,
-                                    16
-                                  ],
-                                  "children": [
-                                    {
-                                      "type": "text",
-                                      "id": "rEqkH",
-                                      "name": "Body text",
-                                      "fill": "$fg",
-                                      "textGrowth": "fixed-width",
-                                      "width": "fill_container",
-                                      "content": "A class repeating every Monday at 18:00 shows at 19:00 after the clocks change. New single classes are fine, so it looks like only the series store their start in local time.",
-                                      "lineHeight": 1.5,
-                                      "fontFamily": "$font",
-                                      "fontSize": 15,
-                                      "fontWeight": "normal"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "I2Rbf",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "Yw4Fy",
-                                          "name": "Chip bug",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "CeAsQ",
-                                              "name": "dot",
-                                              "fill": "#E5534B",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "LTO3L",
-                                              "name": "bug",
-                                              "fill": "$fg-2",
-                                              "content": "bug",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "FXc4B",
-                                          "name": "Chip calendar",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "DZNLN",
-                                              "name": "dot",
-                                              "fill": "#D29922",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "mXtPn",
-                                              "name": "calendar",
-                                              "fill": "$fg-2",
-                                              "content": "calendar",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "XAWm4",
-                                          "name": "Chip v4.2",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "LjnV9",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "milestone",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "fiEBl",
-                                              "name": "v4.2",
-                                              "fill": "$fg-2",
-                                              "content": "v4.2",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "GRo8t",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "n1ffC",
-                                          "name": "Chip 2 of 5 sub-issues",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "t0Rnrt",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "list-tree",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "q2YeU",
-                                              "name": "2 of 5 sub-issues",
-                                              "fill": "$fg-2",
-                                              "content": "2 of 5 sub-issues",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "EEUuI",
-                                          "name": "Chip Bug triage · Todo",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "VCl6M",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "table-2",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "dCzl1",
-                                              "name": "Bug triage · Todo",
-                                              "fill": "$fg-2",
-                                              "content": "Bug triage · Todo",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "c5Es7",
-                              "layoutPosition": "absolute",
-                              "x": 0,
-                              "y": 0,
-                              "name": "Holder",
-                              "width": 390,
-                              "height": 844,
-                              "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "BGo8k",
-                                  "type": "ref",
-                                  "ref": "D7Os7W",
-                                  "name": "Command line",
-                                  "width": "fill_container"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "LnyU9",
-                      "name": "Slot · MB130 · Variant A · On a pull request",
-                      "layout": "vertical",
-                      "gap": 14,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "CFjgh",
-                          "name": "Caption",
-                          "width": 390,
-                          "layout": "vertical",
-                          "gap": 4,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "UAVXD",
-                              "name": "Caption title",
-                              "fill": "$fg",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "MB130 · Variant A · On a pull request",
-                              "fontFamily": "$font",
-                              "fontSize": 15,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "yUXme",
-                              "name": "Caption note",
-                              "fill": "$fg-2",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "The same split on a pull request: where it stands, Reviewers, Checks and Status stay rows; the branch, its size, the issue it closes, labels and the milestone become chips under the title. The More row goes.",
-                              "lineHeight": 1.45,
-                              "fontFamily": "$font",
-                              "fontSize": 13,
-                              "fontWeight": "normal"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "a7iH9Y",
-                          "name": "MB130 · Variant A · On a pull request",
-                          "clip": true,
-                          "width": 390,
-                          "height": 844,
-                          "fill": "$bg",
-                          "cornerRadius": 24,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "children": [
-                            {
-                              "id": "WApqL",
-                              "type": "ref",
-                              "ref": "BpXu0",
-                              "name": "Status strip",
-                              "width": "fill_container"
-                            },
-                            {
-                              "id": "ueS0v",
-                              "type": "ref",
-                              "ref": "mVWVs",
-                              "name": "Top bar",
-                              "width": "fill_container",
-                              "descendants": {
-                                "a3kCD": {
-                                  "enabled": false
-                                },
-                                "oHtoi": {
-                                  "enabled": true
-                                },
-                                "oHtoi/ioLYI": {
-                                  "content": "My work"
-                                },
-                                "LaOVG": {
-                                  "enabled": false
-                                },
-                                "f6G1s": {
-                                  "enabled": true
-                                },
-                                "f6G1s/LG7b7": {
-                                  "icon": "chevron-up"
-                                },
-                                "yCsSA/LG7b7": {
-                                  "icon": "chevron-down"
-                                }
-                              }
-                            },
-                            {
-                              "id": "cIT4v",
-                              "type": "ref",
-                              "ref": "j4OTf",
-                              "name": "Pane",
-                              "width": "fill_container",
-                              "height": "fill_container",
-                              "descendants": {
-                                "u9vBO/FdTPX/Y13KxY": {
-                                  "type": "frame",
-                                  "id": "BAL1b",
-                                  "name": "State and chips",
-                                  "layout": "vertical",
-                                  "gap": 8,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "AzSjh",
-                                      "name": "State",
-                                      "gap": 10,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "u9t9I",
-                                          "name": "Open pill",
-                                          "fill": "#3FB9501F",
-                                          "cornerRadius": 12,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "E9qMn",
-                                              "name": "icon circle-dot",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "git-pull-request",
-                                              "library": "lucide",
-                                              "fill": "$green"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "wkcUP",
-                                              "name": "Open",
-                                              "fill": "$green",
-                                              "content": "Open",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "eoV3W",
-                                          "x": 74,
-                                          "y": 0,
-                                          "name": "Issue type",
-                                          "enabled": false,
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "nwY5C",
-                                              "name": "icon bug",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "bug",
-                                              "library": "lucide",
-                                              "fill": "$red"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "M5dHh",
-                                              "name": "Bug",
-                                              "fill": "$fg-2",
-                                              "content": "Bug",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "D4VyvP",
-                                          "name": "Avatar DK",
-                                          "width": 16,
-                                          "height": 16,
-                                          "fill": "#C9A26B",
-                                          "cornerRadius": 8,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "S2pNT",
-                                              "name": "Initials",
-                                              "fill": "#0D1117",
-                                              "content": "ML",
-                                              "fontFamily": "$font",
-                                              "fontSize": 7,
-                                              "fontWeight": "600"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "o7vTl",
-                                          "name": "dkim · 3 days ago",
-                                          "fill": "$fg-dim",
-                                          "content": "mlaine · 20m ago",
-                                          "fontFamily": "$font",
-                                          "fontSize": 12,
-                                          "fontWeight": "normal"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "niEgn",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "YpBUv",
-                                          "name": "Chip fix/series-tz → main",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "nIdEW",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "git-branch",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "pk2WR",
-                                              "name": "fix/series-tz → main",
-                                              "fill": "$fg-2",
-                                              "content": "fix/series-tz → main",
-                                              "fontFamily": "$mono",
-                                              "fontSize": 11.5,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "b8zDx7",
-                                          "name": "Chip +486 −12",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "T09v1",
-                                              "name": "+486",
-                                              "fill": "$green",
-                                              "content": "+486",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "qMLG3",
-                                              "name": "−12",
-                                              "fill": "$red",
-                                              "content": "−12",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "qDCGm",
-                                      "name": "Chip line",
-                                      "gap": 6,
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "aUhsM",
-                                          "name": "Chip Closes #1187",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "oyLRV",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "link",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "JG194",
-                                              "name": "Closes #1187",
-                                              "fill": "$fg-2",
-                                              "content": "Closes #1187",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "FygsT",
-                                          "name": "Chip calendar",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "ellipse",
-                                              "id": "yJJpQ",
-                                              "name": "dot",
-                                              "fill": "#D29922",
-                                              "width": 7,
-                                              "height": 7
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "bFNsL",
-                                              "name": "calendar",
-                                              "fill": "$fg-2",
-                                              "content": "calendar",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "FEaUM",
-                                          "name": "Chip v4.2",
-                                          "cornerRadius": 12,
-                                          "stroke": "$border-2",
-                                          "strokeWidth": 1,
-                                          "gap": 5,
-                                          "padding": [
-                                            3,
-                                            8
-                                          ],
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "C8bJdf",
-                                              "name": "icon",
-                                              "width": 12,
-                                              "height": 12,
-                                              "icon": "milestone",
-                                              "library": "lucide",
-                                              "fill": "$fg-dim"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Z26v1y",
-                                              "name": "v4.2",
-                                              "fill": "$fg-2",
-                                              "content": "v4.2",
-                                              "fontFamily": "$font",
-                                              "fontSize": 12,
-                                              "fontWeight": "normal"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                "M5WUcK/X9JES": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "type": "frame",
-                              "id": "edxom",
-                              "layoutPosition": "absolute",
-                              "x": 0,
-                              "y": 0,
-                              "name": "Holder",
-                              "width": 390,
-                              "height": 844,
-                              "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "q8RO4",
                                   "type": "ref",
                                   "ref": "D7Os7W",
                                   "name": "Command line",
