@@ -75,3 +75,8 @@ they leave ([D11](DECISIONS.md#d11)), what shows when the copy is not fresh ([D1
 leaving inside a task ([D18](DECISIONS.md#d18)) the places as a panel from the left ([D19](DECISIONS.md#d19)), back on an item
 ([D20](DECISIONS.md#d20)) and Commits and Actions offered in the command menu as leaving ([D21](DECISIONS.md#d21)).
 Nothing drawn is left to pick.
+
+githq's own Settings works on a phone too, all but its tracking section, because its address on github.com is
+GitHub's account settings and handing it off would land somewhere else ([Settings](DECISIONS.md#d22)). The screens
+come next, path by path, starting with the one githq on a phone exists for: seeing what needs you and acting on it
+([its brief](ui/act-on-my-work-on-a-phone.md)).

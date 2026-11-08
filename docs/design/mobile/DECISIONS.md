@@ -292,3 +292,22 @@ does not know about them, and the mark says before the tap that they leave ([D11
 **Rejected.**
 
 - Hidden everywhere (MB48) — you could no longer tell they are a tap away, on github.com.
+
+## D22
+
+**githq's own Settings works on a phone, all but its tracking section: the sections that make sense on a phone
+(display, where settings are saved) fit the narrow screen, and the repositories-and-projects section is not offered
+there.** (2026-11-08, owner, on the design agent's proposal)
+
+**Why.** Settings has a GitHub-reserved address (`/settings`) that on github.com is GitHub's own account settings, so
+the hand-off of [D3](#d3) would land somewhere else entirely. Settings is one column of sections, so fitting it is
+cheaper than an exception to the hand-off. Tracking stays off the phone as [D4](#d4) says; the first sign-in's choice
+is the exception ([D7](#d7)).
+
+> **Checked 2026-11-08:** the sections are repositories (tracking, the default one), display, saving, code review,
+> and the desktop app's updates and changelog — `packages/app/settings/settingsRoutes.ts:24`.
+
+**Rejected.**
+
+- No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
+  fitting a simple page.

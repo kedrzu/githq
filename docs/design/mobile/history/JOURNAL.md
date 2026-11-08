@@ -54,3 +54,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   the top-left corner on an item, and whether Commits and Actions are offered.
 - 2026-11-08 — Owner picked back with the list's name on an item (D20) and Commits and Actions in the command menu with
   ↗ (D21). Every drawn question is picked; `App · Mobile` has no amber frame left.
+- 2026-11-08 — Owner: Settings works on a phone without its tracking section (D22). Owner: the navigation is
+  designed, the screens come next. Brief for the first path written: `ui/act-on-my-work-on-a-phone.md`.
