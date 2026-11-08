@@ -76,6 +76,20 @@ test('"Download the app" downloads the build for the system, or opens /download 
     expectEvery('/download');
 });
 
+test('"Download the app" spins until the download has started, and takes no second click meanwhile', async () => {
+    await OnWindows.run();
+    // The test stays on its page: the browser would leave for githq.dev.
+    const stay = (event: Event) => event.preventDefault();
+    document.addEventListener('click', stay);
+    onTestFinished(() => document.removeEventListener('click', stay));
+
+    const download = page.getByRole('main').getByRole('link', { name: 'Download the app' }).first();
+    await userEvent.click(download);
+    await expect.element(download).toHaveAttribute('aria-busy', 'true');
+    // Off githq.dev the Worker's cookie can't be read, so the spinner gives the redirects a moment and stops.
+    await expect.element(download, { timeout: 3000 }).not.toHaveAttribute('aria-busy');
+});
+
 test('the page says nothing of the signatures or the permissions: /download does', async () => {
     await OnWindows.run();
 

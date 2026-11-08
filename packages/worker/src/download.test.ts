@@ -41,11 +41,20 @@ test.each([
 
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe(`${RELEASES}/download/v0.3.0/${file}`);
-    expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('set-cookie')).toBe('githq_download=1; Path=/; Max-Age=60; SameSite=Lax; Secure');
     expect(github).toHaveBeenCalledTimes(1);
     const [url, init] = github.mock.calls[0]!;
     expect(url).toBe(`${RELEASES}/latest`);
     expect(init?.redirect).toBe('manual');
+});
+
+test('on http, as under `wrangler dev`, the cookie is not Secure', async () => {
+    githubRedirectsTo(`${RELEASES}/tag/v0.3.0`);
+
+    const response = await worker.fetch(new Request('http://localhost:8787/download/windows'), ENV);
+
+    expect(response.headers.get('set-cookie')).toBe('githq_download=1; Path=/; Max-Age=60; SameSite=Lax');
 });
 
 test('an unknown build goes to the page with every build, without asking GitHub', async () => {
@@ -53,6 +62,7 @@ test('an unknown build goes to the page with every build, without asking GitHub'
 
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe(`${ORIGIN}/download`);
+    expect(response.headers.get('set-cookie')).toBeNull();
     expect(github).not.toHaveBeenCalled();
 });
 
@@ -67,5 +77,5 @@ test.each([
 
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe(`${RELEASES}/latest`);
-    expect(response.headers.get('cache-control')).toBe('no-cache');
+    expect(response.headers.get('set-cookie')).toBeNull();
 });

@@ -1,4 +1,5 @@
 import {
+    DESKTOP_DOWNLOAD_COOKIE,
     DESKTOP_INSTALLERS,
     DESKTOP_INSTALLER_PATH,
     GITHQ_RELEASES_URL,
@@ -13,8 +14,8 @@ export const DOWNLOAD_PREFIX = `${DESKTOP_INSTALLER_PATH}/`;
 const LATEST_RELEASE_URL = `${GITHQ_RELEASES_URL}/latest`;
 
 /**
- * How long Cloudflare keeps GitHub's answer to {@link LATEST_RELEASE_URL}, and a browser the redirect to a file: a newly
- * published release reaches the links within this many seconds, and GitHub is asked at most this often per location.
+ * How long Cloudflare keeps GitHub's answer to {@link LATEST_RELEASE_URL}: a newly published release reaches the links
+ * within this many seconds, and GitHub is asked at most this often per location.
  */
 const CACHE_SECONDS = 300;
 
@@ -42,23 +43,38 @@ async function readLatestVersion(): Promise<string | null> {
     }
 }
 
-function redirect(location: string, cacheControl: string): Response {
-    return new Response(null, { status: 302, headers: { Location: location, 'Cache-Control': cacheControl } });
+/**
+ * A redirect no browser keeps: each click has to reach the Worker again, so that the redirect to an installer sets
+ * {@link DESKTOP_DOWNLOAD_COOKIE} every time.
+ */
+function redirect(location: string, headers: Record<string, string> = {}): Response {
+    return new Response(null, {
+        status: 302,
+        headers: { Location: location, 'Cache-Control': 'no-store', ...headers },
+    });
+}
+
+/** {@link DESKTOP_DOWNLOAD_COOKIE} as a `Set-Cookie` header; `Secure` only on https, so that `wrangler dev` can set it. */
+function downloadCookie(request: Request): string {
+    const { name, value, maxAgeSeconds } = DESKTOP_DOWNLOAD_COOKIE;
+    const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
+    return `${name}=${value}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax${secure}`;
 }
 
 /**
  * `/download/<build>`: a redirect to that installer in the latest Stable release, a file with the version in its name,
- * so that a release needs no copies under fixed names. An unknown build goes to `/download`, the page with every build;
- * when GitHub can't say which release is the latest, the visitor lands on that release's page on GitHub instead.
+ * so that a release needs no copies under fixed names, with {@link DESKTOP_DOWNLOAD_COOKIE} for the page that sent the
+ * visitor. An unknown build goes to `/download`, the page with every build; when GitHub can't say which release is the
+ * latest, the visitor lands on that release's page on GitHub instead.
  */
 export async function serveDownload(request: Request): Promise<Response> {
     const name = new URL(request.url).pathname.slice(DOWNLOAD_PREFIX.length);
     if (!isInstaller(name)) {
-        return redirect(new URL(DESKTOP_INSTALLER_PATH, request.url).href, 'no-cache');
+        return redirect(new URL(DESKTOP_INSTALLER_PATH, request.url).href);
     }
     const version = await readLatestVersion();
     if (!version) {
-        return redirect(LATEST_RELEASE_URL, 'no-cache');
+        return redirect(LATEST_RELEASE_URL);
     }
-    return redirect(getDesktopInstallerAssetUrl(name, version), `public, max-age=${CACHE_SECONDS}`);
+    return redirect(getDesktopInstallerAssetUrl(name, version), { 'Set-Cookie': downloadCookie(request) });
 }

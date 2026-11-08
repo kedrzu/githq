@@ -35,3 +35,15 @@ export function getDesktopInstallerUrl(installer: DesktopInstaller): string {
 export function getDesktopInstallerAssetUrl(installer: DesktopInstaller, version: string): string {
     return `${GITHQ_RELEASES_URL}/download/v${version}/githq_${version}_${DESKTOP_INSTALLERS[installer]}`;
 }
+
+/**
+ * The cookie the Worker sets with its redirect to an installer, `githq_download=1`: the page that sent the visitor there
+ * reads it to learn that the download has been handed to GitHub, and stops showing it as under way. Readable by scripts
+ * on purpose; it says nothing but that.
+ */
+export const DESKTOP_DOWNLOAD_COOKIE = {
+    name: 'githq_download',
+    value: '1',
+    /** A minute, in seconds: long enough to be read, short enough not to linger. */
+    maxAgeSeconds: 60,
+} as const;

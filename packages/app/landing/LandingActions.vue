@@ -1,4 +1,4 @@
-<!-- The landing page's call to action (githq.pen "Landing — githq.dev"; D35), in the hero and the Final CTA: "Download the app" with the logo of the visitor's system, which downloads its build at once (with no system to install on, it opens `/download`), and "Sign in with GitHub", straight to GitHub's consent screen (D21); under them one line of fine print, starting with the link to every build. Stacked on a phone. -->
+<!-- The landing page's call to action (githq.pen "Landing — githq.dev"; D35), in the hero and the Final CTA: "Download the app" with the logo of the visitor's system, which downloads its build at once and spins until the download has started (with no system to install on, it opens `/download`), and "Sign in with GitHub", straight to GitHub's consent screen (D21); under them one line of fine print, starting with the link to every build. Stacked on a phone. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Download } from 'lucide-vue-next';
@@ -11,6 +11,7 @@ import BrandLogo from './BrandLogo.vue';
 import { DEFAULT_DESKTOP_BUILD, DESKTOP_BUILDS, DOWNLOAD_PATH } from './desktopBuilds.js';
 import type { DesktopSystem } from './desktopBuilds.js';
 import * as l from './LandingActions.loc.js';
+import { waitForDownload } from './waitForDownload.js';
 
 const LOGOS = { macos: 'apple', windows: 'windows', linux: 'linux' } as const;
 
@@ -28,6 +29,11 @@ const t = useTranslate();
 const downloadLink = computed(() =>
   props.system ? DESKTOP_BUILDS[DEFAULT_DESKTOP_BUILD[props.system]].url : DOWNLOAD_PATH,
 );
+
+/** Spins the button until the download has started; opening `/download` needs no wait of its own. */
+function onDownload() {
+  return props.system ? waitForDownload(downloadLink.value) : undefined;
+}
 </script>
 
 <template>
@@ -38,6 +44,7 @@ const downloadLink = computed(() =>
         variant="light"
         size="xl"
         :link="downloadLink"
+        @click="onDownload"
       >
         <!-- One size for every icon, so nothing moves when the system becomes known. -->
         <BrandLogo
