@@ -66,3 +66,6 @@ Append-only. One line per decision, rejection or answer from the owner.
   settings drop out (only the repository layout) is the design agent's proposal. Owner also asked why the first
   sign-in screens were never drawn: no brief had been written for them. Brief for both: `ui/set-up-on-a-phone.md`.
   The owner mentioned notification settings: githq has none.
+- 2026-11-08 — Setup round came back drawn and picked (D31–D35, recorded by the design session). README's screens and
+  status rewritten as story. Left undrawn: the list options sheet, a board view as a grouped list, the new issue form's
+  choices.

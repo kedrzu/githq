@@ -66,26 +66,33 @@ from the edge of the screen, which the iPhone's browser uses for its own gesture
 button on a list, the comment box and ⌘ side by side on an item ([the line](DECISIONS.md#d17)). How the rest of the navigation
 works is settled in [the decisions](DECISIONS.md), each from drawn variants ([how they were drawn](variants.md)).
 
+## The screens
+
+The navigation, and two paths through the app, are drawn in `githq.pen`, frame `App · Mobile`.
+
+**Getting around** ([its brief](ui/navigate-on-a-phone.md)). There is no tab bar. A command line floats over the bottom
+of every screen: on a list one wide button that opens the command menu and names the part of the place you are in; on
+an item the comment box beside it ([why no tab bar](DECISIONS.md#d17)). The command menu rises from below, its first
+results nearest the thumb ([how it opens](DECISIONS.md#d16)). The top-left corner opens the places as a panel on a
+list, and goes back, naming the list, on an item ([the panel](DECISIONS.md#d19), [back](DECISIONS.md#d20)); the
+top-right holds the list's options and New issue ([the corner](DECISIONS.md#d14)).
+
+**Seeing what needs you and acting on it** ([its brief](ui/act-on-my-work-on-a-phone.md)). A row keeps what tells you
+whether to open it, and the rest waits in the item ([the row](DECISIONS.md#d23)). On an item, the properties that need
+their name are rows and the rest are chips ([the properties](DECISIONS.md#d25)); tapping one opens the command menu
+straight at its choices ([changing a property](DECISIONS.md#d26)). A row swiped to the left offers Status, Assign and
+Close ([swiping](DECISIONS.md#d27)).
+
+**Setting githq up** ([its brief](ui/set-up-on-a-phone.md)). The first sign-in is the computer's in one column, with a
+search that also asks GitHub, so a repository outside your own is found and ticked in the same list — and the computer
+got the same search ([choosing what to track](DECISIONS.md#d34)). Settings opens on its list of sections, each a screen
+of its own ([Settings](DECISIONS.md#d33)); what you track is listed there and added through the first sign-in's screen
+([tracking](DECISIONS.md#d35)). The account at the foot of the places panel opens a menu, as on the computer
+([the account](DECISIONS.md#d32)).
+
 ## Where this stands
 
-Settled: what makes the app a phone, the first version's scope, what happens to the addresses it does not show,
-and the first sign-in. Not yet touched: the item's screen on a phone (its properties, activity and comment box in
-one column), and how a list row shrinks to a phone's width. The navigation is drawn in `githq.pen`, frame
-`App · Mobile`, from [the brief for the design agent](ui/navigate-on-a-phone.md). The owner has picked the command line
-instead of a bottom bar ([D17](DECISIONS.md#d17)), the command menu rising from below ([D16](DECISIONS.md#d16)), its
-button as ⌘ ([D13](DECISIONS.md#d13)), two buttons in the top-right corner ([D14](DECISIONS.md#d14)), links that say
-they leave ([D11](DECISIONS.md#d11)), what shows when the copy is not fresh ([D12](DECISIONS.md#d12)), the button
-leaving inside a task ([D18](DECISIONS.md#d18)) the places as a panel from the left ([D19](DECISIONS.md#d19)), back on an item
-([D20](DECISIONS.md#d20)) and Commits and Actions offered in the command menu as leaving ([D21](DECISIONS.md#d21)).
-Nothing drawn is left to pick.
-
-The screens come next, path by path, starting with the one githq on a phone exists for: seeing what needs you and acting on it
-([its brief](ui/act-on-my-work-on-a-phone.md)). Its screens are drawn in `App · Mobile` (MB89–MB130): the owner has picked My work's filter strip and the row at a
-phone's width ([D23](DECISIONS.md#d23)), a nested pull request as one indented line ([D24](DECISIONS.md#d24)), the
-properties as a few rows then chips, unfolding in place ([D25](DECISIONS.md#d25)), changing a property by tapping it
-or through ⌘ ([D26](DECISIONS.md#d26)), swiping a row for its actions ([D27](DECISIONS.md#d27)), selecting several
-items from the list's options ([D28](DECISIONS.md#d28)) and a strip under the top bar for a pull request's stack
-([D29](DECISIONS.md#d29)).
-
-Setting githq up on a phone — signing in, choosing what to track, and Settings — is the next path
-([its brief](ui/set-up-on-a-phone.md)).
+Everything drawn so far has been picked; the decisions are in [the record](DECISIONS.md). A repository's list, a project with
+hundreds of items and the new issue form were drawn with the navigation. Not drawn yet: the sheet behind the list's
+options (filter, sort, group), a project view saved as a board shown as a grouped list, and the new issue form's choices
+(which repository, its properties).
