@@ -50,7 +50,7 @@ withDefaults(
 .ghostRow {
   display: flex;
   gap: $spacing-10;
-  padding: $spacing-7 $spacing-16;
+  padding: $spacing-10 $spacing-16;
 }
 
 .ghostRow_icon {
