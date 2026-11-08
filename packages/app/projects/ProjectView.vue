@@ -565,7 +565,6 @@ function hasItemView(entry: ProjectEntry) {
         :class="css.projectView_filteredOut"
       >
         <FilteredOut
-          place="screen"
           :detail="filterHides ?? t(l.emptyViewDetailNoFilter, { view: view?.name ?? project.title })"
           :clear="filter ? () => emit('clearFilter') : undefined"
         />

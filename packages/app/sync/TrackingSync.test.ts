@@ -644,7 +644,7 @@ test('first run and loading D12: "Try again" asks the loop the freshness came fr
     expect(sync.getProjectLoop('PVT_1')).toBe('projects');
 
     session.github.requests.length = 0;
-    await sync.pollNow([sync.getRepositoryLoop('acme/web')]);
+    await sync.pollNow(sync.getRepositoryLoop('acme/web'));
 
     expect(session.github.requests.map(request => request.operation)).toEqual([
         'GET /repos/acme/web/issues',

@@ -463,7 +463,7 @@ test('a repository coming on screen while a poll runs past it is read at the end
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/api/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     sync.watchAnyRef('acme/web');
     held.resolve();
@@ -767,7 +767,7 @@ test('ES23: a repository just tracked that GitHub fails on is told at once on Br
 
     world.failing.add('GET /repos/acme/web/actions/runs');
     tracking.choose({ projects: [], repositories: [{ nameWithOwner: 'acme/web', id: 'R_web' }] });
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
 
     expect(sync.getWorkflowsFreshness()).toMatchObject({ kind: 'stale', reason: 'failing' });
@@ -898,7 +898,7 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     await session.clock.advance(10_000);
 
     session.github.requests.length = 0;
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([
         'GET /repos/acme/web/actions/runs per_page=10 conditional',
@@ -912,10 +912,10 @@ test('a screen asking for a poll gets one at once, never alongside a running one
     const held = createPromise();
     session.github.holdIf = request => (request.operation === 'GET /repos/acme/web/actions/runs' ? held.promise : null);
     session.github.requests.length = 0;
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
-    void sync.pollNow(['workflows']);
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     held.resolve();
     await session.clock.advance(0);
@@ -951,7 +951,7 @@ test('a screen asking for the workflows does not wait for the open items', async
     await session.clock.advance(0);
     expect(actionsRequests(session.github.requests)).toEqual([]);
 
-    void sync.pollNow(['workflows']);
+    void sync.pollNow('workflows');
     await session.clock.advance(0);
     expect(workflows.getState('acme/web').status).toBe('read');
 });

@@ -663,7 +663,6 @@ function getSectionCount(value: RepositorySection) {
               />
               <FilteredOut
                 v-else-if="list.held > 0"
-                place="screen"
                 :detail="
                   tracked
                     ? t(sectionTexts.hidden, { count: list.held, state: stateIs })

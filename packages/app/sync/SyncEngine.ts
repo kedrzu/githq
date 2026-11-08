@@ -535,17 +535,16 @@ export const SyncEngine = defineService({
         }
 
         /**
-         * Polls `loops` at once, here or in the tab that syncs, each unless it is polling already, and as asked for:
+         * Polls `loop` at once, here or in the tab that syncs, unless it is polling already, and as asked for:
          * the workflows not waiting for the open items' download. A screen showing workflows opened (actions D2), or the
          * "Try again" of a surface GitHub failed on, which asks the loop its freshness came from (first run and loading
-         * D12). Settles when this tab's polls have; at once when another tab polls, whose status then tells how it went.
+         * D12). Settles when this tab's poll has; at once when another tab polls, whose status then tells how it went.
          */
-        async function pollNow(loops: readonly SyncLoop[]) {
+        async function pollNow(loop: SyncLoop) {
             if (session) {
-                const current = session;
-                await Promise.all(loops.map(loop => run(current, loop, true)));
+                await run(session, loop, true);
             } else if (followed) {
-                tabs.publish({ kind: 'poll', loops });
+                tabs.publish({ kind: 'poll', loop });
             }
         }
 
@@ -559,7 +558,7 @@ export const SyncEngine = defineService({
         function watchAnyRef(nameWithOwner: string) {
             anyRefWatchers.set(nameWithOwner, (anyRefWatchers.get(nameWithOwner) ?? 0) + 1);
             tabs.setAnyRefRepositories([...anyRefWatchers.keys()]);
-            void pollNow(['workflows']);
+            void pollNow('workflows');
 
             return () => {
                 const left = (anyRefWatchers.get(nameWithOwner) ?? 0) - 1;
@@ -642,7 +641,7 @@ export const SyncEngine = defineService({
                     break;
                 case 'poll':
                     if (session) {
-                        void pollNow(message.loops);
+                        void pollNow(message.loop);
                     }
 
                     break;

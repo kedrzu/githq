@@ -1,4 +1,4 @@
-<!-- What a screen, a list's group or a board column says when there is data but the filter, state or view on screen hides all of it (first run and loading D6, D8, `Empty / Filtered out · screen | group | column`): a funnel, or what the narrowed view stands for (ES12's at-sign), the filter named, and a way to clear it. -->
+<!-- What a screen says when there is data but the filter, state or view on screen hides all of it (first run and loading D6, D8, `Empty / Filtered out · screen`): a funnel, or what the narrowed view stands for (ES12's at-sign), what it hides, and a way to clear it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -9,12 +9,9 @@ import EmptyState from './EmptyState.vue';
 import * as l from './FilteredOut.loc.js';
 
 defineProps<{
-  place: 'screen' | 'group' | 'column';
-  /** The filter as the toolbar writes it (`label:bug`): a group's or a column's line names it. */
-  filter?: string;
-  /** What the screen says; "Nothing matches this filter" on a screen, "Nothing matches {filter}" elsewhere. */
+  /** What the screen says; "Nothing matches this filter" when not given. */
   title?: string;
-  /** On a screen, what the filter hides: "Label is bug hides all 18 open issues." */
+  /** What the filter hides: "Label is bug hides all 18 open issues." */
   detail?: string;
   /** A funnel when not given. */
   icon?: LucideIcon;
@@ -32,11 +29,9 @@ const t = useTranslate();
 
 <template>
   <EmptyState
-    :place="place"
+    place="screen"
     :icon="icon ?? FunnelX"
-    :title="
-      title ?? (place === 'screen' || filter == null ? t(l.nothingMatchesThisFilter) : t(l.nothingMatches, { filter }))
-    "
+    :title="title ?? t(l.nothingMatchesThisFilter)"
     :detail="detail"
   >
     <template
@@ -45,8 +40,8 @@ const t = useTranslate();
     >
       <slot name="action">
         <Button
-          :variant="place === 'screen' ? 'secondary' : 'outline'"
-          :size="place === 'screen' ? 'md' : 'sm'"
+          variant="secondary"
+          size="md"
           @click="clear"
         >
           {{ t(l.clearFilter) }}

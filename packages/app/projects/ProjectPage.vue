@@ -132,7 +132,7 @@ const cantBeRead = computed((): CantBeReadCause | null => {
   const { id } = tracked.value;
   return getCantBeReadCause({
     freshness: sync.getProjectFreshness(id),
-    retry: () => sync.pollNow([sync.getProjectLoop(id)]),
+    retry: () => sync.pollNow(sync.getProjectLoop(id)),
     url: githubUrl.value,
   });
 });

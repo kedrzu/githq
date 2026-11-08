@@ -471,7 +471,6 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
         <!-- ES12, D15: narrowed to a group that shows nothing — the rest of My work may hold plenty; under a filter it is the filter that goes. -->
         <FilteredOut
           v-else-if="group"
-          place="screen"
           :icon="group === 'mentioned' ? AtSign : undefined"
           :title="t(l.nothingIn, { group: t(groupLabels[group]) })"
           :clear="filter === 'all' ? undefined : clearFilter"

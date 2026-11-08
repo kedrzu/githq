@@ -205,7 +205,7 @@ const cantBeRead = computed((): CantBeReadCause | null => {
   const repository = nameWithOwner.value;
   const own = getCantBeReadCause({
     freshness: sync.getRepositoryFreshness(repository),
-    retry: () => sync.pollNow([sync.getRepositoryLoop(repository)]),
+    retry: () => sync.pollNow(sync.getRepositoryLoop(repository)),
     url,
   });
   if (own || !repositoryList.value.arriving) {
@@ -214,7 +214,7 @@ const cantBeRead = computed((): CantBeReadCause | null => {
 
   return getCantBeReadCause({
     freshness: sync.getDownloadFreshness(),
-    retry: () => sync.pollNow([sync.getDownloadLoop()]),
+    retry: () => sync.pollNow(sync.getDownloadLoop()),
     url,
   });
 });

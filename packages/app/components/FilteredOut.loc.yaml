@@ -1,6 +1,4 @@
 nothingMatchesThisFilter:
   en: Nothing matches this filter
-nothingMatches:
-  en: Nothing matches {filter}
 clearFilter:
   en: Clear filter

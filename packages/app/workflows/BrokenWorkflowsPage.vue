@@ -27,14 +27,14 @@ const now = useNow(TICK_MS);
 
 const broken = computed(() => buildBrokenWorkflows(store.repositories));
 const cantBeRead = computed(() =>
-  getCantBeReadCause({ freshness: sync.getWorkflowsFreshness(), retry: () => sync.pollNow(['workflows']) }),
+  getCantBeReadCause({ freshness: sync.getWorkflowsFreshness(), retry: () => sync.pollNow('workflows') }),
 );
 const selected = computed({
   get: () => places.brokenSelected,
   set: (key: string | null) => places.setBrokenSelected(key),
 });
 
-onMounted(() => sync.pollNow(['workflows']));
+onMounted(() => sync.pollNow('workflows'));
 
 function open(entry: BrokenWorkflowEntry) {
   const run = entry.workflow.latestFailedRun;

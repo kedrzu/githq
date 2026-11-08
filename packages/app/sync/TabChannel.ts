@@ -49,7 +49,7 @@ export type TabMessage =
      * A screen showing workflows opened (actions D2), or a "Try again" (first run and loading D12), in a tab that does
      * not sync: the syncing tab polls `loops` at once.
      */
-    | { readonly kind: 'poll'; readonly loops: readonly SyncLoop[] }
+    | { readonly kind: 'poll'; readonly loop: SyncLoop }
     /** The window regained focus on a tab that does not sync: the syncing tab looks for draft reviews (code review D21). */
     | { readonly kind: 'pollPendingReviews' };
 
