@@ -60,8 +60,8 @@ How you move between them is chosen by drawing, not by argument. The direction i
 that makes good use of the top-left and top-right corners, with every menu opened by a button and none by swiping
 from the edge of the screen, which the iPhone's browser uses for its own gestures
 ([the direction](DECISIONS.md#d1), [no edge swipes](DECISIONS.md#d2)). A place's parts live under a command line that floats over the bottom of every screen, with no tab bar: one wide
-button on a list, the comment box and ⌘ side by side on an item ([the line](DECISIONS.md#d17)). What is still open is
-drawn for the owner to pick ([what is left](variants.md)).
+button on a list, the comment box and ⌘ side by side on an item ([the line](DECISIONS.md#d17)). How the rest of the navigation
+works is settled in [the decisions](DECISIONS.md), each from drawn variants ([how they were drawn](variants.md)).
 
 ## Where this stands
 
@@ -72,4 +72,6 @@ one column), and how a list row shrinks to a phone's width. The navigation is dr
 instead of a bottom bar ([D17](DECISIONS.md#d17)), the command menu rising from below ([D16](DECISIONS.md#d16)), its
 button as ⌘ ([D13](DECISIONS.md#d13)), two buttons in the top-right corner ([D14](DECISIONS.md#d14)), links that say
 they leave ([D11](DECISIONS.md#d11)), what shows when the copy is not fresh ([D12](DECISIONS.md#d12)), the button
-leaving inside a task ([D18](DECISIONS.md#d18)) and the places as a panel from the left ([D19](DECISIONS.md#d19)).
+leaving inside a task ([D18](DECISIONS.md#d18)) the places as a panel from the left ([D19](DECISIONS.md#d19)), back on an item
+([D20](DECISIONS.md#d20)) and Commits and Actions offered in the command menu as leaving ([D21](DECISIONS.md#d21)).
+Nothing drawn is left to pick.

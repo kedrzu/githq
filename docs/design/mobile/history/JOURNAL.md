@@ -52,3 +52,5 @@ Append-only. One line per decision, rejection or answer from the owner.
   onto the line. Four questions left, in `variants.md`.
 - 2026-11-07 — Owner picked the button leaving inside a task (D18) and the places as a panel (D19). Two questions left:
   the top-left corner on an item, and whether Commits and Actions are offered.
+- 2026-11-08 — Owner picked back with the list's name on an item (D20) and Commits and Actions in the command menu with
+  ↗ (D21). Every drawn question is picked; `App · Mobile` has no amber frame left.

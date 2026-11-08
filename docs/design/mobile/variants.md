@@ -16,13 +16,9 @@ Picked so far, and gone from this list: whether a link says it leaves ([D11](DEC
 ([D12](DECISIONS.md#d12)), what the command menu's button looks like ([D13](DECISIONS.md#d13)), what the top-right
 corner holds ([D14](DECISIONS.md#d14)), the command line above Safari's bar ([D15](DECISIONS.md#d15)), how the open
 command menu sits ([D16](DECISIONS.md#d16)), the command line instead of a bottom bar ([D17](DECISIONS.md#d17)), the button leaving inside a task
-([D18](DECISIONS.md#d18)), and the places as a panel ([D19](DECISIONS.md#d19)).
+([D18](DECISIONS.md#d18)), the places as a panel ([D19](DECISIONS.md#d19)), back on an item ([D20](DECISIONS.md#d20)), and the
+parts a phone does not have ([D21](DECISIONS.md#d21)).
 
 ## Still to be picked
 
-Drawn in `githq.pen`, frame `App · Mobile`, amber frames:
-
-- **The top-left corner on an item's screen** (MB35–MB37): back with the list's name, back and the menu, or the menu
-  only.
-- **Whether a place shows the parts a phone does not have** (MB46, MB48): in the command line's menu marked ↗, or hidden
-  everywhere.
+Nothing: every drawn question has been picked (2026-11-08). A new idea about the navigation goes here first.

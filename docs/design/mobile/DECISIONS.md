@@ -265,3 +265,30 @@ line ([D17](#d17)), so nothing needs to drill, and a panel needs no address of i
 - One menu that drills from the places into a repository's parts (MB28–MB29) — the parts would be in two menus.
 - The places as a screen of their own, the top-left always back (MB30–MB31) — the screen needs an address GitHub does
   not have, and it is one more step in history between every two places.
+
+## D20
+
+**On an item's screen the top-left corner is a back arrow with the name of the list it returns to. Opened from a link,
+with no list behind it, the arrow goes up to the repository and says so.** (2026-11-08, owner, picked from the
+drawings: `MB35`, with `MB62`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: it says what you return to, and the places are
+two taps away when wanted, back and the panel, or the command menu's Go to.
+
+**Rejected.**
+
+- Back with the menu beside it (MB36) — two controls fight for the corner, and the wrong tap throws you out of the
+  item.
+- The menu only, back left to the browser (MB37) — an installed hybrid app has no browser back.
+
+## D21
+
+**A repository's Commits and Actions, which a phone does not show, are offered in the command menu marked ↗ as leaving
+for github.com, and nowhere else.** (2026-11-08, owner, picked from the drawings: `MB46`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: they stay findable, so nobody concludes githq
+does not know about them, and the mark says before the tap that they leave ([D11](#d11)).
+
+**Rejected.**
+
+- Hidden everywhere (MB48) — you could no longer tell they are a tap away, on github.com.
