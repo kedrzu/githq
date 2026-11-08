@@ -433,3 +433,79 @@ the phone's Settings a different list to learn.
   tracks, and its settings are not necessarily synced from the computer.
 - No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
   fitting a simple page.
+
+## D31
+
+**While anything downloads, the places panel's foot says what the desktop status bar's left segment says — the turning
+icon, items so far of all counted and the time left — in place of the API allowance. No screen gets a download strip of
+its own; each says only what it itself waits for.** (2026-11-08, owner, on variant A, drawn in `MB141`)
+
+**Why.** The owner: the status should be the same as on the computer, the one in the opened panel, and a screen of
+details has no reason to show that four repositories are downloading. The panel's foot is already the phone's left end
+of the status bar ([D12](#d12)), so the order of offline, paused, downloading and the allowance carries over.
+
+**Rejected.**
+
+- A strip under the top bar on every list while the download lasts (MB142) — progress of everything does not belong
+  to one screen, and the strip is kept for when something is off.
+
+## D32
+
+**The account tile at the places panel's foot opens a menu, as the user menu on the computer: who you are signed in as,
+Settings, and Sign out as a separate item. The tile no longer carries Sign out itself.** (2026-11-08, owner; drawn in
+`MB171`)
+
+**Why.** The owner: the bottom tile should open a dropdown like the desktop's, with Settings and Sign out as separate
+options. One place to look on both, and a stray tap at the panel's foot only opens a menu.
+
+**Rejected.**
+
+- The whole account row opening Settings, Sign out moved into Account (MB143) — the design agent's recommendation.
+- A Settings row above the account, Sign out kept on the tile (MB144).
+
+## D33
+
+**Settings on a phone opens on the list of its sections; each section is a screen of its own with back to Settings, at
+its own address (`/settings?tab=…`, the first section included).** (2026-11-08, owner, picked from the drawings:
+`MB146`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: the way every phone's settings work, each section
+says its state on the list, and a new section is one more row.
+
+**Rejected.**
+
+- The first section open with the others as segments along its top (MB147) — six do not fit, Account falls off the edge.
+- One long screen with every section (MB148–MB149) — long, with Account at its very end.
+- The sections as the command line's part (MB150) — hidden until tapped, and they are not parts of a place.
+
+## D34
+
+**Choosing what to track with the keyboard up: the search pinned at the top, Track these on a bar above the keyboard with
+the running count. The search also asks GitHub, so a repository outside the user's lists is found and ticked in the
+same list, under On GitHub — on the phone (`MB163`, `MB164`) and on the computer (`G18`, `G19`).** (2026-11-08, owner:
+variant A, and the computer gets the same search)
+
+**Why.** The owner picked A and asked whether the computer can find repositories beyond the user's own; it could only
+through Search repositories… in the command menu (githq D34) and G10's input for a name, so the chooser takes the same
+search: from two typed characters once typing pauses, results after the user's own matches, one calm line while GitHub
+answers. Settings' chooser (T18, MB168) is the same component, so it searches GitHub too.
+
+**Rejected.**
+
+- The search at the bottom, Track in the top-right corner (MB165–MB166).
+- Picked ones in a line, Track these only after the keyboard is down (MB167).
+
+## D35
+
+**Tracking on a phone keeps the computer's two parts: Settings › Repositories (and Projects) lists only what is tracked,
+each row drilling into that repository's or project's own settings; adding is a separate step, the first sign-in's
+choosing screen opened as a screen of its own.** (2026-11-08, owner: the same split as on the desktop, the sign-in
+screen reused for adding; drawn in `MB151`–`MB155`, `MB168`, `MB172`)
+
+**Why.** The owner: the two parts must be as on the computer — tracking apart from showing what is tracked with a drill
+down — and adding may use the sign-in's screen. One choosing screen to learn, with room for picking many.
+
+**Rejected.**
+
+- A picker rising from below for adding (MB169–MB170) — a second way of choosing, without owners' groups or Select
+  all.
