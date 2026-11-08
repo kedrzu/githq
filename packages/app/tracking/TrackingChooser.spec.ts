@@ -593,8 +593,8 @@ test('GitHub is asked nothing under two characters, nor with an owner picked', a
     expect(search).not.toHaveBeenCalled();
     await expect.element(page.getByRole('heading', { name: 'On GitHub' })).not.toBeInTheDocument();
 
-    await Choose.run({ args: { ...Choose.args, filter: 'nuxt', search } });
-    await userEvent.click(page.getByRole('radio', { name: /^skyline-labs/ }));
+    await Choose.run({ args: { ...Choose.args, filter: 'nuxt', initialOwner: 'skyline-labs', search } });
+    await expect.element(page.getByRole('radio', { name: /^skyline-labs/ })).toBeChecked();
     await sleep(400);
     expect(search).not.toHaveBeenCalled();
 });
