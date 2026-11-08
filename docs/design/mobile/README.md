@@ -81,7 +81,7 @@ GitHub's account settings and handing it off would land somewhere else ([Setting
 come next, path by path, starting with the one githq on a phone exists for: seeing what needs you and acting on it
 ([its brief](ui/act-on-my-work-on-a-phone.md)). Its screens are drawn in `App · Mobile` (MB89–MB130): the owner has picked My work's filter strip and the row at a
 phone's width ([D23](DECISIONS.md#d23)), a nested pull request as one indented line ([D24](DECISIONS.md#d24)), the
-first properties as rows with the rest unfolding in place ([D25](DECISIONS.md#d25)), changing a property by tapping it
+properties as a few rows then chips, unfolding in place ([D25](DECISIONS.md#d25)), changing a property by tapping it
 or through ⌘ ([D26](DECISIONS.md#d26)), swiping a row for its actions ([D27](DECISIONS.md#d27)), selecting several
 items from the list's options ([D28](DECISIONS.md#d28)) and a strip under the top bar for a pull request's stack
-([D29](DECISIONS.md#d29)). Still to pick: which properties of an item stay rows and which become chips (MB127–MB130).
+([D29](DECISIONS.md#d29)).

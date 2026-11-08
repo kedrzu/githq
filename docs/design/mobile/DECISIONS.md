@@ -339,15 +339,18 @@ drawings: `MB100`)
 
 ## D25
 
-**An item's properties are rows under the title, but only the first ones: assignees, labels and the first project's
-row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands". A More row says
-in one line what else there is and unfolds the rest in place — every other property, every project with all its
-fields, Add to a project — with Fewer to fold it back.** (2026-11-08, owner: variant B with only the most important
-properties first and the rest unfolding inline, not hidden; drawn in `MB124`–`MB126`)
+**An item's properties are split: what needs its name stays a row under the title — assignees and the first project's
+row field on an issue; reviewers, checks and the row field on a pull request, under "where it stands" — and what reads
+on its own follows as one block of chips without names: labels, the milestone, sub-issues, another project's field;
+on a pull request the branch, its size and the issues it closes. A chevron at the right of the chips unfolds every
+property as rows in place, the chips giving way to them — every project with all its fields, the empty ones too, and
+Add to a project — and Fewer folds it back.** (2026-11-08, owner: rows first with only the important ones, the rest
+unfolding inline, not hidden; then chips after the rows (`MB128`) with a chevron beside them, not a small "All" chip,
+and the chips gone once unfolded; drawn in `MB125`, `MB126`, `MB128`)
 
-**Why.** The owner preferred the desktop's rows to chips, but not all of them before the conversation. The drawing's
-case: the activity starts about 570 px down instead of under the fold, and nothing slides over the item to see the
-rest.
+**Why.** The owner preferred the desktop's rows to a line of chips alone, but not every row before the conversation.
+The drawing's case: the activity starts under 570 px down instead of under the fold, labels and the milestone read at
+a glance without a key, and nothing slides over the item to see the rest.
 
 **Rejected.**
 
@@ -355,6 +358,10 @@ rest.
   preferred rows.
 - The properties after the body (MB107) — the newest comment is as far as with all rows at the top, and a long body
   hides the properties.
+- A More row naming what else there is (MB124) — superseded by the chips, which show the values themselves.
+- The chips under the title, beside the state (MB127, MB130–MB132) — the owner picked them after the rows; a small
+  "… All" chip as the way to every property was too small a target.
+- The chips after the body (MB129) — on a long body the labels and milestone are out of sight.
 
 ## D26
 
