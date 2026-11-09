@@ -22,7 +22,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] `Activity / Event` (`umLcQ`): padding 4 0 4 42, gap 12; a 28 px badge (`$bg-3`, `$border`) with a 14 px icon,
   then one line: avatar, who (12.5 / 500 `$fg`), what (`$fg-2`), an optional label, a hidden `Ref` (`tDaJo`, 12.5 /
   500 `$accent`, “#15”, new) for a referenced issue, pull request or commit, the rest (wraps under itself), and the
-  time at the right. With no person (CI, a Projects field) the avatar and who are hidden.
+  time at the right. With no person (CI, a Status change made by a project workflow) the avatar and who are
+  hidden.
 - [ ] `Activity / Comment` (`WHy4W`): avatar in the gutter (column 36 high), card with a 36 px `$bg-2` head (author
   13 / 600, “commented”, time, ⋯) and a body padded 14 16 16 16, text `$fg` 13.5, line height 1.6. Hidden parts: `Edited`
   (`X0iztw`, “· edited” after the time) and a `Failed` band (`I8YLPw`) at the bottom of the card: `#F851491A` fill,
@@ -104,7 +105,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] New menus, drawn as popovers (`$bg-2`, `$border-2`, radius 9, padding 4, shadow `#000000A0` 0 12 32), from
   `Activity / Menu item` (`vC9fN`: radius 5, padding 5 8, gap 9; icon 14 `$fg-2`, a hidden avatar, label 13 `$fg`, a
   hidden sub-label 12.5 `$fg-dim`, a hidden key) and `Activity / Menu item · selected` (`m8UXn`, `$sel`):
-  - `Activity / Close menu` (`PRnLo`): Close as completed (purple, ↵), Close as not planned.
+  - `Activity / Close menu` (`PRnLo`): Close as completed (purple, ↵), Close as not planned. No Close as duplicate:
+    it needs an issue picker, so it comes later.
   - `Activity / Comment menu` (`nS2AY`): Edit, Quote reply, Copy link, a rule, Delete… in `$red`.
   - `Activity / Mention menu` (`w5xhn`), 280 wide: “People”, then avatar, login and name per row.
   - `Activity / Reference menu` (`eKbTa`), 480 wide: “Issues and pull requests in mlaine/tasklet”, then a state
@@ -194,9 +196,13 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   milestoned, demilestoned, review requested, review request removed, review dismissed, ready for review, converted to
   draft, base changed, cross-referenced, checks failed, closed, reopened, merged, branch deleted, and a merged line.
   Right, issue only: closed as completed, closed by a merged pull request (“closed this as completed in #15”), closed
-  as not planned, closed as a duplicate, reopened, linked a pull request, referenced in a commit, referenced from an
-  issue, sub-issue added, sub-issue removed, parent set, type changed, added to a project, a Projects field changed
-  (no person: GitHub doesn't say who), transferred, locked, unlocked, pinned, unpinned. Rules above the lists:
+  as not planned, closed as a duplicate, reopened, linked a pull request, referenced in a commit, sub-issue added,
+  sub-issue removed, parent set, type changed, added to a project, Status changed (“mlaine changed Status to In
+  progress in tasklet Roadmap”), Status changed, automated (no person: “Status set to Done in tasklet Roadmap by a
+  project workflow”), transferred, locked, unlocked, pinned, unpinned. “mentioned this in” is listed once, on the left,
+  marked “issues too”. Of a project GitHub reports only Status changes (`ProjectV2ItemStatusChangedEvent`), with the
+  person who made them; one made by a project workflow (`wasAutomated`) shows no person. The caption says so. Rules
+  above the lists:
   - One line per burst: events by one person, straight after each other and within 10 minutes, share one line (the
     first event's badge, the newest time, “and” between the parts: “added storage and asked sofiab and dkim for a
     review”). Events of one kind merge their objects; an add and a remove of the same thing cancel out. Comments,
@@ -206,7 +212,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   - In a fold: commits (the commits of the pushes), comments (comments, reviews, code comments), other events (every
     event on this screen, a merged line once).
   - Never shown: subscribed, unsubscribed, mentioned, deployments, comment deleted, and automatic events with no
-    person except CI and a Projects field.
+    person except CI and an automated Status change.
 - [ ] New F14 · Reviews in the thread (`l01YB`): approved, commented with and without a summary, dismissed (folded,
   followed by “mlaine dismissed sofiab's review: Addressed in 3f2a9b1”), your pending review (at the end of the thread,
   above the composer; only you see it), and an outdated code thread on its own.
@@ -224,20 +230,26 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] New top-level frame `App · Issue` (`xO0zP`), right of App · Pull request, with its own letter I.
 - [ ] I1 · Issue full page · the thread (`ugRqZ`): open issue mlaine/tasklet#12 “Sub-issue links are lost when the
   parent is in another repository”, dkim, 6 days ago, on the full page at reading width, no Reviews section. The
-  thread: dkim added bug and set the type to Bug (one line), added to parent #9, added to tasklet Roadmap, “Status
-  changed to Todo in tasklet Roadmap” (no person), sofiab's comment, self-assigned, added sub-issue #13, Status to In
-  progress, removed sub-issue #10, linked pull request #15, referenced in commit 4a1c9e2, mentioned in #14, “2 new since
+  thread: dkim added bug and set the type to Bug (one line), added to parent #9, added to tasklet Roadmap, “mlaine
+  changed Status to Todo in tasklet Roadmap”, sofiab's comment, self-assigned, added sub-issue #13, “mlaine changed
+  Status to In progress in tasklet Roadmap”, removed sub-issue #10, linked pull request #15, referenced in commit 4a1c9e2, mentioned in #14, “2 new since
   you looked”, dkim's comment, pinned. 14 items, so nothing folds. Composer: `Activity / Composer · issue`.
 - [ ] I2 · Issue in panel · closed by a merged pull request (`OrT0n`): the same issue in the panel after #15 merged,
   scrolled to the end: two items, the narrow fold (“Show 15 earlier events · 2 comments · 13 other events”), dkim's
-  comment, “4 new since you looked”, “mlaine closed this as completed in #15”, “Status changed to Done in tasklet
-  Roadmap”, unpinned, sofiab's comment. The title says Closed in purple. Composer: `Activity / Composer · closed`.
+  comment, “4 new since you looked”, “mlaine closed this as completed in #15”, “Status set to Done in tasklet Roadmap
+  by a project workflow” (automated, so no person), unpinned, sofiab's comment. The title says Closed in purple.
+  Composer: `Activity / Composer · closed`. The list's selected row (`Z9BxYw` in the list pane) is this issue:
+  purple circle-check, “Sub-issue links are lost when the parent is in another repository”, mlaine/tasklet#12, mlaine's
+  avatar, Done, 5m (was fitloop/webapp#1187).
 - [ ] I3 · Issue in modal · not planned and locked (`NVC4S`): mlaine/tasklet#16 “Parent links break after a transfer”
-  by sren-dev, the viewer (a contributor), scrolled to the end: transferred from mlaine/tasklet-mobile, closed as a
-  duplicate of #12, sren-dev's comment, reopened, mlaine's comment, then one merged line “closed this as not planned and
-  locked the conversation to collaborators”. The title says Closed in `$fg-2` with circle-slash. Composer:
-  `Activity / Composer · read-only`, with sren-dev's avatar.
+  by sren-dev, the viewer (a contributor; the sidebar's account avatar is sren-dev's, “SR” `#E8A87C`, was mlaine's).
+  The thread: sren-dev's description (`Item / Body`, “commented 3 days ago”), transferred from mlaine/tasklet-mobile,
+  closed as a duplicate of #12, sren-dev's comment, reopened, mlaine's comment, then one merged line “closed this as
+  not planned and locked the conversation to collaborators”. The title says Closed in `$fg-2` with circle-slash.
+  Composer: `Activity / Composer · read-only`, with sren-dev's avatar. The modal is 780 high at y 60 (was 700 at y 100)
+  so the whole thread fits.
 - [ ] I4 · The composer's states (`OGRTF`): issue closing with a reason (the close menu open under the button), issue
   with text typed, closed issue and closed pull request (Reopen), merged pull request, locked and archived (read-only),
   Preview, @ typed (the mention menu at the caret), # typed (the reference menu), a sent comment (the sending card and
   an empty composer) and one that wasn't sent (the failed card). In the menus ↑↓ move, ↵ or Tab inserts, Esc closes.
+  The caption says Close as duplicate is left out of the reasons for now: it needs an issue picker, so it comes later.
