@@ -4,13 +4,13 @@ Only what is under Screens is settled: every amber frame still waits for the own
 
 - [ ] App · Mobile (`jy6bO`): new aspect frame, screen codes `MB` (MB1–MB88), drawn at 390 × 844 as an installed app. No existing frame or component was changed.
 - [ ] Components · Mobile (`F3mZHt`): new components, all named `Phone / …`, built from the shared atoms (`Avatar`, `Label`, `Status`, `Type icon`, `Item / Title`):
-      status strip `BpXu0`, home indicator `n6xuXi`, corner button `G5xXSH`, back `mdx7a`, command button `aAEEs` (corner `nAI3C`, floating `U0mSpw`),
-      tabs `T95PxD` / `LMgge`, text tabs `Wk9XP` / `UTLUe`, top tabs `jYf1O` / `Hi1Gt`, keyboard `qEkWs`, top bar `mVWVs` (address `YXS5B`),
-      docks `d5NN3`, `dp5mP`, `t1lr8`, `Ez3Cq`, `HcC9T`, `BtCKT`, `u7X9A`, `nh6Vd`, `p0NUy`, one box `EAumE`, comment dock `R8VK6` (typing `BGx6I`), item bar `PAQjU`,
-      row `pFppk` (`g2rhNb`, `ME4y9`), group header `uIaHH`, property `VILkz`, banner `EwpS9`, toast `KchF8`, comment `Qidd9`, timeline commit `i4d4tt`, item head `zG5m0`, timeline `KJnIN`,
-      list panes `AMaDW`, `BkUsw`, `B9fFBr`, `ttiit`, `x5FXSy`, `U9tdw`, item panes `Z50g0`, `UXIHb`, `PWGSV`,
-      places `iYE61`, `dWgb5`, `dwQ2N`, `v8tmn1`, `T9SeJV`, `VmPIZ`, panels `zikRv`, `crSUU`, `UBTsr`, `czYPK`,
-      command menu `i6jhQ`, `ikYkr`, `llbOW`, `wBBj9`, `B88hB`, sheets `vTKkt`, `F7peI`, `t7yKzM`, `Mikzu`, `DQLPC`, `iceKP`, panels `FadN6`, `yOkXg`, new issue `K48kY`.
+  status strip `BpXu0`, home indicator `n6xuXi`, corner button `G5xXSH`, back `mdx7a`, command button `aAEEs` (corner `nAI3C`, floating `U0mSpw`),
+  tabs `T95PxD` / `LMgge`, text tabs `Wk9XP` / `UTLUe`, top tabs `jYf1O` / `Hi1Gt`, keyboard `qEkWs`, top bar `mVWVs` (address `YXS5B`),
+  docks `d5NN3`, `dp5mP`, `t1lr8`, `Ez3Cq`, `HcC9T`, `BtCKT`, `u7X9A`, `nh6Vd`, `p0NUy`, one box `EAumE`, comment dock `R8VK6` (typing `BGx6I`), item bar `PAQjU`,
+  row `pFppk` (`g2rhNb`, `ME4y9`), group header `uIaHH`, property `VILkz`, banner `EwpS9`, toast `KchF8`, comment `Qidd9`, timeline commit `i4d4tt`, item head `zG5m0`, timeline `KJnIN`,
+  list panes `AMaDW`, `BkUsw`, `B9fFBr`, `ttiit`, `x5FXSy`, `U9tdw`, item panes `Z50g0`, `UXIHb`, `PWGSV`,
+  places `iYE61`, `dWgb5`, `dwQ2N`, `v8tmn1`, `T9SeJV`, `VmPIZ`, panels `zikRv`, `crSUU`, `UBTsr`, `czYPK`,
+  command menu `i6jhQ`, `ikYkr`, `llbOW`, `wBBj9`, `B88hB`, sheets `vTKkt`, `F7peI`, `t7yKzM`, `Mikzu`, `DQLPC`, `iceKP`, panels `FadN6`, `yOkXg`, new issue `K48kY`.
 - [ ] Variants · Where the command menu's button lives (`skIAE`): MB1–MB13. A end of the dock, B the title is the button, C top-right, D middle of a bar that stays, E floating, F one box at the bottom.
 - [ ] Variants · Whether the button stays once you are inside a task (`eKhGw`): MB70–MB77, the owner's refinement of the dock's end; if A is picked it replaces MB3. A the button leaves while writing (MB71–MB72), picking a value (MB74) and creating an issue (MB75), and is back at rest (MB70, MB73 with the draft kept); B the button stays (MB76–MB77). New components: `Phone / Picker input` (`v2EIR`), `Phone / Command sheet / Assignees · picking` (`KMrAa`). Superseded: see `phone-brought-back-to-the-desktop.md` (`Phone / Command sheet / Assignees · picking` deleted; MB74 shows `Phone / Menu / Assignees`).
 - [ ] Variants · What the bottom bar holds (`MyutN`): MB14–MB22. A the parts of this place, B fixed and global, C tabs at the top, D the title switches the part.

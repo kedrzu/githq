@@ -6,37 +6,37 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
 ## Components (Components · Mobile → `Acting on My work`, `oiITu`)
 
 - [ ] Phone / Row (`pFppk`), base of every phone row: new children in `Meta` (`Y8AnMz`), all off by default, so no existing screen changes:
-      `Field` (`YvlXC`: dot `mt12T`, value `csCon`, "+1" `Iki8G`) after the reference; `Label dots` (`V5gyw`: `B34G7`, `EHtBT`, `VyqSQ`, 7 px colour dots)
-      after the label; `Closing PR` chip (`rB8pJ`: PR icon, `#1205`, check); `Draft` text (`HQCKG`) after Review. Order now:
-      Reference · Field · Label · Label dots · Closing PR · Checks · Review · Draft · spacer · Avatar · Updated.
+  `Field` (`YvlXC`: dot `mt12T`, value `csCon`, "+1" `Iki8G`) after the reference; `Label dots` (`V5gyw`: `B34G7`, `EHtBT`, `VyqSQ`, 7 px colour dots)
+  after the label; `Closing PR` chip (`rB8pJ`: PR icon, `#1205`, check); `Draft` text (`HQCKG`) after Review. Order now:
+  Reference · Field · Label · Label dots · Closing PR · Checks · Review · Draft · spacer · Avatar · Updated.
 - [ ] Rule for the row at a phone's width (proposed in MB89's caption): reference drops the owner when the repository is tracked (`webapp#1187`),
-      keeps it when not (`vitejs/vite#19021`); the project's row field with +N; labels as colour dots only, names in the item; one avatar; checks and
-      review for a PR; "Draft" in place of review for a draft.
+  keeps it when not (`vitejs/vite#19021`); the project's row field with +N; labels as colour dots only, names in the item; one avatar; checks and
+  review for a PR; "Draft" in place of review for a draft.
 - [ ] New rows (`k2azRH`): `Phone / Row / Issue · field, labels, assignee` (`YweAu`), `Phone / Row / PR · checks, review, author` (`Y53KA`, on `ME4y9`),
-      `Phone / Row / PR · draft` (`a450v`), `Phone / Row / Issue · closing PR chip` (`AQeuB`, variant B of nesting),
-      `Phone / Row / Nested PR` (`U1Ipg`: corner-down-right, PR icon, `#1205`, one clipped line of title, checks; indented 22 px),
-      `Phone / Row / Nested PR · full row` (`G2Nsl`, variant C, 26 px indent).
+  `Phone / Row / PR · draft` (`a450v`), `Phone / Row / Issue · closing PR chip` (`AQeuB`, variant B of nesting),
+  `Phone / Row / Nested PR` (`U1Ipg`: corner-down-right, PR icon, `#1205`, one clipped line of title, checks; indented 22 px),
+  `Phone / Row / Nested PR · full row` (`G2Nsl`, variant C, 26 px indent).
 - [ ] `Phone / Segment` (`BxGQw`), `· current` (`y1sXt`, `$sel` fill, `$accent` stroke), `Phone / Filter strip` (`VtYLv`, Needs me current) and
-      `Phone / Filter strip · All` (`AjJ5s`): the My work filters under the top bar (MB89, a question).
+  `Phone / Filter strip · All` (`AjJ5s`): the My work filters under the top bar (MB89, a question).
 - [ ] `Phone / Summary chip` (`mtoXC`): 30 px chip, `$bg-2`, 8 radius; optional avatar, dot, label dots, icon, text, sub, chevron.
 - [ ] `Phone / Property summary · issue` (`Mg3Qu`), `· pull request` (`ZgPo0`, branches line + reviewers, size, ⋯ / status, closes, assignee),
-      `· pull request, stacked` (`G3WRT`, Stack 2 of 4 chip first).
+  `· pull request, stacked` (`G3WRT`, Stack 2 of 4 chip first).
 - [ ] `Phone / Where it stands` (`Pv3sV`, failing check with Log ↗) and variants `· waiting for review` (`Rir6O`), `· ready` (`BSocv`, Merge ↗),
-      `· conflicts` (`QVCVx`, Resolve ↗), `· changes requested` (`G2sL42`), `· checks failing` (`AfKnp`, opens the checks).
+  `· conflicts` (`QVCVx`, Resolve ↗), `· changes requested` (`G2sL42`), `· checks failing` (`AfKnp`, opens the checks).
 - [ ] `Phone / Check row` (`N1d0ew`), `Phone / Timeline gap` (`G0HyHM`, "74 earlier events · Show"), `Phone / Timeline · new since you looked`
-      (`vpKWS`), `Phone / Body placeholder` (`OpGLL`), `Phone / Stack strip` (`yjxbJ`), `Phone / Stack member` (`k6Bc5u`) and `· current` (`pDWAG`).
+  (`vpKWS`), `Phone / Body placeholder` (`OpGLL`), `Phone / Stack strip` (`yjxbJ`), `Phone / Stack member` (`k6Bc5u`) and `· current` (`pDWAG`).
 - [ ] `Phone / Popover / Labels` (`buTBe`, variant B of changing a property), `Phone / Row / Selectable` (`S2UMc`) and `· selected` (`h9ZxKZ`),
-      `Phone / Row / Swiped` (`fzBjl`, variant B of row actions).
+  `Phone / Row / Swiped` (`fzBjl`, variant B of row actions).
 - [ ] Sheets (`wAWLx`): `Phone / Command sheet / Labels · picking` (`xBrsD`, multi-select, no keyboard until search is tapped),
-      `… / Reviewers · picking` (`kdXH0`), `… / Close · from below` (`lBgtP`, completed / not planned), `… / Row · long press` (`O65RZJ`),
-      `… / Pull request · draft` (`LaXFd`, Ready for review nearest the thumb), `… / Selection · three items` (`Cz3JY`),
-      `Phone / Sheet / Every property` (`RG8Uv`, every project with all its fields, Add to a project), `Phone / Sheet / Checks` (`MZluT`),
-      `Phone / Sheet / Stack` (`NcUYf`, Merging the stack ↗). Superseded: see `phone-brought-back-to-the-desktop.md` (Labels, Reviewers and Close · picking deleted; `Phone / Menu / Labels`, `/ Reviewers`, `/ Close` replace them).
+  `… / Reviewers · picking` (`kdXH0`), `… / Close · from below` (`lBgtP`, completed / not planned), `… / Row · long press` (`O65RZJ`),
+  `… / Pull request · draft` (`LaXFd`, Ready for review nearest the thumb), `… / Selection · three items` (`Cz3JY`),
+  `Phone / Sheet / Every property` (`RG8Uv`, every project with all its fields, Add to a project), `Phone / Sheet / Checks` (`MZluT`),
+  `Phone / Sheet / Stack` (`NcUYf`, Merging the stack ↗). Superseded: see `phone-brought-back-to-the-desktop.md` (Labels, Reviewers and Close · picking deleted; `Phone / Menu / Labels`, `/ Reviewers`, `/ Close` replace them).
 - [ ] Panes (`uxlOF`): `Phone / List / My work · Needs me` (`l2aPa4`), `… · All, further down` (`O0qzLh`), `Phone / Item / Issue · summary` (`qZhtg`),
-      `Phone / Item / Pull request · summary` (`j4OTf`), `… / Issue · properties after the body` (`Aj50h`), `… / Pull request · long thread` (`EkP8V`),
-      `… / Issue · arriving` (`e1palS`), `… / Issue · reply sent` (`aUYA5`), and the three stacked panes `U05wa2`, `GSjJM`, `M8C99S`.
+  `Phone / Item / Pull request · summary` (`j4OTf`), `… / Issue · properties after the body` (`Aj50h`), `… / Pull request · long thread` (`EkP8V`),
+  `… / Issue · arriving` (`e1palS`), `… / Issue · reply sent` (`aUYA5`), and the three stacked panes `U05wa2`, `GSjJM`, `M8C99S`.
 - [ ] Counts in the new panes: Needs me 8 = Review requested 2 + My pull requests 1 (failing checks) + Assigned to me 5; All 13 = 2 + 3 + 5 + 3.
-      #1205 is nested under #1187 and counted nowhere.
+  #1205 is nested under #1187 and counted nowhere.
 
 ## Screens (`pM9rS`)
 
@@ -62,18 +62,18 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
 ## Not changed
 
 - [ ] MB80 and the other earlier list screens still use `Phone / List / My work · All` (`B9fFBr`) with full references and label pills. Once MB89's row is
-      picked, that pane should move to the new rows; not done here because it changes settled screens. Superseded: see `phone-brought-back-to-the-desktop.md` (`B9fFBr` now carries the current rows and the strip).
+  picked, that pane should move to the new rows; not done here because it changes settled screens. Superseded: see `phone-brought-back-to-the-desktop.md` (`B9fFBr` now carries the current rows and the strip).
 
 ## Owner's picks, round 2 (D23–D27 in `docs/design/mobile/DECISIONS.md`)
 
 - [ ] MB89 settled (D23): `Question ·` and amber dropped from slot `FYF00`, caption title and screen `v365q`, renamed `MB89 · My work, filtered to Needs me`, caption rewritten.
 - [ ] MB100 picked (D24): renamed `MB100 · One indented line under the issue` (`Jeq3K`), moved to Screens row 2 (`lDRTs`). Frame `z5gop` deleted with MB101–MB102.
-      Deleted as unused: `Phone / Row / Issue · closing PR chip` (`AQeuB`), `Phone / Row / Nested PR · full row` (`G2Nsl`), and the `Closing PR` child (`rB8pJ`) of `Phone / Row` (`pFppk`). Entries above naming them no longer apply.
+  Deleted as unused: `Phone / Row / Issue · closing PR chip` (`AQeuB`), `Phone / Row / Nested PR · full row` (`G2Nsl`), and the `Closing PR` child (`rB8pJ`) of `Phone / Row` (`pFppk`). Entries above naming them no longer apply.
 - [ ] MB114 picked (D27): renamed `MB114 · Swiping a row reveals actions` (`LA3Ov`), now swiping #1190 (visible above the line), moved to Screens. Frame `M1fwt` deleted with MB113, MB115; `Phone / Command sheet / Row · long press` (`O65RZJ`) deleted.
 - [ ] Properties as rows (D25). Components rebuilt in place, so every pane using them changed:
-      `Mg3Qu` is now `Phone / Properties · issue` (Assignees, Labels, Status · Platform Q4, More), `ZgPo0` `Phone / Properties · pull request` (Reviewers, Checks, Status, More),
-      `G3WRT` `Phone / Properties · pull request, stacked` (Stack row first). Padding 0, gap 0; the chips are gone.
-      New: `Phone / Property · more` (`gKSlh`: chevron-down, "More", one line of what else), `Phone / Property · fewer` (`DYbxw`), `Phone / Properties · issue, every property` (`k9uHBB`: type, milestone, sub-issues, a section per project with all its fields, Add to a project, Fewer), pane `Phone / Item / Issue · every property` (`D4CI1`).
+  `Mg3Qu` is now `Phone / Properties · issue` (Assignees, Labels, Status · Platform Q4, More), `ZgPo0` `Phone / Properties · pull request` (Reviewers, Checks, Status, More),
+  `G3WRT` `Phone / Properties · pull request, stacked` (Stack row first). Padding 0, gap 0; the chips are gone.
+  New: `Phone / Property · more` (`gKSlh`: chevron-down, "More", one line of what else), `Phone / Property · fewer` (`DYbxw`), `Phone / Properties · issue, every property` (`k9uHBB`: type, milestone, sub-issues, a section per project with all its fields, Add to a project, Fewer), pane `Phone / Item / Issue · every property` (`D4CI1`).
 - [ ] `Phone / Property` (`VILkz`): spacer and a `›` chevron (`O7y1g`, 16 px, `$fg-3`) at the end, so every property row reads as tappable. A component: every property row changes.
 - [ ] Settled panes changed to match D25: `Phone / Item / Issue` (`Z50g0`) — its five property rows replaced by one `Phone / Properties · issue`; `Phone / Item / Pull request` (`PWGSV`) — Branch, Reviewers, Checks, Size, Closes, Status rows replaced by `Phone / Where it stands · waiting for review` and `Phone / Properties · pull request`; the GitHub link row stays. So MB33, MB35, MB38, MB52, MB60, MB62, MB70–MB74, MB82 change.
 - [ ] The 1 px `Rule` under the properties deleted in panes `qZhtg`, `j4OTf`, `e1palS`, `EkP8V`, `U05wa2`, `GSjJM`, `M8C99S` (the rows carry their own border). Property instances re-overridden in `e1palS`, `EkP8V` and MB99's pane.
@@ -94,9 +94,9 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
   `Variants · Acting on My work`): MB127 A chips under the title, MB128 B chips after the rows, MB129 C chips after the
   body, MB130 A on a pull request. Waiting for the owner's pick; nothing to build yet.
 - [ ] Variants · Which properties are rows and which are chips (`wKAWs`), the owner's follow-up on Variant A ("how are the chips edited, is there a view of every property"):
-      an `… All` chip (ellipsis icon, `Chip all`) added at the end of the last chip line in MB127 (`Dpe8K`) and MB130.
-      New MB131 · Variant A · Changing a chip (`SlfPG`): MB127 under a scrim with `Phone / Command sheet / Labels · picking` — a chip opens its step as a row does (D26).
-      New MB132 · Variant A · Every property (`Wfk7A`): All unfolds every property in place as rows (`Phone / Properties · issue, every property` without its Labels row; empty fields shown, Iteration "None"), the chip turns into `Fewer` (chevron-up, `$accent` stroke, `$sel` fill). Not built until the owner picks.
+  an `… All` chip (ellipsis icon, `Chip all`) added at the end of the last chip line in MB127 (`Dpe8K`) and MB130.
+  New MB131 · Variant A · Changing a chip (`SlfPG`): MB127 under a scrim with `Phone / Command sheet / Labels · picking` — a chip opens its step as a row does (D26).
+  New MB132 · Variant A · Every property (`Wfk7A`): All unfolds every property in place as rows (`Phone / Properties · issue, every property` without its Labels row; empty fields shown, Iteration "None"), the chip turns into `Fewer` (chevron-up, `$accent` stroke, `$sel` fill). Not built until the owner picks.
 
 ## Owner's pick: rows, then chips, with a chevron (D25 rewritten)
 
