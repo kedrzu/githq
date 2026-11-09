@@ -31,8 +31,7 @@ const { updated, commit, editUrl } = usePageMeta();
       :class="css.footerMeta_updated"
       tid="docs-updated"
     >
-      Updated <time :datetime="updated.iso">{{ updated.text }}</time
-      ><template v-if="commit"> · {{ commit }}</template>
+      Updated <time :datetime="updated.iso">{{ updated.text }}</time><template v-if="commit"> · {{ commit }}</template>
     </p>
   </div>
 </template>

@@ -20,9 +20,7 @@ const { updated, readingMinutes } = usePageMeta();
         :class="css.meta_icon"
         aria-hidden="true"
       />
-      <span
-        >Updated <time :datetime="updated.iso">{{ updated.text }}</time></span
-      >
+      <span>Updated <time :datetime="updated.iso">{{ updated.text }}</time></span>
     </span>
     <span
       v-if="readingMinutes"
