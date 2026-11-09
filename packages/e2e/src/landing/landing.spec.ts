@@ -339,10 +339,12 @@ async function readHint(context: BrowserContext) {
 }
 
 test.describe('the docs', () => {
-    /** The docs home page's headline (`packages/docs/src/index.md`). */
-    const DOCS_HEADING = 'How githq works, and how to use it';
+    /** The title of the docs' first page, which `/docs/` is: they have no home page (`packages/docs/.vitepress/sections.ts`). */
+    const DOCS_HEADING = 'What is githq';
 
-    test('"Docs" in the navigation and "Documentation" in the footer open the docs home', async ({ page }) => {
+    test('"Docs" in the navigation and "Documentation" in the footer open the docs at their first page', async ({
+        page,
+    }) => {
         const landing = new LandingHarness(page);
         for (const link of [
             page.getByRole('banner').getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Docs' }),
@@ -359,7 +361,7 @@ test.describe('the docs', () => {
     test.describe('on a phone', () => {
         test.use({ viewport: { width: 390, height: 844 } });
 
-        test('"Docs" in the menu opens the docs home', async ({ page }) => {
+        test('"Docs" in the menu opens the docs at their first page', async ({ page }) => {
             await page.goto('/');
             await expect(new LandingHarness(page).heading).toContainText(LANDING_HEADING_TEXT);
             await page.getByRole('banner').getByRole('button', { name: 'Menu' }).click();

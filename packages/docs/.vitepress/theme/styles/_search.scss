@@ -1,8 +1,8 @@
 @use '../../../../app/styles/tokens' as *;
 @use 'icons' as *;
 
-// The search (`DOC4 · Searching`, `Docs / Search result`): the default theme's local search box, opened by the top bar's
-// field, `/`, ⌘K or Ctrl+K, in the docs' look. Its markup and keys stay the default theme's; the config shows each
+// The search (`DOC4 · Searching`, `Docs / Search result`): the default theme's local search box, opened by the field atop
+// the sidebar (`DocsSidebarSearch`), the top bar's button where there's no sidebar, `/`, ⌘K or Ctrl+K, in the docs' look. Its markup and keys stay the default theme's; the config shows each
 // result's excerpt (`detailedView`) and names the footer's keys. The default theme doesn't group results by section:
 // each result names its page and heading instead ("page › heading").
 //

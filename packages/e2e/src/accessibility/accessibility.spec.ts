@@ -36,11 +36,10 @@ test('the landing page, wide and on a phone', async ({ page }) => {
     await expectAccessible(page, 'the landing page on a phone');
 });
 
-test('the docs: the home page, an article and the "not found" page, wide and on a phone', async ({ page }) => {
+test('the docs: an article and the "not found" page, wide and on a phone', async ({ page }) => {
     const docs = new DocsSiteHarness(page);
     for (const { path, state, shown } of [
-        { path: '/docs/', state: 'the docs home', shown: docs.sectionCards.first() },
-        { path: '/docs/getting-started/what-is-githq', state: 'a docs article', shown: docs.outline },
+        { path: '/docs/', state: 'a docs article', shown: docs.outline },
         { path: '/docs/no-such-page', state: 'the docs\' "not found" page', shown: docs.notFound },
     ]) {
         await page.setViewportSize({ width: 1440, height: 900 });

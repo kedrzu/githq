@@ -1,7 +1,10 @@
 @use '../../../../app/styles/tokens' as *;
+@use 'icons' as *;
 
-// The top bar (`Docs / Top bar`): the wordmark and "docs" over the sidebar, then the search field, the sections, the
-// GitHub mark and "Open githq" (`DocsTopBarActions`).
+// The top bar (`Docs / Top bar`): the wordmark and "docs" over the sidebar, then the sections, the GitHub mark and "Open
+// githq" (`DocsTopBarActions`). The search field is atop the sidebar (`DocsSidebarSearch`); the bar keeps the default
+// theme's search button only where there is no sidebar to hold it: on a phone (an icon, `_phone.scss`) and on the "not
+// found" page.
 html.dark {
     .VPNavBar {
         background: $color-bg;
@@ -46,8 +49,7 @@ html.dark {
         }
     }
 
-    // A page with no sidebar (the home page, "not found"): the bar as on an article, the search where the sidebar would
-    // end, so it doesn't move from page to page. Its container is the centred 1440 the sidebar's pages line up in.
+    // A page with no sidebar ("not found"): the bar as on an article, the search where the sidebar would end. Its container is the centred 1440 the sidebar's pages line up in.
     @media (width >= 960px) {
         .VPNavBar:not(.has-sidebar) .wrapper {
             padding: 0;
@@ -68,11 +70,19 @@ html.dark {
         }
     }
 
-    // The search field (`Docs / Search field`), 280 wide right after the sidebar.
     .VPNavBarSearch {
         padding-left: 0;
     }
 
+    // The sidebar holds the field. Hidden, not removed: the default theme's search box, and its ⌘K and `/`, live in
+    // this part of the bar (`theme/search.ts`).
+    @media (width >= 960px) {
+        .VPNavBar.has-sidebar #local-search {
+            display: none;
+        }
+    }
+
+    // The search field (`Docs / Search field`), 280 wide right after the sidebar's place.
     @media (width >= 960px) {
         .DocSearch-Button {
             gap: $spacing-8;
@@ -113,32 +123,47 @@ html.dark {
             &:hover .DocSearch-Button-Placeholder {
                 color: $color-fg-2;
             }
-
-            .DocSearch-Button-Keys {
-                gap: 3px;
-            }
         }
     }
 
-    // Each key its own chip, as the app's `Kbd`.
+    // One key (`Kbd / icon + key`): the modifier and K in a single chip, ⌘ as the app's icon on a Mac.
+    .DocSearch-Button .DocSearch-Button-Keys {
+        gap: 1px;
+        align-items: center;
+        padding: 1px 5px;
+        background: $color-bg-3;
+        border: 1px solid $color-border-2;
+        border-radius: $radius-sm;
+    }
+
     .DocSearch-Button .DocSearch-Button-Key,
     .DocSearch-Button .DocSearch-Button-Key + .DocSearch-Button-Key {
+        width: auto;
+        min-width: 0;
         height: auto;
-        padding: 1px 5px;
+        padding: 0;
         margin: 0;
         font-family: $font-family-mono;
         font-size: $font-size-4xs;
         font-weight: $font-weight-normal;
         line-height: 14px;
         color: $color-fg-2;
-        background: $color-bg-3;
-        border: 1px solid $color-border-2;
-        border-radius: $radius-sm;
+        background: none;
+        border: 0;
     }
 
     .DocSearch-Button .DocSearch-Button-Key:first-child::after {
+        margin-right: 3px;
         font-size: $font-size-4xs;
         color: $color-fg-2;
+    }
+
+    // The default theme's `mac` class is on `html` too.
+    &.mac .DocSearch-Button .DocSearch-Button-Key:first-child::after {
+        @include icon($icon-command, 11px);
+
+        display: block;
+        margin-right: 0;
     }
 
     // The sections: the current one in the main colour.

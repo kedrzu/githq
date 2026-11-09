@@ -8,18 +8,12 @@ import { E2E_BASE_URL } from '../localApp.js';
 // The docs (`packages/docs`, VitePress) as the Worker serves them from the local build, under `/docs/`
 // (`packages/worker/src/docs.ts`). They need nothing from GitHub: a request to it would fail the test (`github`).
 
-/** The docs' sections, as the sidebar and the home page's cards list them (`packages/docs/.vitepress/sections.ts`). */
-const SECTIONS = [
-    { title: 'Getting started', firstPage: '/docs/getting-started/what-is-githq' },
-    { title: 'Using githq', firstPage: '/docs/using-githq/my-work' },
-    { title: 'How it works', firstPage: '/docs/how-it-works/github-is-the-source-of-truth' },
-];
-
-const HOME_HEADING = 'How githq works, and how to use it';
-
-/** The article the tests read, and its source. */
+/**
+ * The article the tests read, and its source: the sidebar's first page, which is the docs' address itself (they have no
+ * home page; `packages/docs/.vitepress/sections.ts`).
+ */
 const ARTICLE = {
-    path: '/docs/getting-started/what-is-githq',
+    path: '/docs/',
     title: 'What is githq',
     source: 'getting-started/what-is-githq.md',
     headings: [
@@ -33,31 +27,29 @@ const ARTICLE = {
 
 const DOCS_SOURCE = path.join(import.meta.dirname, '../../../docs/src');
 
-test('/docs/ is the docs home, with a card for each section linking to its first page, and /docs leads there', async ({
+test("/docs/ opens the sidebar's first page, /docs leads there, and the page has no second address", async ({
     page,
 }) => {
     const docs = new DocsSiteHarness(page);
     const response = await page.goto('/docs/');
     expect(response?.status()).toBe(200);
-    await expect(docs.heading).toHaveText(HOME_HEADING);
-
-    await expect(docs.sectionCards).toHaveCount(SECTIONS.length);
-    for (const [index, section] of SECTIONS.entries()) {
-        const card = docs.sectionCards.nth(index);
-        await expect(card.getByRole('heading', { level: 2 })).toHaveText(section.title);
-        await expect(card.getByRole('link').first()).toHaveAttribute('href', section.firstPage);
-    }
-
-    await docs.sectionCards.nth(0).getByRole('link').first().click();
-    await expect(page).toHaveURL(ARTICLE.path);
     await expect(docs.heading).toHaveText(ARTICLE.title);
+    await expect(docs.sidebarItem(ARTICLE.title)).toContainClass('is-active');
+    await expect(docs.sidebar.getByRole('link', { name: ARTICLE.title, exact: true })).toHaveAttribute(
+        'href',
+        '/docs/',
+    );
 
     await page.goto('/docs');
     await expect(page).toHaveURL('/docs/');
-    await expect(docs.heading).toHaveText(HOME_HEADING);
+    await expect(docs.heading).toHaveText(ARTICLE.title);
+
+    const old = await page.goto('/docs/getting-started/what-is-githq');
+    expect(old?.status()).toBe(404);
+    await expect(docs.notFound).toBeVisible();
 });
 
-test('a page without .html is served with the sidebar on it and its headings in the outline, and asks nothing of any other server', async ({
+test('a page is served without .html, with the sidebar on it and its headings in the outline, and asks nothing of any other server', async ({
     page,
 }) => {
     const elsewhere: string[] = [];
@@ -77,6 +69,12 @@ test('a page without .html is served with the sidebar on it and its headings in 
     await expect(docs.sidebarItem('Sign in and install')).not.toContainClass('is-active');
     await expect(docs.outline.getByRole('link')).toHaveText(ARTICLE.headings);
 
+    const next = await page.goto('/docs/getting-started/sign-in-and-install');
+    expect(next?.status()).toBe(200);
+    await expect(page).toHaveURL('/docs/getting-started/sign-in-and-install');
+    await expect(docs.heading).toHaveText('Sign in and install');
+    await expect(docs.sidebarItem('Sign in and install')).toContainClass('is-active');
+
     await page.waitForLoadState('networkidle');
     expect(elsewhere).toEqual([]);
 });
@@ -88,7 +86,7 @@ test('an unknown /docs/ address answers 404 with the docs\' "not found" page, no
         expect(response?.status(), address).toBe(404);
         await expect(docs.notFound).toBeVisible();
         await expect(docs.heading).toHaveText("This page isn't in the docs");
-        await expect(docs.notFound.getByRole('link', { name: 'Docs home' })).toHaveAttribute('href', '/docs/');
+        await expect(docs.notFound.getByRole('link', { name: 'Start of the docs' })).toHaveAttribute('href', '/docs/');
         // Nothing of the app's shell: Nuxt mounts on `#__nuxt`.
         await expect(page.locator('#__nuxt')).toHaveCount(0);
     }
@@ -112,6 +110,22 @@ for (const key of ['/', 'ControlOrMeta+k']) {
         await expect(docs.searchField).toBeHidden();
     });
 }
+
+test('the search field atop the sidebar opens the search, and the top bar has none of its own', async ({ page }) => {
+    const docs = new DocsSiteHarness(page);
+    await page.goto(ARTICLE.path);
+    await expect(docs.heading).toHaveText(ARTICLE.title);
+    // The default theme's own search button is still in the bar, hidden: it holds the search box and its keys.
+    const topBarSearch = page
+        .getByRole('banner')
+        .getByRole('button', { name: /Search the docs/u, includeHidden: true });
+    await expect(topBarSearch).toHaveCount(1);
+    await expect(topBarSearch).toBeHidden();
+
+    await docs.openSearchFromSidebar();
+    await docs.searchField.fill('uninstalling');
+    await expect(docs.searchResults.first()).toHaveAccessibleName(/^Sign in and install > .*Uninstalling$/u);
+});
 
 test('an article says when it last changed, by its last commit, and links to its file on main to edit it', async ({
     page,
@@ -168,12 +182,18 @@ test.describe('on a phone', () => {
         expect(await docs.scrollsSideways()).toBe(false);
     });
 
-    test('the home page and the "not found" page do not scroll sideways', async ({ page }) => {
+    test('the search field atop the menu opens the search', async ({ page }) => {
         const docs = new DocsSiteHarness(page);
-        await page.goto('/docs/');
-        await expect(docs.heading).toHaveText(HOME_HEADING);
-        expect(await docs.scrollsSideways()).toBe(false);
+        await page.goto(ARTICLE.path);
+        await expect(docs.heading).toHaveText(ARTICLE.title);
 
+        await docs.menuButton.click();
+        await expect(docs.sidebarSearch).toBeInViewport({ ratio: 1 });
+        await docs.openSearchFromSidebar();
+    });
+
+    test('the "not found" page does not scroll sideways', async ({ page }) => {
+        const docs = new DocsSiteHarness(page);
         await page.goto('/docs/no-such-page');
         await expect(docs.notFound).toBeVisible();
         expect(await docs.scrollsSideways()).toBe(false);
