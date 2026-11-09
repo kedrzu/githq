@@ -36,9 +36,7 @@ const meta = {
         currentId: GLYPHS_STACK[1]?.id ?? '',
         neighbours: { previous: GLYPHS_STACK[0]?.id ?? null, next: null },
         arrangement: 'panel',
-        folded: false,
         onOpen: fn(),
-        onUnfold: fn(),
     },
     // As wide as the place it takes: the panel's 560px, the modal's side column, the page's left column.
     render: args => ({
@@ -55,10 +53,7 @@ type Story = StoryObj<typeof meta>;
 /** SP30: a stack of two in a panel — two rows with their state in words, `K` on the first, and what stops it. */
 export const PanelTwo: Story = {};
 
-/**
- * SP31: a stack of ten in a panel, the sixth open — a window of six lines: four earlier folded, one before, this one, two
- * after, two later folded.
- */
+/** SP82: a stack of ten in a panel, the sixth open — every row, none folded, `K` and `J` right after their titles. */
 export const PanelTen: Story = {
     args: {
         stack: TEN,
@@ -67,13 +62,10 @@ export const PanelTen: Story = {
     },
 };
 
-/** SP32: the panel's content scrolled — the map folded to one line: pips, "6 of 10", "#65 blocks 4 later", `#64 K J #66`. */
-export const PanelFolded: Story = { args: { ...PanelTen.args, folded: true } };
-
 /** SP33: a stack of two at the top of a modal's side column — the icons carry each state. */
 export const ModalTwo: Story = { args: { arrangement: 'modal' } };
 
-/** SP34: a stack of ten in a modal — whole, no window. */
+/** SP34: a stack of ten in a modal — whole. */
 export const ModalTen: Story = { args: { ...PanelTen.args, arrangement: 'modal' } };
 
 /** SP35: a stack of two in a page's left column, as tall as the page. */
@@ -110,15 +102,12 @@ export const PanelReviewRequested: Story = {
     },
 };
 
-/** {@link PanelReviewRequested} folded: the strip says what blocks too. */
-export const PanelReviewRequestedFolded: Story = { args: { ...PanelReviewRequested.args, folded: true } };
-
 /** SP7: the merge of both is on its way — each row reads being merged, none merged, and the line that stacks take longer. */
 export const PanelBeingMerged: Story = {
     args: { stack: sampleStackDescription(GLYPHS_STACK.map(pr => ({ ...pr, merging: 'SQUASH' as const }))) },
 };
 
-/** D25: an amber dot on the row of a pull request with the viewer's draft review; the folded line's pip carries it too. */
+/** D25: an amber dot on the row of a pull request with the viewer's draft review. */
 const WITH_DRAFT = sampleStackDescription(
     GLYPHS_STACK.map((pr, index) =>
         index === 1
@@ -128,5 +117,3 @@ const WITH_DRAFT = sampleStackDescription(
 );
 
 export const WithDraft: Story = { args: { stack: WITH_DRAFT } };
-
-export const WithDraftFolded: Story = { args: { stack: WITH_DRAFT, folded: true } };

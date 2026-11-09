@@ -398,12 +398,12 @@ function openedInStack(members: readonly PullRequestItem[], index: number) {
     };
 }
 
-/** SP30: the second of a stack of two in the panel — the map's rows pinned above the content. */
+/** SP30: the second of a stack of two in the panel — the stack bar pinned above the content, the rows at its top. */
 export const StackOfTwoInPanel: Story = {
     args: { ...openedInStack(GLYPHS_STACK, 1), position: { index: 10, count: 23 } },
 };
 
-/** SP31, SP32: the sixth of a stack of ten in the panel — a window of six; scrolled, the map folds to one line. */
+/** SP82–SP84: the sixth of a stack of ten in the panel — every row at the top of the content; scrolled, the bar drops them. */
 export const StackOfTenInPanel: Story = {
     args: { ...openedInStack(SYNC_ENGINE_STACK, 5), position: { index: 13, count: 31 } },
 };
