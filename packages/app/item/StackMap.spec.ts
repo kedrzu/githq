@@ -6,17 +6,8 @@ import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './StackMap.stories.js';
 
-const {
-    ModalPartlyRead,
-    ModalTen,
-    PanelFolded,
-    PanelBeingMerged,
-    PanelLastOpen,
-    PanelReviewRequested,
-    PanelReviewRequestedFolded,
-    PanelTen,
-    PanelTwo,
-} = composeStories(stories);
+const { ModalPartlyRead, ModalTen, PanelBeingMerged, PanelLastOpen, PanelReviewRequested, PanelTen, PanelTwo } =
+    composeStories(stories);
 
 /** The rows' buttons, top to bottom, by their accessible names. */
 function getRowNames() {
@@ -28,7 +19,8 @@ test('SP30: a stack of two shows both rows, this one marked, K on the one before
     await PanelTwo.run();
 
     await expect.element(page.getByText('Draw the key glyphs', { exact: true }).first()).toBeVisible();
-    await expect.element(page.getByText('2 of 2')).toBeVisible();
+    // In a panel the stack bar names the stack and shows the places.
+    expect(page.getByText('2 of 2').query()).toBeNull();
     const current = page.getByRole('button', { name: /#41/u });
     await expect.element(current).toHaveAttribute('aria-current', 'true');
     await expect.element(current).toHaveTextContent('Waiting for review');
@@ -37,16 +29,28 @@ test('SP30: a stack of two shows both rows, this one marked, K on the one before
     await expect.element(page.getByText('#41 is waiting for review')).toBeVisible();
 });
 
-test('SP31: a stack of ten in a panel shows a window of six lines, the rest folded into lines saying what they hold', async () => {
+test('D25: a stack of ten in a panel shows every row, none folded, K and J right after the titles and the state at the far end', async () => {
     await PanelTen.run();
 
-    expect(getRowNames().map(name => name.slice(0, 3))).toEqual(['#64', '#65', '#66', '#67']);
-    await expect.element(page.getByText('4 earlier · 2 landed, 2 ready')).toBeVisible();
-    await expect.element(page.getByText('2 later', { exact: true })).toBeVisible();
-    await expect.element(page.getByText('6 of 10')).toBeVisible();
+    expect(getRowNames().map(name => name.slice(0, 3))).toEqual(SYNC_ENGINE_STACK.map(pr => `#${pr.number}`));
+    expect(document.body.textContent).not.toContain('earlier');
     await expect.element(page.getByText('#65 stops 4 later from landing')).toBeVisible();
-    await expect.element(page.getByRole('button', { name: /#66/u })).toHaveAttribute('aria-keyshortcuts', 'J');
+    const next = page.getByRole('button', { name: /#66/u });
+    await expect.element(next).toHaveAttribute('aria-keyshortcuts', 'J');
+    await expect.element(page.getByRole('button', { name: /#64/u })).toHaveAttribute('aria-keyshortcuts', 'K');
     await expect.element(page.getByRole('button', { name: /#65/u })).toHaveTextContent('2 checks failing');
+
+    // The key follows the title, the state ends the row.
+    const row = next.element();
+    const title = [...row.querySelectorAll('span')].find(span => span.textContent === SYNC_ENGINE_STACK[6]!.title);
+    const key = row.querySelector('kbd');
+    if (!title || !key) {
+        throw new Error('The row has no title or no key.');
+    }
+
+    const [first, last] = [key.getBoundingClientRect(), title.getBoundingClientRect()];
+    expect(first.left - last.right).toBeLessThan(16);
+    expect(row.textContent.trim().endsWith('Waiting for review')).toBe(true);
 });
 
 test('SP34: in a modal the stack of ten shows whole, merged ones included, without state in words', async () => {
@@ -68,19 +72,7 @@ test('a click on a row opens its pull request; one on the open one does nothing'
     expect(onOpen).toHaveBeenCalledTimes(1);
 });
 
-test('SP32: folded, the map is one line — place, what blocks, the neighbours — and a click unfolds it', async () => {
-    await PanelFolded.run();
-    const { onUnfold } = PanelFolded.args;
-
-    expect(page.getByRole('list', { name: 'Pull requests of the stack' }).query()).toBeNull();
-    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10 #65 blocks 4 later/u });
-    await expect.element(strip).toHaveTextContent(/#64.*K.*J.*#66/u);
-
-    await strip.click();
-    expect(onUnfold).toHaveBeenCalledTimes(1);
-});
-
-test('a stack with one open pull request left reads "Ready", in the map and the folded strip', async () => {
+test('a stack with one open pull request left reads "Ready"', async () => {
     await PanelLastOpen.run();
 
     await expect.element(page.getByText('Ready', { exact: true }).last()).toBeVisible();
@@ -102,14 +94,6 @@ test("on someone else's stack asking the viewer's review the map says what stops
 
     await expect.element(page.getByText('#531 is waiting for review')).toBeVisible();
     expect(document.body.textContent).not.toContain('Your review on');
-});
-
-test("folded, the strip of someone else's stack asking the viewer's review says what blocks it", async () => {
-    await PanelReviewRequestedFolded.run();
-
-    await expect
-        .element(page.getByRole('button', { name: /^Show the stack: 3 of 4 #531 is waiting for review/u }))
-        .toBeVisible();
 });
 
 test('SP7: while the stack is being merged every row going says so, none reads merged, and the map says stacks take longer', async () => {
