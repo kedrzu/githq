@@ -38,6 +38,7 @@ type RouteScrollSnapshot = ReadonlyMap<string, RouteScrollPosition>;
 /** Keeps what the containers show and where, before a navigation changes them (`routeScrollPlugin`). */
 export function saveRouteScroll() {
     pageShown = false;
+    stopAwaiting();
     before = readContainers();
     // Not `history.state`: Back and Forward have already moved it to the entry they go to.
     if (currentEntry != null) {
@@ -68,21 +69,64 @@ let currentEntry: number | null = null;
 let pageWaiters: (() => void)[] = [];
 /** Whether the screen showed since the navigation began: then there is nothing to wait for. */
 let pageShown = false;
+/**
+ * Where Back or Forward returns the containers not on screen yet when the screen showed (a page whose content is a
+ * chunk of its own, as "my work" is, `home/HomePage.vue`): each is put there once it comes, until the next navigation.
+ */
+const awaited = new Map<string, RouteScrollPosition>();
+const observer = typeof MutationObserver === 'undefined' ? null : new MutationObserver(restoreAwaited);
 
 function restoreContainers(popped: boolean) {
     const entry = getHistoryEntry();
     const returnedTo = popped && entry != null ? saved.get(entry) : undefined;
     currentEntry = entry;
+    const containers = getContainers();
     // Only what shows something else than before: a container still showing the same thing stays where it is.
-    for (const [id, element] of getContainers()) {
+    for (const [id, element] of containers) {
         if (!before.has(id)) {
-            const position = returnedTo?.get(id);
-            element.scrollTop = position?.top ?? 0;
-            element.scrollLeft = position?.left ?? 0;
+            scrollTo(element, returnedTo?.get(id));
         }
     }
 
+    for (const [id, position] of returnedTo ?? []) {
+        if (!containers.has(id)) {
+            awaited.set(id, position);
+        }
+    }
+
+    if (awaited.size > 0) {
+        observer?.observe(document.body, { childList: true, subtree: true, attributeFilter: [ATTRIBUTE] });
+    }
+
     before = new Map();
+}
+
+/**
+ * Runs as a microtask of the render that added the container, so before what that render scheduled for after it
+ * (`nextTick`): a list bringing its selected row into sight finds it where it was.
+ */
+function restoreAwaited() {
+    for (const [id, element] of getContainers()) {
+        const position = awaited.get(id);
+        if (position) {
+            awaited.delete(id);
+            scrollTo(element, position);
+        }
+    }
+
+    if (awaited.size === 0) {
+        stopAwaiting();
+    }
+}
+
+function stopAwaiting() {
+    awaited.clear();
+    observer?.disconnect();
+}
+
+function scrollTo(element: HTMLElement, position: RouteScrollPosition | undefined) {
+    element.scrollTop = position?.top ?? 0;
+    element.scrollLeft = position?.left ?? 0;
 }
 
 function readContainers() {
