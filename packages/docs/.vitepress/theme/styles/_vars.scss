@@ -1,0 +1,68 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The default theme's variables, from the app's tokens. The site is dark only (`appearance: 'force-dark'`): the default
+// theme sets its dark values on `.dark`, so these sit on `html.dark` to win over them whatever the order of the files.
+// Every text colour here passes AA (4.5:1) on every surface it sits on: fg 14.87–17.39, fg-2 5.56–6.50, fg-dim
+// 5.15–6.02 on bg, bg-2 and bg-3 (`tokens.scss`); `$color-fg-3` (3.5:1) only ever draws icons and lines.
+html.dark {
+    --vp-font-family-base: #{$font-family-sans};
+    --vp-font-family-mono: #{$font-family-mono};
+
+    --vp-c-bg: #{$color-bg};
+    --vp-c-bg-alt: #{$color-bg-2};
+    --vp-c-bg-elv: #{$color-bg-2};
+    --vp-c-bg-soft: #{$color-bg-3};
+
+    --vp-c-text-1: #{$color-fg};
+    --vp-c-text-2: #{$color-fg-2};
+    --vp-c-text-3: #{$color-fg-dim};
+
+    --vp-c-border: #{$color-border-2};
+    --vp-c-divider: #{$color-border};
+    --vp-c-gutter: #{$color-border};
+
+    --vp-c-brand-1: #{$color-accent};
+    --vp-c-brand-2: #{$color-accent};
+    --vp-c-brand-3: #{$color-accent};
+    --vp-c-brand-soft: #{rgba($color-accent, 0.16)};
+
+    --vp-c-default-soft: #{$color-bg-3};
+
+    --vp-c-tip-1: #{$color-green};
+    --vp-c-tip-soft: #{rgba($color-green, 0.08)};
+    --vp-c-note-1: #{$color-accent};
+    --vp-c-note-soft: #{rgba($color-accent, 0.08)};
+    --vp-c-warning-1: #{$color-amber};
+    --vp-c-warning-soft: #{rgba($color-amber, 0.08)};
+    --vp-c-danger-1: #{$color-red};
+    --vp-c-danger-soft: #{rgba($color-red, 0.08)};
+
+    --vp-focus-color: #{$color-focus};
+
+    // The top bar: 60 high on a wide page, 56 on a phone (`Docs / Top bar`, `Docs / Top bar · phone`).
+    --vp-nav-height: 56px;
+    --vp-nav-bg-color: #{$color-bg};
+    --vp-local-nav-bg-color: #{$color-bg};
+    --vp-sidebar-bg-color: #{$color-bg};
+    --vp-sidebar-width: 296px;
+    // The phone's menu fills the screen under the top bar: nothing behind it to dim.
+    --vp-backdrop-bg-color: transparent;
+
+    --vp-code-font-size: 13px;
+    --vp-code-line-height: 1.5;
+    --vp-code-color: #{$color-fg};
+    --vp-code-bg: #{$color-bg-3};
+    --vp-code-block-color: #{$color-fg};
+    --vp-code-block-bg: #{$color-bg-2};
+    --vp-code-block-divider-color: #{$color-border};
+    --vp-code-copy-code-bg: transparent;
+    --vp-code-copy-code-hover-bg: #{$color-bg-3};
+    --vp-code-copy-code-border-color: transparent;
+    --vp-code-copy-code-hover-border-color: transparent;
+    --vp-code-copy-copied-text-content: 'Copied';
+    --vp-code-lang-color: #{$color-fg-dim};
+
+    @media (width >= 960px) {
+        --vp-nav-height: 60px;
+    }
+}

@@ -1,13 +1,22 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vitepress';
 
 import { assertFullGitHistory, gitIn } from '../lib/gitHistory.js';
+import { articleMetaPlugin, codeTitlePlugin } from '../lib/markdown.js';
+import { readingMinutes } from '../lib/readingTime.js';
+import { EDIT_URL_PATTERN, GITHUB_URL } from './links.js';
 import { sections } from './sections.js';
 
-const GITHUB_URL = 'https://github.com/kedrzu/githq';
+// The app's design tokens (SCSS variables and mixins only, no CSS), available in the theme's components' SCSS blocks;
+// the partials of `theme/styles/` load them themselves.
+const tokensPath = fileURLToPath(new URL('../../app/styles/tokens.scss', import.meta.url));
+const themePath = fileURLToPath(new URL('theme/', import.meta.url));
 
-assertFullGitHistory(gitIn(fileURLToPath(new URL('..', import.meta.url))));
+const git = gitIn(fileURLToPath(new URL('..', import.meta.url)));
+assertFullGitHistory(git);
 
 export default defineConfig({
     title: 'githq docs',
@@ -26,11 +35,41 @@ export default defineConfig({
     // "Updated" dates come from git; `assertFullGitHistory` above keeps a shallow clone from faking them.
     lastUpdated: true,
 
+    markdown: {
+        // One theme: the site is dark only. GitHub's own dark theme, whose comments still pass AA on a code block.
+        theme: 'github-dark-default',
+        container: { infoLabel: 'Note', tipLabel: 'Tip', warningLabel: 'Warning', dangerLabel: 'Danger' },
+        config: md => {
+            md.use(articleMetaPlugin);
+            md.use(codeTitlePlugin);
+        },
+    },
+
+    // The article's meta line and footer (`theme/pageMeta.ts`): its reading time and the commit it was last changed in.
+    transformPageData: (pageData, { siteConfig }) => {
+        if (!pageData.filePath) {
+            return;
+        }
+        const file = join(siteConfig.srcDir, pageData.filePath);
+        const commit = git(['log', '-1', '--format=%h', '--', file]).trim();
+        pageData.frontmatter.readingMinutes = readingMinutes(readFileSync(file, 'utf8'));
+        pageData.frontmatter.commit = commit || undefined;
+    },
+
     vite: {
         // The dev server (port 8789, `package.json`) is also reached through `nuxt dev` on 8787, which proxies
         // `/docs/**` here (`packages/app/nuxt.config.ts`) but cannot carry a WebSocket: the HMR socket goes to
         // 8789 straight away, instead of first trying 8787 and failing there.
         server: { hmr: { clientPort: 8789 } },
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    api: 'modern',
+                    additionalData: (source: string, filename: string) =>
+                        filename.startsWith(themePath) ? `@use '${tokensPath}' as *;\n${source}` : source,
+                },
+            },
+        },
     },
 
     themeConfig: {
@@ -43,11 +82,17 @@ export default defineConfig({
             text: section.title,
             items: section.pages.map(page => ({ text: page.title, link: page.link })),
         })),
-        search: { provider: 'local' },
-        editLink: {
-            pattern: `${GITHUB_URL}/edit/main/packages/docs/src/:path`,
-            text: 'Edit this page',
+        outline: { level: [2, 3], label: 'On this page' },
+        search: {
+            provider: 'local',
+            options: {
+                translations: { button: { buttonText: 'Search the docs', buttonAriaLabel: 'Search the docs' } },
+            },
         },
+        editLink: { pattern: EDIT_URL_PATTERN, text: 'Edit this page on GitHub' },
+        docFooter: { prev: 'Previous', next: 'Next' },
+        // The wordmark stands in for the title (`theme/DocsBrand.vue`).
+        siteTitle: false,
         socialLinks: [{ icon: 'github', link: GITHUB_URL }],
     },
 });

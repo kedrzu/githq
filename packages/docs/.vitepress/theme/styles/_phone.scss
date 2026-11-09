@@ -1,0 +1,159 @@
+@use '../../../../app/styles/tokens' as *;
+@use 'icons' as *;
+
+// Under 960 (`DOC5 · An article on a phone`, `DOC6 · The menu on a phone`): the top bar holds the wordmark, the search
+// and the menu button; the bar under it names the section and opens "On this page"; the menu is the sidebar, filling
+// the screen under the top bar, with the search field atop it (`DocsMenuSearch`).
+@media (width < 960px) {
+    html.dark {
+        // The top bar stays at the top, as the landing page's does, with the section's bar under it.
+        .VPNav {
+            position: sticky;
+            top: 0;
+        }
+
+        .VPLocalNav {
+            top: var(--vp-nav-height);
+        }
+
+        .VPNavBar .wrapper {
+            padding: 0 $spacing-8 0 $spacing-16;
+        }
+
+        .VPNavBar .divider-line {
+            background-color: $color-border;
+        }
+
+        // Room at the end for the menu button, which lives in the bar under it (below).
+        .VPNavBar .content-body {
+            gap: $spacing-4;
+            padding-right: 44px;
+        }
+
+        // The sections are the menu's.
+        .VPNavBarMenu {
+            display: none;
+        }
+
+        // The search: an icon button, as the menu's, at the end of the bar.
+        .VPNavBarSearch {
+            flex-grow: 0;
+        }
+
+        .DocSearch-Button {
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            color: $color-fg-2;
+            background: none;
+            border: 0;
+            border-radius: $radius-lg;
+
+            &:hover {
+                color: $color-fg;
+                background: none;
+            }
+
+            .DocSearch-Button-Placeholder,
+            .DocSearch-Button-Keys {
+                display: none;
+            }
+
+            .DocSearch-Search-Icon {
+                top: 0;
+                width: 20px;
+                height: 20px;
+                margin: 0;
+                color: inherit;
+            }
+        }
+
+        // The bar under the top bar: the section on the left (`DocsLayout` passes its name), "On this page" on the right.
+        // Above the top bar, for its menu button.
+        .VPLocalNav {
+            z-index: 35;
+        }
+
+        .VPLocalNav .container {
+            padding: 0 $spacing-16;
+
+            &::before {
+                overflow: hidden;
+                font-size: $font-size-md;
+                color: $color-fg-dim;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                content: var(--docs-section-title);
+            }
+        }
+
+        // The menu button: the default theme's own, which opens its sidebar, focuses it and has Escape close it and focus
+        // the button again, shown at the end of the top bar as an icon (`Docs / Top bar · phone`). A ✕ while open; the
+        // sidebar's backdrop, transparent over the top bar, takes the click that closes it.
+        .VPLocalNav .menu {
+            position: fixed;
+            top: calc((var(--vp-nav-height) - 40px) / 2);
+            right: $spacing-8;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            color: $color-fg-2;
+            border-radius: $radius-lg;
+
+            &:hover {
+                color: $color-fg;
+            }
+
+            &:focus-visible {
+                outline: 2px solid $color-focus;
+            }
+        }
+
+        .VPLocalNav .menu .menu-icon {
+            --icon: #{$icon-menu};
+
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .VPLocalNav .menu[aria-expanded='true'] .menu-icon {
+            --icon: #{$icon-x};
+        }
+
+        .VPLocalNav .menu .menu-text {
+            @include visually-hidden;
+        }
+
+        .VPLocalNav .VPLocalNavOutlineDropdown {
+            padding: 10px 0;
+        }
+
+        .VPLocalNavOutlineDropdown button {
+            font-size: $font-size-md;
+            font-weight: $font-weight-normal;
+            line-height: 20px;
+            color: $color-fg-2;
+
+            &:hover {
+                color: $color-fg;
+            }
+        }
+
+        // The menu: the whole sidebar under the top bar.
+        // The menu draws the top bar's line itself: the bars' own lines lie under it.
+        .VPSidebar {
+            top: var(--vp-nav-height);
+            width: 100%;
+            max-width: none;
+            padding: $spacing-16 $spacing-16 40px;
+            border-top: 1px solid $color-border;
+            box-shadow: none;
+        }
+
+        .VPSidebar .group {
+            padding: 0 $spacing-12;
+        }
+    }
+}

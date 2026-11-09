@@ -1,0 +1,12 @@
+// The default theme in the docs' look (githq.pen "Docs · githq.dev/docs — template"): its variables first, then what
+// a variable can't reach, part by part. The default theme's components style themselves with scoped selectors
+// (`.x[data-v-…]`); a rule here that overrides one starts at `html.dark` to outweigh it.
+@use 'vars';
+@use 'base';
+@use 'topBar';
+@use 'sidebar';
+@use 'article';
+@use 'content';
+@use 'outline';
+@use 'footer';
+@use 'phone';

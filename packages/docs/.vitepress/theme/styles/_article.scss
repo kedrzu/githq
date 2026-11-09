@@ -1,0 +1,165 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The article's column and its type (`DOC2 · An article`: 720 wide, the outline 220 wide and 64 after it; `DOC5` on a
+// phone).
+$article-width: 720px;
+$outline-width: 220px;
+$outline-gap: 64px;
+
+html.dark {
+    @media (width >= 960px) {
+        .VPDoc {
+            padding: 40px 48px 0;
+        }
+
+        .VPDoc > .container > .content {
+            padding: 0 0 96px;
+        }
+    }
+
+    .VPDoc.has-aside .content-container,
+    .VPDoc:not(.has-sidebar) > .container > .content {
+        max-width: $article-width;
+    }
+
+    .VPDoc .aside {
+        max-width: $outline-width + $outline-gap;
+        padding-left: $outline-gap;
+    }
+
+    .VPDoc .aside-container,
+    .VPDoc .aside-curtain {
+        width: $outline-width;
+    }
+
+    .VPDoc .aside-container {
+        padding-top: calc(var(--vp-nav-height) + 80px);
+    }
+
+    .vp-doc {
+        font-size: $font-size-xl;
+        line-height: 1.7;
+        color: $color-fg;
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-weight: $font-weight-semibold;
+            color: $color-fg;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 34px;
+            line-height: 1.2;
+            letter-spacing: -0.6px;
+        }
+
+        h2 {
+            padding-top: 0;
+            margin: 40px 0 0;
+            font-size: 22px;
+            line-height: 1.3;
+            letter-spacing: -0.3px;
+            border-top: 0;
+        }
+
+        h3 {
+            margin: 32px 0 0;
+            font-size: 17px;
+            line-height: 1.4;
+            letter-spacing: 0;
+        }
+
+        h4 {
+            margin: 24px 0 0;
+            font-size: $font-size-xl;
+        }
+
+        // The page's lead: the paragraph right under its title (`articleMetaPlugin`).
+        .lead {
+            margin: $spacing-20 0;
+            font-size: 17px;
+            line-height: 1.6;
+            color: $color-fg-2;
+        }
+
+        p,
+        ul,
+        ol {
+            margin: $spacing-20 0;
+            line-height: 1.7;
+        }
+
+        li + li {
+            margin-top: $spacing-6;
+        }
+
+        a {
+            font-weight: $font-weight-normal;
+            color: $color-accent;
+            text-decoration: underline;
+            text-decoration-color: rgba($color-accent, 0.4);
+            text-underline-offset: 3px;
+
+            &:hover {
+                text-decoration-color: currentcolor;
+            }
+        }
+
+        // The heading's "#" anchor: dim until the heading is hovered.
+        .header-anchor {
+            color: $color-fg-dim;
+            text-decoration: none;
+        }
+
+        strong {
+            font-weight: $font-weight-semibold;
+        }
+
+        hr {
+            margin: 32px 0;
+            border-top: 1px solid $color-border;
+        }
+
+        blockquote {
+            padding-left: $spacing-16;
+            color: $color-fg-2;
+            border-left: 2px solid $color-border-2;
+        }
+    }
+
+    // A phone (`DOC5`): one column at 20 from the edges, the type a step smaller.
+    @media (width < 960px) {
+        .VPDoc {
+            padding: $spacing-24 $spacing-20 64px;
+        }
+
+        .vp-doc {
+            h1 {
+                font-size: 28px;
+                letter-spacing: -0.5px;
+            }
+
+            h2 {
+                margin-top: 32px;
+                font-size: 20px;
+                letter-spacing: 0;
+            }
+
+            .lead {
+                margin: $spacing-16 0;
+                font-size: 16px;
+                line-height: 1.55;
+            }
+
+            p,
+            ul,
+            ol {
+                margin: $spacing-16 0;
+                line-height: 1.65;
+            }
+        }
+    }
+}
