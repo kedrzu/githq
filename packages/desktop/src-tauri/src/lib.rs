@@ -5,6 +5,8 @@ mod deep_link;
 mod device_flow;
 mod external;
 mod job_logs;
+#[cfg(target_os = "macos")]
+mod menu;
 mod updater;
 
 use tauri::webview::NewWindowResponse;
@@ -27,7 +29,12 @@ const DEV_SERVER_PORT: u16 = 8787;
 
 /// Starts the app and blocks until it quits.
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // On a Mac, ⌘W tells how to quit instead of closing the one window, which would quit (`menu.rs`).
+    #[cfg(target_os = "macos")]
+    let builder = builder.menu(menu::build).on_menu_event(menu::on_event);
+
+    builder
         // First, so that a second launch hands its link to this one and quits before anything else starts. The link
         // reaches `deep_link::open` through the deep-link plugin (the `deep-link` feature); this brings the window up
         // for a launch with none.

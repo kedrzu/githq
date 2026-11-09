@@ -1,0 +1,4 @@
+title:
+  en: Press ⌘Q to quit githq
+detail:
+  en: ⌘W doesn't close the window, so githq won't quit by accident.

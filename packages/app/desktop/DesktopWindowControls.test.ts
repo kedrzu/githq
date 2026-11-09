@@ -117,6 +117,7 @@ function createFakeNative(): FakeNative {
             onScrollPhase: notExpected,
             takeOpenedLink: notExpected,
             onLinkOpened: notExpected,
+            onCloseWindowPressed: notExpected,
         },
     };
 
