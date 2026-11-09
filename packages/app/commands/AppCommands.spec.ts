@@ -89,6 +89,30 @@ test('"sign out" and Enter signs out', async () => {
     await expect.poll(() => auth.signedIn).toBe(false);
 });
 
+test('"Documentation" is among the app\'s own, after "Keyboard shortcuts", is found by "docs", and opens the docs in a new tab', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    onTestFinished(() => open.mockRestore());
+    const router = mount();
+
+    await openMenu();
+    const menu = page.getByRole('listbox', { name: 'Command menu' });
+    const titles = menu
+        .getByRole('option')
+        .elements()
+        .map(option => option.textContent ?? '');
+    const help = titles.findIndex(title => title.startsWith('Keyboard shortcuts'));
+    expect(help).toBeGreaterThanOrEqual(0);
+    expect(titles[help + 1]).toMatch(/^Documentation/u);
+
+    await userEvent.keyboard('docs');
+    await expect.element(menu.getByRole('option', { name: /^Documentation/u })).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+
+    // The web build's: the docs beside the app, which stays where it is.
+    expect(open).toHaveBeenCalledExactlyOnceWith('/docs/', '_blank', 'noopener,noreferrer');
+    expect(router.currentRoute.value.fullPath).toBe('/');
+});
+
 test('Settings → Updates →: Enter on a section goes there, → walks into its commands', async () => {
     const update = createFakeUpdate({ stream: 'stable' });
     const router = mount(update);

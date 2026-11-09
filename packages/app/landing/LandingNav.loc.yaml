@@ -8,6 +8,8 @@ howItWorks:
   en: How it works
 openSource:
   en: Open source
+docs:
+  en: Docs
 repository:
   en: kedrzu/githq
 signIn:

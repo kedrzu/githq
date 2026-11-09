@@ -1,4 +1,4 @@
-<!-- The landing page's top bar (githq.pen "Landing — githq.dev"), pinned to the top as the page scrolls: the wordmark, links to the page's sections, the GitHub mark, "Sign in" and a small "Download", which opens `/download` because no warning can sit beside it on Windows. On a narrow page the links fold into a menu behind a button, on a phone the mark and "Download" too. `/download` shows it too (`elsewhere`), without its own link. -->
+<!-- The landing page's top bar (githq.pen "Landing — githq.dev"), pinned to the top as the page scrolls: the wordmark, links to the page's sections and to the docs (`/docs/`, a full page load), the GitHub mark, "Sign in" and a small "Download", which opens `/download` because no warning can sit beside it on Windows. On a narrow page the links fold into a menu behind a button, on a phone the mark and "Download" too. `/download` shows it too (`elsewhere`), without its own link. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Download, Github, Menu, X } from 'lucide-vue-next';
@@ -12,7 +12,7 @@ import Wordmark from '@/components/Wordmark.vue';
 import BrandLogo from './BrandLogo.vue';
 import { DOWNLOAD_PATH } from './desktopBuilds.js';
 import * as l from './LandingNav.loc.js';
-import { LandingSectionId, REPOSITORY_URL } from './landingLinks.js';
+import { DOCS_PATH, LandingSectionId, REPOSITORY_URL } from './landingLinks.js';
 
 const props = defineProps<{
   /** On a page other than the landing page: the sections are on the way back to it. */
@@ -30,14 +30,16 @@ const t = useTranslate();
 const menuId = useId();
 const menuOpen = ref(false);
 
-const links = computed(() =>
-  [
+// The page's sections, then the docs — a site of their own, loaded in full like any page outside the app.
+const links = computed(() => [
+  ...[
     { id: LandingSectionId.features, label: l.features },
     { id: LandingSectionId.compare, label: l.compare },
     { id: LandingSectionId.howItWorks, label: l.howItWorks },
     { id: LandingSectionId.openSource, label: l.openSource },
   ].map(link => ({ ...link, href: `${props.elsewhere ? HOME_PATH : ''}#${link.id}` })),
-);
+  { id: 'docs', label: l.docs, href: DOCS_PATH },
+]);
 </script>
 
 <template>

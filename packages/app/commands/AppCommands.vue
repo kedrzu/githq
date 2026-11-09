@@ -1,10 +1,11 @@
-<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). In the web builds "Open in desktop app" opens the screen in the githq desktop app. The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
+<!-- The app's own actions and the two sheets that show them all, for the shell: ⌘K opens the command menu wherever the user is, `?` the keyboard help, `C` a new issue in the quick capture (H1) — in the repository of the screen, offered as a sub-issue of the issue open (H6), else in the repository used last; a project's screen registers its own `C` (H5) — and `,` Settings. The menu's top holds what is in context, what the sidebar shows and what the app proposes now (D36); the rest hangs under a parent. On any screen that belongs to a repository — its view, an item's page or the item opened over a list, a workflow's run, its settings — the repository's own actions as a group headed by its name (`repository`, `useRepositoryCommands`): its page on GitHub, copying its link, "Repository settings" while tracked (typing "settings" still finds the app's first), off its view, which registers its sections on `1`–`4` itself, its sections too, and last, so that a plain Enter cannot start it, "Track repository" while it is not tracked (D34); "Stop tracking" is not offered (D32). While an update is ready "Restart to update" (U1), after a failed install "Try again to install the update" (U40), with "Update later" beside them while the status bar's segment shows, each only while it can run (D18). The places it goes to: my work and its groups, the draft reviews, the broken workflows (actions W2, reached from here while the sidebar does not show them), the tracked projects and repositories, and Settings. Each of the last three holds a level: Settings its sections, with "Sign out" under Account and, in the desktop app, "Check for updates" and on macOS and Linux "Switch to Stable" or "Switch to Development", whichever isn't chosen, under Updates; a project its saved views, which typing finds on their own, and its actions; a repository, tracked or an `owner/name` typed (J5), its sections and actions, which typing finds only with its name. The menu finds items kept in the local copy and goes there at once; an item opens as items open from lists (over the screen, or on its page); "Search repositories…" asks GitHub from its submenu (E7–E10). "Documentation", beside "Keyboard shortcuts" among the app's own, opens the docs in a new tab (`DOCS_URL`; in the desktop app githq.dev's, in the system browser). In the web builds "Open in desktop app" opens the screen in the githq desktop app. The merge panel lives here too, over every screen, open for whatever `MergePanelStore` names. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   BookMarked,
+  BookOpen,
   CircleArrowDown,
   CircleHelp,
   CircleUser,
@@ -31,6 +32,7 @@ import { useOpenInDesktopCommand } from '@/desktopLinks/useOpenInDesktopCommand.
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
+import { DOCS_URL } from '@/landing/landingLinks.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getDraftReviews } from '@/myWork/getDraftReviews.js';
@@ -43,6 +45,7 @@ import { LastRepositoryTab } from '@/repository/LastRepositoryTab.js';
 import { useRepositoryCommands } from '@/repository/useRepositoryCommands.js';
 import { AppUpdate, isPrereleaseVersion } from '@/services/AppUpdate.js';
 import type { UpdateState } from '@/services/AppUpdate.js';
+import { Browser } from '@/services/Browser.js';
 import * as settingsSectionLabels from '@/settings/SettingsSectionLabel.loc.js';
 import type { SettingsSection } from '@/settings/settingsRoutes.js';
 import { CONFIRM_STABLE_PATH, getSettingsPath, SETTINGS_PATH, SETTINGS_SECTIONS } from '@/settings/settingsRoutes.js';
@@ -83,6 +86,7 @@ const projects = useService(ProjectStore);
 const resolver = useService(ItemResolver);
 const composer = useService(NewIssueComposer);
 const update = useService(AppUpdate);
+const browser = useService(Browser);
 const repositoryTabs = useService(LastRepositoryTab);
 const route = useRoute();
 const router = useRouter();
@@ -154,6 +158,14 @@ useCommands(() => [
     key: APP_KEYS.help,
     icon: CircleHelp,
     run: () => registry.setHelpOpen(true),
+  },
+  {
+    id: 'app.documentation',
+    title: t(l.documentation),
+    section: 'app',
+    icon: BookOpen,
+    keywords: [t(l.docsKeyword), t(l.helpKeyword)],
+    run: () => browser.openInNewTab(DOCS_URL),
   },
   {
     id: 'app.newIssue',
