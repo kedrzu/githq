@@ -125,6 +125,8 @@ export interface GitHubWorldItemParams {
     readonly projects?: readonly GitHubWorldPlacement[];
     /** Its description as GitHub renders it (`bodyHTML`); none by default. */
     readonly bodyHtml?: string;
+    /** Its conversation is locked to collaborators. */
+    readonly locked?: boolean;
 }
 
 /** An item's place in a project of the world. */
@@ -634,6 +636,7 @@ interface WorldItem {
     readonly pullRequest: WorldPullRequest | null;
     readonly issueType: GitHubWorldIssueType | null;
     readonly bodyHtml: string;
+    readonly locked: boolean;
     readonly foundBy: Set<MyWorkSearch>;
     /** Deleted on GitHub, while the search index still lists it. */
     deleted: boolean;
@@ -2736,6 +2739,7 @@ export class GitHubWorld {
             pullRequest,
             issueType: issueType ?? null,
             bodyHtml: params.bodyHtml ?? '',
+            locked: params.locked ?? false,
             foundBy: new Set(foundBy),
             deleted: false,
         };
@@ -2840,6 +2844,7 @@ export class GitHubWorld {
         const details = {
             body: '',
             bodyHTML: item.bodyHtml,
+            locked: item.locked,
             reactionGroups: [],
             commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE),
             projectItems: { nodes: item.projectItems.map(place => toProjectItemDetail(place)) },

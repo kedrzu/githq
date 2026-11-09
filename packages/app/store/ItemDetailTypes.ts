@@ -29,6 +29,8 @@ export interface ItemDetailBase {
     readonly body: string;
     /** GitHub's own rendering of the body, sanitized by GitHub. */
     readonly bodyHtml: string;
+    /** Its conversation is locked to collaborators: only they may comment (`getEditPermissions`). */
+    readonly locked: boolean;
     /** Only the reactions given, in GitHub's order. */
     readonly reactions: readonly ItemReaction[];
     readonly comments: ItemComments;

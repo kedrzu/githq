@@ -120,6 +120,7 @@ const editing = computed((): ItemEditing | null => {
     permissions: editor.getPermissions(item),
     metadata: repositories.get(item.repository.nameWithOwner) ?? null,
     viewerLogin: viewer.login,
+    viewerAvatarUrl: viewer.avatarUrl,
     viewerProjects: repositories.viewerProjects,
   };
 });

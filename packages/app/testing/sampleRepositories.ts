@@ -66,6 +66,7 @@ export const SAMPLE_MAINTAINER_EDITING: ItemEditing = {
     },
     metadata: SAMPLE_PORTAL_METADATA,
     viewerLogin: SAMPLE_VIEWER.login,
+    viewerAvatarUrl: SAMPLE_VIEWER.avatarUrl,
     viewerProjects: [
         {
             id: 'PVT_roadmap',

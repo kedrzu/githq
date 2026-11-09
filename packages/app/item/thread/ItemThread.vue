@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. -->
+<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -34,68 +34,67 @@ const folded = computed(() =>
 </script>
 
 <template>
-  <p
-    v-if="!detail"
-    :class="css.itemThread_note"
-  >
-    {{ t(l.loading) }}
-  </p>
-  <div
-    v-else
-    :class="css.itemThread"
-  >
-    <ItemThreadCard
-      :author="item.author"
-      :created-at="item.createdAt"
-      :now="now"
-      description
+  <div :class="[css.itemThread, !detail && css.itemThread_loading]">
+    <p
+      v-if="!detail"
+      :class="css.itemThread_note"
     >
-      <GitHubHtml
-        v-if="detail.bodyHtml"
-        :class="css.itemThread_text"
-        :html="detail.bodyHtml"
-      />
-      <p
-        v-else
-        :class="css.itemThread_note"
+      {{ t(l.loading) }}
+    </p>
+    <template v-else>
+      <ItemThreadCard
+        :author="item.author"
+        :created-at="item.createdAt"
+        :now="now"
+        description
       >
-        {{ t(l.noDescription) }}
-      </p>
-    </ItemThreadCard>
-    <ItemThreadFold
-      v-if="folded > 0"
-      :comments="folded"
-      @click="loadAll"
-    />
-    <ol
-      v-if="detail.comments.nodes.length > 0"
-      :class="css.itemThread_comments"
-    >
-      <li
-        v-for="comment in detail.comments.nodes"
-        :key="comment.id"
-      >
-        <ItemThreadCard
-          :author="comment.author"
-          :created-at="comment.createdAt"
-          :now="now"
-          :edited="comment.lastEditedAt !== null"
-          :sending="comment.pendingBody !== undefined"
+        <GitHubHtml
+          v-if="detail.bodyHtml"
+          :class="css.itemThread_text"
+          :html="detail.bodyHtml"
+        />
+        <p
+          v-else
+          :class="css.itemThread_note"
         >
-          <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
-          <p
-            v-if="comment.pendingBody !== undefined"
-            :class="[css.itemThread_text, css.itemThread_pending]"
-            v-text="comment.pendingBody"
-          />
-          <GitHubHtml
-            v-else
-            :class="css.itemThread_text"
-            :html="comment.bodyHtml"
-          />
-        </ItemThreadCard>
-      </li>
-    </ol>
+          {{ t(l.noDescription) }}
+        </p>
+      </ItemThreadCard>
+      <ItemThreadFold
+        v-if="folded > 0"
+        :comments="folded"
+        @click="loadAll"
+      />
+      <ol
+        v-if="detail.comments.nodes.length > 0"
+        :class="css.itemThread_comments"
+      >
+        <li
+          v-for="comment in detail.comments.nodes"
+          :key="comment.id"
+        >
+          <ItemThreadCard
+            :author="comment.author"
+            :created-at="comment.createdAt"
+            :now="now"
+            :edited="comment.lastEditedAt !== null"
+            :sending="comment.pendingBody !== undefined"
+          >
+            <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
+            <p
+              v-if="comment.pendingBody !== undefined"
+              :class="[css.itemThread_text, css.itemThread_pending]"
+              v-text="comment.pendingBody"
+            />
+            <GitHubHtml
+              v-else
+              :class="css.itemThread_text"
+              :html="comment.bodyHtml"
+            />
+          </ItemThreadCard>
+        </li>
+      </ol>
+    </template>
     <slot name="composer" />
   </div>
 </template>
@@ -118,6 +117,11 @@ const folded = computed(() =>
     content: '';
     background: $color-border;
   }
+}
+
+// Nothing on a rail yet: the composer under the note.
+.itemThread_loading::before {
+  content: none;
 }
 
 .itemThread_comments {

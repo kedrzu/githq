@@ -4,6 +4,8 @@ fragment PullRequestDetailFields on PullRequest {
     ...PullRequestFields
     body
     bodyHTML
+    # Locked to collaborators: only people with write access may comment (`getEditPermissions`).
+    locked
     reactionGroups {
         ...ReactionGroupFields
     }

@@ -1,0 +1,24 @@
+comment:
+  en: Comment
+placeholder:
+  en: Leave a comment
+closeIssue:
+  en: Close issue
+closePullRequest:
+  en: Close pull request
+closeWithComment:
+  en: Close with comment
+moreWaysToClose:
+  en: More ways to close
+closeCompleted:
+  en: Close as completed
+closeNotPlanned:
+  en: Close as not planned
+reopenIssue:
+  en: Reopen issue
+reopenPullRequest:
+  en: Reopen pull request
+locked:
+  en: This conversation is locked to collaborators, so you can read it but not comment.
+archived:
+  en: '{repository} is archived, so it takes no new comments.'

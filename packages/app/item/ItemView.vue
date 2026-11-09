@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -69,7 +69,6 @@ import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
-import ItemComposer from './ItemComposer.vue';
 import type { ItemEditing } from './ItemEditing.js';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
@@ -85,6 +84,7 @@ import StackBar from './StackBar.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 import ItemThread from './thread/ItemThread.vue';
+import ItemThreadComposer from './thread/ItemThreadComposer.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -152,7 +152,7 @@ const browser = useService(Browser);
 const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
-const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer');
+const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
@@ -165,8 +165,6 @@ const itemMenuOpen = ref(false);
 const stackRowsInView = ref(true);
 /** In a panel, a copy of the stack's rows dropped from the bar over the content (D27, SP84). */
 const stackDropped = ref(false);
-/** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
-const itemMenuStart = ref<string | null>(null);
 
 // D25: every pull request of a stack opens with its rows in view, and the router opens it at the top
 // (`shell/routeScroll.ts`). Opening one takes the dropped rows away (D27).
@@ -191,12 +189,6 @@ useIntersectionObserver({
   onHidden: () => {
     stackRowsInView.value = false;
   },
-});
-
-watch(itemMenuOpen, isOpen => {
-  if (!isOpen) {
-    itemMenuStart.value = null;
-  }
 });
 
 const split = computed(() => props.arrangement !== 'panel');
@@ -258,6 +250,24 @@ const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);
+/** Without `editing` nothing is known to stop a comment, as before the repository is read. */
+const canComment = computed(() => props.editing == null || permissions.value?.comment === true);
+/** Why the user can't comment, when the composer can say it: an archived repository, a locked conversation. */
+const readOnly = computed(() => {
+  const { editing } = props;
+  if (!editing || canComment.value) {
+    return null;
+  }
+
+  if (editing.metadata?.isArchived) {
+    return 'archived';
+  }
+
+  return props.detail?.locked ? 'locked' : null;
+});
+const viewer = computed(() =>
+  props.editing ? { login: props.editing.viewerLogin, avatarUrl: props.editing.viewerAvatarUrl } : null,
+);
 const reviewerOptions = computed(() =>
   permissions.value?.reviewers && props.editing?.metadata
     ? pickerOptions.assignees([props.editing.metadata], props.editing.viewerLogin)
@@ -429,9 +439,9 @@ function getEditCommands(): Command[] {
       milestone: () => propertiesRef.value?.openPicker('milestone') ?? false,
       issueType: () => propertiesRef.value?.openPicker('issueType') ?? false,
       reviewers: () => reviewsRef.value?.openPicker() ?? false,
+      // Only an open issue has two ways to close: `⇧X` takes the usual one, as the composer's button does.
       state: () => {
-        itemMenuStart.value = 'item.state';
-        itemMenuOpen.value = true;
+        emit('edit', { kind: 'close', reason: 'COMPLETED' });
         return true;
       },
       status: () => projectsRef.value?.openByRole('status') ?? false,
@@ -450,8 +460,8 @@ function getItemCommands(): Command[] {
       section: 'item',
       key: EDIT_KEYS.comment,
       icon: MessageSquare,
-      when: () => editing == null || permissions.value?.comment === true,
-      run: () => composerRef.value?.focus(),
+      when: () => canComment.value,
+      run: () => void composerRef.value?.focus(),
     },
   ];
   if (permissions.value?.addToProject) {
@@ -612,10 +622,7 @@ function getProjectOptions(): CommandOption[] {
             />
           </button>
         </template>
-        <CommandMenuSections
-          :sections="itemMenuSections"
-          :open-id="itemMenuStart"
-        />
+        <CommandMenuSections :sections="itemMenuSections" />
         <MenuSeparator />
         <MenuLabel>
           <span :class="css.itemView_menuFooter">
@@ -823,17 +830,22 @@ function getProjectOptions(): CommandOption[] {
                 :detail="detail"
                 :now="now"
                 :load-all="loadAllComments"
-              />
+              >
+                <template #composer>
+                  <ItemThreadComposer
+                    ref="composer"
+                    v-model:text="commentDraft"
+                    :item="item"
+                    :viewer="viewer"
+                    :can-comment="canComment"
+                    :can-close="permissions?.state === true"
+                    :read-only="readOnly"
+                    @edit="emit('edit', $event)"
+                  />
+                </template>
+              </ItemThread>
             </div>
           </div>
-          <footer :class="css.itemView_composer">
-            <ItemComposer
-              ref="composer"
-              v-model:text="commentDraft"
-              :disabled="editing != null && !permissions?.comment"
-              @submit="emit('edit', { kind: 'comment', body: $event })"
-            />
-          </footer>
         </SplitterPanel>
 
         <template v-if="split">
@@ -1097,22 +1109,6 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 .itemView_opened {
   font-size: $font-size-xs;
   color: $color-fg-dim;
-}
-
-.itemView_composer {
-  flex: none;
-  padding: $spacing-12 $spacing-16;
-  border-top: 1px solid $color-border;
-
-  .itemView_modal &,
-  .itemView_page & {
-    padding: 0 40px 24px;
-    border-top: none;
-  }
-
-  .itemView_page & {
-    padding-inline: $item-page-inset;
-  }
 }
 
 .itemView_side {

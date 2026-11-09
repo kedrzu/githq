@@ -45,6 +45,7 @@ export const D1_ISSUE_DETAIL: IssueDetail = {
     body: 'Recurring visits created before the DST change render one hour late in the week view.',
     bodyHtml:
         '<p>Recurring visits created before the DST change render one hour late in the week view. Single visits are fine. Repro: weekly visit on Oct 20, switch to Nov 3.</p>',
+    locked: false,
     reactions: [],
     comments: {
         totalCount: 4,
@@ -96,6 +97,7 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
     body: 'Moves issues, pull requests and project items into IndexedDB.',
     bodyHtml:
         '<p>Moves issues, pull requests and project items into IndexedDB so reads never wait on the network. Schema v1: one store per kind, indexed by repository and <code>updatedAt</code>.</p>',
+    locked: false,
     reactions: [],
     comments: {
         totalCount: 2,

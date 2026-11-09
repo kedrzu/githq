@@ -703,6 +703,7 @@ export type ItemDetailQuery = {
               __typename: 'Issue';
               body: string;
               bodyHTML: string;
+              locked: boolean;
               id: string;
               url: string;
               number: number;
@@ -922,6 +923,7 @@ export type ItemDetailQuery = {
               __typename: 'PullRequest';
               body: string;
               bodyHTML: string;
+              locked: boolean;
               url: string;
               number: number;
               title: string;
@@ -1235,6 +1237,7 @@ export type ItemDetailsQuery = {
               __typename: 'Issue';
               body: string;
               bodyHTML: string;
+              locked: boolean;
               id: string;
               url: string;
               number: number;
@@ -1454,6 +1457,7 @@ export type ItemDetailsQuery = {
               __typename: 'PullRequest';
               body: string;
               bodyHTML: string;
+              locked: boolean;
               url: string;
               number: number;
               title: string;
@@ -4044,6 +4048,7 @@ export type IssueDetailFieldsFragment = {
     __typename: 'Issue';
     body: string;
     bodyHTML: string;
+    locked: boolean;
     id: string;
     url: string;
     number: number;
@@ -5253,6 +5258,7 @@ export type PullRequestDetailFieldsFragment = {
     __typename: 'PullRequest';
     body: string;
     bodyHTML: string;
+    locked: boolean;
     url: string;
     number: number;
     title: string;
@@ -7580,6 +7586,7 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
   ...IssueFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }
@@ -9027,6 +9034,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
   ...PullRequestFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }
@@ -9771,6 +9779,7 @@ fragment IssueDetailFields on Issue {
   ...IssueFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }
@@ -10034,6 +10043,7 @@ fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }
@@ -10286,6 +10296,7 @@ fragment IssueDetailFields on Issue {
   ...IssueFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }
@@ -10549,6 +10560,7 @@ fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
   bodyHTML
+  locked
   reactionGroups {
     ...ReactionGroupFields
   }

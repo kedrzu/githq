@@ -6,6 +6,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import ItemThread from './ItemThread.vue';
+import ItemThreadComposer from './ItemThreadComposer.vue';
 
 /** The main column's content in a panel; a page's is `ON_PAGE`. */
 const IN_PANEL = 512;
@@ -20,11 +21,18 @@ const meta = {
         now: SAMPLE_NOW,
         loadAll: fn(() => Promise.resolve()),
     },
-    // On an item view's background, as wide as its main column (`parameters.width`).
+    // On an item view's background, as wide as its main column (`parameters.width`), ending in the composer.
     render: (args, { parameters }) => ({
-        components: { ItemThread },
-        setup: () => ({ args }),
-        template: `<div style="width: ${parameters.width ?? IN_PANEL}px; padding: 20px 0; background: #11161c"><ItemThread v-bind="args" /></div>`,
+        components: { ItemThread, ItemThreadComposer },
+        setup: () => ({ args, viewer: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl } }),
+        template: `
+          <div style="width: ${parameters.width ?? IN_PANEL}px; padding: 20px 0; background: #11161c">
+            <ItemThread v-bind="args">
+              <template #composer>
+                <ItemThreadComposer :item="args.item" :viewer="viewer" can-comment can-close :read-only="null" />
+              </template>
+            </ItemThread>
+          </div>`,
     }),
 } satisfies Meta<typeof ItemThread>;
 
@@ -73,5 +81,5 @@ export const EditedAndSending: Story = {
     },
 };
 
-/** Opened before its detail is read. */
+/** Opened before its detail is read: the composer is there already. */
 export const Loading: Story = { args: { detail: null } };

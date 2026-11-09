@@ -256,10 +256,20 @@ test("M2: a pull request's menu asks for reviews — never of its author, those 
     expect(onEdit).toHaveBeenCalledWith({ kind: 'draft', draft: true });
 });
 
-test('⇧X opens the item menu at closing it: close as not planned', async () => {
+test("⇧X closes an open issue as completed at once, as the composer's button does: no menu", async () => {
     await IssueInPanel.run();
 
     await userEvent.keyboard('{Shift>}X{/Shift}');
+
+    expect(IssueInPanel.args.onEdit).toHaveBeenCalledExactlyOnceWith({ kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
+test('the item menu still closes an issue as not planned', async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of / }));
+    await userEvent.click(page.getByRole('menuitem', { name: /^Close issue/ }));
     await userEvent.click(page.getByRole('menuitem', { name: 'Close as not planned' }));
 
     expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'close', reason: 'NOT_PLANNED' });
@@ -292,6 +302,35 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
 
     expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good' });
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
+});
+
+test('the composer ends the thread and scrolls with it: nothing is pinned under the content', async () => {
+    await IssueInPanel.run();
+
+    const scroll = getContentScroll();
+    expect(scroll.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
+    expect(document.querySelector('article footer')).toBeNull();
+});
+
+test('K1b: a conversation locked to collaborators, or an archived repository, says so in place of the composer, and R has nothing to focus', async () => {
+    const editing = {
+        ...SAMPLE_MAINTAINER_EDITING,
+        permissions: { ...SAMPLE_MAINTAINER_EDITING.permissions, comment: false },
+    };
+    await IssueInPanel.run({
+        args: { ...IssueInPanel.args, editing, detail: { ...D1_ISSUE_DETAIL, locked: true } },
+    });
+
+    await expect
+        .element(page.getByText('This conversation is locked to collaborators', { exact: false }))
+        .toBeVisible();
+    expect(page.getByRole('textbox', { name: 'Comment' }).query()).toBeNull();
+    await userEvent.keyboard('r');
+    expect(document.activeElement).toBe(document.body);
+
+    const metadata = SAMPLE_MAINTAINER_EDITING.metadata && { ...SAMPLE_MAINTAINER_EDITING.metadata, isArchived: true };
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, editing: { ...editing, metadata } } });
+    await expect.element(page.getByText('skyline-labs/portal is archived, so it takes no new comments.')).toBeVisible();
 });
 
 test("K1b: edits a contributor can't make are not offered — no keys, no pickers, one line says why", async () => {

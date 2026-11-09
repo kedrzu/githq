@@ -93,6 +93,17 @@ export class ItemViewHarness {
         return this.root.getByRole('textbox', { name: 'Comment' });
     }
 
+    /** The line saying why the user can't comment, in place of the comment box. */
+    get readOnlyComposer(): Locator {
+        // `\s`: short words are held to the next by no-break spaces.
+        return this.root.getByText(/so\syou\scan\sread\sit\sbut\snot\scomment|so\sit\stakes\sno\snew\scomments/);
+    }
+
+    /** A button of the composer at the thread's end, by its label: "Close issue", "More ways to close", "Comment". */
+    composerButton(name: string): Locator {
+        return this.root.getByRole('button', { name, exact: true });
+    }
+
     /** The switch's button moving the item to `name`. */
     arrangement(name: ItemArrangementName): Locator {
         return this.root.getByRole('group', { name: 'Arrangement' }).getByRole('button', { name, exact: true });

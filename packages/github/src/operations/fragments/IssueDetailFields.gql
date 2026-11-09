@@ -3,6 +3,8 @@ fragment IssueDetailFields on Issue {
     ...IssueFields
     body
     bodyHTML
+    # Locked to collaborators: only people with write access may comment (`getEditPermissions`).
+    locked
     reactionGroups {
         ...ReactionGroupFields
     }

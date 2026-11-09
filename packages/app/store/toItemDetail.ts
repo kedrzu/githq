@@ -216,6 +216,7 @@ function toDetailBase(
         fetchedAt,
         body: node.body,
         bodyHtml: node.bodyHTML,
+        locked: node.locked,
         reactions,
         comments: toItemComments(node.commentPage),
         projects: mapNotNull(node.projectItems?.nodes ?? [], projectItem =>

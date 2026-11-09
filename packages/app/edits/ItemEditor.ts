@@ -85,6 +85,7 @@ export const ItemEditor = defineService({
                 viewerLogin: auth.viewer?.login ?? '',
                 permission: metadata?.viewerPermission ?? item.repository.viewerPermission,
                 archived: metadata?.isArchived,
+                locked: details.get(item.id)?.locked,
             });
         }
 
