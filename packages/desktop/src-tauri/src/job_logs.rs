@@ -927,7 +927,7 @@ mod tests {
             config["app"]["security"]["csp"],
             serde_json::json!({
                 "default-src": "'self'",
-                "connect-src": "ipc: http://ipc.localhost https://api.github.com",
+                "connect-src": "ipc: http://ipc.localhost https://api.github.com https://githq.dev",
                 "font-src": "'self' data:",
                 "img-src": "'self' data: https://avatars.githubusercontent.com https://*.githubusercontent.com https://github.com",
                 "worker-src": "'self'",

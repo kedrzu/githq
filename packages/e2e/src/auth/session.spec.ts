@@ -11,10 +11,14 @@ const LOGIN = SAMPLE_VIEWER.viewer.login;
 /** Where the app keeps the signed-in user (`VIEWER_KEY` in `packages/app/auth/AuthStore.ts`). */
 const VIEWER_KEY = 'githq.viewer';
 
-test('signing out at home shows the landing page and forgets the token', async ({ page, github }) => {
+test('signing out at home shows the landing page, forgets the token and revokes it at GitHub', async ({
+    page,
+    github,
+}) => {
     const shell = await signIn(page, github);
 
     await shell.signOut(LOGIN);
+    await expect.poll(() => github.revokedTokens).toEqual([SAMPLE_TOKEN]);
 
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/');

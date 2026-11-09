@@ -389,8 +389,8 @@ the installable PWA with extra steps. Would win if releasing the shell became a 
   a 56px rail, with the controls spilling over the screen's header.
 - **The window stays on the app.** Every address outside the app opens in the system browser: the page
   intercepts links and the `Browser` service, and the window's `on_navigation`/`on_new_window` handlers back it
-  up. The content security policy allows `connect-src` only to `api.github.com`, and images only from GitHub's
-  hosts.
+  up. The content security policy allows `connect-src` only to `api.github.com` and to githq.dev, whose Worker
+  revokes the token on signing out (it alone holds the OAuth App's secret), and images only from GitHub's hosts.
 - **Links open in the app** (owner, 2026-11-06). The app registers `githq://`, where `githq://<path>` is the app's
   `/<path>`, and runs as a single instance. A signed macOS build also takes `https://githq.dev/...` as a Universal Link,
   and a githq.dev link inside the window stays in it. Every other browser hands off through an opt-in on the web.

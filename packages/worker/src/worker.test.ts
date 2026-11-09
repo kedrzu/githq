@@ -5,6 +5,7 @@ import {
     OAUTH_APPROVAL_PATH,
     OAUTH_AUTHORIZE_PATH,
     OAUTH_CALLBACK_PATH,
+    OAUTH_REVOKE_PATH,
     OAUTH_SCOPES,
     OAUTH_TOKEN_PATH,
 } from '@githq/github/oauth.js';
@@ -22,6 +23,8 @@ const CALLBACK = `${ORIGIN}${OAUTH_CALLBACK_PATH}`;
 const STATE = 'q3V9-x_2LmZtR8wKpY4sNa';
 const CODE = 'c0de4f1e2d3c4b5a6978';
 const TOKEN = 'gho_TheAccessToken0123456789';
+/** `e2e-client:the-client-secret-value`, as GitHub's Basic auth wants it. */
+const CLIENT_BASIC_AUTH = `Basic ${btoa('e2e-client:the-client-secret-value')}`;
 const ENV: WorkerEnv = {
     ASSETS: { fetch: () => Promise.resolve(new Response('asset')) },
     GITHQ_ENV: 'e2e',
@@ -220,7 +223,111 @@ describe('POST /api/auth/token', () => {
     });
 });
 
-test('without the OAuth App’s credentials both endpoints answer 500 not_configured', async () => {
+function revokeRequest(body: unknown, init?: RequestInit) {
+    return new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', origin: 'tauri://localhost' },
+        body: JSON.stringify(body),
+        ...init,
+    });
+}
+
+describe('POST /api/auth/revoke', () => {
+    test('revokes the token at GitHub with the OAuth App’s credentials, the token in the body only', async () => {
+        github.mockResolvedValue(new Response(null, { status: 204 }));
+
+        const response = await call(revokeRequest({ token: TOKEN }));
+
+        expect(response.status).toBe(204);
+        expect(response.headers.get('access-control-allow-origin')).toBe('*');
+        expect(github).toHaveBeenCalledTimes(1);
+        const [url, init] = github.mock.calls[0] ?? [];
+        expect(url).toBe('https://api.github.com/applications/e2e-client/token');
+        expect(typeof url === 'string' ? url : '').not.toContain(TOKEN);
+        expect(init?.method).toBe('DELETE');
+        expect(new Headers(init?.headers).get('authorization')).toBe(CLIENT_BASIC_AUTH);
+        expect(new Headers(init?.headers).get('user-agent')).not.toBeNull();
+        expect(typeof init?.body === 'string' ? JSON.parse(init.body) : init?.body).toEqual({ access_token: TOKEN });
+    });
+
+    test('answers the same for a token GitHub no longer knows, so it tells no one whether a token is alive', async () => {
+        github.mockResolvedValue(new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 }));
+
+        const response = await call(revokeRequest({ token: TOKEN }));
+
+        expect(response.status).toBe(204);
+    });
+
+    test('answers 502 when GitHub refuses or cannot be reached', async () => {
+        github.mockResolvedValueOnce(new Response('{"message":"Validation Failed"}', { status: 422 }));
+        github.mockRejectedValueOnce(new TypeError('network down'));
+
+        for (const error of ['github_bad_response', 'github_unreachable']) {
+            const response = await call(revokeRequest({ token: TOKEN }));
+
+            expect(response.status).toBe(502);
+            expect(response.headers.get('access-control-allow-origin')).toBe('*');
+            expect(await response.json()).toMatchObject({ error } satisfies OAuthErrorBody);
+        }
+    });
+
+    test('answers the desktop app’s CORS preflight', async () => {
+        const response = await call(
+            new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, {
+                method: 'OPTIONS',
+                headers: {
+                    origin: 'tauri://localhost',
+                    'access-control-request-method': 'POST',
+                    'access-control-request-headers': 'content-type',
+                },
+            }),
+        );
+
+        expect(response.status).toBe(204);
+        expect(response.headers.get('access-control-allow-origin')).toBe('*');
+        expect(response.headers.get('access-control-allow-methods')).toContain('POST');
+        expect(response.headers.get('access-control-allow-headers')).toContain('content-type');
+        expect(github).not.toHaveBeenCalled();
+    });
+
+    test('refuses anything but a JSON POST of an OAuth App token, without asking GitHub', async () => {
+        const requests = [
+            new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`),
+            revokeRequest({ token: TOKEN }, { headers: { 'content-type': 'text/plain' } }),
+            revokeRequest({}),
+            revokeRequest({ token: '' }),
+            revokeRequest({ token: 'ghp_APersonalAccessToken0123' }),
+            revokeRequest({ token: `gho_${'a'.repeat(252)}` }),
+            revokeRequest({ token: 'gho_with spaces' }),
+            new Request(`${ORIGIN}${OAUTH_REVOKE_PATH}`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: 'not json',
+            }),
+        ];
+
+        for (const request of requests) {
+            const response = await call(request);
+
+            expect(response.status).toBeGreaterThanOrEqual(400);
+            expect(response.status).toBeLessThan(500);
+        }
+        expect(github).not.toHaveBeenCalled();
+    });
+});
+
+test('the token exchange answers no CORS, unlike the revocation', async () => {
+    const response = await call(
+        new Request(`${ORIGIN}${OAUTH_TOKEN_PATH}`, {
+            method: 'OPTIONS',
+            headers: { origin: 'https://evil.test', 'access-control-request-method': 'POST' },
+        }),
+    );
+
+    expect(response.headers.get('access-control-allow-origin')).toBeNull();
+});
+
+test('without the OAuth App’s credentials the auth endpoints answer 500 not_configured', async () => {
     for (const env of [
         { ASSETS: ENV.ASSETS },
         { ASSETS: ENV.ASSETS, GITHQ_ENV: 'e2e' },
@@ -229,6 +336,7 @@ test('without the OAuth App’s credentials both endpoints answer 500 not_config
         for (const request of [
             new Request(`${ORIGIN}${OAUTH_AUTHORIZE_PATH}?state=${STATE}`),
             tokenRequest({ code: CODE, redirectUri: CALLBACK }),
+            revokeRequest({ token: TOKEN }),
         ]) {
             const response = await call(request, env);
 
