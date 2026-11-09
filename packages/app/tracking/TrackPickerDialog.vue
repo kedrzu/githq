@@ -97,7 +97,7 @@ function onEscape(event: KeyboardEvent) {
         <Button
           variant="primary"
           :icon="Plus"
-          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+          :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :disabled="!canTrack"
           @click="emit('track')"
         >

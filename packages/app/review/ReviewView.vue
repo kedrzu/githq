@@ -1782,7 +1782,7 @@ function readAgain() {
                       size="sm"
                       variant="light"
                       :kbd="REVIEW_KEYS.submit"
-                      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+                      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
                       :busy="finish.kind === 'sending'"
                       @click="submitOpen = true"
                     >
@@ -1792,7 +1792,7 @@ function readAgain() {
                       v-if="nextNumber !== null"
                       size="sm"
                       :kbd="REVIEW_KEYS.nextPullRequest"
-                      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+                      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
                       @click="stepPullRequest(nextPullRequest, 'K')"
                     >
                       {{ t(allViewedLoc.next, { number: nextNumber }) }}

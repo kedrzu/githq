@@ -166,7 +166,7 @@ function onKeydown(event: KeyboardEvent) {
         size="sm"
         :icon="FilePenLine"
         :kbd="REVIEW_KEYS.suggest"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.suggest)"
+        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.suggest)"
         @click="insertSuggestion"
       >
         {{ t(l.suggest) }}
@@ -179,7 +179,7 @@ function onKeydown(event: KeyboardEvent) {
       label-hidden
       :placeholder="t(l.placeholder)"
       compact
-      :aria-keyshortcuts="`${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`"
+      :keyshortcuts="`${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`"
       @keydown="onKeydown"
       @focus="emit('focus')"
       @blur="emit('blur')"
@@ -209,7 +209,7 @@ function onKeydown(event: KeyboardEvent) {
         size="sm"
         :disabled="!hasText"
         :kbd="REVIEW_KEYS.sendSecond"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
+        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
         @click="send(second.way)"
       >
         {{ second.label }}
@@ -219,7 +219,7 @@ function onKeydown(event: KeyboardEvent) {
         variant="light"
         :disabled="!hasText"
         :kbd="REVIEW_KEYS.sendFirst"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
+        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
         @click="send(first.way)"
       >
         {{ first.label }}

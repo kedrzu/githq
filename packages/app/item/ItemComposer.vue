@@ -62,7 +62,7 @@ function onKeydown(event: KeyboardEvent) {
     :readonly="disabled"
     compact
     :kbd="text ? SUBMIT_KEY : (focusKey ?? undefined)"
-    :aria-keyshortcuts="[focusKey, formatAriaKeyShortcuts(SUBMIT_KEY)].filter(Boolean).join(' ')"
+    :keyshortcuts="[focusKey, formatAriaKeyShortcuts(SUBMIT_KEY)].filter(Boolean).join(' ')"
     @keydown="onKeydown"
   />
 </template>

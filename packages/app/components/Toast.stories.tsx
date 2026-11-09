@@ -213,7 +213,7 @@ export const Stack: StoryObj<StackArgs> = {
                             variant="secondary"
                             size="sm"
                             kbd={active ? UNDO_KEY : undefined}
-                            aria-keyshortcuts={active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined}
+                            keyshortcuts={active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined}
                             onClick={() => undone.value.push(what)}
                         >
                             Undo

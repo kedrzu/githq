@@ -110,7 +110,7 @@ export const Selection: Story = {
                                             variant="ghost"
                                             size="sm"
                                         >
-                                            3 issues <ChevronDown aria-hidden="true" />
+                                            3 issues <ChevronDown />
                                         </Button>
                                     ),
                                     default: () => (

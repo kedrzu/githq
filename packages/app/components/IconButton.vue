@@ -14,8 +14,12 @@ export const IconButtonProps = {
   icon: defineProp<LucideIcon>(),
   /** What the button does ("Collapse sidebar"): its accessible name and tooltip. */
   label: defineProp<string>({ type: String, required: true }),
-  /** The button's key, shown in the tooltip ("["). Give it to `aria-keyshortcuts` too. */
+  /** The button's key, shown in the tooltip ("["). Give it to `keyshortcuts` too. */
   kbd: defineProp<string>(),
+  /** The keys that press it, as `aria-keyshortcuts` writes them (`formatAriaKeyShortcuts`). */
+  keyshortcuts: defineProp<string>(),
+  /** Shown but not possible yet: dimmed and announced as unavailable (`aria-disabled`), still focusable. */
+  unavailable: defineProp<boolean>({ type: Boolean, default: false }),
   /** `sm` when not given. */
   size: defineProp<IconButtonSize>(),
 };
@@ -26,8 +30,7 @@ import { LoaderCircle } from 'lucide-vue-next';
 
 import Tooltip from './Tooltip.vue';
 
-// The root is the tooltip; attributes (`aria-keyshortcuts`, `aria-disabled`, a menu trigger's handlers) belong
-// on the button.
+// The root is the tooltip; attributes (a menu trigger's handlers and state) belong on the button.
 defineOptions({ inheritAttrs: false });
 
 defineProps(IconButtonProps);
@@ -51,7 +54,8 @@ const { Button, busy, disabled } = useButton();
       :class="[css.iconButton, css[`iconButton_${size ?? 'sm'}`], busy && css.iconButton_busy]"
       :aria-label="label"
       :aria-busy="busy || undefined"
-      :aria-disabled="(link && disabled) || undefined"
+      :aria-disabled="(link && disabled) || unavailable || undefined"
+      :aria-keyshortcuts="keyshortcuts ?? undefined"
     >
       <LoaderCircle
         v-if="busy"

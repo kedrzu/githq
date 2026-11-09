@@ -1,7 +1,7 @@
 <!-- The checks in the merge panel (PM4a, merging D13): one line while nothing holds the merge — "All 9 passed", "5 required" aside. What holds it shows as rows: a required check failing or still running, tagged "Required", first; one that isn't required and failed (or runs beside a required one) is grey and says it doesn't stop the merge. `C` or the chevron opens the full list — Required, then Others — each check with its state, time and log, and those that don't stop the merge saying so the same way. Before the panel's read, the row's summary alone, the chevron in its place but inactive while the read is on its way. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
+import Reveal from '@nzyme/vue/components/Reveal.vue';
 import { ChevronDown, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -136,7 +136,7 @@ function describeCounts(): CheckSummary {
         :label="open ? t(l.fold) : t(l.showAll)"
         :aria-expanded="open"
         kbd="C"
-        aria-keyshortcuts="C"
+        keyshortcuts="C"
         @click="emit('toggle')"
       />
     </MergeCondition>

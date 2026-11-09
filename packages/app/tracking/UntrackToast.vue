@@ -58,7 +58,7 @@ function onOpenChange(entry: PendingUntrack, open: boolean) {
         variant="secondary"
         size="sm"
         :kbd="active ? UNDO_KEY : undefined"
-        :aria-keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
         @click="pending.undo(entry.target)"
       >
         {{ t(l.undo) }}

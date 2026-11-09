@@ -69,7 +69,7 @@ function onOpenChange(close: UndoableClose, open: boolean) {
         variant="secondary"
         size="sm"
         :kbd="active ? UNDO_KEY : undefined"
-        :aria-keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
+        :keyshortcuts="active ? formatAriaKeyShortcuts(UNDO_KEY) : undefined"
         @click="undo(close)"
       >
         {{ t(l.undo) }}

@@ -122,7 +122,7 @@ async function loadOnce() {
       <Button
         variant="primary"
         :kbd="LOAD_KEY"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(LOAD_KEY)"
+        :keyshortcuts="formatAriaKeyShortcuts(LOAD_KEY)"
         :busy="loading"
         @click="loadOnce"
       >
