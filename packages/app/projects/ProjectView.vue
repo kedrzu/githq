@@ -572,6 +572,7 @@ function hasItemView(entry: ProjectEntry) {
       <ListView
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
+        :scroll-key="`project:${project.id}:${view?.id ?? ''}`"
         :groups="groups"
         :groups-arriving="arriving && groups.length === 0"
         :layout="options.layout"

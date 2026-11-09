@@ -169,15 +169,14 @@ const stackDropped = ref(false);
 /** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
 const itemMenuStart = ref<string | null>(null);
 
-// D25: every pull request of a stack opens at the top with its rows in view — `J`/`K` never scroll. Opening one
-// takes the dropped rows away (D27).
+// D25: every pull request of a stack opens with its rows in view, and the router opens it at the top
+// (`shell/routeScroll.ts`). Opening one takes the dropped rows away (D27).
 watch(
   () => props.item.id,
   () => {
     stackDropped.value = false;
     if (props.stack) {
       stackRowsInView.value = true;
-      scrollRef.value?.scrollTo({ top: 0 });
     }
   },
 );
@@ -705,6 +704,7 @@ function getProjectOptions(): CommandOption[] {
             <div
               ref="scroll"
               :class="css.itemView_scroll"
+              :data-route-scroll="`item-main:${item.id}`"
               @scroll.passive="onContentScroll"
             >
               <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
@@ -865,7 +865,10 @@ function getProjectOptions(): CommandOption[] {
             :max-size="sideWidth.max"
             :style="sideWidth.style"
           >
-            <div :class="css.itemView_side">
+            <div
+              :class="css.itemView_side"
+              :data-route-scroll="`item-side:${item.id}`"
+            >
               <StackMap
                 v-if="stack && arrangement === 'modal'"
                 :stack="stack"

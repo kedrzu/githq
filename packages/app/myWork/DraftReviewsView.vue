@@ -94,6 +94,7 @@ const groups = computed((): ListGroup<Item>[] =>
     <ListView
       v-model:selected-id="selectedId"
       v-model:checked-ids="checkedIds"
+      scroll-key="draft-reviews"
       :groups="groups"
       layout="list"
       :get-url="item => item.url"

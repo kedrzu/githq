@@ -263,7 +263,10 @@ function focusConfirmButton(event: Event) {
 </script>
 
 <template>
-  <div :class="css.updatesView">
+  <div
+    :class="css.updatesView"
+    data-route-scroll="settings-updates"
+  >
     <div :class="css.updatesView_column">
       <section :class="css.updatesView_block">
         <h2 :class="css.updatesView_title">{{ t(l.versionTitle) }}</h2>

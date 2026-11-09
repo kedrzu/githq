@@ -575,6 +575,7 @@ function getSectionCount(value: RepositorySection) {
           <ListView
             v-model:selected-id="selectedId"
             v-model:checked-ids="checkedIds"
+            :scroll-key="`repository:${nameWithOwner}:${section}`"
             :groups="list.groups"
             :groups-arriving="list.arriving && !unreadable"
             :layout="options.layout"
