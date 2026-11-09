@@ -115,8 +115,9 @@ The things in the app, and what GitHub gives us about each.
 - **Permissions are known up front.** githq knows the user's role in each repository, so it offers only the
   edits the user is allowed to make. In someone else's open-source repository a contributor can comment and
   create issues, but not set labels, assignees or milestones.
-- **What a project field change tells us:** what the new value is and when it was set. It does **not**
-  reliably tell us who set it, so don't show "moved by someone".
+- **What a project field change tells us:** the new value and when it was set, not who set it, so a list doesn't
+  show "moved by someone". The item's thread is the exception for Status: GitHub reports each Status change as an
+  event with the person, or none when a project workflow made it.
 - **The user**: login, avatar, the organisations they belong to.
 
 ## Where the data comes from, and what that means for the screens
