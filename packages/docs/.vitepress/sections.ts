@@ -43,7 +43,8 @@ export const sections: DocsSection[] = [
         id: 'using-githq',
         title: 'Using githq',
         icon: 'layout-list',
-        description: 'Your work, repositories, projects and reviews, all from the keyboard.',
+        description:
+            'Find your work, browse repositories and projects, review and merge pull requests, all from the keyboard.',
         pages: [
             ['My work', 'my-work'],
             ['Repositories', 'repositories'],
