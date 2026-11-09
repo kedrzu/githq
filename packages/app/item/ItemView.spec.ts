@@ -2,7 +2,12 @@ import { composeStories } from '@storybook/vue3';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { D1_ISSUE_DETAIL, F1_PULL_REQUEST, F3_PULL_REQUEST } from '@/testing/sampleItemDetails.js';
+import {
+    D1_ISSUE_DETAIL,
+    F1_PULL_REQUEST,
+    F1_PULL_REQUEST_DETAIL,
+    F3_PULL_REQUEST,
+} from '@/testing/sampleItemDetails.js';
 import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 import { SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
@@ -311,60 +316,141 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
     expect(ContributorView.args.onEdit).not.toHaveBeenCalled();
 });
 
-test('D17: in a panel the stack map folds to one line once the content scrolls down, and unfolds on a click or at the top', async () => {
-    await StackOfTenInPanel.run();
-    const rows = page.getByRole('list', { name: 'Pull requests of the stack' });
-    await expect.element(rows).toBeVisible();
+/** The panel's scrolling content: the column holding the item's heading. */
+function getContentScroll() {
     const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
     if (!scroll) {
         throw new Error('The content has no scrolling column.');
     }
 
-    scroll.scrollTop = 200;
-    scroll.dispatchEvent(new Event('scroll'));
-    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10/u });
-    await expect.element(strip).toBeVisible();
-    expect(rows.query()).toBeNull();
+    return scroll;
+}
 
-    await strip.click();
-    await expect.element(rows).toBeVisible();
+/** The stack bar's toggle, named by the stack. */
+const stackBarToggle = () => page.getByRole('button', { name: /^Pull requests of the stack: /u });
 
-    scroll.scrollTop = 400;
-    scroll.dispatchEvent(new Event('scroll'));
-    await expect.element(strip).toBeVisible();
-    scroll.scrollTop = 0;
-    scroll.dispatchEvent(new Event('scroll'));
-    await expect.element(rows).toBeVisible();
-});
+/** Scrolls the panel's content to its end, the stack's rows out of view, and waits for the bar to show its chevron. */
+async function scrollRowsAway(scroll: HTMLElement) {
+    scroll.scrollTop = scroll.scrollHeight;
+    await expect.element(stackBarToggle()).toBeEnabled();
+}
 
-test('D17: content that fits once the map folds keeps it folded — the browser clamping it to the top does not unfold it, and the end shows', async () => {
+test('D25: in a panel the stack bar stays put while the rows scroll away under it; the chevron shows once they are gone', async () => {
     await StackOfTenInPanel.run();
+    const toggle = stackBarToggle();
+    const scroll = getContentScroll();
     const rows = page.getByRole('list', { name: 'Pull requests of the stack' });
     await expect.element(rows).toBeVisible();
-    const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
-    const frame = scroll?.closest<HTMLElement>('[style*="100vh"]');
-    if (!scroll || !frame) {
-        throw new Error('The content has no scrolling column in a frame.');
+    // Every row, none folded.
+    expect(rows.element().querySelectorAll('button')).toHaveLength(SYNC_ENGINE_STACK.length);
+    // At the top the rows are in view: nothing to drop, no chevron.
+    await expect.element(toggle).toBeDisabled();
+    expect(toggle.element().querySelector('svg.lucide-chevron-down')).toBeNull();
+
+    const bar = toggle.element().parentElement;
+    if (!bar) {
+        throw new Error('The toggle is not in a bar.');
     }
 
-    // The content overflows by 40px, less than the height the fold frees.
-    const overflow = scroll.scrollHeight - scroll.clientHeight;
-    frame.style.height = `${frame.clientHeight + overflow - 40}px`;
-    await expect.poll(() => scroll.scrollHeight - scroll.clientHeight).toBe(40);
+    const [barHeight, contentTop] = [bar.getBoundingClientRect().height, scroll.getBoundingClientRect().top];
+    await scrollRowsAway(scroll);
+    expect(toggle.element().querySelector('svg.lucide-chevron-down')).not.toBeNull();
+    expect(bar.getBoundingClientRect().height).toBe(barHeight);
+    expect(scroll.getBoundingClientRect().top).toBe(contentTop);
 
-    scroll.scrollTop = 40;
-    scroll.dispatchEvent(new Event('scroll'));
-    const strip = page.getByRole('button', { name: /^Show the stack: 6 of 10/u });
-    await expect.element(strip).toBeVisible();
-    await expect.poll(() => scroll.scrollTop).toBe(0);
-    scroll.dispatchEvent(new Event('scroll'));
-    await new Promise<void>(resolve => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    scroll.scrollTop = 0;
+    await expect.element(toggle).toBeDisabled();
+});
+
+test('D27: a click on the bar drops the rows over the content — one map at a time — and Escape takes them away, the item still open', async () => {
+    await StackOfTenInPanel.run();
+    const { onClose } = StackOfTenInPanel.args;
+    const scroll = getContentScroll();
+    await scrollRowsAway(scroll);
+    const top = scroll.scrollTop;
+
+    await stackBarToggle().click();
+    await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'true');
+    // The copy over the content; the one in it inert and out of the accessibility tree.
+    const maps = () => document.querySelectorAll('section[aria-label="The stack"]');
+    await expect.poll(() => maps().length).toBe(2);
+    const region = page.getByRole('region', { name: 'The stack' });
+    await expect.element(region).toBeVisible();
+    expect(region.all()).toHaveLength(1);
+    expect(scroll.scrollTop).toBe(top);
+
+    // `J`/`K` still walk the stack while the rows are dropped.
+    await userEvent.keyboard('j');
+    expect(StackOfTenInPanel.args.onNext).toHaveBeenCalledTimes(1);
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'false');
+    expect(maps()).toHaveLength(1);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await userEvent.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test('D27: the dropped rows close on a second click on the bar, a click outside, any scroll of the content and the rows coming back into view', async () => {
+    await StackOfTenInPanel.run();
+    const scroll = getContentScroll();
+    const toggle = stackBarToggle();
+    await scrollRowsAway(scroll);
+
+    await toggle.click();
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+    await toggle.click();
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    await toggle.click();
+    await userEvent.click(page.getByRole('textbox', { name: 'Comment' }));
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    // Scrolling the content, up or down, with the rows still out of view (it starts at the end).
+    for (const by of [-40, 20]) {
+        await toggle.click();
+        await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+        scroll.scrollTop += by;
+        await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(toggle).toBeEnabled();
+    }
+
+    await toggle.click();
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+    scroll.scrollTop = 0;
+    await expect.element(toggle).toBeDisabled();
+    await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('D25: another pull request of the stack opens with its rows in view and none dropped', async () => {
+    const canvasElement = document.createElement('div');
+    document.body.append(canvasElement);
+    await StackOfTenInPanel.run({ canvasElement });
+    const scroll = getContentScroll();
+    const toggle = stackBarToggle();
+    await scrollRowsAway(scroll);
+    await toggle.click();
+
+    // A row of the dropped copy asks for its pull request; the screen then opens it here.
+    const next = SYNC_ENGINE_STACK[6]!;
+    await page.getByRole('region', { name: 'The stack' }).getByRole('button', { name: /#66/u }).click();
+    expect(StackOfTenInPanel.args.onOpenInPlace).toHaveBeenCalledExactlyOnceWith(next.id);
+    await StackOfTenInPanel.run({
+        canvasElement,
+        args: {
+            ...StackOfTenInPanel.args,
+            item: next,
+            detail: { ...F1_PULL_REQUEST_DETAIL, id: next.id, item: next },
+            neighbours: { previous: SYNC_ENGINE_STACK[5]!.id, next: SYNC_ENGINE_STACK[7]!.id },
+        },
     });
 
-    await expect.element(strip).toBeVisible();
-    expect(rows.query()).toBeNull();
-    expect(scroll.scrollHeight).toBeLessThanOrEqual(scroll.clientHeight);
+    await expect.element(page.getByRole('heading', { level: 1 })).toHaveTextContent(next.title);
+    // What the router does for another item (`shell/routeScroll.ts`, e2e `navigation/routeScroll.spec.ts`).
+    getContentScroll().scrollTop = 0;
+    await expect.element(stackBarToggle()).toBeDisabled();
+    await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('a row of the stack map opens its pull request in place of this one', async () => {
