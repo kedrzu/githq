@@ -16,7 +16,7 @@ import { usePageMeta } from './pageMeta.js';
 const { Layout } = DefaultTheme;
 const { section } = usePageMeta();
 
-// The phone's bar under the top bar names the page's section (`styles/localNav.scss`). The bar is the default theme's,
+// The phone's bar under the top bar names the page's section (`styles/_phone.scss`). The bar is the default theme's,
 // with no slot: the name reaches it as a CSS string, which `JSON.stringify` writes for a title.
 const style = computed(() => ({ '--docs-section-title': section.value ? JSON.stringify(section.value.title) : '""' }));
 </script>

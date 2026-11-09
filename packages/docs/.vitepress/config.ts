@@ -92,7 +92,7 @@ export default defineConfig({
         search: {
             provider: 'local',
             options: {
-                // Each result shows its text around the match (`DOC4`), always: `theme/styles/search.scss` hides the
+                // Each result shows its text around the match (`DOC4`), always: `theme/styles/_search.scss` hides the
                 // toggle.
                 detailedView: true,
                 translations: {

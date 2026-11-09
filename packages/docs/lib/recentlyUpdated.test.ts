@@ -51,7 +51,7 @@ test('lists the pages newest first, with their section and date', () => {
         { title: 'One', section: 'Getting started', link: '/a/one', updated: 100_000 },
         { title: 'Four', section: 'How it works', link: '/b/four', updated: 50_000 },
     ]);
-    expect(asked[0]).toEqual(['log', '-1', '--format=%ct', '--', 'src/a/one.md']);
+    expect(asked[0]).toEqual(['log', '-1', '--format=%at', '--', 'src/a/one.md']);
 });
 
 test('takes no more than the limit', () => {

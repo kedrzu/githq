@@ -47,7 +47,7 @@ export function recentPages(sections: RecentSection[], options: RecentPagesOptio
             if (!fileExists(file)) {
                 continue;
             }
-            const seconds = Number.parseInt(runGit(['log', '-1', '--format=%ct', '--', file]).trim(), 10);
+            const seconds = Number.parseInt(runGit(['log', '-1', '--format=%at', '--', file]).trim(), 10);
             if (!Number.isFinite(seconds)) {
                 continue;
             }
