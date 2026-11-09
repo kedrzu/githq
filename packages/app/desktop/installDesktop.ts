@@ -57,9 +57,11 @@ export async function installDesktop(container: Container, router: Router) {
     );
 
     const quitHint = container.resolve(QuitHint);
-    bridge.onCloseWindowPressed(() => quitHint.press()).catch((error: unknown) => {
-        logger.warn('Could not listen to ⌘W', { error });
-    });
+    bridge
+        .onCloseWindowPressed(() => quitHint.press())
+        .catch((error: unknown) => {
+            logger.warn('Could not listen to ⌘W', { error });
+        });
 
     if (WINDOW_CONTROLS_OVERLAID) {
         container.set(WindowControls, createDesktopWindowControls({ bridge, logger }));
