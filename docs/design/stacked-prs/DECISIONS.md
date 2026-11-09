@@ -418,6 +418,15 @@ the number's contrast; the mark keeps it, and takes no room, so nothing shifts w
 - A window of six with the rest folded (SP31) — more clicking to see the stack.
 - K and J at the right end of the neighbours' rows — the state beside them shifts as you walk. After the title, the row's spacer absorbs the key.
 - K and J in a legend above the rows — one more line, and it doesn't say which row each key goes to.
+- A merge button in the map's last line ("Merge 3 of 8 ⇧M", SP3, SP5, SP6, SP34, SP36, SP82, SP84; "Rebase on GitHub" in SP8) — not built: `⇧M`
+  opens the merge panel from any pull request of the stack, and the map stays a map. Taken out of the screens to match the app. (owner,
+  2026-11-09)
+- A drawn two-line tooltip on a square (number, title, then "7 of 10 · Waiting for review", SP83 as first drawn) — the browser's own tooltip
+  names it ("7: #67 Pause on rate limit"), and the rows say the state. (owner, 2026-11-09)
+
+> **Built 2026-11-09 (PR #235):** the squares sit 6 px apart, not 3: they are 18 px, and WCAG 2.5.8 wants 24 px between the centres of
+> targets that small. The same spacing as the review's stack strip.
+
 - ‹ and › around the squares (SP89) — the squares are already the buttons, and the arrows take room from the name.
 - Squares tinted, quiet or sharply outlined (SP85–SP87) — too strong, or a failing pull request stops standing out.
 - The open square with a light ring (SP91), a thicker outline (SP92), or a stronger tint and a white number (SP94) — the owner preferred the mark.
@@ -451,3 +460,7 @@ After the name nothing follows it but the spacer, so it shows without moving any
 **Rejected.**
 
 - The chevron as a button at the right end, keeping its place hidden (D25 as first decided) — the empty gap above.
+
+> **Built 2026-11-09 (PR #235), owner's additions:** any scroll of the content, up or down, puts the dropped rows away, as do Esc, a click
+> outside, a second click on the bar, opening a pull request and the rows coming back into view. With Animations on and no reduced motion
+> they slide out from under the bar in 150 ms, ease-out, the bar never covered ([githq D38](../githq/DECISIONS.md#d38)); they go at once.

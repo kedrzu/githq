@@ -11,17 +11,17 @@ desktop on a phone` (`mZPlf`). The desktop change is in `App · Creating an issu
 - [ ] New `Phone / Menu` (`gf3JG`): what is a dropdown on the computer, pinned to the bottom of a phone's screen. Distinct
   from the command menu's sheets: no ⌘, no context chip, no Back. Head with `Title` (`I5kQbM`, the property) and
   `Subject` (`e0cU1`, what it is on, mono) and × (`shPwX`); `Search` (`OHhrI`) with a rounded `Field` (`CYpt8`), `Query`
-  (`qig8z`, the desktop picker's placeholder) and `Caret` (`HFjpk`, off); `Entries` (`k0N2w`) made of `Phone / Command
-  result` rows; `Keyboard` (`zIojp`, off) and `Home indicator` (`FKWPh`). With the keyboard up, Keyboard on and Home
+  (`qig8z`, the desktop picker's placeholder) and `Caret` (`HFjpk`, off); `Entries` (`k0N2w`) of eight `Slot` frames, each a `Phone / Command section` (off) over a `Phone / Command
+  result` (slots 4–8 off), so a variant sets its rows by content and visibility only; `Keyboard` (`zIojp`, off) and `Home indicator` (`FKWPh`). With the keyboard up, Keyboard on and Home
   indicator off.
-- [ ] Its variants, each an instance with its own entries: `Phone / Menu / Status` (`z7aSQ8`), `/ Assignees` (`Xw0L2`,
-  "Assign to…"), `/ Labels` (`S3SI3`, "Filter labels…"), `/ Reviewers` (`FD7Pv`), `/ Close` (`eJdp0`, no search),
-  `/ Repository` (`ToAiG`, D43: tracked, then On GitHub; "Type part of a repository's name"), `/ Repository · in a
-  project` (`H0p65w`: Draft issue, the ones used last in the project, tracked), `/ Template` (`SKoTS`), `/ Filter`
-  (`ACyjg`, for later, D46), `/ Stack` (`LGold`, D48).
-- [ ] Screens that opened the command menu at a property's step now open its menu: MB74 (`s7O74`, Assignees typed "dk",
-  keyboard up), MB108 (`qUE2g`, Labels), MB109 (`H4YWj`, Close), MB110 (`Y4yg7`, Reviewers), MB196 (`DlQXA`, Labels of
-  the new issue), MB193 (`t1fnP0`, Repository typed "sdk"), MB200 (`vdF9d`, Template), MB176 (`PMhvC`, Filter).
+- [ ] Its variants, each an instance with its own entries: `Phone / Menu / Status` (`aYhqV`), `/ Assignees` (`uHKab`,
+  "Assign to…"), `/ Labels` (`EZvDB`, "Filter labels…"), `/ Reviewers` (`GAY0V`), `/ Close` (`Fujkd`, no search),
+  `/ Repository` (`WPdw1`, D43: tracked, then On GitHub; "Type part of a repository's name"), `/ Repository · in a
+  project` (`ZQSRB`: Draft issue, the ones used last in the project, tracked), `/ Template` (`L311lR`), `/ Filter`
+  (`NTEUx`, for later, D46), `/ Stack` (`jHovK`, D48).
+- [ ] Screens that opened the command menu at a property's step now open its menu: MB74 (`kLthX`, Assignees typed "dk",
+  keyboard up), MB108 (`Zi8U2`, Labels), MB109 (`cqrDD`, Close), MB110 (`l7tTt`, Reviewers), MB196 (`LjWan`, Labels of
+  the new issue), MB193 (`LkykV`, Repository typed "sdk"), MB200 (`Uga17`, Template), MB176 (`qUP9Z`, Filter).
 - [ ] `Phone / Command sheet / Status · from below` (`iceKP`): its input is now `Phone / Picker input` ("Find a status…"),
   so the step reached through ⌘ (MB40) no longer shows ⌘ and the item's chip in its search, as MB74 did.
 - [ ] Deleted, now unused: `Phone / Command sheet / Assignees · picking` (`KMrAa`), `/ Labels · picking` (`xBrsD`),
@@ -98,3 +98,16 @@ desktop on a phone` (`mZPlf`). The desktop change is in `App · Creating an issu
   shows as a grouped list), MB65, MB66 (tracking is in Settings on a phone too), MB67, MB68, MB74, MB80, MB89, MB92,
   MB108–MB110, MB112, MB114, MB119, MB128, MB173–MB176 (the filter row is for later, D46), MB193, MB194, MB196, MB200,
   MB204, MB210, MB211, MB216; the section description of Lists and new issue (`i5IIw8`).
+
+## Recovery after a Pen bug (2026-11-09)
+
+- [ ] Pen wipes every instance of a component that sits inside a *replaced* subtree of a variant (`descendants` with
+  `type`) as soon as that component gets a new child. Adding the `Changed` dot to `Phone / Command result` emptied the
+  menus' rows, `Phone / Command sheet / Pull request · draft` (`LaXFd`), `… / Selection · three items` (`Cz3JY`) and the
+  sheet of MB145 (`M3L96`), and the screens' instances pointed at missing nodes, so the file would not save.
+- [ ] `Phone / Menu` was rebuilt on slots (above) and its variants re-created with new ids: Status `aYhqV`, Assignees
+  `uHKab`, Labels `EZvDB`, Reviewers `GAY0V`, Close `Fujkd`, Repository `WPdw1`, Repository · in a project `ZQSRB`,
+  Template `L311lR`, Filter `NTEUx`, Stack `jHovK`; their screen instances re-created with the same overrides (MB68
+  `Pss4k`, MB220 `odR4k`). They no longer use replaced subtrees, so changing `Phone / Command result` is safe for them.
+- [ ] `LaXFd`, `Cz3JY` and MB145's sheet got their rows back from git, same content; they still use replaced subtrees,
+  so a future child added to `Phone / Command result` will empty them again (re-check after any such change).
