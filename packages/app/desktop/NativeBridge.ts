@@ -132,6 +132,11 @@ export interface NativeBridgeShape {
      * once it listens. Then ask {@link takeOpenedLink}: a link opened before is not told again.
      */
     onLinkOpened(listener: () => void): Promise<void>;
+    /**
+     * Calls `listener` each time ⌘W is pressed on a Mac, or Close Window chosen in its menu, which no longer close the
+     * window (the `close-window-pressed` event, `menu.rs`); resolves once it listens.
+     */
+    onCloseWindowPressed(listener: () => void): Promise<void>;
 }
 
 /**
@@ -200,6 +205,7 @@ function createTauriBridge(): NativeBridgeShape {
             }),
         takeOpenedLink: () => tauri.invoke<string | null>('link_take'),
         onLinkOpened: listener => listen('link-opened', () => listener()),
+        onCloseWindowPressed: listener => listen('close-window-pressed', () => listener()),
     };
 
     /** Calls `handler` with the payload of each `event` the native side emits; resolves once it listens. */
