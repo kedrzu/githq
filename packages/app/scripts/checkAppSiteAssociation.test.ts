@@ -28,6 +28,13 @@ describe('checkAppSiteAssociation', () => {
         expect(problems).toContain('apple-app-site-association: claims /new-file.png, which must stay in the browser');
     });
 
+    test('the docs stay in the browser, /docs alone included', () => {
+        const problems = checkAppSiteAssociation(file([{ '/': '/docs/*', exclude: true }, { '/': '/*' }]), []);
+
+        expect(problems).toContain('apple-app-site-association: claims /docs, which must stay in the browser');
+        expect(problems.filter(problem => problem.includes('/docs/'))).toEqual([]);
+    });
+
     test('excluding every path with a dot gives away a repository with a dot in its name', () => {
         const problems = checkAppSiteAssociation(file([{ '/': '/*.*', exclude: true }, { '/': '/*' }]), []);
 

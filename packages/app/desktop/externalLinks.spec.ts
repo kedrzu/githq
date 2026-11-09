@@ -90,6 +90,35 @@ test('a click on a githq.dev link opens it in the app and keeps it from the wind
     expect(clicks).toEqual([true]);
 });
 
+test('the docs on githq.dev — navigated to, replaced or opened beside — open in the system browser, not in the app', () => {
+    const { browser, opened, inApp, inAppLinks } = setupBrowser();
+
+    browser.openInNewTab('https://githq.dev/docs/');
+    browser.navigate('https://githq.dev/docs');
+    browser.replaceLocation('https://www.githq.dev/docs/getting-started/sign-in.html?x=1#token');
+    // Only the docs: a path that merely starts the same is the app's.
+    browser.navigate('https://githq.dev/docsy/web/issues/1');
+
+    expect(opened).toEqual([
+        'https://githq.dev/docs/',
+        'https://githq.dev/docs',
+        'https://www.githq.dev/docs/getting-started/sign-in.html?x=1#token',
+    ]);
+    expect(inAppLinks).toEqual(['/docsy/web/issues/1']);
+    expect(inApp).toEqual([]);
+});
+
+test('a click on a link to the docs on githq.dev opens it in the system browser and keeps it from the window', () => {
+    const { root, opened, clicks, inApp } = setupLinks();
+    const link = addLink(root, 'https://githq.dev/docs/using-githq/');
+
+    link.click();
+
+    expect(opened).toEqual(['https://githq.dev/docs/using-githq/']);
+    expect(inApp).toEqual([]);
+    expect(clicks).toEqual([true]);
+});
+
 test('links within the app, to anything but a web page, a right click and a click already handled are left alone', () => {
     const { root, opened, clicks } = setupLinks();
     const inApp = addLink(root, '/acme/portal/issues/1');

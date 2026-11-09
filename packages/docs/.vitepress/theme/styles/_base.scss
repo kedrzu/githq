@@ -1,0 +1,37 @@
+@use '../../../../app/styles/tokens' as *;
+
+html.dark {
+    body {
+        font-family: $font-family-sans;
+        color: $color-fg;
+        background: $color-bg;
+    }
+
+    // The app's focus ring on everything the keyboard reaches; not on what only a script focuses (the sidebar's list as
+    // the phone's menu opens, a heading an outline link moves to).
+    :focus-visible:not([tabindex='-1']) {
+        outline: 2px solid $color-focus;
+        outline-offset: 1px;
+    }
+
+    // The app's `Kbd` (`components/Kbd.vue`): a key in the mono font on a chip.
+    kbd {
+        display: inline-block;
+        padding: 1px 5px;
+        font-family: $font-family-mono;
+        font-size: $font-size-4xs;
+        font-weight: $font-weight-normal;
+        line-height: 14px;
+        color: $color-fg-2;
+        white-space: nowrap;
+        background: $color-bg-3;
+        border: 1px solid $color-border-2;
+        border-radius: $radius-sm;
+    }
+
+    // The skip link stays the default theme's; only its colours follow ours.
+    .VPSkipLink {
+        color: $color-accent;
+        background: $color-bg-2;
+    }
+}

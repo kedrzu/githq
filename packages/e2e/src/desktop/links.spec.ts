@@ -4,6 +4,7 @@ import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { DesktopSignInScreenHarness } from '../harnesses/DesktopSignInScreen.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { AccountScreenHarness } from '../harnesses/AccountScreen.harness.js';
+import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { E2E_CLIENT_ID } from '../localApp.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
@@ -17,6 +18,8 @@ const ISSUE = 'Sign-in loops after the token expires';
 const ISSUE_PATH = '/acme/web/issues/12';
 /** The link in the issue's description. */
 const BODY_LINK = 'https://example.com/docs/tokens';
+/** Where the desktop app opens the docs: githq.dev's, as it has none of its own. */
+const DOCS_URL = 'https://githq.dev/docs/';
 
 test('an app path opens directly', async ({ page, github, native }) => {
     await signInOnDesktop({ page, github, native, world: createSampleMyWork().world });
@@ -89,6 +92,25 @@ test("an organisation's \"Request approval\" opens GitHub's page of githq's OAut
         .toEqual([`https://github.com/settings/connections/applications/${E2E_CLIENT_ID}`]);
     await expect(page).toHaveURL('/settings?tab=account');
     await expect(account.organization('secretive')).toContainText('You requested approval on');
+    expect(page.context().pages()).toHaveLength(1);
+});
+
+test('"Documentation" in the command menu and in the account menu opens githq.dev\'s docs in the system browser, and the window stays where it is', async ({
+    page,
+    github,
+    native,
+}) => {
+    const shell = await signInOnDesktop({ page, github, native });
+    const appUrl = page.url();
+
+    await new CommandMenuHarness(page).run('Documentation');
+    await expect.poll(() => native.opened).toEqual([DOCS_URL]);
+
+    await shell.account(LOGIN).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Documentation' }).click();
+    await expect.poll(() => native.opened).toEqual([DOCS_URL, DOCS_URL]);
+
+    expect(page.url()).toBe(appUrl);
     expect(page.context().pages()).toHaveLength(1);
 });
 

@@ -1,0 +1,197 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The top bar (`Docs / Top bar`): the wordmark and "docs" over the sidebar, then the search field, the sections, the
+// GitHub mark and "Open githq" (`DocsTopBarActions`).
+html.dark {
+    .VPNavBar {
+        background: $color-bg;
+    }
+
+    // One line under the whole bar, over the sidebar too.
+    .VPNavBar .divider {
+        padding-left: 0;
+    }
+
+    .VPNavBar .divider-line {
+        background-color: $color-border;
+    }
+
+    .VPNavBarTitle .title {
+        border-bottom: 0;
+    }
+
+    @media (width >= 960px) {
+        .VPNavBar.has-sidebar .title {
+            padding-left: $spacing-24;
+        }
+
+        .VPNavBar.has-sidebar .content {
+            padding-right: $spacing-24;
+        }
+
+        // The bar's content stays opaque under the outline's links when the page scrolls.
+        .VPNavBar.has-sidebar .content-body {
+            background: $color-bg;
+        }
+    }
+
+    // The default theme lines a wide window's layout up in a centred 1440: the bar follows, with our 24 at its edges.
+    @media (width >= 1440px) {
+        .VPNavBar.has-sidebar .title {
+            padding-left: calc((100% - var(--vp-layout-max-width)) / 2 + #{$spacing-24});
+        }
+
+        .VPNavBar.has-sidebar .content {
+            padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + #{$spacing-24});
+        }
+    }
+
+    // A page with no sidebar (the home page, "not found"): the bar as on an article, the search where the sidebar would
+    // end, so it doesn't move from page to page. Its container is the centred 1440 the sidebar's pages line up in.
+    @media (width >= 960px) {
+        .VPNavBar:not(.has-sidebar) .wrapper {
+            padding: 0;
+        }
+
+        .VPNavBar:not(.has-sidebar) .container {
+            max-width: var(--vp-layout-max-width);
+        }
+
+        .VPNavBar:not(.has-sidebar) .container > .title {
+            flex: none;
+            width: var(--vp-sidebar-width);
+            padding-left: $spacing-24;
+        }
+
+        .VPNavBar:not(.has-sidebar) .content {
+            padding-right: $spacing-24;
+        }
+    }
+
+    // The search field (`Docs / Search field`), 280 wide right after the sidebar.
+    .VPNavBarSearch {
+        padding-left: 0;
+    }
+
+    @media (width >= 960px) {
+        .DocSearch-Button {
+            gap: $spacing-8;
+            width: 280px;
+            height: auto;
+            padding: 7px $spacing-8 7px $spacing-10;
+            background: $color-bg-2;
+            border: 1px solid $color-border;
+            border-radius: $radius-lg;
+
+            &:hover {
+                background: $color-bg-2;
+                border-color: $color-border-2;
+            }
+
+            .DocSearch-Button-Container {
+                flex: 1;
+                gap: $spacing-8;
+            }
+
+            .DocSearch-Search-Icon {
+                top: 0;
+                width: 15px;
+                height: 15px;
+                margin-right: 0;
+                color: $color-fg-3;
+            }
+
+            .DocSearch-Button-Placeholder {
+                padding: 0;
+                margin: 0;
+                font-size: $font-size-lg;
+                font-weight: $font-weight-normal;
+                line-height: 20px;
+                color: $color-fg-dim;
+            }
+
+            &:hover .DocSearch-Button-Placeholder {
+                color: $color-fg-2;
+            }
+
+            .DocSearch-Button-Keys {
+                gap: 3px;
+            }
+        }
+    }
+
+    // Each key its own chip, as the app's `Kbd`.
+    .DocSearch-Button .DocSearch-Button-Key,
+    .DocSearch-Button .DocSearch-Button-Key + .DocSearch-Button-Key {
+        height: auto;
+        padding: 1px 5px;
+        margin: 0;
+        font-family: $font-family-mono;
+        font-size: $font-size-4xs;
+        font-weight: $font-weight-normal;
+        line-height: 14px;
+        color: $color-fg-2;
+        background: $color-bg-3;
+        border: 1px solid $color-border-2;
+        border-radius: $radius-sm;
+    }
+
+    .DocSearch-Button .DocSearch-Button-Key:first-child::after {
+        font-size: $font-size-4xs;
+        color: $color-fg-2;
+    }
+
+    // The sections: the current one in the main colour.
+    .VPNavBarMenuLink {
+        padding: 0 14px;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-normal;
+        color: $color-fg-2;
+
+        &:hover,
+        &.active {
+            color: $color-fg;
+        }
+    }
+
+    // No rule between the sections and the GitHub mark.
+    .VPNavBar .menu + .social-links::before {
+        display: none;
+    }
+
+    .VPNavBar .social-links {
+        margin-right: 0;
+        margin-left: 10px;
+    }
+
+    .VPNavBarSocialLinks .VPSocialLink {
+        width: 34px;
+        height: 34px;
+        color: $color-fg-2;
+        border-radius: $radius-lg;
+
+        &:hover {
+            color: $color-fg;
+            background: $color-bg-3;
+        }
+
+        > svg,
+        > [class^='vpi-social-'] {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    // The GitHub mark sits in the bar on every wide page; the default theme folds it into a "…" menu under 1280 and
+    // offers its own menu on a phone, where ours (`DocsTopBarActions`) opens the sidebar instead.
+    @media (width >= 960px) {
+        .VPNavBarSocialLinks {
+            display: flex;
+        }
+    }
+
+    .VPNavBarExtra,
+    .VPNavBarHamburger {
+        display: none;
+    }
+}

@@ -1,4 +1,4 @@
-<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections, `/download` and "Sign in", to the project on GitHub and to how githq works, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
+<!-- The landing page's footer (githq.pen "Landing — githq.dev", Footer): the wordmark and tagline, links to the page's sections, the docs (`/docs/`), `/download` and "Sign in", to the project on GitHub and to how githq works, the legal line and the repository and its release feed. "Sign in" emits `signIn`. -->
 <script lang="ts" setup>
 import type { Translation } from '@nzyme/i18n-core';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -14,6 +14,7 @@ import * as l from './LandingFooter.loc.js';
 import {
   API_LIMITS_URL,
   DESIGN_DOCS_URL,
+  DOCS_PATH,
   ISSUES_URL,
   LandingSectionId,
   RELEASES_FEED_URL,
@@ -23,7 +24,7 @@ import {
   WHY_URL,
 } from './landingLinks.js';
 
-/** A link of a footer column: to a section of the page (`#features`) or out to GitHub. */
+/** A link of a footer column: to a section of the page (`#features`), another page of githq.dev or out to GitHub. */
 interface FooterLink {
   label: Translation;
   href: string;
@@ -49,6 +50,7 @@ const resourcesId = useId();
 const product = computed<FooterLink[]>(() => [
   { label: l.features, href: `${props.elsewhere ? HOME_PATH : ''}#${LandingSectionId.features}` },
   { label: l.keyboard, href: `${props.elsewhere ? HOME_PATH : ''}#${LandingSectionId.keyboard}` },
+  { label: l.docs, href: DOCS_PATH },
   { label: l.download, href: DOWNLOAD_PATH },
 ]);
 const project: FooterLink[] = [

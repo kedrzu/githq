@@ -1,0 +1,58 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The page's footer (`Docs / Page footer`): `DocsFooterMeta`'s line, then the previous and next pages in the sidebar's
+// order (`Docs / Page link · previous|next`).
+html.dark {
+    .VPDocFooter {
+        margin-top: 48px;
+    }
+
+    // `DocsFooterMeta` stands for this line.
+    .VPDocFooter .edit-info {
+        display: none;
+    }
+
+    .VPDocFooter .prev-next {
+        gap: $spacing-16;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .VPDocFooter .pager-link {
+        padding: 14px $spacing-16;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+
+        &:hover {
+            border-color: $color-border-2;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $color-focus;
+            outline-offset: 1px;
+        }
+
+        .desc {
+            font-size: $font-size-xs;
+            font-weight: $font-weight-normal;
+            line-height: 16px;
+            color: $color-fg-dim;
+        }
+
+        .title {
+            margin-top: $spacing-4;
+            font-size: $font-size-xl;
+            font-weight: $font-weight-medium;
+            line-height: 20px;
+            color: $color-fg;
+        }
+
+        &.prev .desc::before {
+            content: '← ';
+        }
+
+        &.next .desc::after {
+            content: ' →';
+        }
+    }
+}

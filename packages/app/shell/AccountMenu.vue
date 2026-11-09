@@ -1,7 +1,8 @@
-<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key and "Sign out". While syncing the settings stopped (settings-sync T9, T10) an amber dot sits on the avatar, and "Settings" says "Syncing stopped", shows no key (`,` opens plain Settings) and opens straight on Sync settings. -->
+<!-- The signed-in user at the very bottom of the sidebar (avatar and login, or the avatar alone on the rail), opening a menu — upwards, or to the right on the rail — with who is signed in, "Settings" with its key, "Documentation" — the docs in a new tab (`DOCS_URL`; in the desktop app githq.dev's, in the system browser) — and "Sign out". While syncing the settings stopped (settings-sync T9, T10) an amber dot sits on the avatar, and "Settings" says "Syncing stopped", shows no key (`,` opens plain Settings) and opens straight on Sync settings. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronUp, LogOut, Settings } from 'lucide-vue-next';
+import { useService } from '@nzyme/vue-ioc/useService.js';
+import { BookOpen, ChevronUp, LogOut, Settings } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -14,6 +15,8 @@ import Menu from '@/components/Menu.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
+import { DOCS_URL } from '@/landing/docsUrl.js';
+import { Browser } from '@/services/Browser.js';
 import { getSettingsPath, SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 
 import * as l from './AccountMenu.loc.js';
@@ -32,6 +35,7 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 const router = useRouter();
+const browser = useService(Browser);
 
 const label = computed(() =>
   props.settingsSyncStopped
@@ -111,6 +115,12 @@ function openSettings() {
           />
           <span :class="css.accountMenu_status">{{ t(l.syncStopped) }}</span>
         </template>
+      </MenuItem>
+      <MenuItem
+        :icon="BookOpen"
+        @select="browser.openInNewTab(DOCS_URL)"
+      >
+        {{ t(l.documentation) }}
       </MenuItem>
       <MenuSeparator />
       <MenuItem

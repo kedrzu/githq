@@ -338,6 +338,39 @@ async function readHint(context: BrowserContext) {
     return cookies.find(cookie => cookie.name === SIGNED_IN_HINT_COOKIE.name);
 }
 
+test.describe('the docs', () => {
+    /** The docs home page's headline (`packages/docs/src/index.md`). */
+    const DOCS_HEADING = 'How githq works, and how to use it';
+
+    test('"Docs" in the navigation and "Documentation" in the footer open the docs home', async ({ page }) => {
+        const landing = new LandingHarness(page);
+        for (const link of [
+            page.getByRole('banner').getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'Docs' }),
+            page.getByRole('contentinfo').getByRole('link', { name: 'Documentation' }),
+        ]) {
+            await page.goto('/');
+            await expect(landing.heading).toContainText(LANDING_HEADING_TEXT);
+            await link.click();
+            await expect(page).toHaveURL('/docs/');
+            await expect(page.getByRole('heading', { level: 1 })).toHaveText(DOCS_HEADING);
+        }
+    });
+
+    test.describe('on a phone', () => {
+        test.use({ viewport: { width: 390, height: 844 } });
+
+        test('"Docs" in the menu opens the docs home', async ({ page }) => {
+            await page.goto('/');
+            await expect(new LandingHarness(page).heading).toContainText(LANDING_HEADING_TEXT);
+            await page.getByRole('banner').getByRole('button', { name: 'Menu' }).click();
+            await page.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: 'Docs' }).click();
+
+            await expect(page).toHaveURL('/docs/');
+            await expect(page.getByRole('heading', { level: 1 })).toHaveText(DOCS_HEADING);
+        });
+    });
+});
+
 /** Where the page records that the landing page's headline was in its DOM. */
 const LANDING_SEEN_KEY = 'e2e.landingHeadingSeen';
 

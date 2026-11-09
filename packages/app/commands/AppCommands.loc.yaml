@@ -2,6 +2,12 @@ commandMenu:
   en: Open the command menu
 help:
   en: Keyboard shortcuts
+documentation:
+  en: Documentation
+docsKeyword:
+  en: docs
+helpKeyword:
+  en: help
 newIssue:
   en: New issue
 createKeyword:

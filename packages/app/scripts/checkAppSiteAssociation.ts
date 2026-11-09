@@ -5,7 +5,7 @@ import { OAUTH_CALLBACK_PATH } from '@githq/github/oauth.js';
 const APP_ID = '36227N57ZP.dev.githq.desktop';
 
 /**
- * What stays in the browser whatever else the file says. `/login` is `SIGN_IN_PATH`, spelled out: the module holding it
+ * What stays in the browser whatever else the file says: the docs among it, which the app has no screen for. `/login` is `SIGN_IN_PATH`, spelled out: the module holding it
  * reads `__DESKTOP__`, which only a build defines, and this runs after one.
  */
 const BROWSER_ONLY_PATHS = [
@@ -18,6 +18,10 @@ const BROWSER_ONLY_PATHS = [
     '/_nuxt/entry.js',
     '/_ipx/w_640/landing/shot.webp',
     '/.well-known/apple-app-site-association',
+    '/docs',
+    '/docs/',
+    '/docs/getting-started/what-is-githq',
+    '/docs/assets/app.js',
 ];
 
 /** The app's screens, a repository with a dot in its name among them, which a careless `/*.*` would give away. */
