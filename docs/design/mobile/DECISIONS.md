@@ -125,12 +125,21 @@ second phone UI.
 
 ## D9
 
-**No board on a phone in the first version: lists only, and the switch between list and board is not shown. A
-project view saved as a board shows on a phone as a list grouped by the board's column field.**
-(2026-11-06, owner said to leave the board for now; how a board view shows is the design agent's proposal)
+**No board on a phone at all: lists only, with no switch between list and board. A project view saved on GitHub as a
+board shows on a phone as a list grouped by the board's column field, in the columns' order.** (2026-11-06, owner left
+the board for later; 2026-11-09, owner: lists have grouping too, so boards go from the phone entirely)
 
-**Why.** The owner set the board aside. A board's columns are the values of the field it groups by, so a list
-grouped by that field holds the same items in the same order of groups, and the view stays usable.
+**Why.** A board's columns are the values of the field it groups by, so a list grouped by that field holds the same
+items in the same groups. The desktop reads a view's layout from GitHub, so a board view does reach the phone.
+
+> **Checked 2026-11-09:** a board view's columns become its grouping — `packages/app/projects/projectViewOptions.ts:62-66`
+> (`getColumnGrouping`).
+
+**Rejected.**
+
+- A board view's layout never reaching the phone, so nothing to turn into a list ([history](history/RETIRED.md#d41)) —
+  rested on the belief that a view's layout is not read from GitHub; it is.
+- A board on the phone — the owner dropped it: a grouped list holds the same.
 
 ## D11
 
@@ -349,27 +358,14 @@ a glance without a key, and nothing slides over the item to see the rest.
   "… All" chip as the way to every property was too small a target.
 - The chips after the body (MB129) — on a long body the labels and milestone are out of sight.
 
-## D26
-
-**A property is changed both by tapping it on the item, which opens the command menu straight at its step, and through
-⌘ from the item. Every property row shows › to say it can be tapped; the state pill opens closing or reopening.**
-(2026-11-08, owner, on the drawings `MB108`–`MB112`)
-
-**Why.** The owner: for a good affordance a property should be changed where it is seen, and the command menu stays
-the place where everything is. Both are the same sheet, so there is one mechanism to learn.
-
-**Rejected.**
-
-- A picker of its own dropping from the property (MB111) — a second kind of menu, covering the item, without search.
-- Changing only through ⌘ (alone) — a value you can see but not touch.
-
 ## D27
 
-**Swiping a list row to the left reveals Status, Assign and Close; each opens the same step of the command menu as on
-the item. Everything stays reachable by opening the item.** (2026-11-08, owner, picked from the drawings: `MB114`)
+**Swiping a list row to the left reveals Status, Assign and Close; each opens that property's menu at the bottom, the
+same as tapping it on the item ([D45](#d45)). Everything stays reachable by opening the item.** (2026-11-08, owner,
+picked from the drawings: `MB114`; the menu it opens changed 2026-11-09)
 
 **Why.** The owner: a great idea. Swiping a row is not an edge swipe ([D2](#d2)), and it makes triage from the list
-fast.
+fast. The three are a subset of the desktop's right-click menu on a row (`packages/app/item/getItemMenuSections.ts`).
 
 > **Not settled by this:** which three actions a pull request's row reveals; the drawing shows an issue's.
 
@@ -377,6 +373,8 @@ fast.
 
 - A long press opening the command menu at the row (MB113) — the design agent's recommendation.
 - Nothing, open the item first (MB115).
+- Each action opening the command menu's step — the command menu stands for the desktop's ⌘K, not its dropdowns
+  ([D45](#d45)).
 
 ## D28
 
@@ -512,13 +510,15 @@ down — and adding may use the sign-in's screen. One choosing screen to learn, 
 
 ## D36
 
-**A list's options button opens one sheet rising from below with the list's filter, grouping and sort together, each a
-row of chips changed in place while the list behind follows; a field's values are picked in the command menu's step.
-A repository offers GitHub's own groupings (milestone first), a project its fields first, My work reason, repository,
-status and author.** (2026-11-08, owner, picked from the drawings: `MB173`–`MB176`)
+**A list's options button opens one sheet rising from below with the list's grouping and sort, each a row of chips
+changed in place while the list behind follows. A repository offers GitHub's own groupings (milestone first), a project
+its fields, My work reason, repository, status and author. The sheet's filter row is drawn but not built in the first
+version ([D46](#d46)).** (2026-11-08, owner, picked from the drawings: `MB173`–`MB176`; the filter set aside 2026-11-09)
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: one tap per change, every setting in view, and
-the sheet opens the same way as the command menu.
+the sheet opens the same way as the command menu. The groupings are the desktop's
+(`packages/app/repository/repositoryViewOptions.ts:13`, `packages/app/myWork/myWorkViewOptions.ts:23`,
+`packages/app/projects/projectViewOptions.ts:132`).
 
 **Rejected.**
 
@@ -541,19 +541,6 @@ there is no need for "back to GitHub"; the question `MB180`–`MB184` was droppe
 - A dot on the command line's chip with Back to GitHub's view in the options (MB180–MB182), a strip under the top bar
   (MB183), the reset only inside the options (MB184).
 
-## D38
-
-**A new issue's repository is chosen first: New issue opens on the repository step, keyboard up, the place's repository
-at its top, Draft issue leading in a project, a repository that takes no issues dimmed with the reason; the title comes
-after.** (2026-11-08, owner: as on the desktop; `MB193`)
-
-**Why.** The owner: it is the same on the computer. Saying a repository won't take issues before anything is written
-falls out of it, in the list itself.
-
-**Rejected.**
-
-- Filled in from the place and changed from its row in the form (MB191–MB192) — the design agent's recommendation.
-
 ## D39
 
 **A repository's issue templates rise as a step once the repository is chosen: a markdown template fills the body, an
@@ -567,47 +554,104 @@ asks for a template does not miss it.
 
 - A Template row in the form (MB201) — easy to miss before sending a bare issue.
 
-## D40
-
-**Create always closes the form. The toast that follows is the computer's toast on a phone — a title saying what was
-created, a detail line, a countdown, and real buttons: Create another, which opens the form again with the same
-repository, project and labels, and Open.** (2026-11-08, owner: the toast, but its action must clearly be a button with
-a verb, the toast larger and like the other toasts; drawn in `MB204`, `MB215`, `MB217`)
-
-**Why.** The owner picked the toast over a switch in the form, and asked that the action read as a button.
-
-**Rejected.**
-
-- A Create another switch in the form (MB202–MB203) — the design agent's recommendation.
-- A one-line toast with a bold word as its action — not visibly a button.
-
-## D41
-
-**A phone shows no board, and a project view's layout saved on GitHub does not reach it: view preferences are not
-synced with GitHub, so there is no board view to turn into a grouped list. A project's list is grouped as set on this
-device (D36, D37).** (2026-11-08, owner: view preferences aren't synced with GitHub, so the case does not happen; the
-question `MB185`–`MB190` was dropped)
-
-**Why.** The owner: there is no board view on a phone, and the board saved on GitHub never arrives as one.
-
-> **Not settled by this:** [D9](#d9) and the README still say a view saved as a board shows as a list grouped by its
-> column field; that sentence is superseded here.
-
-**Rejected.**
-
-- Groups that fold with a pinned header (MB185–MB187), a strip of groups (MB188), plain headers (MB189), a long group
-  showing its first three (MB190) — all answered a case that does not happen.
-
 ## D42
 
 **A new issue's details are set as on an item: under the title the rows that need their name — Assignees with Assign
 to me at its end, the project's field when there is one, the parent — then the rest as chips, empty ones saying what
-they would hold; tapping any of them opens the command menu at its step.** (2026-11-08, owner, picked from the drawings:
+they would hold; tapping any of them opens its menu at the bottom, as
+on an item ([D45](#d45)).** (2026-11-08, owner, picked from the drawings:
 `MB194`–`MB196`)
 
 **Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
-([D25](#d25)), changed the same way ([D26](#d26)), and assigning yourself is one tap.
+([D25](#d25)), changed the same way ([D45](#d45)), and assigning yourself is one tap.
 
 **Rejected.**
 
 - One Add details row (MB197), only through ⌘ (MB198), icons above the keyboard (MB199, what MB67 showed until now).
+
+## D43
+
+**A new issue starts in the repository of the place: in a repository, or on an item, that repository, shown in the
+form and changed from it. Started from outside any repository — My work, a project, anywhere else — it opens on choosing
+the repository first.** (2026-11-09, owner: as on the desktop, with the exception that outside a repository the
+repository is chosen)
+
+**Why.** The owner wants the desktop's behaviour, which fills the repository in from the place.
+
+> **Checked 2026-11-09:** the desktop fills in the screen's repository, and elsewhere the last draft's or the last used
+> one; the chooser opens first only when there is none — `packages/app/newIssue/NewIssueComposer.ts:193-215`,
+> `packages/app/newIssue/NewIssueDialog.vue:141`. So "outside a repository, choose first" is not yet what the desktop
+> code does from My work: it offers the last used repository.
+
+**Rejected.**
+
+- The repository always chosen first ([history](history/RETIRED.md#d38)) — chosen as "as on the desktop", which it is
+  not.
+
+## D44
+
+**Creating an issue closes the form and a toast follows, on the phone and on the computer alike: a title saying what was
+created, a detail line, a countdown, and real buttons — Create another, which opens the form again with the same
+repository, project and labels, and Open. On the computer its buttons carry no keyboard shortcuts; on a phone they are
+larger, for a finger, though the drawn ones may be too large.** (2026-11-09, owner)
+
+**Why.** The owner wanted the toast on the phone, with an action that reads as a button; the desktop had none (it keeps
+the form open on ⌘Enter instead, `packages/app/newIssue/NewIssueDialog.vue:1`), so rather than a second solution the
+toast becomes the desktop's too. This changes the desktop design: it needs drawing in the desktop's new issue frames and
+building there.
+
+**Rejected.**
+
+- The toast on the phone only ([history](history/RETIRED.md#d40)) — it claimed to be the computer's toast, which did
+  not exist.
+- A Create another switch in the form (MB202–MB203).
+- A one-line toast with a bold word as its action — not visibly a button.
+
+## D45
+
+**What is a dropdown on the computer is a menu pinned to the bottom of the screen on a phone, with the same entries and
+the same search: a property's picker (tapping it on an item, in the new issue form, or a row's swipe action), the item's
+menu, a row's right-click menu. The command menu on a phone stands only where the computer has ⌘K.** (2026-11-09, owner)
+
+**Why.** The owner: opening the command menu for what is a dropdown on the computer mixes two things and makes for odd
+UX. The desktop item edits a property in a picker dropping from it, with type-to-filter
+(`packages/app/item/ItemProperties.vue:91-151`, `packages/app/components/Picker.vue`); a menu at the bottom is that
+picker within a thumb's reach. ⌘ on the item still reaches every property through the command menu, as ⌘K does.
+
+**Rejected.**
+
+- Tapping a property opening the command menu at its step ([history](history/RETIRED.md#d26)) — two different things
+  in one sheet; its reason called the desktop's picker a menu without search, which it is not.
+- A picker dropping from the property (MB111) — covers the item, out of the thumb's reach.
+
+## D46
+
+**The first phone version builds no filtering the computer does not have. What the desktop has comes along: a
+repository's open / closed / both, My work's filters, a project view's filter from GitHub and clearing it on this
+device. Filtering a list by field values (labels, assignee, a project's field) in the options sheet stays drawn, for
+later, on both.** (2026-11-09, owner: no filters on a phone for now, keep the designs and write it down)
+
+**Why.** The desktop has no editor for filters by field values; building it on the phone first would make the phone a
+second solution.
+
+> **Checked 2026-11-09:** the desktop's filters — `packages/app/repository/RepositoryView.vue:242` (state),
+> `packages/app/myWork/MyWorkView.vue:133` (All, Needs me, Waiting on others), the project view's GitHub filter, cleared
+> here (`packages/app/projects/ProjectView.loc.yaml`).
+
+## D47
+
+**My work on a phone shows what it shows on the computer at `/`: every group at once, grouped by reason, not one group
+at a time.** (2026-11-09, owner: show everything as on the desktop)
+
+**Why.** One group at a time was never decided; it came out of the command line's chip naming "the part you are in".
+The desktop's default is all four groups (`packages/app/myWork/MyWorkView.vue`).
+
+## D48
+
+**The phone carries the desktop's capabilities that its screens had left out: choosing a project's row field, the
+edits still being sent ("Sending 2 changes"), unfolding a stack to all its pull requests with what stops it, and
+selecting only the failed items after a bulk edit partly failed.** (2026-11-09, owner)
+
+**Why.** Each exists on the desktop (`packages/app/projects/ProjectView.loc.yaml` row field,
+`packages/app/shell/SegmentEdits.ts:3`, `packages/app/item/StackMap.vue`, `packages/app/edits/EditToasts.vue`); leaving
+them out made the phone poorer without a decision.

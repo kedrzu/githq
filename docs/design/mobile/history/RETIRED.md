@@ -68,3 +68,130 @@ is the exception ([D7](#d7)).
 
 - No Settings on a phone, `/settings` showing "open it on a computer" — an exception to the hand-off rule, to save
   fitting a simple page.
+
+## D41
+
+Retired 2026-11-09, replaced by [D9](../DECISIONS.md#d9): its premise was wrong — the desktop does read a saved view's layout from GitHub, board included (`packages/app/projects/projectViewOptions.ts:62`).
+
+**A phone shows no board, and a project view's layout saved on GitHub does not reach it: view preferences are not
+synced with GitHub, so there is no board view to turn into a grouped list. A project's list is grouped as set on this
+device (D36, D37).** (2026-11-08, owner: view preferences aren't synced with GitHub, so the case does not happen; the
+question `MB185`–`MB190` was dropped)
+
+**Why.** The owner: there is no board view on a phone, and the board saved on GitHub never arrives as one.
+
+> **Not settled by this:** [D9](#d9) and the README still say a view saved as a board shows as a list grouped by its
+> column field; that sentence is superseded here.
+
+**Rejected.**
+
+- Groups that fold with a pinned header (MB185–MB187), a strip of groups (MB188), plain headers (MB189), a long group
+  showing its first three (MB190) — all answered a case that does not happen.
+
+## D9
+
+Sharpened 2026-11-09 (boards out of the phone entirely); the rule for a board view saved on GitHub, struck by D41, restored.
+
+**No board on a phone in the first version: lists only, and the switch between list and board is not shown. A
+project view saved as a board shows on a phone as a list grouped by the board's column field.**
+(2026-11-06, owner said to leave the board for now; how a board view shows is the design agent's proposal)
+
+**Why.** The owner set the board aside. A board's columns are the values of the field it groups by, so a list
+grouped by that field holds the same items in the same order of groups, and the view stays usable.
+
+## D38
+
+Retired 2026-11-09, replaced by [D43](../DECISIONS.md#d43): its reason, "as on the desktop", was wrong.
+
+**A new issue's repository is chosen first: New issue opens on the repository step, keyboard up, the place's repository
+at its top, Draft issue leading in a project, a repository that takes no issues dimmed with the reason; the title comes
+after.** (2026-11-08, owner: as on the desktop; `MB193`)
+
+**Why.** The owner: it is the same on the computer. Saying a repository won't take issues before anything is written
+falls out of it, in the list itself.
+
+**Rejected.**
+
+- Filled in from the place and changed from its row in the form (MB191–MB192) — the design agent's recommendation.
+
+## D40
+
+Retired 2026-11-09, replaced by [D44](../DECISIONS.md#d44): the desktop had no such toast; the owner made the toast a change for both.
+
+**Create always closes the form. The toast that follows is the computer's toast on a phone — a title saying what was
+created, a detail line, a countdown, and real buttons: Create another, which opens the form again with the same
+repository, project and labels, and Open.** (2026-11-08, owner: the toast, but its action must clearly be a button with
+a verb, the toast larger and like the other toasts; drawn in `MB204`, `MB215`, `MB217`)
+
+**Why.** The owner picked the toast over a switch in the form, and asked that the action read as a button.
+
+**Rejected.**
+
+- A Create another switch in the form (MB202–MB203) — the design agent's recommendation.
+- A one-line toast with a bold word as its action — not visibly a button.
+
+## D26
+
+Retired 2026-11-09, replaced by [D45](../DECISIONS.md#d45): its reason misdescribed the desktop's picker, which has search.
+
+**A property is changed both by tapping it on the item, which opens the command menu straight at its step, and through
+⌘ from the item. Every property row shows › to say it can be tapped; the state pill opens closing or reopening.**
+(2026-11-08, owner, on the drawings `MB108`–`MB112`)
+
+**Why.** The owner: for a good affordance a property should be changed where it is seen, and the command menu stays
+the place where everything is. Both are the same sheet, so there is one mechanism to learn.
+
+**Rejected.**
+
+- A picker of its own dropping from the property (MB111) — a second kind of menu, covering the item, without search.
+- Changing only through ⌘ (alone) — a value you can see but not touch.
+
+## D27
+
+Changed in part 2026-11-09: the actions open the property's menu at the bottom ([D45](../DECISIONS.md#d45)), not the command menu.
+
+**Swiping a list row to the left reveals Status, Assign and Close; each opens the same step of the command menu as on
+the item. Everything stays reachable by opening the item.** (2026-11-08, owner, picked from the drawings: `MB114`)
+
+**Why.** The owner: a great idea. Swiping a row is not an edge swipe ([D2](#d2)), and it makes triage from the list
+fast.
+
+> **Not settled by this:** which three actions a pull request's row reveals; the drawing shows an issue's.
+
+**Rejected.**
+
+- A long press opening the command menu at the row (MB113) — the design agent's recommendation.
+- Nothing, open the item first (MB115).
+
+## D42
+
+Changed in part 2026-11-09: tapping a detail opens its menu at the bottom ([D45](../DECISIONS.md#d45)), not the command menu.
+
+**A new issue's details are set as on an item: under the title the rows that need their name — Assignees with Assign
+to me at its end, the project's field when there is one, the parent — then the rest as chips, empty ones saying what
+they would hold; tapping any of them opens the command menu at its step.** (2026-11-08, owner, picked from the drawings:
+`MB194`–`MB196`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: the form reads like the item it becomes
+([D25](#d25)), changed the same way ([D26](#d26)), and assigning yourself is one tap.
+
+**Rejected.**
+
+- One Add details row (MB197), only through ⌘ (MB198), icons above the keyboard (MB199, what MB67 showed until now).
+
+## D36
+
+Changed in part 2026-11-09: filtering by field values is drawn but not built in the first version ([D46](../DECISIONS.md#d46)).
+
+**A list's options button opens one sheet rising from below with the list's filter, grouping and sort together, each a
+row of chips changed in place while the list behind follows; a field's values are picked in the command menu's step.
+A repository offers GitHub's own groupings (milestone first), a project its fields first, My work reason, repository,
+status and author.** (2026-11-08, owner, picked from the drawings: `MB173`–`MB176`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: one tap per change, every setting in view, and
+the sheet opens the same way as the command menu.
+
+**Rejected.**
+
+- The command menu opened at a View step (MB177–MB178) — every change two taps, one setting in view at a time.
+- A screen of its own (MB179) — the list it changes is out of sight.

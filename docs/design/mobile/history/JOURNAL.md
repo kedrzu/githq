@@ -76,3 +76,12 @@ Append-only. One line per decision, rejection or answer from the owner.
 - 2026-11-08 — Owner asked for a review of all phone screens for defects and for mechanisms incompatible with the
   desktop. Findings in `history/2026-11-08-review-against-the-desktop.md`: D37, D41, D38, D40, D26 and D20 rest on wrong
   beliefs about the desktop; about 30 screen defects. Put to the owner; no decision changed yet.
+- 2026-11-09 — Owner on the review: boards out of the phone entirely, a GitHub board view as a grouped list (D9
+  restored, D41 retired); new issue repository from the place, chosen first outside a repository (D43, replaces D38);
+  the toast after Create on both platforms, no shortcuts on the desktop's, larger buttons on a phone (D44, replaces
+  D40; a desktop change); desktop dropdowns become menus pinned to the bottom, not the command menu (D45, replaces D26;
+  D27 and D42 changed in part); no filtering beyond the desktop's in the first version, designs kept (D46, D36 in
+  part); My work shows every group as at `/` (D47); the four dropped desktop capabilities come along (D48). Still
+  open: back from an item opened from a link (D20), whether My work's filter strip stays (the owner took it for a
+  phone-only filter; the desktop has the same three), the "modified locally" mark and reset (D37, decided on the wrong
+  premise), and that the desktop code offers the last used repository from My work rather than a chooser.

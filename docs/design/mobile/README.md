@@ -30,8 +30,8 @@ github.com, the same way every address githq does not show at all already does.
 
 ## What the first version does
 
-The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list — no board on a phone yet, and a view's layout saved on GitHub does not reach the phone
-([the board](DECISIONS.md#d9), [D41](DECISIONS.md#d41));
+The daily loop, and nothing around it: My work; a repository's issues and pull requests; a project, as a list — no board on a phone at all; a view saved on GitHub as a board shows as a list grouped by its
+columns ([the board](DECISIONS.md#d9));
 opening an item, reading it, commenting, changing its assignees, labels and project fields, opening or closing it;
 creating an issue; the command menu from a button. And signing in for the first time, because someone whose first
 contact with githq is on a phone has to be able to choose what to track
@@ -79,8 +79,9 @@ top-right holds the list's options and New issue ([the corner](DECISIONS.md#d14)
 
 **Seeing what needs you and acting on it** ([its brief](ui/act-on-my-work-on-a-phone.md)). A row keeps what tells you
 whether to open it, and the rest waits in the item ([the row](DECISIONS.md#d23)). On an item, the properties that need
-their name are rows and the rest are chips ([the properties](DECISIONS.md#d25)); tapping one opens the command menu
-straight at its choices ([changing a property](DECISIONS.md#d26)). A row swiped to the left offers Status, Assign and
+their name are rows and the rest are chips ([the properties](DECISIONS.md#d25)); tapping one opens its menu pinned to
+the bottom of the screen — the computer's dropdown within a thumb's reach, while the command menu stays what ⌘K is on
+the computer ([changing a property](DECISIONS.md#d45)). A row swiped to the left offers Status, Assign and
 Close ([swiping](DECISIONS.md#d27)).
 
 **Setting githq up** ([its brief](ui/set-up-on-a-phone.md)). The first sign-in is the computer's in one column, with a
@@ -90,11 +91,23 @@ of its own ([Settings](DECISIONS.md#d33)); what you track is listed there and ad
 ([tracking](DECISIONS.md#d35)). The account at the foot of the places panel opens a menu, as on the computer
 ([the account](DECISIONS.md#d32)).
 
+**Shaping a list and creating an issue** ([its brief](ui/lists-and-new-issue-on-a-phone.md)). A list's options are one
+sheet with its grouping and sort ([the options](DECISIONS.md#d36)). Filtering by labels, assignee or a project's field
+is drawn there but waits until the computer has it too ([why not yet](DECISIONS.md#d46)). A new issue starts in the
+repository of the place, or asks for one when started outside any ([the repository](DECISIONS.md#d43)), sets its details
+as on an item ([the details](DECISIONS.md#d42)), and offers a repository's templates after the repository
+([templates](DECISIONS.md#d39)). After Create a toast offers Create another and Open — on the computer too, which gains
+the toast from this design ([the toast](DECISIONS.md#d44)).
+
+## Keeping to the computer's ways
+
+A review of every phone screen against the desktop found places where the phone had grown its own solution on a wrong
+belief about how the computer works ([the review](history/2026-11-08-review-against-the-desktop.md)). The rule since: the
+phone does what the computer does, and differs only where a finger and a narrow screen need it. My work shows every
+group at once, as at `/` on the computer ([My work](DECISIONS.md#d47)), and the desktop's row field, edits being sent,
+the unfolded stack and selecting the failed items come along ([what came along](DECISIONS.md#d48)).
+
 ## Where this stands
 
-Everything drawn has been picked; the decisions are in [the record](DECISIONS.md). A repository's list, a project with
-hundreds of items and the new issue form were drawn with the navigation. The last round settled the list's options as
-a sheet ([D36](DECISIONS.md#d36)); a view changed on a phone stays this device's own ([D37](DECISIONS.md#d37)) and no
-board reaches the phone ([D41](DECISIONS.md#d41)); a new issue starts with its repository ([D38](DECISIONS.md#d38)),
-sets its details as on an item ([D42](DECISIONS.md#d42)), gets its template after the repository
-([D39](DECISIONS.md#d39)), and the toast after Create offers Create another ([D40](DECISIONS.md#d40)).
+Everything drawn has been picked; the decisions are in [the record](DECISIONS.md). The screens are being corrected after
+the review, and a few points from it are still being settled with the owner.
