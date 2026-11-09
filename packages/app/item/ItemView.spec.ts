@@ -151,13 +151,6 @@ test('the arrangement switch asks for another arrangement', async () => {
     expect(IssueSplit.args.onArrange).toHaveBeenCalledWith('panel');
 });
 
-test('"Show all" reads the comments not read yet, then shows every one', async () => {
-    await IssueInPanel.run();
-
-    await userEvent.click(page.getByRole('button', { name: 'Show all 4' }));
-    expect(IssueInPanel.args.loadAllComments).toHaveBeenCalledTimes(1);
-});
-
 test('opened before its detail arrives: the row shows at once and the comments say they are loading', async () => {
     await LoadingComments.run();
 

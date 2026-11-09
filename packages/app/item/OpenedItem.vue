@@ -408,6 +408,6 @@ function loadViewerProjects() {
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: $color-bg-2;
+  background: $color-bg-item;
 }
 </style>

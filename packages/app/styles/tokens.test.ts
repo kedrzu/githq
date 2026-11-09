@@ -5,7 +5,7 @@ import { expect, test } from 'bun:test';
 
 const TEXT = 4.5;
 const GRAPHICS = 3;
-const SURFACES = ['bg', 'bg-2', 'bg-3', 'sel'];
+const SURFACES = ['bg', 'bg-item', 'bg-2', 'bg-3', 'sel'];
 const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 /** What the code sits on: every surface, and the lines of a diff over the window. */
 const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
@@ -64,6 +64,7 @@ const TAKEN_FROM: Readonly<Record<string, string>> = {
 
 /** Values that differ from Primer on purpose, and why. Anything else that is not `TAKEN_FROM` is an accident. */
 const EXCEPTIONS: Readonly<Record<string, string>> = {
+    'bg-item': "an opened item's background, between Primer's bgColor-default and bgColor-muted",
     'bg-3': "Primer's control-bgColor-rest #212830 fails red (4.44) and fg-3 (2.81) on it",
     sel: 'accent at 10.2% over bg, as bgColor-accent-muted is over GitHub',
     'fg-dim': 'Primer has two levels of text, we have three',

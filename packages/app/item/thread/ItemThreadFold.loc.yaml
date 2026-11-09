@@ -1,0 +1,10 @@
+showEarlierComments:
+  plural: count
+  en:
+    one: Show 1 earlier comment
+    many: Show {count} earlier comments
+comments:
+  plural: count
+  en:
+    one: 1 comment
+    many: '{count} comments'

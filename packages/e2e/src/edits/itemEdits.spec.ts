@@ -53,18 +53,19 @@ test('a comment shows at once as on its way, then as posted', async ({ page, git
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await expect(item.root).toContainText('No comments yet.');
+    // The detail is read: the thread is in.
+    await expect(item.root).toContainText('No description provided.');
 
     const release = sample.world.holdEdits();
     await item.comment('Reproduced on Safari too.');
 
     const comment = item.entry('Reproduced on Safari too.');
-    await expect(comment).toContainText('sending…');
+    await expect(comment).toContainText('Sending…');
     await expect(item.commentBox).toHaveValue('');
     expect(sample.world.stateOf(sample.issue).comments).toEqual([]);
 
     release();
-    await expect(comment).not.toContainText('sending…');
+    await expect(comment).not.toContainText('Sending…');
     await expect(comment).toContainText('octocat');
     await expect.poll(() => sample.world.stateOf(sample.issue).comments).toEqual(['Reproduced on Safari too.']);
     await expectConfirmed(shell);

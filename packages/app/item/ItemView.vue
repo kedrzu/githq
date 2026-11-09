@@ -69,8 +69,6 @@ import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
-import GitHubHtml from './GitHubHtml.vue';
-import ItemActivity from './ItemActivity.vue';
 import ItemComposer from './ItemComposer.vue';
 import type { ItemEditing } from './ItemEditing.js';
 import ItemProjects from './ItemProjects.vue';
@@ -86,6 +84,7 @@ import PullRequestReviews from './PullRequestReviews.vue';
 import StackBar from './StackBar.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
+import ItemThread from './thread/ItemThread.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -819,21 +818,9 @@ function getProjectOptions(): CommandOption[] {
                 />
               </template>
 
-              <template v-if="detail">
-                <GitHubHtml
-                  v-if="detail.bodyHtml"
-                  :html="detail.bodyHtml"
-                />
-                <p
-                  v-else
-                  :class="css.itemView_note"
-                >
-                  {{ t(l.noDescription) }}
-                </p>
-              </template>
-
-              <ItemActivity
-                :comments="detail?.comments ?? null"
+              <ItemThread
+                :item="item"
+                :detail="detail"
                 :now="now"
                 :load-all="loadAllComments"
               />
@@ -913,13 +900,16 @@ function getProjectOptions(): CommandOption[] {
 </template>
 
 <style lang="scss" module="css">
+// A page's main column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
+$item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
+
 .itemView {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   color: $color-fg;
-  background: $color-bg-2;
+  background: $color-bg-item;
 }
 
 .itemView_toolbar {
@@ -1070,9 +1060,13 @@ function getProjectOptions(): CommandOption[] {
   padding: 20px $spacing-24;
   overflow-y: auto;
 
-  .itemView_modal &,
-  .itemView_page & {
+  .itemView_modal & {
     padding: 32px 40px;
+  }
+
+  // At most the reading width, centred.
+  .itemView_page & {
+    padding: 32px $item-page-inset;
   }
 
   // Sections keep their height; the column scrolls instead.
@@ -1105,11 +1099,6 @@ function getProjectOptions(): CommandOption[] {
   color: $color-fg-dim;
 }
 
-.itemView_note {
-  font-size: $font-size-md;
-  color: $color-fg-dim;
-}
-
 .itemView_composer {
   flex: none;
   padding: $spacing-12 $spacing-16;
@@ -1119,6 +1108,10 @@ function getProjectOptions(): CommandOption[] {
   .itemView_page & {
     padding: 0 40px 24px;
     border-top: none;
+  }
+
+  .itemView_page & {
+    padding-inline: $item-page-inset;
   }
 }
 
