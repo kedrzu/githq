@@ -85,3 +85,9 @@ Append-only. One line per decision, rejection or answer from the owner.
   open: back from an item opened from a link (D20), whether My work's filter strip stays (the owner took it for a
   phone-only filter; the desktop has the same three), the "modified locally" mark and reset (D37, decided on the wrong
   premise), and that the desktop code offers the last used repository from My work rather than a chooser.
+- 2026-11-09 — Owner: back from an item opened from a link goes up to the repository on both platforms (D20, the
+  computer changes); My work's filter strip stays with the computer's order and default, All first (D23). Owner asked
+  what "a view saved on GitHub" means (GitHub Projects' own views, not our settings sync) — explained. Owner wants view
+  preferences (grouping, order, properties, display) synced: this reverses settings-sync D7, where the owner kept them
+  local as too volatile — put back to the owner, not recorded. Owner's screenshot: from the command menu the desktop
+  opens the repository chooser first; the code does so when it remembers no repository yet.

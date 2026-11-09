@@ -195,3 +195,33 @@ the sheet opens the same way as the command menu.
 
 - The command menu opened at a View step (MB177–MB178) — every change two taps, one setting in view at a time.
 - A screen of its own (MB179) — the list it changes is out of sight.
+
+## D20
+
+Changed in part 2026-11-09: the same rule now holds on the computer too, which went to My work.
+
+**On an item's screen the top-left corner is a back arrow with the name of the list it returns to. Opened from a link,
+with no list behind it, the arrow goes up to the repository and says so.** (2026-11-08, owner, picked from the
+drawings: `MB35`, with `MB62`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: it says what you return to, and the places are
+two taps away when wanted, back and the panel, or the command menu's Go to.
+
+**Rejected.**
+
+- Back with the menu beside it (MB36) — two controls fight for the corner, and the wrong tap throws you out of the
+  item.
+- The menu only, back left to the browser (MB37) — an installed hybrid app has no browser back.
+
+## D23
+
+Changed in part 2026-11-09: the filters follow the computer's order and default.
+
+**My work's filters (Needs me, Waiting on others, All, each with its count) sit in a strip under the top bar. A row at
+a phone's width keeps the type, the title on up to two lines, the repository without its owner when it is tracked
+(with it when not), the project's row field with +N, labels as colour dots, one avatar, and for a pull request its
+checks and review state, or Draft.** (2026-11-08, owner, picked from the drawings: `MB89`)
+
+**Why.** The owner gave no reason beyond the pick. The drawing's case: the filter is the first choice on every visit,
+and behind the corner menu nobody would see which one is on; the desktop row's labels, milestone and assignee names
+do not fit in about 350 px, and they are one tap away in the item.
