@@ -532,22 +532,6 @@ the sheet opens the same way as the command menu. The groupings are the desktop'
 - The command menu opened at a View step (MB177–MB178) — every change two taps, one setting in view at a time.
 - A screen of its own (MB179) — the list it changes is out of sight.
 
-## D37
-
-**A view changed on a phone stays this device's own: it is not saved in the synced settings, it carries no mark, and
-there is no way back to GitHub's version to offer.** (2026-11-08, owner: view preferences are not in synced settings, so
-there is no need for "back to GitHub"; the question `MB180`–`MB184` was dropped)
-
-**Why.** The owner did not see what the mark and the reset were for: nothing about a view's shape leaves the device.
-
-> **Not settled by this:** the computer's project brief still asks for a locally modified tab with a reset
-> (`docs/design/githq/ui/project.md`); whether the computer drops it too is the owner's call there.
-
-**Rejected.**
-
-- A dot on the command line's chip with Back to GitHub's view in the options (MB180–MB182), a strip under the top bar
-  (MB183), the reset only inside the options (MB184).
-
 ## D39
 
 **A repository's issue templates rise as a step once the repository is chosen: a markdown template fills the body, an
@@ -578,22 +562,28 @@ on an item ([D45](#d45)).** (2026-11-08, owner, picked from the drawings:
 
 ## D43
 
-**A new issue starts in the repository of the place: in a repository, or on an item, that repository, shown in the
-form and changed from it. Started from outside any repository — My work, a project, anywhere else — it opens on choosing
-the repository first.** (2026-11-09, owner: as on the desktop, with the exception that outside a repository the
-repository is chosen)
+**A new issue started in a repository, or on an item, starts in that repository, shown in the form and changed from it.
+Started from outside any repository — My work, a project, the command menu anywhere else — it opens on choosing the
+repository, with nothing chosen in advance: the repository used last sits at the top of the list with a "last used"
+pill. The same on the computer, which today fills in the last used repository by itself.** (2026-11-09, owner)
 
-**Why.** The owner wants the desktop's behaviour, which fills the repository in from the place.
+**Why.** The owner: don't simply remember the last repository and pick it; at the top of the list, marked, but not
+chosen automatically. An issue never lands in the wrong repository by a forgotten default.
 
-> **Checked 2026-11-09:** the desktop fills in the screen's repository, and elsewhere the last draft's or the last used
-> one; the chooser opens first only when there is none — `packages/app/newIssue/NewIssueComposer.ts:193-215`,
-> `packages/app/newIssue/NewIssueDialog.vue:141`. So "outside a repository, choose first" is not yet what the desktop
-> code does from My work: it offers the last used repository.
+> **Checked 2026-11-09:** the computer opens the chooser first only when it remembers no repository yet; otherwise it
+> fills in the last used one — `packages/app/newIssue/NewIssueComposer.ts:193-215`,
+> `packages/app/newIssue/NewIssueDialog.vue:141`. This changes the computer.
+>
+> **Not settled by this:** an unsent draft left in a repository — whether reopening the form outside a repository brings
+> it back with its repository, as the computer does today. Assumed yes: a draft is the user's text, not a remembered
+> default.
 
 **Rejected.**
 
-- The repository always chosen first ([history](history/RETIRED.md#d38)) — chosen as "as on the desktop", which it is
-  not.
+- The last used repository filled in by itself outside a repository — the computer's current behaviour; the owner does
+  not want it.
+- The repository always chosen first, even inside one ([history](history/RETIRED.md#d38)) — chosen as "as on the
+  desktop", which it was not.
 
 ## D44
 
@@ -662,3 +652,25 @@ selecting only the failed items after a bulk edit partly failed.** (2026-11-09, 
 **Why.** Each exists on the desktop (`packages/app/projects/ProjectView.loc.yaml` row field,
 `packages/app/shell/SegmentEdits.ts:3`, `packages/app/item/StackMap.vue`, `packages/app/edits/EditToasts.vue`); leaving
 them out made the phone poorer without a decision.
+
+## D49
+
+**A project view changed in githq — its grouping, sort or shown properties — is marked as changed, with a way back to the
+view as saved on GitHub, on the phone as on the computer ("modified locally" and Reset). The change stays on the device
+where it was made; view preferences are not synced.** (2026-11-09, owner: as proposed; not syncing them for now)
+
+**Why.** A project's views are GitHub's own, saved in the project on github.com and the same for everyone who opens it;
+githq reads each one's layout, grouping, sort and filter (`packages/app/projects/projectViewOptions.ts:62`). A change in
+githq is a layer over that view, kept per device (`packages/app/lists/useListViewOptions.ts:48`), and the computer marks
+it with Reset (`packages/app/projects/ProjectView.vue:1`). Without the mark a phone would show a view that silently
+differs from the team's.
+
+> **Not settled by this:** where the mark and the way back sit on a phone, where a project's views are a menu under the
+> command line, not tabs. The variants drawn for it were deleted when D37 dropped the question.
+
+**Rejected.**
+
+- No mark and no way back ([history](history/RETIRED.md#d37)) — decided on the belief that nothing about a view comes
+  from GitHub.
+- Syncing view preferences between devices — the owner: not for now; it would reverse
+  [settings-sync D7](../settings-sync/DECISIONS.md#d7), where they stay local as too volatile.

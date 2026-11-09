@@ -225,3 +225,42 @@ checks and review state, or Draft.** (2026-11-08, owner, picked from the drawing
 **Why.** The owner gave no reason beyond the pick. The drawing's case: the filter is the first choice on every visit,
 and behind the corner menu nobody would see which one is on; the desktop row's labels, milestone and assignee names
 do not fit in about 350 px, and they are one tap away in the item.
+
+## D37
+
+Retired 2026-11-09, replaced by [D49](../DECISIONS.md#d49): a project view does come from GitHub, so a change made in githq has a GitHub version to differ from.
+
+**A view changed on a phone stays this device's own: it is not saved in the synced settings, it carries no mark, and
+there is no way back to GitHub's version to offer.** (2026-11-08, owner: view preferences are not in synced settings, so
+there is no need for "back to GitHub"; the question `MB180`–`MB184` was dropped)
+
+**Why.** The owner did not see what the mark and the reset were for: nothing about a view's shape leaves the device.
+
+> **Not settled by this:** the computer's project brief still asks for a locally modified tab with a reset
+> (`docs/design/githq/ui/project.md`); whether the computer drops it too is the owner's call there.
+
+**Rejected.**
+
+- A dot on the command line's chip with Back to GitHub's view in the options (MB180–MB182), a strip under the top bar
+  (MB183), the reset only inside the options (MB184).
+
+## D43
+
+Changed 2026-11-09 the same day: outside a repository nothing is chosen in advance, on both platforms.
+
+**A new issue starts in the repository of the place: in a repository, or on an item, that repository, shown in the
+form and changed from it. Started from outside any repository — My work, a project, anywhere else — it opens on choosing
+the repository first.** (2026-11-09, owner: as on the desktop, with the exception that outside a repository the
+repository is chosen)
+
+**Why.** The owner wants the desktop's behaviour, which fills the repository in from the place.
+
+> **Checked 2026-11-09:** the desktop fills in the screen's repository, and elsewhere the last draft's or the last used
+> one; the chooser opens first only when there is none — `packages/app/newIssue/NewIssueComposer.ts:193-215`,
+> `packages/app/newIssue/NewIssueDialog.vue:141`. So "outside a repository, choose first" is not yet what the desktop
+> code does from My work: it offers the last used repository.
+
+**Rejected.**
+
+- The repository always chosen first ([history](history/RETIRED.md#d38)) — chosen as "as on the desktop", which it is
+  not.

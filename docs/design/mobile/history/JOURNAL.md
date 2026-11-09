@@ -91,3 +91,7 @@ Append-only. One line per decision, rejection or answer from the owner.
   preferences (grouping, order, properties, display) synced: this reverses settings-sync D7, where the owner kept them
   local as too volatile — put back to the owner, not recorded. Owner's screenshot: from the command menu the desktop
   opens the repository chooser first; the code does so when it remembers no repository yet.
+- 2026-11-09 — Owner: don't sync view preferences for now (settings-sync D7 stands). New issue outside a repository:
+  nothing chosen in advance, last used at the top with a "last used" pill, on both platforms (D43 changed). Project
+  views as proposed: board views as grouped lists (D9), changes marked with Reset as on the computer (D49, replaces
+  D37). Open: where the mark and Reset sit on a phone.
