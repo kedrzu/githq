@@ -137,7 +137,10 @@ function isApproved(organization: AccountOrganization) {
 
 <template>
   <div :class="css.accountView">
-    <div :class="css.accountView_body">
+    <div
+      :class="css.accountView_body"
+      data-route-scroll="settings-account"
+    >
       <div :class="css.accountView_column">
         <section
           :class="css.accountView_who"

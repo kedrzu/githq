@@ -10,6 +10,7 @@ import { DOWNLOAD_PATH } from '@/landing/desktopBuilds.js';
 import { ITEM_PAGE_PATHS, REVIEW_PAGE_ALIAS, REVIEW_PAGE_PATH } from '@/item/itemRoutes.js';
 import { DRAFT_REVIEWS_PATH, MY_WORK_GROUP_PATHS } from '@/myWork/myWorkRoutes.js';
 import { SETTINGS_PATH } from '@/settings/settingsRoutes.js';
+import { scrollToRoute } from '@/shell/routeScroll.js';
 import { MY_WORK_GROUPS } from '@/store/ItemStoreTypes.js';
 import {
     BROKEN_WORKFLOWS_PATH,
@@ -36,6 +37,8 @@ import {
 export default {
     routes: () => [...getRoutes()],
     stringifyQuery: stringifyGitHubQuery,
+    // The screens scroll inside, where the scroll of the window does not reach (`shell/routeScroll.ts`).
+    scrollBehavior: scrollToRoute,
 } satisfies RouterConfig;
 
 /**

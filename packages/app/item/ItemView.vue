@@ -163,14 +163,14 @@ let lastScrollTop = 0;
 /** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
 const itemMenuStart = ref<string | null>(null);
 
-// D17: every pull request of a stack opens at the top with its map unfolded — `J`/`K` never scroll.
+// D17: every pull request of a stack opens with its map unfolded; the router opens it at the top
+// (`shell/routeScroll.ts`).
 watch(
   () => props.item.id,
   () => {
     if (props.stack) {
       stackMapFolded.value = false;
       lastScrollTop = 0;
-      scrollRef.value?.scrollTo({ top: 0 });
     }
   },
 );
@@ -667,6 +667,7 @@ function getProjectOptions(): CommandOption[] {
           <div
             ref="scroll"
             :class="css.itemView_scroll"
+            :data-route-scroll="`item-main:${item.id}`"
             @scroll.passive="onContentScroll"
           >
             <div :class="css.itemView_heading">
@@ -810,7 +811,10 @@ function getProjectOptions(): CommandOption[] {
             :max-size="sideWidth.max"
             :style="sideWidth.style"
           >
-            <div :class="css.itemView_side">
+            <div
+              :class="css.itemView_side"
+              :data-route-scroll="`item-side:${item.id}`"
+            >
               <StackMap
                 v-if="stack && arrangement === 'modal'"
                 :stack="stack"
