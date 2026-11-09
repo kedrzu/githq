@@ -2,3 +2,7 @@ loading:
   en: Loading comments…
 noDescription:
   en: No description provided.
+discard:
+  en: Discard
+retry:
+  en: Retry

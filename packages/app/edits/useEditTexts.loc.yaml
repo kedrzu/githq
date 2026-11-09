@@ -194,8 +194,6 @@ openOnGitHub:
   en: Open on GitHub
 requestAccess:
   en: Request access on GitHub
-restoreComment:
-  en: Restore comment
 selectFailed:
   plural: count
   en:
@@ -253,3 +251,17 @@ reasonNothingFailed:
   en: 'No check is failing any more: there is nothing to re-run.'
 shortNothingFailed:
   en: nothing failing
+notSentOffline:
+  en: "Not sent: GitHub can't be reached."
+notSentDropped:
+  en: "Not sent: GitHub didn't keep it — in {repository} your role doesn't allow commenting."
+notSentNotAllowed:
+  en: 'Not sent: you can read {repository} but not comment there.'
+notSentMissing:
+  en: 'Not sent: GitHub says this no longer exists.'
+notSentOrganizationRestricted:
+  en: "Not sent: {organization} hasn't approved githq."
+notSentRefused:
+  en: 'Not sent: GitHub refused it: {message}.'
+notSentOther:
+  en: 'Not sent: GitHub refused it.'

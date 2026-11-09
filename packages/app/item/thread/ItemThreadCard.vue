@@ -1,4 +1,4 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description — and what they wrote below. A comment on its way says "Sending…" for its time. -->
+<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description — and what they wrote below. A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed } from 'vue';
@@ -13,7 +13,8 @@ import * as l from './ItemThreadCard.loc.js';
 const props = defineProps<{
   /** `null` for a deleted account. */
   author: ItemUser | null;
-  createdAt: string;
+  /** Not given for a comment GitHub did not take (`failed`). */
+  createdAt?: string;
   /** Epoch ms the age is counted to. */
   now: number;
   /** The item's description: the "Author" chip, and the age in words ("commented 2 days ago"). */
@@ -21,6 +22,8 @@ const props = defineProps<{
   edited?: boolean;
   /** On its way to GitHub. */
   sending?: boolean;
+  /** GitHub did not take it. */
+  failed?: boolean;
 }>();
 
 defineSlots<{
@@ -28,12 +31,18 @@ defineSlots<{
   default(): unknown;
   /** The card's ⋯ at the end of its head. */
   menu?(): unknown;
+  /** A band at the bottom of the card, under what was written. */
+  footer?(): unknown;
 }>();
 
 const t = useTranslate();
 
 const login = computed(() => props.author?.login ?? t(l.deletedUser));
 const when = computed(() => {
+  if (props.createdAt === undefined) {
+    return '';
+  }
+
   const formatWhen = props.description ? formatTimeAgo : formatAge;
   return t(l.commented, { when: formatWhen(Date.parse(props.createdAt), props.now) });
 });
@@ -49,11 +58,16 @@ const when = computed(() => {
         decorative
       />
     </div>
-    <div :class="css.itemThreadCard_card">
+    <div :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed]">
       <p :class="css.itemThreadCard_head">
         <span :class="css.itemThreadCard_author">{{ login }}</span>
         <span
-          v-if="sending"
+          v-if="failed"
+          :class="[css.itemThreadCard_when, css.itemThreadCard_notSent]"
+          >{{ t(l.notSent) }}</span
+        >
+        <span
+          v-else-if="sending"
           :class="css.itemThreadCard_when"
           >{{ t(l.sending) }}</span
         >
@@ -79,6 +93,7 @@ const when = computed(() => {
       <div :class="css.itemThreadCard_body">
         <slot />
       </div>
+      <slot name="footer" />
     </div>
   </div>
 </template>
@@ -107,6 +122,10 @@ const when = computed(() => {
   border-radius: $radius-lg;
 }
 
+.itemThreadCard_failed {
+  border-color: rgba($color-red, 0.5);
+}
+
 .itemThreadCard_head {
   display: flex;
   gap: $spacing-6;
@@ -131,6 +150,10 @@ const when = computed(() => {
 .itemThreadCard_when {
   font-size: $font-size-xs;
   color: $color-fg-dim;
+}
+
+.itemThreadCard_notSent {
+  color: $color-red;
 }
 
 .itemThreadCard_spacer {

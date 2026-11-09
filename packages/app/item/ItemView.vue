@@ -49,6 +49,7 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
+import type { FailedComment } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
@@ -114,6 +115,8 @@ const props = withDefaults(
     mergeChecks?: readonly MergeCheck[] | null;
     /** The viewer may turn auto-merge on, as its merge options said; `null` until they are read. */
     viewerCanEnableAutoMerge?: boolean | null;
+    /** The user's comments GitHub did not take, in the order they were written. */
+    failedComments?: readonly FailedComment[];
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -132,6 +135,10 @@ const emit = defineEmits<{
   review: [];
   /** The user changed something. */
   edit: [request: EditRequest];
+  /** A comment GitHub did not take is to be sent again. */
+  retryComment: [id: number];
+  /** A comment GitHub did not take is to be dropped. */
+  discardComment: [id: number];
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
   /** "Merge…" (`⇧M`): the merge panel is wanted for the pull request. */
@@ -830,6 +837,11 @@ function getProjectOptions(): CommandOption[] {
                 :detail="detail"
                 :now="now"
                 :load-all="loadAllComments"
+                :failed-comments="failedComments"
+                :viewer="viewer"
+                :can-retry="editing != null && canComment"
+                @retry="emit('retryComment', $event)"
+                @discard="emit('discardComment', $event)"
               >
                 <template #composer>
                   <ItemThreadComposer

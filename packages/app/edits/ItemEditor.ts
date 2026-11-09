@@ -70,6 +70,7 @@ export const ItemEditor = defineService({
             getPermissions,
             getPlaces,
             edit,
+            retryComment,
             undoClose,
             forgetClose,
             addDraftIssue,
@@ -92,17 +93,58 @@ export const ItemEditor = defineService({
         /**
          * Makes the change of every item that is in memory; resolves with what failed once GitHub answered. Dropped
          * when the user signs out or another account signs in while it is being made: it is built from the ids read
-         * for the account that asked.
+         * for the account that asked. A comment GitHub does not take stays in the thread ({@link CommentDrafts}).
          */
         async function edit(itemIds: readonly string[], request: EditRequest): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
-            if (!viewer || token === null) {
+            const account = getAccount();
+            const prepared = account && (await prepareEdits(itemIds, request, account));
+            if (!account || !prepared) {
                 return { failed: [] };
             }
 
-            const account: EditAccount = { login: viewer.login, token };
+            const outcome = await submitEdits(prepared, request, account);
+            for (const { edit: failed, reason } of outcome.failed) {
+                if (failed.subject.kind === 'comment' && isSignedIn(account)) {
+                    drafts.addFailed(failed.itemId, failed.subject.body, reason);
+                }
+            }
 
+            return outcome;
+        }
+
+        /**
+         * Sends a comment GitHub did not take again, as any comment is sent: posted, it leaves the failed ones; not,
+         * it stays where it was with why. Resolves with what failed.
+         */
+        async function retryComment(id: number): Promise<EditOutcome> {
+            const comment = drafts.retryFailed(id);
+            if (!comment) {
+                return { failed: [] };
+            }
+
+            const request: EditRequest = { kind: 'comment', body: comment.body };
+            const account = getAccount();
+            const prepared = account && (await prepareEdits([comment.itemId], request, account));
+            // Not sent: it stays as it was.
+            if (!account || !prepared || prepared.edits.length === 0) {
+                drafts.settleFailed(id, comment.reason);
+                return { failed: [] };
+            }
+
+            const outcome = await submitEdits(prepared, request, account);
+            drafts.settleFailed(id, outcome.failed[0]?.reason ?? null);
+            return outcome;
+        }
+
+        /**
+         * The edits of every item of the request that is in memory, those the user may not make marked as such;
+         * `null` once the user who asked is not signed in any more.
+         */
+        async function prepareEdits(
+            itemIds: readonly string[],
+            request: EditRequest,
+            account: EditAccount,
+        ): Promise<PreparedEdits | null> {
             const edits: Edit[] = [];
             // By repository: the items of a selection in one repository look the same names up once.
             const prepared = new Map<string, Promise<PreparedMetadata>>();
@@ -125,8 +167,9 @@ export const ItemEditor = defineService({
                     metadata = await preparing;
                 }
 
-                if (!isSignedIn(account)) {
-                    return { failed: [] };
+                const viewer = auth.viewer;
+                if (!viewer || !isSignedIn(account)) {
+                    return null;
                 }
 
                 const madeEdits = createItemEdits({
@@ -147,6 +190,15 @@ export const ItemEditor = defineService({
                 }
             }
 
+            return { edits, itemCount };
+        }
+
+        /** Sends the edits made; resolves with what failed once GitHub answered. */
+        async function submitEdits(
+            { edits, itemCount }: PreparedEdits,
+            request: EditRequest,
+            account: EditAccount,
+        ): Promise<EditOutcome> {
             const closeId = request.kind === 'close' ? offerUndo(edits) : null;
             const outcome = await queue.submit({ edits, account, itemCount });
             if (closeId !== null) {
@@ -158,11 +210,6 @@ export const ItemEditor = defineService({
             for (const { edit: failed, reason } of outcome.failed) {
                 if (reason.kind === 'missing') {
                     stale.add(failed.reference.split('#')[0] ?? '');
-                }
-
-                // A comment not posted goes back into its empty box; over new text, its toast offers to restore it.
-                if (failed.subject.kind === 'comment' && isSignedIn(account) && !drafts.get(failed.itemId).trim()) {
-                    drafts.set(failed.itemId, failed.subject.body);
                 }
             }
 
@@ -428,6 +475,13 @@ export const ItemEditor = defineService({
                 : [];
         }
 
+        /** The user signed in, as the edits are built for them; `null` signed out. */
+        function getAccount(): EditAccount | null {
+            const viewer = auth.viewer;
+            const token = auth.token;
+            return viewer && token !== null ? { login: viewer.login, token } : null;
+        }
+
         function isSignedIn(account: EditAccount) {
             return auth.viewer?.login === account.login && auth.token === account.token;
         }
@@ -506,6 +560,13 @@ export interface DraftIssueFieldInput {
 interface ResolvedItem {
     readonly item: Item;
     readonly request: EditRequest;
+}
+
+/** The edits of an action, ready to be sent. */
+interface PreparedEdits {
+    readonly edits: readonly Edit[];
+    /** How many items the action was about. */
+    readonly itemCount: number;
 }
 
 /** The metadata an item's edits are made with. */

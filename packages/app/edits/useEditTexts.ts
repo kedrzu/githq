@@ -8,7 +8,7 @@ import type { EditFailure, FailedEdit } from './EditQueue.js';
 import type { Edit, EditFailureReason, EditSubject } from './EditTypes.js';
 import * as l from './useEditTexts.loc.js';
 
-/** The words of the user's edits — toasts (K1, K2), the status bar (D15), a row's "undone". */
+/** The words of the user's edits — toasts (K1, K2), the status bar (D15), a row's "undone", a comment not sent. */
 export interface EditTexts {
     /** A failure's toast title. */
     failureTitle(failure: EditFailure): string;
@@ -30,6 +30,8 @@ export interface EditTexts {
     unanswered(reference: string | null): string;
     /** A row's note on its edit undone: "“regression” label undone". */
     undone(subject: EditSubject): string;
+    /** Why a comment stays in the thread unposted: "Not sent: GitHub can't be reached." */
+    notSent(reason: EditFailureReason, repository: string): string;
 }
 
 /** The words of the user's edits, in the app's language. */
@@ -44,6 +46,7 @@ export function useEditTexts(): EditTexts {
         failed,
         unanswered,
         undone,
+        notSent,
     };
 
     function failureTitle(failure: EditFailure) {
@@ -140,6 +143,31 @@ export function useEditTexts(): EditTexts {
         return subject.kind === 'labelAdded'
             ? t(l.undoneLabel, { label: subject.label })
             : t(l.undone, { change: capitalize(change(subject)) });
+    }
+
+    function notSent(failure: EditFailureReason, repository: string) {
+        switch (failure.kind) {
+            case 'offline':
+            case 'notReached':
+                return t(l.notSentOffline);
+            case 'dropped':
+                return t(l.notSentDropped, { repository });
+            case 'notAllowed':
+                return t(l.notSentNotAllowed, { repository });
+            case 'missing':
+                return t(l.notSentMissing);
+            case 'organizationRestricted':
+                return t(l.notSentOrganizationRestricted, { organization: failure.organization });
+            case 'refused':
+                return t(l.notSentRefused, { message: failure.message.replace(/\.$/u, '') });
+            // Not what a comment fails with.
+            case 'rulesNotConfirmed':
+            case 'notActions':
+            case 'nothingFailed':
+                return t(l.notSentOther);
+            default:
+                return assertNever(failure);
+        }
     }
 
     function failedTitle(edit: Edit) {

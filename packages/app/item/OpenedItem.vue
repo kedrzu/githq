@@ -98,8 +98,7 @@ const closes = computed((): Item[] => {
   return mapNotNull(item.closingIssueIds, id => details.getItem(id));
 });
 
-// The comment box holds the opened item's draft: it stays with the item while the user moves on, and a comment
-// GitHub did not take comes back into it.
+// The comment box holds the opened item's draft: it stays with the item while the user moves on.
 const commentDraft = computed({
   get: () => (opened.id === null ? '' : drafts.get(opened.id)),
   set: (text: string) => {
@@ -108,6 +107,8 @@ const commentDraft = computed({
     }
   },
 });
+
+const failedComments = computed(() => (opened.id === null ? [] : drafts.getFailed(opened.id)));
 
 const editing = computed((): ItemEditing | null => {
   const { item } = opened;
@@ -267,6 +268,10 @@ function edit(request: EditRequest) {
   }
 }
 
+function retryComment(id: number) {
+  void editor.retryComment(id);
+}
+
 /**
  * Opened, the modal takes focus itself rather than its first button (the item menu's), which would show a focus ring
  * no one asked for; the window's title is read out, and Tab goes on into it.
@@ -310,7 +315,10 @@ function loadViewerProjects() {
       :neighbours="walk.neighbours"
       :merge-checks="mergeOptions.options?.checks ?? null"
       :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
+      :failed-comments="failedComments"
       @edit="edit"
+      @retry-comment="retryComment"
+      @discard-comment="drafts.discardFailed($event)"
       @merge="merge"
       @need-projects="loadViewerProjects"
       @close="close"
@@ -356,7 +364,10 @@ function loadViewerProjects() {
     :neighbours="walk.neighbours"
     :merge-checks="mergeOptions.options?.checks ?? null"
     :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
+    :failed-comments="failedComments"
     @edit="edit"
+    @retry-comment="retryComment"
+    @discard-comment="drafts.discardFailed($event)"
     @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"

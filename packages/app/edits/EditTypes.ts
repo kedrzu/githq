@@ -212,4 +212,9 @@ export interface Edit {
     readonly send?: (account: Account) => Promise<EditAnswer>;
     /** Why it fails without being sent. */
     readonly failure?: EditFailureReason;
+    /**
+     * Whoever asked for it shows its failure itself (a comment not posted stays in the thread as its card): the
+     * failure is returned, but not listed nor named in its row.
+     */
+    readonly quiet?: boolean;
 }

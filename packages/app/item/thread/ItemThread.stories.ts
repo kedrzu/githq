@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
+import type { FailedComment } from '@/edits/CommentDrafts.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -12,6 +13,24 @@ import ItemThreadComposer from './ItemThreadComposer.vue';
 const IN_PANEL = 512;
 /** The reading width a page keeps its main column to. */
 const ON_PAGE = { width: 760 };
+
+/** The user's comments GitHub did not take: one while offline, one refused. */
+const FAILED_COMMENTS: FailedComment[] = [
+    {
+        id: 1,
+        itemId: F1_PULL_REQUEST.id,
+        body: 'Thanks both. The cross-repository case is fixed in 3f2a9b1 and the e2e is green again.',
+        reason: { kind: 'offline' },
+        retrying: false,
+    },
+    {
+        id: 2,
+        itemId: F1_PULL_REQUEST.id,
+        body: '@sofiab could you take another look?',
+        reason: { kind: 'refused', message: 'Commenting is disabled.' },
+        retrying: false,
+    },
+];
 
 const meta = {
     component: ItemThread,
@@ -78,6 +97,28 @@ export const EditedAndSending: Story = {
                 ],
             },
         },
+    },
+};
+
+/** I4's "Not sent": two of the user's comments GitHub did not take, after those read, each with why, Discard and Retry. */
+export const NotSent: Story = {
+    args: {
+        item: F1_PULL_REQUEST,
+        detail: F1_PULL_REQUEST_DETAIL,
+        viewer: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl },
+        canRetry: true,
+        failedComments: FAILED_COMMENTS,
+        onRetry: fn(),
+        onDiscard: fn(),
+    },
+};
+
+/** Not sent where the user may no longer comment: the text stays to copy and Discard works; no Retry. */
+export const NotSentReadOnly: Story = {
+    args: {
+        ...NotSent.args,
+        canRetry: false,
+        failedComments: FAILED_COMMENTS.slice(0, 1),
     },
 };
 

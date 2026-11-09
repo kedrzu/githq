@@ -364,6 +364,8 @@ function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
 
     return {
         ...getEditIdentity(item, { kind: 'comment', body }),
+        // One not posted stays in the thread as its card, Discard and Retry on it.
+        quiet: true,
         optimistic: {
             item: current => ({ ...current, commentCount: current.commentCount + 1 }),
             detail: detail => withComment(detail, pending),

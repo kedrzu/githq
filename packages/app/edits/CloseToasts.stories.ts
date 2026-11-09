@@ -29,6 +29,7 @@ function withCloses(closes: readonly UndoableClose[]): Decorator {
                     },
                     getPlaces: () => [],
                     edit: NOTHING,
+                    retryComment: NOTHING,
                     undoClose: id => {
                         closesRef.value = closesRef.value.filter(close => close.id !== id);
                         return NOTHING();

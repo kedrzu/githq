@@ -1183,6 +1183,11 @@ export class GitHubWorld {
         this.failures.set(failureKey(id, mutation), failure);
     }
 
+    /** Makes GitHub take every `mutation` of the item `id` again, as {@link failEdit} said it would not. */
+    stopFailingEdit(id: string, mutation: GitHubWorldMutation): void {
+        this.failures.delete(failureKey(id, mutation));
+    }
+
     /**
      * Keeps every mutation unanswered — and the world as it was — until the returned function is called, to
      * see an edit before GitHub confirms it. The test calls it before it ends: a request still waiting when the
