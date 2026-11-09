@@ -1,4 +1,4 @@
-import { Form } from '@nzyme/vue-forms/components/Form.jsx';
+import Form from '@nzyme/vue-forms/components/Form.vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { ArrowUpRight, Github, ListFilter, LogOut, Plus, Rows3, Search, Star } from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
@@ -121,7 +121,7 @@ export const Gallery: Story = {
                         block
                         icon={Search}
                         kbd="Mod+K"
-                        aria-disabled="true"
+                        unavailable
                     >
                         Search…
                     </Button>
@@ -129,7 +129,7 @@ export const Gallery: Story = {
                         variant="ghost"
                         block
                         icon={Plus}
-                        aria-disabled="true"
+                        unavailable
                     >
                         Track repositories…
                     </Button>
@@ -167,7 +167,7 @@ export const Gallery: Story = {
                         variant="ghost"
                         size="sm"
                         icon={ListFilter}
-                        aria-disabled="true"
+                        unavailable
                     >
                         Filter
                     </Button>

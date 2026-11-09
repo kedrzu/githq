@@ -74,7 +74,7 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: str
           size="sm"
           :icon="SquarePen"
           :kbd="NEW_ISSUE_KEY"
-          :aria-keyshortcuts="NEW_ISSUE_KEY"
+          :keyshortcuts="NEW_ISSUE_KEY"
           @click="newIssue && registry.run(newIssue)"
         >
           {{ t(l.newIssue) }}
@@ -84,7 +84,7 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: str
           size="sm"
           :icon="Search"
           :kbd="APP_KEYS.commandMenu"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+          :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
           @click="registry.openMenu()"
         >
           {{ t(l.jumpToProject) }}
@@ -99,7 +99,7 @@ const look = computed((): { icon: LucideIcon; tone: 'good' | 'muted'; title: str
         variant="outline"
         :icon="Hourglass"
         :kbd="waitingKey"
-        :aria-keyshortcuts="waitingKey"
+        :keyshortcuts="waitingKey"
         @click="emit('showWaiting')"
       >
         {{ t(l.pullRequestsWaiting, { count: waitingCount }) }}

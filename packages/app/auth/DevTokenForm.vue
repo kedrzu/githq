@@ -1,6 +1,6 @@
 <!-- Development only: signing in with a pasted GitHub token (`gh auth token`) instead of the OAuth flow, which needs the OAuth App's secret. Never in the production build: the landing page (`landing/LandingPage.vue`) imports it only under `nuxt dev` and in the local build (`build:local`). -->
 <script lang="ts" setup>
-import { Form } from '@nzyme/vue-forms/components/Form.jsx';
+import Form from '@nzyme/vue-forms/components/Form.vue';
 import { useForm } from '@nzyme/vue-forms/useForm.js';
 import { useFormFields } from '@nzyme/vue-forms/useFormFields.js';
 import { requiredValidator } from '@nzyme/vue-forms/validators/requiredValidator.js';

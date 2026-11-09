@@ -75,7 +75,7 @@ const t = useTranslate();
         variant="outline"
         size="sm"
         :kbd="UNTRACK_KEY"
-        :aria-keyshortcuts="selected ? formatAriaKeyShortcuts(UNTRACK_KEY) : undefined"
+        :keyshortcuts="selected ? formatAriaKeyShortcuts(UNTRACK_KEY) : undefined"
         :class="css.trackedRow_untrack"
         @click="emit('untrack')"
       >

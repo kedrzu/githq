@@ -133,7 +133,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
             size="sm"
             :icon="UserPlus"
             :kbd="EDIT_KEYS.reviewers"
-            :aria-keyshortcuts="EDIT_KEYS.reviewers"
+            :keyshortcuts="EDIT_KEYS.reviewers"
           >
             {{ t(l.request) }}
           </Button>

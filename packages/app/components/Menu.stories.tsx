@@ -49,7 +49,7 @@ export const Actions: Story = {
                                             variant="ghost"
                                             size="sm"
                                         >
-                                            Actions <ChevronDown aria-hidden="true" />
+                                            Actions <ChevronDown />
                                         </Button>
                                     ),
                                     default: () => [
@@ -158,7 +158,7 @@ export const Submenu: Story = {
                                             variant="ghost"
                                             size="sm"
                                         >
-                                            Issue <ChevronDown aria-hidden="true" />
+                                            Issue <ChevronDown />
                                         </Button>
                                     ),
                                     default: () => [

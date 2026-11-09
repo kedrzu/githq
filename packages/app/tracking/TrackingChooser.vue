@@ -860,7 +860,7 @@ function projectMeta(project: CandidateProject) {
         <Button
           variant="primary"
           kbd="Mod+Enter"
-          :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+          :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
           :busy="busy"
           @click="emit('track')"
         >
@@ -1151,7 +1151,7 @@ function projectMeta(project: CandidateProject) {
           <p :class="css.trackingChooser_summaryDetail">{{ summaryDetail }}</p>
           <Button
             :class="css.trackingChooser_onlyMine"
-            :aria-disabled="busy || undefined"
+            :unavailable="busy"
             @click="emit('onlyMine')"
           >
             {{ t(l.onlyMine) }}
@@ -1159,7 +1159,7 @@ function projectMeta(project: CandidateProject) {
           <Button
             variant="primary"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="busy"
             @click="emit('track')"
           >

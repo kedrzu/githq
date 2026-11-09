@@ -27,7 +27,7 @@ const t = useTranslate();
     <IconButton
       :label="previousLabel"
       kbd="K"
-      aria-keyshortcuts="K"
+      keyshortcuts="K"
       :disabled="position.index <= 1"
       @click="emit('previous')"
     >
@@ -36,7 +36,7 @@ const t = useTranslate();
     <IconButton
       :label="nextLabel"
       kbd="J"
-      aria-keyshortcuts="J"
+      keyshortcuts="J"
       :disabled="position.index >= position.count"
       @click="emit('next')"
     >

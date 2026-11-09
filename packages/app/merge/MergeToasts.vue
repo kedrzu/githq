@@ -163,7 +163,7 @@ function getLink(failure: EditFailure, itemId: string) {
           size="sm"
           :icon="GitMerge"
           :kbd="active ? BACK_KEY : undefined"
-          :aria-keyshortcuts="active ? BACK_KEY : undefined"
+          :keyshortcuts="active ? BACK_KEY : undefined"
           @click="backToMerge(failure, itemId)"
         >
           {{ t(l.backToMerge) }}
@@ -201,7 +201,7 @@ function getLink(failure: EditFailure, itemId: string) {
         size="sm"
         :icon="GitBranch"
         :kbd="active ? BRANCH_KEY : undefined"
-        :aria-keyshortcuts="active ? BRANCH_KEY : undefined"
+        :keyshortcuts="active ? BRANCH_KEY : undefined"
         @click="runBranch(confirmation)"
       >
         {{ getBranchCommand(confirmation)?.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}

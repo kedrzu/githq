@@ -142,7 +142,7 @@ function runMainAction() {
                 size="lg"
                 :icon="Copy"
                 kbd="Enter"
-                aria-keyshortcuts="Enter"
+                keyshortcuts="Enter"
                 @click="emit('open')"
               >
                 {{ t(l.copyAndOpen) }}
@@ -150,7 +150,7 @@ function runMainAction() {
               <Button
                 size="lg"
                 kbd="Escape"
-                aria-keyshortcuts="Escape"
+                keyshortcuts="Escape"
                 @click="emit('cancel')"
               >
                 {{ t(l.cancel) }}
@@ -194,7 +194,7 @@ function runMainAction() {
               size="lg"
               :icon="state.kind === 'failed' ? RotateCw : Github"
               kbd="Enter"
-              aria-keyshortcuts="Enter"
+              keyshortcuts="Enter"
               :busy="state.kind === 'requesting'"
               @click="emit('start')"
             >

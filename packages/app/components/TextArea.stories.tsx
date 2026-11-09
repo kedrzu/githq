@@ -58,7 +58,7 @@ export const CommentBox: Story = {
                                 placeholder="Leave a comment…"
                                 compact
                                 kbd={comment.value ? 'Mod+Enter' : 'R'}
-                                aria-keyshortcuts={`R ${formatAriaKeyShortcuts('Mod+Enter')}`}
+                                keyshortcuts={`R ${formatAriaKeyShortcuts('Mod+Enter')}`}
                             />
                         </div>
                     </StoryPage>
