@@ -8,7 +8,7 @@ import SkeletonBar from './SkeletonBar.vue';
 import SkeletonCircle from './SkeletonCircle.vue';
 
 // Three wrappers of mixed shapes, one per row, composed as another screen might (a workflow's name and its strip of
-// five runs): each row shows one band across all its shapes, the row below 80 ms later.
+// five runs): each row shows one band across all its shapes, the row below 25 ms later.
 const Rows = defineComponent(
     () => () =>
         h(

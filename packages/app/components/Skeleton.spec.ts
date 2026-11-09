@@ -9,15 +9,16 @@ import Skeleton from './Skeleton.vue';
 import SkeletonBar from './SkeletonBar.vue';
 import * as stories from './Skeleton.stories.js';
 
-/** `$skeleton-pass` and `$skeleton-row-stagger`, in ms. */
-const PASS = 1600;
-const STAGGER = 80;
+/** `$skeleton-pass` and `$skeleton-row-stagger` in ms, `$skeleton-band-period` in px. */
+const PASS = 2000;
+const STAGGER = 25;
+const PERIOD = 480;
 
 const { Shapes, AnimationsOff } = composeStories(stories);
 const { ChecksPassedWaiting } = composeStories(itemRowStories);
 const { Default: GhostRowDefault } = composeStories(ghostRowStories);
 
-test('every shape of a wrapper shows the same band, and the row below shows it 80 ms later', async () => {
+test('every shape of a wrapper shows the same band, and the row below shows it 25 ms later', async () => {
     const canvasElement = mount();
     await Shapes.run({ canvasElement });
     await new Promise(requestAnimationFrame);
@@ -36,9 +37,8 @@ test('every shape of a wrapper shows the same band, and the row below shows it 8
     for (const start of second!) {
         expect(start).toBeCloseTo(second![0]!, 0);
     }
-    // 80 ms of a 1.6 s pass across 1.5 spans later.
-    const span = getRow(canvasElement, 1).getBoundingClientRect().width;
-    expect(first![0]! - second![0]!).toBeCloseTo((1.5 * span * STAGGER) / PASS, 0);
+    // 25 ms of a 2 s pass across one band's period later.
+    expect(first![0]! - second![0]!).toBeCloseTo((PERIOD * STAGGER) / PASS, 0);
 });
 
 test('a row mounted later lands on the same clock: its stagger behind row 0, whenever it came', async () => {
@@ -101,12 +101,12 @@ test('a ghost row is as tall as the row that replaces it, so nothing jumps', asy
 
 /**
  * The shared clock as the row's band shows it, in ms of a pass: how far its band is, read from the screen, plus its
- * row's stagger. The band's image starts 1.5 spans before the wrapper at the start of a pass and at the wrapper at its end.
+ * row's stagger. The bands' tiles start one period before the wrapper at the start of a pass and at the wrapper at its end.
  */
 function getClock(canvas: HTMLElement, row: number) {
     const wrapper = getRow(canvas, row).getBoundingClientRect();
     const start = getBandStarts(canvas, row)[0]!;
-    const phase = PASS * (1 + (start - wrapper.left) / (1.5 * wrapper.width));
+    const phase = PASS * (1 + (start - wrapper.left) / PERIOD);
     return (((phase + row * STAGGER) % PASS) + PASS) % PASS;
 }
 
