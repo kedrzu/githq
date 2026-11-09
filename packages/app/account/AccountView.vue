@@ -149,7 +149,7 @@ function isApproved(organization: AccountOrganization) {
           <Avatar
             :name="viewer.login"
             :src="viewer.avatarUrl"
-            size="lg"
+            size="xl"
             decorative
           />
           <div :class="css.accountView_whoText">

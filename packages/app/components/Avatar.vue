@@ -8,8 +8,8 @@ const props = withDefaults(
     /** The login: the name, and where the initials come from. */
     name: string;
     src?: string | null;
-    /** `xs` 16px (a row), `sm` 20px (the account), `md` 22px (the rail), `lg` 40px (the Account section of Settings); `sm` when not given. */
-    size?: 'lg' | 'md' | 'sm' | 'xs';
+    /** `xs` 16px (a row), `sm` 20px (the account), `md` 22px (the rail), `lg` 28px (the gutter of an item's thread), `xl` 40px (the Account section of Settings); `sm` when not given. */
+    size?: 'lg' | 'md' | 'sm' | 'xl' | 'xs';
     /** The name is shown beside it: the picture is left out of the accessibility tree. */
     decorative?: boolean;
   }>(),
@@ -81,6 +81,12 @@ const initials = computed(() => {
 }
 
 .avatar_lg {
+  width: 28px;
+  height: 28px;
+  font-size: 10.5px;
+}
+
+.avatar_xl {
   width: 40px;
   height: 40px;
   font-size: 15px;
