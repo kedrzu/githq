@@ -30,6 +30,11 @@ export class ItemViewHarness {
         return this.root.getByText(/^\d+ \/ \d+$/);
     }
 
+    /** The column of its title, description and activity, which scrolls on its own. */
+    get content(): Locator {
+        return this.root.locator('[data-route-scroll^="item-main:"]');
+    }
+
     /** "Previous item" (`K`). */
     get previousButton(): Locator {
         return this.root.getByRole('button', { name: 'Previous item' });

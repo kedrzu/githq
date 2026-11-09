@@ -22,6 +22,12 @@ export const SYNC_URL = `${REPOSITORY_URL}/blob/main/docs/design/githq/README.md
 /** The footer's "API limits": the decision on how the copy learns about changes without spending the limit (D7). */
 export const API_LIMITS_URL = `${REPOSITORY_URL}/blob/main/docs/design/githq/DECISIONS.md#d7`;
 
+/**
+ * The docs (`packages/docs`), a site of their own the Worker serves beside the app: always a full page load — a plain
+ * `<a href>`, never the app's router, which would take `/docs/` for a route of its own.
+ */
+export const DOCS_PATH = '/docs/';
+
 /** The ids of the landing page's sections the navigation and the footer link to (`#features`). */
 export const LandingSectionId = {
     features: 'features',

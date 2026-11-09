@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -122,7 +122,7 @@ test('long lists scroll, with the user at the bottom of the window all along', a
     expect(user.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
 });
 
-test('the user menu opens upwards with who is signed in, Settings and its key, and Sign out', async () => {
+test('the user menu opens upwards with who is signed in, Settings and its key, Documentation, and Sign out', async () => {
     const onSignOut = vi.fn();
     await Expanded.run({ args: { ...Expanded.args, onSignOut } });
 
@@ -133,10 +133,25 @@ test('the user menu opens upwards with who is signed in, Settings and its key, a
     await expect.element(menu.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('aria-keyshortcuts', ',');
     await expect.element(menu.getByRole('menuitem', { name: 'Settings' })).toHaveTextContent(',');
     await expect.element(menu.getByRole('separator')).toBeInTheDocument();
-    expect(menu.getByRole('menuitem').elements()).toHaveLength(2);
+    const items = menu.getByRole('menuitem');
+    expect(items.elements()).toHaveLength(3);
+    await expect.element(items.nth(1)).toHaveAccessibleName('Documentation');
 
     await userEvent.click(menu.getByRole('menuitem', { name: 'Sign out' }));
     expect(onSignOut).toHaveBeenCalledOnce();
+});
+
+test('"Documentation" in the user menu opens the docs in a new tab, the app staying where it is', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+    onTestFinished(() => open.mockRestore());
+    await Expanded.run();
+
+    await userEvent.click(page.getByRole('button', { name: /^Account:/u }));
+    await userEvent.click(page.getByRole('menu').getByRole('menuitem', { name: 'Documentation' }));
+
+    // The web build's: `/docs/`, beside the app.
+    expect(open).toHaveBeenCalledExactlyOnceWith('/docs/', '_blank', 'noopener,noreferrer');
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
 });
 
 test.each([

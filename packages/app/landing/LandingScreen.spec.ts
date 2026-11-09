@@ -7,6 +7,7 @@ import * as stories from './LandingScreen.stories.js';
 const { Landing, OnLinux, OnWindows, Phone, SignInCancelled, SystemNotKnown } = composeStories(stories);
 
 const REPOSITORY_URL = 'https://github.com/kedrzu/githq';
+const DOCS_PATH = '/docs/';
 
 /** The whole page — the navigation and `main` — and nothing of Storybook's around it. */
 function landingPage(): HTMLElement {
@@ -99,18 +100,23 @@ test('the page says nothing of the signatures or the permissions: /download does
     await expect.element(main).not.toHaveTextContent('GitHub will ask for full repository access');
 });
 
-test('every way off the page goes to githq on GitHub or to its installers on githq.dev, and every link within it lands on a section', async () => {
+test('every way off the page goes to githq on GitHub, its installers on githq.dev or its docs, and every link within it lands on a section', async () => {
     await Landing.run();
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
 
     const root = landingPage();
     const links = [...root.querySelectorAll('a')].map(link => link.getAttribute('href') ?? '');
-    const outside = links.filter(href => !href.startsWith('#') && href !== '/download');
+    const outside = links.filter(href => !href.startsWith('#') && href !== '/download' && href !== DOCS_PATH);
     expect(outside).toContain(REPOSITORY_URL);
     expect(
         outside.filter(href => !href.startsWith(REPOSITORY_URL) && !href.startsWith('https://githq.dev/download/')),
     ).toEqual([]);
     expect(root.textContent).not.toContain('mlaine');
+
+    // The docs, from the navigation and the footer: plain links, a full page load in the same tab.
+    const docs = [...root.querySelectorAll(`a[href="${DOCS_PATH}"]`)];
+    expect(docs.map(link => link.textContent?.trim())).toEqual(['Docs', 'Documentation']);
+    expect(docs.filter(link => link.hasAttribute('target'))).toEqual([]);
 
     // The navigation's, then the footer's.
     const sections = links.filter(href => href.startsWith('#'));
@@ -184,6 +190,7 @@ test('on a phone the sections are behind a menu, which a chosen section closes',
     await expect.element(menuButton).toHaveAttribute('aria-expanded', 'true');
     const menu = page.getByRole('navigation', { name: 'Menu' });
     await expect.element(menu.getByRole('link', { name: 'kedrzu/githq' })).toHaveAttribute('href', REPOSITORY_URL);
+    await expect.element(menu.getByRole('link', { name: 'Docs' })).toHaveAttribute('href', DOCS_PATH);
 
     // Following the link would scroll the test runner's own page away.
     document.addEventListener('click', event => event.preventDefault(), { once: true });

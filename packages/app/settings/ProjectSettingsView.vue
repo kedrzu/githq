@@ -29,7 +29,10 @@ const t = useTranslate();
 </script>
 
 <template>
-  <div :class="css.projectSettingsView">
+  <div
+    :class="css.projectSettingsView"
+    :data-route-scroll="`project-settings:${owner}/${title}`"
+  >
     <SettingsPageHead
       :parent="t(sectionLabels.projects)"
       :icon="SquareKanban"

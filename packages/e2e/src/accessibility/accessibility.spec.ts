@@ -1,6 +1,7 @@
 import { expect, test } from '../fixtures.js';
 import { BrokenWorkflowsScreenHarness } from '../harnesses/BrokenWorkflowsScreen.harness.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
+import { DocsSiteHarness } from '../harnesses/DocsSite.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
@@ -33,6 +34,23 @@ test('the landing page, wide and on a phone', async ({ page }) => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expectAccessible(page, 'the landing page on a phone');
+});
+
+test('the docs: the home page, an article and the "not found" page, wide and on a phone', async ({ page }) => {
+    const docs = new DocsSiteHarness(page);
+    for (const { path, state, shown } of [
+        { path: '/docs/', state: 'the docs home', shown: docs.sectionCards.first() },
+        { path: '/docs/getting-started/what-is-githq', state: 'a docs article', shown: docs.outline },
+        { path: '/docs/no-such-page', state: 'the docs\' "not found" page', shown: docs.notFound },
+    ]) {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto(path);
+        await expect(shown).toBeVisible();
+        await expectAccessible(page, state);
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await expectAccessible(page, `${state} on a phone`);
+    }
 });
 
 test('the first sign-in', async ({ page, github }) => {

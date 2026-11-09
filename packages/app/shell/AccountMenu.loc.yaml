@@ -6,6 +6,8 @@ signedInAs:
   en: Signed in as {login}
 settings:
   en: Settings
+documentation:
+  en: Documentation
 signOut:
   en: Sign out
 syncStopped:

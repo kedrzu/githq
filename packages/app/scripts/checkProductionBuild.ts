@@ -2,12 +2,14 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { checkAppSiteAssociation } from './checkAppSiteAssociation.js';
+import { appFiles, checkDocsPresent } from './checkDocs.js';
 import { checkPrerenderedPages } from './checkPrerenderedPages.js';
 import { readBuiltFiles, readBuiltPaths } from './readBuiltFiles.js';
 
 // Runs after every production build (`bun --cwd packages/app build`, `GITHQ_TARGET=production`): proves that
 // what the Worker will serve has nothing of local development or of the desktop app in it — the prerendered landing
-// page (`_landing.html`) included — and that it has the SPA shell and the landing page (`checkPrerenderedPages.ts`).
+// page (`_landing.html`) included — and that it has the SPA shell, the landing page (`checkPrerenderedPages.ts`) and the
+// docs (`checkDocs.ts`). The markers are looked for in the app's own files: the docs are not built from its code.
 // The sign-in with a pasted token is in `nuxt dev` and the local build only — the landing page imports it under
 // `import.meta.dev || __LOCAL_BUILD__`, which the production build turns into `false`; the desktop code is in the
 // desktop build only, behind `__DESKTOP__`, and the desktop links' web code in the web builds only, behind `!__DESKTOP__`.
@@ -66,10 +68,10 @@ export const WEB_MARKERS: readonly { text: string; what: string }[] = [
 export const APP_MARKER = '/api/auth/authorize';
 
 async function checkProductionBuild() {
-    const files = await readBuiltFiles(OUTPUT);
+    const files = appFiles(await readBuiltFiles(OUTPUT));
     const paths = new Set(await readBuiltPaths(OUTPUT));
 
-    const problems = checkPrerenderedPages(files, paths);
+    const problems = [...checkPrerenderedPages(files, paths), ...checkDocsPresent(paths)];
     // Read here: it has no extension, so it is not among `files`, and a build without it fails the read.
     const association = await readFile(path.join(OUTPUT, '.well-known/apple-app-site-association'), 'utf8');
     problems.push(...checkAppSiteAssociation(association, [...paths]));
@@ -94,7 +96,7 @@ async function checkProductionBuild() {
     }
 
     console.info(
-        `Production build checked: ${files.length} files, the shell and the landing page, no development sign-in, no desktop code, the web's own, the Universal Links file.`,
+        `Production build checked: ${files.length} files, the shell, the landing page and the docs, no development sign-in, no desktop code, the web's own, the Universal Links file.`,
     );
 }
 

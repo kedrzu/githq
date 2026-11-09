@@ -1,0 +1,207 @@
+@use 'sass:map';
+@use '../../../../app/styles/tokens' as *;
+@use 'icons' as *;
+
+// What an article holds: callouts, code and keys.
+
+// A callout (`Docs / Callout · note|tip|warning`): VitePress's `info`, `tip`, `warning` and `danger` containers, each
+// in its colour at 8% with a 30% outline; its title in the colour (AA on its own tint: accent 5.48, green 6.74, amber
+// 6.76, red 5.26), its text in the main colour.
+$callouts: (
+    info: (
+        color: $color-accent,
+        icon: $icon-info,
+    ),
+    tip: (
+        color: $color-green,
+        icon: $icon-lightbulb,
+    ),
+    warning: (
+        color: $color-amber,
+        icon: $icon-triangle-alert,
+    ),
+    danger: (
+        color: $color-red,
+        icon: $icon-octagon-alert,
+    ),
+);
+
+html.dark {
+    .vp-doc .custom-block {
+        padding: $spacing-12 $spacing-16;
+        margin: $spacing-20 0;
+        font-size: $font-size-lg;
+        line-height: 1.6;
+        color: $color-fg;
+        border: 1px solid;
+        border-radius: $radius-lg;
+
+        p {
+            margin: $spacing-6 0 0;
+            line-height: 1.6;
+        }
+
+        .custom-block-title {
+            display: flex;
+            gap: $spacing-8;
+            align-items: center;
+            margin: 0;
+            font-size: $font-size-lg;
+            font-weight: $font-weight-semibold;
+            line-height: 20px;
+        }
+
+        a {
+            color: inherit;
+        }
+
+        code {
+            background: rgba($color-fg, 0.08);
+        }
+    }
+
+    @each $name, $callout in $callouts {
+        .vp-doc .custom-block.#{$name} {
+            background: rgba(map.get($callout, color), 0.08);
+            border-color: rgba(map.get($callout, color), 0.3);
+
+            .custom-block-title {
+                color: map.get($callout, color);
+
+                &::before {
+                    @include icon(map.get($callout, icon), 16px);
+                }
+            }
+        }
+    }
+
+    // Inline code (`Docs / Inline code`).
+    .vp-doc :not(pre) > code {
+        padding: 1px 5px;
+        font-size: 0.87em;
+        color: $color-fg;
+        background: $color-bg-3;
+        border-radius: $radius-sm;
+    }
+
+    // A key in prose: the app's chip, a step larger to sit in 15px text.
+    .vp-doc kbd {
+        font-size: $font-size-xs;
+    }
+
+    // A code block (`Docs / Code block`): a box with, when it has one, the file's name in a head beside the copy button.
+    .vp-doc div[class*='language-'] {
+        margin: $spacing-20 0;
+        background: $color-bg-2;
+        border: 1px solid $color-border;
+        border-radius: $radius-lg;
+    }
+
+    .vp-doc div[class*='language-'] pre {
+        padding: 14px 0;
+    }
+
+    .vp-doc div[class*='language-'] code {
+        padding: 0 $spacing-16;
+        font-size: $font-size-md;
+        // The design's 1.5 and 4 between lines.
+        line-height: 1.8;
+    }
+
+    // The language is not shown; the file's name, when there is one, is.
+    .vp-doc div[class*='language-'] > span.lang {
+        display: none;
+    }
+
+    .vp-doc div[class*='language-'] > span.title {
+        display: block;
+        padding: $spacing-8 44px $spacing-8 $spacing-16;
+        font-family: $font-family-mono;
+        font-size: $font-size-xs;
+        line-height: 16px;
+        color: $color-fg-dim;
+        border-bottom: 1px solid $color-border;
+    }
+
+    // The copy button: always there (a keyboard or a touch has no hover), the head's height in a block with a head.
+    .vp-doc div[class*='language-'] > button.copy {
+        top: 3px;
+        right: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 26px;
+        color: $color-fg-3;
+        background: none;
+        border: 0;
+        border-radius: $radius-md;
+        opacity: 1;
+
+        &::after {
+            @include icon($icon-copy, 14px);
+        }
+
+        &:hover {
+            color: $color-fg-2;
+            background: $color-bg-3;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $color-focus;
+        }
+
+        &.copied::after {
+            mask-image: $icon-check;
+            color: $color-green;
+        }
+
+        // "Copied", beside the button.
+        &.copied::before {
+            position: absolute;
+            top: 0;
+            right: 100%;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding: 0 $spacing-6;
+            font-family: $font-family-sans;
+            font-size: $font-size-xs;
+            color: $color-fg-dim;
+            white-space: nowrap;
+            content: var(--vp-code-copy-copied-text-content);
+            background: none;
+            border: 0;
+            border-radius: 0;
+        }
+    }
+
+    .vp-doc div[class*='language-']:not(.has-title) > button.copy {
+        top: 8px;
+        right: 8px;
+    }
+
+    // A code group's tabs, on the block's head.
+    .vp-doc .vp-code-group .tabs {
+        background: $color-bg-2;
+        border: 1px solid $color-border;
+        border-bottom: 0;
+        border-radius: $radius-lg $radius-lg 0 0;
+        box-shadow: inset 0 -1px $color-border;
+    }
+
+    .vp-doc .vp-code-group div[class*='language-'] {
+        margin-top: 0;
+        border-top: 0;
+        border-radius: 0 0 $radius-lg $radius-lg;
+    }
+}
+
+// On a phone the default theme takes a code block out to the screen's edges; here it stays a box (`DOC5`).
+@media (width < 640px) {
+    html.dark .vp-doc div[class*='language-'],
+    html.dark .vp-doc .vp-code-group .tabs {
+        margin-right: 0;
+        margin-left: 0;
+    }
+}

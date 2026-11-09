@@ -87,6 +87,7 @@ function onRowClick(event: MouseEvent, row: T) {
   <div
     ref="root"
     :class="css.trackedListView"
+    :data-route-scroll="`settings-tracked:${kind}`"
   >
     <NothingThere
       v-if="loaded && rows.length === 0"

@@ -1,0 +1,73 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The outline (`Docs / Outline`): "On this page", the H2s and H3s on a rail, the current one with an accent rule
+// (`Docs / Outline item · current`), then the page's links (`DocsOutlineLinks`).
+
+// The title's height and the gap under it: where the rail starts, below which the default theme's marker is placed.
+$title-height: 18px;
+$title-gap: 8px;
+$item-height: 28px;
+
+html.dark {
+    .VPDocAsideOutline .content {
+        padding-left: 0;
+        font-size: $font-size-md;
+        border-left: 0;
+    }
+
+    .VPDocAsideOutline .outline-title {
+        margin-bottom: $title-gap;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
+        line-height: $title-height;
+        letter-spacing: 0.3px;
+        color: $color-fg-dim;
+    }
+
+    .VPDocAsideOutline .VPDocOutlineItem.root {
+        border-left: 1px solid $color-border;
+    }
+
+    .VPDocAsideOutline .VPDocOutlineItem.nested {
+        padding: 0;
+    }
+
+    .VPDocAsideOutline .outline-link {
+        padding: 4px 0 4px 12px;
+        font-size: $font-size-md;
+        line-height: $item-height - 8px;
+        color: $color-fg-2;
+
+        &:hover,
+        &.active {
+            color: $color-fg;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $color-focus;
+            outline-offset: -2px;
+        }
+    }
+
+    .VPDocAsideOutline .nested .outline-link {
+        padding-left: 24px;
+        color: $color-fg-dim;
+
+        &:hover,
+        &.active {
+            color: $color-fg;
+        }
+    }
+
+    // The default theme places the marker at the current link's top plus 39, its own title's height; ours is shorter.
+    // Over the rail, which the list draws above the default theme's marker.
+    .VPDocAsideOutline .outline-marker {
+        z-index: 2;
+        left: -1px;
+        width: 2px;
+        height: $item-height;
+        margin-top: $title-height + $title-gap - 39px;
+        background-color: $color-accent;
+        border-radius: 0;
+    }
+}

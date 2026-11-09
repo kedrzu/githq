@@ -1,0 +1,93 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The sidebar (`Docs / Sidebar`): every section's title and its pages, the current page on a lit row
+// (`Docs / Sidebar item · current`).
+html.dark {
+    .VPSidebar {
+        padding: $spacing-24 $spacing-24 40px;
+    }
+
+    @media (width >= 960px) {
+        .VPSidebar {
+            padding-top: calc(var(--vp-nav-height) + #{$spacing-24});
+            border-right: 1px solid $color-border;
+        }
+
+        .VPSidebar .curtain {
+            margin-right: -$spacing-24;
+            margin-left: -$spacing-24;
+        }
+    }
+
+    @media (width >= 1440px) {
+        .VPSidebar {
+            padding-left: calc((100% - var(--vp-layout-max-width)) / 2 + #{$spacing-24});
+            width: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+        }
+    }
+
+    .VPSidebar .group {
+        width: auto;
+        padding-top: 0;
+    }
+
+    .VPSidebar .group + .group {
+        padding-top: 0;
+        margin-top: $spacing-20;
+        border-top: 0;
+    }
+
+    .VPSidebarItem.level-0 {
+        padding-bottom: 0;
+    }
+
+    .VPSidebarItem .items {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    // A section's title (`Docs / Sidebar group title`).
+    .VPSidebarItem.level-0 > .item > .text {
+        padding: 6px $spacing-10 $spacing-4;
+        font-size: $font-size-md;
+        font-weight: $font-weight-semibold;
+        line-height: 18px;
+        color: $color-fg;
+    }
+
+    // A page (`Docs / Sidebar item`): the whole row is the link.
+    .VPSidebarItem.level-1 > .item > .link {
+        padding: 6px $spacing-10;
+        border-radius: $radius-md;
+
+        &:hover {
+            background: $color-bg-2;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $color-focus;
+            outline-offset: -2px;
+        }
+    }
+
+    .VPSidebarItem.level-1 > .item > .link > .text {
+        padding: 0;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-normal;
+        line-height: 20px;
+        color: $color-fg-2;
+    }
+
+    .VPSidebarItem.level-1.is-link > .item > .link:hover > .text {
+        color: $color-fg;
+    }
+
+    .VPSidebarItem.level-1.is-active > .item > .link {
+        background: $color-bg-3;
+    }
+
+    .VPSidebarItem.level-1.is-active > .item > .link > .text {
+        color: $color-fg;
+    }
+}

@@ -32,7 +32,10 @@ const options = computed((): ChoiceCardsOption<RepositoryLayout>[] => [
 </script>
 
 <template>
-  <div :class="css.displayView">
+  <div
+    :class="css.displayView"
+    data-route-scroll="settings-display"
+  >
     <div :class="css.displayView_column">
       <section>
         <h2

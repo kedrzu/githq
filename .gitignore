@@ -30,6 +30,8 @@ tsconfig.cjs.json
 !/packages/app/tsconfig.json
 # ...and the GitHub package scripts', written by hand for type-aware lint of `scripts/`.
 !/packages/github/scripts/tsconfig.json
+# ...and the docs', written by hand: VitePress builds the package, its tsconfig only type-checks the config.
+!/packages/docs/tsconfig.json
 /INDEX.md
 /UTILS.md
 /packages/*/INDEX.md
@@ -65,3 +67,7 @@ Thumbs.db
 
 # Repo scripts outside every package: written by hand.
 !/scripts/tsconfig.json
+
+# The docs site (`packages/docs`): its build and VitePress's dev cache.
+/packages/docs/dist
+/packages/docs/.vitepress/cache

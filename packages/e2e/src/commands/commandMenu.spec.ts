@@ -1,10 +1,14 @@
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../fixtures.js';
+import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 import { ProjectScreenHarness } from '../harnesses/ProjectScreen.harness.js';
 import { RepositoryScreenHarness } from '../harnesses/RepositoryScreen.harness.js';
+import { signIn } from '../session.js';
 import { openTrackedWork } from '../tracking/openTrackedWork.js';
 import {
     createSampleTrackedWork,
@@ -270,3 +274,32 @@ test("⌘K on an item's page has its chip and its repository's group, Commits go
         .click();
     await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/commits`);
 });
+
+test('"Documentation" in the command menu and in the account menu opens the docs in a new tab, and the app stays where it is', async ({
+    page,
+    github,
+}) => {
+    const shell = await signIn(page, github);
+    const appUrl = page.url();
+    const menu = new CommandMenuHarness(page);
+
+    const fromCommandMenu = page.context().waitForEvent('page');
+    await menu.open();
+    await menu.field.pressSequentially('docs');
+    await menu.option(/^Documentation/u).click();
+    await expectDocsHome(await fromCommandMenu);
+    expect(page.url()).toBe(appUrl);
+
+    const fromAccountMenu = page.context().waitForEvent('page');
+    await shell.account(SAMPLE_VIEWER.viewer.login).click();
+    await page.getByRole('menu').getByRole('menuitem', { name: 'Documentation' }).click();
+    await expectDocsHome(await fromAccountMenu);
+    expect(page.url()).toBe(appUrl);
+});
+
+/** A tab opened on the docs home page (`/docs/`). */
+async function expectDocsHome(tab: Page) {
+    await expect(tab).toHaveURL('/docs/');
+    await expect(tab.getByRole('heading', { level: 1 })).toHaveText('How githq works, and how to use it');
+    await tab.close();
+}

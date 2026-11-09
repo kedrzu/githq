@@ -206,7 +206,10 @@ function turnOff() {
 </script>
 
 <template>
-  <div :class="css.savingView">
+  <div
+    :class="css.savingView"
+    data-route-scroll="settings-saving"
+  >
     <div :class="css.savingView_column">
       <template v-if="saving.state === 'off'">
         <div :class="css.savingView_box">

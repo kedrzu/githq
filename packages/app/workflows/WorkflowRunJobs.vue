@@ -109,6 +109,7 @@ function describeStepTime(step: GitHubWorkflowStep) {
 <template>
   <nav
     :class="css.workflowRunJobs"
+    data-route-scroll="workflow-run-jobs"
     :aria-label="t(l.jobs)"
   >
     <div :class="css.workflowRunJobs_head">
