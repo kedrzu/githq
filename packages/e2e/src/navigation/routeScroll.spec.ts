@@ -55,6 +55,9 @@ test("an item's link opens the other item at the top, and Back brings the first 
 });
 
 test("Back from an item's page brings the list back where it was", async ({ page, github }) => {
+    // A slow machine: "my work" is a chunk of its own, so its list comes after the router has scrolled the screen.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 10 });
     await page.setViewportSize({ width: 1280, height: 360 });
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
