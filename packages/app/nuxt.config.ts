@@ -134,7 +134,7 @@ export default defineNuxtConfig({
                 '/api/**': { proxy: { to: 'http://localhost:8788/api/**', fetchOptions: { redirect: 'manual' } } },
                 // The docs (`packages/docs`, `bun run dev` starts them), from VitePress's dev server on 8789 under the
                 // same `/docs/` as in production. Its HMR socket goes to 8789 directly (`vite.server.hmr` in its
-                // config): this proxy carries no WebSocket. `/docs` gets the home too, not the SPA: a `redirect` rule
+                // config): this proxy carries no WebSocket. `/docs` gets the docs' first page too, not the SPA: a `redirect` rule
                 // here would make Nuxt's router ask for file-based pages. The proxy drops a trailing slash, hence
                 // the target spelled out.
                 '/docs': { proxy: { to: 'http://localhost:8789/docs/' } },

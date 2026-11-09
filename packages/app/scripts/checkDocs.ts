@@ -3,7 +3,7 @@ import type { BuiltFile } from './readBuiltFiles.js';
 /** Where the documentation site (`packages/docs`) lives in a web build's output, copied there by `copyDocs.ts`. */
 const DOCS_FOLDER = 'docs/';
 
-/** The pages the Worker cannot do without: the docs home at `/docs/` and the page every unknown `/docs/...` answers. */
+/** The pages the Worker cannot do without: the docs' first page at `/docs/` and the page every unknown `/docs/...` answers. */
 const DOCS_PAGES = ['docs/index.html', 'docs/404.html'];
 
 /** What is wrong with the docs in a web build's output (`paths`, all its files): empty when both pages are there. */

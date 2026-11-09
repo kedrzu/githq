@@ -1,4 +1,4 @@
-<!-- The top bar's brand: githq's wordmark "git/hq" (as the app's `Wordmark`) and "docs". The default theme's title link around it leads to the docs' home. -->
+<!-- The top bar's brand: githq's wordmark "git/hq" (as the app's `Wordmark`) and "docs". The default theme's title link around it leads to the docs' first page (`/docs/`). -->
 <template>
   <span :class="css.brand">
     <span

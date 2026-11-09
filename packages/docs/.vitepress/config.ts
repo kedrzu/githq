@@ -8,7 +8,7 @@ import { assertFullGitHistory, gitIn } from '../lib/gitHistory.js';
 import { articleMetaPlugin, codeTitlePlugin } from '../lib/markdown.js';
 import { readingMinutes } from '../lib/readingTime.js';
 import { EDIT_URL_PATTERN, GITHUB_URL } from './links.js';
-import { sections } from './sections.js';
+import { firstPage, sections } from './sections.js';
 
 // The app's design tokens (SCSS variables and mixins only, no CSS), available in the theme's components' SCSS blocks;
 // the partials of `theme/styles/` load them themselves.
@@ -24,6 +24,9 @@ export default defineConfig({
     lang: 'en-US',
 
     srcDir: 'src',
+    // No home page: `/docs/` is the sidebar's first page, its file served as `index.md`. A link to the address its folder
+    // would give it (`/getting-started/what-is-githq`) passes the dead-link check yet 404s: link to its file or to `/`.
+    rewrites: { [firstPage.file]: 'index.md' },
     outDir: 'dist',
     // Served by the app's Worker under githq.dev/docs; `cleanUrls` makes `/docs/x` serve `docs/x.html`.
     base: '/docs/',
@@ -82,7 +85,8 @@ export default defineConfig({
         nav: sections.map(section => ({
             text: section.title,
             link: section.pages[0]?.link ?? '/',
-            activeMatch: `^/${section.id}/`,
+            // The first section's first page is `/`.
+            activeMatch: section.pages.some(page => page === firstPage) ? `^/(${section.id}/|$)` : `^/${section.id}/`,
         })),
         sidebar: sections.map(section => ({
             text: section.title,
