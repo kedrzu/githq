@@ -27,8 +27,11 @@ export type ButtonVariant =
   | 'primary'
   | 'secondary';
 
-/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action, `xl` the landing page's hero. */
-export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
+/**
+ * `sm` toolbars, `compact` the actions of a card or an editor in an item's thread (Comment, Resolve thread), `md` forms
+ * and footers, `lg` a page's single call to action, `xl` the landing page's hero.
+ */
+export type ButtonSize = 'compact' | 'lg' | 'md' | 'sm' | 'xl';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the look. */
 export const ButtonProps = {
@@ -177,6 +180,21 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 
   .button_content {
     gap: $spacing-6;
+  }
+}
+
+.button_compact {
+  padding: $spacing-5 $spacing-10;
+  font-size: $font-size-sm;
+  border-radius: $radius-md;
+
+  .button_content {
+    gap: $spacing-6;
+  }
+
+  .button_icon {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -354,6 +372,10 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 .button_keyed {
   &.button_sm {
     padding-inline-end: 3px;
+  }
+
+  &.button_compact {
+    padding-inline-end: $spacing-8;
   }
 
   &.button_md {
