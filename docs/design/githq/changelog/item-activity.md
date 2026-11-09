@@ -13,8 +13,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   right of it. The rail is a 2 px `$border` line at x 55 (the centre of the event badges) that runs from the
   description card down to the composer card, joining them instead of passing through an icon. Only events have a
   badge on the rail. No “Activity” header above the thread.
-- [ ] New `Avatar / large` (`gt0wc`): `Avatar` at 28 × 28, radius 14, initials 10.5.
-- [ ] Item / Body (`bJhAe`) is the description, the first card of the thread: horizontal, gap 12; a 28 px rail with
+- [x] New `Avatar / large` (`gt0wc`): `Avatar` at 28 × 28, radius 14, initials 10.5.
+- [x] Item / Body (`bJhAe`) is the description, the first card of the thread: horizontal, gap 12; a 28 px rail with
   `Avatar / large`; a card like a comment (`$bg`, `$border-2`, radius 8) with a head (36, `$bg-2`, author 13 / 600
   `$fg`, “commented 2 days ago” 12 `$fg-dim`, an “Author” chip, ⋯) and content padded 14 16 16 16, gap 10. Text `$fg`
   13.5, line height 1.6. Hidden parts show how Markdown renders: a heading (14 / 600), a bullet list, and a
@@ -24,7 +24,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   500 `$accent`, “#15”, new) for a referenced issue, pull request or commit, the rest (wraps under itself), and the
   time at the right. With no person (CI, a Status change made by a project workflow) the avatar and who are
   hidden.
-- [ ] `Activity / Comment` (`WHy4W`): avatar in the gutter (column 36 high), card with a 36 px `$bg-2` head (author
+- [x] `Activity / Comment` (`WHy4W`): avatar in the gutter (column 36 high), card with a 36 px `$bg-2` head (author
   13 / 600, “commented”, time, ⋯) and a body padded 14 16 16 16, text `$fg` 13.5, line height 1.6. Hidden parts: `Edited`
   (`X0iztw`, “· edited” after the time) and a `Failed` band (`I8YLPw`) at the bottom of the card: `#F851491A` fill,
   `#F8514959` top border, padding 8 10 8 14, a red circle-alert, “Not sent: GitHub can't be reached.” (12.5 `$fg`),
@@ -65,12 +65,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   events” and the chevron, then the counts) and a 64 px rail break with eight dashes.
 - [ ] `Activity / New since you looked` (`t2x5CU`): “3 new since you looked” (12 / 600 `$accent`) and an accent rule,
   indented 40.
-- [ ] `Button / medium` (`TH5d7`), the size of the merge box's buttons: padding 5 8 5 10, radius 6, `$bg-3` with a
+- [x] `Button / medium` (`TH5d7`), the size of the merge box's buttons: padding 5 8 5 10, radius 6, `$bg-3` with a
   `$border-2` stroke, icon 13, label 12.5 / 500, key. `Button / medium · primary` (`t0PlX5`): `$accent`, label
   `#0D1117`, no icon.
-- [ ] New `Button / medium · menu` (`L4s15U`): the same button with a 1 × 14 `$border-2` divider and a chevron-down
+- [x] New `Button / medium · menu` (`L4s15U`): the same button with a 1 × 14 `$border-2` divider and a chevron-down
   after the key, for a button with a menu: “Close issue” (purple circle-check, ⇧X).
-- [ ] `Activity / Editor` (`OXAXr`), the one Markdown editor (the composer, a reply, editing a comment): `$bg-2`,
+- [x] `Activity / Editor` (`OXAXr`), the one Markdown editor (the composer, a reply, editing a comment): `$bg-2`,
   `$border-2`, radius 8. Head 38, `$bg-2`, bottom border, padding 6 10 0 8, aligned to the bottom: Write / Preview are
   classic tabs; the current one is `$bg` with a `$border` top, left and right border, top corners 6, padding 0 14,
   full height, so it opens into the text area; the other has no fill or border, `$fg-dim` text (both tabs now have
@@ -78,15 +78,15 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   lists, task list, quote | @ and #. The paperclip (attach) is removed: GitHub has no public upload API. A text area
   that grows from about 70 px, and a footer with “Markdown” and two `Button / medium`s. A hidden `Rendered` block
   (`Ssyf3`) in the text area shows the preview: paragraphs in `$fg` 13, a mention in `$accent` 600.
-- [ ] New `Activity / Editor · preview` (`pAVb7`): Preview is the current tab, the tools are hidden, the text area
+- [x] New `Activity / Editor · preview` (`pAVb7`): Preview is the current tab, the tools are hidden, the text area
   shows `Rendered`.
-- [ ] `Activity / Composer` (`sWprg`): the last item on the rail, the viewer's avatar (“ML” `#C9A26B`, was “MK”
+- [x] `Activity / Composer` (`sWprg`): the last item on the rail, the viewer's avatar (“ML” `#C9A26B`, was “MK”
   `#D2A8FF`) and `Activity / Editor` with Close pull request (⇧X) and Comment (⌘↵, dimmed while empty). Focused, the
   editor gets an accent border. Nothing is pinned to the bottom of an item view: R, or “Comment” in the command menu,
   scrolls to the composer and focuses it.
-- [ ] `Activity / Composer · writing` (`G3hGNp`): text typed, accent border, Comment active, and the close button reads
+- [x] `Activity / Composer · writing` (`G3hGNp`): text typed, accent border, Comment active, and the close button reads
   “Close with comment” (was “Close pull request”).
-- [ ] New composer states, variants of `Activity / Composer` unless said otherwise:
+- [x] New composer states, variants of `Activity / Composer` unless said otherwise:
   - `Activity / Composer · issue` (`AljH1`): the close button is `Button / medium · menu`, “Close issue” (⇧X closes as
     completed, the chevron opens `Activity / Close menu`).
   - `Activity / Composer · issue, writing` (`G7spc`): text typed, accent border, “Close with comment”.
@@ -97,7 +97,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   - `Activity / Composer · read-only` (`fBQzF`, new frame): the avatar and, instead of the editor, one `$bg-2` card
     (`$border-2`, radius 8, padding 11 14): a lock icon and “This conversation is locked to collaborators, so you can
     read it but not comment.” (12.5 `$fg-2`). For an archived repository the icon is archive and the line says so.
-- [ ] New `Activity / Comment · sending` (`OmV5q`): the new card in the thread right after Comment, the card at 60 %
+- [x] New `Activity / Comment · sending` (`OmV5q`): the new card in the thread right after Comment, the card at 60 %
   opacity, “Sending…” for the time. New `Activity / Comment · failed` (`a4VAuV`): “Not sent” in `$red`, the card's
   border `#F8514980`, the `Failed` band on.
 - [ ] New `Activity / Comment · editing` (`ehuxk`, a variant of the composer): the comment's card becomes the editor in
@@ -134,16 +134,16 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] Text links that do something are `$accent` (were `$fg-dim` or `$fg-2`): “Show N more commits” (`kt6I8`), “Show
   the whole description” in Review / Conversation (`c05P2`), “Hide” on a resolved code thread (`V3M4mU`), “Log” and its
   arrow in Item / Checks (`ujCTy`, `SQWpM`, `DiElt`, `VTG3K`), “Request” in Item / Reviews (`pu5lX`).
-- [ ] New variable `bg-item` = `#11161C`: the background of an item view, between the list's `$bg` and `$bg-2`, which
+- [x] New variable `bg-item` = `#11161C`: the background of an item view, between the list's `$bg` and `$bg-2`, which
   it replaces on every item-view container (23): Item view / stacked (`jOPlc`), Item view / split (`a80hmX`), Item
   view / PR panel (`pX8Wm`) and every `PR view (full page)` / `PR view (panel)` / modal PR view.
-- [ ] Reading width: on the full page the main column's content is at most 760 px wide, centred (the five full-page
+- [x] Reading width: on the full page the main column's content is at most 760 px wide, centred (the five full-page
   `Main column`s of App · Pull request get horizontal padding 142, was 40). The modal's column is about 680 of
   content; the panel is 512.
 
 ## The thread on every item view
 
-- [ ] `Item / Composer` (`oBw7q`) is deleted, and so are the panels' `Composer dock`s. `Item / Activity` (`f9GRgL`) is
+- [x] `Item / Composer` (`oBw7q`) is deleted, and so are the panels' `Composer dock`s. `Item / Activity` (`f9GRgL`) is
   deleted. On each of its 24 uses (the item views `Item view / stacked` `jOPlc`, `Item view / split` `a80hmX`,
   `Item view / PR panel` `pX8Wm`, and 21 pull request screens in App · Pull request, App · Item menu, App · States,
   App · Merging a pull request, App · Stacked pull requests and App · Code review) the description, the activity and the
@@ -153,7 +153,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   Each screen keeps its two comments (author, time, text); on a pull request the event reads “mlaine asked sofiab for a
   review · 1d”, on an issue “mlaine added bug and assigned dkim · 3d”. `Item view / PR panel` had no composer and gets
   one. Nothing pinned to the bottom of an item view, no `flex` spacer.
-- [ ] Item view / stacked (`jOPlc`) and Item view / split (`a80hmX`), the issue item views of D1–D3 and every list
+- [x] Item view / stacked (`jOPlc`) and Item view / split (`a80hmX`), the issue item views of D1–D3 and every list
   screen: the composer is `Activity / Composer · issue` (was the pull request one), and the description is dkim's,
   “commented 3 days ago”, like the title (was mlaine's, 2 days ago).
 - [ ] App · Freshness, “3d · List fresh, item's comments still loading” (`d6TZng`): the thread is
@@ -185,11 +185,11 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] F10 · PR full page · replying in a thread (`ToA4h`): a reply being written in the review's code thread (its text
   now about this pull request), and the resolved thread opened. Same order and times as F5, no “opened” event. Screen
   height 2303.
-- [ ] F11 · PR in panel · writing a comment (`VNBoD`): the panel scrolled to the end, with a comment being written
+- [x] F11 · PR in panel · writing a comment (`VNBoD`): the panel scrolled to the end, with a comment being written
   (“Close with comment”).
 - [ ] F12 · A resolved thread, folded and open (`pqJ1l`): a resolved thread folded and open, in a review (top) and on
   its own (bottom).
-- [ ] Rail line on F5, F9, F10 and F11 runs from the description card to the composer's avatar.
+- [x] Rail line on F5, F9, F10 and F11 runs from the description card to the composer's avatar.
 - [ ] New F13 · Every event in the thread (`U9JZ1`): every timeline event githq shows, as `Activity / Event`s, with a
   chip saying what each counts as in a fold (“commits”, “other events”) and “issues too” where an issue has it. Left,
   pull request: pushed (drawn as Activity / Push), force-pushed, assigned, unassigned, renamed, labeled, unlabeled,
