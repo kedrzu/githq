@@ -354882,6 +354882,17 @@
                       "fontWeight": "normal"
                     },
                     {
+                      "type": "ellipse",
+                      "id": "bIuoM",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Changed",
+                      "enabled": false,
+                      "fill": "$accent",
+                      "width": 6,
+                      "height": 6
+                    },
+                    {
                       "type": "text",
                       "id": "tPamw",
                       "x": 0,
@@ -356786,6 +356797,17 @@
                           "fontWeight": "500"
                         },
                         {
+                          "type": "ellipse",
+                          "id": "YTCQH",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Changed",
+                          "enabled": false,
+                          "fill": "$accent",
+                          "width": 6,
+                          "height": 6
+                        },
+                        {
                           "type": "text",
                           "id": "c0AlY1",
                           "name": "Count",
@@ -357302,6 +357324,97 @@
                       "width": "fill_container"
                     }
                   ]
+                },
+                {
+                  "id": "M1Hn1",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "V06xmv",
+                  "name": "Phone / Command sheet / Project · views nearest",
+                  "descendants": {
+                    "KdLNy/JVDhZ": {
+                      "icon": "book-marked"
+                    },
+                    "KdLNy/bZUUX": {
+                      "content": "fitloop/webapp"
+                    },
+                    "KdLNy/s255dF": {
+                      "content": "142"
+                    },
+                    "JgvuA/CYCl2": {
+                      "content": "This view · Current sprint"
+                    },
+                    "pMCKu/CYCl2": {
+                      "content": "Platform Q4 · views"
+                    },
+                    "kiBCL/JVDhZ": {
+                      "icon": "list"
+                    },
+                    "kiBCL/bZUUX": {
+                      "content": "Backlog"
+                    },
+                    "kiBCL/s255dF": {
+                      "enabled": true,
+                      "content": "61"
+                    },
+                    "kiBCL/o4aWX": {
+                      "enabled": false
+                    },
+                    "kiBCL/W8GPO": {
+                      "enabled": false
+                    },
+                    "xoRLV/JVDhZ": {
+                      "icon": "calendar-range"
+                    },
+                    "xoRLV/bZUUX": {
+                      "content": "Roadmap"
+                    },
+                    "xoRLV/s255dF": {
+                      "enabled": true,
+                      "content": "128"
+                    },
+                    "xoRLV/o4aWX": {
+                      "enabled": false
+                    },
+                    "xoRLV/W8GPO": {
+                      "enabled": false
+                    },
+                    "MiWsY/JVDhZ": {
+                      "icon": "users"
+                    },
+                    "MiWsY/bZUUX": {
+                      "content": "By assignee"
+                    },
+                    "MiWsY/s255dF": {
+                      "enabled": true,
+                      "content": "128"
+                    },
+                    "MiWsY/o4aWX": {
+                      "enabled": false
+                    },
+                    "MiWsY/W8GPO": {
+                      "enabled": false
+                    },
+                    "gFy1t/JVDhZ": {
+                      "icon": "repeat"
+                    },
+                    "gFy1t/bZUUX": {
+                      "content": "Current sprint"
+                    },
+                    "gFy1t/s255dF": {
+                      "enabled": true,
+                      "content": "34"
+                    },
+                    "gFy1t/o4aWX": {
+                      "enabled": false
+                    },
+                    "gFy1t/W8GPO": {
+                      "enabled": true
+                    },
+                    "R9SxoV/G1CkY": {
+                      "content": "Platform Q4"
+                    }
+                  }
                 }
               ]
             },
@@ -357592,18 +357705,6 @@
                       "alignItems": "center",
                       "children": [
                         {
-                          "id": "RnPHv",
-                          "type": "ref",
-                          "ref": "y1sXt",
-                          "name": "Needs me"
-                        },
-                        {
-                          "id": "iSLcb",
-                          "type": "ref",
-                          "ref": "BxGQw",
-                          "name": "Waiting on others"
-                        },
-                        {
                           "id": "QKPuF",
                           "type": "ref",
                           "ref": "BxGQw",
@@ -357616,6 +357717,18 @@
                               "content": "13"
                             }
                           }
+                        },
+                        {
+                          "id": "RnPHv",
+                          "type": "ref",
+                          "ref": "y1sXt",
+                          "name": "Needs me"
+                        },
+                        {
+                          "id": "iSLcb",
+                          "type": "ref",
+                          "ref": "BxGQw",
+                          "name": "Waiting on others"
                         }
                       ]
                     },
@@ -357972,20 +358085,6 @@
                       "ref": "VtYLv",
                       "name": "Phone / Filter strip · All",
                       "descendants": {
-                        "RnPHv": {
-                          "id": "y3xEG",
-                          "type": "ref",
-                          "ref": "BxGQw",
-                          "name": "Needs me",
-                          "descendants": {
-                            "z7Y4Q8": {
-                              "content": "Needs me"
-                            },
-                            "k9zwDB": {
-                              "content": "8"
-                            }
-                          }
-                        },
                         "QKPuF": {
                           "id": "diEVr",
                           "type": "ref",
@@ -357997,6 +358096,20 @@
                             },
                             "k9zwDB": {
                               "content": "13"
+                            }
+                          }
+                        },
+                        "RnPHv": {
+                          "id": "y3xEG",
+                          "type": "ref",
+                          "ref": "BxGQw",
+                          "name": "Needs me",
+                          "descendants": {
+                            "z7Y4Q8": {
+                              "content": "Needs me"
+                            },
+                            "k9zwDB": {
+                              "content": "8"
                             }
                           }
                         }
@@ -359043,247 +359156,6 @@
                                   "content": "This pull request · #1209"
                                 }
                               }
-                            },
-                            {
-                              "id": "S5VYR",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Open on GitHub",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "github"
-                                },
-                                "bZUUX": {
-                                  "content": "Open on GitHub"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": true
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "x71iMb",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Merge and changed files",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-merge"
-                                },
-                                "bZUUX": {
-                                  "content": "Merge and changed files"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": true
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "VGmsH",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Copy branch name",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "copy"
-                                },
-                                "bZUUX": {
-                                  "content": "Copy branch name"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "mGCuG",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Close pull request",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-pull-request-closed"
-                                },
-                                "bZUUX": {
-                                  "content": "Close pull request"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "kuIkA",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Labels",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "tag"
-                                },
-                                "bZUUX": {
-                                  "content": "Labels"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "GkpPP",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Status",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-dashed"
-                                },
-                                "bZUUX": {
-                                  "content": "Status"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "content": "In progress"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "yMYj3",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Request review",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "user-plus"
-                                },
-                                "bZUUX": {
-                                  "content": "Request review"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "hywrQ",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Ready for review",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "eye",
-                                  "fill": "$green"
-                                },
-                                "bZUUX": {
-                                  "content": "Ready for review"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
                             }
                           ]
                         },
@@ -359324,186 +359196,6 @@
                               "descendants": {
                                 "CYCl2": {
                                   "content": "Only what applies to all three"
-                                }
-                              }
-                            },
-                            {
-                              "id": "hsBoN",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Copy links",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "link"
-                                },
-                                "bZUUX": {
-                                  "content": "Copy links"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "tXkTz",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Close 3 issues",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-check"
-                                },
-                                "bZUUX": {
-                                  "content": "Close 3 issues"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "JbRks",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Milestone",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "milestone"
-                                },
-                                "bZUUX": {
-                                  "content": "Milestone"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "content": "mixed"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "KVPmt",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Labels",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "tag"
-                                },
-                                "bZUUX": {
-                                  "content": "Labels"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "content": "mixed"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "SDEQA",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Assignees",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "user"
-                                },
-                                "bZUUX": {
-                                  "content": "Assignees"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "content": "mlaine"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "eFfwr",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Status",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-dashed"
-                                },
-                                "bZUUX": {
-                                  "content": "Status"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "content": "mixed"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -364407,6 +364099,63 @@
                           ],
                           "children": [
                             {
+                              "type": "frame",
+                              "id": "o0DQ6F",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Changed",
+                              "enabled": false,
+                              "width": "fill_container(0)",
+                              "fill": "$bg-3",
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "bottom": 1
+                              },
+                              "gap": 8,
+                              "padding": [
+                                11,
+                                16
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "iOWXq",
+                                  "name": "Dot",
+                                  "fill": "$accent",
+                                  "width": 6,
+                                  "height": 6
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "snUck",
+                                  "name": "Text",
+                                  "fill": "$fg-2",
+                                  "content": "Changed on this device",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "hDQlv",
+                                  "name": "spacer",
+                                  "width": "fill_container",
+                                  "height": 1
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "TBatO",
+                                  "name": "Back to GitHub's view",
+                                  "fill": "$accent",
+                                  "content": "Back to GitHub's view",
+                                  "fontFamily": "$font",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
                               "id": "WeR67",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -365696,6 +365445,7 @@
                           "id": "jhs6s",
                           "name": "Entries",
                           "width": "fill_container",
+                          "height": "fit_content(0)",
                           "stroke": "$border",
                           "strokeWidth": {
                             "top": 1
@@ -365706,163 +365456,6 @@
                             0,
                             6,
                             0
-                          ],
-                          "children": [
-                            {
-                              "id": "i933Y",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Todo",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "$fg-3"
-                                },
-                                "bZUUX": {
-                                  "content": "Todo"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "n5E2lX",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "In progress",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "$amber"
-                                },
-                                "bZUUX": {
-                                  "content": "In progress"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "v0ARw",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "In review",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "$purple"
-                                },
-                                "bZUUX": {
-                                  "content": "In review"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "ePVNw",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Done",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "$green"
-                                },
-                                "bZUUX": {
-                                  "content": "Done"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "h2sSC",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "No status",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-dashed",
-                                  "fill": "$fg-3"
-                                },
-                                "bZUUX": {
-                                  "content": "No status"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            }
                           ]
                         }
                       }
@@ -365888,6 +365481,7 @@
                           "id": "TGMmR",
                           "name": "Entries",
                           "width": "fill_container",
+                          "height": "fit_content(0)",
                           "stroke": "$border",
                           "strokeWidth": {
                             "top": 1
@@ -365898,164 +365492,6 @@
                             0,
                             6,
                             0
-                          ],
-                          "children": [
-                            {
-                              "id": "K5ME6N",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "mlaine",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "mlaine"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "you"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "tkkZP",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "dkim",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "dkim"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "OBiCP",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "dkowalski",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "dkowalski"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "U3CNiz",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "sanders",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "sanders"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "aLxnF",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "sbrandt",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "sbrandt"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            }
                           ]
                         }
                       }
@@ -366081,6 +365517,7 @@
                           "id": "fSwOo",
                           "name": "Entries",
                           "width": "fill_container",
+                          "height": "fit_content(0)",
                           "stroke": "$border",
                           "strokeWidth": {
                             "top": 1
@@ -366091,163 +365528,6 @@
                             0,
                             6,
                             0
-                          ],
-                          "children": [
-                            {
-                              "id": "r3rjW",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "bug",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "#E5534B"
-                                },
-                                "bZUUX": {
-                                  "content": "bug"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "GyYnj",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "calendar",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "#D29922"
-                                },
-                                "bZUUX": {
-                                  "content": "calendar"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "z6StWi",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "docs",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "#58A6FF"
-                                },
-                                "bZUUX": {
-                                  "content": "docs"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "BIaAa",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "feature",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "#3FB950"
-                                },
-                                "bZUUX": {
-                                  "content": "feature"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "oVYV8",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "needs-repro",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle",
-                                  "fill": "#8B949E"
-                                },
-                                "bZUUX": {
-                                  "content": "needs-repro"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            }
                           ]
                         }
                       }
@@ -366298,69 +365578,6 @@
                               }
                             },
                             {
-                              "id": "rCuXE",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "sbrandt",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "sbrandt"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "changes requested"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "rNTbz",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "sanders",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "sanders"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
                               "id": "LjiCl",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -366369,38 +365586,6 @@
                               "descendants": {
                                 "CYCl2": {
                                   "content": "Requested"
-                                }
-                              }
-                            },
-                            {
-                              "id": "KLn9P",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "dkim",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "dkim"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "waiting"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
                                 }
                               }
                             }
@@ -366432,6 +365617,7 @@
                           "id": "SfXkF",
                           "name": "Entries",
                           "width": "fill_container",
+                          "height": "fit_content(0)",
                           "stroke": "$border",
                           "strokeWidth": {
                             "top": 1
@@ -366442,71 +365628,6 @@
                             0,
                             6,
                             0
-                          ],
-                          "children": [
-                            {
-                              "id": "vf7i2",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Close as completed",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-check",
-                                  "fill": "$purple"
-                                },
-                                "bZUUX": {
-                                  "content": "Close as completed"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "EWMAu",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Close as not planned",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-slash",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Close as not planned"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "won't do, duplicate"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            }
                           ]
                         }
                       }
@@ -366557,134 +365678,6 @@
                               }
                             },
                             {
-                              "id": "VbY3W",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/webapp",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/webapp"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "used last"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "QxmGQ",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/api",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/api"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "TFRic",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/mobile",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/mobile"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "hFqpP",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/legacy",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/legacy",
-                                  "fill": "$fg-3"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "issues turned off",
-                                  "fill": "$fg-3"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
                               "id": "xuQ0S",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -366693,38 +365686,6 @@
                               "descendants": {
                                 "CYCl2": {
                                   "content": "On GitHub"
-                                }
-                              }
-                            },
-                            {
-                              "id": "nBQI1",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop-oss/sdk",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop-oss/sdk"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "not tracked"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -366776,136 +365737,6 @@
                                   "content": "vitejs/vite's templates"
                                 }
                               }
-                            },
-                            {
-                              "id": "ZdNG2",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Bug report",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "bug",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Bug report"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "form · on GitHub"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": true
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "kzhXC",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Feature request",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "lightbulb",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Feature request"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "form · on GitHub"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": true
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "TxqBM",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Docs improvement",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "file-text",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Docs improvement"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "markdown"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "ReFuB",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Blank issue",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "file",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Blank issue",
-                                  "fill": "$fg-3"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "turned off",
-                                  "fill": "$fg-3"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
                             }
                           ]
                         }
@@ -366932,6 +365763,7 @@
                           "id": "EDiWT",
                           "name": "Entries",
                           "width": "fill_container",
+                          "height": "fit_content(0)",
                           "stroke": "$border",
                           "strokeWidth": {
                             "top": 1
@@ -366942,226 +365774,6 @@
                             0,
                             6,
                             0
-                          ],
-                          "children": [
-                            {
-                              "id": "nhrUo",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Assignee",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "user",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Assignee"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "HcsXf",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Label",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "tag",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Label"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "s31o1",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Status",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-dot",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Status"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "hF0ZD",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Iteration",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "repeat",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Iteration"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "@current"
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "Ka4BH",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Priority",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "signal",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Priority"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "GNSJv",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Repository",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Repository"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "pzq0J",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Author",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "pencil",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Author"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": true
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            }
                           ]
                         }
                       }
@@ -367212,38 +365824,6 @@
                               }
                             },
                             {
-                              "id": "rchrL",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "Draft issue",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "file-pen-line",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "Draft issue"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "no repository"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
                               "id": "cjJ2U",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -367256,68 +365836,6 @@
                               }
                             },
                             {
-                              "id": "NurRs",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/webapp",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/webapp"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "MohGh",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/api",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/api"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
                               "id": "phNQy",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -367326,71 +365844,6 @@
                               "descendants": {
                                 "CYCl2": {
                                   "content": "Tracked"
-                                }
-                              }
-                            },
-                            {
-                              "id": "TFkId",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/mobile",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/mobile"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "LR0Vv",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "fitloop/legacy",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "book-marked",
-                                  "fill": "$fg-2"
-                                },
-                                "bZUUX": {
-                                  "content": "fitloop/legacy",
-                                  "fill": "$fg-3"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "issues turned off",
-                                  "fill": "$fg-3"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -367432,37 +365885,6 @@
                           ],
                           "children": [
                             {
-                              "id": "f7zq6V",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "#1205 stops 2 later from landing",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "circle-pause",
-                                  "fill": "$amber"
-                                },
-                                "bZUUX": {
-                                  "content": "#1205 stops 2 later from landing"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": false
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
                               "id": "xiWpl",
                               "type": "ref",
                               "ref": "ikYkr",
@@ -367471,138 +365893,6 @@
                               "descendants": {
                                 "CYCl2": {
                                   "content": "Pull requests of the stack · 4"
-                                }
-                              }
-                            },
-                            {
-                              "id": "qyu2h",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "#1203 · base",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-pull-request",
-                                  "fill": "$green"
-                                },
-                                "bZUUX": {
-                                  "content": "#1203 · base"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "ready",
-                                  "fill": "$green"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "RmOyk",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "#1205 · this one",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-pull-request",
-                                  "fill": "$green"
-                                },
-                                "bZUUX": {
-                                  "content": "#1205 · this one"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "waiting for review",
-                                  "fill": "$amber"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": true
-                                }
-                              }
-                            },
-                            {
-                              "id": "SpdD7",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "#1206",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-pull-request",
-                                  "fill": "$green"
-                                },
-                                "bZUUX": {
-                                  "content": "#1206"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "checks running",
-                                  "fill": "$fg-dim"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
-                                }
-                              }
-                            },
-                            {
-                              "id": "WsQD8",
-                              "type": "ref",
-                              "ref": "i6jhQ",
-                              "name": "#1207",
-                              "width": "fill_container",
-                              "descendants": {
-                                "JVDhZ": {
-                                  "icon": "git-pull-request-draft",
-                                  "fill": "$fg-3"
-                                },
-                                "bZUUX": {
-                                  "content": "#1207"
-                                },
-                                "tPamw": {
-                                  "enabled": false
-                                },
-                                "s255dF": {
-                                  "enabled": true,
-                                  "content": "draft",
-                                  "fill": "$fg-dim"
-                                },
-                                "wuwm0": {
-                                  "enabled": false
-                                },
-                                "o4aWX": {
-                                  "enabled": false
-                                },
-                                "W8GPO": {
-                                  "enabled": false
                                 }
                               }
                             }
@@ -367641,6 +365931,45 @@
                         },
                         "K8pFUJ": {
                           "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "NKSWL",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "EwpS9",
+                      "name": "Phone / Banner · view changed",
+                      "fill": "#7C8CF814",
+                      "stroke": "#7C8CF840",
+                      "descendants": {
+                        "xpQ2U": {
+                          "icon": "sliders-horizontal",
+                          "fill": "$accent"
+                        },
+                        "eYvZy": {
+                          "content": "Current sprint · changed on this device"
+                        },
+                        "rIM01": {
+                          "content": "Back to GitHub's",
+                          "fill": "$accent"
+                        }
+                      }
+                    },
+                    {
+                      "id": "UnW5p",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "gf3JG",
+                      "name": "probe",
+                      "descendants": {
+                        "k0N2w": {
+                          "type": "frame",
+                          "id": "u7srJ",
+                          "name": "Entries",
+                          "width": "fill_container",
+                          "height": "fit_content(0)",
+                          "layout": "vertical"
                         }
                       }
                     }
@@ -371046,11 +369375,11 @@
                               "name": "Filters",
                               "width": "fill_container",
                               "descendants": {
-                                "y3xEG/k9zwDB": {
-                                  "content": "6"
-                                },
                                 "diEVr/k9zwDB": {
                                   "content": "11"
+                                },
+                                "y3xEG/k9zwDB": {
+                                  "content": "6"
                                 }
                               }
                             },
@@ -371903,27 +370232,7 @@
                           "width": 390,
                           "height": 844,
                           "layout": "vertical",
-                          "justifyContent": "end",
-                          "children": [
-                            {
-                              "id": "j68uWe",
-                              "type": "ref",
-                              "ref": "ToAiG",
-                              "name": "Menu",
-                              "width": "fill_container",
-                              "descendants": {
-                                "HFjpk": {
-                                  "enabled": true
-                                },
-                                "zIojp": {
-                                  "enabled": true
-                                },
-                                "FKWPh": {
-                                  "enabled": false
-                                }
-                              }
-                            }
-                          ]
+                          "justifyContent": "end"
                         }
                       ]
                     }
@@ -372576,43 +370885,7 @@
                           "width": 390,
                           "height": 844,
                           "layout": "vertical",
-                          "justifyContent": "end",
-                          "children": [
-                            {
-                              "id": "s7O74",
-                              "type": "ref",
-                              "ref": "Xw0L2",
-                              "name": "Menu",
-                              "width": "fill_container",
-                              "descendants": {
-                                "qig8z": {
-                                  "content": "dk",
-                                  "fill": "$fg"
-                                },
-                                "HFjpk": {
-                                  "enabled": true
-                                },
-                                "K5ME6N": {
-                                  "enabled": false
-                                },
-                                "tkkZP/W8GPO": {
-                                  "enabled": true
-                                },
-                                "U3CNiz": {
-                                  "enabled": false
-                                },
-                                "aLxnF": {
-                                  "enabled": false
-                                },
-                                "zIojp": {
-                                  "enabled": true
-                                },
-                                "FKWPh": {
-                                  "enabled": false
-                                }
-                              }
-                            }
-                          ]
+                          "justifyContent": "end"
                         }
                       ]
                     }
@@ -375054,16 +373327,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "mHDzW",
-                                  "type": "ref",
-                                  "ref": "LaXFd",
-                                  "name": "Sheet",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -375874,16 +374138,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "qUE2g",
-                                  "type": "ref",
-                                  "ref": "S3SI3",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -376031,16 +374286,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "H4YWj",
-                                  "type": "ref",
-                                  "ref": "eJdp0",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -376188,16 +374434,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "Y4yg7",
-                                  "type": "ref",
-                                  "ref": "FD7Pv",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -377067,16 +375304,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "HjP3T",
-                                  "type": "ref",
-                                  "ref": "Cz3JY",
-                                  "name": "Sheet",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -381270,132 +379498,6 @@
                                           "descendants": {
                                             "CYCl2": {
                                               "content": "Settings"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "RNSkR",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Settings",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "settings"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Settings"
-                                            },
-                                            "s255dF": {
-                                              "enabled": false
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "ZpL3x",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Repositories you track",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "book-marked"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Repositories you track"
-                                            },
-                                            "s255dF": {
-                                              "content": "15"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "K53AbM",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Projects you track",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "square-kanban"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Projects you track"
-                                            },
-                                            "s255dF": {
-                                              "content": "3"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "S37yzq",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Display",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "sparkles"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Display"
-                                            },
-                                            "s255dF": {
-                                              "enabled": false
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "tcqsf",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Code review",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "message-square"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Code review"
-                                            },
-                                            "s255dF": {
-                                              "enabled": false
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "rSkyw",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Saving settings",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "cloud-upload"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Saving settings"
-                                            },
-                                            "s255dF": {
-                                              "content": "On"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "DBuYm",
-                                          "type": "ref",
-                                          "ref": "i6jhQ",
-                                          "name": "Account",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "JVDhZ": {
-                                              "icon": "user"
-                                            },
-                                            "bZUUX": {
-                                              "content": "Account"
-                                            },
-                                            "s255dF": {
-                                              "content": "mlaine"
                                             }
                                           }
                                         }
@@ -386083,16 +384185,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "PMhvC",
-                                  "type": "ref",
-                                  "ref": "ACyjg",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -387378,46 +385471,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "t1fnP0",
-                                  "type": "ref",
-                                  "ref": "ToAiG",
-                                  "name": "Menu",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "qig8z": {
-                                      "content": "sdk",
-                                      "fill": "$fg"
-                                    },
-                                    "HFjpk": {
-                                      "enabled": true
-                                    },
-                                    "F1eN4D": {
-                                      "enabled": false
-                                    },
-                                    "VbY3W": {
-                                      "enabled": false
-                                    },
-                                    "QxmGQ": {
-                                      "enabled": false
-                                    },
-                                    "TFRic": {
-                                      "enabled": false
-                                    },
-                                    "hFqpP": {
-                                      "enabled": false
-                                    },
-                                    "zIojp": {
-                                      "enabled": true
-                                    },
-                                    "FKWPh": {
-                                      "enabled": false
-                                    }
-                                  }
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -387528,16 +385582,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "vdF9d",
-                                  "type": "ref",
-                                  "ref": "SKoTS",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -387875,27 +385920,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "DlQXA",
-                                  "type": "ref",
-                                  "ref": "S3SI3",
-                                  "name": "Menu",
-                                  "width": "fill_container",
-                                  "descendants": {
-                                    "e0cU1": {
-                                      "content": "New issue · fitloop/webapp"
-                                    },
-                                    "r3rjW/W8GPO": {
-                                      "enabled": false
-                                    },
-                                    "GyYnj/W8GPO": {
-                                      "enabled": false
-                                    }
-                                  }
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }
@@ -389120,6 +387145,600 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Oi2Nq",
+                  "name": "Variants · Where a changed project view is marked",
+                  "fill": "#D299221A",
+                  "cornerRadius": 12,
+                  "stroke": "#D29922",
+                  "strokeWidth": 2,
+                  "gap": 40,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "B3AIHc",
+                      "name": "Slot · MB222 · Variant A · A dot on the view's chip",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "kpqnr",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ga1Gx",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB222 · Variant A · A dot on the view's chip",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "d4KNL",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Recommended. Current sprint was changed on this phone (its grouping, sort or shown properties), so the command line's chip carries the desktop's dot for a modified view: in sight on every screen of the list, it costs no row, and the chip is where the views are reached anyway (MB223). Nothing else on the list changes.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "S82jM",
+                          "name": "MB222 · Variant A · A dot on the view's chip",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "VnvRP",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "fjppo",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "LaOVG": {
+                                  "content": "Platform Q4"
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "sliders-horizontal"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "plus"
+                                }
+                              }
+                            },
+                            {
+                              "id": "AZko8",
+                              "type": "ref",
+                              "ref": "x5FXSy",
+                              "name": "Pane",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "iR7Zw",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "laNuH",
+                                  "type": "ref",
+                                  "ref": "RGShR",
+                                  "name": "Command line",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "s3BoH2/YDESO": {
+                                      "content": "Current sprint"
+                                    },
+                                    "s3BoH2/YTCQH": {
+                                      "enabled": true
+                                    },
+                                    "s3BoH2/c0AlY1": {
+                                      "content": "34"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PtoUJ",
+                      "name": "Slot · MB223 · Variant A · The dot in the views menu",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "pZtDp",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "BjLCm",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB223 · Variant A · The dot in the views menu",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "IrorN",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Recommended. The command line opens on the project's views nearest the thumb; the changed one has the same dot beside its name, as the desktop's modified tab. Choosing another view and coming back keeps the change: it is this device's, not synced (D49).",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p2Pc6D",
+                          "name": "MB223 · Variant A · The dot in the views menu",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Gm7Nr",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "P6kTsJ",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "LaOVG": {
+                                  "content": "Platform Q4"
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "sliders-horizontal"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "plus"
+                                }
+                              }
+                            },
+                            {
+                              "id": "tEeix",
+                              "type": "ref",
+                              "ref": "x5FXSy",
+                              "name": "Pane",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "R88fN",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "KrF3Y",
+                                  "type": "ref",
+                                  "ref": "RGShR",
+                                  "name": "Command line",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "s3BoH2/YDESO": {
+                                      "content": "Current sprint"
+                                    },
+                                    "s3BoH2/YTCQH": {
+                                      "enabled": true
+                                    },
+                                    "s3BoH2/c0AlY1": {
+                                      "content": "34"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "l01go",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Scrim",
+                              "fill": "#00000099",
+                              "width": 390,
+                              "height": 844
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wrMCV",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "bk835",
+                                  "type": "ref",
+                                  "ref": "M1Hn1",
+                                  "name": "Sheet",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "CR021",
+                      "name": "Slot · MB224 · Variant A · Back to GitHub's view, in the options",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "dD0v5",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "UMV3X",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB224 · Variant A · Back to GitHub's view, in the options",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "swzBA",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Recommended. The list's options open with one line at the top, Changed on this device, and Back to GitHub's view: the desktop's Reset, said in words. It puts back the grouping, sort and shown properties GitHub saves for the view; the line and both dots go.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uWIPq",
+                          "name": "MB224 · Variant A · Back to GitHub's view, in the options",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "Qclil",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "HUY7x",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "LaOVG": {
+                                  "content": "Platform Q4"
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "sliders-horizontal"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "plus"
+                                }
+                              }
+                            },
+                            {
+                              "id": "jxqVf",
+                              "type": "ref",
+                              "ref": "x5FXSy",
+                              "name": "Pane",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "DfpbV",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "UrDmO",
+                                  "type": "ref",
+                                  "ref": "RGShR",
+                                  "width": "fill_container",
+                                  "name": "Command line",
+                                  "descendants": {
+                                    "s3BoH2/YDESO": {
+                                      "content": "Current sprint"
+                                    },
+                                    "s3BoH2/YTCQH": {
+                                      "enabled": true
+                                    },
+                                    "s3BoH2/c0AlY1": {
+                                      "content": "34"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "bRGTM",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Scrim",
+                              "fill": "#00000099",
+                              "width": 390,
+                              "height": 844
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VbEBY",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "mdkhG",
+                                  "type": "ref",
+                                  "ref": "BcxyQ",
+                                  "width": "fill_container",
+                                  "name": "Sheet",
+                                  "descendants": {
+                                    "o0DQ6F": {
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "r4SINY",
+                      "name": "Slot · MB225 · Variant B · A strip under the top bar",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "f5bGFk",
+                          "name": "Caption",
+                          "width": 390,
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "y61XwA",
+                              "name": "Caption title",
+                              "fill": "$fg",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "MB225 · Variant B · A strip under the top bar",
+                              "fontFamily": "$font",
+                              "fontSize": 15,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "QWPjv",
+                              "name": "Caption note",
+                              "fill": "$fg-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "The mark as a strip under the top bar, the way the app says other states of a list (D12): the view's name, changed on this device, and Back to GitHub's at its end, always one tap away. Clear, but it takes 36 px from the list for as long as the change lasts, which is for good, not a passing state.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$font",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "KSyDd",
+                          "name": "MB225 · Variant B · A strip under the top bar",
+                          "clip": true,
+                          "width": 390,
+                          "height": 844,
+                          "fill": "$bg",
+                          "cornerRadius": 24,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "children": [
+                            {
+                              "id": "sWfLK",
+                              "type": "ref",
+                              "ref": "BpXu0",
+                              "name": "Status strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "fy9Mf",
+                              "type": "ref",
+                              "ref": "mVWVs",
+                              "name": "Top bar",
+                              "width": "fill_container",
+                              "descendants": {
+                                "LaOVG": {
+                                  "content": "Platform Q4"
+                                },
+                                "f6G1s": {
+                                  "enabled": true
+                                },
+                                "f6G1s/LG7b7": {
+                                  "icon": "sliders-horizontal"
+                                },
+                                "yCsSA/LG7b7": {
+                                  "icon": "plus"
+                                }
+                              }
+                            },
+                            {
+                              "id": "hzA3d",
+                              "type": "ref",
+                              "ref": "NKSWL",
+                              "name": "Changed strip",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "p4Etc",
+                              "type": "ref",
+                              "ref": "x5FXSy",
+                              "name": "Pane",
+                              "width": "fill_container",
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wEw9e",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Holder",
+                              "width": 390,
+                              "height": 844,
+                              "layout": "vertical",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "id": "iTgUu",
+                                  "type": "ref",
+                                  "ref": "RGShR",
+                                  "name": "Command line",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "s3BoH2/YDESO": {
+                                      "content": "Current sprint"
+                                    },
+                                    "s3BoH2/c0AlY1": {
+                                      "content": "34"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -389662,16 +388281,7 @@
                               "width": 390,
                               "height": 844,
                               "layout": "vertical",
-                              "justifyContent": "end",
-                              "children": [
-                                {
-                                  "id": "zZOsM",
-                                  "type": "ref",
-                                  "ref": "LGold",
-                                  "name": "Menu",
-                                  "width": "fill_container"
-                                }
-                              ]
+                              "justifyContent": "end"
                             }
                           ]
                         }

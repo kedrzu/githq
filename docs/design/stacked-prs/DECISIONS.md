@@ -439,3 +439,15 @@ expanded for the session ([D10](#d10)).
 - `J` and `K` walking a collapsed stack's pull requests while an item is open (D9 as first decided) — the walk above.
 - Passing over an expanded entry's own row while an item is open — one more difference between open and closed. The step can leave the panel on the same
   pull request, when the entry opens the first of its rows; that is accepted.
+
+## D27
+
+**The bar's chevron sits right after the stack's name, and a click anywhere on the bar outside the squares drops the rows over the content or closes
+them. While the rows are in view the chevron is not there at all.** (2026-11-09, owner, changing the chevron of [D25](#d25); SP83, SP84)
+
+**Why.** At the right end, after the squares and a divider, the hidden chevron left an empty gap of no visible use at the top of every pull request.
+After the name nothing follows it but the spacer, so it shows without moving anything, and the whole bar is a bigger target than a 24 px button.
+
+**Rejected.**
+
+- The chevron as a button at the right end, keeping its place hidden (D25 as first decided) — the empty gap above.
