@@ -149,6 +149,8 @@ export default defineNuxtConfig({
             __GITHUB_CLIENT_ID__: JSON.stringify(
                 DESKTOP ? (getOAuthClientId(process.env.GITHQ_ENV ?? 'dev') ?? null) : null,
             ),
+            // Only githq.dev's Worker has the production OAuth App's secret; any other build reaches its own origin's.
+            __WORKER_ORIGIN__: JSON.stringify(DESKTOP && process.env.GITHQ_ENV === 'prod' ? 'https://githq.dev' : ''),
         },
     },
 });

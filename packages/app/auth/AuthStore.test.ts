@@ -4,6 +4,7 @@ import { expect, test } from 'bun:test';
 import {
     OAUTH_AUTHORIZE_PATH,
     OAUTH_CALLBACK_PATH,
+    OAUTH_REVOKE_PATH,
     OAUTH_SCOPES,
     OAUTH_STATE_PATTERN,
     OAUTH_TOKEN_PATH,
@@ -155,6 +156,47 @@ test('a stored token without a known user waits for GitHub before the app opens'
     expect(auth.viewer).toEqual(VIEWER);
 });
 
+test('signing out revokes the token at GitHub through the Worker, behind the sign-out', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES });
+    const { auth, browser } = setup(github, { [TOKEN_KEY]: 'gho_ok', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+
+    auth.signOut();
+
+    // Signed out at once, before the Worker has answered.
+    expect(auth.signedIn).toBe(false);
+    expect(browser.local.has(TOKEN_KEY)).toBe(false);
+    await waitUntil(() => github.revoked.length > 0);
+    expect(github.revoked).toEqual([{ method: 'POST', body: { token: 'gho_ok' } }]);
+
+    // Signed out already: nothing more to revoke.
+    auth.signOut();
+    await Promise.resolve();
+    expect(github.revoked).toHaveLength(1);
+});
+
+test('signing out works offline: a revocation that cannot reach the Worker neither throws nor keeps the session', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES, revokeOffline: true });
+    const { auth, browser } = setup(github, { [TOKEN_KEY]: 'gho_ok', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+
+    expect(() => auth.signOut()).not.toThrow();
+    await new Promise(resolve => {
+        setTimeout(resolve, 0);
+    });
+
+    expect(auth.signedIn).toBe(false);
+    expect(browser.local.has(TOKEN_KEY)).toBe(false);
+});
+
+test('a token GitHub rejected is not sent to be revoked', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES, rejectToken: true });
+    const { auth } = setup(github, { [TOKEN_KEY]: 'gho_revoked', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+
+    await auth.refreshViewer();
+
+    expect(auth.failure).toBe('tokenRejected');
+    expect(github.revoked).toEqual([]);
+});
+
 test('signing out in another tab signs this tab out, and nothing more goes to GitHub with the old token', async () => {
     const github = fakeGitHub({ scopes: ALL_SCOPES });
     const { auth, browser } = setup(github, { [TOKEN_KEY]: 'gho_ok', [VIEWER_KEY]: JSON.stringify(VIEWER) });
@@ -170,6 +212,8 @@ test('signing out in another tab signs this tab out, and nothing more goes to Gi
     expect(auth.failure).toBeNull();
     await auth.refreshViewer();
     expect(github.tokensSeen).toHaveLength(seen);
+    // The tab that signed out revokes the token; this one only follows.
+    expect(github.revoked).toEqual([]);
 });
 
 test('signing in as someone else in another tab moves this tab to that user', async () => {
@@ -250,12 +294,15 @@ interface FakeGitHubOptions {
     viewers?: Record<string, Viewer>;
     /** GraphQL calls wait for this before answering. */
     answerAfter?: Promise<unknown>;
+    /** The Worker's revocation fails at the network. */
+    revokeOffline?: boolean;
 }
 
-/** The Worker's token exchange and GitHub's GraphQL `viewer`, recording what reached them. */
+/** The Worker's token exchange and revocation and GitHub's GraphQL `viewer`, recording what reached them. */
 function fakeGitHub(options: FakeGitHubOptions) {
     const exchanges: unknown[] = [];
     const tokensSeen: string[] = [];
+    const revoked: unknown[] = [];
 
     async function fetch(input: string | Request | URL, init?: RequestInit): Promise<Response> {
         const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -273,6 +320,15 @@ function fakeGitHub(options: FakeGitHubOptions) {
             }
 
             return Response.json({ accessToken: 'gho_new', scopes: options.scopes });
+        }
+
+        if (url === OAUTH_REVOKE_PATH) {
+            if (options.revokeOffline) {
+                throw new TypeError('Failed to fetch');
+            }
+
+            revoked.push({ method: init?.method, body: JSON.parse(body) });
+            return new Response(null, { status: 204 });
         }
 
         if (url === 'https://api.github.com/graphql') {
@@ -298,7 +354,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
         throw new Error(`Unexpected request to ${url}`);
     }
 
-    return { fetch, exchanges, tokensSeen };
+    return { fetch, exchanges, tokensSeen, revoked };
 }
 
 function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, string> = {}, origin: string = ORIGIN) {

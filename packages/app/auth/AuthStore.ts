@@ -3,6 +3,7 @@ import {
     hasOAuthScopes,
     OAUTH_AUTHORIZE_PATH,
     OAUTH_CALLBACK_PATH,
+    OAUTH_REVOKE_PATH,
     OAUTH_TOKEN_PATH,
     SIGNED_IN_HINT_COOKIE,
 } from '@githq/github/oauth.js';
@@ -73,6 +74,10 @@ interface PendingSignIn {
  *
  * Every tab of the app shares the session: signing out in one signs out the others, and signing in as someone
  * else in one moves the others to that user.
+ *
+ * Signing out also revokes the token at GitHub, through the Worker ({@link OAUTH_REVOKE_PATH}): GitHub keeps ten tokens
+ * per user and OAuth App, and past that every new sign-in — on the web or in the desktop app — revokes another one,
+ * which signed the other device out.
  */
 export type AuthStore = Resolved<typeof AuthStore>;
 export const AuthStore = defineService({
@@ -184,8 +189,16 @@ export const AuthStore = defineService({
             return await acceptToken(token, '/', signal);
         }
 
-        /** Forgets the token and the user. With a `failure`, the landing page explains it. */
+        /**
+         * Forgets the token and the user. With a `failure`, the landing page explains it. Without one — the user signed
+         * out — the token is revoked at GitHub too, behind the sign-out: a rejected token is gone already.
+         */
         function signOut(failure: SignInFailure | null = null) {
+            const token = tokenRef.value;
+            if (token !== null && failure === null) {
+                void revokeToken(token);
+            }
+
             vault.remove();
             browser.localStorage.removeItem(VIEWER_KEY);
             tokenRef.value = null;
@@ -243,6 +256,26 @@ export const AuthStore = defineService({
             storeViewer(token, viewer);
             failureRef.value = null;
             return { ok: true, returnTo };
+        }
+
+        /**
+         * Asks the Worker to revoke `token` at GitHub. Nothing waits for it, and a failure — offline, the Worker down —
+         * only leaves the token to GitHub's own limits. `__WORKER_ORIGIN__`: the desktop app's webview is not on
+         * githq.dev.
+         */
+        async function revokeToken(token: string) {
+            try {
+                const response = await browser.fetch(__WORKER_ORIGIN__ + OAUTH_REVOKE_PATH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token }),
+                });
+                if (!response.ok) {
+                    logger.warn('The Worker could not revoke the token', { status: response.status });
+                }
+            } catch (error) {
+                logger.warn('The token revocation could not be reached', { error });
+            }
         }
 
         async function fetchViewer(token: string): Promise<Viewer> {

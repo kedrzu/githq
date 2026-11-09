@@ -66,7 +66,7 @@ test('signed out, the app opens on its own sign-in, never on the landing page: a
     await expect(landingHeading).toBeHidden();
 });
 
-test('the token is kept in the OS keychain, never in web storage — signed in after a reload — and signing out deletes it', async ({
+test('the token is kept in the OS keychain, never in web storage — signed in after a reload — and signing out deletes and revokes it', async ({
     page,
     github,
     native,
@@ -84,6 +84,7 @@ test('the token is kept in the OS keychain, never in web storage — signed in a
     await shell.signOut(LOGIN);
     await expect(new DesktopSignInScreenHarness(page).signInButton).toBeVisible();
     await expect.poll(() => native.keychain).toBeNull();
+    await expect.poll(() => github.revokedTokens).toEqual([SAMPLE_TOKEN]);
     expect(await readWebStorage(page)).not.toContainEqual(expect.stringContaining(SAMPLE_TOKEN));
 
     // Started again, the app is signed out.
