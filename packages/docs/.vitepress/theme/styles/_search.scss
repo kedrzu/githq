@@ -1,0 +1,318 @@
+@use '../../../../app/styles/tokens' as *;
+@use 'icons' as *;
+
+// The search (`DOC4 · Searching`, `Docs / Search result`): the default theme's local search box, opened by the top bar's
+// field, `/`, ⌘K or Ctrl+K, in the docs' look. Its markup and keys stay the default theme's; the config shows each
+// result's excerpt (`detailedView`) and names the footer's keys. The default theme doesn't group results by section:
+// each result names its page and heading instead ("page › heading").
+//
+// Contrast: the accent on the selected row ($color-sel) is 5.3:1, on the box ($color-bg-2) 5.5:1; $color-fg-dim on
+// either 5.2:1 or more.
+$search-width: 640px;
+
+html.dark {
+    .VPLocalSearchBox {
+        --vp-local-search-bg: #{$color-bg-2};
+        --vp-local-search-result-bg: #{$color-bg-2};
+        --vp-local-search-result-border: transparent;
+        --vp-local-search-result-selected-bg: #{$color-sel};
+        --vp-local-search-result-selected-border: transparent;
+        --vp-local-search-highlight-bg: transparent;
+        --vp-local-search-highlight-text: #{$color-accent};
+
+        // Counts the results for the footer's "N results".
+        counter-reset: docs-search-results;
+    }
+
+    // The page dims behind the box (the theme's own backdrop variable is clear, for the phone's menu).
+    .VPLocalSearchBox .backdrop {
+        background: rgb(1 4 9 / 70%);
+    }
+
+    .VPLocalSearchBox .shell {
+        gap: 0;
+        width: min(100vw - 48px, #{$search-width});
+        max-height: min(100vh - 160px, 720px);
+        padding: 0;
+        margin: 96px auto 64px;
+        overflow: hidden;
+        border: 1px solid $color-border-2;
+        border-radius: 12px;
+        box-shadow: 0 16px 48px rgb(0 0 0 / 50%);
+    }
+
+    // The input: the search icon in the accent, the query, Esc at the end.
+    .VPLocalSearchBox .search-bar {
+        gap: $spacing-10;
+        padding: 14px $spacing-16;
+        border: 0;
+        border-bottom: 1px solid $color-border;
+        border-radius: 0;
+
+        &::after {
+            flex: none;
+            padding: 1px 5px;
+            font-family: $font-family-mono;
+            font-size: $font-size-4xs;
+            line-height: 14px;
+            color: $color-fg-2;
+            content: 'Esc';
+            background: $color-bg-3;
+            border: 1px solid $color-border-2;
+            border-radius: $radius-sm;
+        }
+    }
+
+    .VPLocalSearchBox .search-icon {
+        margin: 0;
+        font-size: 18px;
+        color: $color-accent;
+    }
+
+    .VPLocalSearchBox .search-input {
+        padding: 0;
+        font-size: 16px;
+        line-height: 22px;
+        color: $color-fg;
+        caret-color: $color-accent;
+
+        &::placeholder {
+            color: $color-fg-dim;
+        }
+
+        // The box is the field: no ring inside it, the caret shows where typing goes.
+        &:focus-visible {
+            outline: 0;
+        }
+
+        &::-webkit-search-cancel-button {
+            appearance: none;
+        }
+    }
+
+    // Excerpts always show (`detailedView`), and Escape or a new query clears: no buttons for either.
+    .VPLocalSearchBox .search-actions:not(.before) {
+        display: none;
+    }
+
+    // The results: no list at all before a query.
+    .VPLocalSearchBox .results {
+        gap: $spacing-2;
+        padding: $spacing-12 $spacing-8;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    .VPLocalSearchBox .results > li[role='option'] {
+        counter-increment: docs-search-results;
+    }
+
+    // Room on the left for the icon, which sits outside the titles' wrapping line.
+    .VPLocalSearchBox .result {
+        gap: $spacing-12;
+        align-items: flex-start;
+        padding: $spacing-10 $spacing-12 $spacing-10 40px;
+        line-height: 20px;
+        background: var(--vp-local-search-result-bg);
+        border: 0;
+        border-radius: $radius-lg;
+
+        // Not clipped: the icon sits in the result's padding, outside it.
+        > div {
+            min-width: 0;
+            margin: 0;
+            overflow: visible;
+        }
+    }
+
+    // "Page › heading": the page in the main colour, its headings dimmed. The default theme colours a selected row's
+    // titles with `--vp-c-brand-1` (and `!important`); here that's the main colour, and the icon's the accent.
+    .VPLocalSearchBox .titles {
+        flex-wrap: wrap;
+        gap: $spacing-6;
+        padding: 0;
+        font-size: $font-size-lg;
+        color: $color-fg-dim;
+    }
+
+    .VPLocalSearchBox .result.selected .titles {
+        --vp-c-brand-1: #{$color-fg-dim};
+    }
+
+    .VPLocalSearchBox .titles .title {
+        gap: $spacing-6;
+        font-weight: $font-weight-normal;
+    }
+
+    .VPLocalSearchBox .title-icon + .title {
+        font-weight: $font-weight-medium;
+        color: $color-fg;
+    }
+
+    .VPLocalSearchBox .result.selected .title-icon + .title {
+        --vp-c-brand-1: #{$color-fg};
+    }
+
+    .VPLocalSearchBox .title .local-search-icon {
+        font-size: 14px;
+        opacity: 1;
+    }
+
+    // The icon: a page for a page's own result, a # for a heading's.
+    .VPLocalSearchBox .title-icon {
+        --vp-c-brand-1: #{$color-fg-3};
+
+        // In the result's left padding, level with the first line (`.titles` is the default theme's positioned box).
+        position: absolute;
+        top: 2px;
+        left: -28px;
+        font-size: 0;
+        opacity: 1;
+
+        &::before {
+            @include icon($icon-hash, 16px);
+
+            display: block;
+        }
+    }
+
+    .VPLocalSearchBox .titles:has(.title-icon + .title.main) .title-icon::before {
+        mask-image: $icon-file-text;
+    }
+
+    .VPLocalSearchBox .result.selected .title-icon {
+        --vp-c-brand-1: #{$color-accent};
+    }
+
+    // The excerpt: the result's text around the match (the default theme scrolls to it), two lines, the match in the
+    // accent.
+    .VPLocalSearchBox .excerpt-wrapper {
+        margin-top: 3px;
+    }
+
+    .VPLocalSearchBox .excerpt {
+        max-height: 36px;
+        margin-top: 0;
+        opacity: 1;
+
+        .vp-doc {
+            color: $color-fg-2;
+        }
+
+        // Running text: the result's callouts, lists and code lose their boxes, and its headings and a callout's title
+        // go (the titles above name them).
+        .vp-doc :is(h1, h2, h3, h4, h5, h6, .custom-block-title, .copy, .lang) {
+            display: none;
+        }
+
+        .vp-doc :is(div, p, ul, ol, li, blockquote, pre, code, table, tr, td, th) {
+            display: inline;
+            padding: 0;
+            margin: 0;
+            color: inherit;
+            background: none;
+            border: 0;
+        }
+
+        .vp-doc :is(p, li, td)::after {
+            content: ' ';
+        }
+
+        // A key keeps its chip, within the line.
+        .vp-doc kbd {
+            padding: 0 4px;
+            line-height: 12px;
+        }
+
+        mark {
+            padding: 0;
+            font-weight: $font-weight-semibold;
+        }
+    }
+
+    // Two whole lines show: nothing to fade at the edges.
+    .VPLocalSearchBox :is(.excerpt-gradient-top, .excerpt-gradient-bottom) {
+        display: none;
+    }
+
+    .VPLocalSearchBox .titles mark {
+        padding: 0;
+        color: inherit;
+    }
+
+    .VPLocalSearchBox .no-results {
+        padding: $spacing-24 $spacing-16;
+        font-size: $font-size-lg;
+        color: $color-fg-2;
+    }
+
+    // The footer: the keys, then how many results.
+    .VPLocalSearchBox .search-keyboard-shortcuts {
+        gap: 18px;
+        padding: $spacing-10 $spacing-16;
+        font-size: $font-size-xs;
+        line-height: 16px;
+        color: $color-fg-dim;
+        border-top: 1px solid $color-border;
+        opacity: 1;
+
+        > span {
+            gap: $spacing-6;
+        }
+
+        kbd {
+            min-width: 0;
+            padding: 1px 5px;
+            font-size: $font-size-4xs;
+            line-height: 14px;
+            color: $color-fg-2;
+            text-transform: capitalize;
+            background: $color-bg-3;
+            border: 1px solid $color-border-2;
+            border-radius: $radius-sm;
+            box-shadow: none;
+        }
+
+        kbd + kbd {
+            margin-left: -3px;
+        }
+
+        .navigate-icon {
+            font-size: 12px;
+        }
+
+        &::after {
+            margin-left: auto;
+            content: counter(docs-search-results) ' results';
+        }
+    }
+
+    .VPLocalSearchBox .shell:has(.results > li[role='option']:only-child) .search-keyboard-shortcuts::after {
+        content: '1 result';
+    }
+
+    .VPLocalSearchBox .shell:not(:has(.results > li[role='option'])) .search-keyboard-shortcuts::after {
+        content: none;
+    }
+
+    // A phone: the default theme's box fills the screen, with its back button before the input.
+    @media (width < 768px) {
+        .VPLocalSearchBox .shell {
+            width: 100vw;
+            max-height: none;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+        }
+
+        .VPLocalSearchBox .search-bar {
+            padding: $spacing-10 $spacing-12;
+
+            &::after {
+                display: none;
+            }
+        }
+    }
+}

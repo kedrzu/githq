@@ -1,0 +1,8 @@
+@use '../../../../app/styles/tokens' as *;
+
+// The home page (`DOC1`, `DocsHome`) ends with its own footer: none of the default theme's space after it.
+html.dark {
+    .VPHome {
+        margin-bottom: 0;
+    }
+}

@@ -6,6 +6,9 @@ export interface DocsPage {
     link: string;
 }
 
+/** The lucide icons a section can have: one for each the theme imports (`theme/sectionIcons.ts`). */
+export type SectionIcon = 'rocket' | 'layout-list' | 'cog';
+
 /** A group of pages: one block of the sidebar, one link of the top bar, one card on the home page. */
 export interface DocsSection {
     /** The folder under `src/` holding the section's pages, e.g. `getting-started`. */
@@ -13,8 +16,8 @@ export interface DocsSection {
 
     title: string;
 
-    /** A lucide icon name (https://lucide.dev/icons), e.g. `rocket`. */
-    icon: string;
+    /** The section's lucide icon (https://lucide.dev/icons); the theme draws it (`theme/sectionIcons.ts`). */
+    icon: SectionIcon;
 
     /** One sentence for the section's card on the home page. */
     description: string;

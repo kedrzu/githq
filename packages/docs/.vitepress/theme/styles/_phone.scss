@@ -30,6 +30,11 @@
             padding-right: 44px;
         }
 
+        // A page with no sidebar (the home page, "not found") has no menu button: the search ends the bar.
+        .VPNavBar:not(.has-sidebar) .content-body {
+            padding-right: 0;
+        }
+
         // The sections are the menu's.
         .VPNavBarMenu {
             display: none;

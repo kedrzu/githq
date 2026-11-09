@@ -46,6 +46,28 @@ html.dark {
         }
     }
 
+    // A page with no sidebar (the home page, "not found"): the bar as on an article, the search where the sidebar would
+    // end, so it doesn't move from page to page. Its container is the centred 1440 the sidebar's pages line up in.
+    @media (width >= 960px) {
+        .VPNavBar:not(.has-sidebar) .wrapper {
+            padding: 0;
+        }
+
+        .VPNavBar:not(.has-sidebar) .container {
+            max-width: var(--vp-layout-max-width);
+        }
+
+        .VPNavBar:not(.has-sidebar) .container > .title {
+            flex: none;
+            width: var(--vp-sidebar-width);
+            padding-left: $spacing-24;
+        }
+
+        .VPNavBar:not(.has-sidebar) .content {
+            padding-right: $spacing-24;
+        }
+    }
+
     // The search field (`Docs / Search field`), 280 wide right after the sidebar.
     .VPNavBarSearch {
         padding-left: 0;

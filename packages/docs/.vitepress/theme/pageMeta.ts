@@ -5,8 +5,14 @@ import { computed } from 'vue';
 import type { DocsSection } from '../sections.js';
 import { sections } from '../sections.js';
 
-/** A page's date as the article shows it, the same on the server and in every time zone: "Nov 9, 2026". */
+/** A page's date as the docs show it, the same on the server and in every time zone: "Nov 9, 2026". */
 const DATE_FORMAT = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' });
+
+/** A date as the docs show it, for a `<time>`: the text and the ISO form for its `datetime`. */
+export function formatDate(timestamp: number) {
+    const date = new Date(timestamp);
+    return { text: DATE_FORMAT.format(date), iso: date.toISOString() };
+}
 
 /**
  * What the article says about the page it shows: its section, when and in which commit it last changed, how long it
@@ -26,8 +32,7 @@ export function usePageMeta() {
         if (!timestamp || !Number.isFinite(timestamp)) {
             return undefined;
         }
-        const date = new Date(timestamp);
-        return { text: DATE_FORMAT.format(date), iso: date.toISOString() };
+        return formatDate(timestamp);
     });
 
     const readingMinutes = computed(() => numberOrUndefined(frontmatter.value.readingMinutes));

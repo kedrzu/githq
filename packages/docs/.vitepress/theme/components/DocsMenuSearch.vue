@@ -2,10 +2,7 @@
 <script lang="ts" setup>
 import { Search } from 'lucide-vue-next';
 
-function openSearch() {
-  // The default theme's search opens on ⌘K and offers no other way in from outside its button.
-  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
-}
+import { openSearch } from '../search.js';
 </script>
 
 <template>

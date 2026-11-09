@@ -56,6 +56,12 @@ export default defineConfig({
         pageData.frontmatter.commit = commit || undefined;
     },
 
+    // VitePress renders the "not found" page (`theme/components/DocsNotFound.vue`) but writes `404.html` with an empty
+    // `#app`, to fill in the browser. The Worker returns that file for an unknown `/docs/…` address: it carries the page
+    // itself, so it reads without JavaScript and doesn't flash empty; the browser hydrates it as the same page.
+    transformHtml: (html, _file, { page, content }) =>
+        page === '404.md' ? html.replace('<div id="app"></div>', () => `<div id="app">${content}</div>`) : undefined,
+
     vite: {
         // The dev server (port 8789, `package.json`) is also reached through `nuxt dev` on 8787, which proxies
         // `/docs/**` here (`packages/app/nuxt.config.ts`) but cannot carry a WebSocket: the HMR socket goes to
@@ -86,7 +92,16 @@ export default defineConfig({
         search: {
             provider: 'local',
             options: {
-                translations: { button: { buttonText: 'Search the docs', buttonAriaLabel: 'Search the docs' } },
+                // Each result shows its text around the match (`DOC4`), always: `theme/styles/search.scss` hides the
+                // toggle.
+                detailedView: true,
+                translations: {
+                    button: { buttonText: 'Search the docs', buttonAriaLabel: 'Search the docs' },
+                    modal: {
+                        noResultsText: 'Nothing in the docs for',
+                        footer: { navigateText: 'Move', selectText: 'Open', closeText: 'Close' },
+                    },
+                },
             },
         },
         editLink: { pattern: EDIT_URL_PATTERN, text: 'Edit this page on GitHub' },
