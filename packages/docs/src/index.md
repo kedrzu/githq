@@ -7,6 +7,6 @@ markdownStyles: false
 home:
   tag: githq docs
   title: How githq works, and how to use it
-  lead: Getting set up, every screen and key, and what happens between your browser and GitHub.
+  lead: Getting set up, the screens you work in, and what happens between your device and GitHub.
   search: Search the docs, e.g. "sign in" or "projects"
 ---

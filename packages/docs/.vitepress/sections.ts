@@ -32,7 +32,7 @@ export const sections: DocsSection[] = [
         id: 'getting-started',
         title: 'Getting started',
         icon: 'rocket',
-        description: 'Sign in, install the app and pick the repositories githq keeps in sync.',
+        description: 'Sign in on the web or in the desktop app, and pick what githq keeps in sync.',
         pages: [
             ['What is githq', 'what-is-githq'],
             ['Sign in and install', 'sign-in-and-install'],
@@ -56,7 +56,7 @@ export const sections: DocsSection[] = [
         id: 'how-it-works',
         title: 'How it works',
         icon: 'cog',
-        description: 'Where your data lives and what githq is allowed to do with it.',
+        description: 'How githq keeps its copy of GitHub fresh, and what it may do with your account.',
         pages: [
             ['GitHub is the source of truth', 'github-is-the-source-of-truth'],
             ['Privacy and permissions', 'privacy-and-permissions'],
