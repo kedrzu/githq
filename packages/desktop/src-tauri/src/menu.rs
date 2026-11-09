@@ -31,8 +31,13 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
                 continue;
             }
 
-            let close_window =
-                MenuItem::with_id(app, CLOSE_WINDOW_ID, CLOSE_WINDOW_TEXT, true, Some("CmdOrCtrl+W"))?;
+            let close_window = MenuItem::with_id(
+                app,
+                CLOSE_WINDOW_ID,
+                CLOSE_WINDOW_TEXT,
+                true,
+                Some("CmdOrCtrl+W"),
+            )?;
             submenu.remove_at(position)?;
             submenu.insert(&close_window, position)?;
         }
