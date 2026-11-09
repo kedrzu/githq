@@ -26,3 +26,10 @@ declare const __DESKTOP__: boolean;
  * side's is) — in the desktop build only; `null` in the web builds, which link through the Worker.
  */
 declare const __GITHUB_CLIENT_ID__: string | null;
+
+/**
+ * Where the Worker's API is, prefixed to its paths: `''` (the app's own origin) on the web and in a development
+ * desktop build, whose window is on `nuxt dev`; `https://githq.dev` in a desktop build of the production OAuth App
+ * (`GITHQ_ENV=prod`), whose window is not on any web origin.
+ */
+declare const __WORKER_ORIGIN__: string;

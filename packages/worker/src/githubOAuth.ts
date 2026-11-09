@@ -28,8 +28,22 @@ const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 /** GitHub's page of an OAuth App the user authorised, followed by its client ID. */
 const GITHUB_APPLICATION_URL = 'https://github.com/settings/connections/applications/';
 
+/** GitHub's REST API, where an OAuth App's token is revoked. */
+const GITHUB_API_URL = 'https://api.github.com';
+
 /** GitHub's codes are 20 hex characters; the bound only keeps a junk body from being forwarded whole. */
 const MAX_CODE_LENGTH = 256;
+
+/** An OAuth App's user token: `gho_` and base62 (40 characters today; GitHub allows for up to 255). */
+const OAUTH_APP_TOKEN_PATTERN = /^gho_[A-Za-z0-9]{1,251}$/;
+
+/** What {@link revokeToken} answers every origin with: a plain JSON `POST`, no credentials. */
+const REVOKE_CORS_HEADERS = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'POST',
+    'access-control-allow-headers': 'content-type',
+    'access-control-max-age': '86400',
+};
 
 /** `GET /api/auth/authorize?state=…`: redirects the browser to GitHub's consent screen. */
 export function authorize(request: Request, env: WorkerEnv): Response {
@@ -128,6 +142,77 @@ export async function exchangeToken(request: Request, env: WorkerEnv): Promise<R
     return await requestToken({ clientId, clientSecret, code, redirectUri });
 }
 
+/**
+ * `POST /api/auth/revoke` with JSON `{ token }`: revokes an OAuth token of githq's OAuth App at GitHub, which needs
+ * the client secret. `204` whether GitHub still knew the token or not, so the endpoint tells no one whether a token
+ * is alive.
+ *
+ * Unlike the rest, it answers CORS for any origin: the desktop app's webview calls it from its own origin. That gives
+ * no one anything, since only a token the caller holds can be revoked. The token travels in the body only, never in
+ * the URL that the Worker's logs record, and anything not shaped like an OAuth App token is refused before GitHub is
+ * asked, so the open endpoint cannot spend githq's credentials on junk.
+ */
+export async function revokeToken(request: Request, env: WorkerEnv): Promise<Response> {
+    if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: REVOKE_CORS_HEADERS });
+    }
+
+    if (request.method !== 'POST') {
+        return withRevokeCors(methodNotAllowed('POST, OPTIONS'));
+    }
+
+    const clientId = getOAuthClientId(env.GITHQ_ENV);
+    const clientSecret = env.GITHUB_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+        return withRevokeCors(notConfigured());
+    }
+
+    const contentType = request.headers.get('content-type') ?? '';
+    if (!/^application\/json\s*(;|$)/i.test(contentType)) {
+        return withRevokeCors(
+            authError(415, { error: 'unsupported_media_type', description: 'Send application/json' }),
+        );
+    }
+
+    const body = parseJson(await request.text().catch(() => null));
+    const token = typeof body === 'object' && body !== null && 'token' in body ? body.token : undefined;
+    if (typeof token !== 'string' || !OAUTH_APP_TOKEN_PATTERN.test(token)) {
+        return withRevokeCors(
+            authError(400, { error: 'invalid_request', description: 'token is missing or not an OAuth App token' }),
+        );
+    }
+
+    let response: Response;
+    try {
+        response = await fetch(`${GITHUB_API_URL}/applications/${encodeURIComponent(clientId)}/token`, {
+            method: 'DELETE',
+            headers: {
+                accept: 'application/vnd.github+json',
+                authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+                'content-type': 'application/json',
+                'user-agent': 'githq',
+            },
+            body: JSON.stringify({ access_token: token }),
+        });
+    } catch {
+        console.error('GitHub token revocation unreachable');
+        return withRevokeCors(authError(502, { error: 'github_unreachable' }));
+    }
+
+    // 404: GitHub no longer knows the token (revoked already); undocumented, observed.
+    if (response.status === 204 || response.status === 404) {
+        return new Response(null, { status: 204, headers: { ...REVOKE_CORS_HEADERS, 'cache-control': 'no-store' } });
+    }
+
+    console.error(`GitHub token revocation answered ${response.status}`);
+    return withRevokeCors(
+        authError(502, {
+            error: 'github_bad_response',
+            description: `GitHub answered ${response.status}`,
+        }),
+    );
+}
+
 interface RequestTokenParams {
     clientId: string;
     clientSecret: string;
@@ -216,6 +301,13 @@ function methodNotAllowed(allow: string): Response {
         status: 405,
         headers: { allow, 'cache-control': 'no-store' },
     });
+}
+
+function withRevokeCors(response: Response): Response {
+    for (const [name, value] of Object.entries(REVOKE_CORS_HEADERS)) {
+        response.headers.set(name, value);
+    }
+    return response;
 }
 
 function authError(status: number, body: OAuthErrorBody): Response {

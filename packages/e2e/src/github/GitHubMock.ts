@@ -2,7 +2,7 @@ import type { BrowserContext, Page, Request, Route } from '@playwright/test';
 
 import type { Sdk } from '@githq/github/generated.gen.js';
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
-import { OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
+import { OAUTH_REVOKE_PATH, OAUTH_TOKEN_PATH } from '@githq/github/oauth.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 
 /** A GraphQL operation the app sends: a method of the generated SDK (`packages/github/src/operations`). */
@@ -171,8 +171,9 @@ const AVATAR_PNG = Buffer.from(
  * The Worker's half of the sign-in is the one call to GitHub that a browser does not make: the Worker trades
  * the code for a token at `github.com`. Its endpoint (`POST /api/auth/token`) is therefore answered in the
  * browser too ({@link tokenExchange}), and unrouted like any other until a test registers it — so the Worker
- * never calls GitHub during the tests. The Worker's other way to GitHub, the redirect to its consent screen,
- * is answered like a request to that screen (Chromium would not route it).
+ * never calls GitHub during the tests. So is its revocation of a token on signing out (`POST /api/auth/revoke`),
+ * always answered `204` and recorded ({@link revokedTokens}). The Worker's other way to GitHub, the redirect to its
+ * consent screen, is answered like a request to that screen (Chromium would not route it).
  *
  * The issue search (`GET /search/issues`), which every signed-in app polls for "my work", is always answered:
  * from {@link searchIssues}, finding nothing until a test says otherwise — a query it does not know is unrouted.
@@ -225,6 +226,7 @@ export class GitHubMock {
         handler: (request: GitHubRestRequest, match: RegExpExecArray) => GitHubRestAnswer;
     }[] = [];
     private tokenExchangeAnswer: GitHubTokenExchange | GitHubHttpError | null = null;
+    private readonly revoked: string[] = [];
     private readonly unrouted: string[] = [];
     private readonly apiRequestsByPage = new Map<Page, string[]>();
     /** While answers are held: settles when they are released. */
@@ -246,6 +248,16 @@ export class GitHubMock {
             url => url.pathname === OAUTH_TOKEN_PATH,
             route => this.handleTokenExchange(route),
         );
+        await context.route(
+            // The revocation on signing out, which the Worker forwards to GitHub's API: answered in the browser too.
+            url => url.pathname === OAUTH_REVOKE_PATH,
+            route => this.handleRevocation(route),
+        );
+    }
+
+    /** The tokens the app asked the Worker to revoke (`POST /api/auth/revoke`), oldest first. */
+    get revokedTokens(): readonly string[] {
+        return this.revoked;
     }
 
     /**
@@ -539,6 +551,18 @@ export class GitHubMock {
                 this.searchRateLimit,
             ),
         );
+    }
+
+    private async handleRevocation(route: Route) {
+        const request = route.request();
+        const body: unknown = parseJson(request.postData());
+        if (request.method() !== 'POST' || typeof body !== 'object' || body === null || !('token' in body)) {
+            await this.reject(route, describe(request));
+            return;
+        }
+
+        this.revoked.push(String(body.token));
+        await route.fulfill({ status: 204 });
     }
 
     private async handleTokenExchange(route: Route) {

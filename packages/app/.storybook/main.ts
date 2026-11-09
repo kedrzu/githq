@@ -33,6 +33,7 @@ const config: StorybookConfig = {
                 __LOCAL_BUILD__: 'false',
                 __DESKTOP__: 'false',
                 __GITHUB_CLIENT_ID__: 'null',
+                __WORKER_ORIGIN__: '""',
             },
             resolve: {
                 alias: {
