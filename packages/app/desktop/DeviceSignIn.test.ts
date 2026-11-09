@@ -203,6 +203,7 @@ function createFakeNative(): FakeNative {
             onScrollPhase: () => Promise.reject(new Error('Not expected')),
             takeOpenedLink: () => Promise.reject(new Error('Not expected')),
             onLinkOpened: () => Promise.reject(new Error('Not expected')),
+            onCloseWindowPressed: () => Promise.reject(new Error('Not expected')),
         },
         finishes: [],
         startAnswer: null,
