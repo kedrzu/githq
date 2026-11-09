@@ -180,7 +180,7 @@ const nameWithOwner = computed(() => {
           size="sm"
           :icon="mergeIcon"
           :kbd="EDIT_KEYS.merge"
-          :aria-keyshortcuts="EDIT_KEYS.merge"
+          :keyshortcuts="EDIT_KEYS.merge"
           @click.stop="merging?.open(mergeId, { wholeStack: true })"
         >
           {{ mergeLabel }}

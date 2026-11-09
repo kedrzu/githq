@@ -20,7 +20,7 @@ const meta = {
                             modelValue={chosen.value}
                             onUpdate:modelValue={value => (chosen.value = value)}
                             options={OPTIONS}
-                            aria-label="A number"
+                            label="A number"
                             style={{ display: 'flex', gap: '8px' }}
                         >
                             {{ default: ({ option }: { option: { value: string } }) => option.value }}

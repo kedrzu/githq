@@ -143,7 +143,7 @@ async function tryAgain() {
         :size="onScreen ? 'md' : 'sm'"
         :icon="onScreen ? RotateCw : undefined"
         :kbd="onScreen ? RETRY_KEY : undefined"
-        :aria-keyshortcuts="onScreen ? RETRY_KEY : undefined"
+        :keyshortcuts="onScreen ? RETRY_KEY : undefined"
         :busy="retrying"
         @click="tryAgain"
       >
@@ -155,7 +155,7 @@ async function tryAgain() {
         :size="onScreen ? 'md' : 'sm'"
         :icon="onScreen ? Github : undefined"
         :kbd="onScreen ? OPEN_KEY : undefined"
-        :aria-keyshortcuts="onScreen ? OPEN_KEY : undefined"
+        :keyshortcuts="onScreen ? OPEN_KEY : undefined"
         :link="cause.url"
         target="_blank"
         rel="noopener noreferrer"

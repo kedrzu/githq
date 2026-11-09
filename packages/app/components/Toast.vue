@@ -217,7 +217,7 @@ function getElapsed(remaining: number, total: number) {
           variant="secondary"
           size="sm"
           :kbd="active ? 'Escape' : undefined"
-          :aria-keyshortcuts="active ? 'Escape' : undefined"
+          :keyshortcuts="active ? 'Escape' : undefined"
           @click="dismiss"
         >
           {{ t(l.dismiss) }}

@@ -481,7 +481,7 @@ function hasItemView(entry: ProjectEntry) {
               variant="secondary"
               :icon="Plus"
               :kbd="APP_KEYS.commandMenu"
-              :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+              :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
               @click="emit('addItems')"
             >
               {{ t(l.addExistingIssues) }}
@@ -490,7 +490,7 @@ function hasItemView(entry: ProjectEntry) {
               variant="secondary"
               :icon="SquarePen"
               :kbd="NEW_ISSUE_KEY"
-              :aria-keyshortcuts="NEW_ISSUE_KEY"
+              :keyshortcuts="NEW_ISSUE_KEY"
               @click="emit('newIssue', null, null)"
             >
               {{ t(l.newIssue) }}

@@ -81,7 +81,7 @@ function onClick(event: MouseEvent) {
       :icon="collapsed ? ChevronRight : ChevronDown"
       :label="collapsed ? t(l.expand) : t(l.collapse)"
       :kbd="REVIEW_KEYS.collapse"
-      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.collapse)"
+      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.collapse)"
       @click="emit('toggleCollapsed')"
     />
     <ReviewChange
@@ -145,7 +145,7 @@ function onClick(event: MouseEvent) {
       size="sm"
       :icon="viewed ? SquareCheckBig : Square"
       :kbd="REVIEW_KEYS.viewed"
-      :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
+      :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
       :aria-pressed="viewed"
       @click="emit('toggleViewed')"
     >

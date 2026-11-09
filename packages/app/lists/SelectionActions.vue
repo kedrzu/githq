@@ -240,7 +240,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           size="sm"
           :icon="UserPlus"
           :kbd="EDIT_KEYS.assignees"
-          :aria-keyshortcuts="EDIT_KEYS.assignees"
+          :keyshortcuts="EDIT_KEYS.assignees"
         >
           {{ t(l.assign) }}
         </Button>
@@ -264,7 +264,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           size="sm"
           :icon="Tag"
           :kbd="EDIT_KEYS.labels"
-          :aria-keyshortcuts="EDIT_KEYS.labels"
+          :keyshortcuts="EDIT_KEYS.labels"
         >
           {{ t(l.label) }}
         </Button>
@@ -286,7 +286,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           size="sm"
           :icon="Milestone"
           :kbd="EDIT_KEYS.milestone"
-          :aria-keyshortcuts="EDIT_KEYS.milestone"
+          :keyshortcuts="EDIT_KEYS.milestone"
         >
           {{ t(l.milestone) }}
         </Button>
@@ -302,7 +302,7 @@ function optionsOf(repositoriesMetadata: readonly RepositoryMetadata[], picker: 
           size="sm"
           :icon="CircleCheckBig"
           :kbd="EDIT_KEYS.state"
-          :aria-keyshortcuts="EDIT_KEYS.state"
+          :keyshortcuts="EDIT_KEYS.state"
         >
           {{ t(l.close) }}
         </Button>

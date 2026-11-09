@@ -247,7 +247,7 @@ function turnOff() {
           <div :class="css.savingView_actions">
             <Button
               variant="primary"
-              :aria-keyshortcuts="formatAriaKeyShortcuts(COMBINE_KEY)"
+              :keyshortcuts="formatAriaKeyShortcuts(COMBINE_KEY)"
               :busy="combining"
               @click="combineAndTurnOn"
             >
@@ -255,7 +255,7 @@ function turnOff() {
             </Button>
             <Button
               kbd="Escape"
-              aria-keyshortcuts="Escape"
+              keyshortcuts="Escape"
               :disabled="combining"
               @click="cancel"
             >

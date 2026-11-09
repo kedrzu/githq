@@ -131,7 +131,7 @@ const failureText = computed(() => {
           size="sm"
           block
           :kbd="focused ? REVIEW_KEYS.reply : undefined"
-          :aria-keyshortcuts="focused ? REVIEW_KEYS.reply : undefined"
+          :keyshortcuts="focused ? REVIEW_KEYS.reply : undefined"
           @click="emit('reply')"
         >
           {{ inDraft ? t(l.addToDraft) : t(l.reply) }}

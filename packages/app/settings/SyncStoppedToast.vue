@@ -120,7 +120,7 @@ function onOpenChange(open: boolean) {
         size="sm"
         :icon="Settings"
         :kbd="active ? OPEN_KEY : undefined"
-        :aria-keyshortcuts="active ? OPEN_KEY : undefined"
+        :keyshortcuts="active ? OPEN_KEY : undefined"
         @click="openSync"
       >
         {{ t(l.openSettings) }}

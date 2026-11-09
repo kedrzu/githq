@@ -1,11 +1,15 @@
-<!-- A property's value that opens its editor — a picker or a field — in an item's properties or a project's card, on nzyme's `useButton`: laid out as the value it is (avatars, label pills, a dot and a name), only lighter while hovered. Put it in a `PropertyRow` of the same `size`; give it an `aria-label` naming the property and its value ("Labels: bug, docs"), which it opens. -->
+<!-- A property's value that opens its editor — a picker or a field — in an item's properties or a project's card, on nzyme's `useButton`: laid out as the value it is (avatars, label pills, a dot and a name), only lighter while hovered. Put it in a `PropertyRow` of the same `size`; its `label` names the property and its value ("Labels: bug, docs"), which it opens. -->
 <script lang="ts">
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { defineProp } from '@nzyme/vue-utils/defineProp.js';
 
-/** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the size of the row it is in. */
+/** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`), its name, its keys and the size of the row it is in. */
 export const PropertyValueButtonProps = {
   ...useButton.props,
+  /** Its accessible name: the property and its value ("Labels: bug, docs"). */
+  label: defineProp<string>({ type: String, required: true }),
+  /** The keys that open it, as `aria-keyshortcuts` writes them (`formatAriaKeyShortcuts`). */
+  keyshortcuts: defineProp<string>(),
   /** As its `PropertyRow`'s: `card` inside a project's card; `md` when not given. */
   size: defineProp<'card' | 'md'>(),
 };
@@ -23,7 +27,11 @@ const { Button } = useButton();
 </script>
 
 <template>
-  <Button :class="[css.propertyValueButton, css[`propertyValueButton_${size ?? 'md'}`]]">
+  <Button
+    :class="[css.propertyValueButton, css[`propertyValueButton_${size ?? 'md'}`]]"
+    :aria-label="label"
+    :aria-keyshortcuts="keyshortcuts ?? undefined"
+  >
     <slot />
   </Button>
 </template>

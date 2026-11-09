@@ -190,7 +190,7 @@ function getProjectMark(title: string) {
           :icon="PanelLeftClose"
           :label="t(l.collapse)"
           :kbd="APP_KEYS.sidebar"
-          :aria-keyshortcuts="APP_KEYS.sidebar"
+          :keyshortcuts="APP_KEYS.sidebar"
           @click="emit('toggle')"
         />
       </div>
@@ -201,7 +201,7 @@ function getProjectMark(title: string) {
         block
         :icon="Search"
         :kbd="APP_KEYS.commandMenu"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       >
         {{ t(l.search) }}
@@ -394,7 +394,7 @@ function getProjectMark(title: string) {
         :icon="PanelLeftOpen"
         :label="t(l.expand)"
         :kbd="APP_KEYS.sidebar"
-        :aria-keyshortcuts="APP_KEYS.sidebar"
+        :keyshortcuts="APP_KEYS.sidebar"
         @click="emit('toggle')"
       />
       <IconButton
@@ -402,7 +402,7 @@ function getProjectMark(title: string) {
         :icon="Search"
         :label="t(l.search)"
         :kbd="APP_KEYS.commandMenu"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
+        :keyshortcuts="formatAriaKeyShortcuts(APP_KEYS.commandMenu)"
         @click="emit('search')"
       />
       <div :class="[css.sidebar_scroll, css.sidebar_scroll_rail]">

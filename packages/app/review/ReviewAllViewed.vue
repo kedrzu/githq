@@ -59,7 +59,7 @@ const note = computed(() => {
           size="sm"
           variant="light"
           :kbd="REVIEW_KEYS.submit"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
+          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.submit)"
           :busy="sending"
           @click="emit('submit')"
         >
@@ -69,7 +69,7 @@ const note = computed(() => {
           v-if="nextNumber !== null"
           size="sm"
           :kbd="REVIEW_KEYS.nextPullRequest"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
+          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.nextPullRequest)"
           @click="emit('next')"
         >
           {{ t(l.next, { number: nextNumber }) }}

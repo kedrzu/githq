@@ -53,7 +53,7 @@ const t = useTranslate();
       variant="ghost"
       size="sm"
       kbd="P"
-      aria-keyshortcuts="P"
+      keyshortcuts="P"
       @click="emit('settings')"
     >
       {{ t(l.settings) }}

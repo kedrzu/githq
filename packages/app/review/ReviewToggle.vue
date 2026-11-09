@@ -24,7 +24,7 @@ defineProps<{
     :label="label"
     :kbd="kbd"
     :aria-pressed="pressed"
-    :aria-keyshortcuts="kbd && formatAriaKeyShortcuts(kbd)"
+    :keyshortcuts="kbd && formatAriaKeyShortcuts(kbd)"
   />
 </template>
 

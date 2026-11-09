@@ -100,7 +100,7 @@ function onRowClick(event: MouseEvent, row: T) {
           variant="secondary"
           :icon="Plus"
           :kbd="ADD_KEY"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(ADD_KEY)"
+          :keyshortcuts="formatAriaKeyShortcuts(ADD_KEY)"
           @click="emit('add')"
         >
           {{ addLabel }}

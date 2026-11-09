@@ -450,7 +450,7 @@ function getSectionCount(value: RepositorySection) {
               size="sm"
               :icon="GitBranch"
               kbd="B"
-              aria-keyshortcuts="B"
+              keyshortcuts="B"
               @click="emit('openRefList')"
             >
               {{ t(l.branchesAndTags) }}

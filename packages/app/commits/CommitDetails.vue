@@ -155,7 +155,7 @@ function getParentKey(index: number) {
       <IconButton
         :label="t(l.previous)"
         kbd="K"
-        aria-keyshortcuts="K"
+        keyshortcuts="K"
         @click="emit('step', -1)"
       >
         <Kbd keys="K" />
@@ -163,7 +163,7 @@ function getParentKey(index: number) {
       <IconButton
         :label="t(l.next)"
         kbd="J"
-        aria-keyshortcuts="J"
+        keyshortcuts="J"
         @click="emit('step', 1)"
       >
         <Kbd keys="J" />
@@ -175,13 +175,13 @@ function getParentKey(index: number) {
         :link="url"
         target="_blank"
         rel="noopener noreferrer"
-        :aria-keyshortcuts="COMMIT_DETAILS_KEYS.openOnGitHub"
+        :keyshortcuts="COMMIT_DETAILS_KEYS.openOnGitHub"
       />
       <IconButton
         :icon="X"
         :label="t(l.close)"
         kbd="Escape"
-        aria-keyshortcuts="Escape"
+        keyshortcuts="Escape"
         @click="emit('close')"
       />
     </header>

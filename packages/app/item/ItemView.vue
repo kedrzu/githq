@@ -623,13 +623,13 @@ function getProjectOptions(): CommandOption[] {
         :link="item.url"
         target="_blank"
         rel="noopener noreferrer"
-        :aria-keyshortcuts="ITEM_KEYS.openOnGitHub"
+        :keyshortcuts="ITEM_KEYS.openOnGitHub"
       />
       <IconButton
         :icon="X"
         :label="t(l.close)"
         kbd="Escape"
-        aria-keyshortcuts="Escape"
+        keyshortcuts="Escape"
         @click="emit('close')"
       />
     </header>
