@@ -209,13 +209,16 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
         size="sm"
         :icon="ArrowUpRight"
         kbd="O"
-        aria-keyshortcuts="O"
+        keyshortcuts="O"
         @click="openOnGitHub"
       >
         {{ gitHubLabel }}
       </Button>
     </header>
-    <div :class="css.changelogView_body">
+    <div
+      :class="css.changelogView_body"
+      data-route-scroll="settings-changelog"
+    >
       <div :class="css.changelogView_column">
         <div
           v-if="content.kind === 'loading'"

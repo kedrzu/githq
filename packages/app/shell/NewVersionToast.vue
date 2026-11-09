@@ -51,7 +51,7 @@ function onOpenChange(open: boolean) {
         variant="secondary"
         size="sm"
         :kbd="active ? RELOAD_KEY : undefined"
-        :aria-keyshortcuts="active ? RELOAD_KEY : undefined"
+        :keyshortcuts="active ? RELOAD_KEY : undefined"
         @click="version.reload()"
       >
         {{ t(l.reload) }}

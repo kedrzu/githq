@@ -1,7 +1,7 @@
 <!-- The projects an opened item is in (D12: the item view shows all of them), each a card with every field of the project and the item's value of it: a single-select with its colour dot, an iteration with "current" while it runs, text, number, date. Until the detail arrives, the row's "Status" of each stands in. Where the user may write to the project, a field's value opens its editor — a picker of the options or iterations, a field for text, a number or a date — and the first project's status, priority and iteration have their keys (`S`, `P`, `I`). "Add to project" offers the projects the user can write to. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
-import { Form } from '@nzyme/vue-forms/components/Form.jsx';
+import Form from '@nzyme/vue-forms/components/Form.vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Plus, SquareKanban } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -374,8 +374,8 @@ function addTo(projectId: string | null) {
             <template #trigger>
               <PropertyValueButton
                 size="card"
-                :aria-label="t(l.valueLabel, { field: field.name, value: field.text ?? t(l.empty) })"
-                :aria-keyshortcuts="field.kbd"
+                :label="t(l.valueLabel, { field: field.name, value: field.text ?? t(l.empty) })"
+                :keyshortcuts="field.kbd"
               >
                 <span
                   v-if="field.text === null"
@@ -406,7 +406,7 @@ function addTo(projectId: string | null) {
             <template #trigger>
               <PropertyValueButton
                 size="card"
-                :aria-label="t(l.valueLabel, { field: field.name, value: field.text ?? t(l.empty) })"
+                :label="t(l.valueLabel, { field: field.name, value: field.text ?? t(l.empty) })"
               >
                 <span :class="field.text === null ? css.itemProjects_empty : css.itemProjects_value">{{
                   field.text ?? t(l.empty)

@@ -135,7 +135,7 @@ const failureText = computed(() => {
         size="sm"
         variant="light"
         :kbd="REVIEW_KEYS.submit"
-        :aria-keyshortcuts="REVIEW_KEYS.submit"
+        :keyshortcuts="REVIEW_KEYS.submit"
         :busy="sending"
         @click="emit('submit')"
       >

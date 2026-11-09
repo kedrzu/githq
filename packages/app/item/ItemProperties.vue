@@ -162,13 +162,13 @@ function open(issue: LinkedIssue) {
       >
         <template #trigger>
           <PropertyValueButton
-            :aria-label="
+            :label="
               t(l.valueLabel, {
                 property: t(l.assignees),
                 value: item.assignees.map(user => user.login).join(', ') || t(l.noOne),
               })
             "
-            :aria-keyshortcuts="EDIT_KEYS.assignees"
+            :keyshortcuts="EDIT_KEYS.assignees"
           >
             <template v-if="item.assignees.length > 0">
               <span
@@ -232,13 +232,13 @@ function open(issue: LinkedIssue) {
       >
         <template #trigger>
           <PropertyValueButton
-            :aria-label="
+            :label="
               t(l.valueLabel, {
                 property: t(l.labels),
                 value: item.labels.map(label => label.name).join(', ') || t(l.none),
               })
             "
-            :aria-keyshortcuts="EDIT_KEYS.labels"
+            :keyshortcuts="EDIT_KEYS.labels"
           >
             <template v-if="item.labels.length > 0">
               <LabelPill
@@ -288,8 +288,8 @@ function open(issue: LinkedIssue) {
       >
         <template #trigger>
           <PropertyValueButton
-            :aria-label="t(l.valueLabel, { property: t(l.milestone), value: item.milestone?.title ?? t(l.none) })"
-            :aria-keyshortcuts="EDIT_KEYS.milestone"
+            :label="t(l.valueLabel, { property: t(l.milestone), value: item.milestone?.title ?? t(l.none) })"
+            :keyshortcuts="EDIT_KEYS.milestone"
           >
             <span
               v-if="item.milestone"
@@ -342,9 +342,7 @@ function open(issue: LinkedIssue) {
         @pick="emit('edit', { kind: 'issueType', name: $event })"
       >
         <template #trigger>
-          <PropertyValueButton
-            :aria-label="t(l.valueLabel, { property: t(l.type), value: issueType?.name ?? t(l.none) })"
-          >
+          <PropertyValueButton :label="t(l.valueLabel, { property: t(l.type), value: issueType?.name ?? t(l.none) })">
             <LabelPill
               v-if="issueType"
               :name="issueType.name"

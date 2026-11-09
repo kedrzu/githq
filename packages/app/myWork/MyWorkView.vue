@@ -365,6 +365,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
     <ListView
       v-model:selected-id="selectedId"
       v-model:checked-ids="checkedIds"
+      :scroll-key="`my-work:${group ?? 'all'}`"
       :groups="groups"
       :layout="options.layout"
       :opened-id="openedId"

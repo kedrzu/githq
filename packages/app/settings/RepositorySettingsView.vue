@@ -49,7 +49,10 @@ const meta = computed(() => {
 </script>
 
 <template>
-  <div :class="css.repositorySettingsView">
+  <div
+    :class="css.repositorySettingsView"
+    :data-route-scroll="`repository-settings:${nameWithOwner}`"
+  >
     <SettingsPageHead
       :parent="t(sectionLabels.repositories)"
       :icon="isPrivate ? Lock : BookMarked"

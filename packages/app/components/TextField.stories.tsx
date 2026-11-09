@@ -1,4 +1,4 @@
-import { Form } from '@nzyme/vue-forms/components/Form.jsx';
+import Form from '@nzyme/vue-forms/components/Form.vue';
 import { useForm } from '@nzyme/vue-forms/useForm.js';
 import { useFormFields } from '@nzyme/vue-forms/useFormFields.js';
 import { maxLengthValidator } from '@nzyme/vue-forms/validators/maxLengthValidator.js';

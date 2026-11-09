@@ -7,8 +7,17 @@ import Kbd from './Kbd.vue';
 
 // nzyme's text area props: `modelValue`/`field`, `errors`, `required`, `disabled`, `readonly`, `label`, `name`,
 // `placeholder`, `tabindex`; the hint under it, a label read out only, one line high until it holds more, and a
-// keyboard hint drawn inside (only drawn: give the shortcut to `aria-keyshortcuts` too).
-defineProps({ ...useTextArea.props, info: String, labelHidden: Boolean, compact: Boolean, bare: Boolean, kbd: String });
+// keyboard hint drawn inside (only drawn: give the shortcut to `keyshortcuts` too), and the keys that act on it, as
+// `aria-keyshortcuts` writes them (`formatAriaKeyShortcuts`).
+defineProps({
+  ...useTextArea.props,
+  info: String,
+  labelHidden: Boolean,
+  compact: Boolean,
+  bare: Boolean,
+  kbd: String,
+  keyshortcuts: String,
+});
 defineEmits(useTextArea.emits);
 
 const { TextArea, field, input } = useTextArea();
@@ -36,7 +45,10 @@ defineExpose({
       <div
         :class="[css.textArea, compact && css.textArea_compact, bare && css.textArea_bare, kbd && css.textArea_withKbd]"
       >
-        <TextArea v-bind="inputAttrs" />
+        <TextArea
+          v-bind="inputAttrs"
+          :aria-keyshortcuts="keyshortcuts"
+        />
         <Kbd
           v-if="kbd"
           :class="css.textArea_kbd"

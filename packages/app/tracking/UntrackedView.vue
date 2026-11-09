@@ -97,10 +97,14 @@ const groups = computed((): ListGroup<Item>[] => [
       </Button>
     </header>
 
-    <div :class="css.untrackedView_body">
+    <div
+      :class="css.untrackedView_body"
+      :data-route-scroll="`untracked:${githubUrl}`"
+    >
       <ListView
         v-model:selected-id="selectedId"
         v-model:checked-ids="checkedIds"
+        :scroll-key="`untracked:${githubUrl}`"
         :groups="groups"
         layout="list"
         :opened-id="openedId"

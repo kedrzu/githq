@@ -160,7 +160,10 @@ function describeUnavailable(entry: UnavailableWorkflowsEntry) {
       </span>
     </header>
 
-    <div :class="[css.brokenWorkflowsView_body, (unreadable || noneShown) && css.brokenWorkflowsView_body_note]">
+    <div
+      :class="[css.brokenWorkflowsView_body, (unreadable || noneShown) && css.brokenWorkflowsView_body_note]"
+      data-route-scroll="broken-workflows"
+    >
       <div
         v-if="allGreen && trackedCount === 0"
         :class="css.brokenWorkflowsView_message"

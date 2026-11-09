@@ -81,6 +81,11 @@ const props = withDefaults(
     isEdited?: (id: string) => boolean;
     /** Whether the entry can open over the list in the opened item's place; a project's draft has its own dialog instead. */
     canOpenOver?: (value: T) => boolean;
+    /**
+     * What the list shows, for the router to open it at the top when that changes and bring it back on Back
+     * (`shell/routeScroll.ts`); without it the list keeps its scroll.
+     */
+    scrollKey?: string;
   }>(),
   {
     groupsArriving: false,
@@ -1474,6 +1479,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
     <div
       ref="body"
       :class="[css.listView, layout === 'board' && css.listView_board]"
+      :data-route-scroll="scrollKey && `list:${scrollKey}`"
       :tabindex="layout === 'board' ? 0 : undefined"
       data-screen-keys-root
       @contextmenu.capture="prepareContextMenu"
@@ -1637,6 +1643,7 @@ function isNestedRowOf(key: string, parentKey: string, id: string) {
           <ul
             v-else
             :class="[css.listView_cards, arriving.has(group.key) && css.listView_arrived]"
+            :data-route-scroll="scrollKey && `list-column:${scrollKey}:${group.key}`"
             tabindex="0"
             data-screen-keys
             @animationend.self="dropArriving(group.key)"

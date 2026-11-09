@@ -116,7 +116,7 @@ async function tryAgain() {
       <Button
         :icon="RefreshCw"
         :kbd="RETRY_KEY"
-        :aria-keyshortcuts="RETRY_KEY"
+        :keyshortcuts="RETRY_KEY"
         :busy="retrying"
         @click="tryAgain"
       >

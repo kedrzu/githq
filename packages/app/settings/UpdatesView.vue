@@ -263,7 +263,10 @@ function focusConfirmButton(event: Event) {
 </script>
 
 <template>
-  <div :class="css.updatesView">
+  <div
+    :class="css.updatesView"
+    data-route-scroll="settings-updates"
+  >
     <div :class="css.updatesView_column">
       <section :class="css.updatesView_block">
         <h2 :class="css.updatesView_title">{{ t(l.versionTitle) }}</h2>
@@ -277,7 +280,7 @@ function focusConfirmButton(event: Event) {
               size="sm"
               :icon="RefreshCw"
               kbd="U"
-              aria-keyshortcuts="U"
+              keyshortcuts="U"
               :disabled="resting"
               @click="emit('check')"
             >
@@ -315,7 +318,7 @@ function focusConfirmButton(event: Event) {
               v-if="status.action"
               size="sm"
               kbd="R"
-              aria-keyshortcuts="R"
+              keyshortcuts="R"
               @click="emit('restart')"
             >
               {{ status.action }}
@@ -368,7 +371,7 @@ function focusConfirmButton(event: Event) {
             variant="outline"
             size="sm"
             kbd="Escape"
-            aria-keyshortcuts="Escape"
+            keyshortcuts="Escape"
             @click="confirming = false"
           >
             {{ t(l.cancel) }}
@@ -377,7 +380,7 @@ function focusConfirmButton(event: Event) {
             ref="confirmButton"
             size="sm"
             kbd="Enter"
-            aria-keyshortcuts="Enter"
+            keyshortcuts="Enter"
             @click="confirmSwitch"
           >
             {{ t(l.confirmSwitch) }}

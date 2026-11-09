@@ -117,7 +117,7 @@ function onKeydown(event: KeyboardEvent) {
           class: [css.reviewSubmitDialog_kind, css[`reviewSubmitDialog_kind_${option.value}`]],
         })
       "
-      :aria-label="t(l.kind)"
+      :label="t(l.kind)"
       @update:model-value="setEvent"
     >
       <template #default="{ option }">
@@ -145,7 +145,7 @@ function onKeydown(event: KeyboardEvent) {
         variant="light"
         :disabled="!canSend"
         :kbd="SEND_KEY"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(SEND_KEY)"
+        :keyshortcuts="formatAriaKeyShortcuts(SEND_KEY)"
         @click="send"
       >
         {{ sendLabel }}

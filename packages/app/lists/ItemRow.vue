@@ -180,7 +180,7 @@ const waitingDraft = computed(() =>
           size="sm"
           :icon="GitMerge"
           :kbd="EDIT_KEYS.merge"
-          :aria-keyshortcuts="EDIT_KEYS.merge"
+          :keyshortcuts="EDIT_KEYS.merge"
           @click.stop="merging?.open(item.id)"
         >
           {{ t(l.backToMerge) }}
@@ -191,7 +191,7 @@ const waitingDraft = computed(() =>
           size="sm"
           :icon="onQueueBranch ? ListPlus : GitMerge"
           :kbd="EDIT_KEYS.merge"
-          :aria-keyshortcuts="EDIT_KEYS.merge"
+          :keyshortcuts="EDIT_KEYS.merge"
           @click.stop="merging?.open(item.id)"
         >
           {{ onQueueBranch ? t(l.addToQueue) : t(l.merge) }}
@@ -204,7 +204,7 @@ const waitingDraft = computed(() =>
           :icon="ArrowUpRight"
           kbd="O"
           target="_blank"
-          aria-keyshortcuts="O"
+          keyshortcuts="O"
           @click.stop
         >
           {{ t(l.openOnGitHub) }}

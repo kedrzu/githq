@@ -3,7 +3,7 @@
 import type { GitHubWorkflowRun } from '@githq/github/rest/readWorkflowRuns.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
+import Reveal from '@nzyme/vue/components/Reveal.vue';
 import { Github, PackageOpen, PowerOff } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef } from 'vue';
 
@@ -299,7 +299,10 @@ function describeGroup(group: RepositoryWorkflowGroup) {
       @settings="emit('settings', false)"
     />
 
-    <div :class="css.repositoryWorkflowsView_body">
+    <div
+      :class="css.repositoryWorkflowsView_body"
+      :data-route-scroll="`repository-workflows:${nameWithOwner}`"
+    >
       <WorkflowsArriving v-if="list.status === 'unread'" />
       <div
         v-else-if="emptyState"
@@ -323,7 +326,7 @@ function describeGroup(group: RepositoryWorkflowGroup) {
               size="sm"
               :icon="Github"
               kbd="O"
-              aria-keyshortcuts="O"
+              keyshortcuts="O"
               @click="emit('openOnGitHub', emptyState.action.url)"
             >
               {{ emptyState.action.label }}

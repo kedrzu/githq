@@ -362,7 +362,7 @@ function onEscape(event: KeyboardEvent) {
           :icon="isPrivate ? Lock : BookMarked"
           :class="css.newIssueDialog_repository"
           :aria-label="repositoryName ? t(l.repositoryLabel, { repository: repositoryName }) : t(l.chooseRepository)"
-          aria-keyshortcuts="Alt+R"
+          keyshortcuts="Alt+R"
           @click="choosingRepository = true"
         >
           {{ repositoryName ?? t(l.chooseRepository) }}

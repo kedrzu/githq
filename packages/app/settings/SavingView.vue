@@ -206,7 +206,10 @@ function turnOff() {
 </script>
 
 <template>
-  <div :class="css.savingView">
+  <div
+    :class="css.savingView"
+    data-route-scroll="settings-saving"
+  >
     <div :class="css.savingView_column">
       <template v-if="saving.state === 'off'">
         <div :class="css.savingView_box">
@@ -247,7 +250,7 @@ function turnOff() {
           <div :class="css.savingView_actions">
             <Button
               variant="primary"
-              :aria-keyshortcuts="formatAriaKeyShortcuts(COMBINE_KEY)"
+              :keyshortcuts="formatAriaKeyShortcuts(COMBINE_KEY)"
               :busy="combining"
               @click="combineAndTurnOn"
             >
@@ -255,7 +258,7 @@ function turnOff() {
             </Button>
             <Button
               kbd="Escape"
-              aria-keyshortcuts="Escape"
+              keyshortcuts="Escape"
               :disabled="combining"
               @click="cancel"
             >

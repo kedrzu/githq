@@ -23,7 +23,10 @@ const options = computed((): ChoiceCardsOption<ReviewCommentChoice>[] => [
 </script>
 
 <template>
-  <div :class="css.codeReviewView">
+  <div
+    :class="css.codeReviewView"
+    data-route-scroll="settings-code-review"
+  >
     <section :class="css.codeReviewView_column">
       <h3
         :id="`${id}-title`"

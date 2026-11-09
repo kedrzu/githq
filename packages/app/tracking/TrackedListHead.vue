@@ -30,7 +30,7 @@ const emit = defineEmits<{
       size="sm"
       :icon="Plus"
       :kbd="addKey"
-      :aria-keyshortcuts="formatAriaKeyShortcuts(addKey)"
+      :keyshortcuts="formatAriaKeyShortcuts(addKey)"
       @click="emit('add')"
     >
       {{ addLabel }}

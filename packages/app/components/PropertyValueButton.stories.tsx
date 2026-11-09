@@ -7,13 +7,13 @@ import LabelPill from './LabelPill.vue';
 import PropertyRow from './PropertyRow.vue';
 import PropertyValueButton from './PropertyValueButton.vue';
 
-const meta = {
+const meta: Meta<typeof PropertyValueButton> = {
     component: PropertyValueButton,
-} satisfies Meta<typeof PropertyValueButton>;
+};
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof PropertyValueButton>;
 
 /** Values that open their editors: an item's labels and milestone, a project card's status and an empty field. */
 export const Gallery: Story = {
@@ -31,8 +31,8 @@ export const Gallery: Story = {
                                     kbd="L"
                                 >
                                     <PropertyValueButton
-                                        aria-label="Labels: bug, calendar"
-                                        aria-keyshortcuts="L"
+                                        label="Labels: bug, calendar"
+                                        keyshortcuts="L"
                                         onClick={() => (opened.value = 'Labels')}
                                     >
                                         <LabelPill
@@ -50,8 +50,8 @@ export const Gallery: Story = {
                                     kbd="M"
                                 >
                                     <PropertyValueButton
-                                        aria-label="Milestone: none"
-                                        aria-keyshortcuts="M"
+                                        label="Milestone: none"
+                                        keyshortcuts="M"
                                         onClick={() => (opened.value = 'Milestone')}
                                     >
                                         None
@@ -68,8 +68,8 @@ export const Gallery: Story = {
                                 >
                                     <PropertyValueButton
                                         size="card"
-                                        aria-label="Status: In progress"
-                                        aria-keyshortcuts="S"
+                                        label="Status: In progress"
+                                        keyshortcuts="S"
                                         onClick={() => (opened.value = 'Status')}
                                     >
                                         In progress
@@ -81,7 +81,7 @@ export const Gallery: Story = {
                                 >
                                     <PropertyValueButton
                                         size="card"
-                                        aria-label="Estimate: empty"
+                                        label="Estimate: empty"
                                         onClick={() => (opened.value = 'Estimate')}
                                     >
                                         Empty

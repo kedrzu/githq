@@ -32,7 +32,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
 import { Clock } from '@/services/Clock.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
-import { ItemStore } from '@/store/ItemStore.js';
+import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 
 import * as l from './useItemCommands.loc.js';
@@ -57,7 +57,7 @@ export interface ItemCommandsParams {
 export function useItemCommands({ ids, section, open, merge }: ItemCommandsParams) {
     const t = useTranslate();
     const auth = useService(AuthStore);
-    const items = useService(ItemStore);
+    const details = useService(ItemDetailStore);
     const repositories = useService(RepositoryStore);
     const editor = useService(ItemEditor);
     const navigation = useService(ItemNavigation);
@@ -67,7 +67,8 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
     const merging = injectContext(MergeContext, { optional: true });
     const editCommands = useEditCommands();
 
-    const selected = computed(() => ids().flatMap(id => items.get(id) ?? []));
+    // Through the detail too: a pull request opened by its address (its review) need not be in any list.
+    const selected = computed(() => ids().flatMap(id => details.getItem(id) ?? []));
     const one = computed(() => (selected.value.length === 1 ? (selected.value[0] ?? null) : null));
     /** The repositories of the items, each once (`owner/name`). */
     const repositoryNames = computed(() => [...new Set(selected.value.map(item => item.repository.nameWithOwner))]);

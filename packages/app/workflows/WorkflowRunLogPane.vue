@@ -317,7 +317,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
             size="sm"
             :icon="RotateCw"
             kbd="Enter"
-            aria-keyshortcuts="Enter"
+            keyshortcuts="Enter"
             @click="emit('retry')"
           >
             {{ t(l.tryAgain) }}
@@ -327,7 +327,7 @@ function getFailedMessage(pane: Extract<WorkflowLogPane, { kind: 'failed' }>): L
             size="sm"
             :icon="Github"
             kbd="O"
-            aria-keyshortcuts="O"
+            keyshortcuts="O"
             @click="emit('openOnGitHub')"
           >
             {{ message.gitHubLabel }}

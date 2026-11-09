@@ -4,7 +4,7 @@ import type { PullRequestBranchUpdateMethod, PullRequestMergeMethod } from '@git
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
+import Reveal from '@nzyme/vue/components/Reveal.vue';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   ArrowRight,
@@ -1723,7 +1723,7 @@ function onOpenFocus(event: Event) {
           size="sm"
           kbd="Escape"
           :aria-label="t(l.close)"
-          aria-keyshortcuts="Escape"
+          keyshortcuts="Escape"
           @click="open = false"
         />
       </header>
@@ -1768,7 +1768,7 @@ function onOpenFocus(event: Event) {
                 target="_blank"
                 rel="noopener noreferrer"
                 :kbd="band.link.key"
-                :aria-keyshortcuts="band.link.key"
+                :keyshortcuts="band.link.key"
                 >{{ band.link.label }}</Button
               >
             </span>
@@ -1793,7 +1793,7 @@ function onOpenFocus(event: Event) {
               variant="ghost"
               size="sm"
               :kbd="EDIT_KEYS.updateBranchByRebase"
-              :aria-keyshortcuts="EDIT_KEYS.updateBranchByRebase"
+              :keyshortcuts="EDIT_KEYS.updateBranchByRebase"
               @click="update('REBASE')"
               >{{ t(l.updateByRebase) }}</Button
             >
@@ -1823,7 +1823,7 @@ function onOpenFocus(event: Event) {
               v-if="mergedBranch.step"
               size="sm"
               :kbd="EDIT_KEYS.branch"
-              :aria-keyshortcuts="EDIT_KEYS.branch"
+              :keyshortcuts="EDIT_KEYS.branch"
               :busy="advancing === mergedBranch.step"
               @click="takeBranchStep()"
               >{{ mergedBranch.label }}</Button
@@ -1991,7 +1991,7 @@ function onOpenFocus(event: Event) {
                   variant="ghost"
                   size="sm"
                   kbd="E"
-                  aria-keyshortcuts="E"
+                  keyshortcuts="E"
                   @click="edit()"
                   >{{ t(l.edit) }}</Button
                 >
@@ -2043,7 +2043,7 @@ function onOpenFocus(event: Event) {
                   variant="ghost"
                   size="sm"
                   kbd="Y"
-                  aria-keyshortcuts="Y"
+                  keyshortcuts="Y"
                   @click="nextEmail()"
                   >{{ t(l.changeEmail) }}</Button
                 >
@@ -2118,7 +2118,7 @@ function onOpenFocus(event: Event) {
           :class="css.mergePanel_bypassButton"
           variant="danger"
           kbd="Alt+Mod+Enter"
-          :aria-keyshortcuts="formatAriaKeyShortcuts('Alt+Mod+Enter')"
+          :keyshortcuts="formatAriaKeyShortcuts('Alt+Mod+Enter')"
           :busy="sending && bypassing"
           :disabled="advancing !== null"
           @click="bypass()"
@@ -2180,7 +2180,7 @@ function onOpenFocus(event: Event) {
           <Button
             v-if="allowed"
             :kbd="EDIT_KEYS.dequeue"
-            :aria-keyshortcuts="EDIT_KEYS.dequeue"
+            :keyshortcuts="EDIT_KEYS.dequeue"
             :busy="advancing === 'dequeue'"
             @click="takeOutOfQueue()"
             >{{ t(l.takeOutOfQueue) }}</Button
@@ -2189,7 +2189,7 @@ function onOpenFocus(event: Event) {
         <template v-else-if="stackSays?.forward.kind === 'close' && verdict.kind !== 'merging'">
           <Button
             kbd="Escape"
-            aria-keyshortcuts="Escape"
+            keyshortcuts="Escape"
             @click="open = false"
             >{{ t(l.hintClose) }}</Button
           >
@@ -2199,7 +2199,7 @@ function onOpenFocus(event: Event) {
             v-if="canRevert"
             variant="ghost"
             :kbd="EDIT_KEYS.revert"
-            :aria-keyshortcuts="EDIT_KEYS.revert"
+            :keyshortcuts="EDIT_KEYS.revert"
             :busy="advancing === 'revert'"
             @click="revert()"
             >{{ t(l.revert) }}</Button
@@ -2210,7 +2210,7 @@ function onOpenFocus(event: Event) {
             v-if="canJump"
             variant="ghost"
             kbd="Shift+Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Shift+Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Shift+Mod+Enter')"
             :busy="advancing === 'jumpQueue'"
             @click="jump()"
             >{{ t(l.jumpQueue) }}</Button
@@ -2220,7 +2220,7 @@ function onOpenFocus(event: Event) {
             variant="ghost"
             :icon="Eye"
             kbd="Mod+K"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+K')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+K')"
             :busy="advancing === 'markReady'"
             @click="emit('step', 'markReady')"
             >{{ t(l.markNumberReady, { number: stackDraft }) }}</Button
@@ -2233,7 +2233,7 @@ function onOpenFocus(event: Event) {
             target="_blank"
             rel="noopener noreferrer"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             >{{ stackSays.forward.label }}</Button
           >
           <!-- Turning it off isn't the filled action: nothing gets merged by it (PM11). -->
@@ -2241,7 +2241,7 @@ function onOpenFocus(event: Event) {
             v-else-if="step === 'disableAutoMerge' && allowed"
             :icon="CircleOff"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="advancing === 'disableAutoMerge'"
             @click="goForward()"
             >{{ t(l.disableAutoMerge) }}</Button
@@ -2254,7 +2254,7 @@ function onOpenFocus(event: Event) {
             target="_blank"
             rel="noopener noreferrer"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             >{{ t(l.resolveOnGitHub) }}</Button
           >
           <Button
@@ -2262,7 +2262,7 @@ function onOpenFocus(event: Event) {
             variant="primary"
             :icon="stepButton.icon"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="advancing !== null"
             :disabled="sending"
             @click="goForward()"
@@ -2273,7 +2273,7 @@ function onOpenFocus(event: Event) {
             variant="primary"
             :icon="primaryIcon"
             kbd="Mod+Enter"
-            :aria-keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
+            :keyshortcuts="formatAriaKeyShortcuts('Mod+Enter')"
             :busy="sending || forwardWhenRead"
             @click="goForward()"
             >{{ primaryLabel }}</Button

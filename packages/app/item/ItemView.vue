@@ -1,10 +1,11 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D17): pinned above the content in a panel, folded to one line once the content scrolls down and unfolded at the top, every pull request opening at the top; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
 import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
+import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   AppWindow,
@@ -82,6 +83,7 @@ import LinkedItems from './LinkedItems.vue';
 import PullRequestChecks from './PullRequestChecks.vue';
 import PullRequestMerge from './PullRequestMerge.vue';
 import PullRequestReviews from './PullRequestReviews.vue';
+import StackBar from './StackBar.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
 
@@ -102,7 +104,7 @@ const props = withDefaults(
     loadAllComments: () => Promise<void>;
     /** What the user may change and the pickers offer; without it the view only shows. */
     editing?: ItemEditing | null;
-    /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D17). */
+    /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D25). */
     stack?: StackDescription | null;
     /** What `K` and `J` open from it: the stack's map marks those rows. */
     neighbours?: StackNeighbours | null;
@@ -156,24 +158,41 @@ const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('prope
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
 const scrollRef = useTemplateRef<HTMLElement>('scroll');
+const stackRowsRef = useTemplateRef<HTMLElement>('stackRows');
+const stackBarRef = useTemplateRef<InstanceType<typeof StackBar>>('stackBar');
+const stackDropRef = useTemplateRef<HTMLElement>('stackDrop');
 const itemMenuOpen = ref(false);
-/** The stack's map in a panel, folded to one line once the content scrolls down (D17, SP32). */
-const stackMapFolded = ref(false);
-let lastScrollTop = 0;
+/** In a panel, the stack's rows at the top of the content are in view (D27): the bar has nothing to drop. */
+const stackRowsInView = ref(true);
+/** In a panel, a copy of the stack's rows dropped from the bar over the content (D27, SP84). */
+const stackDropped = ref(false);
 /** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
 const itemMenuStart = ref<string | null>(null);
 
-// D17: every pull request of a stack opens at the top with its map unfolded — `J`/`K` never scroll.
+// D25: every pull request of a stack opens with its rows in view, and the router opens it at the top
+// (`shell/routeScroll.ts`). Opening one takes the dropped rows away (D27).
 watch(
   () => props.item.id,
   () => {
+    stackDropped.value = false;
     if (props.stack) {
-      stackMapFolded.value = false;
-      lastScrollTop = 0;
-      scrollRef.value?.scrollTo({ top: 0 });
+      stackRowsInView.value = true;
     }
   },
 );
+
+// D27: whether the rows at the top of the content are in view; back in view, the dropped copy has no reason to stay.
+useIntersectionObserver({
+  element: stackRowsRef,
+  options: () => ({ root: scrollRef.value }),
+  onVisible: () => {
+    stackRowsInView.value = true;
+    stackDropped.value = false;
+  },
+  onHidden: () => {
+    stackRowsInView.value = false;
+  },
+});
 
 watch(itemMenuOpen, isOpen => {
   if (!isOpen) {
@@ -320,11 +339,19 @@ useCommands(
   }),
 );
 
-// Escape closes the item; `K`/`J` step through the list it was opened from (in a panel the list's own `j`/`k`, run first,
+// Escape takes the dropped stack rows away, or else closes the item; `K`/`J` step through the list it was opened from (in a panel the list's own `j`/`k`, run first,
 // move its selection instead, which the opened item follows).
 onWindowEvent('keydown', event => {
   // An open picker or menu takes Escape for itself.
   if (event.key === 'Escape' && !event.defaultPrevented && !isLayerOpen()) {
+    // Here rather than in a listener of the copy's own, which would run after this one. Not a `data-layer` either:
+    // that would cover the screen and switch `J`/`K` off while the rows are dropped.
+    if (stackDropped.value) {
+      event.preventDefault();
+      stackDropped.value = false;
+      return;
+    }
+
     // A field gives the key up first: Escape in the comment box leaves it.
     const { target } = event;
     if (target instanceof HTMLElement && isEditableTarget(target)) {
@@ -352,27 +379,24 @@ onWindowEvent('keydown', event => {
   }
 });
 
-/**
- * Folds the panel's stack map while the content scrolls down; at the top it unfolds again — when the content still
- * scrolls. Content a little taller than the panel fits once the map folds: the browser clamps it to the top, and
- * unfolding then would start it over, the map flickering and the end never reached. It stays folded; a click unfolds.
- */
-function onContentScroll() {
-  const scroll = scrollRef.value;
-  if (!scroll) {
+// D27: a click outside the dropped rows and the bar takes them away; the bar's own click toggles them.
+onWindowEvent('pointerdown', event => {
+  const { target } = event;
+  if (!stackDropped.value || !(target instanceof Node)) {
     return;
   }
 
-  const top = scroll.scrollTop;
-  if (top <= 0) {
-    if (scroll.scrollHeight > scroll.clientHeight) {
-      stackMapFolded.value = false;
-    }
-  } else if (top > lastScrollTop) {
-    stackMapFolded.value = true;
+  const bar = stackBarRef.value?.$el;
+  if (stackDropRef.value?.contains(target) || (bar instanceof Node && bar.contains(target))) {
+    return;
   }
 
-  lastScrollTop = top;
+  stackDropped.value = false;
+});
+
+/** Scrolling the content, either way, takes the dropped rows away: they belong to where the reader was. */
+function onContentScroll() {
+  stackDropped.value = false;
 }
 
 function getEditCommands(): Command[] {
@@ -623,13 +647,13 @@ function getProjectOptions(): CommandOption[] {
         :link="item.url"
         target="_blank"
         rel="noopener noreferrer"
-        :aria-keyshortcuts="ITEM_KEYS.openOnGitHub"
+        :keyshortcuts="ITEM_KEYS.openOnGitHub"
       />
       <IconButton
         :icon="X"
         :label="t(l.close)"
         kbd="Escape"
-        aria-keyshortcuts="Escape"
+        keyshortcuts="Escape"
         @click="emit('close')"
       />
     </header>
@@ -654,69 +678,133 @@ function getProjectOptions(): CommandOption[] {
           :min-size="40"
           :class="css.itemView_main"
         >
-          <StackMap
+          <StackBar
             v-if="stack && arrangement === 'panel'"
+            ref="stackBar"
+            v-model:dropped="stackDropped"
             :stack="stack"
             :current-id="item.id"
-            :neighbours="neighbours"
-            arrangement="panel"
-            :folded="stackMapFolded"
+            :rows-in-view="stackRowsInView"
             @open="emit('openInPlace', $event)"
-            @unfold="stackMapFolded = false"
           />
-          <div
-            ref="scroll"
-            :class="css.itemView_scroll"
-            @scroll.passive="onContentScroll"
-          >
-            <div :class="css.itemView_heading">
-              <h1 :class="css.itemView_title">{{ item.title }}</h1>
-              <p :class="css.itemView_state">
-                <StatePill
-                  :icon="state.icon"
-                  :tone="state.tone"
-                  >{{ state.text }}</StatePill
-                >
-                <LabelPill
-                  v-if="issueType"
-                  :name="issueType.name"
-                  :color="getGitHubColor(issueType.color)"
-                />
-                <Avatar
-                  v-if="opened.author"
-                  :name="opened.author.login"
-                  :src="opened.author.avatarUrl"
-                  size="xs"
-                  decorative
-                />
-                <span :class="css.itemView_opened">{{ opened.text }}</span>
-              </p>
+          <div :class="css.itemView_content">
+            <div
+              v-if="stack && arrangement === 'panel' && stackDropped"
+              ref="stackDrop"
+              :class="css.itemView_stackDrop"
+            >
+              <StackMap
+                :stack="stack"
+                :current-id="item.id"
+                :neighbours="neighbours"
+                arrangement="panel"
+                @open="emit('openInPlace', $event)"
+              />
             </div>
-
-            <PullRequestMerge
-              v-if="pr"
-              :pr="pr"
-              :detail="prDetail"
-              :can-merge="permissions ? permissions.mergePanel : null"
-              :checks="checkCounts"
-              :auto-merge-allowed="autoMergeAllowed"
-              :record="merging?.getRecord(pr.id) ?? null"
-              :commands="merging?.getCommands(pr.id)"
-              @merge="emit('merge')"
-              @command="merging?.run(pr.id, $event)"
-            />
-
-            <!-- One column: everything in reading order. -->
-            <template v-if="!split">
-              <template v-if="pr">
-                <PullRequestReviews
-                  v-if="prDetail"
-                  ref="reviews"
-                  :detail="prDetail"
-                  :now="now"
-                  :reviewer-options="reviewerOptions"
-                  @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+            <div
+              ref="scroll"
+              :class="css.itemView_scroll"
+              :data-route-scroll="`item-main:${item.id}`"
+              @scroll.passive="onContentScroll"
+            >
+              <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
+              <div
+                v-if="stack && arrangement === 'panel'"
+                ref="stackRows"
+                :class="css.itemView_stackRows"
+                :inert="stackDropped"
+                :aria-hidden="stackDropped ? 'true' : undefined"
+              >
+                <StackMap
+                  :stack="stack"
+                  :current-id="item.id"
+                  :neighbours="neighbours"
+                  arrangement="panel"
+                  @open="emit('openInPlace', $event)"
                 />
+              </div>
+              <div :class="css.itemView_heading">
+                <h1 :class="css.itemView_title">{{ item.title }}</h1>
+                <p :class="css.itemView_state">
+                  <StatePill
+                    :icon="state.icon"
+                    :tone="state.tone"
+                    >{{ state.text }}</StatePill
+                  >
+                  <LabelPill
+                    v-if="issueType"
+                    :name="issueType.name"
+                    :color="getGitHubColor(issueType.color)"
+                  />
+                  <Avatar
+                    v-if="opened.author"
+                    :name="opened.author.login"
+                    :src="opened.author.avatarUrl"
+                    size="xs"
+                    decorative
+                  />
+                  <span :class="css.itemView_opened">{{ opened.text }}</span>
+                </p>
+              </div>
+
+              <PullRequestMerge
+                v-if="pr"
+                :pr="pr"
+                :detail="prDetail"
+                :can-merge="permissions ? permissions.mergePanel : null"
+                :checks="checkCounts"
+                :auto-merge-allowed="autoMergeAllowed"
+                :record="merging?.getRecord(pr.id) ?? null"
+                :commands="merging?.getCommands(pr.id)"
+                @merge="emit('merge')"
+                @command="merging?.run(pr.id, $event)"
+              />
+
+              <!-- One column: everything in reading order. -->
+              <template v-if="!split">
+                <template v-if="pr">
+                  <PullRequestReviews
+                    v-if="prDetail"
+                    ref="reviews"
+                    :detail="prDetail"
+                    :now="now"
+                    :reviewer-options="reviewerOptions"
+                    @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
+                  />
+                  <PullRequestChecks
+                    v-if="prDetail"
+                    :detail="prDetail"
+                    :now="now"
+                    :required-ids="requiredCheckIds"
+                  />
+                  <LinkedItems
+                    :title="t(l.closes)"
+                    :items="closes ?? []"
+                    :repository="item.repository.nameWithOwner"
+                    @open="emit('open', $event)"
+                  />
+                </template>
+                <ItemProperties
+                  ref="properties"
+                  :item="item"
+                  :detail="issueDetail"
+                  :editing="editing"
+                  @open="emit('open', $event)"
+                  @edit="emit('edit', $event)"
+                />
+                <ItemProjects
+                  ref="projects"
+                  :projects="item.projects"
+                  :detail-projects="detail?.projects"
+                  :now="now"
+                  :editable="editing != null"
+                  :can-add-to-project="permissions?.addToProject"
+                  :viewer-projects="editing?.viewerProjects"
+                  @edit="emit('edit', $event)"
+                  @need-projects="emit('needProjects')"
+                />
+              </template>
+              <template v-else-if="pr">
                 <PullRequestChecks
                   v-if="prDetail"
                   :detail="prDetail"
@@ -730,59 +818,26 @@ function getProjectOptions(): CommandOption[] {
                   @open="emit('open', $event)"
                 />
               </template>
-              <ItemProperties
-                ref="properties"
-                :item="item"
-                :detail="issueDetail"
-                :editing="editing"
-                @open="emit('open', $event)"
-                @edit="emit('edit', $event)"
-              />
-              <ItemProjects
-                ref="projects"
-                :projects="item.projects"
-                :detail-projects="detail?.projects"
-                :now="now"
-                :editable="editing != null"
-                :can-add-to-project="permissions?.addToProject"
-                :viewer-projects="editing?.viewerProjects"
-                @edit="emit('edit', $event)"
-                @need-projects="emit('needProjects')"
-              />
-            </template>
-            <template v-else-if="pr">
-              <PullRequestChecks
-                v-if="prDetail"
-                :detail="prDetail"
-                :now="now"
-                :required-ids="requiredCheckIds"
-              />
-              <LinkedItems
-                :title="t(l.closes)"
-                :items="closes ?? []"
-                :repository="item.repository.nameWithOwner"
-                @open="emit('open', $event)"
-              />
-            </template>
 
-            <template v-if="detail">
-              <GitHubHtml
-                v-if="detail.bodyHtml"
-                :html="detail.bodyHtml"
-              />
-              <p
-                v-else
-                :class="css.itemView_note"
-              >
-                {{ t(l.noDescription) }}
-              </p>
-            </template>
+              <template v-if="detail">
+                <GitHubHtml
+                  v-if="detail.bodyHtml"
+                  :html="detail.bodyHtml"
+                />
+                <p
+                  v-else
+                  :class="css.itemView_note"
+                >
+                  {{ t(l.noDescription) }}
+                </p>
+              </template>
 
-            <ItemActivity
-              :comments="detail?.comments ?? null"
-              :now="now"
-              :load-all="loadAllComments"
-            />
+              <ItemActivity
+                :comments="detail?.comments ?? null"
+                :now="now"
+                :load-all="loadAllComments"
+              />
+            </div>
           </div>
           <footer :class="css.itemView_composer">
             <ItemComposer
@@ -810,7 +865,10 @@ function getProjectOptions(): CommandOption[] {
             :max-size="sideWidth.max"
             :style="sideWidth.style"
           >
-            <div :class="css.itemView_side">
+            <div
+              :class="css.itemView_side"
+              :data-route-scroll="`item-side:${item.id}`"
+            >
               <StackMap
                 v-if="stack && arrangement === 'modal'"
                 :stack="stack"
@@ -962,6 +1020,45 @@ function getProjectOptions(): CommandOption[] {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+// The content and, in a panel, what drops over it from the stack bar.
+.itemView_content {
+  position: relative;
+  // The dropped rows slide out from under the bar: what is still above the content is cut off, never over the bar.
+  overflow: clip;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+// The stack's rows, the content's first block (D25): as wide as the panel, the edge under them across it.
+.itemView_stackRows {
+  margin: -20px (-$spacing-24) 0;
+  border-bottom: 1px solid $color-border;
+}
+
+// D27, SP84: the same rows dropped right under the bar, over the content, which doesn't move.
+.itemView_stackDrop {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  max-height: 100%;
+  overflow-y: auto;
+  background: $color-bg-2;
+  border-bottom: 1px solid $color-border;
+
+  // D38: it slides out from under the bar; it goes at once, like every overlay.
+  @include motion {
+    animation: stackDrop $motion-open ease-out;
+  }
+}
+
+@keyframes stackDrop {
+  from {
+    translate: 0 -100%;
+  }
 }
 
 .itemView_scroll {
