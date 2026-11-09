@@ -1596,6 +1596,7 @@ dependencies = [
  "dispatch2",
  "keyring",
  "objc2-app-kit",
+ "objc2-foundation",
  "percent-encoding",
  "reqwest",
  "semver",

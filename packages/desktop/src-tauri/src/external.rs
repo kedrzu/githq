@@ -1,10 +1,13 @@
 //! Opening web pages in the system browser — GitHub's pages, the device flow's code page — for the app and for the
 //! window's navigation backstops alike. Only `http:` and `https:` addresses are opened, so a page can never make
 //! the app launch a program or open a file.
+//!
+//! On macOS the page is opened in-process through `NSWorkspace`, so the request reaches LaunchServices from githq's
+//! own bundle. The opener plugin spawns `/usr/bin/open` instead, which hides githq as the sender: a link-routing tool
+//! such as Finicky could then not tell the link came from githq and would route a GitHub page back into the app.
 
 use serde::Serialize;
 use tauri::{AppHandle, Url};
-use tauri_plugin_opener::OpenerExt;
 
 /// Why `open_external` did not open the address. Serialised for the app as the bare code.
 #[derive(Debug, PartialEq, Eq, Serialize)]
@@ -34,6 +37,28 @@ fn parse_web_page(url: &str) -> Result<Url, ExternalError> {
 /// Opens a web page in the system browser; any other kind of address is refused.
 pub fn open(app: &AppHandle, url: &Url) -> Result<(), ExternalError> {
     let url = web_page(url)?;
+    open_web_page(app, url)
+}
+
+#[cfg(target_os = "macos")]
+fn open_web_page(_app: &AppHandle, url: &Url) -> Result<(), ExternalError> {
+    use objc2_app_kit::NSWorkspace;
+    use objc2_foundation::{NSString, NSURL};
+
+    let opened = NSURL::URLWithString(&NSString::from_str(url.as_str()))
+        .is_some_and(|ns_url| NSWorkspace::sharedWorkspace().openURL(&ns_url));
+    if opened {
+        Ok(())
+    } else {
+        eprintln!("Could not open {url} in the browser");
+        Err(ExternalError::Failed)
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn open_web_page(app: &AppHandle, url: &Url) -> Result<(), ExternalError> {
+    use tauri_plugin_opener::OpenerExt;
+
     app.opener()
         .open_url(url.as_str(), None::<&str>)
         .map_err(|error| {
