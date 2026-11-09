@@ -11,8 +11,8 @@
     },
     "scripts": {
         "dev": "nuxt dev --bun",
-        "build": "GITHQ_TARGET=production nuxt generate --bun && bun scripts/checkProductionBuild.ts",
-        "build:local": "GITHQ_TARGET=local nuxt generate --bun && bun scripts/checkLocalBuild.ts",
+        "build": "nx run @githq/docs:build && GITHQ_TARGET=production nuxt generate --bun && bun scripts/copyDocs.ts .output && bun scripts/checkProductionBuild.ts",
+        "build:local": "nx run @githq/docs:build && GITHQ_TARGET=local nuxt generate --bun && bun scripts/copyDocs.ts .output-local && bun scripts/checkLocalBuild.ts",
         "build:desktop": "GITHQ_TARGET=desktop nuxt generate --bun && bun scripts/checkDesktopBuild.ts",
         "dev:desktop": "GITHQ_TARGET=desktop nuxt dev --bun",
         "typecheck": "nuxi typecheck",
@@ -87,13 +87,27 @@
                 "dependsOn": [
                     "^build",
                     "typecheck"
+                ],
+                "inputs": [
+                    "production",
+                    "^production",
+                    "localEnvironment",
+                    "appEnvironment",
+                    {
+                        "input": "production",
+                        "projects": "@githq/docs"
+                    }
                 ]
             },
             "build:local": {
                 "cache": true,
                 "inputs": [
                     "production",
-                    "^production"
+                    "^production",
+                    {
+                        "input": "production",
+                        "projects": "@githq/docs"
+                    }
                 ],
                 "outputs": [
                     "{projectRoot}/.output-local"

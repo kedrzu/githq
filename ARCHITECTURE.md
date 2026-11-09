@@ -18,13 +18,16 @@ githq is a fast, keyboard-first client for GitHub Issues, Projects, pull request
 |-|-|-|
 |`@githq/app`|`packages/app`|The Nuxt app: screens by feature, the store, the sync engine, components and their stories. It holds no credentials.|
 |`@githq/github`|`packages/github`|The GitHub client: `.gql` operations, the committed schema, the generated SDK, the requester, rate limits and OAuth helpers.|
-|`@githq/worker`|`packages/worker`|The Cloudflare Workers: the signed-in/landing choice at `/`, the OAuth token exchange, the `www` redirect. Stateless.|
+|`@githq/worker`|`packages/worker`|The Cloudflare Workers: the signed-in/landing choice at `/`, the docs' 404 under `/docs/*`, the OAuth token exchange, the `www` redirect. Stateless.|
+|`@githq/docs`|`packages/docs`|The documentation site (VitePress), served at githq.dev/docs from the web builds.|
 |`@githq/desktop`|`packages/desktop`|The Tauri shell around the app's desktop build, and its native commands.|
 |`@githq/e2e`|`packages/e2e`|Playwright tests of the built app against a mocked GitHub, and the screen harnesses.|
 
 ## App and UI
 
 The app builds with `nuxt generate` for one of three targets (`GITHQ_TARGET`): `production`, `local` (adds the development sign-in, for e2e) and `desktop`. Each has its own output folder and a script that checks the result. `/` is prerendered signed out into `_landing.html`; every other route and `index.html` stay a SPA. Why: `docs/decisions/prerendered-landing-and-signed-in-hint.md`.
+
+The documentation site (`packages/docs`, VitePress with base `/docs/`) is built by the `production` and `local` build scripts through Nx and copied into the output as `docs/`; the desktop build has none, and the build checks assert both. The Worker runs for `/docs/*` but the hashed `/docs/assets/*`, so an unknown docs address gets the docs' 404 page with a 404 instead of the app's shell. Under `nuxt dev`, `/docs/**` is proxied to VitePress's dev server on 8789. Why: `docs/decisions/docs-site-under-githq-dev-docs.md`.
 
 Routes live only in `app/router.options.ts`; a file Nuxt would route fails the build. Nothing is auto-imported. `plugins/iocPlugin.ts` creates the one IoC container, and other plugins state `dependsOn: ['ioc-plugin']`.
 

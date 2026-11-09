@@ -26,6 +26,13 @@ export default defineConfig({
     // "Updated" dates come from git; `assertFullGitHistory` above keeps a shallow clone from faking them.
     lastUpdated: true,
 
+    vite: {
+        // The dev server (port 8789, `package.json`) is also reached through `nuxt dev` on 8787, which proxies
+        // `/docs/**` here (`packages/app/nuxt.config.ts`) but cannot carry a WebSocket: the HMR socket goes to
+        // 8789 straight away, instead of first trying 8787 and failing there.
+        server: { hmr: { clientPort: 8789 } },
+    },
+
     themeConfig: {
         nav: sections.map(section => ({
             text: section.title,

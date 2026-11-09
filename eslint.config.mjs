@@ -11,6 +11,8 @@ export default [
         '**/.output-local/**',
         '**/.nuxt-local/**',
         '**/storybook-static/**',
+        // VitePress's dev server's prebundled dependencies (`packages/docs`, gitignored).
+        '**/.vitepress/cache/**',
         '**/playwright-report/**',
         '**/*.loc.ts',
         '**/*.loc.js',

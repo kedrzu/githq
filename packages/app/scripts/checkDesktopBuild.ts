@@ -1,19 +1,20 @@
 import path from 'node:path';
 
+import { checkDocsAbsent } from './checkDocs.js';
 import { checkAppShell } from './checkPrerenderedPages.js';
 import { APP_MARKER, DESKTOP_MARKERS, DEV_SIGN_IN_MARKERS, WEB_MARKERS } from './checkProductionBuild.js';
-import { readBuiltFiles } from './readBuiltFiles.js';
+import { readBuiltFiles, readBuiltPaths } from './readBuiltFiles.js';
 
 // Runs after every desktop build (`bun --cwd packages/app build:desktop`, `GITHQ_TARGET=desktop`): proves that the
 // app the desktop app bundles (`packages/desktop`) is the app, with its desktop code and without the development
-// sign-in or the web's own code, and that `/` in its window — `index.html` — is the SPA shell, with no landing page anywhere. Its folder is not the one the Worker serves (`.output/public`).
+// sign-in or the web's own code, and that `/` in its window — `index.html` — is the SPA shell, with no landing page anywhere and no docs (the app opens githq.dev/docs in the browser). Its folder is not the one the Worker serves (`.output/public`).
 
 const OUTPUT = path.join(import.meta.dirname, '../.output-desktop/public');
 
 async function checkDesktopBuild() {
     const files = await readBuiltFiles(OUTPUT);
 
-    const problems = checkAppShell(files);
+    const problems = [...checkAppShell(files), ...checkDocsAbsent(await readBuiltPaths(OUTPUT))];
     if (files.some(file => file.path === '_landing.html')) {
         problems.push('_landing.html: the desktop app has no landing page');
     }
@@ -37,7 +38,7 @@ async function checkDesktopBuild() {
     }
 
     console.info(
-        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, none of the web's own, no landing page.`,
+        `Desktop build checked: ${files.length} files, the shell, with the desktop code, no development sign-in, none of the web's own, no landing page, no docs.`,
     );
 }
 
