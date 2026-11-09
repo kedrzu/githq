@@ -49,7 +49,7 @@ function onKeydown(event: KeyboardEvent) {
       <Button
         size="sm"
         kbd="Escape"
-        aria-keyshortcuts="Escape"
+        keyshortcuts="Escape"
         data-cancel
         @click="open = false"
       >
@@ -60,7 +60,7 @@ function onKeydown(event: KeyboardEvent) {
         size="sm"
         variant="light"
         :kbd="DISCARD_KEY"
-        :aria-keyshortcuts="formatAriaKeyShortcuts(DISCARD_KEY)"
+        :keyshortcuts="formatAriaKeyShortcuts(DISCARD_KEY)"
         @click="emit('discard')"
       >
         {{ t(l.discard, { count: commentCount }) }}

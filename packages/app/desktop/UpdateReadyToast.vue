@@ -60,7 +60,7 @@ function onOpenChange(open: boolean) {
         variant="secondary"
         size="sm"
         :kbd="active ? RESTART_KEY : undefined"
-        :aria-keyshortcuts="active ? RESTART_KEY : undefined"
+        :keyshortcuts="active ? RESTART_KEY : undefined"
         @click="update.restart()"
       >
         {{ t(failed ? l.tryAgain : l.restart) }}

@@ -26,7 +26,7 @@ export const Gallery: Story = {
                         icon={PanelLeftClose}
                         label="Collapse sidebar"
                         kbd="["
-                        aria-keyshortcuts="["
+                        keyshortcuts="["
                     />
                     <IconButton
                         icon={Maximize2}
@@ -61,7 +61,7 @@ export const Gallery: Story = {
                         size="md"
                         icon={Search}
                         label="Search or jump to…"
-                        aria-disabled="true"
+                        unavailable
                     />
                     <IconButton
                         size="md"

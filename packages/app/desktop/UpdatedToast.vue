@@ -84,7 +84,7 @@ function onOpenChange(open: boolean) {
         variant="secondary"
         size="sm"
         :kbd="active ? WHAT_CHANGED_KEY : undefined"
-        :aria-keyshortcuts="active ? WHAT_CHANGED_KEY : undefined"
+        :keyshortcuts="active ? WHAT_CHANGED_KEY : undefined"
         @click="openChangelog"
       >
         {{ t(l.whatChanged) }}

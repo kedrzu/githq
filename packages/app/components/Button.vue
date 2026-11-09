@@ -39,8 +39,12 @@ export const ButtonProps = {
   size: defineProp<ButtonSize>(),
   /** Leading icon, a lucide component. */
   icon: defineProp<LucideIcon>(),
-  /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `aria-keyshortcuts` too. */
+  /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `keyshortcuts` too. */
   kbd: defineProp<string>(),
+  /** The keys that press it, as `aria-keyshortcuts` writes them (`formatAriaKeyShortcuts`). */
+  keyshortcuts: defineProp<string>(),
+  /** Shown but not possible yet: dimmed and announced as unavailable (`aria-disabled`), still focusable. */
+  unavailable: defineProp<boolean>({ type: Boolean, default: false }),
   /** Fills its container's width, the content at the start and the hint at the end — a sidebar entry, a field. */
   block: defineProp<boolean>({ type: Boolean, default: false }),
 };
@@ -77,7 +81,8 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
       disabled && css.button_disabled,
     ]"
     :aria-busy="busy || undefined"
-    :aria-disabled="(link && disabled) || undefined"
+    :aria-disabled="(link && disabled) || unavailable || undefined"
+    :aria-keyshortcuts="keyshortcuts ?? undefined"
   >
     <!-- Hidden, not removed, while busy: the button keeps its width under the spinner. -->
     <span :class="css.button_content">
@@ -312,7 +317,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   cursor: progress;
 }
 
-// Disabled, or shown but not built yet (`aria-disabled`, still focusable): no hover, dim.
+// Disabled, or shown but not possible yet (`unavailable`: `aria-disabled`, still focusable): no hover, dim.
 .button_disabled,
 .button[aria-disabled='true'] {
   cursor: default;

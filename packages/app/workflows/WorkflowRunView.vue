@@ -294,13 +294,13 @@ function getInvalidFileMessage(): RunMessage {
         :link="gitHubUrl"
         target="_blank"
         rel="noopener noreferrer"
-        aria-keyshortcuts="O"
+        keyshortcuts="O"
       />
       <IconButton
         :icon="X"
         :label="t(l.back)"
         kbd="Escape"
-        aria-keyshortcuts="Escape"
+        keyshortcuts="Escape"
         @click="emit('close')"
       />
     </header>
@@ -354,7 +354,7 @@ function getInvalidFileMessage(): RunMessage {
             size="sm"
             :icon="RotateCw"
             kbd="Enter"
-            aria-keyshortcuts="Enter"
+            keyshortcuts="Enter"
             @click="emit('retry')"
           >
             {{ t(l.tryAgain) }}
@@ -364,7 +364,7 @@ function getInvalidFileMessage(): RunMessage {
             size="sm"
             :icon="Github"
             kbd="O"
-            aria-keyshortcuts="O"
+            keyshortcuts="O"
             @click="emit('openOnGitHub', gitHubUrl)"
           >
             {{ message.gitHubLabel }}

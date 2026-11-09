@@ -226,7 +226,7 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="GitBranch"
         :kbd="EDIT_KEYS.branch"
-        :aria-keyshortcuts="EDIT_KEYS.branch"
+        :keyshortcuts="EDIT_KEYS.branch"
         @click="emit('command', branchCommand)"
       >
         {{ branchCommand.kind === 'deleteBranch' ? t(l.deleteBranch) : t(l.restoreBranch) }}
@@ -237,7 +237,7 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="GitPullRequestArrow"
         :kbd="EDIT_KEYS.updateBranch"
-        :aria-keyshortcuts="EDIT_KEYS.updateBranch"
+        :keyshortcuts="EDIT_KEYS.updateBranch"
         @click="emit('command', updateCommand)"
       >
         {{ t(l.updateBranch) }}
@@ -249,7 +249,7 @@ function refusedAside(reason: EditFailureReason) {
         size="sm"
         :icon="GitMerge"
         :kbd="EDIT_KEYS.merge"
-        :aria-keyshortcuts="EDIT_KEYS.merge"
+        :keyshortcuts="EDIT_KEYS.merge"
         @click="emit('merge')"
       >
         {{ mergeLabel }}
@@ -262,7 +262,7 @@ function refusedAside(reason: EditFailureReason) {
         kbd="O"
         target="_blank"
         rel="noopener noreferrer"
-        aria-keyshortcuts="O"
+        keyshortcuts="O"
       >
         {{ t(l.openOnGitHub) }}
       </Button>
@@ -272,7 +272,7 @@ function refusedAside(reason: EditFailureReason) {
         :icon="FileDiff"
         :link="reviewPath"
         kbd="D"
-        aria-keyshortcuts="D"
+        keyshortcuts="D"
       >
         {{ t(l.reviewFiles) }}
       </Button>

@@ -1,7 +1,7 @@
 <!-- The content of a stack's card on a board (D16, SP26, SP27; the board draws the card, its selection and its handlers), as tall as an item's card and no more decorated: on its first line the stack icon — the selection's mark when all its pull requests are selected, a half mark when some are (D20, SP28) — the repository when the list spans several and how many pull requests it holds — "2 of 4" for a share of the stack's open ones, the others in other columns; "1 of 4 matches" under a filter matching some (D3, SP25) — the people on the right and a chevron that expands it; then the stack's name; then the pips — a share's own drawn in their state, the others hollow, the one opened over the list tall (D14) — and the state in words, with the summed size of its pull requests beside it (worked out as for a list's row, `useStackFacts`). Expanded, it lists its pull requests inside it, first to last, each in its own state with its number and title, the one selected in it highlighted, those the filter does not match de-emphasised; a click opens one. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { Reveal } from '@nzyme/vue/components/Reveal.jsx';
+import Reveal from '@nzyme/vue/components/Reveal.vue';
 import { Check, Layers, Minus } from 'lucide-vue-next';
 import { computed } from 'vue';
 

@@ -63,7 +63,7 @@ const link = computed(() => {
         :icon="ArrowUpRight"
         :link="link.url"
         :kbd="active ? link.kbd : undefined"
-        :aria-keyshortcuts="active ? link.kbd : undefined"
+        :keyshortcuts="active ? link.kbd : undefined"
         target="_blank"
         rel="noopener noreferrer"
       >

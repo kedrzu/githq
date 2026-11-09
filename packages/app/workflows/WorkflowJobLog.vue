@@ -1160,7 +1160,7 @@ function measureCharacterWidth() {
           block
           :icon="Search"
           kbd="/"
-          aria-keyshortcuts="/"
+          keyshortcuts="/"
           tid="workflow-log-open-search"
           @click="void openSearch()"
         >

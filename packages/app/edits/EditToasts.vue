@@ -121,7 +121,7 @@ function getLink(failure: EditFailure) {
           variant="secondary"
           size="sm"
           :kbd="active ? SELECT_FAILED_KEY : undefined"
-          :aria-keyshortcuts="active ? SELECT_FAILED_KEY : undefined"
+          :keyshortcuts="active ? SELECT_FAILED_KEY : undefined"
           @click="selectFailed(failure)"
         >
           {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}

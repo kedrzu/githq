@@ -209,7 +209,7 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
         size="sm"
         :icon="ArrowUpRight"
         kbd="O"
-        aria-keyshortcuts="O"
+        keyshortcuts="O"
         @click="openOnGitHub"
       >
         {{ gitHubLabel }}

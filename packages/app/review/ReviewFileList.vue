@@ -286,7 +286,7 @@ function onFilterKeydown(event: KeyboardEvent) {
           variant="light"
           size="sm"
           :kbd="REVIEW_KEYS.viewed"
-          :aria-keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
+          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.viewed)"
           @click="emit('markSelected')"
         >
           {{ allSelectedViewed ? t(l.markNotViewed) : t(l.markViewed) }}

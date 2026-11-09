@@ -17,6 +17,8 @@ import { RadioGroupItem, RadioGroupRoot } from 'reka-ui';
 
 const props = defineProps<{
   options: readonly O[];
+  /** The group's accessible name; a caller with a visible heading names it by `aria-labelledby` instead. */
+  label?: string;
   getCardAttrs?: (option: O) => RadioCardAttrs;
 }>();
 
@@ -62,6 +64,7 @@ function stopScriptedClick(event: MouseEvent) {
 <template>
   <RadioGroupRoot
     :model-value="model"
+    :aria-label="label"
     @click.capture="stopScriptedClick"
     @update:model-value="choose"
   >
