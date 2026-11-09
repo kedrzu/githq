@@ -392,7 +392,7 @@ test('D27: a click on the bar drops the rows over the content — one map at a t
     expect(onClose).toHaveBeenCalledTimes(1);
 });
 
-test('D27: the dropped rows close on a second click on the bar, a click outside, and the rows coming back into view', async () => {
+test('D27: the dropped rows close on a second click on the bar, a click outside, any scroll of the content and the rows coming back into view', async () => {
     await StackOfTenInPanel.run();
     const scroll = getContentScroll();
     const toggle = stackBarToggle();
@@ -406,6 +406,15 @@ test('D27: the dropped rows close on a second click on the bar, a click outside,
     await toggle.click();
     await userEvent.click(page.getByRole('textbox', { name: 'Comment' }));
     await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    // Scrolling the content, up or down, with the rows still out of view (it starts at the end).
+    for (const by of [-40, 20]) {
+        await toggle.click();
+        await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+        scroll.scrollTop += by;
+        await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
+        await expect.element(toggle).toBeEnabled();
+    }
 
     await toggle.click();
     await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');

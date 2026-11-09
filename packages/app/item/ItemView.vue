@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, closed by Escape, a click outside, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -395,6 +395,11 @@ onWindowEvent('pointerdown', event => {
   stackDropped.value = false;
 });
 
+/** Scrolling the content, either way, takes the dropped rows away: they belong to where the reader was. */
+function onContentScroll() {
+  stackDropped.value = false;
+}
+
 function getEditCommands(): Command[] {
   const { editing, item } = props;
   if (!editing) {
@@ -700,6 +705,7 @@ function getProjectOptions(): CommandOption[] {
             <div
               ref="scroll"
               :class="css.itemView_scroll"
+              @scroll.passive="onContentScroll"
             >
               <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
               <div
@@ -1016,6 +1022,8 @@ function getProjectOptions(): CommandOption[] {
 // The content and, in a panel, what drops over it from the stack bar.
 .itemView_content {
   position: relative;
+  // The dropped rows slide out from under the bar: what is still above the content is cut off, never over the bar.
+  overflow: clip;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -1037,6 +1045,17 @@ function getProjectOptions(): CommandOption[] {
   overflow-y: auto;
   background: $color-bg-2;
   border-bottom: 1px solid $color-border;
+
+  // D38: it slides out from under the bar; it goes at once, like every overlay.
+  @include motion {
+    animation: stackDrop $motion-open ease-out;
+  }
+}
+
+@keyframes stackDrop {
+  from {
+    translate: 0 -100%;
+  }
 }
 
 .itemView_scroll {
