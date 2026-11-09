@@ -4,27 +4,6 @@ pullRequests:
   en: Pull requests of the stack
 place:
   en: '{position} of {size}'
-unfold:
-  en: 'Show the stack:'
-earlier:
-  en: '{count} earlier'
-later:
-  en: '{count} later'
-foldWithSummary:
-  en: '{fold} · {summary}'
-foldLanded:
-  en: '{count} landed'
-foldReady:
-  en: '{count} ready'
-foldFailing:
-  en: '{count} failing'
-foldDrafts:
-  plural: count
-  en:
-    one: '{count} draft'
-    many: '{count} drafts'
-foldClosed:
-  en: '{count} closed'
 takesLonger:
   en: Stacks take longer · not merged yet
 heldByDraft:
@@ -35,7 +14,5 @@ heldByReview:
   en: '#{number} is waiting for review'
 heldStopsLater:
   en: '#{number} stops {later} later from landing'
-heldBlocksLater:
-  en: '#{number} blocks {later} later'
 heldAlone:
   en: "#{number} can't merge yet"
