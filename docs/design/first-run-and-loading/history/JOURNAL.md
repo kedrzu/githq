@@ -53,3 +53,4 @@ Append-only; one line per turn that settled something.
 - 2026-11-07 — Build, M3 checkpoint: owner took every recommendation. D12: failing "tries again by itself", pause
   words neutral, hidden a status of its own, refused only over what hasn't arrived, group notes, one poll per Try
   again. D15 simplified ("Nothing in Mentioned", no counts). Ghosts share the real rows' and columns' sizes.
+- 2026-11-09 — Owner: the skeleton band too strong, narrow, slanted and fast. D9 now a slow train of soft, wide bands, 25 ms a row.

@@ -210,8 +210,8 @@ Components (`Components · Empty states`): `Empty / Still arriving · screen | g
 
 ## D9
 
-**The ghosts carry the motion alone: a soft highlight runs left to right along the skeleton bars themselves, never over the background between them, a full pass every 1.6 s,
-each row 80 ms after the one above; an arriving row fades in over its ghost in 150 ms and the ghosts below move down.
+**The ghosts carry the motion alone: soft, wide highlights run left to right along the skeleton bars themselves, never over the background between them, one band every 480 px following another, moving on by one band every 2 s,
+each row 25 ms after the one above, so the bands lean only slightly; an arriving row fades in over its ghost in 150 ms and the ghosts below move down.
 With animations off (Display, CH49) the ghosts stand still.** (2026-11-06, design agent's proposal; the owner asked
 that it visibly move) — ES4
 
@@ -221,7 +221,9 @@ single band crosses the whole row (a gradient anchored to the wrapper, which the
 bar animates on its own. (2026-11-06, owner, at the start of the build)
 
 **Why.** With no words the motion is what tells "something is happening"; a sweep reads as work in progress, a blink
-as a fault. Shapes animating each on their own would look chaotic (owner). The owner's words for the tone: "fetching", "crunching", "churning".
+as a fault. Shapes animating each on their own would look chaotic (owner). The first build's single narrow, bright band crossing the row in 1.6 s, 80 ms a row, read as too strong, too
+narrow, too slanted and too fast (owner, 2026-11-09); the softer train of wide bands follows the usual shimmer of other
+products (wide, low contrast, slow). The owner's words for the tone: "fetching", "crunching", "churning".
 
 ## D10
 

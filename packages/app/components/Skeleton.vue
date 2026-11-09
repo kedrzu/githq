@@ -35,11 +35,9 @@ function measure() {
     return;
   }
 
-  const span = element.getBoundingClientRect();
-  element.style.setProperty('--skeleton-span', `${span.width}px`);
-  element.style.setProperty('--skeleton-travel', `${-1.5 * span.width}px`);
+  const left = element.getBoundingClientRect().left;
   for (const shape of element.querySelectorAll<HTMLElement>('[data-skeleton-shape]')) {
-    shape.style.setProperty('--skeleton-x', `${shape.getBoundingClientRect().left - span.left}px`);
+    shape.style.setProperty('--skeleton-x', `${shape.getBoundingClientRect().left - left}px`);
   }
 }
 </script>
