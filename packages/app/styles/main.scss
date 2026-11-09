@@ -55,12 +55,11 @@ html {
     }
 }
 
-// A skeleton's band crossing its span left to right (`@mixin skeleton-fill`). The image is 2.5 spans wide with the band
-// in its middle, so moving it by 1.5 spans takes the band from a quarter span before the start to a quarter span past
-// the end; each shape shifts it back by where it starts in the span. Alone, a percentage of its own box does the same.
+// A skeleton's bands moving left to right by one band's tile (`@mixin skeleton-fill`), which brings them back to where
+// they started; each shape shifts them back by where it starts in its wrapper.
 @keyframes skeleton-sweep {
     from {
-        background-position-x: calc(var(--skeleton-travel, 100%) - var(--skeleton-x, 0px));
+        background-position-x: calc(-1 * #{$skeleton-band-period} - var(--skeleton-x, 0px));
     }
 
     to {

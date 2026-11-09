@@ -19,6 +19,14 @@ export const OAUTH_AUTHORIZE_PATH = '/api/auth/authorize';
 export const OAUTH_TOKEN_PATH = '/api/auth/token';
 
 /**
+ * The Worker's endpoint that revokes a token at GitHub, which only the client secret can: `POST` JSON `{ token }`, `204`
+ * whether GitHub still knew the token or not. The app calls it on signing out, so tokens do not pile up past GitHub's
+ * ten per user and OAuth App, past which every new sign-in revokes another device's. The only auth endpoint that
+ * answers CORS, for the desktop app's webview: it can only revoke a token the caller already holds.
+ */
+export const OAUTH_REVOKE_PATH = '/api/auth/revoke';
+
+/**
  * The Worker's endpoint that redirects the browser to GitHub's page of githq's OAuth App
  * (`github.com/settings/connections/applications/<client id>`), where the user requests an organisation's
  * approval of githq with one click (G5, D14): `GET`, opened in a new tab.

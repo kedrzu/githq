@@ -13,6 +13,6 @@ export interface WorkerEnv {
     ASSETS: { fetch(request: Request): Promise<Response> };
     /** Which OAuth App this is: `prod`, `dev` or `e2e` (`getOAuthClientId`). */
     GITHQ_ENV?: string;
-    /** Secret: used only in the Worker's own request to GitHub's token endpoint, never in a response or log. */
+    /** Secret: used only in the Worker's own requests to GitHub (the token exchange and revocation), never in a response or log. */
     GITHUB_CLIENT_SECRET?: string;
 }
