@@ -38189,8 +38189,18 @@
                   "name": "Activity / Composer · writing",
                   "width": 760,
                   "descendants": {
+                    "pehHx": {
+                      "stroke": "$accent"
+                    },
+                    "pehHx/mnTU1": {
+                      "fill": "$fg",
+                      "content": "Thanks both. The cross-repository case is fixed in 3f2a9b1 and the e2e is green again.\n\n@sofiab could you take another look? The migration is the only part that changed since your review."
+                    },
                     "pehHx/wYaxO/hqldH": {
                       "content": "Close with comment"
+                    },
+                    "pehHx/gAIL0": {
+                      "opacity": 1
                     }
                   }
                 },
@@ -39374,7 +39384,7 @@
                   "name": "Activity / Reference menu",
                   "reusable": true,
                   "clip": true,
-                  "width": 420,
+                  "width": 480,
                   "fill": "$bg-2",
                   "cornerRadius": 9,
                   "stroke": "$border-2",
@@ -39486,7 +39496,7 @@
                       "id": "ccHsb",
                       "type": "ref",
                       "ref": "vC9fN",
-                      "name": "#9",
+                      "name": "#10",
                       "width": "fill_container",
                       "descendants": {
                         "hslz2": {
@@ -39494,13 +39504,13 @@
                           "fill": "$green"
                         },
                         "pSlRN": {
-                          "content": "#9",
+                          "content": "#10",
                           "fontFamily": "$mono",
                           "fontSize": 12
                         },
                         "i5Wdh": {
                           "enabled": true,
-                          "content": "Offline support"
+                          "content": "Rebuild links on every sync"
                         }
                       }
                     }
@@ -40398,14 +40408,14 @@
                       "cornerRadius": 8,
                       "stroke": "$border-2",
                       "strokeWidth": 1,
+                      "layout": "vertical",
                       "gap": 10,
                       "padding": [
-                        8,
                         10,
-                        8,
+                        14,
+                        12,
                         14
                       ],
-                      "alignItems": "center",
                       "children": [
                         {
                           "type": "frame",
@@ -40444,38 +40454,49 @@
                           ]
                         },
                         {
-                          "id": "G0C6RH",
-                          "type": "ref",
-                          "ref": "TH5d7",
-                          "name": "Open on GitHub",
-                          "descendants": {
-                            "Js7vW": {
-                              "icon": "arrow-up-right"
+                          "type": "frame",
+                          "id": "PIpiP",
+                          "name": "Actions",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "Z7ltJ",
+                              "type": "ref",
+                              "ref": "TH5d7",
+                              "name": "Try again",
+                              "descendants": {
+                                "Js7vW": {
+                                  "icon": "rotate-cw"
+                                },
+                                "hqldH": {
+                                  "content": "Try again"
+                                },
+                                "ZBaFq": {
+                                  "enabled": false
+                                },
+                                "ZBaFq/luKkY": {
+                                  "content": "⇧R"
+                                }
+                              }
                             },
-                            "hqldH": {
-                              "content": "Open on GitHub"
-                            },
-                            "ZBaFq": {
-                              "enabled": false
+                            {
+                              "id": "G0C6RH",
+                              "type": "ref",
+                              "ref": "TH5d7",
+                              "name": "Open on GitHub",
+                              "descendants": {
+                                "Js7vW": {
+                                  "icon": "arrow-up-right"
+                                },
+                                "hqldH": {
+                                  "content": "Open on GitHub"
+                                },
+                                "ZBaFq": {
+                                  "enabled": false
+                                }
+                              }
                             }
-                          }
-                        },
-                        {
-                          "id": "Z7ltJ",
-                          "type": "ref",
-                          "ref": "TH5d7",
-                          "name": "Try again",
-                          "descendants": {
-                            "Js7vW": {
-                              "icon": "rotate-cw"
-                            },
-                            "hqldH": {
-                              "content": "Try again"
-                            },
-                            "ZBaFq/luKkY": {
-                              "content": "⇧R"
-                            }
-                          }
+                          ]
                         }
                       ]
                     }
@@ -41819,7 +41840,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The thread under an issue or a pull request, GitHub's timeline made calmer: one rail runs down it, everything that happened sits on it as a one-line event, and what people wrote sits beside it in a card with its own header, so two comments never run together. A push lists its commits under it (three, then “Show N more”). A review is one card: the verdict, the summary, and each code thread with the lines it is about; resolved threads fold to one line. A long middle folds to “N earlier events”, and the line marks where the new ones start. Scrolled down: the merge box and checks above the thread are unchanged and hidden here.",
+                      "content": "The thread under an issue or a pull request, GitHub's timeline made calmer: one rail runs down it, everything that happened sits on it as a one-line event, and what people wrote sits beside it in a card with its own header, so two comments never run together. A push lists its commits under it (three, then “Show N more”). A review is one card: the verdict, the summary, and each code thread with the lines it is about; resolved threads fold to one line. A long middle folds to “N earlier events”, and the line marks where the new ones start. Scrolled down: the merge box and checks above the thread are unchanged and hidden here.\n\nThe fold: a thread folds once it has more than 20 items (events, pushes, comments, reviews; the description and the composer don't count). The first 2 items stay above the fold. Below it stays everything from the earliest of: the 5th item from the end, the first item new since you looked, and the oldest review or code comment with a thread still unresolved. If that would leave fewer than 6 items to fold, nothing folds. Here: 2 above, 18 folded, 7 below, starting at sofiab's review, whose thread is unresolved.\n\nNew since you looked: counted from the last time you had this item open, in any container, kept per item on this device (a rebuildable cache: on a new device nothing is marked). Your own comments, reviews and events count as looking, so they are never new. The line sits before the first item by someone else after that moment and says how many there are; it stays until you leave the item.\n\nR: when a code thread is focused (moved to with J/K, or clicked), R opens that thread's reply box; otherwise R scrolls to the composer at the end and focuses it, as “Comment” in the command menu does. Esc leaves the editor (in a reply box, Esc is Cancel).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -42553,6 +42574,15 @@
                             },
                             "U4T6V": {
                               "enabled": false
+                            },
+                            "RmiML": {
+                              "enabled": true
+                            },
+                            "RmiML/MrJvR": {
+                              "content": "commented 4 days ago"
+                            },
+                            "RmiML/r8lpm": {
+                              "content": "Moves issues, pull requests and project items into IndexedDB so lists render before the network answers. It is the first of four in the offline stack."
                             },
                             "VwngJ": {
                               "type": "frame",
@@ -43685,6 +43715,9 @@
                               "enabled": false
                             },
                             "U4T6V": {
+                              "enabled": false
+                            },
+                            "RmiML": {
                               "enabled": false
                             },
                             "VwngJ": {
@@ -47345,6 +47378,898 @@
                                       "fontWeight": "normal"
                                     }
                                   ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "X4iyN",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "l01YB",
+              "name": "Slot · F14 · Reviews in the thread",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "vcLdy",
+                  "name": "Caption",
+                  "width": 1600,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "palpv",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F14 · Reviews in the thread",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "klRij",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A review is one card: the reviewer's avatar in the gutter, the verdict in its head (approved green, changes requested red, “reviewed” for comments only), the summary, then its code threads. Without a summary the card holds just the threads. A dismissed review folds to its head, “Show review” opens it, and the dismissal follows as an event. Your own pending review sits at the end of the thread, above the composer, with the same band as in code review (“Submit review…” ⇧S); nobody else sees it. A thread whose lines changed since says “Outdated” and keeps the old lines; unresolved it stays open, resolved it folds like any other.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BNtyu",
+                  "name": "F14 · Reviews in the thread",
+                  "width": 1600,
+                  "fill": "$bg-item",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 40,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "t7yXCK",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "E0BW4K",
+                          "name": "Approved",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jMkAK",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Approved",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "NIWH7",
+                              "type": "ref",
+                              "ref": "I99H9c",
+                              "name": "Review · approved",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "s2UVhi",
+                          "name": "Commented, with a summary",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "H9h1Mo",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Commented, with a summary",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "zZKbC",
+                              "type": "ref",
+                              "ref": "YKqKB",
+                              "name": "Review · commented",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "nEpoq",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F0QtP",
+                          "name": "Commented, no summary: only its threads",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ljp6j",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Commented, no summary: only its threads",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "O6m3zX",
+                              "type": "ref",
+                              "ref": "DwBhj",
+                              "name": "Review · commented, no summary",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "G3f6Ox",
+                          "name": "Dismissed: folded, the dismissal right after it",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "CxHqT",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Dismissed: folded, the dismissal right after it",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "YnEus",
+                              "type": "ref",
+                              "ref": "d5GG0",
+                              "name": "Review · dismissed",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "TOpPv",
+                              "type": "ref",
+                              "ref": "umLcQ",
+                              "name": "Event · dismissed",
+                              "width": "fill_container",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "circle-x"
+                                },
+                                "xlFny": {
+                                  "content": "dismissed"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": "sofiab's review: Addressed in 3f2a9b1",
+                                  "enabled": true
+                                },
+                                "K9lUQx": {
+                                  "content": "1d"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "k4vTM",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Z2SEJO",
+                          "name": "Your pending review: only you see it",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "rifX8",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Your pending review: only you see it",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "z2SZAj",
+                              "type": "ref",
+                              "ref": "PwdqU",
+                              "name": "Review · pending",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VXq1W",
+                          "name": "An outdated code thread",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "m74lIv",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "An outdated code thread",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "kWo4v",
+                              "type": "ref",
+                              "ref": "cwCtr",
+                              "name": "Code comment · outdated",
+                              "width": "fill_container",
+                              "descendants": {
+                                "W9obI": {
+                                  "content": "commented on"
+                                },
+                                "cI4go": {
+                                  "content": "src/store/db.ts"
+                                },
+                                "E4uiz": {
+                                  "content": "2d"
+                                },
+                                "kIygc": {
+                                  "id": "K384O",
+                                  "type": "ref",
+                                  "ref": "Tc0aE",
+                                  "name": "Thread",
+                                  "width": "fill_container"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BLYpR",
+              "name": "Slot · F15 · A comment's ⋯ menu, and editing in place",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cIs13",
+                  "name": "Caption",
+                  "width": 1600,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LXQlc",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F15 · A comment's ⋯ menu, and editing in place",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "o9BXr",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "⋯ in a comment's head (or right-clicking the card) opens its menu: Edit, Quote reply, Copy link, Delete…. Edit turns the card into the editor where it stands, with its text: Cancel (Esc) puts the card back unchanged, Update comment (⌘↵) saves it, and the head then says “· edited”. Quote reply puts the text, quoted, into the composer at the end and scrolls there. Copy link copies the comment's github.com link. Delete… asks once, since GitHub keeps no copy. Edit and Delete are offered on your own comments, and on anyone's where you can write to the repository; otherwise the menu has Quote reply and Copy link. The description card has the same menu, without Delete.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jlNEP",
+                  "name": "F15 · A comment's ⋯ menu, and editing in place",
+                  "width": 1600,
+                  "fill": "$bg-item",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 40,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vkUtV",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "y7zKXS",
+                          "name": "⋯ on your own comment",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            0,
+                            0,
+                            120,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "zy4iL",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "⋯ on your own comment",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "LboU5",
+                              "type": "ref",
+                              "ref": "WHy4W",
+                              "name": "Comment · mlaine",
+                              "width": "fill_container",
+                              "descendants": {
+                                "N5FNN": {
+                                  "fill": "#C9A26B"
+                                },
+                                "N5FNN/zeZzP": {
+                                  "content": "ML"
+                                },
+                                "my8kv": {
+                                  "content": "mlaine"
+                                },
+                                "bCJbH": {
+                                  "content": "2h"
+                                },
+                                "BujgM": {
+                                  "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                }
+                              }
+                            },
+                            {
+                              "id": "k7Lfe",
+                              "type": "ref",
+                              "ref": "nS2AY",
+                              "name": "Comment menu",
+                              "layoutPosition": "absolute",
+                              "x": 510,
+                              "y": 62
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "I9Bi91",
+                          "name": "Editing in place",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "V8SGk1",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Editing in place",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "sTAUD",
+                              "type": "ref",
+                              "ref": "ehuxk",
+                              "name": "Comment · editing",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "T48ox",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "F9ILMA",
+                          "name": "Saved: “· edited” after the time",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xGKO7",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Saved: “· edited” after the time",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "Yp9kW",
+                              "type": "ref",
+                              "ref": "WHy4W",
+                              "name": "Comment · edited",
+                              "width": "fill_container",
+                              "descendants": {
+                                "N5FNN": {
+                                  "fill": "#C9A26B"
+                                },
+                                "N5FNN/zeZzP": {
+                                  "content": "ML"
+                                },
+                                "my8kv": {
+                                  "content": "mlaine"
+                                },
+                                "bCJbH": {
+                                  "content": "2h"
+                                },
+                                "X0iztw": {
+                                  "enabled": true
+                                },
+                                "BujgM": {
+                                  "content": "The retry is in. The failing e2e was the cross-repository case from the thread above; it's green now in 4a1c9e2."
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LysEI",
+                          "name": "Someone else's comment, without write access",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            0,
+                            0,
+                            70,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Bhrzb",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Someone else's comment, without write access",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "cUjf8",
+                              "type": "ref",
+                              "ref": "WHy4W",
+                              "name": "Comment · dkim",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "Pq4Bk",
+                              "type": "ref",
+                              "ref": "nS2AY",
+                              "name": "Comment menu · others",
+                              "layoutPosition": "absolute",
+                              "x": 510,
+                              "y": 62,
+                              "descendants": {
+                                "Tw3ZJ": {
+                                  "enabled": false
+                                },
+                                "LQ9j0": {
+                                  "fill": "$sel"
+                                },
+                                "ztthR": {
+                                  "enabled": false
+                                },
+                                "UUyle": {
+                                  "enabled": false
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Q2H7SU",
+              "name": "Slot · F16 · The thread loading, empty, or not loaded",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Bu6jC",
+                  "name": "Caption",
+                  "width": 1600,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TNfpE",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "F16 · The thread loading, empty, or not loaded",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qZvpZ",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The description and the composer never wait: the description comes with the item from the local copy, and a comment can be written at once. Only the thread's items can be missing, the first time an item is opened before its comments and events are on this device (an item from outside what you track, or one the first sync hasn't reached). Then the rail shows how many items GitHub reported and a skeleton in their shape (left); on later opens they come from the local copy with no skeleton. With nothing between them, the rail runs from the description straight to the composer (middle). If GitHub can't be reached or refuses, one line on the rail says so, with Open on GitHub and Try again (right); what is there stays. The Freshness screen “3d · item's comments still loading” uses the skeleton.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "y4M2s",
+                  "name": "F16 · The thread loading, empty, or not loaded",
+                  "width": 1600,
+                  "fill": "$bg-item",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 40,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xPasb",
+                      "name": "Loading, the first time",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mrcTp",
+                          "name": "Label",
+                          "fill": "$fg-2",
+                          "content": "Loading, the first time",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Wc661",
+                          "name": "Thread",
+                          "width": "fill_container",
+                          "gap": -57,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            55
+                          ],
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "A32BPg",
+                              "name": "Rail line",
+                              "fill": "$border",
+                              "width": 2,
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GStry",
+                              "name": "Items",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "id": "C7P6R",
+                                  "type": "ref",
+                                  "ref": "bJhAe",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a19SS": {
+                                      "fill": "#8FBF9F"
+                                    },
+                                    "a19SS/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "JNFhA": {
+                                      "content": "dkim"
+                                    },
+                                    "MrJvR": {
+                                      "content": "commented 6 days ago"
+                                    },
+                                    "vcj6Q": {
+                                      "enabled": false
+                                    },
+                                    "r8lpm": {
+                                      "content": "After the store upgrade, a sub-issue whose parent lives in another tracked repository shows no parent. A full resync brings the link back."
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "SvKa3",
+                                  "type": "ref",
+                                  "ref": "FZHVU",
+                                  "name": "Activity · loading",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "JwYfT",
+                                  "type": "ref",
+                                  "ref": "AljH1",
+                                  "name": "Composer",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "G38Cl7",
+                      "name": "Empty: nothing has happened yet",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "B2ilqW",
+                          "name": "Label",
+                          "fill": "$fg-2",
+                          "content": "Empty: nothing has happened yet",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O86Jh",
+                          "name": "Thread",
+                          "width": "fill_container",
+                          "gap": -57,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            55
+                          ],
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "uHvMS",
+                              "name": "Rail line",
+                              "fill": "$border",
+                              "width": 2,
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "w7eMZY",
+                              "name": "Items",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "id": "EVxBF",
+                                  "type": "ref",
+                                  "ref": "bJhAe",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a19SS": {
+                                      "fill": "#8FBF9F"
+                                    },
+                                    "a19SS/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "JNFhA": {
+                                      "content": "dkim"
+                                    },
+                                    "MrJvR": {
+                                      "content": "commented 6 days ago"
+                                    },
+                                    "vcj6Q": {
+                                      "enabled": false
+                                    },
+                                    "r8lpm": {
+                                      "content": "After the store upgrade, a sub-issue whose parent lives in another tracked repository shows no parent. A full resync brings the link back."
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "NAyAz",
+                                  "type": "ref",
+                                  "ref": "AljH1",
+                                  "name": "Composer",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "G1fhz",
+                      "name": "Not loaded",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wJCSF",
+                          "name": "Label",
+                          "fill": "$fg-2",
+                          "content": "Not loaded",
+                          "fontFamily": "$font",
+                          "fontSize": 12.5,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "W6TIz",
+                          "name": "Thread",
+                          "width": "fill_container",
+                          "gap": -57,
+                          "padding": [
+                            0,
+                            0,
+                            0,
+                            55
+                          ],
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "UISZL",
+                              "name": "Rail line",
+                              "fill": "$border",
+                              "width": 2,
+                              "height": "fill_container"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "K2LQDK",
+                              "name": "Items",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 16,
+                              "children": [
+                                {
+                                  "id": "Pflvp",
+                                  "type": "ref",
+                                  "ref": "bJhAe",
+                                  "name": "Body",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "a19SS": {
+                                      "fill": "#8FBF9F"
+                                    },
+                                    "a19SS/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "JNFhA": {
+                                      "content": "dkim"
+                                    },
+                                    "MrJvR": {
+                                      "content": "commented 6 days ago"
+                                    },
+                                    "vcj6Q": {
+                                      "enabled": false
+                                    },
+                                    "r8lpm": {
+                                      "content": "After the store upgrade, a sub-issue whose parent lives in another tracked repository shows no parent. A full resync brings the link back."
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "ReN7h",
+                                  "type": "ref",
+                                  "ref": "V75cQv",
+                                  "name": "Activity · not loaded",
+                                  "width": "fill_container"
+                                },
+                                {
+                                  "id": "L3VHj",
+                                  "type": "ref",
+                                  "ref": "AljH1",
+                                  "name": "Composer",
+                                  "width": "fill_container"
                                 }
                               ]
                             }
@@ -407238,7 +408163,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The same issue after #15 merged, in the 560 px panel. GitHub closed it as completed in #15; the Projects workflow then set Status to Done, with no person. The first two items stay above the fold, the middle 15 fold to one band (the narrow fold, two lines), and the five newest stay below it. Closed, the composer offers Reopen issue (⇧X).",
+                      "content": "The same issue after #15 merged, in the 560 px panel, scrolled to the end. GitHub closed it as completed in #15; the Projects workflow then set Status to Done, with no person. The first two items stay above the fold, the middle 15 fold to one band (the narrow fold, on two lines), and the newest stay below it. Closed, the composer offers Reopen issue (⇧X).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -407302,6 +408227,374 @@
                           "stroke": "$border",
                           "strokeWidth": {
                             "left": 1
+                          },
+                          "descendants": {
+                            "bgcXP/a9vgxp": {
+                              "icon": "circle-check"
+                            },
+                            "bgcXP/P1piP": {
+                              "content": "mlaine/tasklet"
+                            },
+                            "bgcXP/b2amx": {
+                              "content": "#12"
+                            },
+                            "hFf19": {
+                              "enabled": false
+                            },
+                            "hFf19/B8QLEN": {
+                              "content": "Sub-issue links are lost when the parent is in another repository"
+                            },
+                            "hFf19/l4d2Si": {
+                              "fill": "#AB7DF81F"
+                            },
+                            "hFf19/Lh6Wp": {
+                              "icon": "circle-check",
+                              "fill": "$purple"
+                            },
+                            "hFf19/DK8EG": {
+                              "content": "Closed",
+                              "fill": "$purple"
+                            },
+                            "hFf19/jlu5N": {
+                              "content": "dkim · 6 days ago"
+                            },
+                            "DdrmQ": {
+                              "enabled": false
+                            },
+                            "DdrmQ/TTW4X/nzkCm": {
+                              "fill": "#D73A4A"
+                            },
+                            "DdrmQ/TTW4X/PssNv": {
+                              "content": "bug"
+                            },
+                            "DdrmQ/eG2CD/nzkCm": {
+                              "fill": "#1D76DB"
+                            },
+                            "DdrmQ/eG2CD/PssNv": {
+                              "content": "storage"
+                            },
+                            "ZPRjQ": {
+                              "enabled": false
+                            },
+                            "ZPRjQ/p170z": {
+                              "fill": "$purple"
+                            },
+                            "ZPRjQ/GMSQF": {
+                              "content": "Done"
+                            },
+                            "aHR48": {
+                              "enabled": false
+                            },
+                            "aHR48/GlsnQ": {
+                              "icon": "git-merge",
+                              "fill": "$purple"
+                            },
+                            "aHR48/UL6qt": {
+                              "content": "IndexedDB store for issues and pull requests"
+                            },
+                            "aHR48/x3U9G": {
+                              "content": "#15"
+                            },
+                            "aHR48/XOyE5": {
+                              "enabled": false
+                            },
+                            "C0ZXj": {
+                              "enabled": false
+                            },
+                            "C0ZXj/MrJvR": {
+                              "content": "commented 6 days ago"
+                            },
+                            "C0ZXj/r8lpm": {
+                              "content": "After the store upgrade, a sub-issue whose parent lives in another tracked repository shows no parent. A full resync brings the link back."
+                            },
+                            "wbe37": {
+                              "type": "frame",
+                              "id": "wVfJx",
+                              "name": "Feed",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "id": "f4HXFt",
+                                  "type": "ref",
+                                  "ref": "umLcQ",
+                                  "name": "Event · added",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "zBUpf": {
+                                      "icon": "tag",
+                                      "fill": "$fg-2"
+                                    },
+                                    "smi7i": {
+                                      "fill": "#8FBF9F"
+                                    },
+                                    "smi7i/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "Yl9EU": {
+                                      "content": "dkim"
+                                    },
+                                    "xlFny": {
+                                      "content": "added"
+                                    },
+                                    "uSG4o": {
+                                      "enabled": true
+                                    },
+                                    "uSG4o/nzkCm": {
+                                      "fill": "#D73A4A"
+                                    },
+                                    "uSG4o/PssNv": {
+                                      "content": "bug"
+                                    },
+                                    "LHum1": {
+                                      "content": "and set the type to Bug",
+                                      "enabled": true
+                                    },
+                                    "K9lUQx": {
+                                      "content": "6d"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "pXPky",
+                                  "type": "ref",
+                                  "ref": "umLcQ",
+                                  "name": "Event · added this to parent",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "zBUpf": {
+                                      "icon": "corner-left-up",
+                                      "fill": "$fg-2"
+                                    },
+                                    "Yl9EU": {
+                                      "content": "mlaine"
+                                    },
+                                    "xlFny": {
+                                      "content": "added this to parent"
+                                    },
+                                    "uSG4o": {
+                                      "enabled": false
+                                    },
+                                    "tDaJo": {
+                                      "enabled": true,
+                                      "content": "#9"
+                                    },
+                                    "LHum1": {
+                                      "content": "Offline support",
+                                      "enabled": true
+                                    },
+                                    "K9lUQx": {
+                                      "content": "6d"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "LIIaD",
+                                  "name": "Indent",
+                                  "width": "fill_container",
+                                  "children": [
+                                    {
+                                      "id": "KnF1j",
+                                      "type": "ref",
+                                      "ref": "SeqKu",
+                                      "name": "Fold",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "J5MjRP": {
+                                          "content": "Show 15 earlier events"
+                                        },
+                                        "rUfac": {
+                                          "enabled": false
+                                        },
+                                        "CxVd0": {
+                                          "content": "2 comments"
+                                        },
+                                        "WIomp": {
+                                          "content": "13 other events"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "pibll",
+                                  "type": "ref",
+                                  "ref": "WHy4W",
+                                  "name": "Comment · dkim",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "N5FNN": {
+                                      "fill": "#8FBF9F"
+                                    },
+                                    "N5FNN/zeZzP": {
+                                      "content": "DK"
+                                    },
+                                    "my8kv": {
+                                      "content": "dkim"
+                                    },
+                                    "bCJbH": {
+                                      "content": "3h"
+                                    },
+                                    "BujgM": {
+                                      "content": "Tried #15's branch: the parent survives the upgrade now, and a resync keeps it."
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "JHLMw",
+                                  "name": "Indent",
+                                  "width": "fill_container",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    40
+                                  ],
+                                  "children": [
+                                    {
+                                      "id": "CQqc6",
+                                      "type": "ref",
+                                      "ref": "t2x5CU",
+                                      "name": "Divider",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "cMld2": {
+                                          "content": "4 new since you looked"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "id": "lDKUQ",
+                                  "type": "ref",
+                                  "ref": "umLcQ",
+                                  "name": "Event · closed this as completed in",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "zBUpf": {
+                                      "icon": "circle-check",
+                                      "fill": "$purple"
+                                    },
+                                    "Yl9EU": {
+                                      "content": "mlaine"
+                                    },
+                                    "xlFny": {
+                                      "content": "closed this as completed in"
+                                    },
+                                    "uSG4o": {
+                                      "enabled": false
+                                    },
+                                    "tDaJo": {
+                                      "enabled": true,
+                                      "content": "#15"
+                                    },
+                                    "LHum1": {
+                                      "content": "",
+                                      "enabled": true
+                                    },
+                                    "K9lUQx": {
+                                      "content": "20m"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "umERQ",
+                                  "type": "ref",
+                                  "ref": "umLcQ",
+                                  "name": "Event · Status changed to Done in",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "zBUpf": {
+                                      "icon": "table",
+                                      "fill": "$fg-2"
+                                    },
+                                    "smi7i": {
+                                      "enabled": false
+                                    },
+                                    "Yl9EU": {
+                                      "enabled": false
+                                    },
+                                    "xlFny": {
+                                      "content": "Status changed to Done in"
+                                    },
+                                    "uSG4o": {
+                                      "enabled": false
+                                    },
+                                    "LHum1": {
+                                      "content": "tasklet Roadmap",
+                                      "enabled": true
+                                    },
+                                    "K9lUQx": {
+                                      "content": "20m"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "U9OGP",
+                                  "type": "ref",
+                                  "ref": "umLcQ",
+                                  "name": "Event · unpinned this issue",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "zBUpf": {
+                                      "icon": "pin-off",
+                                      "fill": "$fg-2"
+                                    },
+                                    "Yl9EU": {
+                                      "content": "mlaine"
+                                    },
+                                    "xlFny": {
+                                      "content": "unpinned this issue"
+                                    },
+                                    "uSG4o": {
+                                      "enabled": false
+                                    },
+                                    "LHum1": {
+                                      "content": "",
+                                      "enabled": true
+                                    },
+                                    "K9lUQx": {
+                                      "content": "18m"
+                                    }
+                                  }
+                                },
+                                {
+                                  "id": "MPqqL",
+                                  "type": "ref",
+                                  "ref": "WHy4W",
+                                  "name": "Comment · sofiab",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "N5FNN": {
+                                      "fill": "#7FB3D5"
+                                    },
+                                    "N5FNN/zeZzP": {
+                                      "content": "SB"
+                                    },
+                                    "my8kv": {
+                                      "content": "sofiab"
+                                    },
+                                    "bCJbH": {
+                                      "content": "5m"
+                                    },
+                                    "BujgM": {
+                                      "content": "Checked on today's Development build: the parent is still there after the upgrade. Thanks!"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "J35os": {
+                              "id": "mu5ql",
+                              "type": "ref",
+                              "ref": "BWMUY",
+                              "name": "Composer",
+                              "width": "fill_container"
+                            }
                           }
                         }
                       ]
@@ -407312,6 +408605,911 @@
                       "ref": "Nopak",
                       "name": "Status bar",
                       "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ivDMp",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "NVC4S",
+              "name": "Slot · I3 · Issue in modal · not planned and locked",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oE35P",
+                  "name": "Caption",
+                  "width": 1440,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hurov",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "I3 · Issue in modal · not planned and locked",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "q55t3",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Another issue in the modal, scrolled to the end. sren-dev opened it and is the viewer here, a contributor without write access. It was transferred from tasklet-mobile, closed as a duplicate of #12, reopened, then closed as not planned. mlaine locked the conversation right after closing, so the two share one line. With the conversation locked, the composer becomes a quiet note: a contributor can read the thread but not write in it.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XSwb5",
+                  "name": "I3 · Issue in modal · not planned and locked",
+                  "clip": true,
+                  "width": 1440,
+                  "height": 900,
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "HdmzC",
+                      "name": "Main",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "children": [
+                        {
+                          "id": "gc7Fb",
+                          "type": "ref",
+                          "ref": "aMT4O",
+                          "name": "Sidebar",
+                          "height": "fill_container",
+                          "descendants": {
+                            "B3L4in": {
+                              "fill": "$bg-3"
+                            },
+                            "hqT6N": {
+                              "fill": "$fg"
+                            }
+                          }
+                        },
+                        {
+                          "id": "b2HTxg",
+                          "type": "ref",
+                          "ref": "A8DFa",
+                          "name": "List pane",
+                          "width": "fill_container",
+                          "height": "fill_container"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KOvit",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Scrim",
+                      "width": 1440,
+                      "height": 900,
+                      "fill": "#050608A6"
+                    },
+                    {
+                      "id": "s7hbl",
+                      "type": "ref",
+                      "ref": "a80hmX",
+                      "name": "Item view (modal)",
+                      "layoutPosition": "absolute",
+                      "x": 198,
+                      "y": 100,
+                      "width": 1100,
+                      "height": 700,
+                      "cornerRadius": 12,
+                      "stroke": "$border-2",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#000000C0",
+                        "offset": {
+                          "x": 0,
+                          "y": 30
+                        },
+                        "blur": 80
+                      },
+                      "descendants": {
+                        "c5JqCZ/a9vgxp": {
+                          "icon": "circle-slash"
+                        },
+                        "c5JqCZ/P1piP": {
+                          "content": "mlaine/tasklet"
+                        },
+                        "c5JqCZ/b2amx": {
+                          "content": "#16"
+                        },
+                        "SZEl2/B8QLEN": {
+                          "content": "Parent links break after a transfer"
+                        },
+                        "SZEl2/l4d2Si": {
+                          "fill": "#9198A11F"
+                        },
+                        "SZEl2/Lh6Wp": {
+                          "icon": "circle-slash",
+                          "fill": "$fg-2"
+                        },
+                        "SZEl2/DK8EG": {
+                          "content": "Closed",
+                          "fill": "$fg-2"
+                        },
+                        "SZEl2/ta8lG": {
+                          "fill": "#E8A87C"
+                        },
+                        "SZEl2/ta8lG/zeZzP": {
+                          "content": "SR"
+                        },
+                        "SZEl2/jlu5N": {
+                          "content": "sren-dev · 3 days ago"
+                        },
+                        "Xlqg6": {
+                          "enabled": false
+                        },
+                        "NHqH3": {
+                          "enabled": false
+                        },
+                        "NHqH3/a19SS": {
+                          "fill": "#E8A87C"
+                        },
+                        "NHqH3/a19SS/zeZzP": {
+                          "content": "SR"
+                        },
+                        "NHqH3/JNFhA": {
+                          "content": "sren-dev"
+                        },
+                        "NHqH3/MrJvR": {
+                          "content": "commented 3 days ago"
+                        },
+                        "NHqH3/r8lpm": {
+                          "content": "I moved an issue from tasklet-mobile to tasklet, and its parent link still points at the old number. Opening the parent shows “not found”."
+                        },
+                        "U2Ed4W": {
+                          "type": "frame",
+                          "id": "TxV72",
+                          "name": "Feed",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "FyQmF",
+                              "type": "ref",
+                              "ref": "umLcQ",
+                              "name": "Event · transferred this issue from",
+                              "width": "fill_container",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "arrow-right-left",
+                                  "fill": "$fg-2"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "transferred this issue from"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": "mlaine/tasklet-mobile",
+                                  "enabled": true
+                                },
+                                "K9lUQx": {
+                                  "content": "3d"
+                                }
+                              }
+                            },
+                            {
+                              "id": "V5eSE",
+                              "type": "ref",
+                              "ref": "umLcQ",
+                              "name": "Event · closed this as a duplicate of",
+                              "width": "fill_container",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "copy",
+                                  "fill": "$fg-2"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "closed this as a duplicate of"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "tDaJo": {
+                                  "enabled": true,
+                                  "content": "#12"
+                                },
+                                "LHum1": {
+                                  "content": "",
+                                  "enabled": true
+                                },
+                                "K9lUQx": {
+                                  "content": "2d"
+                                }
+                              }
+                            },
+                            {
+                              "id": "TITK5",
+                              "type": "ref",
+                              "ref": "WHy4W",
+                              "name": "Comment · sren-dev",
+                              "width": "fill_container",
+                              "descendants": {
+                                "N5FNN": {
+                                  "fill": "#E8A87C"
+                                },
+                                "N5FNN/zeZzP": {
+                                  "content": "SR"
+                                },
+                                "my8kv": {
+                                  "content": "sren-dev"
+                                },
+                                "bCJbH": {
+                                  "content": "2d"
+                                },
+                                "BujgM": {
+                                  "content": "It isn't quite #12: here the parent stays where it was, only the child moved."
+                                }
+                              }
+                            },
+                            {
+                              "id": "bYhOv",
+                              "type": "ref",
+                              "ref": "umLcQ",
+                              "name": "Event · reopened this",
+                              "width": "fill_container",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "circle-dot",
+                                  "fill": "$green"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "reopened this"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": "",
+                                  "enabled": true
+                                },
+                                "K9lUQx": {
+                                  "content": "2d"
+                                }
+                              }
+                            },
+                            {
+                              "id": "RCd2x",
+                              "type": "ref",
+                              "ref": "WHy4W",
+                              "name": "Comment · mlaine",
+                              "width": "fill_container",
+                              "descendants": {
+                                "N5FNN": {
+                                  "fill": "#C9A26B"
+                                },
+                                "N5FNN/zeZzP": {
+                                  "content": "ML"
+                                },
+                                "my8kv": {
+                                  "content": "mlaine"
+                                },
+                                "bCJbH": {
+                                  "content": "1d"
+                                },
+                                "BujgM": {
+                                  "content": "Right, it's a different bug. GitHub keeps the link after a transfer, so it's our cache. It waits for the store work, though."
+                                }
+                              }
+                            },
+                            {
+                              "id": "ru2rI",
+                              "type": "ref",
+                              "ref": "umLcQ",
+                              "name": "Event · closed this as not planned",
+                              "width": "fill_container",
+                              "descendants": {
+                                "zBUpf": {
+                                  "icon": "circle-slash",
+                                  "fill": "$fg-2"
+                                },
+                                "Yl9EU": {
+                                  "content": "mlaine"
+                                },
+                                "xlFny": {
+                                  "content": "closed this as not planned"
+                                },
+                                "uSG4o": {
+                                  "enabled": false
+                                },
+                                "LHum1": {
+                                  "content": "and locked the conversation to collaborators",
+                                  "enabled": true
+                                },
+                                "K9lUQx": {
+                                  "content": "1d"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "zKLqd": {
+                          "id": "wCAUu",
+                          "type": "ref",
+                          "ref": "fBQzF",
+                          "name": "Composer",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ii3f2": {
+                              "fill": "#E8A87C"
+                            },
+                            "ii3f2/zeZzP": {
+                              "content": "SR"
+                            }
+                          }
+                        },
+                        "q3qht/TTW4X/nzkCm": {
+                          "fill": "#D73A4A"
+                        },
+                        "q3qht/TTW4X/PssNv": {
+                          "content": "bug"
+                        },
+                        "q3qht/eG2CD/nzkCm": {
+                          "fill": "#5319E7"
+                        },
+                        "q3qht/eG2CD/PssNv": {
+                          "content": "sync"
+                        },
+                        "MO9s6/p170z": {
+                          "fill": "$fg-3"
+                        },
+                        "MO9s6/GMSQF": {
+                          "content": "Backlog"
+                        }
+                      }
+                    },
+                    {
+                      "id": "msIHC",
+                      "type": "ref",
+                      "ref": "BFhwj",
+                      "name": "Status bar",
+                      "width": "fill_container"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OGRTF",
+              "name": "Slot · I4 · The composer's states",
+              "layout": "vertical",
+              "gap": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ynbWm",
+                  "name": "Caption",
+                  "width": 1600,
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RDeI9",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "I4 · The composer's states",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "L5oEi3",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "The composer at the end of an issue's or a pull request's thread. Closing an issue asks for a reason: ⇧X closes as completed, the chevron opens the reasons. Once text is typed the close button closes and posts it (“Close with comment”). A closed item offers Reopen, a merged pull request offers no close button, and where you can't comment the editor gives way to one quiet line saying why. A sent comment shows at once in the thread as a new card, dimmed until GitHub has it; if GitHub refuses it, the card stays with its text, Retry and Discard. @ and # open a suggestion list at the caret: ↑↓ move, ↵ or Tab inserts, Esc closes.",
+                      "lineHeight": 1.45,
+                      "fontFamily": "$font",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Cozpz",
+                  "name": "I4 · The composer's states",
+                  "width": 1600,
+                  "fill": "$bg-item",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 40,
+                  "padding": 40,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "jMurT",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "p4LvP",
+                          "name": "Issue, closing with a reason",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            0,
+                            0,
+                            110,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "EHPAb",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Issue, closing with a reason",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "ljbk4",
+                              "type": "ref",
+                              "ref": "AljH1",
+                              "name": "Composer · issue",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "gNQuK",
+                              "type": "ref",
+                              "ref": "PRnLo",
+                              "name": "Close menu",
+                              "layoutPosition": "absolute",
+                              "x": 442,
+                              "y": 178
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "vuPTk",
+                          "name": "Issue, text typed",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Se5z6",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Issue, text typed",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "lihjD",
+                              "type": "ref",
+                              "ref": "G7spc",
+                              "name": "Composer · issue, writing",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qPj1k",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "J7k1fO",
+                          "name": "Closed issue or pull request",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YTYUQ",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Closed issue or pull request",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "a9o3i",
+                              "type": "ref",
+                              "ref": "BWMUY",
+                              "name": "Composer · closed, issue",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "FoNd9",
+                              "type": "ref",
+                              "ref": "BWMUY",
+                              "name": "Composer · closed, pull request",
+                              "width": "fill_container",
+                              "descendants": {
+                                "pehHx/wYaxO/Js7vW": {
+                                  "icon": "git-pull-request",
+                                  "fill": "$green"
+                                },
+                                "pehHx/wYaxO/hqldH": {
+                                  "content": "Reopen pull request"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "obs4g",
+                          "name": "Merged pull request: nothing to close",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cv647",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Merged pull request: nothing to close",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "ALgmu",
+                              "type": "ref",
+                              "ref": "yL1Bq",
+                              "name": "Composer · merged",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "FeBAN",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "M1OSI",
+                          "name": "Can't comment: a locked conversation, an archived repository",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "E23VP",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Can't comment: a locked conversation, an archived repository",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "iUcjb",
+                              "type": "ref",
+                              "ref": "fBQzF",
+                              "name": "Composer · locked",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ii3f2": {
+                                  "fill": "#E8A87C"
+                                },
+                                "ii3f2/zeZzP": {
+                                  "content": "SR"
+                                }
+                              }
+                            },
+                            {
+                              "id": "OxHpB",
+                              "type": "ref",
+                              "ref": "fBQzF",
+                              "name": "Composer · archived",
+                              "width": "fill_container",
+                              "descendants": {
+                                "UTldF": {
+                                  "icon": "archive"
+                                },
+                                "ZxKnf": {
+                                  "content": "mlaine/tasklet-mobile is archived, so it takes no new comments."
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "guyKo",
+                          "name": "Preview",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "YiHV0",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Preview",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "R8ZiO",
+                              "type": "ref",
+                              "ref": "d7Rk1Q",
+                              "name": "Composer · preview",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WhNhY",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "VYXpp",
+                          "name": "@ suggests people: this thread's first, then the repository's",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            0,
+                            0,
+                            110,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "VWSgP",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "@ suggests people: this thread's first, then the repository's",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "xBKa6",
+                              "type": "ref",
+                              "ref": "sWprg",
+                              "name": "Composer · typing @",
+                              "width": "fill_container",
+                              "descendants": {
+                                "pehHx": {
+                                  "stroke": "$accent"
+                                },
+                                "pehHx/mnTU1": {
+                                  "fill": "$fg",
+                                  "content": "Thanks both. The cross-repository case is fixed in 3f2a9b1. @so"
+                                },
+                                "pehHx/wYaxO/hqldH": {
+                                  "content": "Close with comment"
+                                },
+                                "pehHx/gAIL0": {
+                                  "opacity": 1
+                                }
+                              }
+                            },
+                            {
+                              "id": "POcEN",
+                              "type": "ref",
+                              "ref": "w5xhn",
+                              "name": "Mention menu",
+                              "layoutPosition": "absolute",
+                              "x": 250,
+                              "y": 92
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VhOs9",
+                          "name": "# suggests issues and pull requests of this repository",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": [
+                            0,
+                            0,
+                            150,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "PcVvc",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "# suggests issues and pull requests of this repository",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "DwI8a",
+                              "type": "ref",
+                              "ref": "sWprg",
+                              "name": "Composer · typing #",
+                              "width": "fill_container",
+                              "descendants": {
+                                "pehHx": {
+                                  "stroke": "$accent"
+                                },
+                                "pehHx/mnTU1": {
+                                  "fill": "$fg",
+                                  "content": "Same root cause as #1"
+                                },
+                                "pehHx/wYaxO/hqldH": {
+                                  "content": "Close with comment"
+                                },
+                                "pehHx/gAIL0": {
+                                  "opacity": 1
+                                }
+                              }
+                            },
+                            {
+                              "id": "c2aDvC",
+                              "type": "ref",
+                              "ref": "eKbTa",
+                              "name": "Reference menu",
+                              "layoutPosition": "absolute",
+                              "x": 196,
+                              "y": 92
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DDIq2",
+                      "name": "Row",
+                      "width": "fill_container",
+                      "gap": 40,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "yM1ph",
+                          "name": "Sent: the new card, until GitHub has it",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "j4N7a",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Sent: the new card, until GitHub has it",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "khMJ7",
+                              "type": "ref",
+                              "ref": "OmV5q",
+                              "name": "Comment · sending",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "mqoKx",
+                              "type": "ref",
+                              "ref": "sWprg",
+                              "name": "Composer · empty again",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZxNKp",
+                          "name": "Not sent: the card keeps the text",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Iobnp",
+                              "name": "Label",
+                              "fill": "$fg-2",
+                              "content": "Not sent: the card keeps the text",
+                              "fontFamily": "$font",
+                              "fontSize": 12.5,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "id": "D1Tp8v",
+                              "type": "ref",
+                              "ref": "a4VAuV",
+                              "name": "Comment · failed",
+                              "width": "fill_container"
+                            },
+                            {
+                              "id": "vMiNt",
+                              "type": "ref",
+                              "ref": "sWprg",
+                              "name": "Composer · empty again",
+                              "width": "fill_container"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
