@@ -40,7 +40,7 @@ and land it when it's ready." They never read the first pull request of one stac
 **The expanded rows** are the app's ordinary pull request rows with their own state. Earlier ones landed are not listed; the entry says so.
 
 **The map,** by importance: each pull request in the stack first to last, with number, title and state, merged ones included; which one
-is open; whether it can be opened with one key. It also says what stops the stack merging, and offers the merge.
+is open; whether it can be opened with one key. It also says what stops the stack merging; `⇧M` merges ([D25](../DECISIONS.md#d25)).
 
 **The merge panel** is the existing one ([its brief](../../pr-merge/ui/merge-a-pull-request.md)), and its design stays. For a stack it
 differs:
