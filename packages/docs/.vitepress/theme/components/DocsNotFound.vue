@@ -5,7 +5,8 @@ import { withBase } from 'vitepress';
 </script>
 
 <template>
-  <div
+  <!-- The page's one `main`: the default theme gives the "not found" page none. -->
+  <main
     :class="css.notFound"
     tid="docs-not-found"
   >
@@ -36,7 +37,7 @@ import { withBase } from 'vitepress';
         Open githq
       </a>
     </div>
-  </div>
+  </main>
 </template>
 
 <style lang="scss" module="css">

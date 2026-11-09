@@ -32,7 +32,7 @@ import { useOpenInDesktopCommand } from '@/desktopLinks/useOpenInDesktopCommand.
 import { ItemResolver } from '@/item/ItemResolver.js';
 import { formatShortReference, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
-import { DOCS_URL } from '@/landing/landingLinks.js';
+import { DOCS_URL } from '@/landing/docsUrl.js';
 import MergePanelHost from '@/merge/MergePanelHost.vue';
 import * as groupLabels from '@/myWork/MyWorkGroupLabel.loc.js';
 import { getDraftReviews } from '@/myWork/getDraftReviews.js';

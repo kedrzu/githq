@@ -13,49 +13,52 @@ function backToTop() {
 </script>
 
 <template>
-  <ul :class="css.links">
-    <li v-if="editUrl">
-      <a
-        :class="css.links_link"
-        :href="editUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Pencil
-          :class="css.links_icon"
-          aria-hidden="true"
-        />
-        Edit this page on GitHub
-      </a>
-    </li>
-    <li>
-      <a
-        :class="css.links_link"
-        :href="NEW_ISSUE_URL"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Bug
-          :class="css.links_icon"
-          aria-hidden="true"
-        />
-        Report a problem
-      </a>
-    </li>
-    <li>
-      <button
-        :class="css.links_link"
-        type="button"
-        @click="backToTop"
-      >
-        <ArrowUp
-          :class="css.links_icon"
-          aria-hidden="true"
-        />
-        Back to top
-      </button>
-    </li>
-  </ul>
+  <!-- A landmark of its own: the outline's `nav` ends before this slot. -->
+  <nav aria-label="This page">
+    <ul :class="css.links">
+      <li v-if="editUrl">
+        <a
+          :class="css.links_link"
+          :href="editUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Pencil
+            :class="css.links_icon"
+            aria-hidden="true"
+          />
+          Edit this page on GitHub
+        </a>
+      </li>
+      <li>
+        <a
+          :class="css.links_link"
+          :href="NEW_ISSUE_URL"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Bug
+            :class="css.links_icon"
+            aria-hidden="true"
+          />
+          Report a problem
+        </a>
+      </li>
+      <li>
+        <button
+          :class="css.links_link"
+          type="button"
+          @click="backToTop"
+        >
+          <ArrowUp
+            :class="css.links_icon"
+            aria-hidden="true"
+          />
+          Back to top
+        </button>
+      </li>
+    </ul>
+  </nav>
 </template>
 
 <style lang="scss" module="css">

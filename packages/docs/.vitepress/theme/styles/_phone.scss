@@ -60,7 +60,15 @@
                 background: none;
             }
 
-            .DocSearch-Button-Placeholder,
+            // The words still name the button (it has no label of its own: `search.options` in the config).
+            // The default theme hides them under 768 with `display: none`.
+            .DocSearch-Button-Placeholder {
+                @include visually-hidden;
+
+                display: inline-block;
+                padding: 0;
+            }
+
             .DocSearch-Button-Keys {
                 display: none;
             }

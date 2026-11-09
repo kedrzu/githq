@@ -31,51 +31,54 @@ function text(words: object, key: string): string {
 
 <template>
   <div :class="css.home">
-    <header :class="css.hero">
-      <p
-        v-if="home.tag"
-        :class="css.hero_tag"
-      >
-        {{ home.tag }}
-      </p>
-      <h1 :class="css.hero_title">{{ home.title }}</h1>
-      <p
-        v-if="home.lead"
-        :class="css.hero_lead"
-      >
-        {{ home.lead }}
-      </p>
-      <button
-        :class="css.hero_search"
-        type="button"
-        tid="docs-home-search"
-        @click="openSearch"
-      >
-        <Search
-          :class="css.hero_searchIcon"
-          aria-hidden="true"
-        />
-        <span :class="css.hero_searchPlaceholder">{{ home.search }}</span>
-        <span
-          :class="css.hero_searchKeys"
-          aria-hidden="true"
+    <!-- The page's one `main`: the default theme gives a `home` page none. -->
+    <main>
+      <header :class="css.hero">
+        <p
+          v-if="home.tag"
+          :class="css.hero_tag"
         >
-          <kbd :class="css.hero_searchMod" /><kbd>K</kbd>
-        </span>
-      </button>
-    </header>
+          {{ home.tag }}
+        </p>
+        <h1 :class="css.hero_title">{{ home.title }}</h1>
+        <p
+          v-if="home.lead"
+          :class="css.hero_lead"
+        >
+          {{ home.lead }}
+        </p>
+        <button
+          :class="css.hero_search"
+          type="button"
+          tid="docs-home-search"
+          @click="openSearch"
+        >
+          <Search
+            :class="css.hero_searchIcon"
+            aria-hidden="true"
+          />
+          <span :class="css.hero_searchPlaceholder">{{ home.search }}</span>
+          <span
+            :class="css.hero_searchKeys"
+            aria-hidden="true"
+          >
+            <kbd :class="css.hero_searchMod" /><kbd>K</kbd>
+          </span>
+        </button>
+      </header>
 
-    <div :class="css.home_body">
-      <div :class="css.sections">
-        <DocsSectionCard
-          v-for="section in sections"
-          :key="section.id"
-          :section="section"
-        />
+      <div :class="css.home_body">
+        <div :class="css.sections">
+          <DocsSectionCard
+            v-for="section in sections"
+            :key="section.id"
+            :section="section"
+          />
+        </div>
+
+        <DocsRecentlyUpdated :class="css.home_recent" />
       </div>
-
-      <DocsRecentlyUpdated :class="css.home_recent" />
-    </div>
+    </main>
 
     <DocsSiteFooter />
   </div>

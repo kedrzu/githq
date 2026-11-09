@@ -15,7 +15,7 @@ import Menu from '@/components/Menu.vue';
 import MenuItem from '@/components/MenuItem.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
-import { DOCS_URL } from '@/landing/landingLinks.js';
+import { DOCS_URL } from '@/landing/docsUrl.js';
 import { Browser } from '@/services/Browser.js';
 import { getSettingsPath, SETTINGS_PATH } from '@/settings/settingsRoutes.js';
 

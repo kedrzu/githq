@@ -96,7 +96,9 @@ export default defineConfig({
                 // toggle.
                 detailedView: true,
                 translations: {
-                    button: { buttonText: 'Search the docs', buttonAriaLabel: 'Search the docs' },
+                    // No label of its own: the button is named by what it shows, its keys included, as a name that leaves
+                    // them out would not match its visible text (axe's `label-content-name-mismatch`).
+                    button: { buttonText: 'Search the docs', buttonAriaLabel: '' },
                     modal: {
                         noResultsText: 'Nothing in the docs for',
                         footer: { navigateText: 'Move', selectText: 'Open', closeText: 'Close' },
