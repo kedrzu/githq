@@ -31,7 +31,7 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
       `… / Reviewers · picking` (`kdXH0`), `… / Close · from below` (`lBgtP`, completed / not planned), `… / Row · long press` (`O65RZJ`),
       `… / Pull request · draft` (`LaXFd`, Ready for review nearest the thumb), `… / Selection · three items` (`Cz3JY`),
       `Phone / Sheet / Every property` (`RG8Uv`, every project with all its fields, Add to a project), `Phone / Sheet / Checks` (`MZluT`),
-      `Phone / Sheet / Stack` (`NcUYf`, Merging the stack ↗).
+      `Phone / Sheet / Stack` (`NcUYf`, Merging the stack ↗). Superseded: see `phone-brought-back-to-the-desktop.md` (Labels, Reviewers and Close · picking deleted; `Phone / Menu / Labels`, `/ Reviewers`, `/ Close` replace them).
 - [ ] Panes (`uxlOF`): `Phone / List / My work · Needs me` (`l2aPa4`), `… · All, further down` (`O0qzLh`), `Phone / Item / Issue · summary` (`qZhtg`),
       `Phone / Item / Pull request · summary` (`j4OTf`), `… / Issue · properties after the body` (`Aj50h`), `… / Pull request · long thread` (`EkP8V`),
       `… / Issue · arriving` (`e1palS`), `… / Issue · reply sent` (`aUYA5`), and the three stacked panes `U05wa2`, `GSjJM`, `M8C99S`.
@@ -62,7 +62,7 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
 ## Not changed
 
 - [ ] MB80 and the other earlier list screens still use `Phone / List / My work · All` (`B9fFBr`) with full references and label pills. Once MB89's row is
-      picked, that pane should move to the new rows; not done here because it changes settled screens.
+      picked, that pane should move to the new rows; not done here because it changes settled screens. Superseded: see `phone-brought-back-to-the-desktop.md` (`B9fFBr` now carries the current rows and the strip).
 
 ## Owner's picks, round 2 (D23–D27 in `docs/design/mobile/DECISIONS.md`)
 
@@ -80,7 +80,7 @@ variants; every amber `Variants · …` frame and the amber slot of MB89 still w
 - [ ] New screens in Screens row 3 (`IkGNm`): MB124 · An issue, opened; MB125 · An issue, every property; MB126 · A pull request, opened.
 - [ ] Frame `A5lyuq` deleted with MB103–MB107 (codes retired); deleted as unused `Phone / Summary chip` (`mtoXC`), `Phone / Sheet / Every property` (`RG8Uv`), `Phone / Item / Issue · properties after the body` (`Aj50h`).
 - [ ] Changing a property (D26): MB108, MB109, MB110, MB112 renamed `MB1xx · Changing a property · Tapping it / Closing / Requesting a reviewer / Through ⌘`, moved to Screens row 3, captions rewritten. Frame `X85aVB` deleted with MB111; `Phone / Popover / Labels` (`buTBe`) deleted.
-- [ ] Sheets fitted to their content: `Labels · picking` (`xBrsD`), `Reviewers · picking` (`kdXH0`), `Close · from below` (`lBgtP`), `Pull request · draft` (`LaXFd`), `Selection · three items` (`Cz3JY`): height fit_content, results fit_content with padding 6 / 8 — no empty band under the head, no row pressed against it.
+- [ ] Sheets fitted to their content: `Labels · picking` (`xBrsD`), `Reviewers · picking` (`kdXH0`), `Close · from below` (`lBgtP`), `Pull request · draft` (`LaXFd`), `Selection · three items` (`Cz3JY`): height fit_content, results fit_content with padding 6 / 8 — no empty band under the head, no row pressed against it. Superseded: see `phone-brought-back-to-the-desktop.md` (Labels, Reviewers and Close · picking deleted).
 - [ ] Still amber: Selecting several items (`g1Xbwf`, MB116–MB119) and Where a pull request's place in its stack goes (`H9ZDbK`, MB120–MB123); MB120 is now `Variant A · A row in the properties`, captions of MB116, MB122, MB123 updated.
 - [ ] Selecting several items settled (D28): MB117–MB119 moved to the new Screens row 4 (`V6j1iq`) and renamed without
   `Variant B ·`; MB116 and the frame `g1Xbwf` deleted. Build MB117–MB119.

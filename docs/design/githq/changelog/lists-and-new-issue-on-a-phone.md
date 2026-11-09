@@ -21,10 +21,10 @@ dropped questions and are gone.
   `$fg-2`, `Trail` icon off); `· selected` (`r1ieBS`: `$sel` fill, `$accent` stroke, label `$fg`; with `Trail` on it is
   the sort direction); `· filter` (`NRdDB`: `$bg-3`, label `$fg`, × trail); `· add` (`W7cWdw`: + lead, "Filter").
 - [ ] Atoms: `Phone / Toast button` (`gYX8L`: 36 px, `$bg-3`, `$border-2` stroke, 8 radius, label 14 px 600, optional
-  icon) and `· primary` (`l07D9`: `$accent` fill, dark label, + icon, "Create another").
+  icon) and `· primary` (`l07D9`: `$accent` fill, dark label, + icon, "Create another"). Superseded: see `phone-brought-back-to-the-desktop.md` (32 px, label 13.5).
 - [ ] Rows (`upuLA`): `Phone / Toast · with actions` (`ajtfg`, D40): the desktop `Toast` (`E6hAh`) on a phone, 366 px,
   `$bg-2`, 12 radius, shadow; head with a green check, `Title` (`i7CoM`, 14 px 600), `Detail` (`P9cMl0`, 13 px `$fg-2`) and
-  the countdown close; `Actions` with `Create another` (primary) and `Open`.
+  the countdown close; `Actions` with `Create another` (primary) and `Open`. Superseded: see `phone-brought-back-to-the-desktop.md` (deleted; `Phone / Toast` is the one toast).
 - [ ] Rows: `Phone / Banner · answered by GitHub` (`QBCz2`, purple tint, cloud icon, Why); `Phone / Banner · no new issues
   here` (`VohF9`, amber, circle-slash, Change; part of the form, off, for a repository whose issues are off reached
   without the repository step, e.g. from a link); `Phone / Property · assignees, assign to me` (`W7sKw0`: "Nobody" and an
@@ -35,7 +35,7 @@ dropped questions and are gone.
 - [ ] Sheets, command-menu steps from `Phone / Command result` and `Phone / Command section`: `… / Filter · fields`
   (`DMySX`), `… / Repository · picking` (`aCoEC`, D38: Draft issue first in a project, tracked repositories, one whose
   issues are off dimmed with the reason, then "On GitHub"; picker input and keyboard), `… / Template · picking` (`F85iW`,
-  D39: forms "on GitHub ↗" where you can't push, markdown, blank issue turned off dimmed).
+  D39: forms "on GitHub ↗" where you can't push, markdown, blank issue turned off dimmed). Superseded: see `phone-brought-back-to-the-desktop.md` (these three deleted; `Phone / Menu / Filter`, `/ Repository` and `/ Template` replace them).
 - [ ] Panes (`fG7Dr`): `Phone / New issue / Form` (`HpEKu`, D42). Top to bottom: head (×, New issue, Create), `Can't create
   here` banner (off), `Rejected` block (`DXo0N`, off: reason in GitHub's terms, Try again · Another repository · Copy as
   Markdown), Repository row, `Template` row (off), title, `Assignees` (the assign-to-me row), `Project field` (off),
