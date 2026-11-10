@@ -9,6 +9,8 @@ import type {
     ThreadCommit,
     ThreadCommitRef,
     ThreadEvent,
+    ThreadReferencedCommit,
+    ThreadRef,
 } from '@/store/ItemDetailTypes.js';
 import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 
@@ -50,22 +52,33 @@ export interface ThreadEventLine {
     readonly updatedAt: string;
 }
 
-/** What one or more events of a line did. */
+/**
+ * What one or more events of a line did: the events of one kind with their objects merged (F13: "events of one kind
+ * merge their objects"), or an event of its own.
+ */
 export type ThreadEventPart =
-    | { readonly kind: 'labeled' | 'unlabeled'; readonly labels: readonly ItemLabel[] }
-    | {
-          readonly kind: 'assigned' | 'unassigned';
-          /** `null` for a deleted account. */
-          readonly users: readonly (ItemUser | null)[];
-      }
-    | {
-          readonly kind: 'reviewRequested' | 'reviewRequestRemoved';
-          readonly reviewers: readonly ItemDetailReviewRequest[];
-      }
+    | ThreadMergedPart<'labeled' | 'unlabeled', ItemLabel>
+    /** `null` for a deleted account. */
+    | ThreadMergedPart<'assigned' | 'unassigned', ItemUser | null>
+    | ThreadMergedPart<'reviewRequested' | 'reviewRequestRemoved', ItemDetailReviewRequest>
+    | ThreadMergedPart<'crossReferenced' | 'subIssueAdded' | 'subIssueRemoved', ThreadRef>
+    | ThreadMergedPart<'referenced', ThreadReferencedCommit>
     | { readonly kind: 'single'; readonly event: SingleThreadEvent };
 
-/** An event that is a part of its own: its objects merge with no other's. */
-export type SingleThreadEvent = Exclude<ThreadEvent, { readonly kind: MergingKind | 'commit' }>;
+/** The events of one kind of a line: their objects, each once, in the order they came. */
+export interface ThreadMergedPart<TKind extends string, TObject> {
+    readonly kind: TKind;
+    readonly objects: readonly TObject[];
+}
+
+/**
+ * An event that is a part of its own: of a kind whose objects do not merge, or a sub-issue or a commit the viewer
+ * cannot see — nothing to tell it from another by.
+ */
+export type SingleThreadEvent = Exclude<
+    ThreadEvent,
+    { readonly kind: Exclude<MergingKind, 'subIssueAdded' | 'subIssueRemoved' | 'referenced'> | 'commit' }
+>;
 
 /** One author's commits straight after each other: GitHub tells of each commit, not of the push that brought it. */
 export interface ThreadPush {
@@ -466,10 +479,24 @@ interface BurstLine {
 }
 
 type MutablePart =
-    | { readonly kind: 'labeled' | 'unlabeled'; labels: ItemLabel[] }
-    | { readonly kind: 'assigned' | 'unassigned'; users: (ItemUser | null)[] }
-    | { readonly kind: 'reviewRequested' | 'reviewRequestRemoved'; reviewers: ItemDetailReviewRequest[] }
-    | { readonly kind: 'single'; readonly event: SingleThreadEvent };
+    | MutableMergedPart<Exclude<ThreadEventPart, { readonly kind: 'single' }>>
+    | Extract<ThreadEventPart, { readonly kind: 'single' }>;
+
+/** A merged part still taking objects; one of {@link MergingPart} for each of {@link ThreadMergedPart}. */
+type MutableMergedPart<TPart> =
+    TPart extends ThreadMergedPart<infer TKind, infer TObject> ? MergingPart<TKind, TObject> : never;
+
+/** The events of one kind of a line being built: each object with what tells it from the others of its kind. */
+interface MergingPart<TKind extends string, TObject> {
+    readonly kind: TKind;
+    readonly entries: MergedEntry<TObject>[];
+}
+
+/** An object of a {@link MergingPart}; `key` `null`: nothing tells it from another (a deleted account). */
+interface MergedEntry<TObject> {
+    readonly key: string | null;
+    readonly object: TObject;
+}
 
 interface MutablePush {
     readonly commits: ThreadCommit[];
@@ -481,7 +508,7 @@ type Building = ThreadItem | BurstLine | { readonly kind: 'pushRef'; readonly pu
 function finish(entry: Building): ThreadItem[] {
     switch (entry.kind) {
         case 'burst': {
-            const parts = entry.parts.filter(part => !isEmptyPart(part));
+            const parts = entry.parts.flatMap(toPart);
             return parts.length > 0
                 ? [{ kind: 'events', id: entry.id, actor: entry.actor, parts, updatedAt: entry.updatedAt }]
                 : [];
@@ -535,58 +562,59 @@ function addToBurst({ line }: Burst, event: Exclude<ThreadEvent, ThreadCommit>) 
     line.updatedAt = event.createdAt;
     switch (event.kind) {
         case 'labeled':
-        case 'unlabeled': {
-            const opposite = event.kind === 'labeled' ? 'unlabeled' : 'labeled';
-            const cancelled = findPart(line, opposite);
-            if (cancelled && removeFrom(cancelled.labels, label => label.name === event.label.name)) {
-                return;
-            }
-
-            const part = findPart(line, event.kind) ?? addPart(line, { kind: event.kind, labels: [] });
-            if (!part.labels.some(label => label.name === event.label.name)) {
-                part.labels.push(event.label);
-            }
-
-            return;
-        }
+        case 'unlabeled':
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                opposite: findPart(line, event.kind === 'labeled' ? 'unlabeled' : 'labeled'),
+                entry: { key: event.label.name, object: event.label },
+            });
         case 'assigned':
-        case 'unassigned': {
-            const login = event.assignee?.login;
-            const opposite = event.kind === 'assigned' ? 'unassigned' : 'assigned';
-            const cancelled = findPart(line, opposite);
-            if (login && cancelled && removeFrom(cancelled.users, user => user?.login === login)) {
-                return;
-            }
-
-            const part = findPart(line, event.kind) ?? addPart(line, { kind: event.kind, users: [] });
-            if (!login || !part.users.some(user => user?.login === login)) {
-                part.users.push(event.assignee);
-            }
-
-            return;
-        }
+        case 'unassigned':
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                opposite: findPart(line, event.kind === 'assigned' ? 'unassigned' : 'assigned'),
+                // A deleted account: told from no other.
+                entry: { key: event.assignee?.login ?? null, object: event.assignee },
+            });
         case 'reviewRequested':
-        case 'reviewRequestRemoved': {
-            const { reviewer } = event;
+        case 'reviewRequestRemoved':
             // A reviewer GitHub no longer knows: nothing to name.
-            if (!reviewer) {
+            if (!event.reviewer) {
                 return;
             }
 
-            const key = getReviewerKey(reviewer);
-            const opposite = event.kind === 'reviewRequested' ? 'reviewRequestRemoved' : 'reviewRequested';
-            const cancelled = findPart(line, opposite);
-            if (cancelled && removeFrom(cancelled.reviewers, other => getReviewerKey(other) === key)) {
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                opposite: findPart(line, event.kind === 'reviewRequested' ? 'reviewRequestRemoved' : 'reviewRequested'),
+                entry: { key: getReviewerKey(event.reviewer), object: event.reviewer },
+            });
+        case 'crossReferenced':
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                entry: { key: event.source.id, object: event.source },
+            });
+        case 'subIssueAdded':
+        case 'subIssueRemoved':
+            if (!event.issue) {
+                line.parts.push({ kind: 'single', event });
                 return;
             }
 
-            const part = findPart(line, event.kind) ?? addPart(line, { kind: event.kind, reviewers: [] });
-            if (!part.reviewers.some(other => getReviewerKey(other) === key)) {
-                part.reviewers.push(reviewer);
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                opposite: findPart(line, event.kind === 'subIssueAdded' ? 'subIssueRemoved' : 'subIssueAdded'),
+                entry: { key: event.issue.id, object: event.issue },
+            });
+        case 'referenced':
+            if (!event.commit) {
+                line.parts.push({ kind: 'single', event });
+                return;
             }
 
-            return;
-        }
+            return mergeInto({
+                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
+                entry: { key: event.commit.url, object: event.commit },
+            });
         default: {
             const key = getUndoKey(event);
             const index = key === null ? -1 : line.parts.findIndex(part => isUndoneBy(part, key));
@@ -597,6 +625,34 @@ function addToBurst({ line }: Burst, event: Exclude<ThreadEvent, ThreadCommit>) 
 
             line.parts.push({ kind: 'single', event });
         }
+    }
+}
+
+/** The parameters of {@link mergeInto}. */
+interface MergeIntoParams<TObject> {
+    readonly part: MergingPart<string, TObject>;
+    /** The part of the kind that undoes it: an add's remove, a remove's add. */
+    readonly opposite?: MergingPart<string, TObject>;
+    readonly entry: MergedEntry<TObject>;
+}
+
+/**
+ * The object joins the part of its kind, once; or, when the part of the opposite kind holds the same thing (an add and
+ * a remove of it), leaves it there.
+ */
+function mergeInto<TObject>({ part, opposite, entry }: MergeIntoParams<TObject>) {
+    const { key } = entry;
+    if (key === null) {
+        part.entries.push(entry);
+        return;
+    }
+
+    if (opposite && removeFrom(opposite.entries, other => other.key === key)) {
+        return;
+    }
+
+    if (!part.entries.some(other => other.key === key)) {
+        part.entries.push(entry);
     }
 }
 
@@ -620,22 +676,33 @@ function removeFrom<T>(list: T[], matches: (entry: T) => boolean) {
     return true;
 }
 
-function isEmptyPart(part: MutablePart) {
+/** The part as the line shows it; none when every object of it was cancelled. */
+function toPart(part: MutablePart): ThreadEventPart[] {
     switch (part.kind) {
         case 'labeled':
         case 'unlabeled':
-            return part.labels.length === 0;
+            return toMergedPart(part);
         case 'assigned':
         case 'unassigned':
-            return part.users.length === 0;
+            return toMergedPart(part);
         case 'reviewRequested':
         case 'reviewRequestRemoved':
-            return part.reviewers.length === 0;
+            return toMergedPart(part);
+        case 'crossReferenced':
+        case 'subIssueAdded':
+        case 'subIssueRemoved':
+            return toMergedPart(part);
+        case 'referenced':
+            return toMergedPart(part);
         case 'single':
-            return false;
+            return [part];
         default:
             return assertNever(part);
     }
+}
+
+function toMergedPart<TKind extends string, TObject>(part: MergingPart<TKind, TObject>): ThreadMergedPart<TKind, TObject>[] {
+    return part.entries.length > 0 ? [{ kind: part.kind, objects: part.entries.map(entry => entry.object) }] : [];
 }
 
 /** What an event adds or removes, and what undoes it. */
@@ -666,10 +733,6 @@ function getUndoKey(event: SingleThreadEvent): UndoKey | null {
             return { undoneBy: 'demilestoned', thing: event.milestone };
         case 'demilestoned':
             return { undoneBy: 'milestoned', thing: event.milestone };
-        case 'subIssueAdded':
-            return event.issue && { undoneBy: 'subIssueRemoved', thing: event.issue.id };
-        case 'subIssueRemoved':
-            return event.issue && { undoneBy: 'subIssueAdded', thing: event.issue.id };
         case 'parentAdded':
             return event.issue && { undoneBy: 'parentRemoved', thing: event.issue.id };
         case 'parentRemoved':
@@ -690,18 +753,20 @@ function getUndoKey(event: SingleThreadEvent): UndoKey | null {
             return { undoneBy: 'unpinned', thing: '' };
         case 'unpinned':
             return { undoneBy: 'pinned', thing: '' };
+        // Single only when the viewer cannot see what it was of (`addToBurst`): nothing to cancel by.
+        case 'subIssueAdded':
+        case 'subIssueRemoved':
+        case 'referenced':
         case 'forcePushed':
         case 'renamed':
         case 'reviewDismissed':
         case 'readyForReview':
         case 'convertedToDraft':
         case 'baseChanged':
-        case 'crossReferenced':
         case 'closed':
         case 'reopened':
         case 'merged':
         case 'headRefDeleted':
-        case 'referenced':
         case 'issueTypeChanged':
         case 'projectStatusChanged':
         case 'transferred':

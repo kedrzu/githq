@@ -203,7 +203,7 @@ export type ThreadEvent =
           'referenced',
           {
               /** `null` where the viewer cannot see the commit. */
-              readonly commit: (ThreadCommitRef & { readonly messageHeadline: string }) | null;
+              readonly commit: ThreadReferencedCommit | null;
               /** `owner/name` of the commit's repository. */
               readonly repository: string;
           }
@@ -271,6 +271,11 @@ export interface ThreadRef {
 export interface ThreadCommitRef {
     readonly abbreviatedOid: string;
     readonly url: string;
+}
+
+/** A commit that referenced an item. */
+export interface ThreadReferencedCommit extends ThreadCommitRef {
+    readonly messageHeadline: string;
 }
 
 /** What closed an item. */

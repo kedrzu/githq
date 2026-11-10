@@ -36,21 +36,28 @@ import {
   UserPlus,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
-import { computed, h, isVNode, useCssModule } from 'vue';
+import { computed, Fragment, h, isVNode, useCssModule } from 'vue';
 import type { VNodeChild } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
 import { getReviewRequestName } from '@/store/getReviewRequestName.js';
-import type { ThreadCommitRef, ThreadRef } from '@/store/ItemDetailTypes.js';
+import type { ThreadCommitRef, ThreadReferencedCommit, ThreadRef } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
 import { formatRelativeReference } from '@/utils/formatRelativeReference.js';
+import { joinList } from '@/utils/joinList.js';
 
 import { getItemPagePath, parseItemUrl } from '../itemRoutes.js';
 import type { ItemReference } from '../itemRoutes.js';
-import type { SingleThreadEvent, ThreadChecksFailed, ThreadEventLine, ThreadEventPart } from './buildThread.js';
+import type {
+  SingleThreadEvent,
+  ThreadChecksFailed,
+  ThreadEventLine,
+  ThreadEventPart,
+  ThreadMergedPart,
+} from './buildThread.js';
 import * as l from './ItemThreadEvent.loc.js';
 
 const props = defineProps<{
@@ -114,26 +121,64 @@ function renderPart(part: ThreadEventPart, after: boolean): VNodeChild[] {
         labels: h(
           'span',
           { class: css.itemThreadEvent_labels },
-          part.labels.map(label => h(LabelPill, { name: label.name, color: label.color })),
+          part.objects.map(label => h(LabelPill, { name: label.name, color: label.color })),
         ),
       });
     case 'assigned':
     case 'unassigned': {
       const login = actor.value?.login;
-      if (part.users.length === 1 && login !== undefined && part.users[0]?.login === login) {
+      if (part.objects.length === 1 && login !== undefined && part.objects[0]?.login === login) {
         return say(part.kind === 'assigned' ? l.selfAssigned : l.selfUnassigned);
       }
 
-      return sayWith(l[part.kind], { users: formatList(part.users.map(getLogin)) });
+      return sayWith(l[part.kind], { users: formatList(part.objects.map(getLogin)) });
     }
     case 'reviewRequested':
     case 'reviewRequestRemoved':
-      return sayWith(l[part.kind], { reviewers: formatList(part.reviewers.map(getReviewRequestName)) });
+      return sayWith(l[part.kind], { reviewers: formatList(part.objects.map(getReviewRequestName)) });
+    case 'crossReferenced':
+    case 'subIssueAdded':
+    case 'subIssueRemoved':
+      return renderRefs(part);
+    case 'referenced':
+      return renderReferenced(part);
     case 'single':
       return renderEvent(part.event, after);
     default:
       return assertNever(part);
   }
+}
+
+/** Issues or pull requests of one kind of event: one with its title, more by their numbers alone (F13). */
+function renderRefs(
+  part: ThreadMergedPart<'crossReferenced' | 'subIssueAdded' | 'subIssueRemoved', ThreadRef>,
+): VNodeChild[] {
+  const [only] = part.objects;
+  if (only && part.objects.length === 1) {
+    return sayWith(l[part.kind], { ref: renderRef(only), title: only.title });
+  }
+
+  const refs = h(Fragment, joinList(part.objects.map(renderRef)));
+  switch (part.kind) {
+    case 'crossReferenced':
+      return sayWith(l.crossReferencedMany, { refs });
+    case 'subIssueAdded':
+      return sayWith(l.subIssuesAdded, { refs });
+    case 'subIssueRemoved':
+      return sayWith(l.subIssuesRemoved, { refs });
+    default:
+      return assertNever(part.kind);
+  }
+}
+
+/** The commits that referenced this: one with its message, more by their hashes alone (F13). */
+function renderReferenced(part: ThreadMergedPart<'referenced', ThreadReferencedCommit>): VNodeChild[] {
+  const [only] = part.objects;
+  if (only && part.objects.length === 1) {
+    return sayWith(l.referenced, { commit: renderCommit(only), title: only.messageHeadline });
+  }
+
+  return sayWith(l.referencedMany, { commits: h(Fragment, joinList(part.objects.map(renderCommit))) });
 }
 
 /** One event's words; `after` another part of the line, a locked conversation is "the" one. */
@@ -165,8 +210,6 @@ function renderEvent(event: SingleThreadEvent, after: boolean): VNodeChild[] {
       return say(l[event.kind]);
     case 'baseChanged':
       return sayWith(l.baseChanged, { from: event.from, to: event.to });
-    case 'crossReferenced':
-      return sayWith(l.crossReferenced, { ref: renderRef(event.source), title: event.source.title });
     case 'closed':
       return renderClosed(event);
     case 'merged':
@@ -180,18 +223,13 @@ function renderEvent(event: SingleThreadEvent, after: boolean): VNodeChild[] {
       return sayWith(l.connectedPullRequest, { ref: renderRef(event.ref) });
     case 'disconnected':
       return sayWith(l.disconnectedPullRequest, { ref: renderRef(event.ref) });
+    // Apart from the merged ones only when the viewer cannot see what they were of (`buildThread`).
     case 'referenced':
-      return event.commit
-        ? sayWith(l.referenced, { commit: renderCommit(event.commit), title: event.commit.messageHeadline })
-        : sayWith(l.referencedHidden, { repository: event.repository });
+      return sayWith(l.referencedHidden, { repository: event.repository });
     case 'subIssueAdded':
-      return event.issue
-        ? sayWith(l.subIssueAdded, { ref: renderRef(event.issue), title: event.issue.title })
-        : say(l.subIssueAddedHidden);
+      return say(l.subIssueAddedHidden);
     case 'subIssueRemoved':
-      return event.issue
-        ? sayWith(l.subIssueRemoved, { ref: renderRef(event.issue), title: event.issue.title })
-        : say(l.subIssueRemovedHidden);
+      return say(l.subIssueRemovedHidden);
     case 'parentAdded':
       return event.issue
         ? sayWith(l.parentAdded, { ref: renderRef(event.issue), title: event.issue.title })
@@ -346,6 +384,13 @@ function getPartLook(part: ThreadEventPart): EventLook {
       return { icon: Eye, tone: 'muted' };
     case 'reviewRequestRemoved':
       return { icon: EyeOff, tone: 'muted' };
+    case 'crossReferenced':
+      return { icon: Link, tone: 'muted' };
+    case 'subIssueAdded':
+    case 'subIssueRemoved':
+      return { icon: ListTree, tone: 'muted' };
+    case 'referenced':
+      return { icon: GitCommitHorizontal, tone: 'muted' };
     case 'single':
       return getEventLook(part.event);
     default:
@@ -372,8 +417,6 @@ function getEventLook(event: SingleThreadEvent): EventLook {
     case 'baseChanged':
     case 'headRefDeleted':
       return { icon: GitBranch, tone: 'muted' };
-    case 'crossReferenced':
-      return { icon: Link, tone: 'muted' };
     case 'closed':
       if (pullRequest) {
         return { icon: GitPullRequestClosed, tone: 'red' };

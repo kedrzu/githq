@@ -4,7 +4,7 @@ import { page } from 'vitest/browser';
 
 import * as stories from './ItemThreadEvent.stories.js';
 
-const { NoPerson, IssueThread } = composeStories(stories);
+const { NoPerson, IssueThread, OneKindMerged } = composeStories(stories);
 
 test("a line no person made shows no avatar: a workflow's Status change names no one, failed checks name CI", async () => {
     await NoPerson.run();
@@ -24,4 +24,13 @@ test('a burst reads as one line, and the user assigning themselves reads as such
 
     await expect.element(page.getByText(/and set the type to\sBug/u)).toBeVisible();
     await expect.element(page.getByText('self-assigned this')).toBeVisible();
+});
+
+test('events of one kind in a burst merge their objects, named by their references alone', async () => {
+    await OneKindMerged.run();
+
+    const what = page.getByText(/^mentioned this in/u).element();
+    expect(what.textContent?.replace(/\s+/gu, ' ')).toBe(
+        'mentioned this in #14, #15, and #16 and added sub-issues #14, #15, and #16 and referenced this in commits 4a1c9e2 and 7d3b0f5',
+    );
 });

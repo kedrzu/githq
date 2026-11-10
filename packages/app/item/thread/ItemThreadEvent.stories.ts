@@ -5,6 +5,7 @@ import type { ItemDetail, ThreadEvent } from '@/store/ItemDetailTypes.js';
 import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import {
+    BURST_OF_ONE_KIND,
     EVERY_ISSUE_EVENT,
     EVERY_PULL_REQUEST_EVENT,
     F5_PULL_REQUEST,
@@ -51,6 +52,11 @@ export const PullRequestEvents: Story = {
 /** F13, right: every event only an issue's thread shows. */
 export const IssueEvents: Story = {
     parameters: { lines: linesOf(withEvents(I1_ISSUE_DETAIL, EVERY_ISSUE_EVENT)) },
+};
+
+/** F13's "events of one kind merge their objects": more than one by their references alone, in one line. */
+export const OneKindMerged: Story = {
+    parameters: { lines: linesOf(withEvents(I1_ISSUE_DETAIL, BURST_OF_ONE_KIND)) },
 };
 
 /** F13's "one line per burst" and I1: "added bug and set the type to Bug", then the events of I1 one by one. */

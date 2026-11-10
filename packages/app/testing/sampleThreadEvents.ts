@@ -222,6 +222,24 @@ export const EVERY_ISSUE_EVENT: readonly ThreadEvent[] = spaced([
     { kind: 'unpinned' },
 ]);
 
+/**
+ * One burst of mlaine's (F13), as primer/react#8676 had them: each new issue mentioned this one, then went in as its
+ * sub-issue; then two commits referenced it.
+ */
+export const BURST_OF_ONE_KIND: readonly ThreadEvent[] = inBurst([
+    { kind: 'crossReferenced', source: ref(14, 'Store project items next to issues') },
+    { kind: 'subIssueAdded', issue: ref(14, 'Store project items next to issues') },
+    { kind: 'crossReferenced', source: ref(15, 'Keep parent links in the migration') },
+    { kind: 'subIssueAdded', issue: ref(15, 'Keep parent links in the migration') },
+    { kind: 'crossReferenced', source: ref(16, 'Rebuild links on every sync') },
+    { kind: 'subIssueAdded', issue: ref(16, 'Rebuild links on every sync') },
+    ...['4a1c9e2', '7d3b0f5'].map(oid => ({
+        kind: 'referenced' as const,
+        commit: { abbreviatedOid: oid, url: `https://github.com/mlaine/tasklet/commit/${oid}`, messageHeadline: oid },
+        repository: 'mlaine/tasklet',
+    })),
+]);
+
 type EventFields = ThreadEvent extends infer TEvent
     ? TEvent extends ThreadEvent
         ? TEvent extends ThreadCommit
@@ -235,6 +253,14 @@ function spaced(events: readonly EventFields[]): ThreadEvent[] {
     return events.map((fields, index): ThreadEvent => ({
         ...fields,
         ...event(`EV_${index + 1}`, MLAINE, (events.length - index) * HOUR),
+    }));
+}
+
+/** mlaine's events a minute apart, the newest a minute ago: one burst. */
+function inBurst(events: readonly EventFields[]): ThreadEvent[] {
+    return events.map((fields, index): ThreadEvent => ({
+        ...fields,
+        ...event(`EB_${index + 1}`, MLAINE, (events.length - index) * MINUTE),
     }));
 }
 

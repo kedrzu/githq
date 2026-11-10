@@ -28,10 +28,10 @@ test("one person's events within 10 minutes share a line, objects of one kind me
         id: 'E1',
         actor: MLAINE,
         parts: [
-            { kind: 'labeled', labels: [STORAGE, BUG] },
+            { kind: 'labeled', objects: [STORAGE, BUG] },
             {
                 kind: 'reviewRequested',
-                reviewers: [
+                objects: [
                     { kind: 'user', user: SOFIAB },
                     { kind: 'user', user: DKIM },
                 ],
@@ -40,6 +40,29 @@ test("one person's events within 10 minutes share a line, objects of one kind me
         updatedAt: at(9),
     };
     expect(thread).toEqual([expected]);
+});
+
+test('mentions, sub-issues and commit references of one burst each merge into the part of their kind, where it first came', () => {
+    const fix = { abbreviatedOid: 'a1b2c3d', url: 'https://github.com/mlaine/tasklet/commit/a1b2c3d', messageHeadline: 'Fix' };
+    const cover = { ...fix, abbreviatedOid: 'e4f5a6b', url: 'https://github.com/mlaine/tasklet/commit/e4f5a6b' };
+    // As primer/react#8676 had them: each new issue mentioned this one, then went in as its sub-issue.
+    const thread = buildIssueThread([
+        { ...base('E1', MLAINE, 0), kind: 'crossReferenced', source: ref('I_8714', 8714) },
+        { ...base('E2', MLAINE, 1), kind: 'subIssueAdded', issue: ref('I_8714', 8714) },
+        { ...base('E3', MLAINE, 2), kind: 'crossReferenced', source: ref('I_8715', 8715) },
+        { ...base('E4', MLAINE, 3), kind: 'subIssueAdded', issue: ref('I_8715', 8715) },
+        { ...base('E5', MLAINE, 4), kind: 'referenced', commit: fix, repository: 'mlaine/tasklet' },
+        { ...base('E6', MLAINE, 5), kind: 'subIssueAdded', issue: null },
+        { ...base('E7', MLAINE, 6), kind: 'referenced', commit: cover, repository: 'mlaine/tasklet' },
+    ]);
+
+    expect(lineOf(thread, 'E1').parts).toEqual([
+        { kind: 'crossReferenced', objects: [ref('I_8714', 8714), ref('I_8715', 8715)] },
+        { kind: 'subIssueAdded', objects: [ref('I_8714', 8714), ref('I_8715', 8715)] },
+        { kind: 'referenced', objects: [fix, cover] },
+        // One the viewer cannot see has nothing to merge by: it stays apart.
+        { kind: 'single', event: expect.objectContaining({ id: 'E6' }) },
+    ]);
 });
 
 test('a burst ends after 10 minutes from its first event, at another person, and at anything that is not an event', () => {
@@ -75,7 +98,7 @@ test('an add and a remove of the same thing in one burst cancel out; a line left
     ]);
 
     expect(thread.map(entry => entry.id)).toEqual(['E1', 'E8']);
-    expect(lineOf(thread, 'E1').parts).toEqual([{ kind: 'labeled', labels: [STORAGE] }]);
+    expect(lineOf(thread, 'E1').parts).toEqual([{ kind: 'labeled', objects: [STORAGE] }]);
     expect(lineOf(thread, 'E8').parts).toHaveLength(2);
 });
 

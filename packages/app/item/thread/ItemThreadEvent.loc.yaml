@@ -40,6 +40,8 @@ baseChanged:
   en: changed the base branch from {from} to {to}
 crossReferenced:
   en: mentioned this in {ref} {title}
+crossReferencedMany:
+  en: mentioned this in {refs}
 closed:
   en: closed this
 closedCompleted:
@@ -64,14 +66,20 @@ disconnectedPullRequest:
   en: unlinked a pull request {ref}
 referenced:
   en: referenced this in commit {commit} {title}
+referencedMany:
+  en: referenced this in commits {commits}
 referencedHidden:
   en: referenced this in a commit in {repository}
 subIssueAdded:
   en: added sub-issue {ref} {title}
+subIssuesAdded:
+  en: added sub-issues {refs}
 subIssueAddedHidden:
   en: added a sub-issue
 subIssueRemoved:
   en: removed sub-issue {ref} {title}
+subIssuesRemoved:
+  en: removed sub-issues {refs}
 subIssueRemovedHidden:
   en: removed a sub-issue
 parentAdded:
