@@ -838,9 +838,10 @@ test('the keys sheet has every row whatever can run now, and no key of the app i
     await expect(sheet.getByText('New issue')).toBeHidden();
     const moving = sheet.getByRole('region', { name: 'Moving' });
     await expect(moving.getByText('Next and previous file')).toBeVisible();
-    await expect(moving.getByText('Line by line')).toBeVisible();
+    await expect(moving.getByText('Scroll by a line')).toBeVisible();
     await expect(moving.getByText('Back to the pull request')).toBeVisible();
     await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter by path')).toBeVisible();
+    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Show 20 more hidden lines')).toBeVisible();
     await expect(sheet.getByText('Review, from an opened pull request')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();

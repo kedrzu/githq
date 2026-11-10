@@ -1,6 +1,8 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says when the pinned row is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says when the pinned row is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
+
+import type { AnchoredListRow } from './anchoredList/createAnchoredListModel.js';
 
 /** The slot's props. */
 export interface AnchoredListSlotProps<T> {
@@ -9,8 +11,22 @@ export interface AnchoredListSlotProps<T> {
   pushed: boolean;
 }
 
+/** What the viewport shows, for the reading line (`getReadingLine`). */
+export interface AnchoredListViewport {
+  readonly height: number;
+  /** How far down from its top the pinned row's overlay reaches. */
+  readonly covered: number;
+}
+
+/** A row on screen, its edges measured from the viewport's top. */
+export interface AnchoredListShownRow<T> {
+  readonly row: T;
+  readonly top: number;
+  readonly bottom: number;
+}
+
 /** What a template ref to the list gives. */
-export interface AnchoredListExposed {
+export interface AnchoredListExposed<T = AnchoredListRow> {
   /** Lands the row at `offset` from the viewport's top and holds it there; an unknown key leaves the list as it is. */
   jumpTo(key: string, offset?: number): void;
   /**
@@ -22,6 +38,9 @@ export interface AnchoredListExposed {
   scrollBy(distance: number): void;
   /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
   getRowOffset(key: string): number | null;
+  getViewport(): AnchoredListViewport;
+  /** The rows touching the viewport, those under the pinned row's overlay included, top to bottom. */
+  getShownRows(): AnchoredListShownRow<T>[];
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
   /** The key of the first row showing under the pinned one, reactive: `anchor` is usually hidden behind that. */
@@ -58,7 +77,6 @@ import type {
   AnchoredListPinnedRow,
   AnchoredListPlacedRow,
   AnchoredListRange,
-  AnchoredListRow,
 } from './anchoredList/createAnchoredListModel.js';
 
 const props = withDefaults(
@@ -140,7 +158,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, scrollBy, getRowOffset, anchor, firstVisibleKey });
+defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getViewport, getShownRows, anchor, firstVisibleKey });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -168,6 +186,23 @@ function scrollBy(distance: number) {
 function getRowOffset(key: string) {
   const placed = placedRows.value.find(({ row }) => row.key === key);
   return placed ? placed.top - knownScrollTop : null;
+}
+
+function getViewport(): AnchoredListViewport {
+  return { height: viewportHeight, covered: model.coveredAt(knownScrollTop) };
+}
+
+function getShownRows() {
+  const placed = placedRows.value;
+  const shown: AnchoredListShownRow<T>[] = [];
+  for (const [index, { row, top }] of placed.entries()) {
+    const bottom = (placed[index + 1]?.top ?? model.total) - knownScrollTop;
+    if (bottom > 0 && top - knownScrollTop < viewportHeight) {
+      shown.push({ row, top: top - knownScrollTop, bottom });
+    }
+  }
+
+  return shown;
 }
 
 function focus() {

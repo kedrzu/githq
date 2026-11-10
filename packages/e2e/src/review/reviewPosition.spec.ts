@@ -208,7 +208,7 @@ test('what was done in a pull request comes back on a reload: collapsed, hide vi
 }) => {
     const { review } = await openReview(page, github);
     await expect(review.code('const engine10 = 10; // changed').first()).toBeVisible();
-    await review.gapButton('Show all').first().click();
+    await review.gapArrow('all').first().click();
     await expect(review.code('const engine5 = 5;').first()).toBeVisible();
 
     await review.fileRow('other.ts').click();

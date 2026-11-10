@@ -67,6 +67,8 @@ export interface AnchoredListModel<T> {
     placeRows(range: AnchoredListRange): AnchoredListPlacedRow<T>[];
     /** The last pinned row at or above the viewport's top. */
     pinnedAt(scrollTop: number): AnchoredListPinnedRow<T> | null;
+    /** How far down from the viewport's top the pinned row's overlay reaches at that scroll position. */
+    coveredAt(scrollTop: number): number;
     /** The first row that shows at that scroll position: the pinned row's overlay hides what's under it. */
     firstVisibleRow(scrollTop: number): T | null;
 }
@@ -105,6 +107,7 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         rangeBetween,
         placeRows,
         pinnedAt,
+        coveredAt,
         firstVisibleRow,
     };
 
@@ -210,10 +213,14 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         return { row: rowAt(index), index, pushUp: Math.max(heights.height(index) - room, 0) };
     }
 
+    function coveredAt(scrollTop: number) {
+        const pinned = pinnedAt(scrollTop);
+        return pinned ? heights.height(pinned.index) - pinned.pushUp : 0;
+    }
+
     function firstVisibleRow(scrollTop: number) {
         const pinned = pinnedAt(scrollTop);
-        const covered = pinned ? heights.height(pinned.index) - pinned.pushUp : 0;
-        const index = heights.indexAt(Math.max(scrollTop, 0) + covered);
+        const index = heights.indexAt(Math.max(scrollTop, 0) + coveredAt(scrollTop));
         if (index < 0) {
             return null;
         }

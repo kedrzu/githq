@@ -41,6 +41,17 @@ import { replayQueue } from './queue'`,
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 
 const FILE = file('src/sync/engine.ts', 6, 3);
+/** 120 lines in a class, changed at 30, 70 and 85: a gap at its top, a long and a short one between hunks, one at its end. */
+const GAPS_BEFORE = `export class Outbox {
+${Array.from({ length: 118 }, (_, index) => `    const kept${index + 2} = ${index + 2};`).join('\n')}
+}
+`;
+const GAPS_DIFF = computeFileDiff({
+    before: GAPS_BEFORE,
+    after: [30, 70, 85].reduce((text, line) => text.replace(`kept${line} = ${line};`, `kept${line} = 0;`), GAPS_BEFORE),
+    ignoreWhitespace: false,
+});
+const GAPS_FILE = file('src/sync/outbox.ts', 3, 3);
 const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
 /** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
 const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
@@ -144,7 +155,31 @@ export const PlaceholderUnified: Story = { render: () => renderRows(placeholderR
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
 
-/** CR62: a push reset the context expanded in the file: its first gap says so, and offers it all again. */
+/** CR103: the lines left out (D42): ↑ alone at a file's top, ↓ and ↑ between hunks, one ↕ for a short gap, ↓ alone at its end, each with the declaration what follows sits in. */
+export const Gaps: Story = {
+    args: { onExpand: fn() },
+    render: args => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: fileRows(GAPS_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: GAPS_FILE.path, diff: GAPS_DIFF, layout: 'unified' }),
+            }),
+            githubUrl: FILES_URL,
+            onExpand: args.onExpand,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" @expand="onExpand" /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('26 lines above')).toBeVisible();
+        await expect(canvas.getByText('33 lines')).toBeVisible();
+        await expect(canvas.getByText('8 lines')).toBeVisible();
+        await expect(canvas.getByText('32 lines below')).toBeVisible();
+        await expect(canvas.getAllByText('export class Outbox {')).toHaveLength(4);
+    },
+};
+
+/** CR62: a push reset the context expanded in the file: its first gap says so, once, its arrows working as ever. */
 export const ExpansionReset: Story = {
     render: () =>
         renderRows(
@@ -153,6 +188,11 @@ export const ExpansionReset: Story = {
                 rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }),
             }),
         ),
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getAllByText(/^Context you expanded here was reset by the push · \d+ lines$/u),
+        ).toHaveLength(1);
+    },
 };
 
 /** CR62: GitHub took its viewed mark off since the last visit. */

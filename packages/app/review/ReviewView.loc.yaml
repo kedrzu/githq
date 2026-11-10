@@ -106,5 +106,9 @@ lineDown:
   en: Scroll down a line
 lineUp:
   en: Scroll up a line
+showHiddenLines:
+  en: Show 20 more hidden lines
+showAllHiddenLines:
+  en: Show all hidden lines
 resizeFileList:
   en: Resize the file list

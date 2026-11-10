@@ -772,12 +772,14 @@ test('the filter takes a pattern and a regular expression, holds what stays on s
     await expect(review.fileList).toContainText('0 of 42 viewed');
 });
 
-test('Show 20 brings the lines nearest the change below and keeps the line being read; Show all empties the gap', async ({
+test('a gap\'s arrows show 20 lines from their hunk and hold the row on that side; a click on it, E and "Show all hidden lines" open it further', async ({
     page,
     github,
 }) => {
     await openMyWork(page, github, createSampleMyWork().world);
     const body = Array.from({ length: 100 }, (_, index) => `    const kept${index} = ${index};`).join('\n');
+    // A file below, for the diff to have room to scroll by what comes in.
+    const more = Array.from({ length: 60 }, (_, index) => `const more${index} = ${index};`);
     answerReview(github, {
         repository: 'acme/web',
         number: 15,
@@ -787,24 +789,50 @@ test('Show 20 brings the lines nearest the change below and keeps the line being
                 before: `export class SyncEngine {\n    const first = 1;\n${body}\n    const last = 1;\n}\n`,
                 after: `export class SyncEngine {\n    const first = 2;\n${body}\n    const last = 2;\n}\n`,
             },
+            {
+                path: 'src/more.ts',
+                before: `${more.join('\n')}\n`,
+                after: `${more.map(line => `${line} // changed`).join('\n')}\n`,
+            },
         ],
     });
     const review = new ReviewScreenHarness(page);
     await page.goto(REVIEW_ADDRESS);
     await expect(review.code('const last = 2;')).toBeVisible();
-    await expect(review.diff.getByText('export class SyncEngine {').last()).toBeVisible();
+    await expect(review.gap('94 lines')).toContainText('export class SyncEngine {');
+    const y = async (text: string) => (await review.code(text).first().boundingBox())?.y;
 
-    await review.gapButton('Show 20').click();
-    await expect(review.code('const kept96 = 96;').first()).toBeAttached();
+    // Down, below the hunk above: the row over the gap stays.
+    const first = await y('const first = 2;');
+    await review.gapArrow('below').click();
+    // Off the gap, whose count says what the arrow under the pointer does.
+    await page.mouse.move(0, 0);
+    await expect(review.code('const kept22 = 22;').first()).toBeAttached();
+    await expect(review.code('const kept23 = 23;')).toHaveCount(0);
+    await expect(review.gap('74 lines')).toBeAttached();
+    expect(await y('const first = 2;')).toBeCloseTo(first ?? 0, 0);
+
+    // Up, above the hunk below: the row under the gap stays, the lines coming above it.
+    const last = await y('const last = 2;');
+    await review.gapArrow('above').click();
+    await page.mouse.move(0, 0);
     await expect(review.code('const kept77 = 77;').first()).toBeAttached();
     await expect(review.code('const kept76 = 76;')).toHaveCount(0);
-    // The file fits on the screen, so nothing is left below to scroll to: the line read stays in view.
-    await expect(review.code('const last = 2;')).toBeInViewport();
+    await expect(review.gap('54 lines')).toBeAttached();
+    await expect.poll(() => y('const last = 2;')).toBeCloseTo(last ?? 0, 0);
 
+    await page.keyboard.press('e');
+    await expect(review.gap('34 lines')).toBeAttached();
+    await review.gap('34 lines').click({ position: { x: 200, y: 10 } });
+    await page.mouse.move(0, 0);
+    // The lines came above the row under the gap, which stayed: the gap went up, out of the rows drawn.
     await review.diff.evaluate(diff => diff.scrollTo(0, 0));
-    await review.gapButton('Show all').click();
+    await expect(review.gap('14 lines')).toBeAttached();
+    await expect(review.gapArrow('all')).toHaveAccessibleName('Show 14 lines');
+
+    await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
-    await expect(review.gapButton('Show all')).toHaveCount(0);
+    await expect(review.diff.locator('[tid="review-gap"]')).toHaveCount(0);
 });
 
 test('⌘B hides the file list and remembers it, the toggle and the view options say so; [ and ] still walk the files', async ({

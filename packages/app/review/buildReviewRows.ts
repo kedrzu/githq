@@ -24,6 +24,12 @@ const PLACEHOLDER_MIN_LINES = 3;
 export const LINE_HEIGHT = 20;
 /** The background between one file's block and the next, which a header pushing the pinned one up keeps (D41). */
 export const FILE_GAP = 8;
+/** How many lines an arrow of a gap shows (D42); a gap with no more hidden has one arrow for all of it. */
+export const GAP_STEP = 20;
+/** How tall a gap's one arrow is drawn. */
+const GAP_ARROW_HEIGHT = 18;
+/** How tall each of a gap's two arrows is: stacked, they need WCAG's 24 px a target (2.5.8), which spacing can't give them. */
+const GAP_ARROW_PAIR_HEIGHT = 24;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
 /** A comment of two lines, and what stands between comments. */
@@ -626,14 +632,76 @@ function getGapOffset({ gap, side }: ThreadOnHiddenLine, line: number) {
 }
 
 /**
- * The lines "Show 20" and "Show all" bring out of a gap (D6): those right above the change below it, the ones that say
- * what that change is in; at the file's end, with no change below, those right after the last one shown.
+ * Which way lines come out of a gap (D42): `down` those right below the hunk above it, from the gap's top, `up` those
+ * right above the hunk below it, from its bottom.
+ */
+export type ReviewGapDirection = 'down' | 'up';
+
+/** The arrows in a gap's gutter (D42): both ways, the one way a file's top or end has, or one for all of a short gap. */
+export type ReviewGapArrows = 'both' | ReviewGapDirection | 'all';
+
+/** What a press on a gap shows of it: so many lines, the way they come. */
+export interface ReviewGapStep {
+    readonly direction: ReviewGapDirection;
+    readonly count: number;
+}
+
+/**
+ * The arrows a gap has (D42): at a file's top only up, there being no hunk above it, at its end only down, and one for
+ * all of it with no more than {@link GAP_STEP} lines hidden.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapLinesToShow(gap: ReviewGapRow, count: number): DiffLineRange {
+export function getGapArrows(gap: ReviewGapRow): ReviewGapArrows {
+    if (gap.hidden <= GAP_STEP) {
+        return 'all';
+    }
+
+    return getGapWay(gap) ?? 'both';
+}
+
+/**
+ * What a click on the rest of a gap's row and E show of it (D42): {@link GAP_STEP} lines toward the hunk `toward` names,
+ * the one on the reading line's side, or the one way the gap has; all of it when it is that short. Lines shown whole
+ * still come the way the gap has, or toward that hunk, for the row on that side to stay put (D7).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapStep(gap: ReviewGapRow, toward: ReviewGapDirection): ReviewGapStep {
+    const arrows = getGapArrows(gap);
+    return {
+        direction: getGapWay(gap) ?? toward,
+        count: arrows === 'all' ? getGapSize(gap) : GAP_STEP,
+    };
+}
+
+/**
+ * All the lines of a gap, threads' code among them, which "Show all hidden lines" and a short gap's arrow show.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapSize({ range }: ReviewGapRow) {
+    return range.afterEnd - range.afterStart;
+}
+
+/** The only way lines can come out of a gap at a file's top or end. */
+function getGapWay(gap: ReviewGapRow): ReviewGapDirection | null {
+    if (gap.atFileEnd) {
+        return 'down';
+    }
+
+    return gap.range.afterStart === 0 ? 'up' : null;
+}
+
+/**
+ * The lines an arrow brings out of a gap (D6, D42): going `up`, those right above the hunk below it, the ones that say
+ * what that change is in; going `down`, those right below the hunk above it.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapLinesToShow(gap: ReviewGapRow, { direction, count }: ReviewGapStep): DiffLineRange {
     const { afterStart, afterEnd } = gap.range;
-    return gap.atFileEnd
+    return direction === 'down'
         ? { start: afterStart, end: Math.min(afterStart + count, afterEnd) }
         : { start: Math.max(afterEnd - count, afterStart), end: afterEnd };
 }
@@ -710,7 +778,10 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'line':
             return LINE_HEIGHT;
         case 'gap':
-            return 28;
+            // The arrows, stacked, and the edges: none under a file's last gap, the block's own following it.
+            return (
+                (getGapArrows(row) === 'both' ? 2 * GAP_ARROW_PAIR_HEIGHT : GAP_ARROW_HEIGHT) + (row.atFileEnd ? 1 : 2)
+            );
         case 'distance':
         case 'fileEnd':
             return 26;
