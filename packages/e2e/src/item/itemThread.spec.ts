@@ -93,6 +93,81 @@ test("a pull request's commits show as a push and its events after it, by who di
     await expect(item.entry('asked hubot for a review')).toContainText('monalisa');
 });
 
+test('a Status change a project workflow made names no one, unlike one a person made', async ({ page, github }) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    const project = { title: 'Roadmap', url: 'https://github.com/orgs/acme/projects/1' };
+    world.event(sample.issue, {
+        event: {
+            __typename: 'ProjectV2ItemStatusChangedEvent',
+            actor: user('monalisa'),
+            wasAutomated: false,
+            previousStatus: 'Todo',
+            status: 'In progress',
+            project,
+        },
+        minutesAgo: 60,
+    });
+    // GitHub names the project's owner for a workflow's change.
+    world.event(sample.issue, {
+        event: {
+            __typename: 'ProjectV2ItemStatusChangedEvent',
+            actor: user('acme'),
+            wasAutomated: true,
+            previousStatus: 'In progress',
+            status: 'Done',
+            project,
+        },
+        minutesAgo: 10,
+    });
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+
+    await expect(item.entry('changed Status to In progress in Roadmap')).toContainText('monalisa');
+    const automated = item.entry('Status set to Done in Roadmap by a project workflow');
+    await expect(automated).toHaveText(/^Status\sset\sto\sDone\sin\sRoadmap\sby\sa\sproject\sworkflow\s*10m$/u);
+    await expect(automated.locator('img')).toHaveCount(0);
+});
+
+test("a pull request's push of more than three commits shows the newest three and the rest on demand, and its head's failed checks show as CI's", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    // Older than the head, committed when the pull request was opened a day ago: the head stays the newest.
+    const author = 'octocat';
+    for (const [index, headline] of [
+        'Add the redirect',
+        'Keep the return address',
+        'Test the loop',
+        'Drop the retry',
+    ].entries()) {
+        world.commit(sample.pullRequest, { author, headline, minutesAgo: 2000 - index });
+    }
+    world.failChecks(sample.pullRequest, ['e2e', 'typecheck']);
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(PULL_REQUEST).click();
+
+    const push = item.entry('pushed 5 commits');
+    await expect(push).toContainText(PULL_REQUEST);
+    await expect(push).toContainText('Test the loop');
+    await expect(push).not.toContainText('Keep the return address');
+    await push.getByRole('button', { name: 'Show 2 more commits' }).click();
+    await expect(push).toContainText('Keep the return address');
+    await expect(push).toContainText('Add the redirect');
+    await expect(push.getByRole('button', { name: /more commits?$/u })).toHaveCount(0);
+
+    const head = world.headOf(sample.pullRequest).slice(0, 7);
+    const checks = item.entry('checks failed');
+    await expect(checks).toHaveText(
+        new RegExp(`^CI\\s*2\\sof\\s5\\schecks\\sfailed\\son\\s${head}:\\se2e,\\stypecheck\\s*1m$`, 'u'),
+    );
+    await expect(checks.locator('img')).toHaveCount(0);
+});
+
 test('a long thread folds its middle to one band; clicking it reads what was not read and shows it all in place, the focus on the first revealed', async ({
     page,
     github,
@@ -141,7 +216,7 @@ test('F16: an item whose thread GitHub did not give says so on the rail; Try aga
     await myWork.row(ISSUE).click();
 
     const failed = item.root.getByRole('alert');
-    await expect(failed).toContainText("The comments and events couldn't be loaded");
+    await expect(failed).toContainText("The description, comments and events couldn't be loaded");
     await expect(failed.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute(
         'href',
         'https://github.com/acme/web/issues/12',

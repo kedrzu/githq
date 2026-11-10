@@ -161,6 +161,13 @@ type WithoutIdAndTime<TEvent> = TEvent extends { readonly id: string; readonly c
     ? Omit<TEvent, 'id' | 'createdAt'>
     : never;
 
+/** A commit on a pull request's branch before its head ({@link GitHubWorld.commit}). */
+export interface GitHubWorldCommitOnBranchParams {
+    readonly author: string;
+    readonly headline: string;
+    readonly minutesAgo: number;
+}
+
 /** A comment on an item of the world ({@link GitHubWorld.comment}). */
 export interface GitHubWorldCommentParams {
     readonly author: string;
@@ -560,7 +567,9 @@ interface WorldPullRequest {
     readonly failedOutsideActions: readonly string[];
     isDraft: boolean;
     reviewDecision: PullRequestReviewDecision | null;
-    readonly failingChecks: number;
+    failingChecks: number;
+    /** The names of its head's failed checks, listed by the opened pull request ({@link GitHubWorld.failChecks}). */
+    failedCheckNames: readonly string[];
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly reviews: GitHubWorldReviewParams[];
@@ -1088,6 +1097,46 @@ export class GitHubWorld {
         }
 
         item.pullRequest.events.push({ ...params.event, ...toEventStamp(item, params.minutesAgo) });
+    }
+
+    /**
+     * Adds a commit to a pull request's branch before its head, as pushed before it: call them oldest first, older than
+     * the pull request (whose head is committed when it was opened, or pushed later).
+     */
+    commit(id: string, params: GitHubWorldCommitOnBranchParams): void {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        const { events } = item.pullRequest;
+        const oid = `${(events.length + 1).toString(16).padStart(7, 'c')}${item.number.toString(16).padStart(33, 'c')}`;
+        events.push({
+            __typename: 'PullRequestCommit',
+            id: `PRC_${item.id}_${oid}`,
+            url: `${toUrl(item)}/commits/${oid}`,
+            pushedCommit: {
+                abbreviatedOid: oid.slice(0, 7),
+                messageHeadline: params.headline,
+                committedDate: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+                author: { name: params.author, user: createUser(params.author) },
+                statusCheckRollup: { state: 'SUCCESS' },
+            },
+        });
+    }
+
+    /**
+     * The checks named fail on a pull request's head, the rest of its checks pass, all finished: the opened pull
+     * request lists every one of them (by default it lists none).
+     */
+    failChecks(id: string, names: readonly string[]): void {
+        const { pullRequest } = this.get(id);
+        if (!pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        pullRequest.failingChecks = names.length;
+        pullRequest.failedCheckNames = names;
     }
 
     /** Adds a submitted review to a pull request, its newest: call them oldest first. */
@@ -2819,6 +2868,7 @@ export class GitHubWorld {
             isDraft: params.isDraft ?? false,
             reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
             failingChecks: params.failingChecks ?? 0,
+            failedCheckNames: [],
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
             reviews: [],
@@ -3030,16 +3080,18 @@ export class GitHubWorld {
         }
 
         const node = this.toPullRequestNode(item, item.pullRequest);
+        const events = this.toPullRequestEvents(item, item.pullRequest);
+        const commitCount = events.filter(event => event.__typename === 'PullRequestCommit').length;
         return {
             ...node,
             ...details,
-            ...toDetailEvents(this.toPullRequestEvents(item, item.pullRequest)),
-            commits: { totalCount: 1 },
-            commitEvents: { totalCount: 1 },
+            ...toDetailEvents(events),
+            commits: { totalCount: commitCount },
+            commitEvents: { totalCount: commitCount },
             headRepository: { nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
-                contextPage: { totalCount: 0, nodes: [] },
+                contextPage: toHeadChecks(item.pullRequest),
             },
             latestReviews: { nodes: [] },
             reviews: toReviewPage(item, item.pullRequest.reviews, item.pullRequest.reviews.length),
@@ -3586,6 +3638,32 @@ function toEventStamp(item: WorldItem, minutesAgo: number) {
         id: `EV_${item.id}_${item.events.length + (item.pullRequest?.events.length ?? 0) + 1}`,
         createdAt: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
     };
+}
+
+/**
+ * The checks of a pull request's head as the opened pull request lists them: none by default, every one of them once
+ * some were named failed ({@link GitHubWorld.failChecks}), finished a minute ago.
+ */
+function toHeadChecks(pullRequest: WorldPullRequest) {
+    const failed = pullRequest.failedCheckNames;
+    if (failed.length === 0) {
+        return { totalCount: 0, nodes: [] };
+    }
+
+    const finishedAt = new Date(Date.now() - 60_000).toISOString();
+    const passed = Array.from({ length: CHECK_COUNT - failed.length }, (_, index) => `check-${index + 1}`);
+    const nodes = [...failed, ...passed].map((name, index) => ({
+        __typename: 'CheckRun' as const,
+        id: `CR_head_${index + 1}`,
+        name,
+        status: 'COMPLETED' as const,
+        conclusion: index < failed.length ? ('FAILURE' as const) : ('SUCCESS' as const),
+        detailsUrl: null,
+        startedAt: finishedAt,
+        completedAt: finishedAt,
+        checkSuite: { workflowRun: null },
+    }));
+    return { totalCount: nodes.length, nodes };
 }
 
 /** When an event happened: a commit's, when it was committed. */
