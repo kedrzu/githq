@@ -48,5 +48,5 @@ from the routes and `isTrackedOnlyRoute`, never from a second list of paths.
 - The desktop treats every click as Open.
 - A long press on touch opens the menu only on a link.
 - Inside an opened item, a link to another item opens in the item's arrangement: on its page it goes to the other
-  item's page, over a list it opens the other item over the same list. It drops a comment fragment
-  (`#issuecomment-…`); this is accepted.
+  item's page, over a list it opens the other item over the same list. The fragment the link names
+  (`#issuecomment-…`) stays in the address; githq does not yet scroll to the comment it names.

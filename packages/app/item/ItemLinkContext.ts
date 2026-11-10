@@ -8,8 +8,11 @@ import type { ItemReference } from './itemRoutes.js';
  * review, Settings, a story) the link goes to the item's address.
  */
 export interface ItemLinkContext {
-    /** Opens the item linked. */
-    open(reference: ItemReference): void;
+    /**
+     * Opens the item linked, at the fragment the link names (`#issuecomment-5`, `''` for none): the place in the item
+     * it points to stays in the address.
+     */
+    open(reference: ItemReference, hash: string): void;
 }
 
 export const ItemLinkContext = defineContext<ItemLinkContext>('ItemLinkContext');

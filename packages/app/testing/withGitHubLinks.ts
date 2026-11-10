@@ -55,7 +55,8 @@ export function withGitHubLinks(options: WithGitHubLinksOptions = {}): Decorator
                 const opened = ref('nothing');
                 if (options.inItem) {
                     provideContext(ItemLinkContext, {
-                        open: reference => (opened.value = `${reference.owner}/${reference.name}#${reference.number}`),
+                        open: (reference, hash) =>
+                            (opened.value = `${reference.owner}/${reference.name}#${reference.number}${hash}`),
                     });
                 }
 

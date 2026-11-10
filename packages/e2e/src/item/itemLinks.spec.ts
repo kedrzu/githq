@@ -6,7 +6,7 @@ import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 const LINKING = 'Explain how tokens expire';
 const LINKED = 'Sign-in loops after the token expires';
 
-/** The sample with an issue whose description links to #12, as GitHub renders a reference to an issue. */
+/** The sample with an issue whose description links to a comment on #12, as GitHub renders a reference to one. */
 function createWorldWithLink() {
     const sample = createSampleMyWork();
     sample.world.issue({
@@ -15,7 +15,7 @@ function createWorldWithLink() {
         title: LINKING,
         foundBy: ['assigned'],
         minutesAgo: 40,
-        bodyHtml: '<p>Caused by <a href="https://github.com/acme/web/issues/12">#12</a>.</p>',
+        bodyHtml: '<p>Caused by <a href="https://github.com/acme/web/issues/12#issuecomment-5">#12</a>.</p>',
     });
     return sample.world;
 }
@@ -30,7 +30,8 @@ test("on its own page, a link in an item's description to another issue opens it
     await expect(item.title).toHaveText(LINKING);
 
     await item.root.getByRole('link', { name: '#12' }).click();
-    await expect(page).toHaveURL('/acme/web/issues/12');
+    // The comment it points to stays in the address.
+    await expect(page).toHaveURL('/acme/web/issues/12#issuecomment-5');
     await expect(item.title).toHaveText(LINKED);
     expect(page.context().pages()).toHaveLength(1);
 });
@@ -45,7 +46,7 @@ test("opened over a list, a link in an item's description to another issue opens
     await expect(item.title).toHaveText(LINKING);
 
     await item.root.getByRole('link', { name: '#12' }).click();
-    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12#issuecomment-5');
     await expect(item.title).toHaveText(LINKED);
     expect(page.context().pages()).toHaveLength(1);
 });

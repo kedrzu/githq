@@ -75,7 +75,8 @@ function open(path: string) {
   // Marked, it is githq's: whether its repository is tracked was asked when it was.
   const item = getGitHubLinkTarget(getGitHubUrl(path), { router, isTracked: () => true })?.item;
   if (item && items) {
-    items.open(item);
+    const fragment = path.indexOf('#');
+    items.open(item, fragment === -1 ? '' : path.slice(fragment));
     return;
   }
 

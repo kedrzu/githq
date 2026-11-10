@@ -40,5 +40,5 @@ test('a click on a link githq shows opens it in the app; in an opened item, an i
 
     await BodyInItem.run();
     await userEvent.click(page.getByRole('link', { name: 'a comment on #12' }));
-    await expect.element(page.getByTestId('opened')).toHaveTextContent('Opened: acme/web#12');
+    await expect.element(page.getByTestId('opened')).toHaveTextContent('Opened: acme/web#12#issuecomment-5');
 });

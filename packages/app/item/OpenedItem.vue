@@ -56,7 +56,7 @@ const route = useRoute();
 const router = useRouter();
 
 // A link to an item in its body or comments opens that item as a linked one does: here, in this arrangement.
-provideContext(ItemLinkContext, { open });
+provideContext(ItemLinkContext, { open: openLinked });
 
 const opened = useOpenedItem({ reference: () => props.reference });
 // In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
@@ -236,6 +236,12 @@ function arrange(arrangement: ItemArrangement) {
 
 function open(reference: ItemReference) {
   void router.push(locate(reference, props.arrangement));
+}
+
+/** A link to an item in its body or comments: opened as `open` does, keeping the fragment it names. */
+function openLinked(reference: ItemReference, hash: string) {
+  const to = locate(reference, props.arrangement);
+  void router.push(typeof to === 'string' ? `${to}${hash}` : { ...to, hash });
 }
 
 /** Always the full page, whatever the arrangement (code review's D2); Back returns. */
