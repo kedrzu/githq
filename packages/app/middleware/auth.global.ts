@@ -4,7 +4,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { resolveRouteAccess } from '@/auth/routeAccess.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import { getRepositorySection, getRouteNameWithOwner, isWorkflowRunRoute } from '@/tracking/trackingRoutes.js';
+import { getRouteNameWithOwner, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import { isHydratingServerHtml } from '@/utils/isHydratingServerHtml.js';
 
@@ -34,8 +34,7 @@ export default defineNuxtRouteMiddleware(async to => {
     // Only a tracked repository has a Workflows section and runs' pages (actions D4): any other's address is GitHub's page,
     // signed out too.
     if (
-        ((to.name === 'repository' && getRepositorySection(to.params.section) === 'workflows') ||
-            isWorkflowRunRoute(to)) &&
+        isTrackedOnlyRoute(to) &&
         !tracking.isTracked({ kind: 'repository', nameWithOwner: getRouteNameWithOwner(to) })
     ) {
         return navigateTo(
