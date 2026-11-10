@@ -28,6 +28,8 @@ const emit = defineEmits<{
   reply: [];
   /** Resolve thread, or Unresolve. */
   setResolved: [resolved: boolean];
+  /** Hide folded the resolved thread again: its row is drawn in its place. */
+  hidden: [];
 }>();
 
 const t = useTranslate();
@@ -37,6 +39,11 @@ const opened = ref(false);
 const first = computed(() => props.entry.thread.comments[0] ?? null);
 const login = computed(() => first.value?.author?.login ?? t(l.ghost));
 const age = computed(() => (first.value ? formatAge(Date.parse(first.value.createdAt), props.now) : ''));
+
+function hide() {
+  opened.value = false;
+  emit('hidden');
+}
 </script>
 
 <template>
@@ -71,7 +78,7 @@ const age = computed(() => (first.value ? formatAge(Date.parse(first.value.creat
         :thread="entry.thread"
         :viewer="viewer"
         :replies="replies"
-        @hide="opened = false"
+        @hide="hide"
         @reply="emit('reply')"
         @set-resolved="emit('setResolved', $event)"
       />

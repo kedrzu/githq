@@ -29,6 +29,8 @@ const emit = defineEmits<{
   reply: [threadId: string];
   /** Resolve thread, or Unresolve, on a thread. */
   setResolved: [threadId: string, resolved: boolean];
+  /** Hide folded a resolved thread again: its row is drawn in its place. */
+  hidden: [threadId: string];
 }>();
 
 const t = useTranslate();
@@ -92,6 +94,11 @@ function setOpened(id: string, open: boolean) {
 
   opened.value = next;
 }
+
+function hide(threadId: string) {
+  setOpened(threadId, false);
+  emit('hidden', threadId);
+}
 </script>
 
 <template>
@@ -149,7 +156,7 @@ function setOpened(id: string, open: boolean) {
             :thread="thread"
             :viewer="viewer"
             :replies="replies"
-            @hide="setOpened(thread.id, false)"
+            @hide="hide(thread.id)"
             @reply="emit('reply', thread.id)"
             @set-resolved="emit('setResolved', thread.id, $event)"
           />
