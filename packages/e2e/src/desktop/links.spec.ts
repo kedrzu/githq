@@ -173,7 +173,7 @@ test('signed out, a githq link shows the sign-in and the screen of the link foll
     await expect(page).toHaveURL(ISSUE_PATH);
 });
 
-test('a click on a githq.dev link in an item opens that screen in the app, while a github.com link still opens in the system browser', async ({
+test('a click on a githq.dev link, or a github.com link to a screen githq shows, opens it in the app; any other github.com link opens in the system browser', async ({
     page,
     github,
     native,
@@ -185,21 +185,28 @@ test('a click on a githq.dev link in an item opens that screen in the app, while
         title: 'Explain how tokens expire',
         foundBy: ['assigned'],
         minutesAgo: 40,
-        bodyHtml: `<p>See <a href="https://githq.dev${ISSUE_PATH}?x=1">the sign-in issue</a> and <a href="https://github.com/acme/web/issues/12">its GitHub page</a>.</p>`,
+        bodyHtml: `<p>See <a href="https://githq.dev${ISSUE_PATH}?x=1">the sign-in issue</a>, <a href="https://github.com/acme/web/issues/12">#12</a> and <a href="https://github.com/acme/web/commit/a1b2c3d">the fix</a>.</p>`,
     });
     await signInOnDesktop({ page, github, native, world: sample.world });
     await page.goto('/acme/web/issues/30');
     const item = new ItemViewHarness(page);
     await expect(item.title).toHaveText('Explain how tokens expire');
 
-    await item.root.getByRole('link', { name: 'its GitHub page' }).click();
-    await expect.poll(() => native.opened).toEqual(['https://github.com/acme/web/issues/12']);
+    await item.root.getByRole('link', { name: 'the fix' }).click();
+    await expect.poll(() => native.opened).toEqual(['https://github.com/acme/web/commit/a1b2c3d']);
     await expect(page).toHaveURL('/acme/web/issues/30');
 
+    // A modifier changes nothing: the app has one window.
+    await item.root.getByRole('link', { name: '#12' }).click({ modifiers: ['ControlOrMeta'] });
+    await expect(item.title).toHaveText(ISSUE);
+    await expect(page).toHaveURL(ISSUE_PATH);
+
+    await page.goBack();
+    await expect(item.title).toHaveText('Explain how tokens expire');
     await item.root.getByRole('link', { name: 'the sign-in issue' }).click();
     await expect(item.title).toHaveText(ISSUE);
     await expect(page).toHaveURL(`${ISSUE_PATH}?x=1`);
-    expect(native.opened).toEqual(['https://github.com/acme/web/issues/12']);
+    expect(native.opened).toEqual(['https://github.com/acme/web/commit/a1b2c3d']);
     expect(page.context().pages()).toHaveLength(1);
 });
 
