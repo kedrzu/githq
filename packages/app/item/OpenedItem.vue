@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -7,7 +7,7 @@ import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import { SearchX } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue';
-import type { RouteLocationRaw } from 'vue-router';
+import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
 import Button from '@/components/Button.vue';
@@ -193,14 +193,27 @@ watch(
   },
 );
 
+// Back and Forward move through the history before the guard below runs, and the router moves back when it stops them:
+// how far they went, for Discard to go there again.
+let poppedBy: number | null = null;
+const removeHistoryListener = router.options.history.listen((_to, _from, info) => {
+  poppedBy = info.delta;
+});
+// How the item's own navigation on its way goes — adding to the history or replacing the address (`moveTo`).
+let movingBy: HistoryMove | null = null;
+
 // Leaving the item — `K`/`J`, another item opened, closing it, anywhere else — while an edit in its thread has changes:
-// the edit asks first and the item stays. Discard does not go on where the user was going: they go again.
+// the edit asks first and the item stays; its Discard then goes on where the user was going.
 const removeLeaveGuard = router.beforeEach(to => {
-  const next = getOpenedItemRoute(to)?.reference;
+  const popped = poppedBy;
+  const by = movingBy;
+  poppedBy = null;
+  movingBy = null;
+  const next = getOpenedItemRoute(to);
   const staying =
-    next !== undefined &&
-    formatItemReference(next).toLowerCase() === formatItemReference(props.reference).toLowerCase();
-  if (staying || !viewRef.value?.askToLeave()) {
+    next !== null &&
+    formatItemReference(next.reference).toLowerCase() === formatItemReference(props.reference).toLowerCase();
+  if (staying || !viewRef.value?.askToLeave(() => goAgain({ to, popped, by }))) {
     return true;
   }
 
@@ -212,7 +225,27 @@ const removeLeaveGuard = router.beforeEach(to => {
   return false;
 });
 
-onBeforeUnmount(removeLeaveGuard);
+onBeforeUnmount(() => {
+  removeLeaveGuard();
+  removeHistoryListener();
+});
+
+/**
+ * The navigation an edit stopped, once its changes are discarded, made again as it was: Back or Forward as far; the
+ * item's own as it went (`moveTo`); from elsewhere, another item over the same list — the list's `J`/`K` — replacing
+ * the address, the rest adding to the history.
+ */
+function goAgain({ to, popped, by }: GoAgainOptions) {
+  if (popped !== null && popped !== 0) {
+    router.go(popped);
+    return;
+  }
+
+  const next = getOpenedItemRoute(to);
+  const listStep = next !== null && !next.onPage && props.arrangement !== 'page' && to.path === route.path;
+  const how = by ?? (listStep ? 'replace' : 'push');
+  void (how === 'replace' ? router.replace(to.fullPath) : router.push(to.fullPath));
+}
 
 function merge() {
   const { id } = opened;
@@ -254,7 +287,7 @@ function step(delta: 1 | -1) {
 function openInPlace(id: string) {
   const item = details.getItem(id);
   if (item) {
-    void router.replace(locate(getItemReference(item), props.arrangement, item.kind));
+    moveTo(locate(getItemReference(item), props.arrangement, item.kind), 'replace');
   }
 }
 
@@ -262,28 +295,37 @@ function arrange(arrangement: ItemArrangement) {
   navigation.setArrangement(arrangement);
   // Between the panel and the modal the address stays: the shell shows the remembered one.
   if (arrangement === 'page' || props.arrangement === 'page') {
-    void router.replace(locate(props.reference, arrangement, opened.item?.kind));
+    moveTo(locate(props.reference, arrangement, opened.item?.kind), 'replace');
   }
 }
 
 function open(reference: ItemReference) {
-  void router.push(locate(reference, props.arrangement));
+  moveTo(locate(reference, props.arrangement), 'push');
 }
 
 /** A link to an item in its body or comments: opened as `open` does, keeping the fragment it names. */
 function openLinked(reference: ItemReference, hash: string) {
   const to = locate(reference, props.arrangement);
-  void router.push(typeof to === 'string' ? `${to}${hash}` : { ...to, hash });
+  moveTo(typeof to === 'string' ? `${to}${hash}` : { ...to, hash }, 'push');
+}
+
+/** Navigates as `by` says, remembered for the guard: an edit stopping it and discarded goes on the same way (`goAgain`). */
+function moveTo(to: RouteLocationRaw, by: HistoryMove) {
+  movingBy = by;
+  void (by === 'replace' ? router.replace(to) : router.push(to)).finally(() => {
+    movingBy = null;
+  });
 }
 
 /** Always the full page, whatever the arrangement (code review's D2); Back returns. */
 function openReview() {
-  void router.push(getReviewPath(props.reference));
+  moveTo(getReviewPath(props.reference), 'push');
 }
 
 function close() {
-  void router.push(
+  moveTo(
     props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
+    'push',
   );
 }
 
@@ -348,6 +390,17 @@ function onModalEscape(event: KeyboardEvent) {
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
+
+/** The navigation an edit stopped, for `goAgain`. */
+interface GoAgainOptions {
+  readonly to: RouteLocationNormalized;
+  /** How far Back or Forward went; `null` for a navigation of the app's own. */
+  readonly popped: number | null;
+  /** How the item's own navigation went; `null` for one from elsewhere. */
+  readonly by: HistoryMove | null;
+}
+
+type HistoryMove = 'push' | 'replace';
 </script>
 
 <template>

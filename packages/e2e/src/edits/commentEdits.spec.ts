@@ -66,8 +66,11 @@ test('an edit GitHub refuses is undone with its toast and opens the editor again
     await expect(item.entry(TEXT)).toBeVisible();
 });
 
-test('J with a changed edit open stays on the item and asks; Discard puts the card back', async ({ page, github }) => {
-    const { item } = await openWithComment(page, github);
+test('J with a changed edit open stays on the item and asks; Discard discards and goes on to the next item', async ({
+    page,
+    github,
+}) => {
+    const { sample, item } = await openWithComment(page, github);
     const myWork = new MyWorkScreenHarness(page);
     await expect(myWork.selectedRow).toContainText(ISSUE);
 
@@ -83,9 +86,49 @@ test('J with a changed edit open stays on the item and asks; Discard puts the ca
     await expect(myWork.selectedRow).toContainText(ISSUE);
 
     await item.root.getByRole('button', { name: 'Discard' }).click();
+    await expect(item.title).toHaveText('Flaky login test');
+    await expect(myWork.selectedRow).toContainText('Flaky login test');
+    expect(sample.world.stateOf(sample.issue).comments).toEqual([TEXT]);
+});
+
+test('Keep editing forgets where J was going: Discard asked by the editor itself stays on the item', async ({
+    page,
+    github,
+}) => {
+    const { item } = await openWithComment(page, github);
+
+    await item.commentAction(TEXT, 'Edit');
+    const editor = item.root.getByRole('textbox', { name: 'Edit comment' });
+    await editor.fill('Reproduced on Safari and Firefox.');
+    await editor.blur();
+    await page.keyboard.press('j');
+    const question = item.root.getByRole('status');
+    await expect(question).toHaveText('Discard your changes to this comment?');
+
+    await editor.press('Escape');
+    await expect(question).toBeHidden();
+    await item.root.getByRole('button', { name: 'Cancel' }).click();
+    await item.root.getByRole('button', { name: 'Discard' }).click();
+
     await expect(editor).toBeHidden();
     await expect(item.entry(TEXT)).toBeVisible();
     await expect(item.title).toHaveText(ISSUE);
+});
+
+test('Back with a changed edit open asks too; Discard goes back', async ({ page, github }) => {
+    const { item } = await openWithComment(page, github);
+
+    await item.commentAction(TEXT, 'Edit');
+    const editor = item.root.getByRole('textbox', { name: 'Edit comment' });
+    await editor.fill('Reproduced on Safari and Firefox.');
+    await page.goBack();
+
+    await expect(item.root.getByRole('status')).toHaveText('Discard your changes to this comment?');
+    await expect(item.title).toHaveText(ISSUE);
+
+    await item.root.getByRole('button', { name: 'Discard' }).click();
+    await expect(item.title).toBeHidden();
+    await expect(page).not.toHaveURL(/issue=/u);
 });
 
 test('Delete… asks once, then the comment is gone, here and on GitHub', async ({ page, github }) => {

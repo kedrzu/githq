@@ -355,8 +355,11 @@ const itemMenuSections = computed(() =>
 defineExpose({
   /** Puts the cursor in the comment box. */
   focusComposer: () => composerRef.value?.focus(),
-  /** Before the item is left: an edit with changes in its thread asks first (`true`), and the item stays. */
-  askToLeave: () => threadRef.value?.askToLeave() ?? false,
+  /**
+   * Before the item is left: an edit with changes in its thread asks first (`true`), and the item stays; its Discard
+   * calls `go`, to leave as the user was.
+   */
+  askToLeave: (go: () => void) => threadRef.value?.askToLeave(go) ?? false,
 });
 
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and

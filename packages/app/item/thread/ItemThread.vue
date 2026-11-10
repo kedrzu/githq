@@ -83,6 +83,8 @@ const foldFailed = ref(false);
 const editorsRef = shallowRef<ReadonlyMap<string | null, EditorText>>(new Map());
 /** The editor whose footer asks whether to discard its changes. */
 const askingRef = ref<string | null | undefined>(undefined);
+/** Where the user was going when leaving the item asked: Discard goes on there, Keep editing forgets it. */
+let leaving: (() => void) | null = null;
 /** The editor the user just opened: it takes the focus. */
 const focusedEditor = ref<string | null | undefined>(undefined);
 /** The comment asked to be deleted, while the dialog asks. */
@@ -116,6 +118,7 @@ watch(
     if (id !== before[0]) {
       editorsRef.value = new Map();
       askingRef.value = undefined;
+      leaving = null;
       focusedEditor.value = undefined;
       deletingId.value = null;
       revealedId.value = null;
@@ -135,17 +138,20 @@ watch(
 defineExpose({
   /**
    * Before the user leaves the item: the first editor, in the thread's order, whose text was changed asks whether to
-   * discard it, in view and with the cursor in it. `false` when none was changed: nothing stands in the way.
+   * discard it, in view and with the cursor in it; its Discard then calls `go`, the way the user was leaving. `false`
+   * when none was changed: nothing stands in the way.
    */
   askToLeave,
 });
 
-function askToLeave() {
+function askToLeave(go: () => void) {
   const ids = [null, ...entries.value.flatMap(entry => (entry.kind === 'comment' ? [entry.id] : []))];
   const changed = ids.find(id => isChanged(id));
   if (changed === undefined) {
     return false;
   }
+
+  leaving = go;
 
   // Asked already: asked again a tick on, so that it comes back into view and takes the cursor again.
   if (askingRef.value === changed) {
@@ -177,6 +183,7 @@ function closeEditor(id: string | null) {
   editorsRef.value = next;
   if (askingRef.value === id) {
     askingRef.value = undefined;
+    leaving = null;
   }
 }
 
@@ -186,7 +193,9 @@ function isChanged(id: string | null) {
   return editor !== undefined && (editor.text !== editor.start || getFailure(id) !== null);
 }
 
+/** The editor's own question (Cancel, Escape) and Keep editing: neither goes anywhere after. */
 function setAsking(id: string | null, asking: boolean) {
+  leaving = null;
   if (asking) {
     askingRef.value = id;
   } else if (askingRef.value === id) {
@@ -205,11 +214,14 @@ function startEdit(id: string | null, body: string) {
 }
 
 function cancelEdit(id: string | null) {
+  const go = askingRef.value === id ? leaving : null;
   closeEditor(id);
   void focusMenu(id);
   if (getFailure(id)) {
     emit('discardEdit', id);
   }
+
+  go?.();
 }
 
 /** The card's ⋯ takes the focus once the card is on screen again. */
