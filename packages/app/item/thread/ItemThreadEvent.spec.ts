@@ -4,7 +4,7 @@ import { page } from 'vitest/browser';
 
 import * as stories from './ItemThreadEvent.stories.js';
 
-const { NoPerson, IssueThread, OneKindMerged } = composeStories(stories);
+const { NoPerson, IssueThread, OneKindMerged, IssueEvents } = composeStories(stories);
 
 test("a line no person made shows no avatar: a workflow's Status change names no one, failed checks name CI", async () => {
     await NoPerson.run();
@@ -33,4 +33,10 @@ test('events of one kind in a burst merge their objects, named by their referenc
     expect(what.textContent?.replace(/\s+/gu, ' ')).toBe(
         'mentioned this in #14, #15, and #16 and added sub-issues #14, #15, and #16 and referenced this in commits 4a1c9e2 and 7d3b0f5',
     );
+});
+
+test('an issue closed as a duplicate of one GitHub does not name says it is a duplicate all the same', async () => {
+    await IssueEvents.run();
+
+    await expect.element(page.getByText(/^closed this as\sa\sduplicate$/u)).toBeVisible();
 });

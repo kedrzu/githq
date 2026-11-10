@@ -52,6 +52,8 @@ closedNotPlanned:
   en: closed this as not planned
 closedDuplicate:
   en: closed this as a duplicate of {ref}
+closedAsDuplicate:
+  en: closed this as a duplicate
 reopened:
   en: reopened this
 merged:

@@ -299,7 +299,10 @@ function renderClosed(event: Extract<SingleThreadEvent, { readonly kind: 'closed
     case 'NOT_PLANNED':
       return say(l.closedNotPlanned);
     case 'DUPLICATE':
-      return event.duplicateOf ? sayWith(l.closedDuplicate, { ref: renderRef(event.duplicateOf) }) : say(l.closed);
+      // GitHub need not name the other (github/roadmap#1318): a duplicate all the same.
+      return event.duplicateOf
+        ? sayWith(l.closedDuplicate, { ref: renderRef(event.duplicateOf) })
+        : say(l.closedAsDuplicate);
     case 'COMPLETED':
     case 'REOPENED':
     case null:

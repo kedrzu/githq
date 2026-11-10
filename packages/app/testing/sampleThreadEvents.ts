@@ -198,6 +198,8 @@ export const EVERY_ISSUE_EVENT: readonly ThreadEvent[] = spaced([
     },
     { kind: 'closed', stateReason: 'NOT_PLANNED', closer: null, duplicateOf: null },
     { kind: 'closed', stateReason: 'DUPLICATE', closer: null, duplicateOf: ref(12, 'Sub-issue links are lost') },
+    // As github/roadmap#1318 has it: closed as a duplicate, of an issue GitHub does not name.
+    { kind: 'closed', stateReason: 'DUPLICATE', closer: null, duplicateOf: null },
     { kind: 'reopened' },
     { kind: 'connected', ref: { ...ref(15, 'IndexedDB store'), kind: 'pullRequest' } },
     {

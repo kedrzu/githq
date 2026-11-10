@@ -46,12 +46,12 @@ type Story = StoryObj<typeof meta>;
 /** F13, left: every event a pull request's thread shows, each on its own line. */
 export const PullRequestEvents: Story = {
     args: { item: F5_PULL_REQUEST },
-    parameters: { lines: linesOf(withEvents(F5_PULL_REQUEST_DETAIL, EVERY_PULL_REQUEST_EVENT)) },
+    parameters: { lines: linesOf(withEvents(F5_PULL_REQUEST_DETAIL, EVERY_PULL_REQUEST_EVENT), true) },
 };
 
 /** F13, right: every event only an issue's thread shows. */
 export const IssueEvents: Story = {
-    parameters: { lines: linesOf(withEvents(I1_ISSUE_DETAIL, EVERY_ISSUE_EVENT)) },
+    parameters: { lines: linesOf(withEvents(I1_ISSUE_DETAIL, EVERY_ISSUE_EVENT), true) },
 };
 
 /** F13's "events of one kind merge their objects": more than one by their references alone, in one line. */
@@ -79,18 +79,19 @@ export const NoPerson: Story = {
     },
 };
 
-/** A thread's lines of events and failed checks, as `ItemThread` shows them. */
-function linesOf(detail: ItemDetail): (ThreadEventLine | ThreadChecksFailed)[] {
-    return buildThread({ detail }).filter(
+/** A thread's lines of events and failed checks, as `ItemThread` shows them; `unfolded`, all of them. */
+function linesOf(detail: ItemDetail, unfolded = false): (ThreadEventLine | ThreadChecksFailed)[] {
+    return buildThread({ detail, unfolded }).filter(
         (entry): entry is ThreadEventLine | ThreadChecksFailed =>
             entry.kind === 'events' || entry.kind === 'checksFailed',
     );
 }
 
+/** The detail with these events, and comments held whole: nothing unread folds them away. */
 function withEvents(detail: ItemDetail, newest: readonly ThreadEvent[]): ItemDetail {
     return {
         ...detail,
-        comments: D1_ISSUE_DETAIL.comments,
+        comments: { ...D1_ISSUE_DETAIL.comments, olderCursor: null },
         events: { totalCount: newest.length, commitCount: 0, oldest: [], newest, middle: null },
     };
 }
