@@ -112,6 +112,7 @@ test("a pull request's checks are told passing, failing, pending or skipped from
         name: 'ci/legacy',
         workflow: null,
         state: 'failing',
+        cancelled: false,
         url: 'https://ci.test/1',
         startedAt: MONDAY,
         completedAt: null,

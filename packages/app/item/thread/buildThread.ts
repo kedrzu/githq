@@ -2,6 +2,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { FailedComment } from '@/edits/CommentDrafts.js';
 import type {
+    ItemCheck,
     ItemComment,
     ItemDetail,
     ItemDetailReviewRequest,
@@ -701,7 +702,9 @@ function toPart(part: MutablePart): ThreadEventPart[] {
     }
 }
 
-function toMergedPart<TKind extends string, TObject>(part: MergingPart<TKind, TObject>): ThreadMergedPart<TKind, TObject>[] {
+function toMergedPart<TKind extends string, TObject>(
+    part: MergingPart<TKind, TObject>,
+): ThreadMergedPart<TKind, TObject>[] {
     return part.entries.length > 0 ? [{ kind: part.kind, objects: part.entries.map(entry => entry.object) }] : [];
 }
 
@@ -789,16 +792,21 @@ function getAuthorKey(commit: ThreadCommit | undefined) {
 
 /**
  * The failed checks of the pull request's newest commit, once every check on it finished (F13): none while one still
- * runs, or when none failed. It happened when the last of them finished.
+ * runs, or when none failed — each check by its newest run, a cancelled one no failure. It happened when the last of
+ * them finished.
  */
 function getChecksFailed(item: PullRequestItem, detail: PullRequestDetail): ThreadChecksFailed | null {
-    const { checks } = detail;
     // GitHub cut the list: whether the rest finished is not known.
-    if (checks.length < detail.checkCount || checks.some(check => check.state === 'pending')) {
+    if (detail.checks.length < detail.checkCount) {
         return null;
     }
 
-    const failing = checks.filter(check => check.state === 'failing');
+    const checks = getNewestRuns(detail.checks);
+    if (checks.some(check => check.state === 'pending')) {
+        return null;
+    }
+
+    const failing = checks.filter(check => check.state === 'failing' && !check.cancelled);
     if (failing.length === 0) {
         return null;
     }
@@ -814,8 +822,29 @@ function getChecksFailed(item: PullRequestItem, detail: PullRequestDetail): Thre
         commit: { abbreviatedOid: item.headRefOid.slice(0, 7), url: `${item.url}/commits/${item.headRefOid}` },
         failedCount: failing.length,
         failed: [...new Set(failing.map(check => check.name))],
-        total: detail.checkCount,
+        total: checks.length,
         // No time told: after the newest commit, at least.
         updatedAt: times.toSorted().at(-1) ?? head?.createdAt ?? item.updatedAt,
     };
+}
+
+/**
+ * Each check's newest run: GitHub lists every run on the commit, a run of its workflow again (a re-run, a newer push
+ * of the same head) beside the one it replaced — healedcare/healed#586 held Build cancelled and Build passing.
+ */
+function getNewestRuns(checks: readonly ItemCheck[]): ItemCheck[] {
+    const newest = new Map<string, ItemCheck>();
+    for (const check of checks) {
+        const key = `${check.kind}:${check.workflow ?? ''}:${check.name}`;
+        const held = newest.get(key);
+        if (!held || getStartedAt(check) >= getStartedAt(held)) {
+            newest.set(key, check);
+        }
+    }
+
+    return [...newest.values()];
+}
+
+function getStartedAt(check: ItemCheck) {
+    return check.startedAt === null ? -Infinity : Date.parse(check.startedAt);
 }

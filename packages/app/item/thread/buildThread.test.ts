@@ -43,7 +43,11 @@ test("one person's events within 10 minutes share a line, objects of one kind me
 });
 
 test('mentions, sub-issues and commit references of one burst each merge into the part of their kind, where it first came', () => {
-    const fix = { abbreviatedOid: 'a1b2c3d', url: 'https://github.com/mlaine/tasklet/commit/a1b2c3d', messageHeadline: 'Fix' };
+    const fix = {
+        abbreviatedOid: 'a1b2c3d',
+        url: 'https://github.com/mlaine/tasklet/commit/a1b2c3d',
+        messageHeadline: 'Fix',
+    };
     const cover = { ...fix, abbreviatedOid: 'e4f5a6b', url: 'https://github.com/mlaine/tasklet/commit/e4f5a6b' };
     // As primer/react#8676 had them: each new issue mentioned this one, then went in as its sub-issue.
     const thread = buildIssueThread([
@@ -198,10 +202,34 @@ test("once the newest commit's checks finished with a failure, the thread says w
         kind: 'checksFailed',
         id: 'checks:e81f0a3c0ffee',
         commit: { abbreviatedOid: 'e81f0a3', url: `${F1_PULL_REQUEST.url}/commits/e81f0a3c0ffee` },
-        failedCount: 3,
+        // e2e ran twice: its newer run counts.
+        failedCount: 2,
         failed: ['e2e', 'typecheck'],
-        total: 4,
+        total: 3,
         updatedAt: at(50),
+    });
+});
+
+test("the CI line counts each check's newest run only, and a cancelled run fails nothing", () => {
+    // As healedcare/healed#586 had them: Build and TODO Check cancelled, then passing in newer runs.
+    const checks = [
+        check('Verify Submodules', 'failing', 1),
+        check('Verify Submodules', 'failing', 2),
+        { ...check('Build', 'failing', 1), cancelled: true },
+        { ...check('TODO Check', 'failing', 1), cancelled: true },
+        check('Release pins', 'skipped', 1),
+        check('Release pins', 'skipped', 2),
+        check('Build', 'passing', 3),
+        check('TODO Check', 'passing', 3),
+        // Cancelled in its newest run too: still no failure.
+        { ...check('Deploy', 'failing', 4), cancelled: true },
+    ];
+    const thread = buildThread({ detail: pullRequestDetail([], [], { checks, checkCount: checks.length }) });
+
+    expect(thread.find(entry => entry.kind === 'checksFailed')).toMatchObject({
+        failedCount: 1,
+        failed: ['Verify Submodules'],
+        total: 5,
     });
 });
 
@@ -548,8 +576,9 @@ function check(name: string, state: ItemCheck['state'], completedMinutes: number
         name,
         workflow: 'ci',
         state,
+        cancelled: false,
         url: null,
-        startedAt: at(0),
+        startedAt: at(completedMinutes ?? 0),
         completedAt: completedMinutes === null ? null : at(completedMinutes),
     };
 }

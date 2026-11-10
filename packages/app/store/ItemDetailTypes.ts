@@ -325,6 +325,11 @@ export interface ItemCheck {
     /** The Actions workflow a check run belongs to (GitHub shows "workflow / name"); `null` otherwise. */
     readonly workflow: string | null;
     readonly state: ItemCheckState;
+    /**
+     * A check run cancelled — by hand, or by a newer run of its workflow. `failing` as GitHub tells it, but no failure
+     * of the code: the thread's CI line leaves it out.
+     */
+    readonly cancelled: boolean;
     readonly url: string | null;
     readonly startedAt: string | null;
     /** `null` while it runs, and for a commit status (GitHub keeps only when it was set). */

@@ -30,6 +30,7 @@ export function sampleMergeCheck(fullName: string, overrides: Partial<MergeCheck
         name: name ?? fullName,
         workflow: workflow ?? null,
         state: 'passing',
+        cancelled: false,
         url: `https://github.com/fitloop/api/actions/runs/1/${encodeURIComponent(fullName)}`,
         startedAt: '2026-11-02T11:50:00Z',
         completedAt: '2026-11-02T11:51:40Z',

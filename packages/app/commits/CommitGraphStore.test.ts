@@ -1148,6 +1148,7 @@ test('only the commit asked for has its checks read, once a minute, and a re-rea
                 name: 'first',
                 workflow: 'ci',
                 state: 'passing',
+                cancelled: false,
                 url: 'https://github.com/acme/web/actions/runs/1',
                 startedAt: null,
                 completedAt: null,

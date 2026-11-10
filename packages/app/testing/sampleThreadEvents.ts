@@ -316,6 +316,7 @@ function check(name: string, state: ItemCheck['state']): ItemCheck {
         name,
         workflow: 'ci',
         state,
+        cancelled: false,
         url: null,
         startedAt: new Date(SAMPLE_NOW - DAY + MINUTE).toISOString(),
         completedAt: new Date(SAMPLE_NOW - DAY + 9 * MINUTE).toISOString(),
