@@ -404,13 +404,12 @@ function createCommentEdit(params: CreateItemEditsParams, body: string, keptInTh
 
 /**
  * A comment's text edited: shown at once as typed, marked edited, until GitHub's rendering arrives. One GitHub does not
- * take opens its editor again with the text (`CommentDrafts`), so it says nothing else.
+ * take is undone with a toast, as every edit is (D8), and its editor opens again with the text (`CommentDrafts`).
  */
 function createCommentTextEdit(params: CreateItemEditsParams, commentId: string, body: string): Edit {
     const { item, now } = params;
     return {
         ...getEditIdentity(item, { kind: 'textEdited', commentId, body }),
-        quiet: true,
         optimistic: {
             item: current => current,
             detail: detail =>
@@ -466,13 +465,12 @@ function createDeleteCommentEdit(item: Item, commentId: string): Edit {
 
 /**
  * The description edited: shown at once as typed, marked edited, until GitHub's rendering arrives. One GitHub does not
- * take opens its editor again with the text (`CommentDrafts`), so it says nothing else.
+ * take is undone with a toast, as every edit is (D8), and its editor opens again with the text (`CommentDrafts`).
  */
 function createBodyEdit(params: CreateItemEditsParams, body: string): Edit {
     const { item, now } = params;
     return {
         ...getEditIdentity(item, { kind: 'textEdited', commentId: null, body }),
-        quiet: true,
         optimistic: {
             item: current => current,
             detail: detail => ({ ...detail, body, pendingBody: body, lastEditedAt: now }),

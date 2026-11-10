@@ -495,7 +495,7 @@ test('a comment edited shows at once as typed and edited, then as GitHub rendere
     ]);
 });
 
-test('an edit GitHub refuses never loses the text: the comment reads as it was, and the text waits with why, no toast', async () => {
+test('an edit GitHub refuses never loses the text: the comment reads as it was, with a toast, and the text waits with why', async () => {
     const { editor, details, drafts, queue, github } = await setup();
     github.comments = [sampleComment('IC_1', 'First take')];
     await details.ensure('I_1');
@@ -514,7 +514,7 @@ test('an edit GitHub refuses never loses the text: the comment reads as it was, 
             reason: { kind: 'refused', message: 'Comment is too long' },
         },
     ]);
-    expect(queue.failures).toEqual([]);
+    expect(queue.failures).toMatchObject([{ toast: true }]);
 
     // Saved again, it waits no more.
     github.error = null;

@@ -41,11 +41,11 @@ test('a comment edited in place shows at once, then as GitHub has it, "· edited
     await expect.poll(() => sample.world.stateOf(sample.issue).comments).toEqual(['Reproduced on Safari and Firefox.']);
 });
 
-test('an edit GitHub refuses opens the editor again with the text and why; the comment reads as it was', async ({
+test('an edit GitHub refuses is undone with its toast and opens the editor again with the text and why', async ({
     page,
     github,
 }) => {
-    const { sample, item } = await openWithComment(page, github);
+    const { sample, shell, item } = await openWithComment(page, github);
     sample.world.failEdit(sample.issue, 'UpdateIssueComment', { kind: 'refuse', message: 'Body is too long' });
 
     await item.commentAction(TEXT, 'Edit');
@@ -53,6 +53,7 @@ test('an edit GitHub refuses opens the editor again with the text and why; the c
     await editor.fill('A much longer text.');
     await editor.press('ControlOrMeta+Enter');
 
+    await expect(shell.toasts.filter({ hasText: "Your edit of a comment on acme/web#12 wasn't saved" })).toBeVisible();
     await expect(item.root.getByRole('alert')).toHaveText('Not sent: GitHub refused it: Body is too long.');
     await expect(editor).toHaveValue('A much longer text.');
     expect(sample.world.stateOf(sample.issue).comments).toEqual([TEXT]);
