@@ -160,6 +160,12 @@ export const I1_ISSUE_DETAIL: IssueDetail = {
     },
 };
 
+/** mlaine asking for their own review, then taking the request back, an hour apart. */
+export const THEIR_OWN_REVIEW_REQUEST: readonly ThreadEvent[] = spaced([
+    { kind: 'reviewRequested', reviewer: { kind: 'user', user: MLAINE } },
+    { kind: 'reviewRequestRemoved', reviewer: { kind: 'user', user: MLAINE } },
+]);
+
 /** Every event a pull request's thread shows (F13, left), one person's each well apart, so none share a line. */
 export const EVERY_PULL_REQUEST_EVENT: readonly ThreadEvent[] = spaced([
     { kind: 'forcePushed', beforeOid: '91ac0de', afterOid: 'e81f0a3' },

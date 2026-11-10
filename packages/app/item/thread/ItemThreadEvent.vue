@@ -135,8 +135,14 @@ function renderPart(part: ThreadEventPart, after: boolean): VNodeChild[] {
     }
     case 'reviewRequested':
     case 'reviewRequestedAgain':
-    case 'reviewRequestRemoved':
+    case 'reviewRequestRemoved': {
+      const [only] = part.objects;
+      if (only?.kind === 'user' && part.objects.length === 1 && only.user.login === actor.value?.login) {
+        return say(l[`${part.kind}Self`]);
+      }
+
       return sayWith(l[part.kind], { reviewers: formatList(part.objects.map(getReviewRequestName)) });
+    }
     case 'crossReferenced':
     case 'subIssueAdded':
     case 'subIssueRemoved':

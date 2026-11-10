@@ -12,6 +12,7 @@ import {
     F5_PULL_REQUEST_DETAIL,
     I1_ISSUE,
     I1_ISSUE_DETAIL,
+    THEIR_OWN_REVIEW_REQUEST,
 } from '@/testing/sampleThreadEvents.js';
 
 import { buildThread } from './buildThread.js';
@@ -47,6 +48,12 @@ type Story = StoryObj<typeof meta>;
 export const PullRequestEvents: Story = {
     args: { item: F5_PULL_REQUEST },
     parameters: { lines: linesOf(withEvents(F5_PULL_REQUEST_DETAIL, EVERY_PULL_REQUEST_EVENT), true) },
+};
+
+/** The person asking for their own review and taking it back: said of themselves, not by their login. */
+export const TheirOwnReviewRequest: Story = {
+    args: { item: F5_PULL_REQUEST },
+    parameters: { lines: linesOf(withEvents(F5_PULL_REQUEST_DETAIL, THEIR_OWN_REVIEW_REQUEST), true) },
 };
 
 /** F13, right: every event only an issue's thread shows. */

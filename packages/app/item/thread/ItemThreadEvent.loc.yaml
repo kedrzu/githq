@@ -30,6 +30,12 @@ reviewRequestedAgain:
   en: asked {reviewers} for another review
 reviewRequestRemoved:
   en: removed the review request for {reviewers}
+reviewRequestedSelf:
+  en: requested their own review
+reviewRequestedAgainSelf:
+  en: requested their own review again
+reviewRequestRemovedSelf:
+  en: removed their review request
 reviewDismissed:
   en: dismissed {reviewer}’s review
 reviewDismissedWithMessage:

@@ -4,7 +4,7 @@ import { page } from 'vitest/browser';
 
 import * as stories from './ItemThreadEvent.stories.js';
 
-const { NoPerson, IssueThread, OneKindMerged, IssueEvents } = composeStories(stories);
+const { NoPerson, IssueThread, OneKindMerged, IssueEvents, TheirOwnReviewRequest } = composeStories(stories);
 
 test("a line no person made shows no avatar: a workflow's Status change names no one, failed checks name CI", async () => {
     await NoPerson.run();
@@ -24,6 +24,13 @@ test('a burst reads as one line, and the user assigning themselves reads as such
 
     await expect.element(page.getByText(/and set the type to\sBug/u)).toBeVisible();
     await expect.element(page.getByText('self-assigned this')).toBeVisible();
+});
+
+test('the person asking for their own review, or taking the request back, reads as such', async () => {
+    await TheirOwnReviewRequest.run();
+
+    await expect.element(page.getByText('requested their own review', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('removed their review request', { exact: true })).toBeVisible();
 });
 
 test('events of one kind in a burst merge their objects, named by their references alone', async () => {
