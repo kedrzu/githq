@@ -672,6 +672,23 @@ test('Reply… shows its R, and says it, only while its code thread has the focu
     await expect.element(reply).not.toHaveAttribute('aria-keyshortcuts');
 });
 
+test('a folded resolved thread opened, by a click or Enter, has the focus, so J and K go on between the code threads', async () => {
+    await openCodeThreads();
+    // dkim's code comment, resolved: opened by a click.
+    await userEvent.click(page.getByRole('button', { name: /^Resolved/u }));
+    const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
+    await expect.element(schema).toHaveFocus();
+    await userEvent.keyboard('k');
+    await expect.element(dbThread()).toHaveFocus();
+
+    // sofiab's thread, resolved in the review: opened by Enter on its row.
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    await userEvent.keyboard('{Enter}');
+    await expect.element(dbThread()).toHaveFocus();
+    await userEvent.keyboard('j');
+    await expect.element(schema).toHaveFocus();
+});
+
 test('Hide folds an opened resolved thread to its row, which keeps the focus, so J and K go on between the code threads', async () => {
     await openCodeThreads();
     // dkim's code comment, resolved: opened, then folded again.

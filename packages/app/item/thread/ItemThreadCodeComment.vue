@@ -28,8 +28,8 @@ const emit = defineEmits<{
   reply: [];
   /** Resolve thread, or Unresolve. */
   setResolved: [resolved: boolean];
-  /** Hide folded the resolved thread again: its row is drawn in its place. */
-  hidden: [];
+  /** The resolved thread was opened from its row, or folded to it again by Hide: drawn anew in its place. */
+  toggled: [];
 }>();
 
 const t = useTranslate();
@@ -55,9 +55,9 @@ function setResolved(resolved: boolean) {
   emit('setResolved', resolved);
 }
 
-function hide() {
-  opened.value = false;
-  emit('hidden');
+function toggle(open: boolean) {
+  opened.value = open;
+  emit('toggled');
 }
 </script>
 
@@ -86,14 +86,14 @@ function hide() {
         v-if="folded"
         :thread="entry.thread"
         excerpt
-        @click="opened = true"
+        @click="toggle(true)"
       />
       <ItemThreadCodeThread
         v-else
         :thread="entry.thread"
         :viewer="viewer"
         :replies="replies"
-        @hide="hide"
+        @hide="toggle(false)"
         @reply="emit('reply')"
         @set-resolved="setResolved"
       />

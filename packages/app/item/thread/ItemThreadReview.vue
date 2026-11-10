@@ -30,8 +30,8 @@ const emit = defineEmits<{
   reply: [threadId: string];
   /** Resolve thread, or Unresolve, on a thread. */
   setResolved: [threadId: string, resolved: boolean];
-  /** Hide folded a resolved thread again: its row is drawn in its place. */
-  hidden: [threadId: string];
+  /** A resolved thread was opened from its row, or folded to it again by Hide: drawn anew in its place. */
+  toggled: [threadId: string];
 }>();
 
 const t = useTranslate();
@@ -92,10 +92,6 @@ function isOpened(threadId: string) {
   return opened.value.get(threadId) ?? props.replies?.get(threadId) != null;
 }
 
-function setOpened(threadId: string, open: boolean) {
-  opened.value = new Map(opened.value).set(threadId, open);
-}
-
 /** Resolve always folds the thread to its row, however it was opened before. */
 function setResolved(threadId: string, resolved: boolean) {
   if (resolved) {
@@ -107,9 +103,9 @@ function setResolved(threadId: string, resolved: boolean) {
   emit('setResolved', threadId, resolved);
 }
 
-function hide(threadId: string) {
-  setOpened(threadId, false);
-  emit('hidden', threadId);
+function toggle(threadId: string, open: boolean) {
+  opened.value = new Map(opened.value).set(threadId, open);
+  emit('toggled', threadId);
 }
 </script>
 
@@ -169,14 +165,14 @@ function hide(threadId: string) {
             :thread="thread"
             :viewer="viewer"
             :replies="replies"
-            @hide="hide(thread.id)"
+            @hide="toggle(thread.id, false)"
             @reply="emit('reply', thread.id)"
             @set-resolved="setResolved(thread.id, $event)"
           />
           <ItemThreadResolvedRow
             v-else
             :thread="thread"
-            @click="setOpened(thread.id, true)"
+            @click="toggle(thread.id, true)"
           />
         </template>
       </div>
