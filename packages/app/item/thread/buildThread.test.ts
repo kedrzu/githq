@@ -39,7 +39,7 @@ test("one person's events within 10 minutes share a line, objects of one kind me
         ],
         updatedAt: at(9),
     };
-    expect(withoutDescription(thread)).toEqual([expected]);
+    expect(thread).toEqual([expected]);
 });
 
 test('a burst ends after 10 minutes from its first event, at another person, and at anything that is not an event', () => {
@@ -54,7 +54,7 @@ test('a burst ends after 10 minutes from its first event, at another person, and
         [comment('C1', SOFIAB, 15)],
     );
 
-    expect(withoutDescription(thread).map(entry => entry.id)).toEqual(['E1', 'E2', 'E3', 'C1', 'E5']);
+    expect(thread.map(entry => entry.id)).toEqual(['E1', 'E2', 'E3', 'C1', 'E5']);
     expect(lineOf(thread, 'E3').parts.map(part => (part.kind === 'single' ? part.event.kind : part.kind))).toEqual([
         'pinned',
         'unlocked',
@@ -74,21 +74,19 @@ test('an add and a remove of the same thing in one burst cancel out; a line left
         { ...base('E9', SOFIAB, 61), kind: 'subIssueRemoved', issue: ref('I_14', 14) },
     ]);
 
-    const lines = withoutDescription(thread);
-    expect(lines.map(entry => entry.id)).toEqual(['E1', 'E8']);
+    expect(thread.map(entry => entry.id)).toEqual(['E1', 'E8']);
     expect(lineOf(thread, 'E1').parts).toEqual([{ kind: 'labeled', labels: [STORAGE] }]);
     expect(lineOf(thread, 'E8').parts).toHaveLength(2);
 });
 
 test('an event with no person is never shown, but a project workflow’s Status change, which shows no one', () => {
     const thread = buildIssueThread([
-        { ...base('E1', null, 0), kind: 'addedToProject', project: PROJECT, wasAutomated: true },
+        { ...base('E1', null, 0), kind: 'addedToProject', project: PROJECT },
         { ...base('E2', null, 1), kind: 'labeled', label: BUG },
         {
             ...base('E3', null, 2),
             kind: 'projectStatusChanged',
             project: PROJECT,
-            from: 'Todo',
             to: 'Done',
             wasAutomated: true,
         },
@@ -96,13 +94,12 @@ test('an event with no person is never shown, but a project workflow’s Status 
             ...base('E4', null, 3),
             kind: 'projectStatusChanged',
             project: PROJECT,
-            from: 'Done',
             to: 'Todo',
             wasAutomated: false,
         },
     ]);
 
-    expect(withoutDescription(thread)).toEqual([
+    expect(thread).toEqual([
         {
             kind: 'events',
             id: 'E3',
@@ -136,7 +133,6 @@ test("the description comes first, then comments and events by time, then the us
     });
 
     expect(thread.map(entry => entry.id)).toEqual([
-        'description',
         'C1',
         'E1',
         'C2',
@@ -162,7 +158,7 @@ test("one author's commits straight after each other are one push; a comment or 
         ),
     });
 
-    const pushes = withoutDescription(thread).map(entry =>
+    const pushes = thread.map(entry =>
         entry.kind === 'push' ? entry.commits.map(commit => commit.abbreviatedOid) : entry.id,
     );
     expect(pushes).toEqual([['a1', 'a2'], ['a3'], 'C1', ['a4', 'a5']]);
@@ -182,7 +178,7 @@ test("once the newest commit's checks finished with a failure, the thread says w
         }),
     });
 
-    expect(withoutDescription(thread).map(entry => entry.id)).toEqual(['PRC_e81f0a3', 'C1', 'checks:e81f0a3c0ffee']);
+    expect(thread.map(entry => entry.id)).toEqual(['PRC_e81f0a3', 'C1', 'checks:e81f0a3c0ffee']);
     expect(thread.at(-1)).toEqual({
         kind: 'checksFailed',
         id: 'checks:e81f0a3c0ffee',
@@ -324,9 +320,8 @@ function manyComments(count: number) {
     return Array.from({ length: count }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 1));
 }
 
-/** The ids after the description. */
 function idsOf(thread: ThreadItem[]) {
-    return withoutDescription(thread).map(entry => entry.id);
+    return thread.map(entry => entry.id);
 }
 
 function foldOf(thread: ThreadItem[]): ThreadFold {
@@ -366,10 +361,6 @@ function pullRequestDetail(
         comments: { totalCount: nodes.length, first: [], nodes, olderCursor: null },
         events: { totalCount: newest.length, commitCount: newest.length, oldest: [], newest, middle: null },
     };
-}
-
-function withoutDescription(thread: ThreadItem[]) {
-    return thread.filter(entry => entry.kind !== 'description');
 }
 
 function lineOf(thread: ThreadItem[], id: string): ThreadEventLine {

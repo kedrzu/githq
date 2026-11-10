@@ -423,7 +423,6 @@ test("a Status a project workflow set names no one, though GitHub reports the pr
                 createdAt: MONDAY,
                 actor: { login: 'mlaine', avatarUrl: 'https://avatars.example/mlaine' },
                 wasAutomated,
-                previousStatus: 'In progress',
                 status: 'Done',
                 project: { title: 'Roadmap', url: 'https://github.com/orgs/acme/projects/1' },
             },
@@ -433,7 +432,6 @@ test("a Status a project workflow set names no one, though GitHub reports the pr
     expect(statusChange(true)).toMatchObject({
         kind: 'projectStatusChanged',
         actor: null,
-        from: 'In progress',
         to: 'Done',
     });
     expect(statusChange(false)).toMatchObject({ actor: { login: 'mlaine' } });

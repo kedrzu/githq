@@ -30,7 +30,6 @@ test("an issue's events show among its comments by time, one person's burst on o
         event: {
             __typename: 'CrossReferencedEvent',
             actor: user('hubot'),
-            willCloseTarget: false,
             source: {
                 __typename: 'Issue',
                 id: sample.secondIssue,
@@ -102,7 +101,6 @@ test('a Status change a project workflow made names no one, unlike one a person 
             __typename: 'ProjectV2ItemStatusChangedEvent',
             actor: user('monalisa'),
             wasAutomated: false,
-            previousStatus: 'Todo',
             status: 'In progress',
             project,
         },
@@ -114,7 +112,6 @@ test('a Status change a project workflow made names no one, unlike one a person 
             __typename: 'ProjectV2ItemStatusChangedEvent',
             actor: user('acme'),
             wasAutomated: true,
-            previousStatus: 'In progress',
             status: 'Done',
             project,
         },

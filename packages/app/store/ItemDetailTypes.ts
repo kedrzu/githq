@@ -165,7 +165,6 @@ export type ThreadEvent =
           {
               /** Whose review it was; `null` for a deleted account. */
               readonly reviewer: ItemUser | null;
-              readonly previousState: PullRequestReviewState;
               readonly message: string | null;
           }
       >
@@ -176,8 +175,6 @@ export type ThreadEvent =
           {
               /** The issue or pull request that mentioned this one. */
               readonly source: ThreadRef;
-              /** It closes this one once it is merged or closed. */
-              readonly willClose: boolean;
           }
       >
     | ThreadEventOf<
@@ -207,16 +204,11 @@ export type ThreadEvent =
           { readonly issue: ThreadRef | null }
       >
     | ThreadEventOf<'issueTypeChanged', { readonly from: ThreadIssueType | null; readonly to: ThreadIssueType | null }>
-    | ThreadEventOf<
-          'addedToProject' | 'removedFromProject',
-          { readonly project: ThreadProject | null; readonly wasAutomated: boolean }
-      >
+    | ThreadEventOf<'addedToProject' | 'removedFromProject', { readonly project: ThreadProject | null }>
     | ThreadEventOf<
           'projectStatusChanged',
           {
               readonly project: ThreadProject | null;
-              /** The Status option's name before; empty when it had none. */
-              readonly from: string;
               /** The Status option's name now; empty when cleared. */
               readonly to: string;
               readonly wasAutomated: boolean;

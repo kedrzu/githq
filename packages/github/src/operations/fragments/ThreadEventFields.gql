@@ -163,7 +163,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             avatarUrl
         }
         dismissalMessage
-        previousReviewState
         review {
             author {
                 login
@@ -205,7 +204,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             login
             avatarUrl
         }
-        willCloseTarget
         source {
             ...ThreadRefFields
         }
@@ -429,7 +427,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             avatarUrl
         }
         wasAutomated
-        previousStatus
         status
         project {
             title

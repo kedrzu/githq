@@ -105,7 +105,7 @@ const entries = computed(() =>
         failedComments: props.failedComments,
         unfolded: unfolded.value,
         keepShown: new Set([...editorsRef.value.keys()].filter(id => id !== null)),
-      }).filter(entry => entry.kind !== 'description')
+      })
     : [],
 );
 

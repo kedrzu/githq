@@ -1182,7 +1182,6 @@ export type ItemDetailQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -1459,7 +1458,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -1825,7 +1823,6 @@ export type ItemDetailQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -2102,7 +2099,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -2761,7 +2757,6 @@ export type ItemDetailQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -3082,7 +3077,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -3186,7 +3180,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
-                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -3574,7 +3567,6 @@ export type ItemDetailQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -3895,7 +3887,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -3999,7 +3990,6 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
-                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -4677,7 +4667,6 @@ export type ItemDetailsQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -4954,7 +4943,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -5320,7 +5308,6 @@ export type ItemDetailsQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -5597,7 +5584,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -6256,7 +6242,6 @@ export type ItemDetailsQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -6577,7 +6562,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -6681,7 +6665,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
-                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -7069,7 +7052,6 @@ export type ItemDetailsQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -7390,7 +7372,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -7494,7 +7475,6 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
-                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -10198,7 +10178,6 @@ export type ThreadMiddleQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -10475,7 +10454,6 @@ export type ThreadMiddleQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -10900,7 +10878,6 @@ export type ThreadMiddleQuery = {
                             __typename: 'CrossReferencedEvent';
                             id: string;
                             createdAt: string;
-                            willCloseTarget: boolean;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -11221,7 +11198,6 @@ export type ThreadMiddleQuery = {
                             id: string;
                             createdAt: string;
                             wasAutomated: boolean;
-                            previousStatus: string;
                             status: string;
                             actor:
                                 | { login: string; avatarUrl: string }
@@ -11325,7 +11301,6 @@ export type ThreadMiddleQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
-                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -12006,7 +11981,6 @@ export type IssueDetailFieldsFragment = {
                   __typename: 'CrossReferencedEvent';
                   id: string;
                   createdAt: string;
-                  willCloseTarget: boolean;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -12283,7 +12257,6 @@ export type IssueDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   wasAutomated: boolean;
-                  previousStatus: string;
                   status: string;
                   actor:
                       | { login: string; avatarUrl: string }
@@ -12649,7 +12622,6 @@ export type IssueDetailFieldsFragment = {
                   __typename: 'CrossReferencedEvent';
                   id: string;
                   createdAt: string;
-                  willCloseTarget: boolean;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -12926,7 +12898,6 @@ export type IssueDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   wasAutomated: boolean;
-                  previousStatus: string;
                   status: string;
                   actor:
                       | { login: string; avatarUrl: string }
@@ -14649,7 +14620,6 @@ export type PullRequestDetailFieldsFragment = {
                   __typename: 'CrossReferencedEvent';
                   id: string;
                   createdAt: string;
-                  willCloseTarget: boolean;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -14970,7 +14940,6 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   wasAutomated: boolean;
-                  previousStatus: string;
                   status: string;
                   actor:
                       | { login: string; avatarUrl: string }
@@ -15071,7 +15040,6 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   dismissalMessage: string | null;
-                  previousReviewState: PullRequestReviewState;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -15459,7 +15427,6 @@ export type PullRequestDetailFieldsFragment = {
                   __typename: 'CrossReferencedEvent';
                   id: string;
                   createdAt: string;
-                  willCloseTarget: boolean;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -15780,7 +15747,6 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   wasAutomated: boolean;
-                  previousStatus: string;
                   status: string;
                   actor:
                       | { login: string; avatarUrl: string }
@@ -15881,7 +15847,6 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   dismissalMessage: string | null;
-                  previousReviewState: PullRequestReviewState;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -16766,7 +16731,6 @@ type ThreadEventFields_CrossReferencedEvent_Fragment = {
     __typename: 'CrossReferencedEvent';
     id: string;
     createdAt: string;
-    willCloseTarget: boolean;
     actor:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -17114,7 +17078,6 @@ type ThreadEventFields_ProjectV2ItemStatusChangedEvent_Fragment = {
     id: string;
     createdAt: string;
     wasAutomated: boolean;
-    previousStatus: string;
     status: string;
     actor:
         | { login: string; avatarUrl: string }
@@ -17229,7 +17192,6 @@ type ThreadEventFields_ReviewDismissedEvent_Fragment = {
     id: string;
     createdAt: string;
     dismissalMessage: string | null;
-    previousReviewState: PullRequestReviewState;
     actor:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -19279,7 +19241,6 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -19320,7 +19281,6 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -19539,7 +19499,6 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title
@@ -20429,7 +20388,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -20470,7 +20428,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -20689,7 +20646,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title
@@ -22579,7 +22535,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -22620,7 +22575,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -22839,7 +22793,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title
@@ -23977,7 +23930,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -24018,7 +23970,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -24237,7 +24188,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title
@@ -25068,7 +25018,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -25109,7 +25058,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -25328,7 +25276,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title
@@ -28180,7 +28127,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
-    previousReviewState
     review {
       author {
         login
@@ -28221,7 +28167,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       login
       avatarUrl
     }
-    willCloseTarget
     source {
       ...ThreadRefFields
     }
@@ -28440,7 +28385,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     wasAutomated
-    previousStatus
     status
     project {
       title

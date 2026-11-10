@@ -23,11 +23,10 @@ const KEEP_BELOW = 5;
 const FOLD_AT_LEAST = 6;
 
 /**
- * One entry of an item's thread, as it is drawn (item-activity F5, F13): the description, a comment, a line of one
- * person's events, a push of commits, a pull request's failed checks, a comment GitHub did not take.
+ * One entry of an item's thread after the description, as it is drawn (item-activity F5, F13): a comment, a line of
+ * one person's events, a push of commits, a pull request's failed checks, a comment GitHub did not take.
  */
 export type ThreadItem =
-    | { readonly kind: 'description'; readonly id: string }
     | { readonly kind: 'comment'; readonly id: string; readonly comment: ItemComment }
     | ThreadEventLine
     | ThreadPush
@@ -132,7 +131,7 @@ type Timed =
     | { readonly at: number; readonly kind: 'item'; readonly item: ThreadItem };
 
 /**
- * An item's thread as it is drawn, oldest first (item-activity F5, F13): the description, then every comment and event
+ * An item's thread after the description as it is drawn, oldest first (item-activity F5, F13): every comment and event
  * read, by time — one person's events within 10 minutes on one line, an add and a remove of the same thing gone, one
  * author's commits as one push, a pull request's failed checks once they finished — then the user's comments on their
  * way, then those GitHub did not take. An event no person made is left out but a project workflow's Status change.
@@ -186,7 +185,7 @@ export function buildThread({
         ...pending,
         ...failedComments.map((failed): ThreadItem => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
     ];
-    return [{ kind: 'description', id: 'description' }, ...foldThread(items, { detail, unfolded, keepShown })];
+    return foldThread(items, { detail, unfolded, keepShown });
 }
 
 /** What {@link foldThread} folds by. */
@@ -255,7 +254,6 @@ function countAbove(items: readonly ThreadItem[], detail: ItemDetail) {
                 return eventGap;
             case 'failedComment':
                 return true;
-            case 'description':
             case 'fold':
                 return false;
             default:
@@ -310,7 +308,6 @@ function countFolded(folded: readonly ThreadItem[]): FoldCounts {
             case 'push':
                 commits += entry.commits.length;
                 break;
-            case 'description':
             case 'failedComment':
             case 'fold':
                 break;

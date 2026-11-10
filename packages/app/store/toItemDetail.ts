@@ -262,7 +262,6 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
                 ...toEventBase(node),
                 kind: 'reviewDismissed',
                 reviewer: toDetailAuthor(node.review?.author),
-                previousState: node.previousReviewState,
                 message: node.dismissalMessage,
             };
         case 'ReadyForReviewEvent':
@@ -276,7 +275,6 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
                 ...toEventBase(node),
                 kind: 'crossReferenced',
                 source: toThreadRef(node.source),
-                willClose: node.willCloseTarget,
             };
         case 'ClosedEvent': {
             const { closer } = node;
@@ -348,14 +346,12 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
                 ...toEventBase(node, node.wasAutomated),
                 kind: node.__typename === 'AddedToProjectV2Event' ? 'addedToProject' : 'removedFromProject',
                 project: node.project,
-                wasAutomated: node.wasAutomated,
             };
         case 'ProjectV2ItemStatusChangedEvent':
             return {
                 ...toEventBase(node, node.wasAutomated),
                 kind: 'projectStatusChanged',
                 project: node.project,
-                from: node.previousStatus,
                 to: node.status,
                 wasAutomated: node.wasAutomated,
             };
