@@ -55,7 +55,7 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
     <span
       v-if="excerpt"
       :class="css.itemThreadResolvedRow_excerpt"
-      >· {{ firstLine }}</span
+      >{{ firstLine }}</span
     >
     <span
       v-else

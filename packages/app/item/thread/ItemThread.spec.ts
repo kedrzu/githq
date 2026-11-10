@@ -793,7 +793,7 @@ test('a thread opened, unresolved and resolved again folds to its row, in a revi
     await expect.element(dbRow).toHaveFocus();
 
     // dkim's code comment, resolved.
-    const schemaRow = page.getByRole('button', { name: /^Resolved · Nit/u });
+    const schemaRow = page.getByRole('button', { name: /^Resolved Nit/u });
     const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
     await userEvent.click(schemaRow);
     await userEvent.click(schema.getByRole('button', { name: 'Unresolve' }));
