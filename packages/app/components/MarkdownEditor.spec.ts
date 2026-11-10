@@ -216,6 +216,32 @@ test("a tracked repository's issues and pull requests come from the local copy, 
     expect(searched).toEqual([]);
 });
 
+test("# alone lists a tracked repository's issues, the latest updated first", async () => {
+    const { text } = await mountSuggestingEditor({
+        tracked: [
+            {
+                ...sampleIssue('I_old'),
+                number: 31,
+                title: 'Sign-in loops on Safari',
+                updatedAt: '2026-10-01T00:00:00Z',
+            },
+            { ...sampleIssue('I_new'), number: 32, title: 'Rebuild links', updatedAt: '2026-10-20T00:00:00Z' },
+        ],
+    });
+
+    await userEvent.type(text, '#');
+    await expect.poll(suggested).toEqual(['#32 Rebuild links', '#31 Sign-in loops on Safari']);
+});
+
+test('# alone in a repository not tracked asks GitHub nothing until a character follows', async () => {
+    const { text, searched } = await mountSuggestingEditor({ found: { '': [issue(7, 'Seven')] } });
+
+    await userEvent.type(text, '#');
+    await waitFor(400);
+    expect(searched).toEqual([]);
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+});
+
 test('the @ tool types the @ starting a word and opens the menu at it', async () => {
     const { text, view } = await mountSuggestingEditor({});
 

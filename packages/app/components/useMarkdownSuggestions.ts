@@ -2,15 +2,16 @@ import type { VirtualElement } from '@floating-ui/vue';
 import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
-import { computed, ref, shallowRef, toValue, useId } from 'vue';
+import { computed, ref, shallowRef, toValue, useId, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref, TextareaHTMLAttributes } from 'vue';
 
 import { MarkdownSuggestionService } from '@/services/MarkdownSuggestionService.js';
 import { getCaretRect } from '@/utils/getCaretRect.js';
+import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
 
 import { findSuggestionTrigger } from './findSuggestionTrigger.js';
 import type { SuggestionTrigger } from './findSuggestionTrigger.js';
-import type { PersonSuggestion, SuggestionList } from './SuggestionTypes.js';
+import type { PersonSuggestion, ReferenceSuggestion, SuggestionList } from './SuggestionTypes.js';
 
 /** The text area suggestions are typed in, and what they are of. */
 export interface UseMarkdownSuggestionsOptions {
@@ -47,8 +48,10 @@ export interface MarkdownSuggestionsViewModel {
 /**
  * The `@` and `#` suggestions of a Markdown text area. Typing `@` or `#` at a word's start opens them at the caret,
  * typing on filters them, and a space, no match or the caret moving off closes them. They never edit the text but
- * when a row is picked, and they never take a key while closed: typing goes on as if they were not there. An answer
- * arriving after what is typed changed is dropped; Escape closes them until another `@` or `#` is typed.
+ * when a row is picked, and they never take a key while closed: typing goes on as if they were not there. People and
+ * a tracked repository's issues come from what the app holds, at once; an untracked repository's are asked of GitHub's
+ * search once typing pauses (`useGitHubSearch`), from the first character typed after `#`. Escape closes them until
+ * another `@` or `#` is typed.
  */
 export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): MarkdownSuggestionsViewModel {
     const container = useContainer();
@@ -56,12 +59,11 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
     const id = useId();
 
     const trigger = shallowRef<SuggestionTrigger | null>(null);
-    const list = shallowRef<SuggestionList | null>(null);
     const active = ref(0);
+    /** What GitHub's search last found for the trigger open: kept while what is typed on is asked. */
+    const searched = shallowRef<readonly ReferenceSuggestion[] | null>(null);
     /** Where the trigger closed by Escape starts: it stays closed while the caret is after it. */
     let dismissed: number | null = null;
-    /** Counts what was asked, so an answer to anything but the last is dropped. */
-    let asked = 0;
 
     const start = computed(() => trigger.value?.start ?? null);
     const anchor = computed((): VirtualElement | null => {
@@ -73,19 +75,66 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
 
         return { getBoundingClientRect: () => getCaretRect(element, at), contextElement: element };
     });
-    const open = computed(() => list.value !== null && anchor.value !== null);
+    /** What the app holds for the trigger open; `null` for none, or for an untracked repository's references. */
+    const held = computed((): SuggestionList | null => {
+        const found = trigger.value;
+        if (!found) {
+            return null;
+        }
+
+        const repository = toValue(options.repository);
+        if (found.kind === 'mention') {
+            const thread = toValue(options.people);
+            return { kind: 'mention', rows: getService().people({ repository, query: found.query, thread }) };
+        }
+
+        const rows = getService().references({ repository, query: found.query });
+        return rows && { kind: 'reference', rows };
+    });
+    const search = useGitHubSearch({
+        text: () => (trigger.value?.kind === 'reference' && held.value === null ? trigger.value.query : ''),
+        ask: () => {
+            const repository = toValue(options.repository);
+            return query => getService().searchReferences({ repository, query });
+        },
+        minLength: 1,
+    });
+    const list = computed((): SuggestionList | null => {
+        const shown =
+            held.value ??
+            (trigger.value?.kind === 'reference' && searched.value
+                ? { kind: 'reference', rows: searched.value }
+                : null);
+        return shown && shown.rows.length > 0 && anchor.value !== null ? shown : null;
+    });
     // The text area stays a text box — ARIA lets a `textarea` take no other role — that owns the menu as a combobox
     // does, as GitHub's own editor does: it says it completes from a list, which list, and which row is highlighted.
     const attrs = computed((): TextareaHTMLAttributes => ({
         'aria-autocomplete': 'list',
         'aria-haspopup': 'listbox',
-        'aria-controls': open.value ? id : undefined,
-        'aria-activedescendant': open.value ? `${id}-${active.value}` : undefined,
+        'aria-controls': list.value ? id : undefined,
+        'aria-activedescendant': list.value ? `${id}-${active.value}` : undefined,
     }));
+
+    // While what is typed on is asked, what was found stays.
+    watch(search, state => {
+        if (state.kind === 'answered') {
+            searched.value = state.result;
+        } else if (state.kind !== 'asking') {
+            searched.value = null;
+        }
+
+        if (state.kind === 'failed') {
+            logger.warn('The editor could not suggest anything', { kind: 'reference' });
+        }
+    });
+    watch(list, () => {
+        active.value = 0;
+    });
 
     return reactive<MarkdownSuggestionsViewModel>({
         id,
-        list: computed(() => (open.value ? list.value : null)),
+        list,
         active,
         anchor,
         attrs,
@@ -95,6 +144,11 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
         pick,
         highlight,
     });
+
+    // Resolved once suggesting starts, not for every editor mounted: an editor no one types `@` or `#` in needs none.
+    function getService() {
+        return container.resolve(MarkdownSuggestionService);
+    }
 
     function update() {
         const element = options.textarea.value;
@@ -115,49 +169,23 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
             return;
         }
 
-        // Another trigger: what the last one listed is not of it. The same one typed on keeps its rows until the
-        // answer for what is typed now replaces them.
-        if (current?.kind !== found.kind || current.start !== found.start) {
-            list.value = null;
+        // Another trigger asking something else: what GitHub found is not of it. The same one typed on keeps what
+        // GitHub found until its answer for what is typed now replaces it.
+        const another = current?.kind !== found.kind || current.start !== found.start;
+        if (another && current?.query !== found.query) {
+            searched.value = null;
+        }
+
+        // Once per menu opened: the repository's people, unless read lately; the thread's are there meanwhile.
+        if (another && found.kind === 'mention') {
+            void getService().readPeople(toValue(options.repository));
         }
 
         trigger.value = found;
-        void load(found);
-    }
-
-    async function load(found: SuggestionTrigger) {
-        asked++;
-        const question = asked;
-        const repository = toValue(options.repository);
-        const suggest = container.resolve(MarkdownSuggestionService);
-        try {
-            const next: SuggestionList =
-                found.kind === 'mention'
-                    ? {
-                          kind: 'mention',
-                          rows: await suggest.people({
-                              repository,
-                              query: found.query,
-                              thread: toValue(options.people),
-                          }),
-                      }
-                    : { kind: 'reference', rows: await suggest.references({ repository, query: found.query }) };
-            if (question !== asked) {
-                return;
-            }
-
-            list.value = next.rows.length > 0 ? next : null;
-            active.value = 0;
-        } catch (error) {
-            if (question === asked) {
-                list.value = null;
-                logger.warn('The editor could not suggest anything', { kind: found.kind, error });
-            }
-        }
     }
 
     function onKeydown(event: KeyboardEvent) {
-        const shown = open.value ? list.value : null;
+        const shown = list.value;
         if (!shown || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
             return;
         }
@@ -189,9 +217,7 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
     }
 
     function close() {
-        asked++;
         trigger.value = null;
-        list.value = null;
     }
 
     // Read again from the text area as it is now, so the text typed since the menu last changed is what is replaced.
