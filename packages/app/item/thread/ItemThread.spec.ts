@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import { shallowReactive } from 'vue';
 
 import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
-import type { ItemComment } from '@/store/ItemDetailTypes.js';
+import type { ItemComment, ItemDetail } from '@/store/ItemDetailTypes.js';
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import type { FakeReviewWritingOptions } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
@@ -166,6 +166,115 @@ test('F16: not given by GitHub, the rail says so with Try again, which reads it 
     await userEvent.click(page.getByRole('button', { name: 'Try again' }));
     expect(readAgain).toHaveBeenCalledTimes(1);
     expect(page.getByRole('status').query()).toBeNull();
+});
+
+/** The detail with each comment at GitHub's address of it, `issuecomment-<n>` in the thread's order. */
+function withAnchors(detail: ItemDetail): ItemDetail {
+    const { comments } = detail;
+    return {
+        ...detail,
+        comments: {
+            ...comments,
+            nodes: comments.nodes.map((comment, index) => ({
+                ...comment,
+                url: `https://github.com/acme/web/issues/12#issuecomment-${index + 1}`,
+            })),
+        },
+    };
+}
+
+test('#248: every comment GitHub has carries its anchor, the one on its way none; the one the address names is marked', async () => {
+    const detail = withAnchors(D1_ISSUE_DETAIL);
+    const [olam] = detail.comments.nodes;
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            linkedAnchor: 'issuecomment-1',
+            detail: {
+                ...detail,
+                comments: {
+                    ...detail.comments,
+                    totalCount: 3,
+                    olderCursor: null,
+                    nodes: [
+                        ...detail.comments.nodes,
+                        { ...olam!, id: 'pending:1', url: D1_ISSUE.url, bodyHtml: '', pendingBody: 'On its way' },
+                    ],
+                },
+            },
+        },
+    });
+
+    const linked = card(THEIRS);
+    await expect.element(linked).toHaveAttribute('id', 'issuecomment-1');
+    await expect.element(linked).toHaveAttribute('aria-current', 'location');
+    await expect.element(card(MINE)).toHaveAttribute('id', 'issuecomment-2');
+    expect(document.querySelectorAll('[aria-current="location"]')).toHaveLength(1);
+    await expect.element(card('On its way')).not.toHaveAttribute('id');
+    expect(IssueInPanel.args.loadMiddle).not.toHaveBeenCalled();
+});
+
+test('#248: the comment the address names, folded away, is shown: the middle unfolds, nothing to read', async () => {
+    const { detail } = LongThread.args;
+    if (!detail) {
+        throw new Error('The long thread has its detail');
+    }
+
+    const loadMiddle = vi.fn(() => Promise.resolve());
+    await LongThread.run({
+        args: {
+            ...LongThread.args,
+            detail: withAnchors(detail),
+            linkedAnchor: 'issuecomment-8',
+            loadMiddle,
+        },
+    });
+
+    await expect.element(page.getByRole('button', { name: /earlier/ })).not.toBeInTheDocument();
+    await expect.element(card('Follow-up 6.')).toHaveAttribute('aria-current', 'location');
+    expect(loadMiddle).not.toHaveBeenCalled();
+});
+
+test('#248: a comment the detail does not hold is read with the middle, once, and the middle shows', async () => {
+    const [newest] = D1_ISSUE_DETAIL.comments.nodes;
+    const older: ItemComment = {
+        ...newest!,
+        id: 'C_OLDER',
+        url: 'https://github.com/acme/web/issues/12#issuecomment-99',
+        bodyHtml: '<p>The first comment on the issue.</p>',
+    };
+    // GitHub's answer: the detail with every comment, as the store puts it in.
+    const loadMiddle = vi.fn(() => {
+        const { comments } = D1_ISSUE_DETAIL;
+        args.detail = {
+            ...D1_ISSUE_DETAIL,
+            comments: { ...comments, nodes: [older, ...comments.nodes], olderCursor: null },
+        };
+        return Promise.resolve();
+    });
+    const args = shallowReactive({
+        ...IssueInPanel.args,
+        detail: D1_ISSUE_DETAIL,
+        linkedAnchor: 'issuecomment-99',
+        loadMiddle,
+    });
+    await IssueInPanel.run({ args });
+
+    await expect.element(card('The first comment on the issue.')).toHaveAttribute('aria-current', 'location');
+    await expect.element(page.getByRole('button', { name: /earlier/ })).not.toBeInTheDocument();
+    expect(loadMiddle).toHaveBeenCalledTimes(1);
+});
+
+test('#248: a fragment that names no comment, or one GitHub no longer has, reads nothing and marks nothing', async () => {
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, linkedAnchor: 'pullrequestreview-1' } });
+    await expect.element(page.getByRole('button', { name: /^Show 2 earlier events/ })).toBeInTheDocument();
+    expect(IssueInPanel.args.loadMiddle).not.toHaveBeenCalled();
+
+    const loadMiddle = vi.fn(() => Promise.resolve());
+    await LongThread.run({ args: { ...LongThread.args, linkedAnchor: 'issuecomment-404', loadMiddle } });
+    await expect.element(page.getByRole('button', { name: /^Show 23 earlier events/ })).toBeInTheDocument();
+    expect(loadMiddle).not.toHaveBeenCalled();
+    expect(document.querySelector('[aria-current="location"]')).toBeNull();
 });
 
 test('with every comment read there is nothing to fold', async () => {

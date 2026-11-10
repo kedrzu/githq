@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -95,6 +95,8 @@ const mergeOptions = useMergeOptions({
   },
 });
 
+// The comment the address's fragment names (`#issuecomment-…`), shown and marked; vue-router gives the hash decoded.
+const linkedAnchor = computed(() => route.hash.slice(1));
 const referenceText = computed(() => `${props.reference.owner}/${props.reference.name}#${props.reference.number}`);
 /** What shows until the item does. */
 const waitingTitle = computed(() => {
@@ -432,6 +434,7 @@ type HistoryMove = 'push' | 'replace';
       :load-thread-middle="opened.loadThreadMiddle"
       :detail-failed="opened.detailFailed"
       :read-detail-again="opened.readDetailAgain"
+      :linked-anchor="linkedAnchor"
       :editing="editing"
       :stack="stack"
       :neighbours="walk.neighbours"
@@ -488,6 +491,7 @@ type HistoryMove = 'push' | 'replace';
     :load-thread-middle="opened.loadThreadMiddle"
     :detail-failed="opened.detailFailed"
     :read-detail-again="opened.readDetailAgain"
+    :linked-anchor="linkedAnchor"
     :editing="editing"
     :stack="stack"
     :neighbours="walk.neighbours"

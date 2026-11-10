@@ -6,7 +6,7 @@ names the comment, the comment is outlined, as GitHub marks a comment it was lin
 - [ ] App · Pull request (`XN8vf`): new row with `Slot · F17 · A comment linked from the address` (`q73pJ`): the item
   view's Latest activity with the middle of three comments linked (left), and the same mark on the thread's card
   (right).
-- [ ] The linked comment in Latest activity (`ItemActivity.vue`, `.itemActivity_comment`): an outline only, drawn
+- [x] The linked comment in Latest activity (`ItemActivity.vue`, `.itemActivity_comment`): an outline only, drawn
   outside the comment so nothing moves, neither the comment's own content nor its neighbours.
   - Border: 1 px `$color-accent`. No background: the comment stays on the item's surface.
   - Radius: `$radius-lg` (8 px).
@@ -18,7 +18,7 @@ names the comment, the comment is outlined, as GitHub marks a comment it was lin
   - The same in the panel, the modal and the page: it depends only on the comment.
   - It stays while the fragment is in the address, and goes with it (K/J, another item, closing). No animation, no
     new text.
-- [ ] The linked comment in the thread (`Activity / Comment`, as the thread replaces Latest activity): the card's border
+- [x] The linked comment in the thread (`Activity / Comment`, as the thread replaces Latest activity): the card's border
   `$border-2` → `$accent`, nothing else. The card already has a border, so nothing moves.
 - [ ] App · Pull request · `Components · Activity` · `Comments and reviews` (`rOA90`): new components.
   - `Avatar / medium` (`mxoOS`): `Avatar` at 22 × 22, radius 11, initials 8.5, as the app's `Avatar` `md`.

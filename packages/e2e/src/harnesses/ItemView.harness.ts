@@ -129,6 +129,18 @@ export class ItemViewHarness {
         return this.title.locator('xpath=following-sibling::p[1]').getByText(text, { exact: true });
     }
 
+    /** The comments of its thread, those shown, oldest first: the entries with a comment's ⋯. */
+    get comments(): Locator {
+        return this.root
+            .getByRole('listitem')
+            .filter({ has: this.page.getByRole('button', { name: 'Comment actions' }) });
+    }
+
+    /** The comment the address's fragment names, marked as the current location (`aria-current="location"`). */
+    get linkedComment(): Locator {
+        return this.comments.and(this.root.locator('[aria-current="location"]'));
+    }
+
     /** A comment or a reviewer's line holding `text`. */
     entry(text: string): Locator {
         return this.root.getByRole('listitem').filter({ hasText: text });

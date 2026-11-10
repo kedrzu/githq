@@ -1,4 +1,4 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`aside`), its ⋯ — and what they wrote below, when anything. The viewer's draft review has an amber border (`pending`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`aside`), its ⋯ — and what they wrote below, when anything. The viewer's draft review has an amber border (`pending`), the comment the address links to an accent one (`linked`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -30,6 +30,8 @@ const props = defineProps<{
   failed?: boolean;
   /** The viewer's draft review: the amber border (`Activity / Review · pending`). */
   pending?: boolean;
+  /** The comment the address's fragment names: the accent border (`Activity / Comment · linked`). */
+  linked?: boolean;
   /** Said instead of the login: "Your review". */
   name?: string;
   /**
@@ -93,7 +95,12 @@ watchPostEffect(() => {
         />
       </div>
       <div
-        :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed, pending && css.itemThreadCard_pending]"
+        :class="[
+          css.itemThreadCard_card,
+          failed && css.itemThreadCard_failed,
+          pending && css.itemThreadCard_pending,
+          linked && css.itemThreadCard_linked,
+        ]"
       >
         <p
           ref="head"
@@ -184,6 +191,11 @@ watchPostEffect(() => {
 
 .itemThreadCard_pending {
   border-color: rgba($color-amber, 0.5);
+}
+
+// The card has a border already: only its colour changes, so nothing moves.
+.itemThreadCard_linked {
+  border-color: $color-accent;
 }
 
 .itemThreadCard_head {

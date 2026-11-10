@@ -108,6 +108,8 @@ const props = withDefaults(
     detailFailed?: boolean;
     /** Reads its detail again after {@link detailFailed}. */
     readDetailAgain?: () => Promise<void>;
+    /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked in the thread. */
+    linkedAnchor?: string;
     /** What the user may change and the pickers offer; without it the view only shows. */
     editing?: ItemEditing | null;
     /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D25). */
@@ -902,6 +904,7 @@ function getProjectOptions(): CommandOption[] {
                 :load-middle="loadThreadMiddle"
                 :failed="detailFailed"
                 :read-again="readDetailAgain"
+                :linked-anchor="linkedAnchor"
                 :failed-comments="failedComments"
                 :viewer="viewer"
                 :can-retry="editing != null && canComment"
