@@ -547,6 +547,20 @@ test('Resolve thread goes through the writing, and the thread says the viewer re
     await expect.element(dbThread()).toHaveTextContent('mlaine marked this thread as resolved.');
 });
 
+test('Reply… shows its R, and says it, only while its code thread has the focus', async () => {
+    await openCodeThreads();
+    const reply = dbThread().getByRole('button', { name: 'Reply…' });
+    await expect.element(reply).not.toHaveAttribute('aria-keyshortcuts');
+
+    await userEvent.click(dbThread().getByText('That’s what the e2e trips on.', { exact: false }));
+    await expect.element(reply).toHaveAttribute('aria-keyshortcuts', 'R');
+    await expect.element(reply).toHaveTextContent(/R$/u);
+
+    // dkim's code comment, folded: its row takes the focus.
+    await userEvent.click(page.getByRole('button', { name: /^Resolved/u }));
+    await expect.element(reply).not.toHaveAttribute('aria-keyshortcuts');
+});
+
 test('on a focused code thread J and K move between the code threads and R opens its reply editor', async () => {
     await openCodeThreads();
     // dkim's code comment, resolved: opened, a code thread too.

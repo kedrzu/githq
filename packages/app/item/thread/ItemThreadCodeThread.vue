@@ -1,12 +1,13 @@
-<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`). -->
+<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import ReviewThreadComment from '@/review/threads/ReviewThreadComment.vue';
 import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
 import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
@@ -56,6 +57,15 @@ const resolveFailure = computed(() => {
   const failure = props.replies?.getResolveFailure(props.thread.id) ?? null;
   return failure && getResolveFailureText(failure, props.thread.isResolved);
 });
+/** The focus is in the thread: `R` opens its reply editor, as on code review's focused thread. */
+const focused = ref(false);
+const replyKey = computed(() => (focused.value && props.replies ? REVIEW_KEYS.reply : undefined));
+
+function onFocusOut(event: FocusEvent) {
+  const { currentTarget, relatedTarget } = event;
+  focused.value =
+    currentTarget instanceof Element && relatedTarget instanceof Node && currentTarget.contains(relatedTarget);
+}
 </script>
 
 <template>
@@ -65,6 +75,8 @@ const resolveFailure = computed(() => {
     :class="css.itemThreadCodeThread"
     :data-code-thread="thread.id"
     tabindex="-1"
+    @focusin="focused = true"
+    @focusout="onFocusOut"
   >
     <p
       v-if="thread.isResolved"
@@ -142,6 +154,8 @@ const resolveFailure = computed(() => {
         variant="field"
         size="compact"
         block
+        :kbd="replyKey"
+        :keyshortcuts="replyKey"
         @click="emit('reply')"
       >
         {{ t(l.reply) }}
