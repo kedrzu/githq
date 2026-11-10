@@ -194,7 +194,7 @@ In `githq.pen`, frame **"App · Code review"** (`CEDLB`). The numbers are the fr
 |4. Code shown out of place|The distance mark: CR11; a collapsed file with only its threads: CR12, expanded CR13|
 |5. Outdated threads and gone files|Placed approximately: CR2; line gone: CR10; a gone file: CR14|
 |6. The view options|One button naming layout and whitespace, a menu: CR50|
-|7. Writing|CR70 (single by default), CR71 (draft by default), CR72 (draft open)|
+|7. Writing|CR70 (single by default), CR71 (draft by default), CR72 (draft open); the box itself CR90–CR93, Cancel CR97, CR98 (D39, D40)|
 
 Reading: an opened pull request and D, CR1; large screen split with the conversation CR2, unified without it CR3;
 laptop split CR4, unified with the conversation CR5, both columns hidden CR6. Threads: CR10–CR15 (jumping between
@@ -203,6 +203,8 @@ once CR24, J CR25, K back CR26, path pattern CR27, regular expression CR28, the 
 files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything viewed CR63, no changes CR64, only
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68, a file still arriving in split CR88 and unified CR89 (D38). Writing: a
 range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
+
+Refined 2026-11-10 (D39–D45): the comment box on the shared editor CR90, a range with a draft open CR91, a reply CR92, unified after a push and refused CR93; Esc asking CR97 and a toast giving a discarded comment back CR98; 8 px between files CR99; hidden lines with gutter arrows CR103; the number as the hover affordance CR106; the current file lit CR108; placeholders from the patch CR111 and a guessed height reserved CR113.
 
 Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.
 

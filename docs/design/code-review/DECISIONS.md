@@ -530,7 +530,7 @@ pending. Above My work because it is the one thing in the sidebar that blocks so
 
 **Code shown out of place has its own mark: a row with a vertical arrow, how far ("172 lines further down"), why
 ("shown for its thread; nothing between is expanded"), a rule, and "Expand to here". It differs from the gap between
-hunks, which is a filled row offering "Show 20 · Show all". In a collapsed file, the code above a thread sits in a
+hunks, which is a filled row with expand arrows in the gutter ([D42](#d42)). In a collapsed file, the code above a thread sits in a
 small box labelled "as it was when commented", because it is the comment's `diffHunk`, not the file.** (2026-11-02,
 agent, CR11–CR13)
 
@@ -653,3 +653,100 @@ empty on its side; unified lists context, then deleted, then added. As many rows
 **Why.** Six fixed lengths repeating read as a pattern, not as code, and a single column under a split view announces a
 different layout from the one that arrives. Seeding by path keeps a file's bars the same when it scrolls out and back,
 and across layouts. No colour and no shimmer: the calm UI, and the status bar already says what's loading.
+
+## D39
+
+**The comment box is the shared editor (`Activity / Editor`), inset under its line on its own side, where its thread
+will sit, in split as in unified: a head saying where it goes ("Comment on line 50", "Comment on lines 48–51",
+"Reply to sofiab and mlaine"), Suggest a change as the first button of the format toolbar (⌘G, as on github.com),
+then the text, and a footer with Cancel Esc beside D33's two send buttons. The amber "code changed" line (D33) and a
+red "Not sent: {reason}." line sit between the head and the editor, the text kept. A reply is the same box inside the
+thread.** (2026-11-10, owner's pick of the agent's first variant; the Markdown hint dropped, Suggest moved into the
+toolbar and the primary button's key drawn in the accent's colours, owner; CR90–CR93, also CR70–CR74, CR83, CR87)
+
+**Why.** It is the thread it becomes, so sending moves nothing around it, and it is the same editor as the
+conversation's, which the old box was not.
+
+**Rejected.**
+
+- A card across both sides of a split diff under the row (CR94) — covers the other side, and the thread jumps to its
+  half once sent.
+- A box docked at the foot of the diff column (CR95) — away from its line, and only one box at a time.
+
+## D40
+
+**Esc on an empty box closes it. On a box with text, Esc asks in place: the footer becomes "Discard what you wrote?"
+with Keep writing (Esc) and Discard (↵), no dialog. After Discard a toast offers Restore ⌘Z for ten seconds, which
+reopens the box under its line with its text.** (2026-11-10, owner: the agent's second and third variants together;
+CR97, CR98)
+
+**Rejected.**
+
+- Esc closing without a question and leaving an "Unsent comment" row under the line (CR96, agent's first
+  recommendation).
+
+## D41
+
+**A file's block ends with its own 1 px border and rounded corners, and the next file starts 8 px below; the 4 px
+closing strip and its 12 px margin go. With a header pinned (D24), the next header pushes it up and the 8 px of
+background shows between them for a moment.** (2026-11-10, owner's pick of the agent's first variant; CR99)
+
+**Rejected.**
+
+- No gap, every file in one bordered column (CR100) — the end of one file and the start of the next told apart only by
+  the header.
+- A gap only before an expanded file (CR101) — the gap appears and disappears as files are ticked viewed.
+
+## D42
+
+**Hidden lines open from arrows in the number gutter, as on github.com: ↓ shows 20 lines below the hunk above, ↑ 20
+above the hunk below, and a gap of 20 or fewer has one ↕ for all of it; a click elsewhere on the row shows all. The row
+carries the enclosing declaration only when it is a real one (a class, function or method signature), never a comment
+opener or a brace. The gap at the top of a file has only ↑, the one at its end only ↓. From the keyboard the line
+cursor stops on the row, ↓/↑ pick the arrow and ↵ expands. Hover lights the arrow under the pointer, focus outlines it
+in accent.** (2026-11-10, owner's pick of the agent's second variant; CR103; replaces D29's "Show 20 · Show all")
+
+**Rejected.**
+
+- One full-width row, a click showing 20 and ⌥click all (CR102, agent's recommendation).
+- One click showing every hidden line (CR104) — a long gap floods the screen.
+
+## D43
+
+**On hover a line's number turns accent and underlined, with a small comment icon in the margin before it: click the
+number to comment, drag along the numbers or ⇧click for a range (D32). No tint, and the code stays selectable as text.
+The same on context, added and deleted lines, in split and unified; during a drag the range is tinted and the number
+under the pointer marked.** (2026-11-10, owner's pick of the agent's second variant; CR106)
+
+**Rejected.**
+
+- A + button between the number and the code, with a row tint (CR105, agent's recommendation).
+- A tint and a "C comment" hint at the line's end (CR107) — clicking code to select it and to comment collide.
+
+## D44
+
+**The current file — the one V, Space and C act on — shows in the diff: its header faintly tinted with an accent
+chevron, and its block's edge in accent; pinned or in place, expanded, collapsed or viewed alike. It is the file whose
+block crosses a reading line a third down under the pinned header, sliding down near the end of the diff; a click in
+a file, `[` `]`, the file list or V moving on holds it until it leaves the screen or the reader scrolls a fair
+distance. The reading line is never drawn.** (2026-11-10, owner's pick of the agent's first variant; CR108)
+
+**Rejected.**
+
+- A 2 px marker in the diff's left margin (CR109).
+- Every other file dimmed (CR110) — the dim flickers from file to file while scrolling.
+
+## D45
+
+**Heights and placeholders come from GitHub's per-file patch. A binary or too-large file shows its final one-line
+note from the first frame. A file with known hunks draws D38's bars in its real hunk layout, with its gap rows in place
+and their counts, and since the patch says which lines are added and deleted, those bars take the line's tint. When
+the height is only a guess (whitespace hidden, files past GitHub's 3,000-file listing) the file reserves it with bars;
+with whitespace hidden that is an upper bound, so the file can only shrink, and the reading anchor (D7) holds what is
+read.** (2026-11-10, owner: the tint "if we know where the added and deleted lines are", and the agent's second
+variant for a guess; CR111, CR113; amends D38's count and its "no colour")
+
+**Rejected.**
+
+- A compact band with the files after it held back until it is drawn (CR112, agent's recommendation).
+- A compact band with the next files shown (CR114) — the biggest jump when it is drawn.
