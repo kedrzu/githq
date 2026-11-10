@@ -96,6 +96,7 @@ import {
   FILE_GAP,
   findCommentLine,
   findReplacementRow,
+  GAP_STEP,
   getDistanceLinesToShow,
   getGapLinesToShow,
   getGapSize,
@@ -1066,7 +1067,7 @@ useCommands(() => [
   },
   {
     id: 'review.showHiddenLines',
-    title: t(l.showHiddenLines),
+    title: t(l.showHiddenLines, { count: GAP_STEP }),
     section: 'view',
     key: REVIEW_KEYS.showHiddenLines,
     icon: ChevronsUpDown,

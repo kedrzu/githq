@@ -25,7 +25,7 @@ extend:
 collapse:
   en: Collapse or expand the file
 showHiddenLines:
-  en: Show 20 more hidden lines
+  en: Show {count} more hidden lines
 filter:
   en: Filter by path
 comment:
