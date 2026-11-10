@@ -19,7 +19,7 @@ export interface FailedComment {
 
 /**
  * An edit of a comment's or the description's text GitHub did not take: its editor opens again with the text, until
- * it is saved or cancelled.
+ * it is saved or cancelled, or the comment is deleted (`ItemEditor`).
  */
 export interface FailedTextEdit {
     readonly itemId: string;
@@ -61,6 +61,10 @@ export const CommentDrafts = defineService({
             /** Whether any comment is typed and not posted, or was not taken by GitHub; reactive. */
             get hasAny() {
                 return draftsRef.value.size > 0 || failedRef.value.length > 0 || failedEditsRef.value.length > 0;
+            },
+            /** Every edit GitHub did not take, of every item; reactive. */
+            get failedEdits() {
+                return failedEditsRef.value;
             },
             get,
             set,

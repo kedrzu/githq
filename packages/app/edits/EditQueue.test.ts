@@ -523,6 +523,24 @@ test('an edit GitHub refuses never loses the text: the comment reads as it was, 
     expect(details.get('I_1')?.comments.nodes[0]?.body).toBe('Shorter');
 });
 
+test("C4: a refused edit of a comment deleted since goes once the comments read no longer hold it: it can't be saved", async () => {
+    const { editor, details, drafts, github, session } = await setup();
+    github.comments = [sampleComment('IC_1', 'First take'), sampleComment('IC_2', 'Other')];
+    await details.ensure('I_1');
+    github.error = { type: 'FORBIDDEN', message: 'Comment is too long' };
+    await editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_1', body: 'Second take' });
+    await editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_2', body: 'Kept' });
+    expect(drafts.getFailedEdits('I_1')).toHaveLength(2);
+
+    github.error = null;
+    github.comments = [sampleComment('IC_2', 'Other')];
+    await details.readAgain('I_1');
+    await session.clock.advance(0);
+
+    expect(drafts.getFailedEdits('I_1').map(edit => edit.commentId)).toEqual(['IC_2']);
+    expect(drafts.hasAny).toBe(true);
+});
+
 test('a comment deleted is gone at once; one GitHub refuses to delete comes back, with its toast', async () => {
     const { editor, details, queue, github, session } = await setup();
     github.comments = [sampleComment('IC_1', 'Keep'), sampleComment('IC_2', 'Drop')];

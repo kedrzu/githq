@@ -17,6 +17,7 @@ import type { Item } from '@/store/ItemTypes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
+import type { FailedTextEdit } from './CommentDrafts.js';
 import { createDraftFieldEdit } from './createDraftFieldEdit.js';
 import { createDraftIssueEdit } from './createDraftIssueEdit.js';
 import { createIssueEdit } from './createIssueEdit.js';
@@ -60,6 +61,17 @@ export const ItemEditor = defineService({
                 closesRef.value = [];
             },
             { flush: 'sync' },
+        );
+
+        // An edit GitHub did not take of a comment deleted since can't be saved, and its editor, drawn where the
+        // comment was, has no Cancel: it goes once the item's comments, all read, no longer hold that comment.
+        watch(
+            () => drafts.failedEdits.filter(isOfDeletedComment),
+            gone => {
+                for (const edit of gone) {
+                    drafts.discardFailedEdit(edit.itemId, edit.commentId);
+                }
+            },
         );
 
         return {
@@ -498,6 +510,15 @@ export const ItemEditor = defineService({
         }
 
         /** The user signed in, as the edits are built for them; `null` signed out. */
+        function isOfDeletedComment(edit: FailedTextEdit) {
+            const comments = edit.commentId === null ? undefined : details.get(edit.itemId)?.comments;
+            return (
+                comments !== undefined &&
+                comments.olderCursor === null &&
+                !comments.nodes.some(comment => comment.id === edit.commentId)
+            );
+        }
+
         function getAccount(): EditAccount | null {
             const viewer = auth.viewer;
             const token = auth.token;
