@@ -88,9 +88,8 @@ test('the items the fold reveals go in place, the first of them taking the focus
         .toHaveFocus();
 });
 
-test('a long thread read whole folds its middle by the counts of each group, and shows it without asking GitHub', async () => {
-    const loadMiddle = vi.fn(() => Promise.resolve());
-    await LongThread.run({ args: { ...LongThread.args, loadMiddle } });
+test('a long thread read whole folds its middle by the counts of each group, and shows it on a click', async () => {
+    await LongThread.run();
 
     const entries = page.getByRole('listitem');
     const fold = page.getByRole('button', { name: /^Show 23 earlier events/ });
@@ -103,7 +102,6 @@ test('a long thread read whole folds its middle by the counts of each group, and
 
     await userEvent.click(fold);
 
-    expect(loadMiddle).not.toHaveBeenCalled();
     await expect.element(fold).not.toBeInTheDocument();
     expect(entries.elements()).toHaveLength(30);
     await expect.element(entries.nth(2)).toHaveFocus();

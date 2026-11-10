@@ -281,12 +281,12 @@ test('what GitHub has and the detail does not hold counts as folded, and folds h
 
     // The events not held may lie anywhere between E1 and E2: the comments held between them fold too.
     expect(idsOf(thread)).toEqual(['E1', 'fold', 'E2']);
-    expect(foldOf(thread)).toEqual(fold({ comments: 12, otherEvents: 7, unread: true }));
+    expect(foldOf(thread)).toEqual(fold({ comments: 12, otherEvents: 7 }));
     // The first comments not held either: they may be older than E1, which cannot stay above them.
     const newestOnly: ItemDetail = { ...detail, comments: { ...detail.comments, first: [] } };
     expect(idsOf(buildThread({ detail: newestOnly }))).toEqual(['fold', 'E2']);
     // Shown, with the middle still not held: it stays folded — nothing to show it with.
-    expect(foldOf(buildThread({ detail, unfolded: true })).unread).toBe(true);
+    expect(idsOf(buildThread({ detail, unfolded: true }))).toEqual(['E1', 'fold', 'E2']);
 });
 
 test("what stays around the fold keeps the time order of what it hides, whichever stream's middle is not held", () => {
@@ -308,7 +308,7 @@ test("what stays around the fold keeps the time order of what it hides, whicheve
 
     // C1 came after commits not read yet, C21–C25 before some: none of them stays out of the fold.
     expect(idsOf(thread)).toEqual(['PRC_a1', 'fold', 'PRC_b1']);
-    expect(foldOf(thread)).toEqual(fold({ commits: 7, comments: 25, unread: true }));
+    expect(foldOf(thread)).toEqual(fold({ commits: 7, comments: 25 }));
 });
 
 test('the CI line names the commit the detail read its checks with, though the row has moved on to a newer one', () => {
@@ -385,7 +385,7 @@ test("the fold's other events count the close a merge came with, held, as GitHub
     const thread = buildThread({ detail });
 
     expect(idsOf(thread)).toEqual(['E1', 'fold', 'ME_1']);
-    expect(foldOf(thread)).toEqual(fold({ otherEvents: 3, unread: true }));
+    expect(foldOf(thread)).toEqual(fold({ otherEvents: 3 }));
 });
 
 test('shown by the user, a long thread read whole folds no more', () => {
@@ -424,7 +424,7 @@ function foldOf(thread: ThreadItem[]): ThreadFold {
 }
 
 function fold(counts: Partial<Omit<ThreadFold, 'kind' | 'id'>>): ThreadFold {
-    return { kind: 'fold', id: 'fold', commits: 0, comments: 0, otherEvents: 0, unread: false, ...counts };
+    return { kind: 'fold', id: 'fold', commits: 0, comments: 0, otherEvents: 0, ...counts };
 }
 
 function failedComment(id: number): FailedComment {

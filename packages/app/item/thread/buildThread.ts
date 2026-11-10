@@ -107,8 +107,6 @@ export interface ThreadFold {
     readonly comments: number;
     /** The events but commits; a line of one person's events counts once. */
     readonly otherEvents: number;
-    /** Some of them are not read yet: showing them reads the thread's middle first. */
-    readonly unread: boolean;
 }
 
 /** The parameters of {@link buildThread}. */
@@ -236,7 +234,6 @@ function foldThread(
         commits: counts.commits + unread.commits,
         comments: counts.comments + unread.comments,
         otherEvents: counts.otherEvents + unread.otherEvents,
-        unread: unreadCount > 0,
     };
     return [...items.slice(0, above), fold, ...items.slice(below)];
 }

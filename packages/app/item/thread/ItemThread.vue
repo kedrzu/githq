@@ -272,18 +272,17 @@ function copyLink(url: string) {
 }
 
 // The fold goes with what it hid; focus moves to the first item it revealed, where it stood, instead of falling to the
-// page. What the detail does not hold is read first; a read that fails leaves the fold, saying so.
-async function showEarlier(unread: boolean) {
+// page. What the detail does not hold is read first (nothing to read: done at once); a read that fails leaves the
+// fold, saying so.
+async function showEarlier() {
   const at = entries.value.findIndex(entry => entry.kind === 'fold');
   const id = props.item.id;
   foldFailed.value = false;
-  if (unread) {
-    try {
-      await props.loadMiddle();
-    } catch {
-      foldFailed.value = props.item.id === id;
-      return;
-    }
+  try {
+    await props.loadMiddle();
+  } catch {
+    foldFailed.value = props.item.id === id;
+    return;
   }
 
   if (props.item.id !== id) {
@@ -384,7 +383,7 @@ interface EditorText {
             :comments="entry.comments"
             :other-events="entry.otherEvents"
             :failed="foldFailed"
-            @click="showEarlier(entry.unread)"
+            @click="showEarlier()"
           />
           <template v-else-if="entry.kind === 'comment'">
             <ItemThreadEditor
