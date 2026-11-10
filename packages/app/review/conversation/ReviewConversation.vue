@@ -270,7 +270,6 @@ async function showOlder(load: () => Promise<void>) {
         v-model:text="commentDraft"
         :disabled="commentDisabled"
         :placeholder="draftOpen ? t(l.composerWithDraft) : t(l.composer)"
-        :focus-key="null"
         @submit="onComment"
       />
     </footer>
