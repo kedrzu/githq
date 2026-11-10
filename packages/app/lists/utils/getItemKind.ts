@@ -12,8 +12,8 @@ export type ItemKindState =
 
 /**
  * The icon an issue or pull request is drawn with, in GitHub's colour: an open issue, one closed as completed or as
- * not planned, and a pull request as {@link getPullRequestKind} draws it — a list's row, a reference suggested in a
- * comment.
+ * not planned, and a pull request as {@link getPullRequestKind} draws it — a list's row, the opened item's state, a
+ * reference suggested in a comment.
  *
  * @util
  * @__NO_SIDE_EFFECTS__

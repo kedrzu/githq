@@ -10,9 +10,7 @@ import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserve
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   AppWindow,
-  CircleCheck,
   CircleCheckBig,
-  CircleDot,
   CircleSlash,
   GitPullRequestClosed,
   ChevronDown,
@@ -54,7 +52,7 @@ import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
-import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { getItemKind } from '@/lists/utils/getItemKind.js';
 import { countMergeChecks } from '@/merge/countMergeChecks.js';
 import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
@@ -241,25 +239,25 @@ const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issue
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
   const { item } = props;
-  if (item.kind === 'issue') {
-    if (item.state === 'OPEN') {
-      return { icon: CircleDot, tone: 'open', text: t(l.open) };
-    }
-
-    switch (item.stateReason) {
-      case 'NOT_PLANNED':
-        return { icon: CircleSlash, tone: 'draft', text: t(l.closedNotPlanned) };
-      case 'DUPLICATE':
-        return { icon: CircleSlash, tone: 'draft', text: t(l.closedDuplicate) };
-      default:
-        return { icon: CircleCheck, tone: 'done', text: t(l.closedCompleted) };
-    }
+  const kind = getItemKind(item);
+  if (item.kind === 'pullRequest') {
+    // Its state in words, by the tone of its icon.
+    const key: `${StatePillTone}PullRequest` = `${kind.tone}PullRequest`;
+    return { ...kind, text: t(l[key]) };
   }
 
-  const kind = getPullRequestKind(item);
-  // Its state in words, by the tone of its icon.
-  const key: `${StatePillTone}PullRequest` = `${kind.tone}PullRequest`;
-  return { ...kind, text: t(l[key]) };
+  if (item.state === 'OPEN') {
+    return { ...kind, text: t(l.open) };
+  }
+
+  switch (item.stateReason) {
+    case 'NOT_PLANNED':
+      return { ...kind, text: t(l.closedNotPlanned) };
+    case 'DUPLICATE':
+      return { ...kind, text: t(l.closedDuplicate) };
+    default:
+      return { ...kind, text: t(l.closedCompleted) };
+  }
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);
