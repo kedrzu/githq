@@ -236,6 +236,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   (`V75cQv`) reads “The description, comments and events couldn't be loaded” and “GitHub can't be reached, so they
   aren't on this device yet.” (was “The comments and events couldn't be loaded” and “… The description above is from
   this device.”). The caption says so, and that a read failing later changes nothing on screen.
+- [x] `Activity / Thread · loading` (`FZHVU`): the line reads “Loading 4 comments and the events from GitHub” (was “…
+  and 6 events…”): before the detail arrives the item's row knows how many comments it has, not how many events.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
