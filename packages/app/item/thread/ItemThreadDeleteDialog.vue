@@ -5,7 +5,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
-import ReviewDialogFrame from '@/review/writing/ReviewDialogFrame.vue';
+import DialogFrame from '@/components/DialogFrame.vue';
 
 import * as l from './ItemThreadDeleteDialog.loc.js';
 
@@ -27,7 +27,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <ReviewDialogFrame
+  <DialogFrame
     v-model:open="open"
     :title="t(l.title)"
     :width="440"
@@ -55,7 +55,7 @@ function onKeydown(event: KeyboardEvent) {
         {{ t(l.delete) }}
       </Button>
     </template>
-  </ReviewDialogFrame>
+  </DialogFrame>
 </template>
 
 <style lang="scss" module="css">
