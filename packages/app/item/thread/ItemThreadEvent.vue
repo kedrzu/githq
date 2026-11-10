@@ -1,5 +1,6 @@
 <!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest at the right. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab. A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). -->
 <script lang="ts" setup>
+import type { TranslationResult, TranslationSimple, TranslationWithParams } from '@nzyme/i18n-core';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -40,7 +41,8 @@ import type { VNodeChild } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import LabelPill from '@/components/LabelPill.vue';
-import type { ItemDetailReviewRequest, ThreadCommitRef, ThreadRef } from '@/store/ItemDetailTypes.js';
+import { getReviewRequestName } from '@/store/getReviewRequestName.js';
+import type { ThreadCommitRef, ThreadRef } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
@@ -126,7 +128,7 @@ function renderPart(part: ThreadEventPart, after: boolean): VNodeChild[] {
     }
     case 'reviewRequested':
     case 'reviewRequestRemoved':
-      return sayWith(l[part.kind], { reviewers: formatList(part.reviewers.map(getReviewerName)) });
+      return sayWith(l[part.kind], { reviewers: formatList(part.reviewers.map(getReviewRequestName)) });
     case 'single':
       return renderEvent(part.event, after);
     default:
@@ -283,16 +285,16 @@ function renderClosed(event: Extract<SingleThreadEvent, { readonly kind: 'closed
 }
 
 /** A translation's words. */
-function say(translation: (lang: string) => unknown): VNodeChild[] {
+function say(translation: TranslationSimple): VNodeChild[] {
   return toChildren(translation(language.value));
 }
 
 /** A translation with its parameters in place, which may be elements. */
-function sayWith<TParams>(translation: (lang: string, params: TParams) => unknown, params: TParams): VNodeChild[] {
+function sayWith<TParams>(translation: TranslationWithParams<TParams>, params: TParams): VNodeChild[] {
   return toChildren(translation(language.value, params));
 }
 
-function toChildren(result: unknown): VNodeChild[] {
+function toChildren(result: TranslationResult): VNodeChild[] {
   if (typeof result === 'string') {
     return [result];
   }
@@ -337,10 +339,6 @@ function openRef(event: MouseEvent, reference: ItemReference | null) {
 
 function getLogin(user: ItemUser | null) {
   return user?.login ?? t(l.deletedUser);
-}
-
-function getReviewerName(reviewer: ItemDetailReviewRequest) {
-  return reviewer.kind === 'user' ? reviewer.user.login : reviewer.name;
 }
 
 function getPartLook(part: ThreadEventPart): EventLook {

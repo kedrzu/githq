@@ -11,6 +11,7 @@ import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import Picker from '@/components/Picker.vue';
 import type { PickerOption } from '@/components/Picker.vue';
+import { getReviewRequestName } from '@/store/getReviewRequestName.js';
 import type { PullRequestDetail } from '@/store/ItemDetailTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
@@ -83,7 +84,7 @@ const lines = computed((): ReviewerLine[] => {
   }
 
   for (const request of props.detail.reviewRequests) {
-    const name = request.kind === 'user' ? request.user.login : request.name;
+    const name = getReviewRequestName(request);
     if (seen.has(name)) {
       continue;
     }
