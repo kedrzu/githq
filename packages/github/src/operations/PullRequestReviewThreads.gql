@@ -24,6 +24,10 @@ query PullRequestReviewThreads($owner: String!, $name: String!, $number: Int!, $
                     viewerCanReply
                     viewerCanResolve
                     viewerCanUnresolve
+                    resolvedBy {
+                        login
+                        avatarUrl
+                    }
                     comments(first: 50) {
                         pageInfo {
                             hasNextPage

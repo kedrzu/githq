@@ -8499,6 +8499,7 @@ export type PullRequestReviewThreadsQuery = {
                     viewerCanReply: boolean;
                     viewerCanResolve: boolean;
                     viewerCanUnresolve: boolean;
+                    resolvedBy: { login: string; avatarUrl: string } | null;
                     comments: {
                         pageInfo: { hasNextPage: boolean; endCursor: string | null };
                         nodes: Array<{
@@ -25377,6 +25378,10 @@ export const PullRequestReviewThreadsDocument = new TypedDocumentString(`
           viewerCanReply
           viewerCanResolve
           viewerCanUnresolve
+          resolvedBy {
+            login
+            avatarUrl
+          }
           comments(first: 50) {
             pageInfo {
               hasNextPage
