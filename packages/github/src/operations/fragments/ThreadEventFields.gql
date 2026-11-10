@@ -477,32 +477,4 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             avatarUrl
         }
     }
-    ... on MarkedAsDuplicateEvent {
-        id
-        createdAt
-        actor {
-            login
-            avatarUrl
-        }
-        canonical {
-            ...ThreadRefFields
-        }
-        duplicate {
-            ...ThreadRefFields
-        }
-    }
-    ... on UnmarkedAsDuplicateEvent {
-        id
-        createdAt
-        actor {
-            login
-            avatarUrl
-        }
-        canonical {
-            ...ThreadRefFields
-        }
-        duplicate {
-            ...ThreadRefFields
-        }
-    }
 }

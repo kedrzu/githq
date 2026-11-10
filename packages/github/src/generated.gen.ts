@@ -1338,54 +1338,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MilestonedEvent';
@@ -1620,54 +1573,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -1979,54 +1885,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MilestonedEvent';
@@ -2261,54 +2120,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -2943,54 +2755,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MergedEvent';
@@ -3328,54 +3093,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -3753,54 +3471,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MergedEvent';
@@ -4138,54 +3809,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -4823,54 +4447,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MilestonedEvent';
@@ -5105,54 +4682,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -5464,54 +4994,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MilestonedEvent';
@@ -5746,54 +5229,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -6428,54 +5864,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MergedEvent';
@@ -6813,54 +6202,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -7238,54 +6580,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MergedEvent';
@@ -7623,54 +6918,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -10335,54 +9583,7 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MilestonedEvent';
@@ -10617,54 +9818,7 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -11066,54 +10220,7 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'MarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'MarkedAsDuplicateEvent' }
                       | { __typename: 'MentionedEvent' }
                       | {
                             __typename: 'MergedEvent';
@@ -11451,54 +10558,7 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | {
-                            __typename: 'UnmarkedAsDuplicateEvent';
-                            id: string;
-                            createdAt: string;
-                            actor:
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | { login: string; avatarUrl: string }
-                                | null;
-                            canonical:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                            duplicate:
-                                | {
-                                      __typename: 'Issue';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | {
-                                      __typename: 'PullRequest';
-                                      id: string;
-                                      url: string;
-                                      number: number;
-                                      title: string;
-                                      repository: { nameWithOwner: string };
-                                  }
-                                | null;
-                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -12139,54 +11199,7 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'MarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'MarkedAsDuplicateEvent' }
             | { __typename: 'MentionedEvent' }
             | {
                   __typename: 'MilestonedEvent';
@@ -12421,54 +11434,7 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'UnmarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -12780,54 +11746,7 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'MarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'MarkedAsDuplicateEvent' }
             | { __typename: 'MentionedEvent' }
             | {
                   __typename: 'MilestonedEvent';
@@ -13062,54 +11981,7 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'UnmarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -14808,54 +13680,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'MarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'MarkedAsDuplicateEvent' }
             | { __typename: 'MentionedEvent' }
             | {
                   __typename: 'MergedEvent';
@@ -15190,54 +14015,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'UnmarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -15615,54 +14393,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'MarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'MarkedAsDuplicateEvent' }
             | { __typename: 'MentionedEvent' }
             | {
                   __typename: 'MergedEvent';
@@ -15997,54 +14728,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | {
-                  __typename: 'UnmarkedAsDuplicateEvent';
-                  id: string;
-                  createdAt: string;
-                  actor:
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | { login: string; avatarUrl: string }
-                      | null;
-                  canonical:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-                  duplicate:
-                      | {
-                            __typename: 'Issue';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | {
-                            __typename: 'PullRequest';
-                            id: string;
-                            url: string;
-                            number: number;
-                            title: string;
-                            repository: { nameWithOwner: string };
-                        }
-                      | null;
-              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -16938,54 +15622,7 @@ type ThreadEventFields_LockedEvent_Fragment = {
         | null;
 };
 
-type ThreadEventFields_MarkedAsDuplicateEvent_Fragment = {
-    __typename: 'MarkedAsDuplicateEvent';
-    id: string;
-    createdAt: string;
-    actor:
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | null;
-    canonical:
-        | {
-              __typename: 'Issue';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | {
-              __typename: 'PullRequest';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | null;
-    duplicate:
-        | {
-              __typename: 'Issue';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | {
-              __typename: 'PullRequest';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | null;
-};
+type ThreadEventFields_MarkedAsDuplicateEvent_Fragment = { __typename: 'MarkedAsDuplicateEvent' };
 
 type ThreadEventFields_MentionedEvent_Fragment = { __typename: 'MentionedEvent' };
 
@@ -17352,54 +15989,7 @@ type ThreadEventFields_UnlockedEvent_Fragment = {
         | null;
 };
 
-type ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment = {
-    __typename: 'UnmarkedAsDuplicateEvent';
-    id: string;
-    createdAt: string;
-    actor:
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | { login: string; avatarUrl: string }
-        | null;
-    canonical:
-        | {
-              __typename: 'Issue';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | {
-              __typename: 'PullRequest';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | null;
-    duplicate:
-        | {
-              __typename: 'Issue';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | {
-              __typename: 'PullRequest';
-              id: string;
-              url: string;
-              number: number;
-              title: string;
-              repository: { nameWithOwner: string };
-          }
-        | null;
-};
+type ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment = { __typename: 'UnmarkedAsDuplicateEvent' };
 
 type ThreadEventFields_UnpinnedEvent_Fragment = {
     __typename: 'UnpinnedEvent';
@@ -19551,34 +18141,6 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       avatarUrl
     }
   }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
 }
     fragment ThreadRefFields on IssueOrPullRequest {
   __typename
@@ -20696,34 +19258,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     actor {
       login
       avatarUrl
-    }
-  }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
     }
   }
 }
@@ -22845,34 +21379,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
   }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
 }
 fragment ThreadRefFields on IssueOrPullRequest {
   __typename
@@ -24240,34 +22746,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
   }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
 }
 fragment ThreadRefFields on IssueOrPullRequest {
   __typename
@@ -25326,34 +23804,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     actor {
       login
       avatarUrl
-    }
-  }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
     }
   }
 }
@@ -28441,34 +26891,6 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     actor {
       login
       avatarUrl
-    }
-  }
-  ... on MarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
-    }
-  }
-  ... on UnmarkedAsDuplicateEvent {
-    id
-    createdAt
-    actor {
-      login
-      avatarUrl
-    }
-    canonical {
-      ...ThreadRefFields
-    }
-    duplicate {
-      ...ThreadRefFields
     }
   }
 }
