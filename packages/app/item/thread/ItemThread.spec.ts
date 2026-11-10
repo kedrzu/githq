@@ -558,3 +558,29 @@ test('on a focused code thread J and K move between the code threads and R opens
     await userEvent.keyboard('r');
     await expect.element(dbThread().getByRole('textbox', { name: 'Reply' })).toHaveFocus();
 });
+
+test('Resolve folds the thread to its row and the row keeps the focus, so J and K go on between the code threads', async () => {
+    const { args } = await openCodeThreads();
+    const schemaRow = page.getByRole('button', { name: /^Resolved/u });
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    // As the writing draws it, once the click is done: resolved.
+    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
+        thread.id === DB_THREAD.id ? { ...thread, isResolved: true } : thread,
+    );
+    const dbRow = page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u });
+    await expect.element(dbRow).toHaveFocus();
+
+    await userEvent.keyboard('j');
+    await expect.element(schemaRow.last()).toHaveFocus();
+    await userEvent.keyboard('k');
+    await expect.element(dbRow).toHaveFocus();
+
+    // Opened again and unresolved: the thread, open, has it.
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(dbThread().getByRole('button', { name: 'Unresolve' }));
+    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
+        thread.id === DB_THREAD.id ? { ...thread, isResolved: false } : thread,
+    );
+    await expect.element(dbThread().getByRole('button', { name: 'Resolve thread' })).toBeVisible();
+    await expect.element(dbThread()).toHaveFocus();
+});

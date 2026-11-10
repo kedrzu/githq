@@ -1,4 +1,4 @@
-<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. -->
+<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. It is a code thread to `J`/`K` (`data-code-thread`, `ItemThread`). -->
 <script lang="ts" setup>
 import { arrayRemoveDuplicates } from '@nzyme/utils/array/arrayRemoveDuplicates.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
@@ -39,6 +39,7 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
   <button
     type="button"
     :class="css.itemThreadResolvedRow"
+    :data-code-thread="thread.id"
     aria-expanded="false"
     @click="$emit('click')"
   >

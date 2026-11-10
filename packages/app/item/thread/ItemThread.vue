@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked: then `J`/`K` move to the next and previous code thread and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve or Unresolve redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -123,6 +123,8 @@ const askingReply = ref<string | null>(null);
 const focusedReply = ref<string | null>(null);
 /** The threads the viewer resolved here: they say so at once, before the threads read again name who did. */
 const resolvedHere = ref<ReadonlySet<string>>(new Set());
+/** The code thread Resolve or Unresolve was clicked on, until it is drawn so: folded to its row or opened, it keeps the focus. */
+const toggledThread = ref<ToggledThread | null>(null);
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
@@ -224,6 +226,7 @@ watch(
       askingReply.value = null;
       focusedReply.value = null;
       resolvedHere.value = new Set();
+      toggledThread.value = null;
     }
 
     for (const edit of failed ?? []) {
@@ -233,6 +236,19 @@ watch(
     }
   },
   { immediate: true },
+);
+
+// The button clicked goes with the state it changed: the thread, drawn anew, takes the focus, the keys still its own.
+watch(
+  shownThreads,
+  threads => {
+    const toggled = toggledThread.value;
+    if (toggled && threads.find(({ id }) => id === toggled.id)?.isResolved === toggled.resolved) {
+      toggledThread.value = null;
+      findThreadCard(toggled.id)?.focus({ preventScroll: true });
+    }
+  },
+  { flush: 'post' },
 );
 
 defineExpose({
@@ -558,6 +574,7 @@ function setResolved(threadId: string, resolved: boolean) {
   }
 
   resolvedHere.value = here;
+  toggledThread.value = { id: threadId, resolved };
   props.reviewWriting?.setResolved(threadId, resolved);
 }
 
@@ -606,6 +623,12 @@ function moveToThread(from: HTMLElement, by: 1 | -1) {
     next.focus({ preventScroll: true });
     next.scrollIntoView({ block: 'nearest' });
   }
+}
+
+/** A code thread asked to be resolved, or opened again. */
+interface ToggledThread {
+  readonly id: string;
+  readonly resolved: boolean;
 }
 
 /** A card's text being edited, and the text the edit started with. */
