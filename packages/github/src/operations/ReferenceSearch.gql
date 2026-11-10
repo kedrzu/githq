@@ -1,0 +1,23 @@
+# Issues and pull requests of a repository the user does not track, as GitHub's search finds what they type after `#`
+# in a comment (the editor's reference suggestions): what a row shows — its state, number and title.
+query ReferenceSearch($query: String!) {
+    search(query: $query, type: ISSUE, first: 10) {
+        nodes {
+            ... on Issue {
+                __typename
+                number
+                title
+                issueState: state
+                stateReason
+            }
+            ... on PullRequest {
+                __typename
+                number
+                title
+                pullRequestState: state
+                isDraft
+                merged
+            }
+        }
+    }
+}

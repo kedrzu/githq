@@ -3310,6 +3310,34 @@ export type PullRequestStatusesQuery = {
     >;
 };
 
+export type ReferenceSearchQueryVariables = Exact<{
+    query: string;
+}>;
+
+export type ReferenceSearchQuery = {
+    search: {
+        nodes: Array<
+            | {
+                  __typename: 'Issue';
+                  number: number;
+                  title: string;
+                  stateReason: IssueStateReason | null;
+                  issueState: IssueState;
+              }
+            | {
+                  __typename: 'PullRequest';
+                  number: number;
+                  title: string;
+                  isDraft: boolean;
+                  merged: boolean;
+                  pullRequestState: PullRequestState;
+              }
+            | Record<PropertyKey, never>
+            | null
+        > | null;
+    };
+};
+
 export type RepositoryAssignableUsersQueryVariables = Exact<{
     owner: string;
     name: string;
@@ -12620,6 +12648,29 @@ fragment PullRequestStatusFields on PullRequest {
   }
   ...PullRequestPendingReviewFields
 }`);
+export const ReferenceSearchDocument = new TypedDocumentString(`
+    query ReferenceSearch($query: String!) {
+  search(query: $query, type: ISSUE, first: 10) {
+    nodes {
+      ... on Issue {
+        __typename
+        number
+        title
+        issueState: state
+        stateReason
+      }
+      ... on PullRequest {
+        __typename
+        number
+        title
+        pullRequestState: state
+        isDraft
+        merged
+      }
+    }
+  }
+}
+    `);
 export const RepositoryAssignableUsersDocument = new TypedDocumentString(`
     query RepositoryAssignableUsers($owner: String!, $name: String!, $after: String!) {
   repository(owner: $owner, name: $name) {
@@ -15029,6 +15080,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<PullRequestStatusesQuery>;
+        },
+        ReferenceSearch(variables: ReferenceSearchQueryVariables, options?: C): Promise<ReferenceSearchQuery> {
+            return requester<ReferenceSearchQuery, ReferenceSearchQueryVariables>(
+                ReferenceSearchDocument,
+                variables,
+                options,
+            ) as Promise<ReferenceSearchQuery>;
         },
         RepositoryAssignableUsers(
             variables: RepositoryAssignableUsersQueryVariables,

@@ -30,7 +30,7 @@ export interface MarkdownEdit {
 /**
  * What a Markdown tool does to the text at `selection`: bold, italic and code wrap it (a selection over several lines
  * goes in a code block), link makes it a link's text and selects `url`, the list, quote and heading tools start each
- * line it touches, and @ and # are typed over it. Returned as a replacement rather than the new text, so the text area
+ * line it touches, and @ and # are typed over it, a space before them after a word. Returned as a replacement rather than the new text, so the text area
  * applies it as typing and its undo history keeps it.
  *
  * @__NO_SIDE_EFFECTS__
@@ -53,9 +53,9 @@ export function applyMarkdownTool(text: string, selection: TextRange, tool: Mark
             return { range: selection, insert, selection: { start: at, end: selected ? at + 3 : at } };
         }
         case 'mention':
-            return typeOver(selection, '@');
+            return typeOver(text, selection, '@');
         case 'reference':
-            return typeOver(selection, '#');
+            return typeOver(text, selection, '#');
         case 'heading':
             return startLines(text, selection, () => '### ');
         case 'bulletList':
@@ -80,7 +80,10 @@ function wrap(selection: TextRange, selected: string, before: string, after = be
     };
 }
 
-function typeOver(selection: TextRange, insert: string): MarkdownEdit {
+/** A space keeps it off a word before it, so that it starts one and its suggestions open. */
+function typeOver(text: string, selection: TextRange, trigger: string): MarkdownEdit {
+    const before = text[selection.start - 1];
+    const insert = before === undefined || /\s/.test(before) ? trigger : ` ${trigger}`;
     const at = selection.start + insert.length;
     return { range: selection, insert, selection: { start: at, end: at } };
 }

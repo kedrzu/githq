@@ -1,4 +1,4 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. `Mod+Enter` and `Escape` inside it are only reported (`submit`, `cancel`): the caller decides what they do. -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. -->
 <script lang="ts" setup>
 import { useTextArea } from '@nzyme/vue-forms/components/useTextArea.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -22,6 +22,7 @@ import {
 } from 'lucide-vue-next';
 import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoot, ToolbarSeparator } from 'reka-ui';
 import { computed, nextTick, ref } from 'vue';
+import type { PropType } from 'vue';
 
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
@@ -30,14 +31,19 @@ import { RenderMarkdownCommand } from '@/services/RenderMarkdownCommand.js';
 import { applyMarkdownTool } from './applyMarkdownTool.js';
 import type { MarkdownTool } from './applyMarkdownTool.js';
 import * as l from './MarkdownEditor.loc.js';
+import MarkdownSuggestions from './MarkdownSuggestions.vue';
+import type { PersonSuggestion } from './SuggestionTypes.js';
 import Tooltip from './Tooltip.vue';
+import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 
 // nzyme's text area props: `modelValue` (the text), `label` (the text area's accessible name), `placeholder`,
-// `disabled`, `readonly`; and the repository the text is written in, `owner/name`, which the preview links `#42` and
-// mentions in.
+// `disabled`, `readonly`; the repository the text is written in, `owner/name`, which the preview links `#42` and
+// mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
+// (who opened it, who commented), whom `@` suggests first.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
+  people: { type: Array as PropType<readonly PersonSuggestion[]>, default: () => [] },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -76,6 +82,11 @@ const { TextArea, field, input } = useTextArea();
 const t = useTranslate();
 const render = useService(RenderMarkdownCommand);
 const logger = useLogger();
+const suggestions = useMarkdownSuggestions({
+  textarea: input,
+  repository: () => props.repository,
+  people: () => props.people,
+});
 
 const tab = ref<'write' | 'preview'>('write');
 /**
@@ -111,10 +122,6 @@ const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ?
 defineExpose({
   /** Puts the cursor in the text area, on the Write tab. */
   focus,
-  /** The text area, for what is anchored at its caret (the @ and # suggestions). */
-  get textarea() {
-    return input.value;
-  },
 });
 
 async function focus() {
@@ -123,7 +130,13 @@ async function focus() {
   input.value?.focus();
 }
 
+// The suggestions take their keys first: with them open, Enter inserts one and Escape closes them only.
 function onKeydown(event: KeyboardEvent) {
+  suggestions.onKeydown(event);
+  if (event.defaultPrevented) {
+    return;
+  }
+
   if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
     emit('submit');
@@ -226,7 +239,24 @@ interface RenderedPreview {
       :class="css.markdownEditor_body"
       tabindex="-1"
     >
-      <TextArea :class="css.markdownEditor_text" />
+      <TextArea
+        :class="css.markdownEditor_text"
+        v-bind="suggestions.attrs"
+        @input="suggestions.update()"
+        @keyup="suggestions.update()"
+        @click="suggestions.update()"
+        @blur="suggestions.close()"
+      />
+      <MarkdownSuggestions
+        v-if="suggestions.list && suggestions.anchor"
+        :id="suggestions.id"
+        :suggestions="suggestions.list"
+        :active="suggestions.active"
+        :anchor="suggestions.anchor"
+        :repository="repository"
+        @pick="suggestions.pick"
+        @highlight="suggestions.highlight"
+      />
     </TabsContent>
     <TabsContent
       value="preview"

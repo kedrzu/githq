@@ -37,7 +37,8 @@ test('lists, quote and heading start every line the selection touches, the first
     expect(run('Title', { start: 5, end: 5 }, 'heading')).toBe('### Title|');
 });
 
-test('@ and # are typed over the selection', () => {
+test('@ and # are typed over the selection, starting a word', () => {
     expect(run('hi ', { start: 3, end: 3 }, 'mention')).toBe('hi @|');
     expect(run('see 12', { start: 4, end: 6 }, 'reference')).toBe('see #|');
+    expect(run('thanks', { start: 6, end: 6 }, 'mention')).toBe('thanks @|');
 });

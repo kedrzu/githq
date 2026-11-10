@@ -34,6 +34,8 @@ const props = defineProps<{
   canClose: boolean;
   /** Why the user can't comment here, said instead of the editor; `null` when nothing stops them. */
   readOnly: 'archived' | 'locked' | null;
+  /** The thread's people, whom `@` suggests first. */
+  people?: readonly ItemUser[];
 }>();
 
 const emit = defineEmits<{
@@ -112,6 +114,7 @@ function close(reason: CloseReason) {
       v-model="text"
       :class="css.itemThreadComposer_editor"
       :repository="item.repository.nameWithOwner"
+      :people="people"
       :label="t(l.comment)"
       :placeholder="t(l.placeholder)"
       :readonly="!canComment"
