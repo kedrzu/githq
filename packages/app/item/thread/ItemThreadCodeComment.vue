@@ -85,7 +85,7 @@ function toggle(open: boolean) {
       <ItemThreadResolvedRow
         v-if="folded"
         :thread="entry.thread"
-        excerpt
+        says="excerpt"
         @click="toggle(true)"
       />
       <ItemThreadCodeThread

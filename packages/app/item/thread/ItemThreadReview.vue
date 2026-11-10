@@ -1,4 +1,4 @@
-<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. -->
+<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -69,6 +69,16 @@ const counts = computed(() => {
   const all = t(l.threads, { count: total });
   return resolved.length === 0 ? all : t(l.threadsResolved, { threads: all, resolved: resolved.length });
 });
+/** The files of more than one resolved thread: their rows say their first lines too, so they can be told apart. */
+const sharedPaths = computed(() => {
+  const seen = new Set<string>();
+  const shared = new Set<string>();
+  for (const { path } of props.entry.resolved) {
+    (seen.has(path) ? shared : seen).add(path);
+  }
+
+  return shared;
+});
 /**
  * Nothing written and no threads, there is no body: the head alone. A dismissed review shows once opened, or while a
  * reply is written in one of its threads.
@@ -79,9 +89,7 @@ const bodyShown = computed(() => {
     return false;
   }
 
-  return (
-    !dismissed.value || shown.value || [...threads, ...resolved].some(thread => props.replies?.get(thread.id))
-  );
+  return !dismissed.value || shown.value || [...threads, ...resolved].some(thread => props.replies?.get(thread.id));
 });
 
 function getDismissedText(before: ThreadReview['dismissedFrom']) {
@@ -179,6 +187,7 @@ function toggle(threadId: string, open: boolean) {
           <ItemThreadResolvedRow
             v-else
             :thread="thread"
+            :says="sharedPaths.has(thread.path) ? 'both' : 'path'"
             @click="toggle(thread.id, true)"
           />
         </template>

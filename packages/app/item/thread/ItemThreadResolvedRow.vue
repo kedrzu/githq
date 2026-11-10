@@ -1,4 +1,4 @@
-<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. It is a code thread to `J`/`K` (`data-code-thread`, `ItemThread`). -->
+<!-- A resolved thread on an item's thread, folded to one row (`Activity / Resolved threads`, F12): a chevron, a green check, "Resolved", the file — or, where the file is said already, the first line of its first comment; both where the file alone would not tell it from another row — the avatars of who wrote in it, how many comments, and "Show". The whole row is one button: a click or Enter opens the thread. It is a code thread to `J`/`K` (`data-code-thread`, `ItemThread`). -->
 <script lang="ts" setup>
 import { arrayRemoveDuplicates } from '@nzyme/utils/array/arrayRemoveDuplicates.js';
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
@@ -12,11 +12,17 @@ import { getHtmlFirstLine } from '@/review/utils/getHtmlFirstLine.js';
 
 import * as l from './ItemThreadResolvedRow.loc.js';
 
-const props = defineProps<{
-  thread: ReviewThread;
-  /** The file is said above it (a code comment's head): the first line of its first comment instead. */
-  excerpt?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    thread: ReviewThread;
+    /**
+     * What says which thread it is: the file (by default); the first line of its first comment where the file is said
+     * above it (a code comment's head); both where another row has the same file.
+     */
+    says?: 'path' | 'excerpt' | 'both';
+  }>(),
+  { says: 'path' },
+);
 
 defineEmits<{
   /** Open the thread. */
@@ -53,14 +59,14 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
     />
     <span :class="css.itemThreadResolvedRow_state">{{ t(l.resolved) }}</span>
     <span
-      v-if="excerpt"
-      :class="css.itemThreadResolvedRow_excerpt"
-      >{{ firstLine }}</span
-    >
-    <span
-      v-else
+      v-if="says !== 'excerpt'"
       :class="css.itemThreadResolvedRow_path"
       >{{ thread.path }}</span
+    >
+    <span
+      v-if="says !== 'path'"
+      :class="css.itemThreadResolvedRow_excerpt"
+      >{{ firstLine }}</span
     >
     <span :class="css.itemThreadResolvedRow_spacer" />
     <span :class="css.itemThreadResolvedRow_people">

@@ -26,4 +26,7 @@ type Story = StoryObj<typeof meta>;
 export const InReview: Story = {};
 
 /** Under a code comment's head, which says the file: the first line of its first comment instead. */
-export const WithExcerpt: Story = { args: { excerpt: true } };
+export const WithExcerpt: Story = { args: { says: 'excerpt' } };
+
+/** In a review where another row has the same file: the file, then the first line of its first comment. */
+export const WithPathAndExcerpt: Story = { args: { says: 'both' } };

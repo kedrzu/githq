@@ -66,6 +66,17 @@ export const SCHEMA_THREAD: ReviewThread = sampleReviewThread({
     resolvedBy: REVIEW_VIEWER,
 });
 
+/** Another of dkim's threads on `src/store/schema.ts`, resolved too: the same file as `SCHEMA_THREAD`. */
+export const SCHEMA_NAME_THREAD: ReviewThread = sampleReviewThread({
+    id: 'T_schema_name',
+    path: 'src/store/schema.ts',
+    hunk: SCHEMA_HUNK,
+    lines: [8, 10],
+    comments: [[DKIM, '<p>STORES reads like a constant of the browser. DB_STORES?</p>', 2 * DAY, 'R_dkim']],
+    isResolved: true,
+    resolvedBy: REVIEW_VIEWER,
+});
+
 /** dkim's question on `src/store/db.ts` (`Activity / Review · commented`). */
 export const OPTION_THREAD: ReviewThread = sampleReviewThread({
     id: 'T_option',

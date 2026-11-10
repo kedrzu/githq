@@ -9,6 +9,7 @@ import {
     COMMENTED_REVIEW,
     DISMISSED_REVIEW,
     REVIEW_VIEWER,
+    SCHEMA_NAME_THREAD,
 } from '@/testing/sampleReviews.js';
 
 import ItemThreadReview from './ItemThreadReview.vue';
@@ -43,6 +44,16 @@ type Story = StoryObj<typeof meta>;
 
 /** `Activity / Review`: requested changes, a summary, a thread open and one resolved, folded to its row. */
 export const ChangesRequested: Story = {};
+
+/** Two threads resolved in one file: each row says its first line after the file, so they can be told apart. */
+export const ResolvedInOneFile: Story = {
+    args: {
+        entry: {
+            ...CHANGES_REQUESTED_REVIEW,
+            resolved: [...CHANGES_REQUESTED_REVIEW.resolved, SCHEMA_NAME_THREAD],
+        },
+    },
+};
 
 /** `· approved`: in green, a summary, no threads. */
 export const Approved: Story = { args: { entry: APPROVED_REVIEW } };
