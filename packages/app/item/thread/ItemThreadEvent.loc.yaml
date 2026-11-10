@@ -60,12 +60,8 @@ headRefDeleted:
   en: deleted the {branch} branch
 connectedPullRequest:
   en: linked a pull request {ref} that will close this issue
-connectedIssue:
-  en: linked an issue {ref} that this pull request will close
 disconnectedPullRequest:
   en: unlinked a pull request {ref}
-disconnectedIssue:
-  en: unlinked an issue {ref}
 referenced:
   en: referenced this in commit {commit} {title}
 referencedHidden:

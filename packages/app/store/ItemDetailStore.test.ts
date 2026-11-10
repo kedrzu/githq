@@ -22,6 +22,29 @@ import { ItemStore } from './ItemStore.js';
 import { toItem } from './toItem.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
+/** The events F13 draws for an issue only, and the removes that cancel their adds. */
+const ISSUE_ONLY_EVENT_TYPES: unknown[] = [
+    'ADDED_TO_PROJECT_V2_EVENT',
+    'CONNECTED_EVENT',
+    'DISCONNECTED_EVENT',
+    'ISSUE_TYPE_ADDED_EVENT',
+    'ISSUE_TYPE_CHANGED_EVENT',
+    'ISSUE_TYPE_REMOVED_EVENT',
+    'LOCKED_EVENT',
+    'MARKED_AS_DUPLICATE_EVENT',
+    'PARENT_ISSUE_ADDED_EVENT',
+    'PARENT_ISSUE_REMOVED_EVENT',
+    'PINNED_EVENT',
+    'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
+    'REFERENCED_EVENT',
+    'REMOVED_FROM_PROJECT_V2_EVENT',
+    'SUB_ISSUE_ADDED_EVENT',
+    'SUB_ISSUE_REMOVED_EVENT',
+    'TRANSFERRED_EVENT',
+    'UNLOCKED_EVENT',
+    'UNMARKED_AS_DUPLICATE_EVENT',
+    'UNPINNED_EVENT',
+];
 const TUESDAY = '2026-10-27T10:00:00Z';
 
 test('an opened item shows its kept detail at once; one behind its item is read again in the background and replaces it', async () => {
@@ -131,6 +154,16 @@ test('another account taking over in another tab: the details leave memory and d
     // Nothing of Alice's in Bob's copy either.
     expect(details.needsFetch('I_2')).toBe(true);
     expect(await databaseNames()).not.toContain(getLocalDatabaseName(alice));
+});
+
+test("a pull request's thread reads none of the events only an issue has (F13)", async () => {
+    const { details, github } = setup(uniqueLogin());
+    github.nodes.set('PR_read', samplePullRequestDetailNode('PR_read', MONDAY));
+    await details.ensure('PR_read');
+
+    const request = github.requests.find(entry => entry.operation === 'ItemDetail');
+    const read = request?.variables.pullRequestEventTypes;
+    expect(Array.isArray(read) && read.filter(type => ISSUE_ONLY_EVENT_TYPES.includes(type))).toEqual([]);
 });
 
 test('older reviews go before the ones read; reading the pull request again keeps them', async () => {

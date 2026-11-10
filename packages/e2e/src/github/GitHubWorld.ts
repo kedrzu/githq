@@ -1081,8 +1081,9 @@ export class GitHubWorld {
     }
 
     /**
-     * Adds an event an issue can have too to an item's thread, its newest: call them oldest first. A pull request's
-     * thread has its head commit too, by its author, with the head's checks.
+     * Adds an event an issue can have too to an item's thread, its newest: call them oldest first. On a pull request,
+     * only one githq reads for both (item-activity F13: "issues too", closed, reopened) — it does not ask GitHub for
+     * the others. A pull request's thread has its head commit too, by its author, with the head's checks.
      */
     event(id: string, params: GitHubWorldEventParams<GitHubWorldIssueEvent>): void {
         const item = this.get(id);

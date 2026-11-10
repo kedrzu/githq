@@ -34,46 +34,51 @@ const RECHECK_AFTER_MS = 60_000;
 /** How long a kept detail survives without being read again: the copy must not grow without end. */
 const KEEP_DETAIL_MS = 30 * 24 * 60 * 60_000;
 
-/** The events of an issue's thread githq reads (item-activity F13): comments and the events it never shows left out. */
-const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
-    'ADDED_TO_PROJECT_V2_EVENT',
+/** The events both an issue's and a pull request's thread show (item-activity F13, "issues too", closed, reopened). */
+const SHARED_EVENT_TYPES: IssueTimelineItemsItemType[] = [
     'ASSIGNED_EVENT',
     'CLOSED_EVENT',
-    'CONNECTED_EVENT',
     'CROSS_REFERENCED_EVENT',
     'DEMILESTONED_EVENT',
+    'LABELED_EVENT',
+    'MILESTONED_EVENT',
+    'RENAMED_TITLE_EVENT',
+    'REOPENED_EVENT',
+    'UNASSIGNED_EVENT',
+    'UNLABELED_EVENT',
+];
+
+/** The events of an issue's thread githq reads (F13, right): comments and the events it never shows left out. */
+const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
+    ...SHARED_EVENT_TYPES,
+    'ADDED_TO_PROJECT_V2_EVENT',
+    'CONNECTED_EVENT',
     'DISCONNECTED_EVENT',
     'ISSUE_TYPE_ADDED_EVENT',
     'ISSUE_TYPE_CHANGED_EVENT',
     'ISSUE_TYPE_REMOVED_EVENT',
-    'LABELED_EVENT',
     'LOCKED_EVENT',
     'MARKED_AS_DUPLICATE_EVENT',
-    'MILESTONED_EVENT',
     'PARENT_ISSUE_ADDED_EVENT',
     'PARENT_ISSUE_REMOVED_EVENT',
     'PINNED_EVENT',
     'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
     'REFERENCED_EVENT',
     'REMOVED_FROM_PROJECT_V2_EVENT',
-    'RENAMED_TITLE_EVENT',
-    'REOPENED_EVENT',
     'SUB_ISSUE_ADDED_EVENT',
     'SUB_ISSUE_REMOVED_EVENT',
     'TRANSFERRED_EVENT',
-    'UNASSIGNED_EVENT',
-    'UNLABELED_EVENT',
     'UNLOCKED_EVENT',
     'UNMARKED_AS_DUPLICATE_EVENT',
     'UNPINNED_EVENT',
 ];
 
 /**
- * The events of a pull request's thread githq reads: the issue's, its commits and its own events. Reviews and code
- * threads are not read yet.
+ * The events of a pull request's thread githq reads (F13, left): the shared ones, its commits and its own events — no
+ * issue-only ones. Reviews and code threads are not read yet.
  */
 const PULL_REQUEST_EVENT_TYPES: PullRequestTimelineItemsItemType[] = [
-    ...ISSUE_EVENT_TYPES,
+    ...SHARED_EVENT_TYPES,
     'BASE_REF_CHANGED_EVENT',
     'CONVERT_TO_DRAFT_EVENT',
     'HEAD_REF_DELETED_EVENT',

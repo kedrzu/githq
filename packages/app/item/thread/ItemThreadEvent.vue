@@ -175,19 +175,11 @@ function renderEvent(event: SingleThreadEvent, after: boolean): VNodeChild[] {
         : sayWith(l.mergedNoCommit, { branch: event.into });
     case 'headRefDeleted':
       return sayWith(l.headRefDeleted, { branch: event.branch });
+    // Only an issue's thread has them (F13): what was linked is a pull request.
     case 'connected':
-    case 'disconnected': {
-      const linked = event.ref.kind === 'pullRequest';
-      const key =
-        event.kind === 'connected'
-          ? linked
-            ? l.connectedPullRequest
-            : l.connectedIssue
-          : linked
-            ? l.disconnectedPullRequest
-            : l.disconnectedIssue;
-      return sayWith(key, { ref: renderRef(event.ref) });
-    }
+      return sayWith(l.connectedPullRequest, { ref: renderRef(event.ref) });
+    case 'disconnected':
+      return sayWith(l.disconnectedPullRequest, { ref: renderRef(event.ref) });
     case 'referenced':
       return event.commit
         ? sayWith(l.referenced, { commit: renderCommit(event.commit), title: event.commit.messageHeadline })
