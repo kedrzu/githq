@@ -1026,6 +1026,25 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               };
+              firstComments: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
               firstEvents: {
                   pageInfo: { endCursor: string | null };
                   nodes: Array<
@@ -1202,7 +1221,52 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | { __typename: 'IssueComment' }
                       | { __typename: 'IssueCommentPinnedEvent' }
                       | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -1358,7 +1422,26 @@ export type ItemDetailQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -1402,7 +1485,20 @@ export type ItemDetailQuery = {
                             commitRepository: { nameWithOwner: string };
                         }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | {
                             __typename: 'RenamedTitleEvent';
                             id: string;
@@ -1526,7 +1622,54 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -1721,7 +1864,52 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | { __typename: 'IssueComment' }
                       | { __typename: 'IssueCommentPinnedEvent' }
                       | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -1877,7 +2065,26 @@ export type ItemDetailQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -1921,7 +2128,20 @@ export type ItemDetailQuery = {
                             commitRepository: { nameWithOwner: string };
                         }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | {
                             __typename: 'RenamedTitleEvent';
                             id: string;
@@ -2045,7 +2265,54 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -2302,6 +2569,25 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               };
+              firstComments: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
               firstEvents: {
                   pageInfo: { endCursor: string | null };
                   nodes: Array<
@@ -2516,7 +2802,52 @@ export type ItemDetailQuery = {
                         }
                       | { __typename: 'DeployedEvent' }
                       | { __typename: 'DeploymentEnvironmentChangedEvent' }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | {
                             __typename: 'HeadRefDeletedEvent';
                             id: string;
@@ -2714,7 +3045,26 @@ export type ItemDetailQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -2790,7 +3140,20 @@ export type ItemDetailQuery = {
                         }
                       | { __typename: 'RemovedFromMergeQueueEvent' }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | { __typename: 'RemovedFromStackEvent' }
                       | {
                             __typename: 'RenamedTitleEvent';
@@ -2972,7 +3335,54 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -3205,7 +3615,52 @@ export type ItemDetailQuery = {
                         }
                       | { __typename: 'DeployedEvent' }
                       | { __typename: 'DeploymentEnvironmentChangedEvent' }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | {
                             __typename: 'HeadRefDeletedEvent';
                             id: string;
@@ -3403,7 +3858,26 @@ export type ItemDetailQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -3479,7 +3953,20 @@ export type ItemDetailQuery = {
                         }
                       | { __typename: 'RemovedFromMergeQueueEvent' }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | { __typename: 'RemovedFromStackEvent' }
                       | {
                             __typename: 'RenamedTitleEvent';
@@ -3661,7 +4148,54 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -3987,6 +4521,25 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               };
+              firstComments: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
               firstEvents: {
                   pageInfo: { endCursor: string | null };
                   nodes: Array<
@@ -4163,7 +4716,52 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | { __typename: 'IssueComment' }
                       | { __typename: 'IssueCommentPinnedEvent' }
                       | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -4319,7 +4917,26 @@ export type ItemDetailsQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -4363,7 +4980,20 @@ export type ItemDetailsQuery = {
                             commitRepository: { nameWithOwner: string };
                         }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | {
                             __typename: 'RenamedTitleEvent';
                             id: string;
@@ -4487,7 +5117,54 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -4682,7 +5359,52 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | { __typename: 'IssueComment' }
                       | { __typename: 'IssueCommentPinnedEvent' }
                       | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -4838,7 +5560,26 @@ export type ItemDetailsQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -4882,7 +5623,20 @@ export type ItemDetailsQuery = {
                             commitRepository: { nameWithOwner: string };
                         }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | {
                             __typename: 'RenamedTitleEvent';
                             id: string;
@@ -5006,7 +5760,54 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -5263,6 +6064,25 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               };
+              firstComments: {
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
               firstEvents: {
                   pageInfo: { endCursor: string | null };
                   nodes: Array<
@@ -5477,7 +6297,52 @@ export type ItemDetailsQuery = {
                         }
                       | { __typename: 'DeployedEvent' }
                       | { __typename: 'DeploymentEnvironmentChangedEvent' }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | {
                             __typename: 'HeadRefDeletedEvent';
                             id: string;
@@ -5675,7 +6540,26 @@ export type ItemDetailsQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -5751,7 +6635,20 @@ export type ItemDetailsQuery = {
                         }
                       | { __typename: 'RemovedFromMergeQueueEvent' }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | { __typename: 'RemovedFromStackEvent' }
                       | {
                             __typename: 'RenamedTitleEvent';
@@ -5933,7 +6830,54 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -6166,7 +7110,52 @@ export type ItemDetailsQuery = {
                         }
                       | { __typename: 'DeployedEvent' }
                       | { __typename: 'DeploymentEnvironmentChangedEvent' }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | {
                             __typename: 'HeadRefDeletedEvent';
                             id: string;
@@ -6364,7 +7353,26 @@ export type ItemDetailsQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -6440,7 +7448,20 @@ export type ItemDetailsQuery = {
                         }
                       | { __typename: 'RemovedFromMergeQueueEvent' }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | { __typename: 'RemovedFromStackEvent' }
                       | {
                             __typename: 'RenamedTitleEvent';
@@ -6622,7 +7643,54 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -9169,7 +10237,52 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | { __typename: 'IssueComment' }
                       | { __typename: 'IssueCommentPinnedEvent' }
                       | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -9325,7 +10438,26 @@ export type ThreadMiddleQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -9369,7 +10501,20 @@ export type ThreadMiddleQuery = {
                             commitRepository: { nameWithOwner: string };
                         }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | {
                             __typename: 'RenamedTitleEvent';
                             id: string;
@@ -9493,7 +10638,54 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -9749,7 +10941,52 @@ export type ThreadMiddleQuery = {
                         }
                       | { __typename: 'DeployedEvent' }
                       | { __typename: 'DeploymentEnvironmentChangedEvent' }
-                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'DisconnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
                       | {
                             __typename: 'HeadRefDeletedEvent';
                             id: string;
@@ -9947,7 +11184,26 @@ export type ThreadMiddleQuery = {
                                 repository: { nameWithOwner: string };
                             } | null;
                         }
-                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'ParentIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
                       | {
                             __typename: 'PinnedEvent';
                             id: string;
@@ -10023,7 +11279,20 @@ export type ThreadMiddleQuery = {
                         }
                       | { __typename: 'RemovedFromMergeQueueEvent' }
                       | { __typename: 'RemovedFromProjectEvent' }
-                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RemovedFromProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
                       | { __typename: 'RemovedFromStackEvent' }
                       | {
                             __typename: 'RenamedTitleEvent';
@@ -10205,7 +11474,54 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                         }
-                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnmarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
                       | {
                             __typename: 'UnpinnedEvent';
                             id: string;
@@ -10534,6 +11850,25 @@ export type IssueDetailFieldsFragment = {
                 | null;
         } | null> | null;
     };
+    firstComments: {
+        nodes: Array<{
+            id: string;
+            url: string;
+            createdAt: string;
+            lastEditedAt: string | null;
+            body: string;
+            bodyHTML: string;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+        } | null> | null;
+    };
     firstEvents: {
         pageInfo: { endCursor: string | null };
         nodes: Array<
@@ -10710,7 +12045,52 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'DisconnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
             | { __typename: 'IssueComment' }
             | { __typename: 'IssueCommentPinnedEvent' }
             | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -10866,7 +12246,26 @@ export type IssueDetailFieldsFragment = {
                       repository: { nameWithOwner: string };
                   } | null;
               }
-            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'ParentIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
             | {
                   __typename: 'PinnedEvent';
                   id: string;
@@ -10910,7 +12309,20 @@ export type IssueDetailFieldsFragment = {
                   commitRepository: { nameWithOwner: string };
               }
             | { __typename: 'RemovedFromProjectEvent' }
-            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RemovedFromProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
             | {
                   __typename: 'RenamedTitleEvent';
                   id: string;
@@ -11034,7 +12446,54 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnmarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -11229,7 +12688,52 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'DisconnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
             | { __typename: 'IssueComment' }
             | { __typename: 'IssueCommentPinnedEvent' }
             | { __typename: 'IssueCommentUnpinnedEvent' }
@@ -11385,7 +12889,26 @@ export type IssueDetailFieldsFragment = {
                       repository: { nameWithOwner: string };
                   } | null;
               }
-            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'ParentIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
             | {
                   __typename: 'PinnedEvent';
                   id: string;
@@ -11429,7 +12952,20 @@ export type IssueDetailFieldsFragment = {
                   commitRepository: { nameWithOwner: string };
               }
             | { __typename: 'RemovedFromProjectEvent' }
-            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RemovedFromProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
             | {
                   __typename: 'RenamedTitleEvent';
                   id: string;
@@ -11553,7 +13089,54 @@ export type IssueDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnmarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -12874,6 +14457,25 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     };
+    firstComments: {
+        nodes: Array<{
+            id: string;
+            url: string;
+            createdAt: string;
+            lastEditedAt: string | null;
+            body: string;
+            bodyHTML: string;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+        } | null> | null;
+    };
     firstEvents: {
         pageInfo: { endCursor: string | null };
         nodes: Array<
@@ -13088,7 +14690,52 @@ export type PullRequestDetailFieldsFragment = {
               }
             | { __typename: 'DeployedEvent' }
             | { __typename: 'DeploymentEnvironmentChangedEvent' }
-            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'DisconnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
             | {
                   __typename: 'HeadRefDeletedEvent';
                   id: string;
@@ -13286,7 +14933,26 @@ export type PullRequestDetailFieldsFragment = {
                       repository: { nameWithOwner: string };
                   } | null;
               }
-            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'ParentIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
             | {
                   __typename: 'PinnedEvent';
                   id: string;
@@ -13359,7 +15025,20 @@ export type PullRequestDetailFieldsFragment = {
               }
             | { __typename: 'RemovedFromMergeQueueEvent' }
             | { __typename: 'RemovedFromProjectEvent' }
-            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RemovedFromProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
             | { __typename: 'RemovedFromStackEvent' }
             | {
                   __typename: 'RenamedTitleEvent';
@@ -13541,7 +15220,54 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnmarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -13774,7 +15500,52 @@ export type PullRequestDetailFieldsFragment = {
               }
             | { __typename: 'DeployedEvent' }
             | { __typename: 'DeploymentEnvironmentChangedEvent' }
-            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'DisconnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
             | {
                   __typename: 'HeadRefDeletedEvent';
                   id: string;
@@ -13972,7 +15743,26 @@ export type PullRequestDetailFieldsFragment = {
                       repository: { nameWithOwner: string };
                   } | null;
               }
-            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'ParentIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
             | {
                   __typename: 'PinnedEvent';
                   id: string;
@@ -14045,7 +15835,20 @@ export type PullRequestDetailFieldsFragment = {
               }
             | { __typename: 'RemovedFromMergeQueueEvent' }
             | { __typename: 'RemovedFromProjectEvent' }
-            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RemovedFromProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
             | { __typename: 'RemovedFromStackEvent' }
             | {
                   __typename: 'RenamedTitleEvent';
@@ -14227,7 +16030,54 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
               }
-            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnmarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
             | {
                   __typename: 'UnpinnedEvent';
                   id: string;
@@ -14961,7 +16811,52 @@ type ThreadEventFields_DeployedEvent_Fragment = { __typename: 'DeployedEvent' };
 
 type ThreadEventFields_DeploymentEnvironmentChangedEvent_Fragment = { __typename: 'DeploymentEnvironmentChangedEvent' };
 
-type ThreadEventFields_DisconnectedEvent_Fragment = { __typename: 'DisconnectedEvent' };
+type ThreadEventFields_DisconnectedEvent_Fragment = {
+    __typename: 'DisconnectedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    source:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          };
+    subject:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          };
+};
 
 type ThreadEventFields_HeadRefDeletedEvent_Fragment = {
     __typename: 'HeadRefDeletedEvent';
@@ -15180,7 +17075,26 @@ type ThreadEventFields_ParentIssueAddedEvent_Fragment = {
     } | null;
 };
 
-type ThreadEventFields_ParentIssueRemovedEvent_Fragment = { __typename: 'ParentIssueRemovedEvent' };
+type ThreadEventFields_ParentIssueRemovedEvent_Fragment = {
+    __typename: 'ParentIssueRemovedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    parent: {
+        __typename: 'Issue';
+        id: string;
+        url: string;
+        number: number;
+        title: string;
+        repository: { nameWithOwner: string };
+    } | null;
+};
 
 type ThreadEventFields_PinnedEvent_Fragment = {
     __typename: 'PinnedEvent';
@@ -15265,7 +17179,20 @@ type ThreadEventFields_RemovedFromMergeQueueEvent_Fragment = { __typename: 'Remo
 
 type ThreadEventFields_RemovedFromProjectEvent_Fragment = { __typename: 'RemovedFromProjectEvent' };
 
-type ThreadEventFields_RemovedFromProjectV2Event_Fragment = { __typename: 'RemovedFromProjectV2Event' };
+type ThreadEventFields_RemovedFromProjectV2Event_Fragment = {
+    __typename: 'RemovedFromProjectV2Event';
+    id: string;
+    createdAt: string;
+    wasAutomated: boolean;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    project: { title: string; url: string } | null;
+};
 
 type ThreadEventFields_RemovedFromStackEvent_Fragment = { __typename: 'RemovedFromStackEvent' };
 
@@ -15461,7 +17388,54 @@ type ThreadEventFields_UnlockedEvent_Fragment = {
         | null;
 };
 
-type ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment = { __typename: 'UnmarkedAsDuplicateEvent' };
+type ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment = {
+    __typename: 'UnmarkedAsDuplicateEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    canonical:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+    duplicate:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+};
 
 type ThreadEventFields_UnpinnedEvent_Fragment = {
     __typename: 'UnpinnedEvent';
@@ -17417,6 +19391,20 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -17456,6 +19444,17 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -17507,6 +19506,19 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -17579,6 +19591,20 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+  ... on UnmarkedAsDuplicateEvent {
     id
     createdAt
     actor {
@@ -17964,6 +19990,11 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
   }
   commentPage: comments(last: 50) {
     ...CommentPageFields
+  }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
     pageInfo {
@@ -18510,6 +20541,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -18549,6 +20594,17 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -18600,6 +20656,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -18672,6 +20741,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+  ... on UnmarkedAsDuplicateEvent {
     id
     createdAt
     actor {
@@ -19914,6 +21997,11 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
+  }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
     pageInfo {
       endCursor
@@ -20603,6 +22691,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -20642,6 +22744,17 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -20693,6 +22806,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -20765,6 +22891,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+  ... on UnmarkedAsDuplicateEvent {
     id
     createdAt
     actor {
@@ -21155,6 +23295,11 @@ fragment IssueDetailFields on Issue {
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
+  }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
     pageInfo {
       endCursor
@@ -21437,6 +23582,11 @@ fragment PullRequestDetailFields on PullRequest {
   }
   commentPage: comments(last: 50) {
     ...CommentPageFields
+  }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
     pageInfo {
@@ -21939,6 +24089,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -21978,6 +24142,17 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -22029,6 +24204,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -22114,6 +24302,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on UnmarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
 }
 fragment ThreadRefFields on IssueOrPullRequest {
   __typename
@@ -22183,6 +24385,11 @@ fragment IssueDetailFields on Issue {
   }
   commentPage: comments(last: 50) {
     ...CommentPageFields
+  }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
     pageInfo {
@@ -22466,6 +24673,11 @@ fragment PullRequestDetailFields on PullRequest {
   }
   commentPage: comments(last: 50) {
     ...CommentPageFields
+  }
+  firstComments: comments(first: 2) {
+    nodes {
+      ...IssueCommentFields
+    }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
     pageInfo {
@@ -22968,6 +25180,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -23007,6 +25233,17 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -23058,6 +25295,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -23130,6 +25380,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+  ... on UnmarkedAsDuplicateEvent {
     id
     createdAt
     actor {
@@ -26028,6 +28292,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       ...ThreadRefFields
     }
   }
+  ... on DisconnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
   ... on ReferencedEvent {
     id
     createdAt
@@ -26067,6 +28345,17 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueRemovedEvent {
     id
     createdAt
     actor {
@@ -26118,6 +28407,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on RemovedFromProjectV2Event {
     id
     createdAt
     actor {
@@ -26190,6 +28492,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
     }
   }
   ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+  ... on UnmarkedAsDuplicateEvent {
     id
     createdAt
     actor {
