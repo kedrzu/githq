@@ -137,11 +137,27 @@ async function focus(reveal: 'head' | 'end') {
   await nextTick();
   // Not scrolled to the caret by the browser: on a long text that takes the head out of view.
   input.value?.focus({ preventScroll: true });
-  // A frame on, the text area has grown to its text (`useTextArea` sizes it a tick after the text changes).
+  await bringIntoView(reveal === 'head' ? headRef.value : footerRef.value);
+}
+
+/**
+ * Typed at the end, the text area grows under the footer: the browser keeps the caret in view, the footer and its
+ * buttons follow it into view.
+ */
+async function onInput() {
+  suggestions.update();
+  const element = input.value;
+  if (element && element.selectionEnd === element.value.length) {
+    await bringIntoView(footerRef.value);
+  }
+}
+
+// A frame on, the text area has grown to its text (`useTextArea` sizes it a tick after the text changes).
+async function bringIntoView(part: HTMLElement | null) {
   await new Promise(resolve => {
     requestAnimationFrame(resolve);
   });
-  (reveal === 'head' ? headRef : footerRef).value?.scrollIntoView({ block: 'nearest' });
+  part?.scrollIntoView({ block: 'nearest' });
 }
 
 // The suggestions take their keys first: with them open, Enter inserts one and Escape closes them only.
@@ -259,7 +275,7 @@ interface RenderedPreview {
       <TextArea
         :class="css.markdownEditor_text"
         v-bind="suggestions.attrs"
-        @input="suggestions.update()"
+        @input="onInput"
         @keyup="suggestions.update()"
         @click="suggestions.update()"
         @blur="suggestions.close()"

@@ -162,3 +162,38 @@ test("in the modal a click picks an @ suggestion and the modal stays: the menu i
     await expect(item.commentBox).toHaveValue(`Thanks @${login} `);
     await expect(item.modal).toBeVisible();
 });
+
+test('in the modal the comment box growing as lines are typed keeps its buttons in view, the space under them kept', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    for (let index = 1; index <= 12; index++) {
+        sample.world.comment(sample.issue, {
+            author: sample.world.viewer,
+            body: `Comment ${index}.`,
+            minutesAgo: 30 - index,
+        });
+    }
+
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Modal').click();
+    await expect(item.entry('Comment 12.')).toBeVisible();
+
+    await item.commentBox.click();
+    for (let line = 1; line <= 8; line++) {
+        await page.keyboard.type(`Line ${line}`);
+        await page.keyboard.press('Shift+Enter');
+    }
+
+    await expect.poll(() => getBottomGap(item.composerButton('Comment'), item.modal)).toBeGreaterThanOrEqual(24);
+});
+
+/** How far above the bottom of `container` the bottom of `locator` is. */
+async function getBottomGap(locator: Locator, container: Locator) {
+    const box = await locator.boundingBox();
+    const around = await container.boundingBox();
+    return box && around ? around.y + around.height - (box.y + box.height) : null;
+}
