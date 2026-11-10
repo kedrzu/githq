@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, useTemplateRef, watchPostEffect } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import ContextMenu from '@/components/ContextMenu.vue';
@@ -28,6 +28,11 @@ const props = defineProps<{
   sending?: boolean;
   /** GitHub did not take it. */
   failed?: boolean;
+  /**
+   * Its ⋯ takes the focus: the keyboard goes on from the card after its edit was cancelled or its deletion was not
+   * confirmed, rather than from the page — the editor and the dialog are gone with what had it.
+   */
+  menuFocused?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -45,6 +50,7 @@ defineSlots<{
 }>();
 
 const t = useTranslate();
+const headRef = useTemplateRef<HTMLElement>('head');
 
 const login = computed(() => props.author?.login ?? t(l.deletedUser));
 const when = computed(() => {
@@ -54,6 +60,13 @@ const when = computed(() => {
 
   const formatWhen = props.description ? formatTimeAgo : formatAge;
   return t(l.commented, { when: formatWhen(Date.parse(props.createdAt), props.now) });
+});
+
+// The ⋯ is the head's only button.
+watchPostEffect(() => {
+  if (props.menuFocused) {
+    headRef.value?.querySelector('button')?.focus();
+  }
 });
 </script>
 
@@ -72,7 +85,10 @@ const when = computed(() => {
         />
       </div>
       <div :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed]">
-        <p :class="css.itemThreadCard_head">
+        <p
+          ref="head"
+          :class="css.itemThreadCard_head"
+        >
           <span :class="css.itemThreadCard_author">{{ login }}</span>
           <span
             v-if="failed"

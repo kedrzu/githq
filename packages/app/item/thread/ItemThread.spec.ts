@@ -148,6 +148,18 @@ test("Edit opens the comment's Markdown in place; Cancel (Esc) puts the card bac
     await expect.element(editor).not.toBeInTheDocument();
     await expect.element(card(MINE)).toHaveTextContent(/migrating existing series\.$/u);
     expect(onEdit).not.toHaveBeenCalled();
+    // The keyboard goes on from the card, not from the page's start.
+    await expect.element(card(MINE).getByRole('button', { name: 'Comment actions' })).toHaveFocus();
+});
+
+test("the description's Cancel gives the focus back to its ⋯ too", async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+
+    await expect.element(page.getByRole('button', { name: 'Description actions' })).toHaveFocus();
 });
 
 test('⌘↵ saves the edit through the edit path and closes the editor', async () => {
@@ -163,6 +175,21 @@ test('⌘↵ saves the edit through the edit path and closes the editor', async 
 
     expect(onEdit).toHaveBeenCalledWith({ kind: 'editComment', commentId: 'C_2', body: 'Opened a pull request.' });
     await expect.element(editor).not.toBeInTheDocument();
+});
+
+test("Cancel in the delete confirmation gives the focus back to the comment's ⋯, the comment kept", async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    // From a right click too, where the menu has no ⋯ of its own to give the focus back to.
+    await userEvent.click(card(MINE).getByText('Opened #1205'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
+    await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+
+    await expect.element(dialog).not.toBeInTheDocument();
+    await expect.element(card(MINE).getByRole('button', { name: 'Comment actions' })).toHaveFocus();
+    expect(onEdit).not.toHaveBeenCalled();
 });
 
 test('Delete… asks once; only the confirmation deletes', async () => {

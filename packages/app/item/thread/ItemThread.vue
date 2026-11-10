@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. -->
+<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
@@ -70,10 +70,14 @@ const editorsRef = shallowRef<ReadonlyMap<string | null, string>>(new Map());
 const focusedEditor = ref<string | null | undefined>(undefined);
 /** The comment asked to be deleted, while the dialog asks. */
 const deletingId = ref<string | null>(null);
+/** The card whose ⋯ takes the focus (`null` the description's), for the moment it takes it. */
+const menuFocus = ref<string | null | undefined>(undefined);
 /** The text Quote reply picked, handed over once the menu closed: the composer then keeps the focus it takes. */
 let quoted: string | null = null;
 /** Edit opened an editor from a menu, which took the focus: the closing menu leaves it there. */
 let editOpened = false;
+/** The comment Delete… picked, asked about once the menu closed. */
+let deleting: string | null = null;
 
 const folded = computed(() =>
   props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
@@ -123,9 +127,17 @@ function startEdit(id: string | null, body: string) {
 
 function cancelEdit(id: string | null) {
   setEditor(id, null);
+  void focusMenu(id);
   if (getFailure(id)) {
     emit('discardEdit', id);
   }
+}
+
+/** The card's ⋯ takes the focus once the card is on screen again. */
+async function focusMenu(id: string | null) {
+  menuFocus.value = id;
+  await nextTick();
+  menuFocus.value = undefined;
 }
 
 /** Saved as it was: nothing to send, unless it is an edit GitHub did not take. */
@@ -151,8 +163,15 @@ function quote(body: string) {
   quoted = body;
 }
 
-function onMenuClose(event: Event) {
-  if (editOpened || quoted !== null) {
+function askDelete(id: string) {
+  deleting = id;
+}
+
+// The dialog opens only once the focus is on the card's ⋯ — not on the menu's entry, gone with the menu — so its Cancel
+// gives the focus back there.
+async function onMenuClose(event: Event) {
+  const asked = deleting;
+  if (editOpened || quoted !== null || asked !== null) {
     event.preventDefault();
   }
 
@@ -162,6 +181,11 @@ function onMenuClose(event: Event) {
 
   editOpened = false;
   quoted = null;
+  deleting = null;
+  if (asked !== null) {
+    await focusMenu(asked);
+    deletingId.value = asked;
+  }
 }
 
 function copyLink(url: string) {
@@ -206,6 +230,7 @@ async function showEarlier() {
         :now="now"
         :edited="detail.lastEditedAt !== null"
         :sending="detail.pendingBody !== undefined"
+        :menu-focused="menuFocus === null"
         description
         @menu-close="onMenuClose"
       >
@@ -270,6 +295,7 @@ async function showEarlier() {
             :now="now"
             :edited="comment.lastEditedAt !== null"
             :sending="comment.pendingBody !== undefined"
+            :menu-focused="menuFocus === comment.id"
             @menu-close="onMenuClose"
           >
             <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
@@ -295,7 +321,7 @@ async function showEarlier() {
                 @edit="startEdit(comment.id, comment.body)"
                 @quote-reply="quote(comment.body)"
                 @copy-link="copyLink(comment.url)"
-                @delete="deletingId = comment.id"
+                @delete="askDelete(comment.id)"
               />
             </template>
           </ItemThreadCard>
