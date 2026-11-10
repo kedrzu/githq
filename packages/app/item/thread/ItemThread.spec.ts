@@ -765,3 +765,21 @@ test('Resolve folds the thread to its row and the row keeps the focus, so J and 
     await expect.element(dbThread().getByRole('button', { name: 'Resolve thread' })).toBeVisible();
     await expect.element(dbThread()).toHaveFocus();
 });
+
+test('a thread opened, unresolved and resolved again folds to its row, in a review and on its own', async () => {
+    await openCodeThreads();
+    const dbRow = page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u });
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    await userEvent.click(dbRow);
+    await userEvent.click(dbThread().getByRole('button', { name: 'Unresolve' }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    await expect.element(dbRow).toHaveFocus();
+
+    // dkim's code comment, resolved.
+    const schemaRow = page.getByRole('button', { name: /^Resolved · Nit/u });
+    const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
+    await userEvent.click(schemaRow);
+    await userEvent.click(schema.getByRole('button', { name: 'Unresolve' }));
+    await userEvent.click(schema.getByRole('button', { name: 'Resolve thread' }));
+    await expect.element(schemaRow).toHaveFocus();
+});

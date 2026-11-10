@@ -46,6 +46,15 @@ const folded = computed(
 );
 const age = computed(() => (first.value ? formatAge(Date.parse(first.value.createdAt), props.now) : ''));
 
+/** Resolve always folds it to its row, however it was opened before. */
+function setResolved(resolved: boolean) {
+  if (resolved) {
+    opened.value = null;
+  }
+
+  emit('setResolved', resolved);
+}
+
 function hide() {
   opened.value = false;
   emit('hidden');
@@ -86,7 +95,7 @@ function hide() {
         :replies="replies"
         @hide="hide"
         @reply="emit('reply')"
-        @set-resolved="emit('setResolved', $event)"
+        @set-resolved="setResolved"
       />
     </div>
   </div>

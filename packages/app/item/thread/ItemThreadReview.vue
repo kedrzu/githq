@@ -96,6 +96,17 @@ function setOpened(threadId: string, open: boolean) {
   opened.value = new Map(opened.value).set(threadId, open);
 }
 
+/** Resolve always folds the thread to its row, however it was opened before. */
+function setResolved(threadId: string, resolved: boolean) {
+  if (resolved) {
+    const next = new Map(opened.value);
+    next.delete(threadId);
+    opened.value = next;
+  }
+
+  emit('setResolved', threadId, resolved);
+}
+
 function hide(threadId: string) {
   setOpened(threadId, false);
   emit('hidden', threadId);
@@ -147,7 +158,7 @@ function hide(threadId: string) {
           :viewer="viewer"
           :replies="replies"
           @reply="emit('reply', thread.id)"
-          @set-resolved="emit('setResolved', thread.id, $event)"
+          @set-resolved="setResolved(thread.id, $event)"
         />
         <template
           v-for="thread in entry.resolved"
@@ -160,7 +171,7 @@ function hide(threadId: string) {
             :replies="replies"
             @hide="hide(thread.id)"
             @reply="emit('reply', thread.id)"
-            @set-resolved="emit('setResolved', thread.id, $event)"
+            @set-resolved="setResolved(thread.id, $event)"
           />
           <ItemThreadResolvedRow
             v-else
