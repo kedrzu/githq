@@ -27,6 +27,15 @@ function card(text: string) {
     return page.getByRole('listitem').filter({ hasText: text });
 }
 
+/**
+ * Right-clicks the head of the comment that reads `text`, or of the description when not given. Not its text: in
+ * GitHub's rendering a right click is the browser's own menu, or a githq link's (`GitHubLinks`).
+ */
+async function rightClickCard(text?: string) {
+    const head = text === undefined ? page.getByText('Author', { exact: true }) : card(text).getByText(/^commented /);
+    await userEvent.click(head, { button: 'right' });
+}
+
 /** Opens the ⋯ menu of the comment that reads `text`. */
 async function openMenu(text: string) {
     await userEvent.click(card(text).getByRole('button', { name: 'Comment actions' }));
@@ -217,7 +226,7 @@ test('where the user may not comment, the menu offers no Quote reply: the quote 
 test('the description has the same menu without Delete, from a right click too', async () => {
     await IssueInPanel.run();
 
-    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await rightClickCard();
 
     const items = page.getByRole('menuitem');
     await expect.element(items.nth(0)).toHaveTextContent('Edit');
@@ -278,7 +287,7 @@ test('a changed edit asks before it is let go: Esc asks, Esc again keeps editing
 test("Cancel on the description's changed edit asks too: Keep editing goes back to the text, Discard puts the card back", async () => {
     await IssueInPanel.run();
 
-    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await rightClickCard();
     await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
     const editor = page.getByRole('textbox', { name: 'Edit description' });
     await userEvent.type(editor, ' More.');
@@ -299,7 +308,7 @@ test("Cancel on the description's changed edit asks too: Keep editing goes back 
 test("the description's Cancel gives the focus back to its ⋯ too", async () => {
     await IssueInPanel.run();
 
-    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await rightClickCard();
     await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
     await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
 
@@ -326,7 +335,7 @@ test("Cancel in the delete confirmation gives the focus back to the comment's �
     await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
 
     // From a right click too, where the menu has no ⋯ of its own to give the focus back to.
-    await userEvent.click(card(MINE).getByText('Opened #1205'), { button: 'right' });
+    await rightClickCard(MINE);
     await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
     const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
     await userEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
@@ -373,7 +382,7 @@ test("an editor open on one item is not on the next: Update could otherwise save
     const failedEdits = EditRefused.args.failedEdits ?? [];
     const args = shallowReactive({ ...IssueInPanel.args, failedEdits, onEdit });
     await IssueInPanel.run({ args });
-    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await rightClickCard();
     await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
     await expect.element(page.getByRole('textbox', { name: 'Edit description' })).toBeVisible();
 
@@ -411,7 +420,7 @@ test('Edit from a right click leaves the focus in the editor it opened, not wher
     await userEvent.click(page.getByRole('button', { name: /^Show 2 earlier events/ }));
     await expect.element(card('An older one of mine.')).toHaveFocus();
 
-    await userEvent.click(card('An older one of mine.').getByText('An older one'), { button: 'right' });
+    await rightClickCard('An older one of mine.');
     await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
     const editor = page.getByRole('textbox', { name: 'Edit comment' });
     await expect.element(editor).toHaveFocus();

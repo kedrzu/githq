@@ -355,7 +355,7 @@ test('Quote reply of a long comment leaves its HTML comments out and brings the 
     const scroll = getContentScroll();
     scroll.scrollTop = 0;
 
-    await userEvent.click(page.getByText('Steps', { exact: true }), { button: 'right' });
+    await rightClickComment('Steps');
     await userEvent.click(page.getByRole('menuitem', { name: 'Quote reply' }));
 
     const box = page.getByRole('textbox', { name: 'Comment' });
@@ -378,7 +378,7 @@ test("Edit of a long comment keeps the editor's head in view, not only the caret
     });
     const scroll = getContentScroll();
 
-    await userEvent.click(page.getByText('Steps', { exact: true }), { button: 'right' });
+    await rightClickComment('Steps');
     await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
 
     await expect.element(page.getByRole('textbox', { name: 'Edit comment' })).toHaveFocus();
@@ -402,7 +402,7 @@ test('K1b: a conversation locked to collaborators, or an archived repository, sa
     await userEvent.keyboard('r');
     expect(document.activeElement).toBe(document.body);
     // Quote reply would land in a draft no one sees.
-    await userEvent.click(page.getByText('Same on mobile.', { exact: false }), { button: 'right' });
+    await rightClickComment('Same on mobile.');
     await expect.element(page.getByRole('menuitem', { name: 'Copy link' })).toBeVisible();
     expect(page.getByRole('menuitem', { name: 'Quote reply' }).query()).toBeNull();
     await userEvent.keyboard('{Escape}');
@@ -427,7 +427,22 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
     expect(ContributorView.args.onEdit).not.toHaveBeenCalled();
 });
 
-/** The panel's scrolling content: the column holding the item's heading. */
+/**
+ * Right-clicks the head of the comment that reads `text`. Not its text: in GitHub's rendering a right click is the
+ * browser's own menu, or a githq link's (`GitHubLinks`).
+ */
+async function rightClickComment(text: string) {
+    await userEvent.click(
+        page
+            .getByRole('listitem')
+            .filter({ hasText: text })
+            .getByText(/^commented /),
+        {
+            button: 'right',
+        },
+    );
+}
+
 /** `element` is wholly inside what `scroll` shows. */
 function isInView(element: Element, scroll: HTMLElement) {
     const box = element.getBoundingClientRect();
@@ -435,6 +450,7 @@ function isInView(element: Element, scroll: HTMLElement) {
     return box.top >= view.top && box.bottom <= view.bottom;
 }
 
+/** The panel's scrolling content: the column holding the item's heading. */
 function getContentScroll() {
     const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
     if (!scroll) {
