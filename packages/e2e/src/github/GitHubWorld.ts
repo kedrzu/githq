@@ -1016,15 +1016,17 @@ export class GitHubWorld {
         return this.createPullRequest(params, null).item.id;
     }
 
-    /** Adds a comment to an item, its newest: call them oldest first. */
-    comment(id: string, params: GitHubWorldCommentParams): void {
+    /** Adds a comment to an item, its newest: call them oldest first. Returns its node id. */
+    comment(id: string, params: GitHubWorldCommentParams): string {
         const item = this.get(id);
+        const commentId = `IC_${id}_${item.comments.length + 1}`;
         item.comments.push({
-            id: `IC_${id}_${item.comments.length + 1}`,
+            id: commentId,
             author: params.author,
             body: params.body,
             createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
         });
+        return commentId;
     }
 
     /** Adds a submitted review to a pull request, its newest: call them oldest first. */
