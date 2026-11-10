@@ -132,7 +132,7 @@ test('the description has the same menu without Delete, from a right click too',
     expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Quote reply', 'Copy link']);
 });
 
-test("Edit opens the comment's Markdown in place; Cancel (Esc) puts the card back unchanged, nothing sent", async () => {
+test("Edit opens the comment's Markdown in place; Esc on it unchanged puts the card back at once, nothing sent", async () => {
     const onEdit = vi.fn();
     await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
 
@@ -142,7 +142,6 @@ test("Edit opens the comment's Markdown in place; Cancel (Esc) puts the card bac
     await expect.element(editor).toHaveFocus();
     await expect.element(editor).toHaveValue('Opened #1205 — converting at creation and migrating existing series.');
 
-    await userEvent.type(editor, ' Typed away.');
     await userEvent.keyboard('{Escape}');
 
     await expect.element(editor).not.toBeInTheDocument();
@@ -150,6 +149,59 @@ test("Edit opens the comment's Markdown in place; Cancel (Esc) puts the card bac
     expect(onEdit).not.toHaveBeenCalled();
     // The keyboard goes on from the card, not from the page's start.
     await expect.element(card(MINE).getByRole('button', { name: 'Comment actions' })).toHaveFocus();
+});
+
+test('a changed edit asks before it is let go: Esc asks, Esc again keeps editing, Enter discards', async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    await openMenu(MINE);
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await userEvent.type(editor, ' Typed away.');
+    await userEvent.keyboard('{Escape}');
+
+    const question = page.getByRole('status');
+    await expect.element(question).toHaveTextContent('Discard your changes to this comment?');
+    await expect.element(editor).toHaveFocus();
+    expect(page.getByRole('button', { name: 'Update comment' }).query()).toBeNull();
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(question).not.toBeInTheDocument();
+    await expect.element(editor).toHaveFocus();
+    await expect
+        .element(editor)
+        .toHaveValue('Opened #1205 — converting at creation and migrating existing series. Typed away.');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(question).toBeVisible();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(editor).not.toBeInTheDocument();
+    await expect.element(card(MINE)).toHaveTextContent(/migrating existing series\.$/u);
+    await expect.element(card(MINE).getByRole('button', { name: 'Comment actions' })).toHaveFocus();
+    expect(onEdit).not.toHaveBeenCalled();
+});
+
+test("Cancel on the description's changed edit asks too: Keep editing goes back to the text, Discard puts the card back", async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit description' });
+    await userEvent.type(editor, ' More.');
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+
+    await expect.element(page.getByRole('status')).toHaveTextContent('Discard your changes to the description?');
+    await expect.element(editor).toHaveFocus();
+    await userEvent.click(page.getByRole('button', { name: 'Keep editing' }));
+    await expect.element(page.getByRole('status')).not.toBeInTheDocument();
+    await expect.element(editor).toHaveFocus();
+
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(page.getByRole('button', { name: 'Discard' }));
+    await expect.element(editor).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Description actions' })).toHaveFocus();
 });
 
 test("the description's Cancel gives the focus back to its ⋯ too", async () => {
@@ -207,7 +259,7 @@ test('Delete… asks once; only the confirmation deletes', async () => {
     await expect.element(dialog).not.toBeInTheDocument();
 });
 
-test('an edit GitHub did not take is open again with the text and why; Cancel drops it', async () => {
+test('an edit GitHub did not take is open again with the text and why; Cancel asks, Discard drops it', async () => {
     const onDiscardEdit = vi.fn();
     await EditRefused.run({ args: { ...EditRefused.args, onDiscardEdit } });
 
@@ -217,7 +269,10 @@ test('an edit GitHub did not take is open again with the text and why; Cancel dr
         .toHaveValue('Opened #1205 — converting at creation. Migrating existing series in a follow-up.');
     await expect.element(page.getByRole('alert')).toHaveTextContent('Not sent: GitHub refused it: Body is too long.');
 
+    // Not taken, it counts as changed: Cancel asks first.
     await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+    expect(onDiscardEdit).not.toHaveBeenCalled();
+    await userEvent.click(page.getByRole('button', { name: 'Discard' }));
     expect(onDiscardEdit).toHaveBeenCalledWith('C_2');
 });
 

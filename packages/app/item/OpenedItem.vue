@@ -1,11 +1,11 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { SearchX } from 'lucide-vue-next';
-import { computed, nextTick, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -27,7 +27,14 @@ import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
-import { getItemPagePath, getItemReference, getOpenedItemQuery, getReviewPath } from './itemRoutes.js';
+import {
+  formatItemReference,
+  getItemPagePath,
+  getItemReference,
+  getOpenedItemQuery,
+  getOpenedItemRoute,
+  getReviewPath,
+} from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
@@ -181,6 +188,27 @@ watch(
   },
 );
 
+// Leaving the item — `K`/`J`, another item opened, closing it, anywhere else — while an edit in its thread has changes:
+// the edit asks first and the item stays. Discard does not go on where the user was going: they go again.
+const removeLeaveGuard = router.beforeEach(to => {
+  const next = getOpenedItemRoute(to)?.reference;
+  const staying =
+    next !== undefined &&
+    formatItemReference(next).toLowerCase() === formatItemReference(props.reference).toLowerCase();
+  if (staying || !viewRef.value?.askToLeave()) {
+    return true;
+  }
+
+  // The list's cursor moved ahead of the step (its own `j`/`k`): it comes back.
+  if (opened.id !== null) {
+    navigation.requestStay(opened.id);
+  }
+
+  return false;
+});
+
+onBeforeUnmount(removeLeaveGuard);
+
 function merge() {
   const { id } = opened;
   if (id !== null) {
@@ -291,11 +319,15 @@ function focusModal(event: Event) {
 
 /**
  * Escape in a field leaves it and the modal stays, as the panel and the page do (the item view's Escape): an editor
- * opened in place has cancelled itself, the comment box loses the cursor. The modal hears the key before the item view,
+ * opened in place takes the key itself (it closes, or asks), the comment box loses the cursor. The modal hears the key before the item view,
  * which then leaves it alone; a second Escape closes the item.
  */
 function onModalEscape(event: KeyboardEvent) {
   const { target } = event;
+  if (event.defaultPrevented) {
+    return;
+  }
+
   if (target instanceof HTMLElement && isEditableTarget(target)) {
     event.preventDefault();
     target.blur();

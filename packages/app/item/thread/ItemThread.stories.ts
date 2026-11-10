@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
@@ -140,6 +140,16 @@ export const EditRefused: Story = {
         ],
         onEdit: fn(),
         onDiscardEdit: fn(),
+    },
+};
+
+/** F15's third row: the refused edit, counted as changed, asked to be left: its footer asks to discard it. */
+export const EditAsksToDiscard: Story = {
+    args: EditRefused.args,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(await canvas.findByRole('button', { name: 'Cancel' }));
+        await expect(await canvas.findByRole('status')).toHaveTextContent('Discard your changes to this comment?');
     },
 };
 

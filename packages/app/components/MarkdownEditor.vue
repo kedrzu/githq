@@ -1,4 +1,4 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. The footer's left says "Markdown" unless the caller puts something else there (a question). -->
 <script lang="ts" setup>
 import { useTextArea } from '@nzyme/vue-forms/components/useTextArea.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -51,12 +51,14 @@ const emit = defineEmits({
   ...useTextArea.emits,
   /** `Mod+Enter` inside the editor. */
   submit: () => true,
-  /** `Escape` inside the editor. */
-  cancel: () => true,
+  /** `Escape` inside the editor; the caller taking it prevents its default, and the screen leaves the key alone. */
+  cancel: (_event: KeyboardEvent) => true,
 });
 defineSlots<{
   /** The footer's buttons, at its right. */
   footer?(): unknown;
+  /** What the footer says at its left; "Markdown" when not given. */
+  status?(): unknown;
 }>();
 
 /** The tool groups of the head, a rule between each. */
@@ -171,7 +173,7 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault();
     emit('submit');
   } else if (event.key === 'Escape') {
-    emit('cancel');
+    emit('cancel', event);
   }
 }
 
@@ -323,11 +325,13 @@ interface RenderedPreview {
       ref="footer"
       :class="css.markdownEditor_footer"
     >
-      <FileText
-        :class="css.markdownEditor_footerIcon"
-        aria-hidden="true"
-      />
-      <span :class="css.markdownEditor_hint">{{ t(l.markdown) }}</span>
+      <slot name="status">
+        <FileText
+          :class="css.markdownEditor_footerIcon"
+          aria-hidden="true"
+        />
+        <span :class="css.markdownEditor_hint">{{ t(l.markdown) }}</span>
+      </slot>
       <div :class="css.markdownEditor_actions">
         <slot name="footer" />
       </div>

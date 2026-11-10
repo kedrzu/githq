@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
+import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 
 import { createSampleEditableWork } from './sampleEditableWork.js';
@@ -58,9 +59,33 @@ test('an edit GitHub refuses is undone with its toast and opens the editor again
     await expect(editor).toHaveValue('A much longer text.');
     expect(sample.world.stateOf(sample.issue).comments).toEqual([TEXT]);
 
+    // Not taken, it counts as changed: Cancel asks first.
     await item.root.getByRole('button', { name: 'Cancel' }).click();
+    await item.root.getByRole('button', { name: 'Discard' }).click();
     await expect(editor).toBeHidden();
     await expect(item.entry(TEXT)).toBeVisible();
+});
+
+test('J with a changed edit open stays on the item and asks; Discard puts the card back', async ({ page, github }) => {
+    const { item } = await openWithComment(page, github);
+    const myWork = new MyWorkScreenHarness(page);
+    await expect(myWork.selectedRow).toContainText(ISSUE);
+
+    await item.commentAction(TEXT, 'Edit');
+    const editor = item.root.getByRole('textbox', { name: 'Edit comment' });
+    await editor.fill('Reproduced on Safari and Firefox.');
+    await editor.blur();
+    await page.keyboard.press('j');
+
+    await expect(item.root.getByRole('status')).toHaveText('Discard your changes to this comment?');
+    await expect(editor).toBeFocused();
+    await expect(item.title).toHaveText(ISSUE);
+    await expect(myWork.selectedRow).toContainText(ISSUE);
+
+    await item.root.getByRole('button', { name: 'Discard' }).click();
+    await expect(editor).toBeHidden();
+    await expect(item.entry(TEXT)).toBeVisible();
+    await expect(item.title).toHaveText(ISSUE);
 });
 
 test('Delete… asks once, then the comment is gone, here and on GitHub', async ({ page, github }) => {

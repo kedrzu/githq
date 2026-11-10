@@ -81,6 +81,10 @@ $color-red: #f85149;
 $color-red-quiet: #ac4d52;
 // Primer's fgColor-attention.
 $color-amber: #d29922;
+// The fill of the answer that throws something away (Discard in a question), and the label on it: Primer's
+// bgColor-danger-emphasis and fgColor-onEmphasis, 4.6:1. `$color-red` would read 3.4:1 under a white label.
+$color-red-emphasis: #da3633;
+$color-on-emphasis: #ffffff;
 // Primer's fgColor-done.
 $color-purple: #ab7df8;
 

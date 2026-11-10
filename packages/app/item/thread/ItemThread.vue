@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. -->
+<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
@@ -64,8 +64,10 @@ const editTexts = useEditTexts();
 const commentsRef = useTemplateRef('comments');
 /** The first comment the fold revealed: focusable, so the keyboard picks up where the fold was. */
 const revealedId = ref<string | null>(null);
-/** The text of each card edited in place, by its comment's id; `null` for the description. */
-const editorsRef = shallowRef<ReadonlyMap<string | null, string>>(new Map());
+/** Each card edited in place, by its comment's id; `null` for the description. */
+const editorsRef = shallowRef<ReadonlyMap<string | null, EditorText>>(new Map());
+/** The editor whose footer asks whether to discard its changes. */
+const askingRef = ref<string | null | undefined>(undefined);
 /** The editor the user just opened: it takes the focus. */
 const focusedEditor = ref<string | null | undefined>(undefined);
 /** The comment asked to be deleted, while the dialog asks. */
@@ -90,6 +92,7 @@ watch(
   ([id, failed], before) => {
     if (id !== before[0]) {
       editorsRef.value = new Map();
+      askingRef.value = undefined;
       focusedEditor.value = undefined;
       deletingId.value = null;
       revealedId.value = null;
@@ -97,22 +100,73 @@ watch(
 
     for (const edit of failed ?? []) {
       if (!editorsRef.value.has(edit.commentId)) {
-        setEditor(edit.commentId, edit.body);
+        openEditor(edit.commentId, edit.body);
       }
     }
   },
   { immediate: true },
 );
 
-function setEditor(id: string | null, text: string | null) {
-  const next = new Map(editorsRef.value);
-  if (text === null) {
-    next.delete(id);
-  } else {
-    next.set(id, text);
+defineExpose({
+  /**
+   * Before the user leaves the item: the first editor, in the thread's order, whose text was changed asks whether to
+   * discard it, in view and with the cursor in it. `false` when none was changed: nothing stands in the way.
+   */
+  askToLeave,
+});
+
+function askToLeave() {
+  const ids = [null, ...(props.detail?.comments.nodes.map(comment => comment.id) ?? [])];
+  const changed = ids.find(id => isChanged(id));
+  if (changed === undefined) {
+    return false;
   }
 
+  // Asked already: asked again a tick on, so that it comes back into view and takes the cursor again.
+  if (askingRef.value === changed) {
+    askingRef.value = undefined;
+    void nextTick(() => {
+      askingRef.value = changed;
+    });
+  } else {
+    askingRef.value = changed;
+  }
+
+  return true;
+}
+
+function openEditor(id: string | null, text: string) {
+  editorsRef.value = new Map(editorsRef.value).set(id, { text, start: text });
+}
+
+function setText(id: string | null, text: string) {
+  const editor = editorsRef.value.get(id);
+  if (editor) {
+    editorsRef.value = new Map(editorsRef.value).set(id, { ...editor, text });
+  }
+}
+
+function closeEditor(id: string | null) {
+  const next = new Map(editorsRef.value);
+  next.delete(id);
   editorsRef.value = next;
+  if (askingRef.value === id) {
+    askingRef.value = undefined;
+  }
+}
+
+/** Not as the edit started, or not taken by GitHub: an edit GitHub refused counts as changed. */
+function isChanged(id: string | null) {
+  const editor = editorsRef.value.get(id);
+  return editor !== undefined && (editor.text !== editor.start || getFailure(id) !== null);
+}
+
+function setAsking(id: string | null, asking: boolean) {
+  if (asking) {
+    askingRef.value = id;
+  } else if (askingRef.value === id) {
+    askingRef.value = undefined;
+  }
 }
 
 function getFailure(id: string | null) {
@@ -122,11 +176,11 @@ function getFailure(id: string | null) {
 function startEdit(id: string | null, body: string) {
   editOpened = true;
   focusedEditor.value = id;
-  setEditor(id, body);
+  openEditor(id, body);
 }
 
 function cancelEdit(id: string | null) {
-  setEditor(id, null);
+  closeEditor(id);
   void focusMenu(id);
   if (getFailure(id)) {
     emit('discardEdit', id);
@@ -142,8 +196,8 @@ async function focusMenu(id: string | null) {
 
 /** Saved as it was: nothing to send, unless it is an edit GitHub did not take. */
 function saveEdit(id: string | null, body: string) {
-  const text = editorsRef.value.get(id) ?? '';
-  setEditor(id, null);
+  const text = editorsRef.value.get(id)?.text ?? '';
+  closeEditor(id);
   if (text === body && !getFailure(id)) {
     return;
   }
@@ -199,6 +253,12 @@ async function showEarlier() {
   await nextTick();
   commentsRef.value?.querySelector<HTMLElement>(':scope > [tabindex="-1"]')?.focus();
 }
+
+/** A card's text being edited, and the text the edit started with. */
+interface EditorText {
+  readonly text: string;
+  readonly start: string;
+}
 </script>
 
 <template>
@@ -212,15 +272,18 @@ async function showEarlier() {
     <template v-else>
       <ItemThreadEditor
         v-if="editorsRef.has(null)"
-        :text="editorsRef.get(null) ?? ''"
+        :text="editorsRef.get(null)?.text ?? ''"
         :author="item.author"
         :repository="item.repository.nameWithOwner"
         :item-number="item.number"
         :people="people"
         :reason="getFailure(null)"
         :autofocus="focusedEditor === null"
+        :changed="isChanged(null)"
+        :asking="askingRef === null"
         description
-        @update:text="setEditor(null, $event)"
+        @update:text="setText(null, $event)"
+        @update:asking="setAsking(null, $event)"
         @save="saveEdit(null, detail.body)"
         @cancel="cancelEdit(null)"
       />
@@ -279,14 +342,17 @@ async function showEarlier() {
         >
           <ItemThreadEditor
             v-if="editorsRef.has(comment.id)"
-            :text="editorsRef.get(comment.id) ?? ''"
+            :text="editorsRef.get(comment.id)?.text ?? ''"
             :author="comment.author"
             :repository="item.repository.nameWithOwner"
             :item-number="item.number"
             :people="people"
             :reason="getFailure(comment.id)"
             :autofocus="focusedEditor === comment.id"
-            @update:text="setEditor(comment.id, $event)"
+            :changed="isChanged(comment.id)"
+            :asking="askingRef === comment.id"
+            @update:text="setText(comment.id, $event)"
+            @update:asking="setAsking(comment.id, $event)"
             @save="saveEdit(comment.id, comment.body)"
             @cancel="cancelEdit(comment.id)"
           />

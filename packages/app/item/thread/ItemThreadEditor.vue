@@ -1,8 +1,8 @@
-<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. One GitHub did not take opens again with the text and why, under the editor. -->
+<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. One GitHub did not take opens again with the text and why, under the editor. Left with its text changed, it asks first in its footer (`Activity / Comment · editing, discard?`): Keep editing (`Escape`) or Discard (`Enter`); the cursor stays in the text. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert } from 'lucide-vue-next';
-import { onMounted, useTemplateRef } from 'vue';
+import { onMounted, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Avatar from '@/components/Avatar.vue';
@@ -29,14 +29,19 @@ const props = defineProps<{
   reason?: EditFailureReason | null;
   /** Takes the focus as it opens: the user asked to edit it. */
   autofocus?: boolean;
+  /** Its text is not what the edit started with, or GitHub did not take it: leaving it asks first. */
+  changed?: boolean;
 }>();
 
 const emit = defineEmits<{
   save: [];
+  /** Left without saving: Cancel on an unchanged text, or Discard. */
   cancel: [];
 }>();
 
 const text = defineModel<string>('text', { required: true });
+/** Its footer asks whether to discard the changes; the thread asks it too when the user leaves the item. */
+const asking = defineModel<boolean>('asking', { default: false });
 
 const SAVE_KEY = 'Mod+Enter';
 const t = useTranslate();
@@ -49,20 +54,61 @@ onMounted(async () => {
   }
 });
 
+// The question is answered from the text: the cursor goes there, and the footer asking it into view.
+watch(asking, async value => {
+  if (value) {
+    await editorRef.value?.focus('end');
+  }
+});
+
 /** GitHub takes no empty comment. */
 function canSave() {
   return props.description || text.value.trim() !== '';
 }
 
 function save() {
-  if (canSave()) {
+  if (canSave() && !asking.value) {
     emit('save');
+  }
+}
+
+/** Escape and Cancel: an unchanged text closes, a changed one asks; Escape on the question keeps editing. */
+function leave() {
+  if (asking.value) {
+    keepEditing();
+  } else if (props.changed) {
+    asking.value = true;
+  } else {
+    emit('cancel');
+  }
+}
+
+// Taken here: the screen does not close the item, nor the modal blur the text.
+function onEscape(event: KeyboardEvent) {
+  event.preventDefault();
+  leave();
+}
+
+// Not awaited: a click listener's promise would show the button busy.
+function keepEditing() {
+  asking.value = false;
+  void editorRef.value?.focus('end');
+}
+
+// Enter answers the question; one a suggestion took, or `Mod+Enter`, is not for it.
+function onKeydown(event: KeyboardEvent) {
+  if (asking.value && event.key === 'Enter' && !event.defaultPrevented) {
+    event.preventDefault();
+    emit('cancel');
   }
 }
 </script>
 
 <template>
-  <div :class="css.itemThreadEditor">
+  <div
+    :class="css.itemThreadEditor"
+    @keydown="onKeydown"
+  >
     <div :class="css.itemThreadEditor_gutter">
       <Avatar
         :name="author?.login ?? ''"
@@ -81,14 +127,53 @@ function save() {
         :people="people"
         :label="description ? t(l.editDescription) : t(l.editComment)"
         @submit="save"
-        @cancel="emit('cancel')"
+        @cancel="onEscape"
       >
-        <template #footer>
+        <template
+          v-if="asking"
+          #status
+        >
+          <CircleAlert
+            :class="css.itemThreadEditor_questionIcon"
+            aria-hidden="true"
+          />
+          <span
+            :class="css.itemThreadEditor_question"
+            role="status"
+            >{{ description ? t(l.discardDescription) : t(l.discardComment) }}</span
+          >
+        </template>
+        <template
+          v-if="asking"
+          #footer
+        >
           <Button
             size="compact"
             kbd="Escape"
             keyshortcuts="Escape"
+            @click="keepEditing"
+          >
+            {{ t(l.keepEditing) }}
+          </Button>
+          <Button
+            size="compact"
+            variant="destructive"
+            kbd="Enter"
+            keyshortcuts="Enter"
             @click="emit('cancel')"
+          >
+            {{ t(l.discard) }}
+          </Button>
+        </template>
+        <template
+          v-else
+          #footer
+        >
+          <Button
+            size="compact"
+            kbd="Escape"
+            keyshortcuts="Escape"
+            @click="leave"
           >
             {{ t(l.cancel) }}
           </Button>
@@ -140,6 +225,18 @@ function save() {
 // open, focused or not: it is what is being changed.
 .itemThreadEditor_editor.itemThreadEditor_editor {
   border-color: $color-accent;
+}
+
+.itemThreadEditor_question {
+  font-size: $font-size-xs;
+  color: $color-fg;
+}
+
+.itemThreadEditor_questionIcon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: $color-amber;
 }
 
 .itemThreadEditor_failed {

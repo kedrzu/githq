@@ -15,9 +15,11 @@ import type { LucideIcon } from 'lucide-vue-next';
  * - `link`: text only, inline in a sentence ("Why?") or a row's meta line ("Open on GitHub").
  * - `field`: looks like a text field, for a button that opens one ("Search… ⌘K" in the sidebar).
  * - `danger`: red outline, an action that deletes something ("Sign out and clear").
+ * - `destructive`: red fill, the answer to a question that throws something away ("Discard" changes to a comment).
  */
 export type ButtonVariant =
   | 'danger'
+  | 'destructive'
   | 'field'
   | 'framed'
   | 'ghost'
@@ -69,7 +71,17 @@ const { Button, busy, disabled } = useButton();
 const t = useTranslate();
 
 const variant = computed(() => props.variant ?? 'secondary');
-const kbdTone = computed(() => (variant.value === 'primary' || variant.value === 'light' ? 'onFill' : 'default'));
+const kbdTone = computed(() => {
+  switch (variant.value) {
+    case 'primary':
+    case 'light':
+      return 'onFill';
+    case 'destructive':
+      return 'onDanger';
+    default:
+      return 'default';
+  }
+});
 </script>
 
 <template>
@@ -294,6 +306,15 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 
   &:hover {
     background: rgba($color-red, 0.14);
+  }
+}
+
+.button_destructive {
+  color: $color-on-emphasis;
+  background: $color-red-emphasis;
+
+  &:hover {
+    background: color-mix(in srgb, #{$color-red-emphasis} 88%, black);
   }
 }
 

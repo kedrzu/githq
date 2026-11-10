@@ -164,6 +164,7 @@ const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
 const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
+const threadRef = useTemplateRef<InstanceType<typeof ItemThread>>('thread');
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
@@ -350,6 +351,8 @@ const itemMenuSections = computed(() =>
 defineExpose({
   /** Puts the cursor in the comment box. */
   focusComposer: () => composerRef.value?.focus(),
+  /** Before the item is left: an edit with changes in its thread asks first (`true`), and the item stays. */
+  askToLeave: () => threadRef.value?.askToLeave() ?? false,
 });
 
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
@@ -877,6 +880,7 @@ function getProjectOptions(): CommandOption[] {
               </template>
 
               <ItemThread
+                ref="thread"
                 :item="item"
                 :detail="detail"
                 :now="now"

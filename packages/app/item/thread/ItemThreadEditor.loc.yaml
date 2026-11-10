@@ -8,3 +8,11 @@ updateComment:
   en: Update comment
 updateDescription:
   en: Update description
+discardComment:
+  en: Discard your changes to this comment?
+discardDescription:
+  en: Discard your changes to the description?
+keepEditing:
+  en: Keep editing
+discard:
+  en: Discard
