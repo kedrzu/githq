@@ -60,7 +60,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: HOME_PATH,
         name: 'my-work',
         component: HomePage,
-        meta: { auth: 'home', layout: false, key: 'my-work' },
+        meta: { auth: 'home', layout: false, key: 'my-work', gitHubScreen: true },
     };
     for (const group of MY_WORK_GROUPS) {
         yield {
@@ -68,7 +68,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             alias: group === 'mentioned' ? ['/pulls/mentioned'] : [],
             name: `my-work-${group}`,
             component: HomePage,
-            meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group },
+            meta: { auth: 'home', layout: false, key: 'my-work', myWorkGroup: group, gitHubScreen: true },
         };
     }
     yield {
@@ -83,7 +83,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         alias: REVIEW_PAGE_ALIAS,
         name: 'review',
         component: () => import('@/review/ReviewPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: 'review', railForced: true },
+        meta: { auth: 'signedIn', layout: 'shell', key: 'review', railForced: true, gitHubScreen: true },
     };
     // An item on a page of its own, at GitHub's address of it; one page instance for both (`key`), so stepping
     // from an issue to a pull request keeps it.
@@ -92,12 +92,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name: index === 0 ? 'item-issue' : 'item-pull',
             component: () => import('@/item/ItemPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: true },
+            meta: { auth: 'signedIn', layout: 'shell', key: 'item', itemPage: true, gitHubScreen: true },
         };
         // GitHub's other addresses under an item (a pull request's `/commits`, `/checks`, …) settle on the
-        // item's own, keeping the query and the fragment.
+        // item's own, keeping the query and the fragment. `router.resolve()` does not follow the redirect and reads
+        // the record's own `meta`, so it says the same as the item's.
         yield {
             path: `${path}/:rest(.*)+`,
+            meta: { itemPage: true, gitHubScreen: true },
             redirect: to => getItemPageRedirect(to, index === 0 ? 'item-issue' : 'item-pull'),
         };
     }
@@ -138,7 +140,7 @@ function* getRoutes(): Generator<RouteRecordRaw> {
             path,
             name,
             component: () => import('@/workflows/WorkflowRunPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey },
+            meta: { auth: 'signedIn', layout: 'shell', key: getWorkflowRunKey, gitHubScreen: true },
         };
     }
     // A repository's and a project's views, at GitHub's addresses of them. One repository page instance for the
@@ -147,14 +149,14 @@ function* getRoutes(): Generator<RouteRecordRaw> {
         path: REPOSITORY_PATH,
         name: 'repository',
         component: () => import('@/repository/RepositoryPage.vue'),
-        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner },
+        meta: { auth: 'signedIn', layout: 'shell', key: getRouteNameWithOwner, gitHubScreen: true },
     };
     for (const [index, path] of PROJECT_PATHS.entries()) {
         yield {
             path,
             name: index === 0 ? 'project-org' : 'project-user',
             component: () => import('@/projects/ProjectPage.vue'),
-            meta: { auth: 'signedIn', layout: 'shell' },
+            meta: { auth: 'signedIn', layout: 'shell', gitHubScreen: true },
         };
     }
     // A tracked repository's and project's settings (T16, T17), inside Settings, at GitHub's own addresses of their

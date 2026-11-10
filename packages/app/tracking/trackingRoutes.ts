@@ -215,6 +215,24 @@ export function isWorkflowRunRoute(route: IsWorkflowRunRouteParams) {
     return route.name === 'workflow-run' || route.name === 'workflow-run-job';
 }
 
+/** What {@link isTrackedOnlyRoute} reads of a route. */
+export interface IsTrackedOnlyRouteParams extends IsWorkflowRunRouteParams {
+    readonly params: Readonly<Record<string, unknown>>;
+}
+
+/**
+ * Whether a route is shown only for a tracked repository (actions D4): its Workflows section and its runs' pages. Any
+ * other repository's address of them is GitHub's page.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isTrackedOnlyRoute(route: IsTrackedOnlyRouteParams) {
+    return (
+        (route.name === 'repository' && getRepositorySection(route.params.section) === 'workflows') ||
+        isWorkflowRunRoute(route)
+    );
+}
+
 /**
  * The section a repository's address names, from its last segment (the route's `section`): `null` when it names
  * none (`/owner/name`).
