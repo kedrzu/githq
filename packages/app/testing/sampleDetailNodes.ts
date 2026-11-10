@@ -2,8 +2,8 @@ import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from 
 
 /** No events: the first two and the newest of none. */
 const NO_EVENTS = {
-    firstEvents: { pageInfo: { endCursor: null }, nodes: [] },
-    lastEvents: { filteredCount: 0, pageInfo: { startCursor: null }, nodes: [] },
+    firstEvents: { edges: [], nodes: [] },
+    lastEvents: { filteredCount: 0, edges: [], nodes: [] },
 };
 
 const REPOSITORY: IssueDetailFieldsFragment['repository'] = {

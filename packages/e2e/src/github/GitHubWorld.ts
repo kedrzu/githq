@@ -3613,32 +3613,42 @@ function toCommentPage(item: WorldItem, before: number, count: number, reader: C
  * index of its event. `filteredCount` counts these events, `totalCount` the `others` of the timeline too: a pull
  * request's comments and reviews, which GitHub counts in it whatever the `itemTypes`.
  */
-function toDetailEvents<TEvent>(events: readonly TEvent[], others: number) {
-    const lastStart = Math.max(0, events.length - LAST_EVENTS);
-    const firstEnd = Math.min(FIRST_EVENTS, events.length);
+function toDetailEvents<TEvent extends ThreadEventFieldsFragment>(events: readonly TEvent[], others: number) {
     return {
-        firstEvents: {
-            pageInfo: { endCursor: firstEnd > 0 ? `C${firstEnd - 1}` : null },
-            nodes: events.slice(0, firstEnd),
-        },
+        firstEvents: toEventPage(events, 0, Math.min(FIRST_EVENTS, events.length)),
         lastEvents: {
             totalCount: events.length + others,
             filteredCount: events.length,
-            pageInfo: { startCursor: lastStart < events.length ? `C${lastStart}` : null },
-            nodes: events.slice(lastStart),
+            ...toEventPage(events, Math.max(0, events.length - LAST_EVENTS), events.length),
         },
     };
 }
 
-/** The events between the cursors of `ThreadMiddle`'s variables, a page at most. */
-function toMiddleEvents<TEvent>(events: readonly TEvent[], variables: Readonly<Record<string, unknown>>) {
-    const start = (parseCursor(variables.eventsAfter) ?? -1) + 1;
-    const before = parseCursor(variables.eventsBefore) ?? events.length;
-    const end = Math.min(start + MIDDLE_PAGE, before);
+/**
+ * The events between the cursors of `ThreadMiddle`'s variables, a page at most. As GitHub's, `after` and `before`
+ * compare the time only: the events at their cursor's time are left out (kedrzu/githq#219).
+ */
+function toMiddleEvents<TEvent extends ThreadEventFieldsFragment>(
+    events: readonly TEvent[],
+    variables: Readonly<Record<string, unknown>>,
+) {
+    const after = events[parseCursor(variables.eventsAfter) ?? -1];
+    const before = events[parseCursor(variables.eventsBefore) ?? -1];
+    const start = after ? events.findIndex(event => getEventTime(event) > getEventTime(after)) : 0;
+    const bound = before ? events.findIndex(event => getEventTime(event) >= getEventTime(before)) : events.length;
+    const from = start < 0 ? events.length : start;
+    const until = Math.max(from, bound < 0 ? events.length : bound);
+    const end = Math.min(from + MIDDLE_PAGE, until);
     return {
-        pageInfo: { hasNextPage: end < before, endCursor: end > start ? `C${end - 1}` : null },
-        nodes: events.slice(start, end),
+        pageInfo: { hasNextPage: end < until, endCursor: end > from ? `C${end - 1}` : null },
+        ...toEventPage(events, from, end),
     };
+}
+
+/** The events from `start` to before `end` as a page of `timelineItems`, each with its cursor (`edges`). */
+function toEventPage<TEvent>(events: readonly TEvent[], start: number, end: number) {
+    const nodes = events.slice(start, end);
+    return { edges: nodes.map((_, index) => ({ cursor: `C${start + index}` })), nodes };
 }
 
 /** The node id and the time of an event added to an item; ids count the events of both kinds. */

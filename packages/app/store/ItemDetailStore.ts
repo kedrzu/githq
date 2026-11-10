@@ -24,7 +24,7 @@ import type { ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
 import { ItemStore } from './ItemStore.js';
 import type { Item } from './ItemTypes.js';
-import { toItemComments, toItemDetail, toItemReviewPage, toThreadEvents } from './toItemDetail.js';
+import { getCursorAfter, toItemComments, toItemDetail, toItemReviewPage, toThreadEvents } from './toItemDetail.js';
 
 /**
  * How long an opened item's detail is trusted without asking GitHub again. What changes without moving the
@@ -377,7 +377,7 @@ export const ItemDetailStore = defineService({
         }
 
         /**
-         * Reads a page of the thread's middle (`ThreadMiddle`: 100 events after the oldest held, and 100 comments before
+         * Reads a page of the thread's middle (`ThreadMiddle`: 100 events from the oldest held on, and 100 comments before
          * the oldest held, each only while some are not held) and puts it in place: the events after the oldest ones, the
          * comments before the newest ones. Rejects when GitHub does not answer.
          */
@@ -425,14 +425,21 @@ export const ItemDetailStore = defineService({
             if (middle && node.eventPage) {
                 const { events } = updated;
                 const newest = new Set(events.newest.map(event => event.id));
-                const read = toThreadEvents(node.eventPage.nodes, id).filter(event => !newest.has(event.id));
+                const held = new Set([...newest, ...events.oldest.map(event => event.id)]);
+                // Read with an overlap (`getCursorAfter`): those held already are left out.
+                const page = toThreadEvents(node.eventPage.nodes, id);
+                const read = page.filter(event => !held.has(event.id));
+                // Read up to the newest held, or past them when the end is not bound: nothing is left between.
+                const meets = page.some(event => newest.has(event.id));
                 const { hasNextPage, endCursor } = node.eventPage.pageInfo;
+                // A page of one time has no older event to go on from: the next one may skip some at that time.
+                const after = getCursorAfter(node.eventPage) ?? endCursor;
                 updated = {
                     ...updated,
                     events: {
                         ...events,
                         oldest: [...events.oldest, ...read],
-                        middle: hasNextPage && endCursor !== null ? { after: endCursor, before: middle.before } : null,
+                        middle: hasNextPage && !meets && after !== null ? { after, before: middle.before } : null,
                     },
                 };
             }

@@ -159,12 +159,13 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
 /** The thread's events the detail reads (`firstEvents`, `lastEvents`), of an issue or a pull request. */
 interface DetailEvents {
     readonly id: string;
-    readonly firstEvents: EventPage<{ readonly endCursor: string | null }>;
-    readonly lastEvents: EventPage<{ readonly startCursor: string | null }> & { readonly filteredCount: number };
+    readonly firstEvents: CursoredEventPage;
+    readonly lastEvents: CursoredEventPage & { readonly filteredCount: number };
 }
 
-interface EventPage<TPageInfo> {
-    readonly pageInfo: TPageInfo;
+/** A page of a thread's events as GitHub answers it: the events, and each one's cursor at its index (`edges`). */
+export interface CursoredEventPage {
+    readonly edges: readonly ({ readonly cursor: string } | null)[] | null;
     readonly nodes: readonly (ThreadEventFieldsFragment | null)[] | null;
 }
 
@@ -178,8 +179,6 @@ function toItemEvents(node: DetailEvents, commitCount: number): ItemEvents {
     const newest = toThreadEvents(node.lastEvents.nodes, node.id);
     const newestIds = new Set(newest.map(event => event.id));
     const oldest = toThreadEvents(node.firstEvents.nodes, node.id).filter(event => !newestIds.has(event.id));
-    const after = node.firstEvents.pageInfo.endCursor;
-    const before = node.lastEvents.pageInfo.startCursor;
     const unread = oldest.length + newest.length < node.lastEvents.filteredCount;
 
     return {
@@ -187,8 +186,52 @@ function toItemEvents(node: DetailEvents, commitCount: number): ItemEvents {
         commitCount,
         oldest,
         newest,
-        middle: unread && after !== null && before !== null ? { after, before } : null,
+        middle: unread ? { after: getCursorAfter(node.firstEvents), before: getCursorBefore(node.lastEvents) } : null,
     };
+}
+
+/**
+ * The cursor to read on after the page from so that no event is skipped: GitHub's `after` leaves out every event at
+ * the same time as its cursor's (checked 2026-11-10 on kedrzu/githq#219: after the 2nd commit, the 3rd, made the same
+ * second, did not come). So it is the cursor of the newest event older than the page's last; the events read again
+ * are told apart by id. `null` when none is older: the page holds one time only.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getCursorAfter(page: CursoredEventPage): string | null {
+    const events = toTimedCursors(page);
+    const last = events.at(-1);
+    return (last && events.findLast(event => event.at < last.at)?.cursor) ?? null;
+}
+
+/**
+ * The cursor to read up to before the page so that no event is skipped: GitHub's `before` leaves out the events at the
+ * same time as its cursor's, as `after` does ({@link getCursorAfter}). So it is the cursor of the oldest event newer
+ * than the page's first; `null` when none is newer.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+function getCursorBefore(page: CursoredEventPage): string | null {
+    const events = toTimedCursors(page);
+    const first = events[0];
+    return (first && events.find(event => event.at > first.at)?.cursor) ?? null;
+}
+
+/** Each event's cursor and the time GitHub orders it by: a commit's is when it was made. */
+function toTimedCursors({ edges, nodes }: CursoredEventPage) {
+    return mapNotNull(nodes ?? [], (node, index) => {
+        const cursor = edges?.[index]?.cursor;
+        if (!node || cursor === undefined) {
+            return null;
+        }
+
+        if (node.__typename === 'PullRequestCommit') {
+            return { cursor, at: Date.parse(node.pushedCommit.committedDate) };
+        }
+
+        // A kind githq does not read has no time told: it orders nothing.
+        return 'createdAt' in node ? { cursor, at: Date.parse(node.createdAt) } : null;
+    });
 }
 
 /**

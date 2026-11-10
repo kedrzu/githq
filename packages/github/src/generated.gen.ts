@@ -1046,7 +1046,7 @@ export type ItemDetailQuery = {
                   } | null> | null;
               };
               firstEvents: {
-                  pageInfo: { endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
                       | {
@@ -1687,7 +1687,7 @@ export type ItemDetailQuery = {
               };
               lastEvents: {
                   filteredCount: number;
-                  pageInfo: { startCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
                       | {
@@ -2585,7 +2585,7 @@ export type ItemDetailQuery = {
                   } | null> | null;
               };
               firstEvents: {
-                  pageInfo: { endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
                       | { __typename: 'AddedToProjectEvent' }
@@ -3395,7 +3395,7 @@ export type ItemDetailQuery = {
               };
               lastEvents: {
                   filteredCount: number;
-                  pageInfo: { startCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
                       | { __typename: 'AddedToProjectEvent' }
@@ -4531,7 +4531,7 @@ export type ItemDetailsQuery = {
                   } | null> | null;
               };
               firstEvents: {
-                  pageInfo: { endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
                       | {
@@ -5172,7 +5172,7 @@ export type ItemDetailsQuery = {
               };
               lastEvents: {
                   filteredCount: number;
-                  pageInfo: { startCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
                       | {
@@ -6070,7 +6070,7 @@ export type ItemDetailsQuery = {
                   } | null> | null;
               };
               firstEvents: {
-                  pageInfo: { endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
                       | { __typename: 'AddedToProjectEvent' }
@@ -6880,7 +6880,7 @@ export type ItemDetailsQuery = {
               };
               lastEvents: {
                   filteredCount: number;
-                  pageInfo: { startCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
                       | { __typename: 'AddedToProjectEvent' }
@@ -10043,6 +10043,7 @@ export type ThreadMiddleQuery = {
               id: string;
               eventPage?: {
                   pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
                       | {
@@ -10707,6 +10708,7 @@ export type ThreadMiddleQuery = {
               id: string;
               eventPage?: {
                   pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  edges: Array<{ cursor: string } | null> | null;
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
                       | { __typename: 'AddedToProjectEvent' }
@@ -11845,7 +11847,7 @@ export type IssueDetailFieldsFragment = {
         } | null> | null;
     };
     firstEvents: {
-        pageInfo: { endCursor: string | null };
+        edges: Array<{ cursor: string } | null> | null;
         nodes: Array<
             | { __typename: 'AddedToProjectEvent' }
             | {
@@ -12486,7 +12488,7 @@ export type IssueDetailFieldsFragment = {
     };
     lastEvents: {
         filteredCount: number;
-        pageInfo: { startCursor: string | null };
+        edges: Array<{ cursor: string } | null> | null;
         nodes: Array<
             | { __typename: 'AddedToProjectEvent' }
             | {
@@ -14448,7 +14450,7 @@ export type PullRequestDetailFieldsFragment = {
         } | null> | null;
     };
     firstEvents: {
-        pageInfo: { endCursor: string | null };
+        edges: Array<{ cursor: string } | null> | null;
         nodes: Array<
             | { __typename: 'AddedToMergeQueueEvent' }
             | { __typename: 'AddedToProjectEvent' }
@@ -15255,7 +15257,7 @@ export type PullRequestDetailFieldsFragment = {
     };
     lastEvents: {
         filteredCount: number;
-        pageInfo: { startCursor: string | null };
+        edges: Array<{ cursor: string } | null> | null;
         nodes: Array<
             | { __typename: 'AddedToMergeQueueEvent' }
             | { __typename: 'AddedToProjectEvent' }
@@ -19956,8 +19958,8 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -19965,8 +19967,8 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -21959,8 +21961,8 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -21968,8 +21970,8 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -23254,8 +23256,8 @@ fragment IssueDetailFields on Issue {
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -23263,8 +23265,8 @@ fragment IssueDetailFields on Issue {
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -23542,8 +23544,8 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -23551,8 +23553,8 @@ fragment PullRequestDetailFields on PullRequest {
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -24342,8 +24344,8 @@ fragment IssueDetailFields on Issue {
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -24351,8 +24353,8 @@ fragment IssueDetailFields on Issue {
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -24630,8 +24632,8 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
-    pageInfo {
-      endCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -24639,8 +24641,8 @@ fragment PullRequestDetailFields on PullRequest {
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
     filteredCount
-    pageInfo {
-      startCursor
+    edges {
+      cursor
     }
     nodes {
       ...ThreadEventFields
@@ -27914,6 +27916,9 @@ export const ThreadMiddleDocument = new TypedDocumentString(`
           hasNextPage
           endCursor
         }
+        edges {
+          cursor
+        }
         nodes {
           ...ThreadEventFields
         }
@@ -27933,6 +27938,9 @@ export const ThreadMiddleDocument = new TypedDocumentString(`
         pageInfo {
           hasNextPage
           endCursor
+        }
+        edges {
+          cursor
         }
         nodes {
           ...ThreadEventFields

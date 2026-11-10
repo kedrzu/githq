@@ -215,8 +215,9 @@ test("the thread's middle goes in place, events after the oldest and comments be
     expect(github.requests.at(-1)?.variables).toMatchObject({
         id: 'I_1',
         readEvents: true,
-        eventsAfter: 'event-2',
-        eventsBefore: 'event-11',
+        // GitHub's cursors skip the events at their time: from one older than the last held, to one newer than the first.
+        eventsAfter: 'event-1',
+        eventsBefore: 'event-12',
         readComments: true,
         commentsBefore: 'cursor-51',
     });
@@ -258,7 +259,27 @@ test("the thread's middle read while the item is read again in the background st
     expect(read?.comments.olderCursor).toBeNull();
 });
 
-function setup(login: string) {
+test("the thread's middle read page by page loses none of the events GitHub's cursors skip, and holds each once", async () => {
+    const { details, github } = setup(uniqueLogin(), { middlePage: 4 });
+    github.nodes.set('I_1', withEvents(sampleIssueDetailNode('I_1', MONDAY), 60));
+    await details.ensure('I_1');
+
+    await details.loadThreadMiddle('I_1');
+    await details.loadThreadMiddle('I_1');
+    await details.loadThreadMiddle('I_1');
+
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+});
+
+/** How the test's GitHub answers. */
+interface SetupOptions {
+    /** How many events a page of the middle holds (`ThreadMiddle`). */
+    readonly middlePage?: number;
+}
+
+function setup(login: string, { middlePage = 100 }: SetupOptions = {}) {
     const nodes = new Map<string, IssueDetailFieldsFragment | PullRequestDetailFieldsFragment>();
     const session = createTestSession({ login, answer });
     const persistence = createIndexedDbPersistence();
@@ -297,16 +318,27 @@ function setup(login: string) {
                 return { data: { node: { id, commentPage: commentPage(1, before - 1) } } };
             }
             case 'ThreadMiddle': {
-                const after = Number(String(request.variables.eventsAfter).replace('event-', ''));
-                const before = Number(String(request.variables.eventsBefore).replace('event-', ''));
+                const count = node?.lastEvents.filteredCount ?? 0;
+                const after = parseEventCursor(request.variables.eventsAfter);
+                const before = parseEventCursor(request.variables.eventsBefore);
+                // As GitHub's: `after` and `before` compare the time only, the events at their cursor's time left out.
+                const between = Array.from({ length: count }, (_, index) => index + 1).filter(
+                    number =>
+                        (after === null || eventMinute(number) > eventMinute(after)) &&
+                        (before === null || eventMinute(number) < eventMinute(before)),
+                );
+                const page = between.slice(0, middlePage);
                 const comments = Number(String(request.variables.commentsBefore).replace('cursor-', ''));
                 return {
                     data: {
                         node: {
                             id,
                             eventPage: {
-                                pageInfo: { hasNextPage: false, endCursor: `event-${before - 1}` },
-                                nodes: events(after + 1, before - 1),
+                                pageInfo: {
+                                    hasNextPage: between.length > page.length,
+                                    endCursor: page.length > 0 ? `event-${page.at(-1)}` : null,
+                                },
+                                ...eventPage(page),
                             },
                             commentPage: commentPage(1, comments - 1),
                         },
@@ -376,24 +408,37 @@ function commentPage(from: number, to: number): IssueDetailFieldsFragment['comme
 /** The issue with `count` events, as the detail reads them: the first two and the newest 50. */
 function withEvents(node: IssueDetailFieldsFragment, count: number): IssueDetailFieldsFragment {
     const newestFrom = Math.max(3, count - 49);
+    const newest = Array.from({ length: count - newestFrom + 1 }, (_, index) => newestFrom + index);
     return {
         ...node,
-        firstEvents: { pageInfo: { endCursor: 'event-2' }, nodes: events(1, 2) },
-        lastEvents: {
-            filteredCount: count,
-            pageInfo: { startCursor: `event-${newestFrom}` },
-            nodes: events(newestFrom, count),
-        },
+        firstEvents: eventPage([1, 2]),
+        lastEvents: { filteredCount: count, ...eventPage(newest) },
     };
 }
 
-function events(from: number, to: number) {
-    return eventIds(from, to).map(id => ({
-        __typename: 'PinnedEvent' as const,
-        id,
-        createdAt: MONDAY,
-        actor: { login: 'mlaine', avatarUrl: '' },
-    }));
+/** The events `numbers` as a page of `timelineItems`, each with its cursor (`event-<number>`). */
+function eventPage(numbers: readonly number[]) {
+    return {
+        edges: numbers.map(number => ({ cursor: `event-${number}` })),
+        nodes: numbers.map(number => ({
+            __typename: 'PinnedEvent' as const,
+            id: `EV_${number}`,
+            createdAt: new Date(Date.parse(MONDAY) + eventMinute(number) * 60_000).toISOString(),
+            actor: { login: 'mlaine', avatarUrl: '' },
+        })),
+    };
+}
+
+/**
+ * The minute after Monday 10:00 the event `number` happened: its number, but the 3rd, 6th and 11th happened at the
+ * same time as the one before them — where GitHub's cursors skip events.
+ */
+function eventMinute(number: number) {
+    return [3, 6, 11].includes(number) ? number - 1 : number;
+}
+
+function parseEventCursor(cursor: unknown) {
+    return typeof cursor === 'string' ? Number(cursor.replace('event-', '')) : null;
 }
 
 function eventIds(from: number, to: number) {

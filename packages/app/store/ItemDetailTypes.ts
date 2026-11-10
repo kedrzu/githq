@@ -140,12 +140,15 @@ export interface ItemEvents {
     readonly middle: ItemEventsMiddle | null;
 }
 
-/** The cursors around the events of a thread not read yet (`ThreadMiddle`'s `eventsAfter` and `eventsBefore`). */
+/**
+ * The cursors around the events of a thread not read yet (`ThreadMiddle`'s `eventsAfter` and `eventsBefore`). GitHub's
+ * cursors skip the events at their own time, so they lie within what is read, not at its edge (`getCursorAfter`).
+ */
 export interface ItemEventsMiddle {
-    /** The last of the oldest events read. */
-    readonly after: string;
-    /** The first of the newest events read. */
-    readonly before: string;
+    /** An event of the oldest read, older than the last of them; `null`: from the first event. */
+    readonly after: string | null;
+    /** An event of the newest read, newer than the first of them; `null`: to the last event. */
+    readonly before: string | null;
 }
 
 /**

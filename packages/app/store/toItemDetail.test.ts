@@ -353,8 +353,8 @@ test("a short thread's first and newest events overlap: each is kept once, and n
     const detail = toItemDetail(
         {
             ...sampleIssueDetailNode('I_1', MONDAY),
-            firstEvents: { pageInfo: { endCursor: 'E_2' }, nodes: events.slice(0, 2) },
-            lastEvents: { filteredCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
+            firstEvents: eventPage(events.slice(0, 2)),
+            lastEvents: { filteredCount: 3, ...eventPage(events) },
         },
         FETCHED_AT,
     );
@@ -372,14 +372,10 @@ test('a long thread keeps its first events apart from its newest, with the curso
     const detail = toItemDetail(
         {
             ...samplePullRequestDetailNode('PR_1', MONDAY),
-            firstEvents: {
-                pageInfo: { endCursor: 'after-2' },
-                nodes: [labeled('E_1', 'bug'), labeled('E_2', 'docs')],
-            },
+            firstEvents: eventPage([labeled('E_1', 'bug', '09:00'), labeled('E_2', 'docs', '09:05')]),
             lastEvents: {
                 filteredCount: 60,
-                pageInfo: { startCursor: 'before-51' },
-                nodes: [labeled('E_51', 'ui')],
+                ...eventPage([labeled('E_51', 'ui', '11:00'), labeled('E_52', 'api', '11:10')]),
             },
             commitEvents: { filteredCount: 12 },
         },
@@ -390,9 +386,27 @@ test('a long thread keeps its first events apart from its newest, with the curso
         totalCount: 60,
         commitCount: 12,
         oldest: [{ id: 'E_1' }, { id: 'E_2' }],
-        newest: [{ id: 'E_51' }],
-        middle: { after: 'after-2', before: 'before-51' },
+        newest: [{ id: 'E_51' }, { id: 'E_52' }],
+        // GitHub's `after` and `before` leave out the events at their cursor's time: the middle is read from an event
+        // older than the last held before it, up to one newer than the first held after it.
+        middle: { after: 'cursor-E_1', before: 'cursor-E_52' },
     });
+});
+
+test("a long thread whose events held around the middle share their time reads the middle from the start, to the end: GitHub's cursors would skip the events at that time", () => {
+    const detail = toItemDetail(
+        {
+            ...sampleIssueDetailNode('I_1', MONDAY),
+            firstEvents: eventPage([labeled('E_1', 'bug', '09:00'), labeled('E_2', 'docs', '09:00')]),
+            lastEvents: {
+                filteredCount: 60,
+                ...eventPage([labeled('E_51', 'ui', '11:00'), labeled('E_52', 'api', '11:00')]),
+            },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events.middle).toEqual({ after: null, before: null });
 });
 
 test("a pull request's thread counts the events of the kinds it reads, not the whole timeline GitHub's totalCount counts", () => {
@@ -401,8 +415,8 @@ test("a pull request's thread counts the events of the kinds it reads, not the w
     const detail = toItemDetail(
         {
             ...samplePullRequestDetailNode('PR_1', MONDAY),
-            firstEvents: { pageInfo: { endCursor: 'E_2' }, nodes: events.slice(0, 2) },
-            lastEvents: { filteredCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
+            firstEvents: eventPage(events.slice(0, 2)),
+            lastEvents: { filteredCount: 3, ...eventPage(events) },
             commitEvents: { filteredCount: 1 },
         },
         FETCHED_AT,
@@ -435,12 +449,8 @@ test('a merged pull request keeps the ClosedEvent GitHub gives with the merge: e
     const detail = toItemDetail(
         {
             ...samplePullRequestDetailNode('PR_1', MONDAY),
-            firstEvents: { pageInfo: { endCursor: 'after-2' }, nodes: [] },
-            lastEvents: {
-                filteredCount: 3,
-                pageInfo: { startCursor: 'before-1' },
-                nodes: [closedByHand, merged, closedWithMerge],
-            },
+            firstEvents: eventPage([]),
+            lastEvents: { filteredCount: 3, ...eventPage([closedByHand, merged, closedWithMerge]) },
         },
         FETCHED_AT,
     );
@@ -497,8 +507,19 @@ test("a Status a project workflow set names no one, though GitHub reports the pr
     expect(statusChange(false)).toMatchObject({ actor: { login: 'mlaine' } });
 });
 
-function labeled(id: string, label: string): Extract<ThreadEventFieldsFragment, { __typename: 'LabeledEvent' }> {
-    return { __typename: 'LabeledEvent', id, createdAt: MONDAY, actor: null, label: { name: label, color: 'ededed' } };
+/** A label added on Monday, at `time` (`hh:mm`, UTC) or 10:00. */
+function labeled(
+    id: string,
+    label: string,
+    time?: string,
+): Extract<ThreadEventFieldsFragment, { __typename: 'LabeledEvent' }> {
+    const createdAt = time === undefined ? MONDAY : `2026-10-26T${time}:00Z`;
+    return { __typename: 'LabeledEvent', id, createdAt, actor: null, label: { name: label, color: 'ededed' } };
+}
+
+/** The events as a page of `timelineItems`, each with its cursor (`cursor-<id>`). */
+function eventPage<TNode extends { readonly id: string }>(nodes: TNode[]) {
+    return { edges: nodes.map(node => ({ cursor: `cursor-${node.id}` })), nodes };
 }
 
 function ref(id: string, number: number) {
