@@ -399,11 +399,13 @@ export const ItemDetailStore = defineService({
                 ...THREAD_EVENT_TYPES,
             });
             const detail = detailsRef.value.get(id);
-            // Read again meanwhile: the cursors these were read from may not be the detail's any more.
+            // Read again meanwhile: the cursors these were read from may not be the detail's any more. Compared as
+            // values — a read again that found the same middle holds it in a new object.
             if (
                 !isCurrent(current) ||
                 !detail ||
-                detail.events.middle !== middle ||
+                detail.events.middle?.after !== middle?.after ||
+                detail.events.middle?.before !== middle?.before ||
                 detail.comments.olderCursor !== commentsBefore
             ) {
                 return;

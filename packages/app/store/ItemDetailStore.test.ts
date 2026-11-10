@@ -205,6 +205,26 @@ test("the thread's middle goes in place, events after the oldest and comments be
     expect(again?.events.middle).toBeNull();
 });
 
+test("the thread's middle read while the item is read again in the background still goes in place: its cursors did not move", async () => {
+    const { details, github, session } = setup(uniqueLogin());
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', MONDAY), 51, 100), 60));
+    await details.ensure('I_1');
+
+    const held = createPromise();
+    session.github.holdIf = request => (request.operation === 'ThreadMiddle' ? held.promise : null);
+    const middle = details.loadThreadMiddle('I_1');
+    await session.clock.advance(0);
+    // Read again meanwhile: an equal middle, a new object.
+    await details.readAgain('I_1');
+    held.resolve();
+    await middle;
+
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+    expect(read?.comments.olderCursor).toBeNull();
+});
+
 function setup(login: string) {
     const nodes = new Map<string, IssueDetailFieldsFragment | PullRequestDetailFieldsFragment>();
     const session = createTestSession({ login, answer });
