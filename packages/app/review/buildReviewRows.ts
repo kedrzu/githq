@@ -684,8 +684,12 @@ export function getGapSize({ range }: ReviewGapRow) {
     return range.afterEnd - range.afterStart;
 }
 
-/** The only way lines can come out of a gap at a file's top or end. */
-function getGapWay(gap: ReviewGapRow): ReviewGapDirection | null {
+/**
+ * The only way lines can come out of a gap at a file's top (`up`) or end (`down`); `null` for a gap between hunks.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapWay(gap: ReviewGapRow): ReviewGapDirection | null {
     if (gap.atFileEnd) {
         return 'down';
     }

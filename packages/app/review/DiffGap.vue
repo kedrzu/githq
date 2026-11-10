@@ -10,7 +10,7 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-vue-next';
 import { computed, shallowRef } from 'vue';
 
-import { GAP_STEP, getGapArrows, getGapStep } from './buildReviewRows.js';
+import { GAP_STEP, getGapArrows, getGapStep, getGapWay } from './buildReviewRows.js';
 import type { ReviewGapDirection, ReviewGapRow, ReviewGapStep } from './buildReviewRows.js';
 import * as l from './DiffGap.loc.js';
 
@@ -40,14 +40,8 @@ const arrows = computed((): Arrow[] => {
 const count = computed(() => {
   const { row } = props;
   const params = { count: row.hidden, formatted: numbers.format(row.hidden) };
-  let lines: string;
-  if (row.atFileEnd) {
-    lines = t(l.linesBelow, params);
-  } else if (row.range.afterStart === 0) {
-    lines = t(l.linesAbove, params);
-  } else {
-    lines = t(l.lines, params);
-  }
+  const way = getGapWay(row);
+  const lines = t(way === 'down' ? l.linesBelow : way === 'up' ? l.linesAbove : l.lines, params);
 
   return row.expansionReset ? t(l.expansionReset, { lines }) : lines;
 });
@@ -192,7 +186,7 @@ function expandFromRow() {
   min-width: 0;
   overflow: hidden;
   font-family: $font-family-mono;
-  font-size: 11px;
+  font-size: $font-size-3xs;
   color: $color-fg-2;
   text-overflow: ellipsis;
   white-space: nowrap;
