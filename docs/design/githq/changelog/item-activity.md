@@ -256,6 +256,14 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     modal the first Esc leaves the box, the next closes the item.
 - [x] F15's caption (`o9BXr`): a right click opens the card's menu outside its text; on the text GitHub rendered the
   browser's menu stays, as everywhere GitHub's rendering shows (GitHub links, #247).
+- [ ] Code threads brought in line with what was built:
+  - F10's caption (`WEgWr`): the reply box is code review's own, so its ⌘↵ button says what it does there — Reply, Add to
+    draft while your review draft is open, or Start a review when your setting puts replies into a review first; a
+    changed reply asks before it is discarded, as an edit does; a refused resolve says why in the band; a code thread
+    can be focused, J / K move between code threads and R opens the focused one's reply box.
+  - `Activity / Review · pending` (`PwdqU`): the pending toolbar's note is code review's, “Others can't see them until
+    you submit.” (was “Only you can see them.”); F14's caption (`klRij`) says the toolbar and its dialogs are code
+    review's.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
