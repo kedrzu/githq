@@ -137,6 +137,111 @@ export type IssueStateReason =
     /** An issue that has been reopened */
     | 'REOPENED';
 
+/** The possible item types found in a timeline. */
+export type IssueTimelineItemsItemType =
+    /** Represents a 'added_to_project' event on a given issue or pull request. */
+    | 'ADDED_TO_PROJECT_EVENT'
+    /** Represents a 'added_to_project_v2' event on a given issue or pull request. */
+    | 'ADDED_TO_PROJECT_V2_EVENT'
+    /** Represents an 'assigned' event on any assignable object. */
+    | 'ASSIGNED_EVENT'
+    /** Represents a 'blocked_by_added' event on a given issue. */
+    | 'BLOCKED_BY_ADDED_EVENT'
+    /** Represents a 'blocked_by_removed' event on a given issue. */
+    | 'BLOCKED_BY_REMOVED_EVENT'
+    /** Represents a 'blocking_added' event on a given issue. */
+    | 'BLOCKING_ADDED_EVENT'
+    /** Represents a 'blocking_removed' event on a given issue. */
+    | 'BLOCKING_REMOVED_EVENT'
+    /** Represents a 'closed' event on any `Closable`. */
+    | 'CLOSED_EVENT'
+    /** Represents a 'comment_deleted' event on a given issue or pull request. */
+    | 'COMMENT_DELETED_EVENT'
+    /** Represents a 'connected' event on a given issue or pull request. */
+    | 'CONNECTED_EVENT'
+    /** Represents a 'converted_from_draft' event on a given issue or pull request. */
+    | 'CONVERTED_FROM_DRAFT_EVENT'
+    /** Represents a 'converted_note_to_issue' event on a given issue or pull request. */
+    | 'CONVERTED_NOTE_TO_ISSUE_EVENT'
+    /** Represents a 'converted_to_discussion' event on a given issue. */
+    | 'CONVERTED_TO_DISCUSSION_EVENT'
+    /** Represents a mention made by one issue or pull request to another. */
+    | 'CROSS_REFERENCED_EVENT'
+    /** Represents a 'demilestoned' event on a given issue or pull request. */
+    | 'DEMILESTONED_EVENT'
+    /** Represents a 'disconnected' event on a given issue or pull request. */
+    | 'DISCONNECTED_EVENT'
+    /** Represents a comment on an Issue. */
+    | 'ISSUE_COMMENT'
+    /** Represents a 'issue_comment_pinned' event on a given issue. */
+    | 'ISSUE_COMMENT_PINNED_EVENT'
+    /** Represents a 'issue_comment_unpinned' event on a given issue. */
+    | 'ISSUE_COMMENT_UNPINNED_EVENT'
+    /** Represents a 'issue_field_added' event on a given issue. */
+    | 'ISSUE_FIELD_ADDED_EVENT'
+    /** Represents a 'issue_field_changed' event on a given issue. */
+    | 'ISSUE_FIELD_CHANGED_EVENT'
+    /** Represents a 'issue_field_removed' event on a given issue. */
+    | 'ISSUE_FIELD_REMOVED_EVENT'
+    /** Represents a 'issue_type_added' event on a given issue. */
+    | 'ISSUE_TYPE_ADDED_EVENT'
+    /** Represents a 'issue_type_changed' event on a given issue. */
+    | 'ISSUE_TYPE_CHANGED_EVENT'
+    /** Represents a 'issue_type_removed' event on a given issue. */
+    | 'ISSUE_TYPE_REMOVED_EVENT'
+    /** Represents a 'labeled' event on a given issue or pull request. */
+    | 'LABELED_EVENT'
+    /** Represents a 'locked' event on a given issue or pull request. */
+    | 'LOCKED_EVENT'
+    /** Represents a 'marked_as_duplicate' event on a given issue or pull request. */
+    | 'MARKED_AS_DUPLICATE_EVENT'
+    /** Represents a 'mentioned' event on a given issue or pull request. */
+    | 'MENTIONED_EVENT'
+    /** Represents a 'milestoned' event on a given issue or pull request. */
+    | 'MILESTONED_EVENT'
+    /** Represents a 'moved_columns_in_project' event on a given issue or pull request. */
+    | 'MOVED_COLUMNS_IN_PROJECT_EVENT'
+    /** Represents a 'parent_issue_added' event on a given issue. */
+    | 'PARENT_ISSUE_ADDED_EVENT'
+    /** Represents a 'parent_issue_removed' event on a given issue. */
+    | 'PARENT_ISSUE_REMOVED_EVENT'
+    /** Represents a 'pinned' event on a given issue or pull request. */
+    | 'PINNED_EVENT'
+    /** Represents a 'project_v2_item_status_changed' event on a given issue or pull request. */
+    | 'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT'
+    /** Represents a 'referenced' event on a given `ReferencedSubject`. */
+    | 'REFERENCED_EVENT'
+    /** Represents a 'removed_from_project' event on a given issue or pull request. */
+    | 'REMOVED_FROM_PROJECT_EVENT'
+    /** Represents a 'removed_from_project_v2' event on a given issue or pull request. */
+    | 'REMOVED_FROM_PROJECT_V2_EVENT'
+    /** Represents a 'renamed' event on a given issue or pull request */
+    | 'RENAMED_TITLE_EVENT'
+    /** Represents a 'reopened' event on any `Closable`. */
+    | 'REOPENED_EVENT'
+    /** Represents a 'subscribed' event on a given `Subscribable`. */
+    | 'SUBSCRIBED_EVENT'
+    /** Represents a 'sub_issue_added' event on a given issue. */
+    | 'SUB_ISSUE_ADDED_EVENT'
+    /** Represents a 'sub_issue_removed' event on a given issue. */
+    | 'SUB_ISSUE_REMOVED_EVENT'
+    /** Represents a 'transferred' event on a given issue or pull request. */
+    | 'TRANSFERRED_EVENT'
+    /** Represents an 'unassigned' event on any assignable object. */
+    | 'UNASSIGNED_EVENT'
+    /** Represents an 'unlabeled' event on a given issue or pull request. */
+    | 'UNLABELED_EVENT'
+    /** Represents an 'unlocked' event on a given issue or pull request. */
+    | 'UNLOCKED_EVENT'
+    /** Represents an 'unmarked_as_duplicate' event on a given issue or pull request. */
+    | 'UNMARKED_AS_DUPLICATE_EVENT'
+    /** Represents an 'unpinned' event on a given issue or pull request. */
+    | 'UNPINNED_EVENT'
+    /** Represents an 'unsubscribed' event on a given `Subscribable`. */
+    | 'UNSUBSCRIBED_EVENT'
+    /** Represents a 'user_blocked' event on a given user. */
+    | 'USER_BLOCKED_EVENT';
+
 /** The possible color for an issue type */
 export type IssueTypeColor =
     /** blue */
@@ -155,6 +260,17 @@ export type IssueTypeColor =
     | 'RED'
     /** yellow */
     | 'YELLOW';
+
+/** The possible reasons that an issue or pull request was locked. */
+export type LockReason =
+    /** The issue or pull request was locked because the conversation was off-topic. */
+    | 'OFF_TOPIC'
+    /** The issue or pull request was locked because the conversation was resolved. */
+    | 'RESOLVED'
+    /** The issue or pull request was locked because the conversation was spam. */
+    | 'SPAM'
+    /** The issue or pull request was locked because the conversation was too heated. */
+    | 'TOO_HEATED';
 
 /** The possible states for a merge queue entry. */
 export type MergeQueueEntryState =
@@ -408,6 +524,173 @@ export type PullRequestState =
     | 'MERGED'
     /** A pull request that is still open. */
     | 'OPEN';
+
+/** The possible item types found in a timeline. */
+export type PullRequestTimelineItemsItemType =
+    /** Represents an 'added_to_merge_queue' event on a given pull request. */
+    | 'ADDED_TO_MERGE_QUEUE_EVENT'
+    /** Represents a 'added_to_project' event on a given issue or pull request. */
+    | 'ADDED_TO_PROJECT_EVENT'
+    /** Represents a 'added_to_project_v2' event on a given issue or pull request. */
+    | 'ADDED_TO_PROJECT_V2_EVENT'
+    /** Represents an 'added_to_stack' event on a given pull request. */
+    | 'ADDED_TO_STACK_EVENT'
+    /** Represents an 'archived' event on a given pull request. */
+    | 'ARCHIVED_EVENT'
+    /** Represents an 'assigned' event on any assignable object. */
+    | 'ASSIGNED_EVENT'
+    /** Represents a 'automatic_base_change_failed' event on a given pull request. */
+    | 'AUTOMATIC_BASE_CHANGE_FAILED_EVENT'
+    /** Represents a 'automatic_base_change_succeeded' event on a given pull request. */
+    | 'AUTOMATIC_BASE_CHANGE_SUCCEEDED_EVENT'
+    /** Represents a 'auto_merge_disabled' event on a given pull request. */
+    | 'AUTO_MERGE_DISABLED_EVENT'
+    /** Represents a 'auto_merge_enabled' event on a given pull request. */
+    | 'AUTO_MERGE_ENABLED_EVENT'
+    /** Represents a 'auto_rebase_enabled' event on a given pull request. */
+    | 'AUTO_REBASE_ENABLED_EVENT'
+    /** Represents a 'auto_squash_enabled' event on a given pull request. */
+    | 'AUTO_SQUASH_ENABLED_EVENT'
+    /** Represents a 'base_ref_changed' event on a given issue or pull request. */
+    | 'BASE_REF_CHANGED_EVENT'
+    /** Represents a 'base_ref_deleted' event on a given pull request. */
+    | 'BASE_REF_DELETED_EVENT'
+    /** Represents a 'base_ref_force_pushed' event on a given pull request. */
+    | 'BASE_REF_FORCE_PUSHED_EVENT'
+    /** Represents a 'blocked_by_added' event on a given issue. */
+    | 'BLOCKED_BY_ADDED_EVENT'
+    /** Represents a 'blocked_by_removed' event on a given issue. */
+    | 'BLOCKED_BY_REMOVED_EVENT'
+    /** Represents a 'blocking_added' event on a given issue. */
+    | 'BLOCKING_ADDED_EVENT'
+    /** Represents a 'blocking_removed' event on a given issue. */
+    | 'BLOCKING_REMOVED_EVENT'
+    /** Represents a 'closed' event on any `Closable`. */
+    | 'CLOSED_EVENT'
+    /** Represents a 'comment_deleted' event on a given issue or pull request. */
+    | 'COMMENT_DELETED_EVENT'
+    /** Represents a 'connected' event on a given issue or pull request. */
+    | 'CONNECTED_EVENT'
+    /** Represents a 'converted_from_draft' event on a given issue or pull request. */
+    | 'CONVERTED_FROM_DRAFT_EVENT'
+    /** Represents a 'converted_note_to_issue' event on a given issue or pull request. */
+    | 'CONVERTED_NOTE_TO_ISSUE_EVENT'
+    /** Represents a 'converted_to_discussion' event on a given issue. */
+    | 'CONVERTED_TO_DISCUSSION_EVENT'
+    /** Represents a 'convert_to_draft' event on a given pull request. */
+    | 'CONVERT_TO_DRAFT_EVENT'
+    /** Represents a mention made by one issue or pull request to another. */
+    | 'CROSS_REFERENCED_EVENT'
+    /** Represents a 'demilestoned' event on a given issue or pull request. */
+    | 'DEMILESTONED_EVENT'
+    /** Represents a 'deployed' event on a given pull request. */
+    | 'DEPLOYED_EVENT'
+    /** Represents a 'deployment_environment_changed' event on a given pull request. */
+    | 'DEPLOYMENT_ENVIRONMENT_CHANGED_EVENT'
+    /** Represents a 'disconnected' event on a given issue or pull request. */
+    | 'DISCONNECTED_EVENT'
+    /** Represents a 'head_ref_deleted' event on a given pull request. */
+    | 'HEAD_REF_DELETED_EVENT'
+    /** Represents a 'head_ref_force_pushed' event on a given pull request. */
+    | 'HEAD_REF_FORCE_PUSHED_EVENT'
+    /** Represents a 'head_ref_restored' event on a given pull request. */
+    | 'HEAD_REF_RESTORED_EVENT'
+    /** Represents a comment on an Issue. */
+    | 'ISSUE_COMMENT'
+    /** Represents a 'issue_comment_pinned' event on a given issue. */
+    | 'ISSUE_COMMENT_PINNED_EVENT'
+    /** Represents a 'issue_comment_unpinned' event on a given issue. */
+    | 'ISSUE_COMMENT_UNPINNED_EVENT'
+    /** Represents a 'issue_field_added' event on a given issue. */
+    | 'ISSUE_FIELD_ADDED_EVENT'
+    /** Represents a 'issue_field_changed' event on a given issue. */
+    | 'ISSUE_FIELD_CHANGED_EVENT'
+    /** Represents a 'issue_field_removed' event on a given issue. */
+    | 'ISSUE_FIELD_REMOVED_EVENT'
+    /** Represents a 'issue_type_added' event on a given issue. */
+    | 'ISSUE_TYPE_ADDED_EVENT'
+    /** Represents a 'issue_type_changed' event on a given issue. */
+    | 'ISSUE_TYPE_CHANGED_EVENT'
+    /** Represents a 'issue_type_removed' event on a given issue. */
+    | 'ISSUE_TYPE_REMOVED_EVENT'
+    /** Represents a 'labeled' event on a given issue or pull request. */
+    | 'LABELED_EVENT'
+    /** Represents a 'locked' event on a given issue or pull request. */
+    | 'LOCKED_EVENT'
+    /** Represents a 'marked_as_duplicate' event on a given issue or pull request. */
+    | 'MARKED_AS_DUPLICATE_EVENT'
+    /** Represents a 'mentioned' event on a given issue or pull request. */
+    | 'MENTIONED_EVENT'
+    /** Represents a 'merged' event on a given pull request. */
+    | 'MERGED_EVENT'
+    /** Represents a 'milestoned' event on a given issue or pull request. */
+    | 'MILESTONED_EVENT'
+    /** Represents a 'moved_columns_in_project' event on a given issue or pull request. */
+    | 'MOVED_COLUMNS_IN_PROJECT_EVENT'
+    /** Represents a 'parent_issue_added' event on a given issue. */
+    | 'PARENT_ISSUE_ADDED_EVENT'
+    /** Represents a 'parent_issue_removed' event on a given issue. */
+    | 'PARENT_ISSUE_REMOVED_EVENT'
+    /** Represents a 'pinned' event on a given issue or pull request. */
+    | 'PINNED_EVENT'
+    /** Represents a 'project_v2_item_status_changed' event on a given issue or pull request. */
+    | 'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT'
+    /** Represents a Git commit part of a pull request. */
+    | 'PULL_REQUEST_COMMIT'
+    /** Represents a commit comment thread part of a pull request. */
+    | 'PULL_REQUEST_COMMIT_COMMENT_THREAD'
+    /** A review object for a given pull request. */
+    | 'PULL_REQUEST_REVIEW'
+    /** A threaded list of comments for a given pull request. */
+    | 'PULL_REQUEST_REVIEW_THREAD'
+    /** Represents the latest point in the pull request timeline for which the viewer has seen the pull request's commits. */
+    | 'PULL_REQUEST_REVISION_MARKER'
+    /** Represents a 'ready_for_review' event on a given pull request. */
+    | 'READY_FOR_REVIEW_EVENT'
+    /** Represents a 'referenced' event on a given `ReferencedSubject`. */
+    | 'REFERENCED_EVENT'
+    /** Represents a 'removed_from_merge_queue' event on a given pull request. */
+    | 'REMOVED_FROM_MERGE_QUEUE_EVENT'
+    /** Represents a 'removed_from_project' event on a given issue or pull request. */
+    | 'REMOVED_FROM_PROJECT_EVENT'
+    /** Represents a 'removed_from_project_v2' event on a given issue or pull request. */
+    | 'REMOVED_FROM_PROJECT_V2_EVENT'
+    /** Represents a 'removed_from_stack' event on a given pull request. */
+    | 'REMOVED_FROM_STACK_EVENT'
+    /** Represents a 'renamed' event on a given issue or pull request */
+    | 'RENAMED_TITLE_EVENT'
+    /** Represents a 'reopened' event on any `Closable`. */
+    | 'REOPENED_EVENT'
+    /** Represents a 'review_dismissed' event on a given issue or pull request. */
+    | 'REVIEW_DISMISSED_EVENT'
+    /** Represents an 'review_requested' event on a given pull request. */
+    | 'REVIEW_REQUESTED_EVENT'
+    /** Represents an 'review_request_removed' event on a given pull request. */
+    | 'REVIEW_REQUEST_REMOVED_EVENT'
+    /** Represents a 'subscribed' event on a given `Subscribable`. */
+    | 'SUBSCRIBED_EVENT'
+    /** Represents a 'sub_issue_added' event on a given issue. */
+    | 'SUB_ISSUE_ADDED_EVENT'
+    /** Represents a 'sub_issue_removed' event on a given issue. */
+    | 'SUB_ISSUE_REMOVED_EVENT'
+    /** Represents a 'transferred' event on a given issue or pull request. */
+    | 'TRANSFERRED_EVENT'
+    /** Represents an 'unarchived' event on a given pull request. */
+    | 'UNARCHIVED_EVENT'
+    /** Represents an 'unassigned' event on any assignable object. */
+    | 'UNASSIGNED_EVENT'
+    /** Represents an 'unlabeled' event on a given issue or pull request. */
+    | 'UNLABELED_EVENT'
+    /** Represents an 'unlocked' event on a given issue or pull request. */
+    | 'UNLOCKED_EVENT'
+    /** Represents an 'unmarked_as_duplicate' event on a given issue or pull request. */
+    | 'UNMARKED_AS_DUPLICATE_EVENT'
+    /** Represents an 'unpinned' event on a given issue or pull request. */
+    | 'UNPINNED_EVENT'
+    /** Represents an 'unsubscribed' event on a given `Subscribable`. */
+    | 'UNSUBSCRIBED_EVENT'
+    /** Represents a 'user_blocked' event on a given user. */
+    | 'USER_BLOCKED_EVENT';
 
 /** Emojis that can be attached to Issues, Pull Requests and Comments. */
 export type ReactionContent =
@@ -695,6 +978,8 @@ export type ItemByNumberQuery = { repository: { issueOrPullRequest: { id: string
 
 export type ItemDetailQueryVariables = Exact<{
     id: string;
+    issueEventTypes: Array<IssueTimelineItemsItemType> | IssueTimelineItemsItemType;
+    pullRequestEventTypes: Array<PullRequestTimelineItemsItemType> | PullRequestTimelineItemsItemType;
 }>;
 
 export type ItemDetailQuery = {
@@ -740,6 +1025,1043 @@ export type ItemDetailQuery = {
                           | { login: string; avatarUrl: string }
                           | null;
                   } | null> | null;
+              };
+              firstEvents: {
+                  pageInfo: { endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DisconnectedEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              lastEvents: {
+                  totalCount: number;
+                  pageInfo: { startCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DisconnectedEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
               };
               parent: {
                   id: string;
@@ -980,6 +2302,1384 @@ export type ItemDetailQuery = {
                           | null;
                   } | null> | null;
               };
+              firstEvents: {
+                  pageInfo: { endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToMergeQueueEvent' }
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | { __typename: 'AddedToStackEvent' }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'AutoMergeDisabledEvent' }
+                      | { __typename: 'AutoMergeEnabledEvent' }
+                      | { __typename: 'AutoRebaseEnabledEvent' }
+                      | { __typename: 'AutoSquashEnabledEvent' }
+                      | { __typename: 'AutomaticBaseChangeFailedEvent' }
+                      | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+                      | {
+                            __typename: 'BaseRefChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            previousRefName: string;
+                            currentRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BaseRefDeletedEvent' }
+                      | { __typename: 'BaseRefForcePushedEvent' }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'ConvertToDraftEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DeployedEvent' }
+                      | { __typename: 'DeploymentEnvironmentChangedEvent' }
+                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'HeadRefDeletedEvent';
+                            id: string;
+                            createdAt: string;
+                            headRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'HeadRefForcePushedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            beforeCommit: { abbreviatedOid: string } | null;
+                            afterCommit: { abbreviatedOid: string } | null;
+                        }
+                      | { __typename: 'HeadRefRestoredEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MergedEvent';
+                            id: string;
+                            createdAt: string;
+                            mergeRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'PullRequestCommit';
+                            id: string;
+                            url: string;
+                            pushedCommit: {
+                                abbreviatedOid: string;
+                                messageHeadline: string;
+                                committedDate: string;
+                                author: {
+                                    name: string | null;
+                                    user: { login: string; avatarUrl: string } | null;
+                                } | null;
+                                statusCheckRollup: { state: StatusState } | null;
+                            };
+                        }
+                      | { __typename: 'PullRequestCommitCommentThread' }
+                      | { __typename: 'PullRequestReview' }
+                      | { __typename: 'PullRequestReviewThread' }
+                      | { __typename: 'PullRequestRevisionMarker' }
+                      | {
+                            __typename: 'ReadyForReviewEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromMergeQueueEvent' }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | { __typename: 'RemovedFromStackEvent' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewDismissedEvent';
+                            id: string;
+                            createdAt: string;
+                            dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            review: {
+                                author:
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | null;
+                            } | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              lastEvents: {
+                  totalCount: number;
+                  pageInfo: { startCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToMergeQueueEvent' }
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | { __typename: 'AddedToStackEvent' }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'AutoMergeDisabledEvent' }
+                      | { __typename: 'AutoMergeEnabledEvent' }
+                      | { __typename: 'AutoRebaseEnabledEvent' }
+                      | { __typename: 'AutoSquashEnabledEvent' }
+                      | { __typename: 'AutomaticBaseChangeFailedEvent' }
+                      | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+                      | {
+                            __typename: 'BaseRefChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            previousRefName: string;
+                            currentRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BaseRefDeletedEvent' }
+                      | { __typename: 'BaseRefForcePushedEvent' }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'ConvertToDraftEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DeployedEvent' }
+                      | { __typename: 'DeploymentEnvironmentChangedEvent' }
+                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'HeadRefDeletedEvent';
+                            id: string;
+                            createdAt: string;
+                            headRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'HeadRefForcePushedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            beforeCommit: { abbreviatedOid: string } | null;
+                            afterCommit: { abbreviatedOid: string } | null;
+                        }
+                      | { __typename: 'HeadRefRestoredEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MergedEvent';
+                            id: string;
+                            createdAt: string;
+                            mergeRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'PullRequestCommit';
+                            id: string;
+                            url: string;
+                            pushedCommit: {
+                                abbreviatedOid: string;
+                                messageHeadline: string;
+                                committedDate: string;
+                                author: {
+                                    name: string | null;
+                                    user: { login: string; avatarUrl: string } | null;
+                                } | null;
+                                statusCheckRollup: { state: StatusState } | null;
+                            };
+                        }
+                      | { __typename: 'PullRequestCommitCommentThread' }
+                      | { __typename: 'PullRequestReview' }
+                      | { __typename: 'PullRequestReviewThread' }
+                      | { __typename: 'PullRequestRevisionMarker' }
+                      | {
+                            __typename: 'ReadyForReviewEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromMergeQueueEvent' }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | { __typename: 'RemovedFromStackEvent' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewDismissedEvent';
+                            id: string;
+                            createdAt: string;
+                            dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            review: {
+                                author:
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | null;
+                            } | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              commitEvents: { totalCount: number };
               commits: { totalCount: number };
               headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
@@ -1239,6 +3939,8 @@ export type ItemDetailQuery = {
 
 export type ItemDetailsQueryVariables = Exact<{
     ids: Array<string> | string;
+    issueEventTypes: Array<IssueTimelineItemsItemType> | IssueTimelineItemsItemType;
+    pullRequestEventTypes: Array<PullRequestTimelineItemsItemType> | PullRequestTimelineItemsItemType;
 }>;
 
 export type ItemDetailsQuery = {
@@ -1284,6 +3986,1043 @@ export type ItemDetailsQuery = {
                           | { login: string; avatarUrl: string }
                           | null;
                   } | null> | null;
+              };
+              firstEvents: {
+                  pageInfo: { endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DisconnectedEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              lastEvents: {
+                  totalCount: number;
+                  pageInfo: { startCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DisconnectedEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
               };
               parent: {
                   id: string;
@@ -1524,6 +5263,1384 @@ export type ItemDetailsQuery = {
                           | null;
                   } | null> | null;
               };
+              firstEvents: {
+                  pageInfo: { endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToMergeQueueEvent' }
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | { __typename: 'AddedToStackEvent' }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'AutoMergeDisabledEvent' }
+                      | { __typename: 'AutoMergeEnabledEvent' }
+                      | { __typename: 'AutoRebaseEnabledEvent' }
+                      | { __typename: 'AutoSquashEnabledEvent' }
+                      | { __typename: 'AutomaticBaseChangeFailedEvent' }
+                      | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+                      | {
+                            __typename: 'BaseRefChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            previousRefName: string;
+                            currentRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BaseRefDeletedEvent' }
+                      | { __typename: 'BaseRefForcePushedEvent' }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'ConvertToDraftEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DeployedEvent' }
+                      | { __typename: 'DeploymentEnvironmentChangedEvent' }
+                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'HeadRefDeletedEvent';
+                            id: string;
+                            createdAt: string;
+                            headRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'HeadRefForcePushedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            beforeCommit: { abbreviatedOid: string } | null;
+                            afterCommit: { abbreviatedOid: string } | null;
+                        }
+                      | { __typename: 'HeadRefRestoredEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MergedEvent';
+                            id: string;
+                            createdAt: string;
+                            mergeRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'PullRequestCommit';
+                            id: string;
+                            url: string;
+                            pushedCommit: {
+                                abbreviatedOid: string;
+                                messageHeadline: string;
+                                committedDate: string;
+                                author: {
+                                    name: string | null;
+                                    user: { login: string; avatarUrl: string } | null;
+                                } | null;
+                                statusCheckRollup: { state: StatusState } | null;
+                            };
+                        }
+                      | { __typename: 'PullRequestCommitCommentThread' }
+                      | { __typename: 'PullRequestReview' }
+                      | { __typename: 'PullRequestReviewThread' }
+                      | { __typename: 'PullRequestRevisionMarker' }
+                      | {
+                            __typename: 'ReadyForReviewEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromMergeQueueEvent' }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | { __typename: 'RemovedFromStackEvent' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewDismissedEvent';
+                            id: string;
+                            createdAt: string;
+                            dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            review: {
+                                author:
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | null;
+                            } | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              lastEvents: {
+                  totalCount: number;
+                  pageInfo: { startCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToMergeQueueEvent' }
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | { __typename: 'AddedToStackEvent' }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'AutoMergeDisabledEvent' }
+                      | { __typename: 'AutoMergeEnabledEvent' }
+                      | { __typename: 'AutoRebaseEnabledEvent' }
+                      | { __typename: 'AutoSquashEnabledEvent' }
+                      | { __typename: 'AutomaticBaseChangeFailedEvent' }
+                      | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+                      | {
+                            __typename: 'BaseRefChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            previousRefName: string;
+                            currentRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BaseRefDeletedEvent' }
+                      | { __typename: 'BaseRefForcePushedEvent' }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'ConvertToDraftEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DeployedEvent' }
+                      | { __typename: 'DeploymentEnvironmentChangedEvent' }
+                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'HeadRefDeletedEvent';
+                            id: string;
+                            createdAt: string;
+                            headRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'HeadRefForcePushedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            beforeCommit: { abbreviatedOid: string } | null;
+                            afterCommit: { abbreviatedOid: string } | null;
+                        }
+                      | { __typename: 'HeadRefRestoredEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MergedEvent';
+                            id: string;
+                            createdAt: string;
+                            mergeRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'PullRequestCommit';
+                            id: string;
+                            url: string;
+                            pushedCommit: {
+                                abbreviatedOid: string;
+                                messageHeadline: string;
+                                committedDate: string;
+                                author: {
+                                    name: string | null;
+                                    user: { login: string; avatarUrl: string } | null;
+                                } | null;
+                                statusCheckRollup: { state: StatusState } | null;
+                            };
+                        }
+                      | { __typename: 'PullRequestCommitCommentThread' }
+                      | { __typename: 'PullRequestReview' }
+                      | { __typename: 'PullRequestReviewThread' }
+                      | { __typename: 'PullRequestRevisionMarker' }
+                      | {
+                            __typename: 'ReadyForReviewEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromMergeQueueEvent' }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | { __typename: 'RemovedFromStackEvent' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewDismissedEvent';
+                            id: string;
+                            createdAt: string;
+                            dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            review: {
+                                author:
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | null;
+                            } | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              commitEvents: { totalCount: number };
               commits: { totalCount: number };
               headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
@@ -3861,6 +8978,1277 @@ export type ReviewThreadCommentsQuery = {
         | null;
 };
 
+export type ThreadMiddleQueryVariables = Exact<{
+    id: string;
+    readEvents: boolean;
+    eventsAfter?: string | null | undefined;
+    eventsBefore?: string | null | undefined;
+    readComments: boolean;
+    commentsBefore?: string | null | undefined;
+    issueEventTypes: Array<IssueTimelineItemsItemType> | IssueTimelineItemsItemType;
+    pullRequestEventTypes: Array<PullRequestTimelineItemsItemType> | PullRequestTimelineItemsItemType;
+}>;
+
+export type ThreadMiddleQuery = {
+    node:
+        | {
+              id: string;
+              eventPage?: {
+                  pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DisconnectedEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              commentPage?: {
+                  totalCount: number;
+                  pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
+          }
+        | {
+              id: string;
+              eventPage?: {
+                  pageInfo: { hasNextPage: boolean; endCursor: string | null };
+                  nodes: Array<
+                      | { __typename: 'AddedToMergeQueueEvent' }
+                      | { __typename: 'AddedToProjectEvent' }
+                      | {
+                            __typename: 'AddedToProjectV2Event';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | { __typename: 'AddedToStackEvent' }
+                      | {
+                            __typename: 'AssignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'AutoMergeDisabledEvent' }
+                      | { __typename: 'AutoMergeEnabledEvent' }
+                      | { __typename: 'AutoRebaseEnabledEvent' }
+                      | { __typename: 'AutoSquashEnabledEvent' }
+                      | { __typename: 'AutomaticBaseChangeFailedEvent' }
+                      | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+                      | {
+                            __typename: 'BaseRefChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            previousRefName: string;
+                            currentRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'BaseRefDeletedEvent' }
+                      | { __typename: 'BaseRefForcePushedEvent' }
+                      | { __typename: 'BlockedByAddedEvent' }
+                      | { __typename: 'BlockedByRemovedEvent' }
+                      | { __typename: 'BlockingAddedEvent' }
+                      | { __typename: 'BlockingRemovedEvent' }
+                      | {
+                            __typename: 'ClosedEvent';
+                            id: string;
+                            createdAt: string;
+                            stateReason: IssueStateReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            closer:
+                                | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                                | { __typename: 'ProjectV2' }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicateOf:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'CommentDeletedEvent' }
+                      | {
+                            __typename: 'ConnectedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                            subject:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'ConvertToDraftEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'ConvertedFromDraftEvent' }
+                      | { __typename: 'ConvertedNoteToIssueEvent' }
+                      | { __typename: 'ConvertedToDiscussionEvent' }
+                      | {
+                            __typename: 'CrossReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            willCloseTarget: boolean;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            source:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  };
+                        }
+                      | {
+                            __typename: 'DemilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'DeployedEvent' }
+                      | { __typename: 'DeploymentEnvironmentChangedEvent' }
+                      | { __typename: 'DisconnectedEvent' }
+                      | {
+                            __typename: 'HeadRefDeletedEvent';
+                            id: string;
+                            createdAt: string;
+                            headRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'HeadRefForcePushedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            beforeCommit: { abbreviatedOid: string } | null;
+                            afterCommit: { abbreviatedOid: string } | null;
+                        }
+                      | { __typename: 'HeadRefRestoredEvent' }
+                      | { __typename: 'IssueComment' }
+                      | { __typename: 'IssueCommentPinnedEvent' }
+                      | { __typename: 'IssueCommentUnpinnedEvent' }
+                      | { __typename: 'IssueFieldAddedEvent' }
+                      | { __typename: 'IssueFieldChangedEvent' }
+                      | { __typename: 'IssueFieldRemovedEvent' }
+                      | {
+                            __typename: 'IssueTypeAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                            prevIssueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'IssueTypeRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            issueType: { name: string; color: IssueTypeColor } | null;
+                        }
+                      | {
+                            __typename: 'LabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'LockedEvent';
+                            id: string;
+                            createdAt: string;
+                            lockReason: LockReason | null;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'MarkedAsDuplicateEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            canonical:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                            duplicate:
+                                | {
+                                      __typename: 'Issue';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | {
+                                      __typename: 'PullRequest';
+                                      id: string;
+                                      url: string;
+                                      number: number;
+                                      title: string;
+                                      repository: { nameWithOwner: string };
+                                  }
+                                | null;
+                        }
+                      | { __typename: 'MentionedEvent' }
+                      | {
+                            __typename: 'MergedEvent';
+                            id: string;
+                            createdAt: string;
+                            mergeRefName: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'MilestonedEvent';
+                            id: string;
+                            createdAt: string;
+                            milestoneTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'MovedColumnsInProjectEvent' }
+                      | {
+                            __typename: 'ParentIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            parent: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'ParentIssueRemovedEvent' }
+                      | {
+                            __typename: 'PinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ProjectV2ItemStatusChangedEvent';
+                            id: string;
+                            createdAt: string;
+                            wasAutomated: boolean;
+                            previousStatus: string;
+                            status: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            project: { title: string; url: string } | null;
+                        }
+                      | {
+                            __typename: 'PullRequestCommit';
+                            id: string;
+                            url: string;
+                            pushedCommit: {
+                                abbreviatedOid: string;
+                                messageHeadline: string;
+                                committedDate: string;
+                                author: {
+                                    name: string | null;
+                                    user: { login: string; avatarUrl: string } | null;
+                                } | null;
+                                statusCheckRollup: { state: StatusState } | null;
+                            };
+                        }
+                      | { __typename: 'PullRequestCommitCommentThread' }
+                      | { __typename: 'PullRequestReview' }
+                      | { __typename: 'PullRequestReviewThread' }
+                      | { __typename: 'PullRequestRevisionMarker' }
+                      | {
+                            __typename: 'ReadyForReviewEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReferencedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                            commitRepository: { nameWithOwner: string };
+                        }
+                      | { __typename: 'RemovedFromMergeQueueEvent' }
+                      | { __typename: 'RemovedFromProjectEvent' }
+                      | { __typename: 'RemovedFromProjectV2Event' }
+                      | { __typename: 'RemovedFromStackEvent' }
+                      | {
+                            __typename: 'RenamedTitleEvent';
+                            id: string;
+                            createdAt: string;
+                            previousTitle: string;
+                            currentTitle: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReopenedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewDismissedEvent';
+                            id: string;
+                            createdAt: string;
+                            dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            review: {
+                                author:
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | { login: string; avatarUrl: string }
+                                    | null;
+                            } | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'ReviewRequestedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            requestedReviewer:
+                                | { slug: string; name: string }
+                                | { login: string; avatarUrl: string }
+                                | Record<PropertyKey, never>
+                                | null;
+                        }
+                      | {
+                            __typename: 'SubIssueAddedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | {
+                            __typename: 'SubIssueRemovedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            subIssue: {
+                                __typename: 'Issue';
+                                id: string;
+                                url: string;
+                                number: number;
+                                title: string;
+                                repository: { nameWithOwner: string };
+                            } | null;
+                        }
+                      | { __typename: 'SubscribedEvent' }
+                      | {
+                            __typename: 'TransferredEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            fromRepository: { nameWithOwner: string } | null;
+                        }
+                      | {
+                            __typename: 'UnassignedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            assignee:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | {
+                            __typename: 'UnlabeledEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                            label: { name: string; color: string };
+                        }
+                      | {
+                            __typename: 'UnlockedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnmarkedAsDuplicateEvent' }
+                      | {
+                            __typename: 'UnpinnedEvent';
+                            id: string;
+                            createdAt: string;
+                            actor:
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | { login: string; avatarUrl: string }
+                                | null;
+                        }
+                      | { __typename: 'UnsubscribedEvent' }
+                      | { __typename: 'UserBlockedEvent' }
+                      | null
+                  > | null;
+              };
+              commentPage?: {
+                  totalCount: number;
+                  pageInfo: { hasPreviousPage: boolean; startCursor: string | null };
+                  nodes: Array<{
+                      id: string;
+                      url: string;
+                      createdAt: string;
+                      lastEditedAt: string | null;
+                      body: string;
+                      bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null> | null;
+              };
+          }
+        | Record<PropertyKey, never>
+        | null;
+};
+
 export type TrackingCandidatesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type TrackingCandidatesQuery = {
@@ -4145,6 +10533,1043 @@ export type IssueDetailFieldsFragment = {
                 | { login: string; avatarUrl: string }
                 | null;
         } | null> | null;
+    };
+    firstEvents: {
+        pageInfo: { endCursor: string | null };
+        nodes: Array<
+            | { __typename: 'AddedToProjectEvent' }
+            | {
+                  __typename: 'AddedToProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'AssignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'BlockedByAddedEvent' }
+            | { __typename: 'BlockedByRemovedEvent' }
+            | { __typename: 'BlockingAddedEvent' }
+            | { __typename: 'BlockingRemovedEvent' }
+            | {
+                  __typename: 'ClosedEvent';
+                  id: string;
+                  createdAt: string;
+                  stateReason: IssueStateReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  closer:
+                      | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                      | { __typename: 'ProjectV2' }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicateOf:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'CommentDeletedEvent' }
+            | {
+                  __typename: 'ConnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | { __typename: 'ConvertedFromDraftEvent' }
+            | { __typename: 'ConvertedNoteToIssueEvent' }
+            | { __typename: 'ConvertedToDiscussionEvent' }
+            | {
+                  __typename: 'CrossReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  willCloseTarget: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'DemilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'DisconnectedEvent' }
+            | { __typename: 'IssueComment' }
+            | { __typename: 'IssueCommentPinnedEvent' }
+            | { __typename: 'IssueCommentUnpinnedEvent' }
+            | { __typename: 'IssueFieldAddedEvent' }
+            | { __typename: 'IssueFieldChangedEvent' }
+            | { __typename: 'IssueFieldRemovedEvent' }
+            | {
+                  __typename: 'IssueTypeAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+                  prevIssueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'LabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'LockedEvent';
+                  id: string;
+                  createdAt: string;
+                  lockReason: LockReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'MarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'MentionedEvent' }
+            | {
+                  __typename: 'MilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'MovedColumnsInProjectEvent' }
+            | {
+                  __typename: 'ParentIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'PinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ProjectV2ItemStatusChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  previousStatus: string;
+                  status: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'ReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                  commitRepository: { nameWithOwner: string };
+              }
+            | { __typename: 'RemovedFromProjectEvent' }
+            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RenamedTitleEvent';
+                  id: string;
+                  createdAt: string;
+                  previousTitle: string;
+                  currentTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReopenedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'SubIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | {
+                  __typename: 'SubIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'SubscribedEvent' }
+            | {
+                  __typename: 'TransferredEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  fromRepository: { nameWithOwner: string } | null;
+              }
+            | {
+                  __typename: 'UnassignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'UnlabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'UnlockedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnpinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnsubscribedEvent' }
+            | { __typename: 'UserBlockedEvent' }
+            | null
+        > | null;
+    };
+    lastEvents: {
+        totalCount: number;
+        pageInfo: { startCursor: string | null };
+        nodes: Array<
+            | { __typename: 'AddedToProjectEvent' }
+            | {
+                  __typename: 'AddedToProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'AssignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'BlockedByAddedEvent' }
+            | { __typename: 'BlockedByRemovedEvent' }
+            | { __typename: 'BlockingAddedEvent' }
+            | { __typename: 'BlockingRemovedEvent' }
+            | {
+                  __typename: 'ClosedEvent';
+                  id: string;
+                  createdAt: string;
+                  stateReason: IssueStateReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  closer:
+                      | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                      | { __typename: 'ProjectV2' }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicateOf:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'CommentDeletedEvent' }
+            | {
+                  __typename: 'ConnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | { __typename: 'ConvertedFromDraftEvent' }
+            | { __typename: 'ConvertedNoteToIssueEvent' }
+            | { __typename: 'ConvertedToDiscussionEvent' }
+            | {
+                  __typename: 'CrossReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  willCloseTarget: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'DemilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'DisconnectedEvent' }
+            | { __typename: 'IssueComment' }
+            | { __typename: 'IssueCommentPinnedEvent' }
+            | { __typename: 'IssueCommentUnpinnedEvent' }
+            | { __typename: 'IssueFieldAddedEvent' }
+            | { __typename: 'IssueFieldChangedEvent' }
+            | { __typename: 'IssueFieldRemovedEvent' }
+            | {
+                  __typename: 'IssueTypeAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+                  prevIssueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'LabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'LockedEvent';
+                  id: string;
+                  createdAt: string;
+                  lockReason: LockReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'MarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'MentionedEvent' }
+            | {
+                  __typename: 'MilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'MovedColumnsInProjectEvent' }
+            | {
+                  __typename: 'ParentIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'PinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ProjectV2ItemStatusChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  previousStatus: string;
+                  status: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'ReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                  commitRepository: { nameWithOwner: string };
+              }
+            | { __typename: 'RemovedFromProjectEvent' }
+            | { __typename: 'RemovedFromProjectV2Event' }
+            | {
+                  __typename: 'RenamedTitleEvent';
+                  id: string;
+                  createdAt: string;
+                  previousTitle: string;
+                  currentTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReopenedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'SubIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | {
+                  __typename: 'SubIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'SubscribedEvent' }
+            | {
+                  __typename: 'TransferredEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  fromRepository: { nameWithOwner: string } | null;
+              }
+            | {
+                  __typename: 'UnassignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'UnlabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'UnlockedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnpinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnsubscribedEvent' }
+            | { __typename: 'UserBlockedEvent' }
+            | null
+        > | null;
     };
     parent: {
         id: string;
@@ -5449,6 +12874,1378 @@ export type PullRequestDetailFieldsFragment = {
                 | null;
         } | null> | null;
     };
+    firstEvents: {
+        pageInfo: { endCursor: string | null };
+        nodes: Array<
+            | { __typename: 'AddedToMergeQueueEvent' }
+            | { __typename: 'AddedToProjectEvent' }
+            | {
+                  __typename: 'AddedToProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | { __typename: 'AddedToStackEvent' }
+            | {
+                  __typename: 'AssignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'AutoMergeDisabledEvent' }
+            | { __typename: 'AutoMergeEnabledEvent' }
+            | { __typename: 'AutoRebaseEnabledEvent' }
+            | { __typename: 'AutoSquashEnabledEvent' }
+            | { __typename: 'AutomaticBaseChangeFailedEvent' }
+            | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+            | {
+                  __typename: 'BaseRefChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  previousRefName: string;
+                  currentRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'BaseRefDeletedEvent' }
+            | { __typename: 'BaseRefForcePushedEvent' }
+            | { __typename: 'BlockedByAddedEvent' }
+            | { __typename: 'BlockedByRemovedEvent' }
+            | { __typename: 'BlockingAddedEvent' }
+            | { __typename: 'BlockingRemovedEvent' }
+            | {
+                  __typename: 'ClosedEvent';
+                  id: string;
+                  createdAt: string;
+                  stateReason: IssueStateReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  closer:
+                      | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                      | { __typename: 'ProjectV2' }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicateOf:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'CommentDeletedEvent' }
+            | {
+                  __typename: 'ConnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'ConvertToDraftEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'ConvertedFromDraftEvent' }
+            | { __typename: 'ConvertedNoteToIssueEvent' }
+            | { __typename: 'ConvertedToDiscussionEvent' }
+            | {
+                  __typename: 'CrossReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  willCloseTarget: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'DemilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'DeployedEvent' }
+            | { __typename: 'DeploymentEnvironmentChangedEvent' }
+            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'HeadRefDeletedEvent';
+                  id: string;
+                  createdAt: string;
+                  headRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'HeadRefForcePushedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  beforeCommit: { abbreviatedOid: string } | null;
+                  afterCommit: { abbreviatedOid: string } | null;
+              }
+            | { __typename: 'HeadRefRestoredEvent' }
+            | { __typename: 'IssueComment' }
+            | { __typename: 'IssueCommentPinnedEvent' }
+            | { __typename: 'IssueCommentUnpinnedEvent' }
+            | { __typename: 'IssueFieldAddedEvent' }
+            | { __typename: 'IssueFieldChangedEvent' }
+            | { __typename: 'IssueFieldRemovedEvent' }
+            | {
+                  __typename: 'IssueTypeAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+                  prevIssueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'LabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'LockedEvent';
+                  id: string;
+                  createdAt: string;
+                  lockReason: LockReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'MarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'MentionedEvent' }
+            | {
+                  __typename: 'MergedEvent';
+                  id: string;
+                  createdAt: string;
+                  mergeRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string } | null;
+              }
+            | {
+                  __typename: 'MilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'MovedColumnsInProjectEvent' }
+            | {
+                  __typename: 'ParentIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'PinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ProjectV2ItemStatusChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  previousStatus: string;
+                  status: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'PullRequestCommit';
+                  id: string;
+                  url: string;
+                  pushedCommit: {
+                      abbreviatedOid: string;
+                      messageHeadline: string;
+                      committedDate: string;
+                      author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+                      statusCheckRollup: { state: StatusState } | null;
+                  };
+              }
+            | { __typename: 'PullRequestCommitCommentThread' }
+            | { __typename: 'PullRequestReview' }
+            | { __typename: 'PullRequestReviewThread' }
+            | { __typename: 'PullRequestRevisionMarker' }
+            | {
+                  __typename: 'ReadyForReviewEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                  commitRepository: { nameWithOwner: string };
+              }
+            | { __typename: 'RemovedFromMergeQueueEvent' }
+            | { __typename: 'RemovedFromProjectEvent' }
+            | { __typename: 'RemovedFromProjectV2Event' }
+            | { __typename: 'RemovedFromStackEvent' }
+            | {
+                  __typename: 'RenamedTitleEvent';
+                  id: string;
+                  createdAt: string;
+                  previousTitle: string;
+                  currentTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReopenedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReviewDismissedEvent';
+                  id: string;
+                  createdAt: string;
+                  dismissalMessage: string | null;
+                  previousReviewState: PullRequestReviewState;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  review: {
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null;
+              }
+            | {
+                  __typename: 'ReviewRequestRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  requestedReviewer:
+                      | { slug: string; name: string }
+                      | { login: string; avatarUrl: string }
+                      | Record<PropertyKey, never>
+                      | null;
+              }
+            | {
+                  __typename: 'ReviewRequestedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  requestedReviewer:
+                      | { slug: string; name: string }
+                      | { login: string; avatarUrl: string }
+                      | Record<PropertyKey, never>
+                      | null;
+              }
+            | {
+                  __typename: 'SubIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | {
+                  __typename: 'SubIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'SubscribedEvent' }
+            | {
+                  __typename: 'TransferredEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  fromRepository: { nameWithOwner: string } | null;
+              }
+            | {
+                  __typename: 'UnassignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'UnlabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'UnlockedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnpinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnsubscribedEvent' }
+            | { __typename: 'UserBlockedEvent' }
+            | null
+        > | null;
+    };
+    lastEvents: {
+        totalCount: number;
+        pageInfo: { startCursor: string | null };
+        nodes: Array<
+            | { __typename: 'AddedToMergeQueueEvent' }
+            | { __typename: 'AddedToProjectEvent' }
+            | {
+                  __typename: 'AddedToProjectV2Event';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | { __typename: 'AddedToStackEvent' }
+            | {
+                  __typename: 'AssignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'AutoMergeDisabledEvent' }
+            | { __typename: 'AutoMergeEnabledEvent' }
+            | { __typename: 'AutoRebaseEnabledEvent' }
+            | { __typename: 'AutoSquashEnabledEvent' }
+            | { __typename: 'AutomaticBaseChangeFailedEvent' }
+            | { __typename: 'AutomaticBaseChangeSucceededEvent' }
+            | {
+                  __typename: 'BaseRefChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  previousRefName: string;
+                  currentRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'BaseRefDeletedEvent' }
+            | { __typename: 'BaseRefForcePushedEvent' }
+            | { __typename: 'BlockedByAddedEvent' }
+            | { __typename: 'BlockedByRemovedEvent' }
+            | { __typename: 'BlockingAddedEvent' }
+            | { __typename: 'BlockingRemovedEvent' }
+            | {
+                  __typename: 'ClosedEvent';
+                  id: string;
+                  createdAt: string;
+                  stateReason: IssueStateReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  closer:
+                      | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+                      | { __typename: 'ProjectV2' }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicateOf:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'CommentDeletedEvent' }
+            | {
+                  __typename: 'ConnectedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+                  subject:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'ConvertToDraftEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'ConvertedFromDraftEvent' }
+            | { __typename: 'ConvertedNoteToIssueEvent' }
+            | { __typename: 'ConvertedToDiscussionEvent' }
+            | {
+                  __typename: 'CrossReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  willCloseTarget: boolean;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  source:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        };
+              }
+            | {
+                  __typename: 'DemilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'DeployedEvent' }
+            | { __typename: 'DeploymentEnvironmentChangedEvent' }
+            | { __typename: 'DisconnectedEvent' }
+            | {
+                  __typename: 'HeadRefDeletedEvent';
+                  id: string;
+                  createdAt: string;
+                  headRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'HeadRefForcePushedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  beforeCommit: { abbreviatedOid: string } | null;
+                  afterCommit: { abbreviatedOid: string } | null;
+              }
+            | { __typename: 'HeadRefRestoredEvent' }
+            | { __typename: 'IssueComment' }
+            | { __typename: 'IssueCommentPinnedEvent' }
+            | { __typename: 'IssueCommentUnpinnedEvent' }
+            | { __typename: 'IssueFieldAddedEvent' }
+            | { __typename: 'IssueFieldChangedEvent' }
+            | { __typename: 'IssueFieldRemovedEvent' }
+            | {
+                  __typename: 'IssueTypeAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+                  prevIssueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'IssueTypeRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  issueType: { name: string; color: IssueTypeColor } | null;
+              }
+            | {
+                  __typename: 'LabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'LockedEvent';
+                  id: string;
+                  createdAt: string;
+                  lockReason: LockReason | null;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'MarkedAsDuplicateEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  canonical:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+                  duplicate:
+                      | {
+                            __typename: 'Issue';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | {
+                            __typename: 'PullRequest';
+                            id: string;
+                            url: string;
+                            number: number;
+                            title: string;
+                            repository: { nameWithOwner: string };
+                        }
+                      | null;
+              }
+            | { __typename: 'MentionedEvent' }
+            | {
+                  __typename: 'MergedEvent';
+                  id: string;
+                  createdAt: string;
+                  mergeRefName: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string } | null;
+              }
+            | {
+                  __typename: 'MilestonedEvent';
+                  id: string;
+                  createdAt: string;
+                  milestoneTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'MovedColumnsInProjectEvent' }
+            | {
+                  __typename: 'ParentIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  parent: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'ParentIssueRemovedEvent' }
+            | {
+                  __typename: 'PinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ProjectV2ItemStatusChangedEvent';
+                  id: string;
+                  createdAt: string;
+                  wasAutomated: boolean;
+                  previousStatus: string;
+                  status: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  project: { title: string; url: string } | null;
+              }
+            | {
+                  __typename: 'PullRequestCommit';
+                  id: string;
+                  url: string;
+                  pushedCommit: {
+                      abbreviatedOid: string;
+                      messageHeadline: string;
+                      committedDate: string;
+                      author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+                      statusCheckRollup: { state: StatusState } | null;
+                  };
+              }
+            | { __typename: 'PullRequestCommitCommentThread' }
+            | { __typename: 'PullRequestReview' }
+            | { __typename: 'PullRequestReviewThread' }
+            | { __typename: 'PullRequestRevisionMarker' }
+            | {
+                  __typename: 'ReadyForReviewEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReferencedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+                  commitRepository: { nameWithOwner: string };
+              }
+            | { __typename: 'RemovedFromMergeQueueEvent' }
+            | { __typename: 'RemovedFromProjectEvent' }
+            | { __typename: 'RemovedFromProjectV2Event' }
+            | { __typename: 'RemovedFromStackEvent' }
+            | {
+                  __typename: 'RenamedTitleEvent';
+                  id: string;
+                  createdAt: string;
+                  previousTitle: string;
+                  currentTitle: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReopenedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'ReviewDismissedEvent';
+                  id: string;
+                  createdAt: string;
+                  dismissalMessage: string | null;
+                  previousReviewState: PullRequestReviewState;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  review: {
+                      author:
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | { login: string; avatarUrl: string }
+                          | null;
+                  } | null;
+              }
+            | {
+                  __typename: 'ReviewRequestRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  requestedReviewer:
+                      | { slug: string; name: string }
+                      | { login: string; avatarUrl: string }
+                      | Record<PropertyKey, never>
+                      | null;
+              }
+            | {
+                  __typename: 'ReviewRequestedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  requestedReviewer:
+                      | { slug: string; name: string }
+                      | { login: string; avatarUrl: string }
+                      | Record<PropertyKey, never>
+                      | null;
+              }
+            | {
+                  __typename: 'SubIssueAddedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | {
+                  __typename: 'SubIssueRemovedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  subIssue: {
+                      __typename: 'Issue';
+                      id: string;
+                      url: string;
+                      number: number;
+                      title: string;
+                      repository: { nameWithOwner: string };
+                  } | null;
+              }
+            | { __typename: 'SubscribedEvent' }
+            | {
+                  __typename: 'TransferredEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  fromRepository: { nameWithOwner: string } | null;
+              }
+            | {
+                  __typename: 'UnassignedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  assignee:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | {
+                  __typename: 'UnlabeledEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+                  label: { name: string; color: string };
+              }
+            | {
+                  __typename: 'UnlockedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnmarkedAsDuplicateEvent' }
+            | {
+                  __typename: 'UnpinnedEvent';
+                  id: string;
+                  createdAt: string;
+                  actor:
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | { login: string; avatarUrl: string }
+                      | null;
+              }
+            | { __typename: 'UnsubscribedEvent' }
+            | { __typename: 'UserBlockedEvent' }
+            | null
+        > | null;
+    };
+    commitEvents: { totalCount: number };
     commits: { totalCount: number };
     headRepository: { nameWithOwner: string } | null;
     statusCheckRollup: {
@@ -5923,6 +14720,867 @@ export type ReviewThreadCommentFieldsFragment = {
     originalCommit: { oid: string; abbreviatedOid: string } | null;
     pullRequestReview: { id: string } | null;
 };
+
+type ThreadEventFields_AddedToMergeQueueEvent_Fragment = { __typename: 'AddedToMergeQueueEvent' };
+
+type ThreadEventFields_AddedToProjectEvent_Fragment = { __typename: 'AddedToProjectEvent' };
+
+type ThreadEventFields_AddedToProjectV2Event_Fragment = {
+    __typename: 'AddedToProjectV2Event';
+    id: string;
+    createdAt: string;
+    wasAutomated: boolean;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    project: { title: string; url: string } | null;
+};
+
+type ThreadEventFields_AddedToStackEvent_Fragment = { __typename: 'AddedToStackEvent' };
+
+type ThreadEventFields_AssignedEvent_Fragment = {
+    __typename: 'AssignedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    assignee:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_AutoMergeDisabledEvent_Fragment = { __typename: 'AutoMergeDisabledEvent' };
+
+type ThreadEventFields_AutoMergeEnabledEvent_Fragment = { __typename: 'AutoMergeEnabledEvent' };
+
+type ThreadEventFields_AutoRebaseEnabledEvent_Fragment = { __typename: 'AutoRebaseEnabledEvent' };
+
+type ThreadEventFields_AutoSquashEnabledEvent_Fragment = { __typename: 'AutoSquashEnabledEvent' };
+
+type ThreadEventFields_AutomaticBaseChangeFailedEvent_Fragment = { __typename: 'AutomaticBaseChangeFailedEvent' };
+
+type ThreadEventFields_AutomaticBaseChangeSucceededEvent_Fragment = { __typename: 'AutomaticBaseChangeSucceededEvent' };
+
+type ThreadEventFields_BaseRefChangedEvent_Fragment = {
+    __typename: 'BaseRefChangedEvent';
+    id: string;
+    createdAt: string;
+    previousRefName: string;
+    currentRefName: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_BaseRefDeletedEvent_Fragment = { __typename: 'BaseRefDeletedEvent' };
+
+type ThreadEventFields_BaseRefForcePushedEvent_Fragment = { __typename: 'BaseRefForcePushedEvent' };
+
+type ThreadEventFields_BlockedByAddedEvent_Fragment = { __typename: 'BlockedByAddedEvent' };
+
+type ThreadEventFields_BlockedByRemovedEvent_Fragment = { __typename: 'BlockedByRemovedEvent' };
+
+type ThreadEventFields_BlockingAddedEvent_Fragment = { __typename: 'BlockingAddedEvent' };
+
+type ThreadEventFields_BlockingRemovedEvent_Fragment = { __typename: 'BlockingRemovedEvent' };
+
+type ThreadEventFields_ClosedEvent_Fragment = {
+    __typename: 'ClosedEvent';
+    id: string;
+    createdAt: string;
+    stateReason: IssueStateReason | null;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    closer:
+        | { __typename: 'Commit'; abbreviatedOid: string; url: string }
+        | { __typename: 'ProjectV2' }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+    duplicateOf:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+};
+
+type ThreadEventFields_CommentDeletedEvent_Fragment = { __typename: 'CommentDeletedEvent' };
+
+type ThreadEventFields_ConnectedEvent_Fragment = {
+    __typename: 'ConnectedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    source:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          };
+    subject:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          };
+};
+
+type ThreadEventFields_ConvertToDraftEvent_Fragment = {
+    __typename: 'ConvertToDraftEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_ConvertedFromDraftEvent_Fragment = { __typename: 'ConvertedFromDraftEvent' };
+
+type ThreadEventFields_ConvertedNoteToIssueEvent_Fragment = { __typename: 'ConvertedNoteToIssueEvent' };
+
+type ThreadEventFields_ConvertedToDiscussionEvent_Fragment = { __typename: 'ConvertedToDiscussionEvent' };
+
+type ThreadEventFields_CrossReferencedEvent_Fragment = {
+    __typename: 'CrossReferencedEvent';
+    id: string;
+    createdAt: string;
+    willCloseTarget: boolean;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    source:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          };
+};
+
+type ThreadEventFields_DemilestonedEvent_Fragment = {
+    __typename: 'DemilestonedEvent';
+    id: string;
+    createdAt: string;
+    milestoneTitle: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_DeployedEvent_Fragment = { __typename: 'DeployedEvent' };
+
+type ThreadEventFields_DeploymentEnvironmentChangedEvent_Fragment = { __typename: 'DeploymentEnvironmentChangedEvent' };
+
+type ThreadEventFields_DisconnectedEvent_Fragment = { __typename: 'DisconnectedEvent' };
+
+type ThreadEventFields_HeadRefDeletedEvent_Fragment = {
+    __typename: 'HeadRefDeletedEvent';
+    id: string;
+    createdAt: string;
+    headRefName: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_HeadRefForcePushedEvent_Fragment = {
+    __typename: 'HeadRefForcePushedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    beforeCommit: { abbreviatedOid: string } | null;
+    afterCommit: { abbreviatedOid: string } | null;
+};
+
+type ThreadEventFields_HeadRefRestoredEvent_Fragment = { __typename: 'HeadRefRestoredEvent' };
+
+type ThreadEventFields_IssueComment_Fragment = { __typename: 'IssueComment' };
+
+type ThreadEventFields_IssueCommentPinnedEvent_Fragment = { __typename: 'IssueCommentPinnedEvent' };
+
+type ThreadEventFields_IssueCommentUnpinnedEvent_Fragment = { __typename: 'IssueCommentUnpinnedEvent' };
+
+type ThreadEventFields_IssueFieldAddedEvent_Fragment = { __typename: 'IssueFieldAddedEvent' };
+
+type ThreadEventFields_IssueFieldChangedEvent_Fragment = { __typename: 'IssueFieldChangedEvent' };
+
+type ThreadEventFields_IssueFieldRemovedEvent_Fragment = { __typename: 'IssueFieldRemovedEvent' };
+
+type ThreadEventFields_IssueTypeAddedEvent_Fragment = {
+    __typename: 'IssueTypeAddedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    issueType: { name: string; color: IssueTypeColor } | null;
+};
+
+type ThreadEventFields_IssueTypeChangedEvent_Fragment = {
+    __typename: 'IssueTypeChangedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    issueType: { name: string; color: IssueTypeColor } | null;
+    prevIssueType: { name: string; color: IssueTypeColor } | null;
+};
+
+type ThreadEventFields_IssueTypeRemovedEvent_Fragment = {
+    __typename: 'IssueTypeRemovedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    issueType: { name: string; color: IssueTypeColor } | null;
+};
+
+type ThreadEventFields_LabeledEvent_Fragment = {
+    __typename: 'LabeledEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    label: { name: string; color: string };
+};
+
+type ThreadEventFields_LockedEvent_Fragment = {
+    __typename: 'LockedEvent';
+    id: string;
+    createdAt: string;
+    lockReason: LockReason | null;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_MarkedAsDuplicateEvent_Fragment = {
+    __typename: 'MarkedAsDuplicateEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    canonical:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+    duplicate:
+        | {
+              __typename: 'Issue';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | {
+              __typename: 'PullRequest';
+              id: string;
+              url: string;
+              number: number;
+              title: string;
+              repository: { nameWithOwner: string };
+          }
+        | null;
+};
+
+type ThreadEventFields_MentionedEvent_Fragment = { __typename: 'MentionedEvent' };
+
+type ThreadEventFields_MergedEvent_Fragment = {
+    __typename: 'MergedEvent';
+    id: string;
+    createdAt: string;
+    mergeRefName: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    commit: { abbreviatedOid: string; url: string } | null;
+};
+
+type ThreadEventFields_MilestonedEvent_Fragment = {
+    __typename: 'MilestonedEvent';
+    id: string;
+    createdAt: string;
+    milestoneTitle: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_MovedColumnsInProjectEvent_Fragment = { __typename: 'MovedColumnsInProjectEvent' };
+
+type ThreadEventFields_ParentIssueAddedEvent_Fragment = {
+    __typename: 'ParentIssueAddedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    parent: {
+        __typename: 'Issue';
+        id: string;
+        url: string;
+        number: number;
+        title: string;
+        repository: { nameWithOwner: string };
+    } | null;
+};
+
+type ThreadEventFields_ParentIssueRemovedEvent_Fragment = { __typename: 'ParentIssueRemovedEvent' };
+
+type ThreadEventFields_PinnedEvent_Fragment = {
+    __typename: 'PinnedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_ProjectV2ItemStatusChangedEvent_Fragment = {
+    __typename: 'ProjectV2ItemStatusChangedEvent';
+    id: string;
+    createdAt: string;
+    wasAutomated: boolean;
+    previousStatus: string;
+    status: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    project: { title: string; url: string } | null;
+};
+
+type ThreadEventFields_PullRequestCommit_Fragment = {
+    __typename: 'PullRequestCommit';
+    id: string;
+    url: string;
+    pushedCommit: {
+        abbreviatedOid: string;
+        messageHeadline: string;
+        committedDate: string;
+        author: { name: string | null; user: { login: string; avatarUrl: string } | null } | null;
+        statusCheckRollup: { state: StatusState } | null;
+    };
+};
+
+type ThreadEventFields_PullRequestCommitCommentThread_Fragment = { __typename: 'PullRequestCommitCommentThread' };
+
+type ThreadEventFields_PullRequestReview_Fragment = { __typename: 'PullRequestReview' };
+
+type ThreadEventFields_PullRequestReviewThread_Fragment = { __typename: 'PullRequestReviewThread' };
+
+type ThreadEventFields_PullRequestRevisionMarker_Fragment = { __typename: 'PullRequestRevisionMarker' };
+
+type ThreadEventFields_ReadyForReviewEvent_Fragment = {
+    __typename: 'ReadyForReviewEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_ReferencedEvent_Fragment = {
+    __typename: 'ReferencedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    commit: { abbreviatedOid: string; url: string; messageHeadline: string } | null;
+    commitRepository: { nameWithOwner: string };
+};
+
+type ThreadEventFields_RemovedFromMergeQueueEvent_Fragment = { __typename: 'RemovedFromMergeQueueEvent' };
+
+type ThreadEventFields_RemovedFromProjectEvent_Fragment = { __typename: 'RemovedFromProjectEvent' };
+
+type ThreadEventFields_RemovedFromProjectV2Event_Fragment = { __typename: 'RemovedFromProjectV2Event' };
+
+type ThreadEventFields_RemovedFromStackEvent_Fragment = { __typename: 'RemovedFromStackEvent' };
+
+type ThreadEventFields_RenamedTitleEvent_Fragment = {
+    __typename: 'RenamedTitleEvent';
+    id: string;
+    createdAt: string;
+    previousTitle: string;
+    currentTitle: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_ReopenedEvent_Fragment = {
+    __typename: 'ReopenedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_ReviewDismissedEvent_Fragment = {
+    __typename: 'ReviewDismissedEvent';
+    id: string;
+    createdAt: string;
+    dismissalMessage: string | null;
+    previousReviewState: PullRequestReviewState;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    review: {
+        author:
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | { login: string; avatarUrl: string }
+            | null;
+    } | null;
+};
+
+type ThreadEventFields_ReviewRequestRemovedEvent_Fragment = {
+    __typename: 'ReviewRequestRemovedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    requestedReviewer:
+        | { slug: string; name: string }
+        | { login: string; avatarUrl: string }
+        | Record<PropertyKey, never>
+        | null;
+};
+
+type ThreadEventFields_ReviewRequestedEvent_Fragment = {
+    __typename: 'ReviewRequestedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    requestedReviewer:
+        | { slug: string; name: string }
+        | { login: string; avatarUrl: string }
+        | Record<PropertyKey, never>
+        | null;
+};
+
+type ThreadEventFields_SubIssueAddedEvent_Fragment = {
+    __typename: 'SubIssueAddedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    subIssue: {
+        __typename: 'Issue';
+        id: string;
+        url: string;
+        number: number;
+        title: string;
+        repository: { nameWithOwner: string };
+    } | null;
+};
+
+type ThreadEventFields_SubIssueRemovedEvent_Fragment = {
+    __typename: 'SubIssueRemovedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    subIssue: {
+        __typename: 'Issue';
+        id: string;
+        url: string;
+        number: number;
+        title: string;
+        repository: { nameWithOwner: string };
+    } | null;
+};
+
+type ThreadEventFields_SubscribedEvent_Fragment = { __typename: 'SubscribedEvent' };
+
+type ThreadEventFields_TransferredEvent_Fragment = {
+    __typename: 'TransferredEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    fromRepository: { nameWithOwner: string } | null;
+};
+
+type ThreadEventFields_UnassignedEvent_Fragment = {
+    __typename: 'UnassignedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    assignee:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_UnlabeledEvent_Fragment = {
+    __typename: 'UnlabeledEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+    label: { name: string; color: string };
+};
+
+type ThreadEventFields_UnlockedEvent_Fragment = {
+    __typename: 'UnlockedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment = { __typename: 'UnmarkedAsDuplicateEvent' };
+
+type ThreadEventFields_UnpinnedEvent_Fragment = {
+    __typename: 'UnpinnedEvent';
+    id: string;
+    createdAt: string;
+    actor:
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | { login: string; avatarUrl: string }
+        | null;
+};
+
+type ThreadEventFields_UnsubscribedEvent_Fragment = { __typename: 'UnsubscribedEvent' };
+
+type ThreadEventFields_UserBlockedEvent_Fragment = { __typename: 'UserBlockedEvent' };
+
+export type ThreadEventFieldsFragment =
+    | ThreadEventFields_AddedToMergeQueueEvent_Fragment
+    | ThreadEventFields_AddedToProjectEvent_Fragment
+    | ThreadEventFields_AddedToProjectV2Event_Fragment
+    | ThreadEventFields_AddedToStackEvent_Fragment
+    | ThreadEventFields_AssignedEvent_Fragment
+    | ThreadEventFields_AutoMergeDisabledEvent_Fragment
+    | ThreadEventFields_AutoMergeEnabledEvent_Fragment
+    | ThreadEventFields_AutoRebaseEnabledEvent_Fragment
+    | ThreadEventFields_AutoSquashEnabledEvent_Fragment
+    | ThreadEventFields_AutomaticBaseChangeFailedEvent_Fragment
+    | ThreadEventFields_AutomaticBaseChangeSucceededEvent_Fragment
+    | ThreadEventFields_BaseRefChangedEvent_Fragment
+    | ThreadEventFields_BaseRefDeletedEvent_Fragment
+    | ThreadEventFields_BaseRefForcePushedEvent_Fragment
+    | ThreadEventFields_BlockedByAddedEvent_Fragment
+    | ThreadEventFields_BlockedByRemovedEvent_Fragment
+    | ThreadEventFields_BlockingAddedEvent_Fragment
+    | ThreadEventFields_BlockingRemovedEvent_Fragment
+    | ThreadEventFields_ClosedEvent_Fragment
+    | ThreadEventFields_CommentDeletedEvent_Fragment
+    | ThreadEventFields_ConnectedEvent_Fragment
+    | ThreadEventFields_ConvertToDraftEvent_Fragment
+    | ThreadEventFields_ConvertedFromDraftEvent_Fragment
+    | ThreadEventFields_ConvertedNoteToIssueEvent_Fragment
+    | ThreadEventFields_ConvertedToDiscussionEvent_Fragment
+    | ThreadEventFields_CrossReferencedEvent_Fragment
+    | ThreadEventFields_DemilestonedEvent_Fragment
+    | ThreadEventFields_DeployedEvent_Fragment
+    | ThreadEventFields_DeploymentEnvironmentChangedEvent_Fragment
+    | ThreadEventFields_DisconnectedEvent_Fragment
+    | ThreadEventFields_HeadRefDeletedEvent_Fragment
+    | ThreadEventFields_HeadRefForcePushedEvent_Fragment
+    | ThreadEventFields_HeadRefRestoredEvent_Fragment
+    | ThreadEventFields_IssueComment_Fragment
+    | ThreadEventFields_IssueCommentPinnedEvent_Fragment
+    | ThreadEventFields_IssueCommentUnpinnedEvent_Fragment
+    | ThreadEventFields_IssueFieldAddedEvent_Fragment
+    | ThreadEventFields_IssueFieldChangedEvent_Fragment
+    | ThreadEventFields_IssueFieldRemovedEvent_Fragment
+    | ThreadEventFields_IssueTypeAddedEvent_Fragment
+    | ThreadEventFields_IssueTypeChangedEvent_Fragment
+    | ThreadEventFields_IssueTypeRemovedEvent_Fragment
+    | ThreadEventFields_LabeledEvent_Fragment
+    | ThreadEventFields_LockedEvent_Fragment
+    | ThreadEventFields_MarkedAsDuplicateEvent_Fragment
+    | ThreadEventFields_MentionedEvent_Fragment
+    | ThreadEventFields_MergedEvent_Fragment
+    | ThreadEventFields_MilestonedEvent_Fragment
+    | ThreadEventFields_MovedColumnsInProjectEvent_Fragment
+    | ThreadEventFields_ParentIssueAddedEvent_Fragment
+    | ThreadEventFields_ParentIssueRemovedEvent_Fragment
+    | ThreadEventFields_PinnedEvent_Fragment
+    | ThreadEventFields_ProjectV2ItemStatusChangedEvent_Fragment
+    | ThreadEventFields_PullRequestCommit_Fragment
+    | ThreadEventFields_PullRequestCommitCommentThread_Fragment
+    | ThreadEventFields_PullRequestReview_Fragment
+    | ThreadEventFields_PullRequestReviewThread_Fragment
+    | ThreadEventFields_PullRequestRevisionMarker_Fragment
+    | ThreadEventFields_ReadyForReviewEvent_Fragment
+    | ThreadEventFields_ReferencedEvent_Fragment
+    | ThreadEventFields_RemovedFromMergeQueueEvent_Fragment
+    | ThreadEventFields_RemovedFromProjectEvent_Fragment
+    | ThreadEventFields_RemovedFromProjectV2Event_Fragment
+    | ThreadEventFields_RemovedFromStackEvent_Fragment
+    | ThreadEventFields_RenamedTitleEvent_Fragment
+    | ThreadEventFields_ReopenedEvent_Fragment
+    | ThreadEventFields_ReviewDismissedEvent_Fragment
+    | ThreadEventFields_ReviewRequestRemovedEvent_Fragment
+    | ThreadEventFields_ReviewRequestedEvent_Fragment
+    | ThreadEventFields_SubIssueAddedEvent_Fragment
+    | ThreadEventFields_SubIssueRemovedEvent_Fragment
+    | ThreadEventFields_SubscribedEvent_Fragment
+    | ThreadEventFields_TransferredEvent_Fragment
+    | ThreadEventFields_UnassignedEvent_Fragment
+    | ThreadEventFields_UnlabeledEvent_Fragment
+    | ThreadEventFields_UnlockedEvent_Fragment
+    | ThreadEventFields_UnmarkedAsDuplicateEvent_Fragment
+    | ThreadEventFields_UnpinnedEvent_Fragment
+    | ThreadEventFields_UnsubscribedEvent_Fragment
+    | ThreadEventFields_UserBlockedEvent_Fragment;
+
+type ThreadRefFields_Issue_Fragment = {
+    __typename: 'Issue';
+    id: string;
+    url: string;
+    number: number;
+    title: string;
+    repository: { nameWithOwner: string };
+};
+
+type ThreadRefFields_PullRequest_Fragment = {
+    __typename: 'PullRequest';
+    id: string;
+    url: string;
+    number: number;
+    title: string;
+    repository: { nameWithOwner: string };
+};
+
+export type ThreadRefFieldsFragment = ThreadRefFields_Issue_Fragment | ThreadRefFields_PullRequest_Fragment;
 
 export type TrackingProjectFieldsFragment = {
     id: string;
@@ -7460,6 +17118,504 @@ export const CommentPageFieldsFragmentDoc = new TypedDocumentString(
 }`,
     { fragmentName: 'CommentPageFields' },
 );
+export const ThreadRefFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+}
+    `,
+    { fragmentName: 'ThreadRefFields' },
+);
+export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+    fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+}`,
+    { fragmentName: 'ThreadEventFields' },
+);
 export const LinkedIssueFieldsFragmentDoc = new TypedDocumentString(
     `
     fragment LinkedIssueFields on Issue {
@@ -7809,6 +17965,23 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
   parent {
     ...LinkedIssueFields
   }
@@ -8064,6 +18237,474 @@ fragment ReactionGroupFields on ReactionGroup {
   viewerHasReacted
   reactors {
     totalCount
+  }
+}
+fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
   }
 }`,
     { fragmentName: 'IssueDetailFields' },
@@ -9273,6 +19914,26 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
+    totalCount
+  }
   commits {
     totalCount
   }
@@ -9669,6 +20330,474 @@ fragment ReviewPageFields on PullRequestReviewConnection {
     state
     bodyHTML
     submittedAt
+  }
+}
+fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
   }
 }`,
     { fragmentName: 'PullRequestDetailFields' },
@@ -9979,7 +21108,7 @@ export const ItemByNumberDocument = new TypedDocumentString(`
 }
     `);
 export const ItemDetailDocument = new TypedDocumentString(`
-    query ItemDetail($id: ID!) {
+    query ItemDetail($id: ID!, $issueEventTypes: [IssueTimelineItemsItemType!]!, $pullRequestEventTypes: [PullRequestTimelineItemsItemType!]!) {
   node(id: $id) {
     ... on Issue {
       ...IssueDetailFields
@@ -10026,6 +21155,23 @@ fragment IssueDetailFields on Issue {
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
   parent {
     ...LinkedIssueFields
   }
@@ -10292,6 +21438,26 @@ fragment PullRequestDetailFields on PullRequest {
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
+    totalCount
+  }
   commits {
     totalCount
   }
@@ -10501,9 +21667,477 @@ fragment ReviewPageFields on PullRequestReviewConnection {
     bodyHTML
     submittedAt
   }
+}
+fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
 }`);
 export const ItemDetailsDocument = new TypedDocumentString(`
-    query ItemDetails($ids: [ID!]!) {
+    query ItemDetails($ids: [ID!]!, $issueEventTypes: [IssueTimelineItemsItemType!]!, $pullRequestEventTypes: [PullRequestTimelineItemsItemType!]!) {
   nodes(ids: $ids) {
     ... on Issue {
       ...IssueDetailFields
@@ -10550,6 +22184,23 @@ fragment IssueDetailFields on Issue {
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
   parent {
     ...LinkedIssueFields
   }
@@ -10816,6 +22467,26 @@ fragment PullRequestDetailFields on PullRequest {
   commentPage: comments(last: 50) {
     ...CommentPageFields
   }
+  firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
+    pageInfo {
+      endCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
+    totalCount
+    pageInfo {
+      startCursor
+    }
+    nodes {
+      ...ThreadEventFields
+    }
+  }
+  commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
+    totalCount
+  }
   commits {
     totalCount
   }
@@ -11024,6 +22695,474 @@ fragment ReviewPageFields on PullRequestReviewConnection {
     state
     bodyHTML
     submittedAt
+  }
+}
+fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
   }
 }`);
 export const ItemsByIdsDocument = new TypedDocumentString(`
@@ -13549,6 +25688,543 @@ export const ReviewThreadCommentsDocument = new TypedDocumentString(`
     id
   }
 }`);
+export const ThreadMiddleDocument = new TypedDocumentString(`
+    query ThreadMiddle($id: ID!, $readEvents: Boolean!, $eventsAfter: String, $eventsBefore: String, $readComments: Boolean!, $commentsBefore: String, $issueEventTypes: [IssueTimelineItemsItemType!]!, $pullRequestEventTypes: [PullRequestTimelineItemsItemType!]!) {
+  node(id: $id) {
+    ... on Issue {
+      id
+      eventPage: timelineItems(
+        first: 100
+        after: $eventsAfter
+        before: $eventsBefore
+        itemTypes: $issueEventTypes
+      ) @include(if: $readEvents) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          ...ThreadEventFields
+        }
+      }
+      commentPage: comments(last: 100, before: $commentsBefore) @include(if: $readComments) {
+        ...CommentPageFields
+      }
+    }
+    ... on PullRequest {
+      id
+      eventPage: timelineItems(
+        first: 100
+        after: $eventsAfter
+        before: $eventsBefore
+        itemTypes: $pullRequestEventTypes
+      ) @include(if: $readEvents) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          ...ThreadEventFields
+        }
+      }
+      commentPage: comments(last: 100, before: $commentsBefore) @include(if: $readComments) {
+        ...CommentPageFields
+      }
+    }
+  }
+}
+    fragment CommentPageFields on IssueCommentConnection {
+  totalCount
+  pageInfo {
+    hasPreviousPage
+    startCursor
+  }
+  nodes {
+    ...IssueCommentFields
+  }
+}
+fragment IssueCommentFields on IssueComment {
+  id
+  url
+  createdAt
+  lastEditedAt
+  author {
+    login
+    avatarUrl
+  }
+  body
+  bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
+}
+fragment ThreadEventFields on PullRequestTimelineItems {
+  __typename
+  ... on PullRequestCommit {
+    id
+    url
+    pushedCommit: commit {
+      abbreviatedOid
+      messageHeadline
+      committedDate
+      author {
+        name
+        user {
+          login
+          avatarUrl
+        }
+      }
+      statusCheckRollup {
+        state
+      }
+    }
+  }
+  ... on HeadRefForcePushedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    beforeCommit {
+      abbreviatedOid
+    }
+    afterCommit {
+      abbreviatedOid
+    }
+  }
+  ... on AssignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on UnassignedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    assignee {
+      ... on Actor {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on RenamedTitleEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousTitle
+    currentTitle
+  }
+  ... on LabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on UnlabeledEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    label {
+      name
+      color
+    }
+  }
+  ... on MilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on DemilestonedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    milestoneTitle
+  }
+  ... on ReviewRequestedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewRequestRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    requestedReviewer {
+      ... on User {
+        login
+        avatarUrl
+      }
+      ... on Team {
+        slug
+        name
+      }
+    }
+  }
+  ... on ReviewDismissedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    dismissalMessage
+    previousReviewState
+    review {
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+  ... on ReadyForReviewEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on ConvertToDraftEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on BaseRefChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    previousRefName
+    currentRefName
+  }
+  ... on CrossReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    willCloseTarget
+    source {
+      ...ThreadRefFields
+    }
+  }
+  ... on ClosedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    stateReason
+    closer {
+      __typename
+      ... on PullRequest {
+        ...ThreadRefFields
+      }
+      ... on Commit {
+        abbreviatedOid
+        url
+      }
+    }
+    duplicateOf {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReopenedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MergedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    mergeRefName
+    commit {
+      abbreviatedOid
+      url
+    }
+  }
+  ... on HeadRefDeletedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    headRefName
+  }
+  ... on ConnectedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    source {
+      ...ThreadRefFields
+    }
+    subject {
+      ...ThreadRefFields
+    }
+  }
+  ... on ReferencedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    commit {
+      abbreviatedOid
+      url
+      messageHeadline
+    }
+    commitRepository {
+      nameWithOwner
+    }
+  }
+  ... on SubIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on SubIssueRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    subIssue {
+      ...ThreadRefFields
+    }
+  }
+  ... on ParentIssueAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    parent {
+      ...ThreadRefFields
+    }
+  }
+  ... on IssueTypeAddedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+    prevIssueType {
+      name
+      color
+    }
+  }
+  ... on IssueTypeRemovedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    issueType {
+      name
+      color
+    }
+  }
+  ... on AddedToProjectV2Event {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    project {
+      title
+      url
+    }
+  }
+  ... on ProjectV2ItemStatusChangedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    wasAutomated
+    previousStatus
+    status
+    project {
+      title
+      url
+    }
+  }
+  ... on TransferredEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    fromRepository {
+      nameWithOwner
+    }
+  }
+  ... on LockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    lockReason
+  }
+  ... on UnlockedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on PinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on UnpinnedEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+  }
+  ... on MarkedAsDuplicateEvent {
+    id
+    createdAt
+    actor {
+      login
+      avatarUrl
+    }
+    canonical {
+      ...ThreadRefFields
+    }
+    duplicate {
+      ...ThreadRefFields
+    }
+  }
+}
+fragment ThreadRefFields on IssueOrPullRequest {
+  __typename
+  ... on Issue {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+  ... on PullRequest {
+    id
+    url
+    number
+    title
+    repository {
+      nameWithOwner
+    }
+  }
+}`);
 export const TrackingCandidatesDocument = new TypedDocumentString(`
     query TrackingCandidates {
   viewer {
@@ -15485,6 +28161,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<ReviewThreadCommentsQuery>;
+        },
+        ThreadMiddle(variables: ThreadMiddleQueryVariables, options?: C): Promise<ThreadMiddleQuery> {
+            return requester<ThreadMiddleQuery, ThreadMiddleQueryVariables>(
+                ThreadMiddleDocument,
+                variables,
+                options,
+            ) as Promise<ThreadMiddleQuery>;
         },
         TrackingCandidates(
             variables?: TrackingCandidatesQueryVariables,
