@@ -184,10 +184,11 @@ const folded = computed(() =>
   content: none;
 }
 
+// 8 between the items, as the design's feed (`Activity / Thread · short`).
 .itemThread_comments {
   display: flex;
   flex-direction: column;
-  gap: $spacing-20;
+  gap: $spacing-8;
   padding: 0;
   margin: 0;
   list-style: none;
