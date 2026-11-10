@@ -1,6 +1,6 @@
 <!-- The Markdown editor's suggestions at the caret, floating over the page (inside the modal dialog the editor is in, so the pointer reaches them there): for `@` the people ("People": avatar, login, name), for `#` the repository's issues and pull requests ("Issues and pull requests in owner/name": state icon, number, title). It is the listbox of the text area's combobox: the keys and the focus stay in the text area, which moves the highlight (`active`); a click picks a row without taking the focus. -->
 <script lang="ts" setup>
-import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue';
+import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue';
 import type { VirtualElement } from '@floating-ui/vue';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, toRef, useTemplateRef } from 'vue';
@@ -30,18 +30,39 @@ const emit = defineEmits<{
   highlight: [index: number];
 }>();
 
+/** The space the menu keeps from the edges of the area it stays in. */
+const EDGE = 8;
+
 const t = useTranslate();
 const menuRef = useTemplateRef<HTMLElement>('menu');
-const { floatingStyles, placement } = useFloating(toRef(props, 'anchor'), menuRef, {
-  placement: 'bottom-start',
-  strategy: 'fixed',
-  middleware: [offset(4), flip(), shift({ padding: 8 })],
-  whileElementsMounted: autoUpdate,
-});
-
 // Inside the modal dialog the editor is in, if any: reka makes everything outside a modal's layer deaf to the pointer,
 // and a press out there closes it. Floating over the page from there all the same (`strategy: 'fixed'`).
 const portal = computed(() => props.anchor.contextElement?.closest<HTMLElement>('[role="dialog"]') ?? 'body');
+// The area the menu stays in: what scrolls the editor where it marks itself (`data-suggestions-boundary`: the item
+// view's content, not the list beside it or the status bar under it), else the window. Not floating-ui's clipping
+// ancestors: they are the menu's, teleported out of the editor.
+const boundary = computed(
+  () => props.anchor.contextElement?.closest<HTMLElement>('[data-suggestions-boundary]') ?? 'clippingAncestors',
+);
+const { floatingStyles, placement } = useFloating(toRef(props, 'anchor'), menuRef, {
+  placement: 'bottom-start',
+  strategy: 'fixed',
+  middleware: computed(() => [
+    offset(4),
+    flip({ boundary: boundary.value, padding: EDGE }),
+    shift({ boundary: boundary.value, padding: EDGE }),
+    // Without room for all of it either side of the caret, as much as fits, scrolling.
+    size({
+      boundary: boundary.value,
+      padding: EDGE,
+      apply: ({ availableWidth, availableHeight, elements }) => {
+        elements.floating.style.maxWidth = `${Math.max(0, availableWidth)}px`;
+        elements.floating.style.maxHeight = `${Math.max(0, availableHeight)}px`;
+      },
+    }),
+  ]),
+  whileElementsMounted: autoUpdate,
+});
 
 const heading = computed(() =>
   props.suggestions.kind === 'mention' ? t(l.people) : t(l.references, { repository: props.repository }),
@@ -124,8 +145,8 @@ const heading = computed(() =>
 <style lang="scss" module="css">
 .markdownSuggestions {
   z-index: 20;
-  max-width: calc(100vw - #{$spacing-16});
   padding: $spacing-4;
+  overflow-y: auto;
   font-size: $font-size-md;
   color: $color-fg;
   background: $color-bg-2;

@@ -761,6 +761,7 @@ function getProjectOptions(): CommandOption[] {
               ref="scroll"
               :class="css.itemView_scroll"
               :data-route-scroll="`item-main:${item.id}`"
+              data-suggestions-boundary
               @scroll.passive="onContentScroll"
             >
               <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
