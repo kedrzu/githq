@@ -2470,8 +2470,7 @@ export class GitHubWorld {
             }
 
             // Without push access GitHub silently drops labels, assignees and the milestone (D14).
-            const pushes =
-                ['WRITE', 'MAINTAIN', 'ADMIN'].includes(repository.viewerPermission) && failure?.kind !== 'drop';
+            const pushes = canPush(repository.viewerPermission) && failure?.kind !== 'drop';
             const number =
                 Math.max(
                     0,
@@ -2877,13 +2876,12 @@ export class GitHubWorld {
         return project;
     }
 
-    /** A live item; `undefined` for an id GitHub does not know or that was deleted. */
     /** The viewer reading the item's comments, and whether they may write to its repository. */
     private readerOf(item: WorldItem): CommentReader {
-        const { viewerPermission } = this.getRepository(item.repository);
-        return { viewer: this.viewer, writes: ['WRITE', 'MAINTAIN', 'ADMIN'].includes(viewerPermission) };
+        return { viewer: this.viewer, writes: canPush(this.getRepository(item.repository).viewerPermission) };
     }
 
+    /** A live item; `undefined` for an id GitHub does not know or that was deleted. */
     private readItem(id: string): WorldItem | undefined {
         const item = this.items.get(id);
         return item && !item.deleted ? item : undefined;
@@ -3475,6 +3473,11 @@ function toCommentNode(item: WorldItem, comment: WorldComment, reader: CommentRe
         viewerCanUpdate: mayChange,
         viewerCanDelete: mayChange,
     };
+}
+
+/** Whether the viewer may push to the repository: with write access or more, as GitHub grants it. */
+function canPush(permission: RepositoryPermission): boolean {
+    return permission === 'WRITE' || permission === 'MAINTAIN' || permission === 'ADMIN';
 }
 
 function toAssignable(item: WorldItem) {
