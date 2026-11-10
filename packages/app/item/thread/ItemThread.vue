@@ -123,23 +123,9 @@ let deleting: string | null = null;
 const askingReply = ref<string | null>(null);
 /** The code thread whose reply box takes the focus, for the moment it takes it. */
 const focusedReply = ref<string | null>(null);
-/** The threads the viewer resolved here: they say so at once, before the threads read again name who did. */
-const resolvedHere = ref<ReadonlySet<string>>(new Set());
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
-/** The threads, the viewer as who resolved those resolved here. */
-const shownThreads = computed(() => {
-  const threads = props.reviewThreads ?? [];
-  const { viewer } = props;
-  if (resolvedHere.value.size === 0 || !viewer) {
-    return threads;
-  }
-
-  return threads.map(thread =>
-    thread.isResolved && resolvedHere.value.has(thread.id) ? { ...thread, resolvedBy: viewer } : thread,
-  );
-});
 /** Code review's boxes of replies, by their thread: the one being written, and those sent until the threads read have them. */
 const replyBoxes = computed(() => {
   const byThread = new Map<string, ReplyBoxes>();
@@ -202,7 +188,7 @@ const entries = computed(() =>
         failedComments: props.failedComments,
         unfolded: unfolded.value,
         keepShown: new Set([...[...editorsRef.value.keys()].filter(id => id !== null), ...replyBoxes.value.keys()]),
-        reviewThreads: shownThreads.value,
+        reviewThreads: props.reviewThreads ?? [],
         pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
         viewerLogin: props.viewer?.login ?? null,
       })
@@ -225,7 +211,6 @@ watch(
       foldFailed.value = false;
       askingReply.value = null;
       focusedReply.value = null;
-      resolvedHere.value = new Set();
     }
 
     for (const edit of failed ?? []) {
@@ -497,7 +482,7 @@ function isReplyChanged(threadId: string) {
 
 /** Code review's box on the thread's lines, the one being written there if there is one; it takes the focus. */
 async function openReply(threadId: string) {
-  const thread = shownThreads.value.find(({ id }) => id === threadId);
+  const thread = (props.reviewThreads ?? []).find(({ id }) => id === threadId);
   const writing = props.reviewWriting;
   if (!thread || !writing || !thread.viewerCanReply || draftThreads.value.has(threadId)) {
     return;
@@ -545,14 +530,6 @@ function setReplyAsking(threadId: string, asking: boolean) {
 }
 
 function setResolved(threadId: string, resolved: boolean) {
-  const here = new Set(resolvedHere.value);
-  if (resolved) {
-    here.add(threadId);
-  } else {
-    here.delete(threadId);
-  }
-
-  resolvedHere.value = here;
   props.reviewWriting?.setResolved(threadId, resolved);
   // The writing draws the state at once: the thread, folded to its row or opened, takes the focus, the keys still its own.
   void focusThread(threadId);
@@ -587,7 +564,7 @@ function onKeydown(event: KeyboardEvent) {
       return;
     case 'r': {
       const threadId = card.dataset.codeThread ?? '';
-      const thread = shownThreads.value.find(({ id }) => id === threadId);
+      const thread = (props.reviewThreads ?? []).find(({ id }) => id === threadId);
       if (thread?.viewerCanReply && !draftThreads.value.has(threadId) && props.reviewWriting) {
         event.preventDefault();
         void openReply(threadId);

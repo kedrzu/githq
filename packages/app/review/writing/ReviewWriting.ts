@@ -124,7 +124,7 @@ export interface ReviewWriting {
     retry(): void;
     /** Puts the failure away, while {@link canDismiss}, keeping the choice for the dialog. */
     dismiss(): void;
-    /** Resolves a thread, or opens it again: shows at once, at once on GitHub whatever draft is open (D17). */
+    /** Resolves a thread, or opens it again: shows at once, the viewer as who resolved it, at once on GitHub whatever draft is open (D17). */
     setResolved(threadId: string, resolved: boolean): void;
     /** Why the last change of the thread's state didn't go through; it shows as it was again. */
     getResolveFailure(threadId: string): ReviewWriteFailure | null;

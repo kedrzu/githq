@@ -464,14 +464,16 @@ function dbThread() {
 }
 
 /** The pull request with sofiab's review, written through a fresh writing. */
-/** The code threads story, its writing drawing each resolve into the threads at once, as the real one does. */
+/** The code threads story, its writing drawing each resolve into the threads at once, the viewer as who did, as the real one does. */
 async function openCodeThreads(options: FakeReviewWritingOptions = {}) {
     const args = shallowReactive({ ...CodeThreads.args });
     const writing = new FakeReviewWriting({
         ...options,
         onResolve: ({ threadId, resolved }) => {
             args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
-                thread.id === threadId ? { ...thread, isResolved: resolved } : thread,
+                thread.id === threadId
+                    ? { ...thread, isResolved: resolved, resolvedBy: resolved ? (args.viewer ?? null) : null }
+                    : thread,
             );
         },
     });

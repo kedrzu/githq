@@ -1122,6 +1122,26 @@ test('resolving shows at once, goes at once beside an open draft, and a refusal 
     expect(writes()).toEqual(['ResolveReviewThread', 'ResolveReviewThread']);
 });
 
+test('a thread resolved here names the viewer at once; once read again, it names whoever GitHub says resolved it since', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { session, model, login, writes } = await open(github);
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+
+    model.writing.setResolved('T_1', true);
+    expect(model.threads[0]).toMatchObject({ isResolved: true, resolvedBy: { login } });
+    // The threads read after the write: this GitHub names no one.
+    await waitUntil(() => writes().length === 1 && model.threads[0]?.resolvedBy === null, { timeoutMs: 2000 });
+
+    // hubot unresolves it and resolves it again on github.com.
+    const hubot = { login: 'hubot', avatarUrl: 'https://avatars.test/hubot' };
+    github.threads = [{ ...sampleThread(), isResolved: true, resolvedBy: hubot }];
+    session.container.resolve(ReviewFiles).open(REFERENCE);
+    await waitUntil(() => model.threads[0]?.resolvedBy?.login === 'hubot', { timeoutMs: 2000 });
+
+    expect(model.threads[0]).toMatchObject({ isResolved: true, resolvedBy: hubot });
+});
+
 test('after signing out nothing more goes out, a reply or a resolve', async () => {
     const github = createGitHub();
     github.threads = [sampleThread()];
