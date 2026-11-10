@@ -7,6 +7,8 @@ import * as l from './useCommentFailureText.loc.js';
 /**
  * Says why a comment or a reply did not go, and that its text is kept: code review's comment box and a reply in an
  * item's thread, in the app's language.
+ *
+ * @util
  */
 export function useCommentFailureText(): (failure: ReviewCommentFailure) => string {
     const t = useTranslate();

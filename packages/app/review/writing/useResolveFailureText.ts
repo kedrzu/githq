@@ -7,6 +7,8 @@ import * as l from './useResolveFailureText.loc.js';
 /**
  * Says why a thread's change of state didn't go through, on the thread in the state it went back to: `resolved` is
  * that state, so a refused resolve says it couldn't resolve it. Code review's thread and an item's thread alike.
+ *
+ * @util
  */
 export function useResolveFailureText(): (failure: ReviewWriteFailure, resolved: boolean) => string {
     const t = useTranslate();

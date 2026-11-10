@@ -8,6 +8,8 @@ export type ReplyTarget = Pick<ReviewCommentTarget, 'side' | 'line' | 'startLine
 /**
  * A reply's lines are its thread's: its last line, or the one it was written on when it is outdated, and a range only
  * when it spans more than one. Code review and a reply in an item's thread open the same box on them.
+ *
+ * @util
  * @__NO_SIDE_EFFECTS__
  */
 export function getReplyTarget(thread: ReviewThread): ReplyTarget {
