@@ -44,6 +44,7 @@ import type { ItemDetailReviewRequest, ThreadCommitRef, ThreadRef } from '@/stor
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatList } from '@/utils/formatList.js';
+import { formatRelativeReference } from '@/utils/formatRelativeReference.js';
 
 import { getItemPagePath, parseItemUrl } from '../itemRoutes.js';
 import type { ItemReference } from '../itemRoutes.js';
@@ -306,8 +307,6 @@ function toChildren(result: unknown): VNodeChild[] {
 /** An issue or a pull request, by its number — with its repository when it is another's. */
 function renderRef(ref: ThreadRef) {
   const reference = parseItemUrl(ref.url);
-  const label =
-    ref.repository === props.item.repository.nameWithOwner ? `#${ref.number}` : `${ref.repository}#${ref.number}`;
   return h(
     'a',
     {
@@ -315,7 +314,7 @@ function renderRef(ref: ThreadRef) {
       href: reference ? getItemPagePath(reference, ref.kind) : ref.url,
       onClick: (event: MouseEvent) => openRef(event, reference),
     },
-    label,
+    formatRelativeReference(ref, props.item.repository.nameWithOwner),
   );
 }
 
