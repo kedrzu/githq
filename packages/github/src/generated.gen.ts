@@ -703,6 +703,8 @@ export type ItemDetailQuery = {
               __typename: 'Issue';
               body: string;
               bodyHTML: string;
+              lastEditedAt: string | null;
+              viewerCanUpdate: boolean;
               locked: boolean;
               id: string;
               url: string;
@@ -726,7 +728,10 @@ export type ItemDetailQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -923,6 +928,8 @@ export type ItemDetailQuery = {
               __typename: 'PullRequest';
               body: string;
               bodyHTML: string;
+              lastEditedAt: string | null;
+              viewerCanUpdate: boolean;
               locked: boolean;
               url: string;
               number: number;
@@ -960,7 +967,10 @@ export type ItemDetailQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -1237,6 +1247,8 @@ export type ItemDetailsQuery = {
               __typename: 'Issue';
               body: string;
               bodyHTML: string;
+              lastEditedAt: string | null;
+              viewerCanUpdate: boolean;
               locked: boolean;
               id: string;
               url: string;
@@ -1260,7 +1272,10 @@ export type ItemDetailsQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -1457,6 +1472,8 @@ export type ItemDetailsQuery = {
               __typename: 'PullRequest';
               body: string;
               bodyHTML: string;
+              lastEditedAt: string | null;
+              viewerCanUpdate: boolean;
               locked: boolean;
               url: string;
               number: number;
@@ -1494,7 +1511,10 @@ export type ItemDetailsQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -1956,7 +1976,10 @@ export type MoreCommentsQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -1977,7 +2000,10 @@ export type MoreCommentsQuery = {
                       url: string;
                       createdAt: string;
                       lastEditedAt: string | null;
+                      body: string;
                       bodyHTML: string;
+                      viewerCanUpdate: boolean;
+                      viewerCanDelete: boolean;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -4009,7 +4035,10 @@ export type CommentPageFieldsFragment = {
         url: string;
         createdAt: string;
         lastEditedAt: string | null;
+        body: string;
         bodyHTML: string;
+        viewerCanUpdate: boolean;
+        viewerCanDelete: boolean;
         author:
             | { login: string; avatarUrl: string }
             | { login: string; avatarUrl: string }
@@ -4062,7 +4091,10 @@ export type IssueCommentFieldsFragment = {
     url: string;
     createdAt: string;
     lastEditedAt: string | null;
+    body: string;
     bodyHTML: string;
+    viewerCanUpdate: boolean;
+    viewerCanDelete: boolean;
     author:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -4076,6 +4108,8 @@ export type IssueDetailFieldsFragment = {
     __typename: 'Issue';
     body: string;
     bodyHTML: string;
+    lastEditedAt: string | null;
+    viewerCanUpdate: boolean;
     locked: boolean;
     id: string;
     url: string;
@@ -4099,7 +4133,10 @@ export type IssueDetailFieldsFragment = {
             url: string;
             createdAt: string;
             lastEditedAt: string | null;
+            body: string;
             bodyHTML: string;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
             author:
                 | { login: string; avatarUrl: string }
                 | { login: string; avatarUrl: string }
@@ -4335,6 +4372,80 @@ export type IssueStateResultFieldsFragment = {
     stateReason: IssueStateReason | null;
     closedAt: string | null;
 };
+
+type ItemBodyResultFields_CommitComment_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_Discussion_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_DiscussionComment_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_GistComment_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_Issue_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_IssueComment_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_PullRequest_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_PullRequestReview_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+type ItemBodyResultFields_PullRequestReviewComment_Fragment = {
+    updatedAt: string;
+    lastEditedAt: string | null;
+    body: string;
+    bodyHTML: string;
+};
+
+export type ItemBodyResultFieldsFragment =
+    | ItemBodyResultFields_CommitComment_Fragment
+    | ItemBodyResultFields_Discussion_Fragment
+    | ItemBodyResultFields_DiscussionComment_Fragment
+    | ItemBodyResultFields_GistComment_Fragment
+    | ItemBodyResultFields_Issue_Fragment
+    | ItemBodyResultFields_IssueComment_Fragment
+    | ItemBodyResultFields_PullRequest_Fragment
+    | ItemBodyResultFields_PullRequestReview_Fragment
+    | ItemBodyResultFields_PullRequestReviewComment_Fragment;
 
 export type ItemProjectItemFieldsFragment = {
     id: string;
@@ -5286,6 +5397,8 @@ export type PullRequestDetailFieldsFragment = {
     __typename: 'PullRequest';
     body: string;
     bodyHTML: string;
+    lastEditedAt: string | null;
+    viewerCanUpdate: boolean;
     locked: boolean;
     url: string;
     number: number;
@@ -5323,7 +5436,10 @@ export type PullRequestDetailFieldsFragment = {
             url: string;
             createdAt: string;
             lastEditedAt: string | null;
+            body: string;
             bodyHTML: string;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
             author:
                 | { login: string; avatarUrl: string }
                 | { login: string; avatarUrl: string }
@@ -5890,7 +6006,10 @@ export type AddCommentMutation = {
                 url: string;
                 createdAt: string;
                 lastEditedAt: string | null;
+                body: string;
                 bodyHTML: string;
+                viewerCanUpdate: boolean;
+                viewerCanDelete: boolean;
                 author:
                     | { login: string; avatarUrl: string }
                     | { login: string; avatarUrl: string }
@@ -6521,6 +6640,12 @@ export type CreateRefMutationVariables = Exact<{
 
 export type CreateRefMutation = { createRef: { ref: { id: string } | null } | null };
 
+export type DeleteIssueCommentMutationVariables = Exact<{
+    id: string;
+}>;
+
+export type DeleteIssueCommentMutation = { deleteIssueComment: { clientMutationId: string | null } | null };
+
 export type DeletePullRequestReviewMutationVariables = Exact<{
     pullRequestReviewId: string;
 }>;
@@ -6967,6 +7092,44 @@ export type UnresolveReviewThreadMutationVariables = Exact<{
 
 export type UnresolveReviewThreadMutation = { unresolveReviewThread: { thread: { id: string } | null } | null };
 
+export type UpdateIssueBodyMutationVariables = Exact<{
+    id: string;
+    body: string;
+}>;
+
+export type UpdateIssueBodyMutation = {
+    updateIssue: {
+        issue: { id: string; updatedAt: string; lastEditedAt: string | null; body: string; bodyHTML: string } | null;
+    } | null;
+};
+
+export type UpdateIssueCommentMutationVariables = Exact<{
+    id: string;
+    body: string;
+}>;
+
+export type UpdateIssueCommentMutation = {
+    updateIssueComment: {
+        issueComment: {
+            id: string;
+            url: string;
+            createdAt: string;
+            lastEditedAt: string | null;
+            body: string;
+            bodyHTML: string;
+            viewerCanUpdate: boolean;
+            viewerCanDelete: boolean;
+            author:
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | { login: string; avatarUrl: string }
+                | null;
+        } | null;
+    } | null;
+};
+
 export type UpdateIssueMilestoneMutationVariables = Exact<{
     id: string;
     milestoneId?: string | null | undefined;
@@ -6993,6 +7156,23 @@ export type UpdateIssueTypeMutation = {
             id: string;
             updatedAt: string;
             issueType: { id: string; name: string; color: IssueTypeColor } | null;
+        } | null;
+    } | null;
+};
+
+export type UpdatePullRequestBodyMutationVariables = Exact<{
+    id: string;
+    body: string;
+}>;
+
+export type UpdatePullRequestBodyMutation = {
+    updatePullRequest: {
+        pullRequest: {
+            id: string;
+            updatedAt: string;
+            lastEditedAt: string | null;
+            body: string;
+            bodyHTML: string;
         } | null;
     } | null;
 };
@@ -7244,7 +7424,10 @@ export const IssueCommentFieldsFragmentDoc = new TypedDocumentString(
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }
     `,
     { fragmentName: 'IssueCommentFields' },
@@ -7270,7 +7453,10 @@ export const CommentPageFieldsFragmentDoc = new TypedDocumentString(
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }`,
     { fragmentName: 'CommentPageFields' },
 );
@@ -7614,6 +7800,8 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
   ...IssueFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -7667,7 +7855,10 @@ fragment IssueCommentFields on IssueComment {
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }
 fragment IssueFields on Issue {
   __typename
@@ -7888,6 +8079,17 @@ export const IssueStateResultFieldsFragmentDoc = new TypedDocumentString(
 }
     `,
     { fragmentName: 'IssueStateResultFields' },
+);
+export const ItemBodyResultFieldsFragmentDoc = new TypedDocumentString(
+    `
+    fragment ItemBodyResultFields on Comment {
+  updatedAt
+  lastEditedAt
+  body
+  bodyHTML
+}
+    `,
+    { fragmentName: 'ItemBodyResultFields' },
 );
 export const LabelableResultFieldsFragmentDoc = new TypedDocumentString(
     `
@@ -9062,6 +9264,8 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
   ...PullRequestFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -9130,7 +9334,10 @@ fragment IssueCommentFields on IssueComment {
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }
 fragment ItemProjectItemFields on ProjectV2Item {
   id
@@ -9801,12 +10008,17 @@ fragment IssueCommentFields on IssueComment {
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }
 fragment IssueDetailFields on Issue {
   ...IssueFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -10071,6 +10283,8 @@ fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -10318,12 +10532,17 @@ fragment IssueCommentFields on IssueComment {
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }
 fragment IssueDetailFields on Issue {
   ...IssueFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -10588,6 +10807,8 @@ fragment PullRequestDetailFields on PullRequest {
   ...PullRequestFields
   body
   bodyHTML
+  lastEditedAt
+  viewerCanUpdate
   locked
   reactionGroups {
     ...ReactionGroupFields
@@ -11073,7 +11294,10 @@ fragment IssueCommentFields on IssueComment {
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }`);
 export const MoreReviewsDocument = new TypedDocumentString(`
     query MoreReviews($id: ID!, $before: String!) {
@@ -13560,7 +13784,10 @@ export const AddCommentDocument = new TypedDocumentString(`
     login
     avatarUrl
   }
+  body
   bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
 }`);
 export const AddDraftIssueDocument = new TypedDocumentString(`
     mutation AddDraftIssue($projectId: ID!, $title: String!, $body: String, $assigneeIds: [ID!]) {
@@ -14307,6 +14534,13 @@ export const CreateRefDocument = new TypedDocumentString(`
   }
 }
     `);
+export const DeleteIssueCommentDocument = new TypedDocumentString(`
+    mutation DeleteIssueComment($id: ID!) {
+  deleteIssueComment(input: {id: $id}) {
+    clientMutationId
+  }
+}
+    `);
 export const DeletePullRequestReviewDocument = new TypedDocumentString(`
     mutation DeletePullRequestReview($pullRequestReviewId: ID!) {
   deletePullRequestReview(input: {pullRequestReviewId: $pullRequestReviewId}) {
@@ -14827,6 +15061,43 @@ export const UnresolveReviewThreadDocument = new TypedDocumentString(`
   }
 }
     `);
+export const UpdateIssueBodyDocument = new TypedDocumentString(`
+    mutation UpdateIssueBody($id: ID!, $body: String!) {
+  updateIssue(input: {id: $id, body: $body}) {
+    issue {
+      id
+      ...ItemBodyResultFields
+    }
+  }
+}
+    fragment ItemBodyResultFields on Comment {
+  updatedAt
+  lastEditedAt
+  body
+  bodyHTML
+}`);
+export const UpdateIssueCommentDocument = new TypedDocumentString(`
+    mutation UpdateIssueComment($id: ID!, $body: String!) {
+  updateIssueComment(input: {id: $id, body: $body}) {
+    issueComment {
+      ...IssueCommentFields
+    }
+  }
+}
+    fragment IssueCommentFields on IssueComment {
+  id
+  url
+  createdAt
+  lastEditedAt
+  author {
+    login
+    avatarUrl
+  }
+  body
+  bodyHTML
+  viewerCanUpdate
+  viewerCanDelete
+}`);
 export const UpdateIssueMilestoneDocument = new TypedDocumentString(`
     mutation UpdateIssueMilestone($id: ID!, $milestoneId: ID) {
   updateIssue(input: {id: $id, milestoneId: $milestoneId}) {
@@ -14859,6 +15130,21 @@ export const UpdateIssueTypeDocument = new TypedDocumentString(`
   }
 }
     `);
+export const UpdatePullRequestBodyDocument = new TypedDocumentString(`
+    mutation UpdatePullRequestBody($id: ID!, $body: String!) {
+  updatePullRequest(input: {pullRequestId: $id, body: $body}) {
+    pullRequest {
+      id
+      ...ItemBodyResultFields
+    }
+  }
+}
+    fragment ItemBodyResultFields on Comment {
+  updatedAt
+  lastEditedAt
+  body
+  bodyHTML
+}`);
 export const UpdatePullRequestBranchDocument = new TypedDocumentString(`
     mutation UpdatePullRequestBranch($pullRequestId: ID!, $expectedHeadOid: GitObjectID!, $updateMethod: PullRequestBranchUpdateMethod!) {
   updatePullRequestBranch(
@@ -15355,6 +15641,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CreateRefMutation>;
         },
+        DeleteIssueComment(
+            variables: DeleteIssueCommentMutationVariables,
+            options?: C,
+        ): Promise<DeleteIssueCommentMutation> {
+            return requester<DeleteIssueCommentMutation, DeleteIssueCommentMutationVariables>(
+                DeleteIssueCommentDocument,
+                variables,
+                options,
+            ) as Promise<DeleteIssueCommentMutation>;
+        },
         DeletePullRequestReview(
             variables: DeletePullRequestReviewMutationVariables,
             options?: C,
@@ -15537,6 +15833,23 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<UnresolveReviewThreadMutation>;
         },
+        UpdateIssueBody(variables: UpdateIssueBodyMutationVariables, options?: C): Promise<UpdateIssueBodyMutation> {
+            return requester<UpdateIssueBodyMutation, UpdateIssueBodyMutationVariables>(
+                UpdateIssueBodyDocument,
+                variables,
+                options,
+            ) as Promise<UpdateIssueBodyMutation>;
+        },
+        UpdateIssueComment(
+            variables: UpdateIssueCommentMutationVariables,
+            options?: C,
+        ): Promise<UpdateIssueCommentMutation> {
+            return requester<UpdateIssueCommentMutation, UpdateIssueCommentMutationVariables>(
+                UpdateIssueCommentDocument,
+                variables,
+                options,
+            ) as Promise<UpdateIssueCommentMutation>;
+        },
         UpdateIssueMilestone(
             variables: UpdateIssueMilestoneMutationVariables,
             options?: C,
@@ -15553,6 +15866,16 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<UpdateIssueTypeMutation>;
+        },
+        UpdatePullRequestBody(
+            variables: UpdatePullRequestBodyMutationVariables,
+            options?: C,
+        ): Promise<UpdatePullRequestBodyMutation> {
+            return requester<UpdatePullRequestBodyMutation, UpdatePullRequestBodyMutationVariables>(
+                UpdatePullRequestBodyDocument,
+                variables,
+                options,
+            ) as Promise<UpdatePullRequestBodyMutation>;
         },
         UpdatePullRequestBranch(
             variables: UpdatePullRequestBranchMutationVariables,
