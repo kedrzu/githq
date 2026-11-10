@@ -1,9 +1,23 @@
 import { composeStories } from '@storybook/vue3-vite';
 import { expect, test } from 'vitest';
 
+import { estimateReviewRowHeight } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
 
-const { CodeKinds, Split, SplitColoured, Unified, UnifiedColoured } = composeStories(stories);
+const { CodeKinds, Collapsed, Split, SplitColoured, Unified, UnifiedColoured } = composeStories(stories);
+
+test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
+    await Collapsed.run();
+
+    const heights = (selector: string) =>
+        [...document.querySelectorAll(selector)].map(end => end.parentElement?.getBoundingClientRect().height);
+    const open = heights('[class*="reviewDiffRow_end"]:not([class*="reviewDiffRow_endCollapsed"])');
+    const collapsed = heights('[class*="reviewDiffRow_endCollapsed"]');
+
+    expect(open).toEqual([estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: false })]);
+    const collapsedEstimate = estimateReviewRowHeight({ kind: 'end', key: 'end', collapsed: true });
+    expect(collapsed).toEqual([collapsedEstimate, collapsedEstimate, collapsedEstimate, collapsedEstimate]);
+});
 
 test.each([
     ['split', Split, SplitColoured],

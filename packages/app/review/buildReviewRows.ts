@@ -22,6 +22,8 @@ const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
 /** A line of code's height, which is also what ↓ and ↑ scroll by. */
 export const LINE_HEIGHT = 20;
+/** The background between one file's block and the next, which a header pushing the pinned one up keeps (D41). */
+export const FILE_GAP = 8;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
 /** A comment of two lines, and what stands between comments. */
@@ -725,7 +727,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'paused':
             return 58;
         case 'end':
-            return row.collapsed ? 12 : 16;
+            // The block's bottom edge, unless the header alone has its own, then the gap.
+            return (row.collapsed ? 0 : 1) + FILE_GAP;
         case 'allViewed':
             return ALL_VIEWED_HEIGHT;
         default:

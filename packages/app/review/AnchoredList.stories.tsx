@@ -26,6 +26,8 @@ const Demo = defineComponent({
         count: { type: Number, default: 10_000 },
         /** A pinned header every this many rows. */
         sectionSize: { type: Number, default: 0 },
+        /** The room a header keeps over itself as it pushes the pinned one up. */
+        pushRoom: { type: Number, default: 0 },
         wrapping: { type: Boolean, default: false },
         jumpKey: { type: String, default: 'row-5000' },
         jumpOffset: { type: Number, default: 0 },
@@ -60,14 +62,16 @@ const Demo = defineComponent({
                         rows={rows.value}
                         estimateHeight={() => ESTIMATE}
                         isPinned={row => row.pinned}
+                        pushRoom={() => props.pushRoom}
                         label="Rows"
                     >
                         {{
-                            default: ({ row }: { row: StoryRowData }) => {
+                            default: ({ row, pushed }: { row: StoryRowData; pushed: boolean }) => {
                                 props.reportRender?.(row.key);
                                 return (
                                     <div
                                         tid={row.key}
+                                        data-pushed={pushed}
                                         style={{
                                             height:
                                                 row.height === undefined
@@ -145,6 +149,11 @@ export const Wrapping: Story = {
 /** Sections whose headers pin at the top. */
 export const PinnedHeaders: Story = {
     args: { sectionSize: 100, jumpKey: 'row-250' },
+};
+
+/** The same, each header keeping 10 px of room over itself as it pushes the pinned one up. */
+export const PinnedHeadersWithRoom: Story = {
+    args: { sectionSize: 100, jumpKey: 'row-250', pushRoom: 10 },
 };
 
 /** Size is not what it costs. */

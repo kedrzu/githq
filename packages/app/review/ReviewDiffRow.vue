@@ -61,6 +61,8 @@ const props = withDefaults(
     commented?: CommentedLines;
     /** The layout being read, which a file still on its way is drawn in. */
     layout?: DiffLayout;
+    /** The row is the pinned header, being pushed up by the next file's. */
+    pushed?: boolean;
   }>(),
   { commented: () => NO_LINES, layout: 'unified' },
 );
@@ -155,6 +157,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       :changed-since="changedSince"
       :threads-under="row.threadsUnder"
       :threads="row.threads"
+      :pushed="pushed"
       @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
       @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
@@ -385,16 +388,30 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   border-left: 1px solid $color-border;
 }
 
+// The block's own bottom edge, then the room before the next file (D41). The rounded corners reach up over the last row,
+// whose background the page's colour covers outside them; nothing of them is drawn above the corners.
 .reviewDiffRow_end {
-  height: 4px;
-  margin-bottom: $spacing-12;
-  border: 1px solid $color-border;
-  border-top: 0;
-  border-radius: 0 0 $radius-lg $radius-lg;
+  position: relative;
+  height: calc(1px + #{$spacing-8});
+
+  &::before {
+    position: absolute;
+    top: -$radius-md;
+    right: 0;
+    left: 0;
+    height: calc(#{$radius-md} + 1px);
+    content: '';
+    border: 1px solid $color-border;
+    border-top: 0;
+    border-radius: 0 0 $radius-md $radius-md;
+    box-shadow: 0 0 0 $radius-md $color-bg;
+    clip-path: inset(0 #{-$radius-md} #{-$radius-md});
+  }
 }
 
+// Under a header alone, which has its own bottom edge: only the room.
 .reviewDiffRow_endCollapsed {
-  height: $spacing-12;
+  height: $spacing-8;
 }
 
 .reviewDiffRow_gap {

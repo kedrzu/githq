@@ -28,6 +28,8 @@ const props = defineProps<{
   /** Its threads under it: it closes the block only without them. */
   threadsUnder?: boolean;
   threads?: ThreadCounts | null;
+  /** Pinned and pushed up by the next file's header: it is where its block ends, the top cut off by the screen's edge. */
+  pushed?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -67,6 +69,7 @@ function onClick(event: MouseEvent) {
     :class="[
       css.diffFileHeader,
       collapsed && !threadsUnder && css.diffFileHeader_collapsed,
+      pushed && css.diffFileHeader_pushed,
       file.gone && css.diffFileHeader_gone,
     ]"
     @click="onClick"
@@ -163,12 +166,16 @@ function onClick(event: MouseEvent) {
   padding: 0 $spacing-10 0 $spacing-12;
   background: $color-bg-2;
   border: 1px solid $color-border;
-  border-radius: $radius-lg $radius-lg 0 0;
+  border-radius: $radius-md $radius-md 0 0;
   cursor: pointer;
 }
 
 .diffFileHeader_collapsed {
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
+}
+
+.diffFileHeader_pushed {
+  border-radius: 0 0 $radius-md $radius-md;
 }
 
 .diffFileHeader_gone {

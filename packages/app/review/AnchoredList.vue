@@ -1,10 +1,12 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says when the pinned row is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
 
 /** The slot's props. */
 export interface AnchoredListSlotProps<T> {
   row: T;
+  /** The row is the pinned one, and the next pinned row is pushing it up. */
+  pushed: boolean;
 }
 
 /** What a template ref to the list gives. */
@@ -37,7 +39,7 @@ const SCROLL_EPSILON = 0.01;
  * a `<slot>` inside `v-for` compiles to dynamic slots, which update the child every time.
  */
 function AnchoredListCell<T>(props: AnchoredListCellProps<T>) {
-  return props.render({ row: props.row });
+  return props.render({ row: props.row, pushed: props.pushed });
 }
 
 interface AnchoredListCellProps<T> extends AnchoredListSlotProps<T> {
@@ -65,10 +67,12 @@ const props = withDefaults(
     /** A row's height until it has been drawn. */
     estimateHeight: (row: T) => number;
     isPinned?: (row: T) => boolean;
+    /** How far below the one it pushes up a pinned row stays, the background showing between them. */
+    pushRoom?: (row: T) => number;
     /** What the list is, for screen readers. */
     label: string;
   }>(),
-  { isPinned: () => false },
+  { isPinned: () => false, pushRoom: () => 0 },
 );
 
 const emit = defineEmits<{
@@ -87,6 +91,7 @@ const spacer = useTemplateRef<HTMLElement>('spacer');
 const model = createAnchoredListModel<T>({
   estimateHeight: row => props.estimateHeight(row),
   isPinned: row => props.isPinned(row),
+  pushRoom: row => props.pushRoom(row),
 });
 model.setRows(props.rows);
 
@@ -289,6 +294,7 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="pinnedRow.row"
+          :pushed="pinnedRow.pushUp > 0"
           :render="slots.default"
         />
       </div>
@@ -306,6 +312,7 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="placed.row"
+          :pushed="false"
           :render="slots.default"
         />
       </div>

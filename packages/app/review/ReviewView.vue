@@ -92,6 +92,7 @@ import {
   clampCommentRange,
   COMMENT_BOX_HEIGHT,
   estimateReviewRowHeight,
+  FILE_GAP,
   findCommentLine,
   findReplacementRow,
   getDistanceLinesToShow,
@@ -1582,6 +1583,11 @@ function isPinned(row: ReviewRow) {
   return row.kind === 'header';
 }
 
+/** A header pushing the pinned one up keeps the gap between files over it (D41). */
+function getPushRoom() {
+  return FILE_GAP;
+}
+
 function back() {
   goBack(router, getItemPagePath(props.reference, 'pullRequest'));
 }
@@ -1676,11 +1682,12 @@ function readAgain() {
               :rows="rows"
               :estimate-height="estimateReviewRowHeight"
               :is-pinned="isPinned"
+              :push-room="getPushRoom"
               :label="t(l.diff)"
               @user-scroll="stopLanding"
               @row-focus-lost="onRowFocusLost"
             >
-              <template #default="{ row }">
+              <template #default="{ row, pushed }">
                 <ReviewAllViewed
                   v-if="row.kind === 'allViewed'"
                   :total="allFiles.length"
@@ -1702,6 +1709,7 @@ function readAgain() {
                   :thread-failure="row.kind === 'thread' ? writing?.getResolveFailure(row.placement.thread.id) : null"
                   :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
                   :layout="layout"
+                  :pushed="pushed"
                   @expand="expandGap"
                   @expand-to-thread="expandToThread"
                   @expand-to-file-end="expandToFileEnd"
@@ -1967,7 +1975,7 @@ function readAgain() {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding-top: $spacing-12;
+  padding-top: $spacing-8;
 }
 
 .reviewView_diff {
