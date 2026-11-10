@@ -197,6 +197,8 @@ $list-header-height: 48px;
 $item-panel-width: 560px;
 // The most an opened item's main column holds on a page of its own; it stays centred in the rest.
 $item-reading-width: 760px;
+// The same in a modal, which is narrower and keeps its column a shorter line.
+$item-modal-reading-width: 700px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;

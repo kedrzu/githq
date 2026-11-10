@@ -924,8 +924,10 @@ function getProjectOptions(): CommandOption[] {
 </template>
 
 <style lang="scss" module="css">
-// A page's main column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
+// A page's and a modal's main column keep their content to the reading width, centred: 40px from the edges, more once
+// it is wider.
 $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
+$item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
 
 .itemView {
   display: flex;
@@ -1084,11 +1086,11 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   padding: 20px $spacing-24;
   overflow-y: auto;
 
+  // At most the reading width, centred.
   .itemView_modal & {
-    padding: 32px 40px;
+    padding: 32px $item-modal-inset;
   }
 
-  // At most the reading width, centred.
   .itemView_page & {
     padding: 32px $item-page-inset;
   }
