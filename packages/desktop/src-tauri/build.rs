@@ -1,8 +1,9 @@
 /// The OAuth App client IDs, shared with the TypeScript side (`getOAuthClientId`).
 const CLIENT_IDS: &str = "../../github/src/oauthClientIds.json";
 
-/// Compiles in the client ID of the environment `GITHQ_ENV` names, `dev` by default (`device_flow.rs`).
-fn set_client_id() {
+/// Compiles in what depends on the environment `GITHQ_ENV` names, `dev` by default: its OAuth App's client ID
+/// (`device_flow.rs`) and the credential store account its token is kept under (`credentials.rs`).
+fn set_environment() {
     println!("cargo:rerun-if-env-changed=GITHQ_ENV");
     println!("cargo:rerun-if-changed={CLIENT_IDS}");
 
@@ -15,10 +16,19 @@ fn set_client_id() {
         .unwrap_or_else(|| panic!("GITHQ_ENV={env} names no OAuth App"));
 
     println!("cargo:rustc-env=GITHQ_GITHUB_CLIENT_ID={id}");
+
+    // Every build has the same app identifier, so without this a dev build would read, replace and delete the
+    // release app's token: one Keychain entry for two OAuth Apps.
+    let account = if env == "prod" {
+        "github-token".to_owned()
+    } else {
+        format!("github-token-{env}")
+    };
+    println!("cargo:rustc-env=GITHQ_CREDENTIAL_ACCOUNT={account}");
 }
 
 fn main() {
-    set_client_id();
+    set_environment();
 
     // The commit the release workflow builds, compiled in by `updater.rs`; a local build has none.
     println!("cargo:rerun-if-env-changed=GITHQ_COMMIT");
