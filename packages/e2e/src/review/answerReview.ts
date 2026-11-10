@@ -26,6 +26,8 @@ export interface SampleReviewThread {
     readonly diffSide?: 'LEFT' | 'RIGHT';
     readonly isOutdated?: boolean;
     readonly isResolved?: boolean;
+    /** Who resolved it, when resolved: `mlaine` when not given. */
+    readonly resolvedBy?: string;
     readonly subjectType?: 'LINE' | 'FILE';
     /** Empty on a `FILE` thread. */
     readonly diffHunk?: string;
@@ -269,7 +271,7 @@ function toThreadNode(thread: SampleReviewThread) {
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
-        resolvedBy: thread.isResolved ? { login: 'mlaine', avatarUrl: '' } : null,
+        resolvedBy: thread.isResolved ? { login: thread.resolvedBy ?? 'mlaine', avatarUrl: '' } : null,
         comments: {
             pageInfo: { hasNextPage: false, endCursor: null },
             nodes: thread.comments.map((bodyHTML, index) => ({

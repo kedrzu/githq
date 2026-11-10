@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '../fixtures.js';
 import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
 import { GitHubHttpError } from '../github/GitHubMock.js';
+import { SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
@@ -368,7 +369,11 @@ async function openReviewThread(page: Page, github: GitHubMock) {
             const at = threads.findIndex(thread => thread.id === variables.threadId);
             const thread = threads[at];
             if (thread) {
-                threads[at] = { ...thread, isResolved };
+                threads[at] = {
+                    ...thread,
+                    isResolved,
+                    resolvedBy: isResolved ? SAMPLE_VIEWER.viewer.login : undefined,
+                };
             }
 
             return { data: { [field]: { thread: { id: variables.threadId } } } };
@@ -417,7 +422,7 @@ test('with the draft chosen, a reply from the thread starts a review on the head
     page,
     github,
 }) => {
-    const { item, thread, writes, sample } = await openReviewThread(page, github);
+    const { thread, writes, sample } = await openReviewThread(page, github);
     github.graphqlDocument('StartPullRequestReview', ({ variables }) => {
         writes.push({ name: 'StartPullRequestReview', variables });
         sample.world.setPendingReview(sample.pullRequest, { comments: 1, minutesAgo: 0 });
