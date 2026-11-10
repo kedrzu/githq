@@ -5,11 +5,12 @@ import type {
     ItemComment,
     ItemDetail,
     ItemDetailReviewRequest,
+    PullRequestDetail,
     ThreadCommit,
     ThreadCommitRef,
     ThreadEvent,
 } from '@/store/ItemDetailTypes.js';
-import type { Item, ItemLabel, ItemUser } from '@/store/ItemTypes.js';
+import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
 
 /** How long one person's events straight after each other share a line, from the first of them (F13). */
 const BURST_MS = 10 * 60_000;
@@ -425,7 +426,7 @@ function groupTimed(ordered: readonly Timed[]): ThreadItem[] {
         if (entry.kind === 'event') {
             push = null;
             const { event } = entry;
-            if (burst && continuesBurst(burst, event, entry.at)) {
+            if (burst && continuesBurst({ burst, event, at: entry.at })) {
                 addToBurst(burst, event);
                 continue;
             }
@@ -513,7 +514,15 @@ function finish(entry: Building): ThreadItem[] {
     }
 }
 
-function continuesBurst(burst: Burst, event: Exclude<ThreadEvent, ThreadCommit>, at: number) {
+/** The parameters of {@link continuesBurst}. */
+interface ContinuesBurstParams {
+    readonly burst: Burst;
+    readonly event: Exclude<ThreadEvent, ThreadCommit>;
+    /** When the event happened. */
+    readonly at: number;
+}
+
+function continuesBurst({ burst, event, at }: ContinuesBurstParams) {
     const { actor } = burst.line;
     return actor !== null && event.actor?.login === actor.login && at - burst.at <= BURST_MS;
 }
@@ -723,10 +732,7 @@ function getAuthorKey(commit: ThreadCommit | undefined) {
  * The failed checks of the pull request's newest commit, once every check on it finished (F13): none while one still
  * runs, or when none failed. It happened when the last of them finished.
  */
-function getChecksFailed(
-    item: Extract<Item, { readonly kind: 'pullRequest' }>,
-    detail: Extract<ItemDetail, { readonly kind: 'pullRequest' }>,
-): ThreadChecksFailed | null {
+function getChecksFailed(item: PullRequestItem, detail: PullRequestDetail): ThreadChecksFailed | null {
     const { checks } = detail;
     // GitHub cut the list: whether the rest finished is not known.
     if (checks.length < detail.checkCount || checks.some(check => check.state === 'pending')) {

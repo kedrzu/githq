@@ -49,6 +49,15 @@ export interface OpenedItemViewModel {
     readDetailAgain(): Promise<void>;
 }
 
+/** What `loadPages` in {@link useOpenedItem} reads, page by page. */
+interface LoadPagesParams {
+    /** The item's id. */
+    readonly id: string;
+    /** Where the next page starts; `null` once all is read. */
+    readonly readCursor: (id: string) => string | null;
+    readonly loadPage: (id: string) => Promise<void>;
+}
+
 /**
  * Opens the item an address names: finds its id (`ItemResolver`), brings its detail into memory and has it read
  * again when its row moves on (`ItemDetailStore.ensure`), and remembers it as opened last (`ItemNavigation`), for
@@ -128,7 +137,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         }
 
         try {
-            await loadPages(current, readMiddleCursors, details.loadThreadMiddle);
+            await loadPages({ id: current, readCursor: readMiddleCursors, loadPage: details.loadThreadMiddle });
         } catch (error) {
             logger.warn("The middle of an item's thread could not be read", { id: current, error });
             throw error;
@@ -150,17 +159,13 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         }
 
         try {
-            await loadPages(current, readCursor, loadPage);
+            await loadPages({ id: current, readCursor, loadPage });
         } catch (error) {
             logger.warn('Older comments or reviews could not be read', { id: current, error });
         }
     }
 
-    async function loadPages(
-        current: string,
-        readCursor: (id: string) => string | null,
-        loadPage: (id: string) => Promise<void>,
-    ) {
+    async function loadPages({ id: current, readCursor, loadPage }: LoadPagesParams) {
         // A page at a time, until all is read — or the detail was read again meanwhile and the cursor did not move.
         let cursor = readCursor(current);
         while (cursor !== null) {
