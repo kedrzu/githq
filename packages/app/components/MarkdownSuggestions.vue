@@ -1,4 +1,4 @@
-<!-- The Markdown editor's suggestions at the caret, floating over the page: for `@` the people ("People": avatar, login, name), for `#` the repository's issues and pull requests ("Issues and pull requests in owner/name": state icon, number, title). It is the listbox of the text area's combobox: the keys and the focus stay in the text area, which moves the highlight (`active`); a click picks a row without taking the focus. -->
+<!-- The Markdown editor's suggestions at the caret, floating over the page (inside the modal dialog the editor is in, so the pointer reaches them there): for `@` the people ("People": avatar, login, name), for `#` the repository's issues and pull requests ("Issues and pull requests in owner/name": state icon, number, title). It is the listbox of the text area's combobox: the keys and the focus stay in the text area, which moves the highlight (`active`); a click picks a row without taking the focus. -->
 <script lang="ts" setup>
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue';
 import type { VirtualElement } from '@floating-ui/vue';
@@ -39,13 +39,17 @@ const { floatingStyles, placement } = useFloating(toRef(props, 'anchor'), menuRe
   whileElementsMounted: autoUpdate,
 });
 
+// Inside the modal dialog the editor is in, if any: reka makes everything outside a modal's layer deaf to the pointer,
+// and a press out there closes it. Floating over the page from there all the same (`strategy: 'fixed'`).
+const portal = computed(() => props.anchor.contextElement?.closest<HTMLElement>('[role="dialog"]') ?? 'body');
+
 const heading = computed(() =>
   props.suggestions.kind === 'mention' ? t(l.people) : t(l.references, { repository: props.repository }),
 );
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport :to="portal">
     <div
       ref="menu"
       :class="[css.markdownSuggestions, css[`markdownSuggestions_${suggestions.kind}`]]"

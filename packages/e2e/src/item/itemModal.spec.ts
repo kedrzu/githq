@@ -110,3 +110,22 @@ async function getWidth(locator: Locator) {
     const box = await locator.boundingBox();
     return box ? Math.round(box.width) : null;
 }
+
+test("in the modal a click picks an @ suggestion and the modal stays: the menu is in the modal's layer", async ({
+    page,
+    github,
+}) => {
+    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Modal').click();
+    await expect(item.modal).toBeVisible();
+
+    await item.commentBox.pressSequentially('Thanks @');
+    const suggestion = page.getByRole('option').first();
+    const login = (await suggestion.innerText()).split(/\s/u)[0];
+    await suggestion.click();
+
+    await expect(item.commentBox).toHaveValue(`Thanks @${login} `);
+    await expect(item.modal).toBeVisible();
+});
