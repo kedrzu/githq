@@ -1,4 +1,5 @@
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
+import type { IssueTimelineItemsItemType, PullRequestTimelineItemsItemType } from '@githq/github/generated.gen.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -28,6 +29,63 @@ import { toItemComments, toItemDetail, toItemReviewPage } from './toItemDetail.j
 const RECHECK_AFTER_MS = 60_000;
 /** How long a kept detail survives without being read again: the copy must not grow without end. */
 const KEEP_DETAIL_MS = 30 * 24 * 60 * 60_000;
+
+/** The events of an issue's thread githq reads (item-activity F13): comments and the events it never shows left out. */
+const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
+    'ADDED_TO_PROJECT_V2_EVENT',
+    'ASSIGNED_EVENT',
+    'CLOSED_EVENT',
+    'CONNECTED_EVENT',
+    'CROSS_REFERENCED_EVENT',
+    'DEMILESTONED_EVENT',
+    'ISSUE_TYPE_ADDED_EVENT',
+    'ISSUE_TYPE_CHANGED_EVENT',
+    'ISSUE_TYPE_REMOVED_EVENT',
+    'LABELED_EVENT',
+    'LOCKED_EVENT',
+    'MARKED_AS_DUPLICATE_EVENT',
+    'MILESTONED_EVENT',
+    'PARENT_ISSUE_ADDED_EVENT',
+    'PINNED_EVENT',
+    'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
+    'REFERENCED_EVENT',
+    'RENAMED_TITLE_EVENT',
+    'REOPENED_EVENT',
+    'SUB_ISSUE_ADDED_EVENT',
+    'SUB_ISSUE_REMOVED_EVENT',
+    'TRANSFERRED_EVENT',
+    'UNASSIGNED_EVENT',
+    'UNLABELED_EVENT',
+    'UNLOCKED_EVENT',
+    'UNPINNED_EVENT',
+];
+
+/**
+ * The events of a pull request's thread githq reads: the issue's, its commits and its own events. Reviews and code
+ * threads are not read yet.
+ */
+const PULL_REQUEST_EVENT_TYPES: PullRequestTimelineItemsItemType[] = [
+    ...ISSUE_EVENT_TYPES,
+    'BASE_REF_CHANGED_EVENT',
+    'CONVERT_TO_DRAFT_EVENT',
+    'HEAD_REF_DELETED_EVENT',
+    'HEAD_REF_FORCE_PUSHED_EVENT',
+    'MERGED_EVENT',
+    'PULL_REQUEST_COMMIT',
+    'READY_FOR_REVIEW_EVENT',
+    'REVIEW_DISMISSED_EVENT',
+    'REVIEW_REQUEST_REMOVED_EVENT',
+    'REVIEW_REQUESTED_EVENT',
+];
+
+/**
+ * The variables `ItemDetail`, `ItemDetails` and `ThreadMiddle` read the thread's events with: GitHub filters a
+ * timeline by item types, and the issue's and the pull request's are two enums.
+ */
+const THREAD_EVENT_TYPES = {
+    issueEventTypes: ISSUE_EVENT_TYPES,
+    pullRequestEventTypes: PULL_REQUEST_EVENT_TYPES,
+};
 
 /** The signed-in user the details are read for, captured when they signed in. */
 interface Session {
@@ -235,7 +293,7 @@ export const ItemDetailStore = defineService({
 
             const errors: GitHubGraphQLErrorEntry[] = [];
             const answer = current.account.sdk.ItemDetails(
-                { ids: wanted },
+                { ids: wanted, ...THREAD_EVENT_TYPES },
                 { onPartialErrors: found => errors.push(...found) },
             );
             const settled = answer.then(
@@ -480,7 +538,7 @@ export const ItemDetailStore = defineService({
             try {
                 const errors: GitHubGraphQLErrorEntry[] = [];
                 const { node } = await current.account.sdk.ItemDetail(
-                    { id },
+                    { id, ...THREAD_EVENT_TYPES },
                     { onPartialErrors: found => errors.push(...found) },
                 );
                 if (!isCurrent(current)) {

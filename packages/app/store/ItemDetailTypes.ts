@@ -1,12 +1,15 @@
 import type {
     IssueState,
     IssueStateReason,
+    IssueTypeColor,
+    LockReason,
     ProjectV2SingleSelectFieldOptionColor,
     PullRequestReviewState,
     ReactionContent,
+    StatusState,
 } from '@githq/github/generated.gen.js';
 
-import type { Item, ItemUser } from './ItemTypes.js';
+import type { Item, ItemLabel, ItemUser } from './ItemTypes.js';
 
 /**
  * What an opened issue or pull request shows beyond its row (D18): fetched when it is opened, prefetched for
@@ -43,6 +46,7 @@ export interface ItemDetailBase {
     /** Only the reactions given, in GitHub's order. */
     readonly reactions: readonly ItemReaction[];
     readonly comments: ItemComments;
+    readonly events: ItemEvents;
     /** Its places in projects with every field value, archived ones left out (D13). */
     readonly projects: readonly ItemDetailProject[];
 }
@@ -112,6 +116,166 @@ export interface ItemComment {
      * the markdown once it has it. Never kept (M3 editing).
      */
     readonly pendingBody?: string;
+}
+
+/**
+ * The events of the item's thread read so far (item-activity F13), comments and reviews apart: the first ones and the
+ * newest ones, and the middle once it is asked for (`ThreadMiddle`).
+ */
+export interface ItemEvents {
+    /** How many events the thread has, of the kinds githq reads (`THREAD_EVENT_TYPES`), commits included. */
+    readonly totalCount: number;
+    /** How many of them are a pull request's commits; `0` for an issue. The rest are the fold's "other events" (F5). */
+    readonly commitCount: number;
+    /** The oldest events, oldest first, with the events not read yet after them; empty when every event is read. */
+    readonly oldest: readonly ThreadEvent[];
+    /** The newest events, oldest first. */
+    readonly newest: readonly ThreadEvent[];
+    /** Where the events not read yet lie, between {@link oldest} and {@link newest}; `null` when every one is read. */
+    readonly middle: ItemEventsMiddle | null;
+}
+
+/** The cursors around the events of a thread not read yet (`ThreadMiddle`'s `eventsAfter` and `eventsBefore`). */
+export interface ItemEventsMiddle {
+    /** The last of the oldest events read. */
+    readonly after: string;
+    /** The first of the newest events read. */
+    readonly before: string;
+}
+
+/**
+ * An event of an item's thread, as GitHub reports it (item-activity F13). `actor` is who did it: `null` for a deleted
+ * account, and for a change a project workflow made (`wasAutomated`), which GitHub attributes to the project's owner.
+ */
+export type ThreadEvent =
+    | ThreadCommit
+    | ThreadEventOf<'forcePushed', { readonly beforeOid: string | null; readonly afterOid: string | null }>
+    | ThreadEventOf<'assigned' | 'unassigned', { readonly assignee: ItemUser | null }>
+    | ThreadEventOf<'renamed', { readonly from: string; readonly to: string }>
+    | ThreadEventOf<'labeled' | 'unlabeled', { readonly label: ItemLabel }>
+    | ThreadEventOf<'milestoned' | 'demilestoned', { readonly milestone: string }>
+    | ThreadEventOf<'reviewRequested' | 'reviewRequestRemoved', { readonly reviewer: ItemDetailReviewRequest | null }>
+    | ThreadEventOf<
+          'reviewDismissed',
+          {
+              /** Whose review it was; `null` for a deleted account. */
+              readonly reviewer: ItemUser | null;
+              readonly previousState: PullRequestReviewState;
+              readonly message: string | null;
+          }
+      >
+    | ThreadEventOf<'readyForReview' | 'convertedToDraft' | 'reopened' | 'unlocked' | 'pinned' | 'unpinned', object>
+    | ThreadEventOf<'baseChanged', { readonly from: string; readonly to: string }>
+    | ThreadEventOf<
+          'crossReferenced',
+          {
+              /** The issue or pull request that mentioned this one. */
+              readonly source: ThreadRef;
+              /** It closes this one once it is merged or closed. */
+              readonly willClose: boolean;
+          }
+      >
+    | ThreadEventOf<
+          'closed',
+          {
+              readonly stateReason: IssueStateReason | null;
+              /** What closed it: a pull request merged or a commit pushed; `null` when closed by hand. */
+              readonly closer: ThreadCloser | null;
+              /** The issue it was closed as a duplicate of. */
+              readonly duplicateOf: ThreadRef | null;
+          }
+      >
+    | ThreadEventOf<'merged', { readonly commit: ThreadCommitRef | null; readonly into: string }>
+    | ThreadEventOf<'headRefDeleted', { readonly branch: string }>
+    | ThreadEventOf<'connected', { readonly ref: ThreadRef }>
+    | ThreadEventOf<
+          'referenced',
+          {
+              /** `null` where the viewer cannot see the commit. */
+              readonly commit: (ThreadCommitRef & { readonly messageHeadline: string }) | null;
+              /** `owner/name` of the commit's repository. */
+              readonly repository: string;
+          }
+      >
+    | ThreadEventOf<'subIssueAdded' | 'subIssueRemoved' | 'parentAdded', { readonly issue: ThreadRef | null }>
+    | ThreadEventOf<'issueTypeChanged', { readonly from: ThreadIssueType | null; readonly to: ThreadIssueType | null }>
+    | ThreadEventOf<'addedToProject', { readonly project: ThreadProject | null; readonly wasAutomated: boolean }>
+    | ThreadEventOf<
+          'projectStatusChanged',
+          {
+              readonly project: ThreadProject | null;
+              /** The Status option's name before; empty when it had none. */
+              readonly from: string;
+              /** The Status option's name now; empty when cleared. */
+              readonly to: string;
+              readonly wasAutomated: boolean;
+          }
+      >
+    | ThreadEventOf<'transferred', { /** `owner/name`; `null` when it is gone. */ readonly from: string | null }>
+    | ThreadEventOf<'locked', { readonly reason: LockReason | null }>
+    | ThreadEventOf<
+          'markedAsDuplicate',
+          { readonly canonical: ThreadRef | null; readonly duplicate: ThreadRef | null }
+      >;
+
+/** What every event but a commit has. */
+type ThreadEventOf<TKind extends string, TFields extends object> = {
+    readonly kind: TKind;
+    readonly id: string;
+    readonly createdAt: string;
+    readonly actor: ItemUser | null;
+} & TFields;
+
+/** A commit of a pull request: GitHub reports each, not the push that brought it — the thread model groups them. */
+export interface ThreadCommit {
+    readonly kind: 'commit';
+    readonly id: string;
+    /** When it was committed: GitHub keeps no time of the push. */
+    readonly createdAt: string;
+    /** Its author's GitHub account; `null` when the author's email belongs to none. */
+    readonly actor: ItemUser | null;
+    /** The author's name as git records it. */
+    readonly authorName: string | null;
+    readonly abbreviatedOid: string;
+    readonly messageHeadline: string;
+    /** The commit within the pull request on GitHub. */
+    readonly url: string;
+    /** Its checks together; `null` when none ran. */
+    readonly ci: StatusState | null;
+}
+
+/** An issue or a pull request an event points at; may live in another repository. */
+export interface ThreadRef {
+    readonly kind: 'issue' | 'pullRequest';
+    readonly id: string;
+    readonly url: string;
+    readonly number: number;
+    readonly title: string;
+    /** `owner/name`. */
+    readonly repository: string;
+}
+
+/** A commit an event points at. */
+export interface ThreadCommitRef {
+    readonly abbreviatedOid: string;
+    readonly url: string;
+}
+
+/** What closed an item. */
+export type ThreadCloser =
+    | { readonly kind: 'pullRequest'; readonly pullRequest: ThreadRef }
+    | ({ readonly kind: 'commit' } & ThreadCommitRef);
+
+/** An issue type. */
+export interface ThreadIssueType {
+    readonly name: string;
+    readonly color: IssueTypeColor;
+}
+
+/** A project an event happened in. */
+export interface ThreadProject {
+    readonly title: string;
+    readonly url: string;
 }
 
 /** An issue linked to another — its parent, a sub-issue, one it is blocked by or blocking. */

@@ -9,6 +9,8 @@ import type {
     PullRequestDetailFieldsFragment,
     ReactionGroupFieldsFragment,
     ReviewPageFieldsFragment,
+    ThreadEventFieldsFragment,
+    ThreadRefFieldsFragment,
 } from '@githq/github/generated.gen.js';
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -22,6 +24,7 @@ import type {
     ItemDetailProject,
     ItemDetailReview,
     ItemDetailReviewRequest,
+    ItemEvents,
     ItemReviewSummary,
     ItemReaction,
     LinkedIssue,
@@ -29,6 +32,8 @@ import type {
     ProjectField,
     ProjectFieldValue,
     PullRequestDetail,
+    ThreadEvent,
+    ThreadRef,
 } from './ItemDetailTypes.js';
 import type { ItemUser } from './ItemTypes.js';
 import { toItem } from './toItem.js';
@@ -144,6 +149,307 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
     };
 }
 
+/** The thread's events the detail reads (`firstEvents`, `lastEvents`), of an issue or a pull request. */
+interface DetailEvents {
+    readonly id: string;
+    readonly firstEvents: EventPage<{ readonly endCursor: string | null }>;
+    readonly lastEvents: EventPage<{ readonly startCursor: string | null }> & { readonly totalCount: number };
+}
+
+interface EventPage<TPageInfo> {
+    readonly pageInfo: TPageInfo;
+    readonly nodes: readonly (ThreadEventFieldsFragment | null)[] | null;
+}
+
+/**
+ * The first and the newest events of an item's thread (`firstEvents`, `lastEvents`): each once, and where the ones
+ * not read lie between them.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+function toItemEvents(node: DetailEvents, commitCount: number): ItemEvents {
+    const newest = toThreadEvents(node.lastEvents.nodes, node.id);
+    const newestIds = new Set(newest.map(event => event.id));
+    const oldest = toThreadEvents(node.firstEvents.nodes, node.id).filter(event => !newestIds.has(event.id));
+    const after = node.firstEvents.pageInfo.endCursor;
+    const before = node.lastEvents.pageInfo.startCursor;
+    const unread = oldest.length + newest.length < node.lastEvents.totalCount;
+
+    return {
+        totalCount: node.lastEvents.totalCount,
+        commitCount,
+        oldest,
+        newest,
+        middle: unread && after !== null && before !== null ? { after, before } : null,
+    };
+}
+
+/**
+ * A page of the events of the item `itemId`'s thread, oldest first; the kinds githq does not read left out.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function toThreadEvents(
+    nodes: readonly (ThreadEventFieldsFragment | null)[] | null,
+    itemId: string,
+): ThreadEvent[] {
+    return mapNotNull(nodes ?? [], node => node && toThreadEvent(node, itemId));
+}
+
+/**
+ * An event of the item `itemId`'s thread (`ThreadEventFields`); `null` for a kind githq does not read.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): ThreadEvent | null {
+    switch (node.__typename) {
+        case 'PullRequestCommit': {
+            const commit = node.pushedCommit;
+            return {
+                kind: 'commit',
+                id: node.id,
+                createdAt: commit.committedDate,
+                actor: toDetailAuthor(commit.author?.user),
+                authorName: commit.author?.name ?? null,
+                abbreviatedOid: commit.abbreviatedOid,
+                messageHeadline: commit.messageHeadline,
+                url: node.url,
+                ci: commit.statusCheckRollup?.state ?? null,
+            };
+        }
+        case 'HeadRefForcePushedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'forcePushed',
+                beforeOid: node.beforeCommit?.abbreviatedOid ?? null,
+                afterOid: node.afterCommit?.abbreviatedOid ?? null,
+            };
+        case 'AssignedEvent':
+            return { ...toEventBase(node), kind: 'assigned', assignee: toDetailAuthor(node.assignee) };
+        case 'UnassignedEvent':
+            return { ...toEventBase(node), kind: 'unassigned', assignee: toDetailAuthor(node.assignee) };
+        case 'RenamedTitleEvent':
+            return { ...toEventBase(node), kind: 'renamed', from: node.previousTitle, to: node.currentTitle };
+        case 'LabeledEvent':
+            return { ...toEventBase(node), kind: 'labeled', label: node.label };
+        case 'UnlabeledEvent':
+            return { ...toEventBase(node), kind: 'unlabeled', label: node.label };
+        case 'MilestonedEvent':
+            return { ...toEventBase(node), kind: 'milestoned', milestone: node.milestoneTitle };
+        case 'DemilestonedEvent':
+            return { ...toEventBase(node), kind: 'demilestoned', milestone: node.milestoneTitle };
+        case 'ReviewRequestedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'reviewRequested',
+                reviewer: toReviewer(node.requestedReviewer),
+            };
+        case 'ReviewRequestRemovedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'reviewRequestRemoved',
+                reviewer: toReviewer(node.requestedReviewer),
+            };
+        case 'ReviewDismissedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'reviewDismissed',
+                reviewer: toDetailAuthor(node.review?.author),
+                previousState: node.previousReviewState,
+                message: node.dismissalMessage,
+            };
+        case 'ReadyForReviewEvent':
+            return { ...toEventBase(node), kind: 'readyForReview' };
+        case 'ConvertToDraftEvent':
+            return { ...toEventBase(node), kind: 'convertedToDraft' };
+        case 'BaseRefChangedEvent':
+            return { ...toEventBase(node), kind: 'baseChanged', from: node.previousRefName, to: node.currentRefName };
+        case 'CrossReferencedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'crossReferenced',
+                source: toThreadRef(node.source),
+                willClose: node.willCloseTarget,
+            };
+        case 'ClosedEvent': {
+            const { closer } = node;
+            return {
+                ...toEventBase(node),
+                kind: 'closed',
+                stateReason: node.stateReason,
+                closer:
+                    closer?.__typename === 'PullRequest'
+                        ? { kind: 'pullRequest', pullRequest: toThreadRef(closer) }
+                        : closer?.__typename === 'Commit'
+                          ? { kind: 'commit', abbreviatedOid: closer.abbreviatedOid, url: closer.url }
+                          : null,
+                duplicateOf: node.duplicateOf && toThreadRef(node.duplicateOf),
+            };
+        }
+        case 'ReopenedEvent':
+            return { ...toEventBase(node), kind: 'reopened' };
+        case 'MergedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'merged',
+                commit: node.commit,
+                into: node.mergeRefName,
+            };
+        case 'HeadRefDeletedEvent':
+            return { ...toEventBase(node), kind: 'headRefDeleted', branch: node.headRefName };
+        case 'ConnectedEvent':
+            // Seen from either side: the other one is what was linked.
+            return {
+                ...toEventBase(node),
+                kind: 'connected',
+                ref: toThreadRef(node.source.id === itemId ? node.subject : node.source),
+            };
+        case 'ReferencedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'referenced',
+                commit: node.commit,
+                repository: node.commitRepository.nameWithOwner,
+            };
+        case 'SubIssueAddedEvent':
+            return { ...toEventBase(node), kind: 'subIssueAdded', issue: node.subIssue && toThreadRef(node.subIssue) };
+        case 'SubIssueRemovedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'subIssueRemoved',
+                issue: node.subIssue && toThreadRef(node.subIssue),
+            };
+        case 'ParentIssueAddedEvent':
+            return { ...toEventBase(node), kind: 'parentAdded', issue: node.parent && toThreadRef(node.parent) };
+        case 'IssueTypeAddedEvent':
+            return { ...toEventBase(node), kind: 'issueTypeChanged', from: null, to: node.issueType };
+        case 'IssueTypeChangedEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'issueTypeChanged',
+                from: node.prevIssueType,
+                to: node.issueType,
+            };
+        case 'IssueTypeRemovedEvent':
+            return { ...toEventBase(node), kind: 'issueTypeChanged', from: node.issueType, to: null };
+        case 'AddedToProjectV2Event':
+            return {
+                ...toEventBase(node, node.wasAutomated),
+                kind: 'addedToProject',
+                project: node.project,
+                wasAutomated: node.wasAutomated,
+            };
+        case 'ProjectV2ItemStatusChangedEvent':
+            return {
+                ...toEventBase(node, node.wasAutomated),
+                kind: 'projectStatusChanged',
+                project: node.project,
+                from: node.previousStatus,
+                to: node.status,
+                wasAutomated: node.wasAutomated,
+            };
+        case 'TransferredEvent':
+            return { ...toEventBase(node), kind: 'transferred', from: node.fromRepository?.nameWithOwner ?? null };
+        case 'LockedEvent':
+            return { ...toEventBase(node), kind: 'locked', reason: node.lockReason };
+        case 'UnlockedEvent':
+            return { ...toEventBase(node), kind: 'unlocked' };
+        case 'PinnedEvent':
+            return { ...toEventBase(node), kind: 'pinned' };
+        case 'UnpinnedEvent':
+            return { ...toEventBase(node), kind: 'unpinned' };
+        case 'MarkedAsDuplicateEvent':
+            return {
+                ...toEventBase(node),
+                kind: 'markedAsDuplicate',
+                canonical: node.canonical && toThreadRef(node.canonical),
+                duplicate: node.duplicate && toThreadRef(node.duplicate),
+            };
+        // Not read (`THREAD_EVENT_TYPES`): comments, reviews and code threads come apart, the rest githq never shows.
+        case 'AddedToMergeQueueEvent':
+        case 'AddedToProjectEvent':
+        case 'AddedToStackEvent':
+        case 'AutoMergeDisabledEvent':
+        case 'AutoMergeEnabledEvent':
+        case 'AutoRebaseEnabledEvent':
+        case 'AutoSquashEnabledEvent':
+        case 'AutomaticBaseChangeFailedEvent':
+        case 'AutomaticBaseChangeSucceededEvent':
+        case 'BaseRefDeletedEvent':
+        case 'BaseRefForcePushedEvent':
+        case 'BlockedByAddedEvent':
+        case 'BlockedByRemovedEvent':
+        case 'BlockingAddedEvent':
+        case 'BlockingRemovedEvent':
+        case 'CommentDeletedEvent':
+        case 'ConvertedFromDraftEvent':
+        case 'ConvertedNoteToIssueEvent':
+        case 'ConvertedToDiscussionEvent':
+        case 'DeployedEvent':
+        case 'DeploymentEnvironmentChangedEvent':
+        case 'DisconnectedEvent':
+        case 'HeadRefRestoredEvent':
+        case 'IssueComment':
+        case 'IssueCommentPinnedEvent':
+        case 'IssueCommentUnpinnedEvent':
+        case 'IssueFieldAddedEvent':
+        case 'IssueFieldChangedEvent':
+        case 'IssueFieldRemovedEvent':
+        case 'MentionedEvent':
+        case 'MovedColumnsInProjectEvent':
+        case 'ParentIssueRemovedEvent':
+        case 'PullRequestCommitCommentThread':
+        case 'PullRequestReview':
+        case 'PullRequestReviewThread':
+        case 'PullRequestRevisionMarker':
+        case 'RemovedFromMergeQueueEvent':
+        case 'RemovedFromProjectEvent':
+        case 'RemovedFromProjectV2Event':
+        case 'RemovedFromStackEvent':
+        case 'SubscribedEvent':
+        case 'UnmarkedAsDuplicateEvent':
+        case 'UnsubscribedEvent':
+        case 'UserBlockedEvent':
+            return null;
+        default:
+            return assertNever(node);
+    }
+}
+
+interface EventNode {
+    readonly id: string;
+    readonly createdAt: string;
+    readonly actor: ItemUser | null;
+}
+
+/** What every event but a commit has; no one for a change a project workflow made. */
+function toEventBase(node: EventNode, automated = false) {
+    return { id: node.id, createdAt: node.createdAt, actor: automated ? null : toDetailAuthor(node.actor) };
+}
+
+function toReviewer(reviewer: DetailReviewer | null): ItemDetailReviewRequest | null {
+    if (reviewer === null) {
+        return null;
+    }
+
+    if ('login' in reviewer) {
+        return { kind: 'user', user: { login: reviewer.login, avatarUrl: reviewer.avatarUrl } };
+    }
+
+    return 'slug' in reviewer ? { kind: 'team', slug: reviewer.slug, name: reviewer.name } : null;
+}
+
+function toThreadRef(ref: ThreadRefFieldsFragment): ThreadRef {
+    return {
+        kind: ref.__typename === 'Issue' ? 'issue' : 'pullRequest',
+        id: ref.id,
+        url: ref.url,
+        number: ref.number,
+        title: ref.title,
+        repository: ref.repository.nameWithOwner,
+    };
+}
+
 /**
  * A page of a pull request's submitted reviews (`ReviewPageFields`) as its detail keeps them.
  *
@@ -183,18 +489,7 @@ type DetailReviewer =
 export function toDetailReviewRequests(
     connection: GitHubNodes<ReviewRequestNode<DetailReviewer>> | null,
 ): ItemDetailReviewRequest[] {
-    return mapNotNull(connection?.nodes ?? [], (node): ItemDetailReviewRequest | null => {
-        const reviewer = node?.requestedReviewer;
-        if (reviewer == null) {
-            return null;
-        }
-
-        if ('login' in reviewer) {
-            return { kind: 'user', user: { login: reviewer.login, avatarUrl: reviewer.avatarUrl } };
-        }
-
-        return 'slug' in reviewer ? { kind: 'team', slug: reviewer.slug, name: reviewer.name } : null;
-    });
+    return mapNotNull(connection?.nodes ?? [], node => toReviewer(node?.requestedReviewer ?? null));
 }
 
 function toDetailBase(
@@ -224,6 +519,7 @@ function toDetailBase(
         locked: node.locked,
         reactions,
         comments: toItemComments(node.commentPage),
+        events: toItemEvents(node, node.__typename === 'PullRequest' ? node.commitEvents.totalCount : 0),
         projects: mapNotNull(node.projectItems?.nodes ?? [], projectItem =>
             projectItem && !projectItem.isArchived ? toDetailProject(projectItem) : null,
         ),

@@ -1,5 +1,11 @@
 import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from '@githq/github/generated.gen.js';
 
+/** No events: the first two and the newest of none. */
+const NO_EVENTS = {
+    firstEvents: { pageInfo: { endCursor: null }, nodes: [] },
+    lastEvents: { totalCount: 0, pageInfo: { startCursor: null }, nodes: [] },
+};
+
 const REPOSITORY: IssueDetailFieldsFragment['repository'] = {
     nameWithOwner: 'acme/web',
     isPrivate: false,
@@ -35,6 +41,7 @@ export function sampleIssueDetailNode(id: string, updatedAt: string): IssueDetai
         locked: false,
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        ...NO_EVENTS,
         parent: null,
         subIssues: { totalCount: 0, nodes: [] },
         blockedBy: { totalCount: 0, nodes: [] },
@@ -94,6 +101,8 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         locked: false,
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        ...NO_EVENTS,
+        commitEvents: { totalCount: 0 },
         commits: { totalCount: 1 },
         headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },

@@ -5,6 +5,7 @@ import type {
     ItemCheck,
     ItemComment,
     ItemDetailProject,
+    ItemEvents,
     PullRequestDetail,
 } from '@/store/ItemDetailTypes.js';
 import type { IssueItem, Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -15,6 +16,9 @@ import { SAMPLE_VIEWER } from './sampleViewer.js';
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+
+/** A thread with no events: the samples' threads are their comments (events come with the thread's own samples). */
+const NO_EVENTS: ItemEvents = { totalCount: 0, commitCount: 0, oldest: [], newest: [], middle: null };
 
 const KEDRZU = sampleUser(SAMPLE_VIEWER.login, '#d6a23a');
 const OLAM = sampleUser('olam', '#7fb3d5');
@@ -57,6 +61,7 @@ export const D1_ISSUE_DETAIL: IssueDetail = {
         ],
         olderCursor: 'cursor-older',
     },
+    events: NO_EVENTS,
     projects: [
         project('Platform Q4', { status: ['In progress', 'YELLOW'], priority: 'High', estimate: 3 }),
         project('Bug triage', { status: ['Confirmed', 'GREEN'], severity: 'Major' }),
@@ -116,6 +121,7 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
         ],
         olderCursor: null,
     },
+    events: NO_EVENTS,
     projects: [project('githq Roadmap', { status: ['In review', 'PURPLE'], priority: 'High', estimate: 5 })],
     commitCount: 4,
     headRepository: 'kedrzu/githq',

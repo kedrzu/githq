@@ -31,6 +31,7 @@ import type {
     PullRequestState,
     RepositoryPermission,
     StatusState,
+    ThreadEventFieldsFragment,
     TrackingProjectFieldsFragment,
     TrackingRepositoryFieldsFragment,
     TrackingRepositoryPageFieldsFragment,
@@ -140,6 +141,25 @@ export interface GitHubWorldPlacement {
     /** Archived in the project: GitHub still lists it there, marked archived. */
     readonly archived?: boolean;
 }
+
+/** An event of an item's thread ({@link GitHubWorld.event}, {@link GitHubWorld.pullRequestEvent}). */
+export interface GitHubWorldEventParams<TEvent> {
+    /** GitHub's answer for it (`ThreadEventFields`), but its node id and its time. */
+    readonly event: TEvent;
+    readonly minutesAgo: number;
+}
+
+/** An event of a pull request's thread as GitHub answers it, but its node id and its time; not a commit. */
+export type GitHubWorldEvent = WithoutIdAndTime<ThreadEventFieldsFragment>;
+
+/** An event an issue's thread can have too, as GitHub answers it, but its node id and its time. */
+export type GitHubWorldIssueEvent = WithoutIdAndTime<IssueThreadEvent>;
+
+type IssueThreadEvent = NonNullable<NonNullable<IssueDetailFieldsFragment['lastEvents']['nodes']>[number]>;
+
+type WithoutIdAndTime<TEvent> = TEvent extends { readonly id: string; readonly createdAt: string }
+    ? Omit<TEvent, 'id' | 'createdAt'>
+    : never;
 
 /** A comment on an item of the world ({@link GitHubWorld.comment}). */
 export interface GitHubWorldCommentParams {
@@ -552,6 +572,8 @@ interface WorldPullRequest {
      * head, its mergeability `UNKNOWN`, until the update lands — after the next read of the merge panel.
      */
     updatingBranch: boolean;
+    /** The events only a pull request has the test gave it ({@link GitHubWorld.pullRequestEvent}), oldest first. */
+    readonly events: ThreadEventFieldsFragment[];
     /** The last commit pushed to its branch since the test began ({@link GitHubWorld.push}); `null` for none. */
     pushed: WorldPushedCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
@@ -587,6 +609,7 @@ interface WorldAutoMerge {
 /** A commit pushed to a pull request's branch. */
 interface WorldPushedCommit {
     readonly oid: string;
+    readonly committedDate: string;
     readonly headline: string;
     readonly author: string;
 }
@@ -640,6 +663,8 @@ interface WorldItem {
     assignees: string[];
     milestone: string | null;
     comments: WorldComment[];
+    /** The events of its thread the test gave it ({@link GitHubWorld.event}), oldest first. */
+    readonly events: IssueThreadEvent[];
     projectItems: WorldProjectItem[];
     /** Its pull request's own state; `null` for an issue. */
     readonly pullRequest: WorldPullRequest | null;
@@ -683,6 +708,10 @@ const LAST_PAGE = { hasNextPage: false, endCursor: null };
 const COMMENT_PAGE = 50;
 const OLDER_COMMENT_PAGE = 100;
 const REVIEW_PAGE = 100;
+/** The events an opened item reads at once (`firstEvents`, `lastEvents`), and per page of the middle (`ThreadMiddle`). */
+const FIRST_EVENTS = 2;
+const LAST_EVENTS = 50;
+const MIDDLE_PAGE = 100;
 
 const DEFAULT_LABELS: readonly GitHubWorldLabel[] = [
     { name: 'bug', color: 'd73a4a' },
@@ -1038,6 +1067,25 @@ export class GitHubWorld {
             createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
             lastEditedAt: null,
         });
+    }
+
+    /**
+     * Adds an event an issue can have too to an item's thread, its newest: call them oldest first. A pull request's
+     * thread has its head commit too, by its author, with the head's checks.
+     */
+    event(id: string, params: GitHubWorldEventParams<GitHubWorldIssueEvent>): void {
+        const item = this.get(id);
+        item.events.push({ ...params.event, ...toEventStamp(item, params.minutesAgo) });
+    }
+
+    /** Adds an event to a pull request's thread, its newest — one an issue cannot have too, or any. */
+    pullRequestEvent(id: string, params: GitHubWorldEventParams<GitHubWorldEvent>): void {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        item.pullRequest.events.push({ ...params.event, ...toEventStamp(item, params.minutesAgo) });
     }
 
     /** Adds a submitted review to a pull request, its newest: call them oldest first. */
@@ -1725,6 +1773,32 @@ export class GitHubWorld {
             const before = parseCursor(variables.before) ?? item.comments.length;
             return {
                 node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE, this.readerOf(item)) },
+            };
+        });
+        // The middle of a thread: events between two of the cursors `toEventPage` gives, comments before one.
+        github.graphql('ThreadMiddle', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item) {
+                return new GitHubPartialAnswer<'ThreadMiddle'>({ node: null }, [notFoundError(id, ['node'])]);
+            }
+
+            const commentPage =
+                variables.readComments === true
+                    ? toCommentPage(
+                          item,
+                          parseCursor(variables.commentsBefore) ?? item.comments.length,
+                          OLDER_COMMENT_PAGE,
+                          this.readerOf(item),
+                      )
+                    : undefined;
+            const events = item.pullRequest ? this.toPullRequestEvents(item, item.pullRequest) : item.events;
+            return {
+                node: {
+                    id,
+                    commentPage,
+                    eventPage: variables.readEvents === true ? toMiddleEvents(events, variables) : undefined,
+                },
             };
         });
         github.graphql('MoreReviews', ({ variables }) => {
@@ -2746,6 +2820,7 @@ export class GitHubWorld {
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
             reviews: [],
+            events: [],
             pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
@@ -2793,6 +2868,7 @@ export class GitHubWorld {
             assignees: foundBy.includes('assigned') ? [this.viewer] : [],
             milestone: params.milestone ?? null,
             comments: [],
+            events: [],
             projectItems: [],
             pullRequest,
             issueType: issueType ?? null,
@@ -2897,6 +2973,26 @@ export class GitHubWorld {
         return item.pullRequest ? this.toPullRequestNode(item, item.pullRequest) : this.toIssueNode(item);
     }
 
+    /** The events of a pull request's thread as GitHub lists them, oldest first: its head commit and the test's. */
+    private toPullRequestEvents(item: WorldItem, pullRequest: WorldPullRequest): ThreadEventFieldsFragment[] {
+        const head = toHeadCommit(item, pullRequest);
+        const commit: ThreadEventFieldsFragment = {
+            __typename: 'PullRequestCommit',
+            id: `PRC_${item.id}_${head.oid}`,
+            url: `${toUrl(item)}/commits/${head.oid}`,
+            pushedCommit: {
+                abbreviatedOid: head.oid.slice(0, 7),
+                messageHeadline: head.messageHeadline,
+                committedDate: pullRequest.pushed?.committedDate ?? item.createdAt,
+                author: { name: head.author.name, user: createUser(head.author.name) },
+                statusCheckRollup: this.toPullRequestNode(item, pullRequest).statusCheckRollup,
+            },
+        };
+        return [commit, ...item.events, ...pullRequest.events].toSorted((a, b) =>
+            getEventTime(a).localeCompare(getEventTime(b)),
+        );
+    }
+
     /** A live item as `ItemDetail` reads it: its row, its rendered description, its comments and projects. */
     private readDetailNode(id: string): IssueDetailFieldsFragment | PullRequestDetailFieldsFragment | undefined {
         const item = this.readItem(id);
@@ -2920,6 +3016,7 @@ export class GitHubWorld {
             return {
                 ...this.toIssueNode(item),
                 ...details,
+                ...toDetailEvents(item.events),
                 parent: null,
                 subIssues: noIssues,
                 blockedBy: noIssues,
@@ -2931,7 +3028,9 @@ export class GitHubWorld {
         return {
             ...node,
             ...details,
+            ...toDetailEvents(this.toPullRequestEvents(item, item.pullRequest)),
             commits: { totalCount: 1 },
+            commitEvents: { totalCount: 1 },
             headRepository: { nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
@@ -3445,6 +3544,54 @@ function toCommentPage(item: WorldItem, before: number, count: number, reader: C
     };
 }
 
+/**
+ * The events an opened item reads at once: the first ones and the newest ones, as GitHub pages them; a cursor is the
+ * index of its event.
+ */
+function toDetailEvents<TEvent>(events: readonly TEvent[]) {
+    const lastStart = Math.max(0, events.length - LAST_EVENTS);
+    const firstEnd = Math.min(FIRST_EVENTS, events.length);
+    return {
+        firstEvents: {
+            pageInfo: { endCursor: firstEnd > 0 ? `C${firstEnd - 1}` : null },
+            nodes: events.slice(0, firstEnd),
+        },
+        lastEvents: {
+            totalCount: events.length,
+            pageInfo: { startCursor: lastStart < events.length ? `C${lastStart}` : null },
+            nodes: events.slice(lastStart),
+        },
+    };
+}
+
+/** The events between the cursors of `ThreadMiddle`'s variables, a page at most. */
+function toMiddleEvents<TEvent>(events: readonly TEvent[], variables: Readonly<Record<string, unknown>>) {
+    const start = (parseCursor(variables.eventsAfter) ?? -1) + 1;
+    const before = parseCursor(variables.eventsBefore) ?? events.length;
+    const end = Math.min(start + MIDDLE_PAGE, before);
+    return {
+        pageInfo: { hasNextPage: end < before, endCursor: end > start ? `C${end - 1}` : null },
+        nodes: events.slice(start, end),
+    };
+}
+
+/** The node id and the time of an event added to an item; ids count the events of both kinds. */
+function toEventStamp(item: WorldItem, minutesAgo: number) {
+    return {
+        id: `EV_${item.id}_${item.events.length + (item.pullRequest?.events.length ?? 0) + 1}`,
+        createdAt: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+    };
+}
+
+/** When an event happened: a commit's, when it was committed. */
+function getEventTime(event: ThreadEventFieldsFragment): string {
+    if (event.__typename === 'PullRequestCommit') {
+        return event.pushedCommit.committedDate;
+    }
+
+    return 'createdAt' in event ? event.createdAt : '';
+}
+
 function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams[], before: number) {
     const start = Math.max(0, before - REVIEW_PAGE);
     return {
@@ -3711,11 +3858,15 @@ function toHeadRefOid(item: WorldItem) {
 }
 
 /** Pushes a commit to the pull request's branch: its head moves to a commit of its own. Returns the new head. */
-function pushCommit(item: WorldItem, pullRequest: WorldPullRequest, commit: Omit<WorldPushedCommit, 'oid'>): string {
+function pushCommit(
+    item: WorldItem,
+    pullRequest: WorldPullRequest,
+    commit: Omit<WorldPushedCommit, 'oid' | 'committedDate'>,
+): string {
     const previous = pullRequest.pushed ? Number.parseInt(pullRequest.pushed.oid.slice(0, 8), 16) : 0;
     const oid = `${(previous + 1).toString(16).padStart(8, '0')}${item.number.toString(16).padStart(32, 'e')}`;
-    pullRequest.pushed = { ...commit, oid };
     item.updatedAt = new Date().toISOString();
+    pullRequest.pushed = { ...commit, oid, committedDate: item.updatedAt };
     return oid;
 }
 

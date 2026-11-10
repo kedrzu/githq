@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import type { ProjectItemDetailFieldsFragment } from '@githq/github/generated.gen.js';
+import type { ProjectItemDetailFieldsFragment, ThreadEventFieldsFragment } from '@githq/github/generated.gen.js';
 
 import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 
@@ -12,7 +12,7 @@ import type {
     ItemReaction,
     ItemReviewSummary,
 } from './ItemDetailTypes.js';
-import { toItemDetail } from './toItemDetail.js';
+import { toItemDetail, toThreadEvent } from './toItemDetail.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
 const FETCHED_AT = Date.UTC(2026, 9, 30, 13, 0, 0);
@@ -345,5 +345,110 @@ function comment(id: string) {
         bodyHTML: `<p>${id}</p>`,
         viewerCanUpdate: false,
         viewerCanDelete: false,
+    };
+}
+
+test("a short thread's first and newest events overlap: each is kept once, and nothing is left to read between them", () => {
+    const events = [labeled('E_1', 'bug'), labeled('E_2', 'docs'), labeled('E_3', 'ui')];
+    const detail = toItemDetail(
+        {
+            ...sampleIssueDetailNode('I_1', MONDAY),
+            firstEvents: { pageInfo: { endCursor: 'E_2' }, nodes: events.slice(0, 2) },
+            lastEvents: { totalCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toEqual({
+        totalCount: 3,
+        commitCount: 0,
+        oldest: [],
+        newest: events.map(event => expect.objectContaining({ id: event.id, kind: 'labeled' })),
+        middle: null,
+    });
+});
+
+test('a long thread keeps its first events apart from its newest, with the cursors of the middle between them', () => {
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: {
+                pageInfo: { endCursor: 'after-2' },
+                nodes: [labeled('E_1', 'bug'), labeled('E_2', 'docs')],
+            },
+            lastEvents: {
+                totalCount: 60,
+                pageInfo: { startCursor: 'before-51' },
+                nodes: [labeled('E_51', 'ui')],
+            },
+            commitEvents: { totalCount: 12 },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toMatchObject({
+        totalCount: 60,
+        commitCount: 12,
+        oldest: [{ id: 'E_1' }, { id: 'E_2' }],
+        newest: [{ id: 'E_51' }],
+        middle: { after: 'after-2', before: 'before-51' },
+    });
+});
+
+test('a pull request linked to an issue is the other side, whichever side GitHub reports the link from', () => {
+    const issue = { __typename: 'Issue' as const, ...ref('I_1', 12) };
+    const pullRequest = { __typename: 'PullRequest' as const, ...ref('PR_1', 15) };
+    const connected = (source: typeof issue | typeof pullRequest, subject: typeof issue | typeof pullRequest) =>
+        toThreadEvent(
+            { __typename: 'ConnectedEvent', id: 'E_1', createdAt: MONDAY, actor: null, source, subject },
+            'I_1',
+        );
+
+    expect(connected(pullRequest, issue)).toMatchObject({
+        kind: 'connected',
+        ref: { kind: 'pullRequest', number: 15 },
+    });
+    expect(connected(issue, pullRequest)).toMatchObject({
+        kind: 'connected',
+        ref: { kind: 'pullRequest', number: 15 },
+    });
+});
+
+test("a Status a project workflow set names no one, though GitHub reports the project's owner", () => {
+    const statusChange = (wasAutomated: boolean) =>
+        toThreadEvent(
+            {
+                __typename: 'ProjectV2ItemStatusChangedEvent',
+                id: 'E_1',
+                createdAt: MONDAY,
+                actor: { login: 'mlaine', avatarUrl: 'https://avatars.example/mlaine' },
+                wasAutomated,
+                previousStatus: 'In progress',
+                status: 'Done',
+                project: { title: 'Roadmap', url: 'https://github.com/orgs/acme/projects/1' },
+            },
+            'I_1',
+        );
+
+    expect(statusChange(true)).toMatchObject({
+        kind: 'projectStatusChanged',
+        actor: null,
+        from: 'In progress',
+        to: 'Done',
+    });
+    expect(statusChange(false)).toMatchObject({ actor: { login: 'mlaine' } });
+});
+
+function labeled(id: string, label: string): Extract<ThreadEventFieldsFragment, { __typename: 'LabeledEvent' }> {
+    return { __typename: 'LabeledEvent', id, createdAt: MONDAY, actor: null, label: { name: label, color: 'ededed' } };
+}
+
+function ref(id: string, number: number) {
+    return {
+        id,
+        url: `https://github.com/acme/web/issues/${number}`,
+        number,
+        title: `Item ${number}`,
+        repository: { nameWithOwner: 'acme/web' },
     };
 }
