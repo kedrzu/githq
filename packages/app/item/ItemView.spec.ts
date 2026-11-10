@@ -312,6 +312,17 @@ test('the composer ends the thread and scrolls with it: nothing is pinned under 
     expect(document.querySelector('article footer')).toBeNull();
 });
 
+test('R brings the composer into view leaving the space the end of the scroll leaves, not flush against the edge', async () => {
+    await IssueInPanel.run();
+    const scroll = getContentScroll();
+    scroll.scrollTop = 0;
+
+    await userEvent.keyboard('r');
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveFocus();
+    expect(scroll.scrollHeight - scroll.clientHeight).toBeGreaterThan(0);
+    expect(scroll.scrollTop).toBeCloseTo(scroll.scrollHeight - scroll.clientHeight, 0);
+});
+
 test('K1b: a conversation locked to collaborators, or an archived repository, says so in place of the composer, and R has nothing to focus', async () => {
     const editing = {
         ...SAMPLE_MAINTAINER_EDITING,

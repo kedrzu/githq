@@ -1085,14 +1085,18 @@ $item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
   min-height: 0;
   padding: 20px $spacing-24;
   overflow-y: auto;
+  // What is brought into view at the end (the composer, by `R`) keeps the space the end of the scroll leaves.
+  scroll-padding-bottom: 20px;
 
   // At most the reading width, centred.
   .itemView_modal & {
     padding: 32px $item-modal-inset;
+    scroll-padding-bottom: 32px;
   }
 
   .itemView_page & {
     padding: 32px $item-page-inset;
+    scroll-padding-bottom: 32px;
   }
 
   // Sections keep their height; the column scrolls instead.
