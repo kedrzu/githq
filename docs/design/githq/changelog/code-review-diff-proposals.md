@@ -110,3 +110,10 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   61,400 lines"); caption: shown once the blob says so, the bars turning into the note (CR116).
 - [ ] CR88, CR89 captions: the grey bars are the look before a file's patch arrives, and for a file with lines but no
   patch; once the patch is in they take its hunk layout and tint (CR111).
+- [ ] Diff / Row · unified, loading (`UMKkg`) and · split, loading (`JfZR9`): the bars are no longer pushed in by
+  padding (unified 108, split 48 per side) but stand after the same number columns as the code rows: unified Old
+  (`yGlPs`, 36, right), New (`YC4yJ`, 44, right) and a 28 px sign spacer (`yzUKV`); split No per side (`KMIkg`,
+  `X3YpT`, 36, right, gap 12). `$fg-dim`, mono 11, empty by default, so a file before its patch looks as before. Once
+  the patch is in its numbers come from the hunk headers and are filled in: CR60, CR111, CR113, CR116 (whose gaps now
+  read "8,112 lines above" and "53,276 lines below", so the numbers keep four digits). The bars still start where the
+  code will.

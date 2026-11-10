@@ -760,7 +760,7 @@ as many as its additions and deletions: a guess (CR115). Then the patch decides:
 
 - **no patch, 0/0 lines and MODIFIED, ADDED or DELETED: binary, its final one-line note;**
 - **RENAMED with 0/0 lines: "Renamed, no changes", its final one-line note;**
-- **a patch: D38's bars in its real hunk layout, its gap rows in place with their counts, and since the patch says
+- **a patch: D38's bars in its real hunk layout, its line numbers from the hunk headers in the number columns, its gap rows in place with their counts, and since the patch says
   which lines are added and deleted, those bars take the line's tint (CR111);**
 - **no patch but lines: GitHub left the diff out for its size, so the grey bars stay, sized from the additions and
   deletions, a guess.**
