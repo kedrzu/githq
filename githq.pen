@@ -296742,10 +296742,41 @@
                         0,
                         10,
                         0,
-                        108
+                        0
                       ],
                       "alignItems": "center",
                       "children": [
+                        {
+                          "type": "text",
+                          "id": "yGlPs",
+                          "name": "Old",
+                          "fill": "$fg-dim",
+                          "textGrowth": "fixed-width",
+                          "width": 36,
+                          "textAlign": "right",
+                          "fontFamily": "$mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YC4yJ",
+                          "name": "New",
+                          "fill": "$fg-dim",
+                          "textGrowth": "fixed-width",
+                          "width": 44,
+                          "textAlign": "right",
+                          "fontFamily": "$mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yzUKV",
+                          "name": "Sign",
+                          "width": 28,
+                          "height": 1
+                        },
                         {
                           "type": "rectangle",
                           "cornerRadius": 2,
@@ -296772,14 +296803,27 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
+                          "gap": 12,
                           "padding": [
                             0,
                             10,
                             0,
-                            48
+                            0
                           ],
                           "alignItems": "center",
                           "children": [
+                            {
+                              "type": "text",
+                              "id": "KMIkg",
+                              "name": "No",
+                              "fill": "$fg-dim",
+                              "textGrowth": "fixed-width",
+                              "width": 36,
+                              "textAlign": "right",
+                              "fontFamily": "$mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
                             {
                               "type": "rectangle",
                               "cornerRadius": 2,
@@ -296806,14 +296850,27 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
+                          "gap": 12,
                           "padding": [
                             0,
                             10,
                             0,
-                            48
+                            0
                           ],
                           "alignItems": "center",
                           "children": [
+                            {
+                              "type": "text",
+                              "id": "X3YpT",
+                              "name": "No",
+                              "fill": "$fg-dim",
+                              "textGrowth": "fixed-width",
+                              "width": 36,
+                              "textAlign": "right",
+                              "fontFamily": "$mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
                             {
                               "type": "rectangle",
                               "cornerRadius": 2,
@@ -326606,6 +326663,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "1"
+                                                },
                                                 "D40s5v": {
                                                   "width": 72,
                                                   "fill": "#2EA0434D"
@@ -326621,6 +326681,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "2"
                                                 },
                                                 "D40s5v": {
                                                   "width": 72,
@@ -326638,6 +326701,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "3"
+                                                },
                                                 "D40s5v": {
                                                   "width": 274,
                                                   "fill": "#2EA0434D"
@@ -326653,6 +326719,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "4"
                                                 },
                                                 "D40s5v": {
                                                   "width": 194,
@@ -326670,6 +326739,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "5"
+                                                },
                                                 "D40s5v": {
                                                   "width": 94,
                                                   "fill": "#2EA0434D"
@@ -326685,6 +326757,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "6"
                                                 },
                                                 "D40s5v": {
                                                   "width": 194,
@@ -326702,6 +326777,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "7"
+                                                },
                                                 "D40s5v": {
                                                   "width": 209,
                                                   "fill": "#2EA0434D"
@@ -326717,6 +326795,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "8"
                                                 },
                                                 "D40s5v": {
                                                   "width": 115,
@@ -326734,6 +326815,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "9"
+                                                },
                                                 "D40s5v": {
                                                   "width": 209,
                                                   "fill": "#2EA0434D"
@@ -326749,6 +326833,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "10"
                                                 },
                                                 "D40s5v": {
                                                   "width": 338,
@@ -326782,6 +326869,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "11"
+                                                },
                                                 "D40s5v": {
                                                   "width": 144,
                                                   "fill": "#2EA0434D"
@@ -326814,6 +326904,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "12"
+                                                },
                                                 "D40s5v": {
                                                   "width": 230,
                                                   "fill": "#2EA0434D"
@@ -326829,6 +326922,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "13"
                                                 },
                                                 "D40s5v": {
                                                   "width": 86,
@@ -326846,6 +326942,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "14"
+                                                },
                                                 "D40s5v": {
                                                   "width": 252,
                                                   "fill": "#2EA0434D"
@@ -326861,6 +326960,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "15"
                                                 },
                                                 "D40s5v": {
                                                   "width": 360,
@@ -326878,6 +326980,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "16"
+                                                },
                                                 "D40s5v": {
                                                   "width": 230,
                                                   "fill": "#2EA0434D"
@@ -326893,6 +326998,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "17"
                                                 },
                                                 "D40s5v": {
                                                   "width": 259,
@@ -326926,6 +327034,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "18"
+                                                },
                                                 "D40s5v": {
                                                   "width": 151,
                                                   "fill": "#2EA0434D"
@@ -326941,6 +327052,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "19"
                                                 },
                                                 "D40s5v": {
                                                   "width": 101,
@@ -326958,6 +327072,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "20"
+                                                },
                                                 "D40s5v": {
                                                   "width": 338,
                                                   "fill": "#2EA0434D"
@@ -326973,6 +327090,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "21"
                                                 },
                                                 "D40s5v": {
                                                   "width": 259,
@@ -326990,6 +327110,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "22"
+                                                },
                                                 "D40s5v": {
                                                   "width": 86,
                                                   "fill": "#2EA0434D"
@@ -327005,6 +327128,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "23"
                                                 },
                                                 "D40s5v": {
                                                   "width": 72,
@@ -327022,6 +327148,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "24"
+                                                },
                                                 "D40s5v": {
                                                   "width": 310,
                                                   "fill": "#2EA0434D"
@@ -327037,6 +327166,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "25"
                                                 },
                                                 "D40s5v": {
                                                   "width": 144,
@@ -327054,6 +327186,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "26"
+                                                },
                                                 "D40s5v": {
                                                   "width": 101,
                                                   "fill": "#2EA0434D"
@@ -327069,6 +327204,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "27"
                                                 },
                                                 "D40s5v": {
                                                   "width": 288,
@@ -327102,6 +327240,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "28"
+                                                },
                                                 "D40s5v": {
                                                   "width": 360,
                                                   "fill": "#2EA0434D"
@@ -327117,6 +327258,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "29"
                                                 },
                                                 "D40s5v": {
                                                   "width": 173,
@@ -327134,6 +327278,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "30"
+                                                },
                                                 "D40s5v": {
                                                   "width": 223,
                                                   "fill": "#2EA0434D"
@@ -327149,6 +327296,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "31"
                                                 },
                                                 "D40s5v": {
                                                   "width": 144,
@@ -327166,6 +327316,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "32"
+                                                },
                                                 "D40s5v": {
                                                   "width": 216,
                                                   "fill": "#2EA0434D"
@@ -327182,6 +327335,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "33"
+                                                },
                                                 "D40s5v": {
                                                   "width": 209,
                                                   "fill": "#2EA0434D"
@@ -327197,6 +327353,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "34"
                                                 },
                                                 "D40s5v": {
                                                   "width": 187,
@@ -327230,6 +327389,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "35"
+                                                },
                                                 "D40s5v": {
                                                   "width": 187,
                                                   "fill": "#2EA0434D"
@@ -327245,6 +327407,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "36"
                                                 },
                                                 "D40s5v": {
                                                   "width": 187,
@@ -327262,6 +327427,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "37"
+                                                },
                                                 "D40s5v": {
                                                   "width": 130,
                                                   "fill": "#2EA0434D"
@@ -327277,6 +327445,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "38"
                                                 },
                                                 "D40s5v": {
                                                   "width": 158,
@@ -327294,6 +327465,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "39"
+                                                },
                                                 "D40s5v": {
                                                   "width": 94,
                                                   "fill": "#2EA0434D"
@@ -327309,6 +327483,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "40"
                                                 },
                                                 "D40s5v": {
                                                   "width": 230,
@@ -327342,6 +327519,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "41"
+                                                },
                                                 "D40s5v": {
                                                   "width": 22,
                                                   "fill": "#2EA0434D"
@@ -327357,6 +327537,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "42"
                                                 },
                                                 "D40s5v": {
                                                   "width": 108,
@@ -327374,6 +327557,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "43"
+                                                },
                                                 "D40s5v": {
                                                   "width": 288,
                                                   "fill": "#2EA0434D"
@@ -327389,6 +327575,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "44"
                                                 },
                                                 "D40s5v": {
                                                   "width": 180,
@@ -327406,6 +327595,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "45"
+                                                },
                                                 "D40s5v": {
                                                   "width": 245,
                                                   "fill": "#2EA0434D"
@@ -327421,6 +327613,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "46"
                                                 },
                                                 "D40s5v": {
                                                   "width": 180,
@@ -327438,6 +327633,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "47"
+                                                },
                                                 "D40s5v": {
                                                   "width": 238,
                                                   "fill": "#2EA0434D"
@@ -327453,6 +327651,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "48"
                                                 },
                                                 "D40s5v": {
                                                   "width": 281,
@@ -327470,6 +327671,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "49"
+                                                },
                                                 "D40s5v": {
                                                   "width": 180,
                                                   "fill": "#2EA0434D"
@@ -327485,6 +327689,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "50"
                                                 },
                                                 "D40s5v": {
                                                   "width": 166,
@@ -327502,6 +327709,9 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
+                                                "X3YpT": {
+                                                  "content": "51"
+                                                },
                                                 "D40s5v": {
                                                   "width": 173,
                                                   "fill": "#2EA0434D"
@@ -327517,6 +327727,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "52"
                                                 },
                                                 "D40s5v": {
                                                   "width": 166,
@@ -327580,6 +327793,9 @@
                                               "descendants": {
                                                 "t4LOJ": {
                                                   "enabled": false
+                                                },
+                                                "X3YpT": {
+                                                  "content": "1"
                                                 },
                                                 "D40s5v": {
                                                   "width": 331,
@@ -348708,7 +348924,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Once a file's patch is in (GET …/pulls/{n}/files, a separate request, 100 files a page), it decides the placeholder. (a) No patch and 0/0 lines: a binary file shows its final note; a pure rename (RENAMED, 0/0) says \"Renamed, no changes\". No bars, nothing shrinks. (b) A file with a patch draws its bars in the real hunk layout, its gap rows in place with their counts; in split a changed line is one row with both sides. The patch says which lines are added and deleted, so those bars take the line's tint. Close, not exact: our diff is not git's (D6), and D7's anchor absorbs a few rows' difference. \"Too large\" isn't in the patch (CR116).",
+                      "content": "Once a file's patch is in (GET …/pulls/{n}/files, a separate request, 100 files a page), it decides the placeholder. (a) No patch and 0/0 lines: a binary file shows its final note; a pure rename (RENAMED, 0/0) says \"Renamed, no changes\". No bars, nothing shrinks. (b) A file with a patch draws its bars in the real hunk layout with their line numbers, the bars starting where the code will, its gap rows in place with their counts; in split a changed line is one row with both sides. The patch says which lines are added and deleted, so those bars take the line's tint. Close, not exact: our diff is not git's (D6), and D7's anchor absorbs a few rows' difference. \"Too large\" isn't in the patch (CR116).",
                       "lineHeight": 1.5,
                       "fontFamily": "$font",
                       "fontSize": 12.5,
@@ -348831,9 +349047,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "1"
+                                },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "1"
                                 },
                                 "D40s5v": {
                                   "width": 132,
@@ -348848,9 +349070,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "2"
+                                },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "2"
                                 },
                                 "D40s5v": {
                                   "width": 180,
@@ -348865,9 +349093,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "3"
+                                },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "3"
                                 },
                                 "D40s5v": {
                                   "width": 84,
@@ -348882,9 +349116,15 @@
                               "name": "Loading chg",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "4"
+                                },
                                 "t4LOJ": {
                                   "width": 216,
                                   "fill": "#F851494D"
+                                },
+                                "X3YpT": {
+                                  "content": "4"
                                 },
                                 "D40s5v": {
                                   "width": 192,
@@ -348902,6 +349142,9 @@
                                 "t4LOJ": {
                                   "enabled": false
                                 },
+                                "X3YpT": {
+                                  "content": "5"
+                                },
                                 "D40s5v": {
                                   "width": 168,
                                   "fill": "#2EA0434D"
@@ -348915,9 +349158,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "5"
+                                },
                                 "t4LOJ": {
                                   "width": 108,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "6"
                                 },
                                 "D40s5v": {
                                   "width": 108,
@@ -348932,9 +349181,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "6"
+                                },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "7"
                                 },
                                 "D40s5v": {
                                   "width": 240,
@@ -348949,9 +349204,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "7"
+                                },
                                 "t4LOJ": {
                                   "width": 144,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8"
                                 },
                                 "D40s5v": {
                                   "width": 144,
@@ -348984,9 +349245,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "142"
+                                },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "143"
                                 },
                                 "D40s5v": {
                                   "width": 132,
@@ -349001,9 +349268,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "143"
+                                },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "144"
                                 },
                                 "D40s5v": {
                                   "width": 180,
@@ -349018,9 +349291,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "144"
+                                },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "145"
                                 },
                                 "D40s5v": {
                                   "width": 84,
@@ -349038,6 +349317,9 @@
                                 "t4LOJ": {
                                   "enabled": false
                                 },
+                                "X3YpT": {
+                                  "content": "146"
+                                },
                                 "D40s5v": {
                                   "width": 192,
                                   "fill": "#2EA0434D"
@@ -349051,9 +349333,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "145"
+                                },
                                 "t4LOJ": {
                                   "width": 156,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "147"
                                 },
                                 "D40s5v": {
                                   "width": 156,
@@ -349068,9 +349356,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "146"
+                                },
                                 "t4LOJ": {
                                   "width": 108,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "148"
                                 },
                                 "D40s5v": {
                                   "width": 108,
@@ -349085,9 +349379,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "147"
+                                },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "149"
                                 },
                                 "D40s5v": {
                                   "width": 240,
@@ -349261,6 +349561,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "1"
+                                },
+                                "YC4yJ": {
+                                  "content": "1"
+                                },
                                 "BMgGl": {
                                   "width": 132,
                                   "fill": "$bg-3"
@@ -349274,6 +349580,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "2"
+                                },
+                                "YC4yJ": {
+                                  "content": "2"
+                                },
                                 "BMgGl": {
                                   "width": 180,
                                   "fill": "$bg-3"
@@ -349287,6 +349599,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "3"
+                                },
+                                "YC4yJ": {
+                                  "content": "3"
+                                },
                                 "BMgGl": {
                                   "width": 84,
                                   "fill": "$bg-3"
@@ -349300,6 +349618,9 @@
                               "name": "Loading del",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "4"
+                                },
                                 "BMgGl": {
                                   "width": 216,
                                   "fill": "#F851494D"
@@ -349313,6 +349634,9 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
+                                "YC4yJ": {
+                                  "content": "4"
+                                },
                                 "BMgGl": {
                                   "width": 156,
                                   "fill": "#2EA0434D"
@@ -349326,6 +349650,9 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
+                                "YC4yJ": {
+                                  "content": "5"
+                                },
                                 "BMgGl": {
                                   "width": 108,
                                   "fill": "#2EA0434D"
@@ -349339,6 +349666,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "5"
+                                },
+                                "YC4yJ": {
+                                  "content": "6"
+                                },
                                 "BMgGl": {
                                   "width": 240,
                                   "fill": "$bg-3"
@@ -349352,6 +349685,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "6"
+                                },
+                                "YC4yJ": {
+                                  "content": "7"
+                                },
                                 "BMgGl": {
                                   "width": 144,
                                   "fill": "$bg-3"
@@ -349365,6 +349704,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "7"
+                                },
+                                "YC4yJ": {
+                                  "content": "8"
+                                },
                                 "BMgGl": {
                                   "width": 72,
                                   "fill": "$bg-3"
@@ -349396,6 +349741,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "142"
+                                },
+                                "YC4yJ": {
+                                  "content": "143"
+                                },
                                 "BMgGl": {
                                   "width": 132,
                                   "fill": "$bg-3"
@@ -349409,6 +349760,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "143"
+                                },
+                                "YC4yJ": {
+                                  "content": "144"
+                                },
                                 "BMgGl": {
                                   "width": 180,
                                   "fill": "$bg-3"
@@ -349422,6 +349779,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "144"
+                                },
+                                "YC4yJ": {
+                                  "content": "145"
+                                },
                                 "BMgGl": {
                                   "width": 84,
                                   "fill": "$bg-3"
@@ -349435,6 +349798,9 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
+                                "YC4yJ": {
+                                  "content": "146"
+                                },
                                 "BMgGl": {
                                   "width": 216,
                                   "fill": "#2EA0434D"
@@ -349448,6 +349814,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "145"
+                                },
+                                "YC4yJ": {
+                                  "content": "147"
+                                },
                                 "BMgGl": {
                                   "width": 156,
                                   "fill": "$bg-3"
@@ -349461,6 +349833,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "146"
+                                },
+                                "YC4yJ": {
+                                  "content": "148"
+                                },
                                 "BMgGl": {
                                   "width": 108,
                                   "fill": "$bg-3"
@@ -349474,6 +349852,12 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "yGlPs": {
+                                  "content": "147"
+                                },
+                                "YC4yJ": {
+                                  "content": "149"
+                                },
                                 "BMgGl": {
                                   "width": 240,
                                   "fill": "$bg-3"
@@ -349808,6 +350192,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "31"
+                            },
+                            "YC4yJ": {
+                              "content": "31"
+                            },
                             "BMgGl": {
                               "width": 132,
                               "fill": "$bg-3"
@@ -349821,6 +350211,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "32"
+                            },
+                            "YC4yJ": {
+                              "content": "32"
+                            },
                             "BMgGl": {
                               "width": 180,
                               "fill": "$bg-3"
@@ -349834,6 +350230,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "33"
+                            },
+                            "YC4yJ": {
+                              "content": "33"
+                            },
                             "BMgGl": {
                               "width": 84,
                               "fill": "$bg-3"
@@ -349847,6 +350249,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "34"
+                            },
+                            "YC4yJ": {
+                              "content": "34"
+                            },
                             "BMgGl": {
                               "width": 216,
                               "fill": "$bg-3"
@@ -349860,6 +350268,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "35"
+                            },
+                            "YC4yJ": {
+                              "content": "35"
+                            },
                             "BMgGl": {
                               "width": 156,
                               "fill": "$bg-3"
@@ -349873,6 +350287,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "36"
+                            },
+                            "YC4yJ": {
+                              "content": "36"
+                            },
                             "BMgGl": {
                               "width": 108,
                               "fill": "$bg-3"
@@ -349920,6 +350340,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "12"
+                            },
+                            "YC4yJ": {
+                              "content": "12"
+                            },
                             "BMgGl": {
                               "width": 132,
                               "fill": "$bg-3"
@@ -349933,6 +350359,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "13"
+                            },
+                            "YC4yJ": {
+                              "content": "13"
+                            },
                             "BMgGl": {
                               "width": 180,
                               "fill": "$bg-3"
@@ -349946,6 +350378,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "14"
+                            },
+                            "YC4yJ": {
+                              "content": "14"
+                            },
                             "BMgGl": {
                               "width": 84,
                               "fill": "$bg-3"
@@ -349959,6 +350397,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "15"
+                            },
+                            "YC4yJ": {
+                              "content": "15"
+                            },
                             "BMgGl": {
                               "width": 216,
                               "fill": "$bg-3"
@@ -349972,6 +350416,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "16"
+                            },
+                            "YC4yJ": {
+                              "content": "16"
+                            },
                             "BMgGl": {
                               "width": 156,
                               "fill": "$bg-3"
@@ -349985,6 +350435,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "17"
+                            },
+                            "YC4yJ": {
+                              "content": "17"
+                            },
                             "BMgGl": {
                               "width": 108,
                               "fill": "$bg-3"
@@ -349998,6 +350454,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "18"
+                            },
+                            "YC4yJ": {
+                              "content": "18"
+                            },
                             "BMgGl": {
                               "width": 240,
                               "fill": "$bg-3"
@@ -350011,6 +350473,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "19"
+                            },
+                            "YC4yJ": {
+                              "content": "19"
+                            },
                             "BMgGl": {
                               "width": 144,
                               "fill": "$bg-3"
@@ -350024,6 +350492,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "20"
+                            },
+                            "YC4yJ": {
+                              "content": "20"
+                            },
                             "BMgGl": {
                               "width": 72,
                               "fill": "$bg-3"
@@ -350037,6 +350511,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "21"
+                            },
+                            "YC4yJ": {
+                              "content": "21"
+                            },
                             "BMgGl": {
                               "width": 192,
                               "fill": "$bg-3"
@@ -350050,6 +350530,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "22"
+                            },
+                            "YC4yJ": {
+                              "content": "22"
+                            },
                             "BMgGl": {
                               "width": 168,
                               "fill": "$bg-3"
@@ -350063,6 +350549,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "23"
+                            },
+                            "YC4yJ": {
+                              "content": "23"
+                            },
                             "BMgGl": {
                               "width": 120,
                               "fill": "$bg-3"
@@ -350110,6 +350602,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "4"
+                            },
+                            "YC4yJ": {
+                              "content": "4"
+                            },
                             "BMgGl": {
                               "width": 132,
                               "fill": "$bg-3"
@@ -350123,6 +350621,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "5"
+                            },
+                            "YC4yJ": {
+                              "content": "5"
+                            },
                             "BMgGl": {
                               "width": 180,
                               "fill": "$bg-3"
@@ -350136,6 +350640,12 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "6"
+                            },
+                            "YC4yJ": {
+                              "content": "6"
+                            },
                             "BMgGl": {
                               "width": 84,
                               "fill": "$bg-3"
@@ -350149,6 +350659,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "7"
+                            },
+                            "YC4yJ": {
+                              "content": "7"
+                            },
                             "BMgGl": {
                               "width": 216,
                               "fill": "$bg-3"
@@ -350162,6 +350678,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "8"
+                            },
+                            "YC4yJ": {
+                              "content": "8"
+                            },
                             "BMgGl": {
                               "width": 156,
                               "fill": "$bg-3"
@@ -350209,6 +350731,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "18"
+                            },
+                            "YC4yJ": {
+                              "content": "20"
+                            },
                             "BMgGl": {
                               "width": 132,
                               "fill": "$bg-3"
@@ -350222,6 +350750,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "19"
+                            },
+                            "YC4yJ": {
+                              "content": "21"
+                            },
                             "BMgGl": {
                               "width": 180,
                               "fill": "$bg-3"
@@ -350235,6 +350769,12 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
+                            "yGlPs": {
+                              "content": "20"
+                            },
+                            "YC4yJ": {
+                              "content": "22"
+                            },
                             "BMgGl": {
                               "width": 84,
                               "fill": "$bg-3"
@@ -352032,7 +352572,7 @@
                               "width": "fill_container",
                               "descendants": {
                                 "F6fibT": {
-                                  "content": "30,112 lines above"
+                                  "content": "8,112 lines above"
                                 }
                               }
                             },
@@ -352043,9 +352583,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8113"
+                                },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8113"
                                 },
                                 "D40s5v": {
                                   "width": 132,
@@ -352060,9 +352606,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8114"
+                                },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8114"
                                 },
                                 "D40s5v": {
                                   "width": 180,
@@ -352077,9 +352629,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8115"
+                                },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8115"
                                 },
                                 "D40s5v": {
                                   "width": 84,
@@ -352094,9 +352652,15 @@
                               "name": "Loading chg",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8116"
+                                },
                                 "t4LOJ": {
                                   "width": 216,
                                   "fill": "#F851494D"
+                                },
+                                "X3YpT": {
+                                  "content": "8116"
                                 },
                                 "D40s5v": {
                                   "width": 192,
@@ -352113,6 +352677,9 @@
                               "descendants": {
                                 "t4LOJ": {
                                   "enabled": false
+                                },
+                                "X3YpT": {
+                                  "content": "8117"
                                 },
                                 "D40s5v": {
                                   "width": 168,
@@ -352132,6 +352699,9 @@
                                   "fill": "$bg-3",
                                   "enabled": false
                                 },
+                                "X3YpT": {
+                                  "content": "8118"
+                                },
                                 "D40s5v": {
                                   "width": 108,
                                   "fill": "#2EA0434D"
@@ -352145,9 +352715,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8117"
+                                },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8119"
                                 },
                                 "D40s5v": {
                                   "width": 240,
@@ -352162,9 +352738,15 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
+                                "KMIkg": {
+                                  "content": "8118"
+                                },
                                 "t4LOJ": {
                                   "width": 144,
                                   "fill": "$bg-3"
+                                },
+                                "X3YpT": {
+                                  "content": "8120"
                                 },
                                 "D40s5v": {
                                   "width": 144,
@@ -352183,7 +352765,7 @@
                                   "enabled": false
                                 },
                                 "F6fibT": {
-                                  "content": "31,276 lines below"
+                                  "content": "53,276 lines below"
                                 }
                               }
                             }
