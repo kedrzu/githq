@@ -71,6 +71,10 @@ const deletingId = ref<string | null>(null);
 /** The text Quote reply picked, handed over once the menu closed: the composer then keeps the focus it takes. */
 let quoted: string | null = null;
 
+const folded = computed(() =>
+  props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
+);
+
 // An edit GitHub did not take opens its editor again with the text: nothing written is lost.
 watch(
   () => props.failedEdits,
@@ -82,10 +86,6 @@ watch(
     }
   },
   { immediate: true },
-);
-
-const folded = computed(() =>
-  props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
 );
 
 function setEditor(id: string | null, text: string | null) {
