@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
-import { F5_PULL_REQUEST, F5_PULL_REQUEST_DETAIL } from '@/testing/sampleThreadEvents.js';
+import { F5_PULL_REQUEST_DETAIL } from '@/testing/sampleThreadEvents.js';
 
 import { buildThread } from './buildThread.js';
 import type { ThreadPush } from './buildThread.js';

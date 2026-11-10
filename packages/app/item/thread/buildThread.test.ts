@@ -131,15 +131,7 @@ test("the description comes first, then comments and events by time, then the us
         failedComments: [failed],
     });
 
-    expect(thread.map(entry => entry.id)).toEqual([
-        'C1',
-        'E1',
-        'C2',
-        'E2',
-        'C3',
-        'pending:1',
-        'failed:1',
-    ]);
+    expect(thread.map(entry => entry.id)).toEqual(['C1', 'E1', 'C2', 'E2', 'C3', 'pending:1', 'failed:1']);
 });
 
 test("one author's commits straight after each other are one push; a comment or another author starts the next", () => {
@@ -182,7 +174,7 @@ test("once the newest commit's checks finished with a failure, the thread says w
     expect(thread.at(-1)).toEqual({
         kind: 'checksFailed',
         id: 'checks:e81f0a3c0ffee',
-        commit: { abbreviatedOid: 'e81f0a3', url: 'https://github.com/kedrzu/githq/pull/1/commits/e81f0a3' },
+        commit: { abbreviatedOid: 'e81f0a3', url: `${F1_PULL_REQUEST.url}/commits/e81f0a3c0ffee` },
         failedCount: 3,
         failed: ['e2e', 'typecheck'],
         total: 4,
@@ -319,7 +311,7 @@ test("what stays around the fold keeps the time order of what it hides, whicheve
     expect(foldOf(thread)).toEqual(fold({ commits: 7, comments: 25, unread: true }));
 });
 
-test("the CI line names the commit the detail read its checks with, though the row has moved on to a newer one", () => {
+test('the CI line names the commit the detail read its checks with, though the row has moved on to a newer one', () => {
     const thread = buildThread({
         detail: {
             ...pullRequestDetail([], [], { checks: [check('e2e', 'failing', 20)], checkCount: 1 }),

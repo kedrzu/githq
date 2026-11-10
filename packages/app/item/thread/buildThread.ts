@@ -17,7 +17,7 @@ const BURST_MS = 10 * 60_000;
 const FOLD_OVER = 20;
 /** How many of the first items stay above the fold. */
 const KEEP_ABOVE = 2;
-/** How many of the last items stay below it, at least. */
+/** How many of the last items stay below it, at least — but none from before what the detail does not hold. */
 const KEEP_BELOW = 5;
 /** Fewer items than this to fold: nothing folds. */
 const FOLD_AT_LEAST = 6;
@@ -172,8 +172,10 @@ export function buildThread({
     }
 
     // The head the detail read its checks with: the row held may have moved on to a newer push since.
-    const head = detail.item;
-    const checks = detail.kind === 'pullRequest' && head.kind === 'pullRequest' ? getChecksFailed(head, detail) : null;
+    const checks =
+        detail.kind === 'pullRequest' && detail.item.kind === 'pullRequest'
+            ? getChecksFailed(detail.item, detail)
+            : null;
     if (checks) {
         timed.push({ at: Date.parse(checks.updatedAt), kind: 'item', item: checks });
     }
@@ -204,7 +206,10 @@ interface FoldParams {
  * whatever the counts: it cannot be shown. Around it stays only what keeps the thread in time order once it is shown
  * ({@link getUnreadSpan}).
  */
-function foldThread(items: readonly ThreadItem[], { detail, unfolded, keepShown, startedAt }: FoldParams): ThreadItem[] {
+function foldThread(
+    items: readonly ThreadItem[],
+    { detail, unfolded, keepShown, startedAt }: FoldParams,
+): ThreadItem[] {
     const unread = countUnread(detail);
     const unreadCount = unread.commits + unread.comments + unread.otherEvents;
     if (unfolded && unreadCount === 0) {
@@ -301,7 +306,7 @@ interface BelowStartParams {
  */
 function getBelowStart({ items, above, keepShown, startedAt, unreadUntil }: BelowStartParams) {
     const afterUnread = items.findIndex(entry => (startedAt.get(entry.id) ?? getEndedAt(entry)) >= unreadUntil);
-    const kept = Math.max(0, items.length - KEEP_BELOW, afterUnread < 0 ? items.length : afterUnread);
+    const kept = Math.max(items.length - KEEP_BELOW, afterUnread < 0 ? items.length : afterUnread);
     const firstShown = items.findIndex((entry, index) => index >= above && mustShow(entry, keepShown));
     return firstShown >= 0 ? Math.min(kept, firstShown) : kept;
 }
@@ -403,8 +408,7 @@ function countUnread(detail: ItemDetail): FoldCounts {
     return {
         comments: comments.olderCursor === null ? 0 : Math.max(0, comments.totalCount - heldComments),
         commits: events.middle === null ? 0 : Math.max(0, events.commitCount - heldCommits),
-        otherEvents:
-            events.middle === null ? 0 : Math.max(0, events.totalCount - events.commitCount - heldOthers),
+        otherEvents: events.middle === null ? 0 : Math.max(0, events.totalCount - events.commitCount - heldOthers),
     };
 }
 
@@ -739,14 +743,10 @@ function getChecksFailed(
         return at === null ? [] : [at];
     });
     const head = detail.events.newest.toReversed().find((event): event is ThreadCommit => event.kind === 'commit');
-    const abbreviatedOid = item.headRefOid.slice(0, 7);
     return {
         kind: 'checksFailed',
         id: `checks:${item.headRefOid}`,
-        commit:
-            head?.abbreviatedOid === abbreviatedOid
-                ? { abbreviatedOid, url: head.url }
-                : { abbreviatedOid, url: `${item.url}/commits/${item.headRefOid}` },
+        commit: { abbreviatedOid: item.headRefOid.slice(0, 7), url: `${item.url}/commits/${item.headRefOid}` },
         failedCount: failing.length,
         failed: [...new Set(failing.map(check => check.name))],
         total: detail.checkCount,
