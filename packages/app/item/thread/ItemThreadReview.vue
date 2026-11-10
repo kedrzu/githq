@@ -4,6 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
 
+import Button from '@/components/Button.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import GitHubHtml from '../GitHubHtml.vue';
@@ -113,15 +114,16 @@ function hide(threadId: string) {
       }}</span>
     </template>
     <template #aside>
-      <button
+      <Button
         v-if="dismissed"
-        type="button"
+        variant="link"
+        tone="accent"
         :class="css.itemThreadReview_show"
         :aria-expanded="shown"
         @click="shown = !shown"
       >
         {{ shown ? t(l.hideReview) : t(l.showReview) }}
-      </button>
+      </Button>
       <span
         v-else-if="counts !== null"
         :class="css.itemThreadReview_counts"
@@ -191,20 +193,7 @@ function hide(threadId: string) {
 }
 
 .itemThreadReview_show {
-  @include focus-ring;
-
-  padding: 0;
-  font: inherit;
   font-size: $font-size-xs;
-  color: $color-accent;
-  cursor: pointer;
-  background: none;
-  border: 0;
-  border-radius: 3px;
-
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .itemThreadReview_body {

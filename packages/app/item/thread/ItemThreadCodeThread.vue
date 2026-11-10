@@ -92,14 +92,15 @@ function onFocusOut(event: FocusEvent) {
       />
       <span :class="css.itemThreadCodeThread_state">{{ t(l.resolved) }}</span>
       <span :class="css.itemThreadCodeThread_spacer" />
-      <button
-        type="button"
+      <Button
+        variant="link"
+        tone="accent"
         :class="css.itemThreadCodeThread_hide"
         aria-expanded="true"
         @click="emit('hide')"
       >
         {{ t(l.hide) }}
-      </button>
+      </Button>
     </p>
     <div :class="css.itemThreadCodeThread_body">
       <ItemThreadExcerpt :thread="thread" />
@@ -232,20 +233,7 @@ function onFocusOut(event: FocusEvent) {
 }
 
 .itemThreadCodeThread_hide {
-  @include focus-ring;
-
-  padding: 0;
-  font: inherit;
   font-size: $font-size-xs;
-  color: $color-accent;
-  cursor: pointer;
-  background: none;
-  border: 0;
-  border-radius: 3px;
-
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .itemThreadCodeThread_body {
