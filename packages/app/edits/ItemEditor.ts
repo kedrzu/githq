@@ -68,8 +68,8 @@ export const ItemEditor = defineService({
         watch(
             () => drafts.failedEdits.filter(isOfDeletedComment),
             gone => {
-                for (const edit of gone) {
-                    drafts.discardFailedEdit(edit.itemId, edit.commentId);
+                for (const failed of gone) {
+                    drafts.discardFailedEdit(failed.itemId, failed.commentId);
                 }
             },
         );
@@ -509,16 +509,16 @@ export const ItemEditor = defineService({
                 : [];
         }
 
-        /** The user signed in, as the edits are built for them; `null` signed out. */
-        function isOfDeletedComment(edit: FailedTextEdit) {
-            const comments = edit.commentId === null ? undefined : details.get(edit.itemId)?.comments;
+        function isOfDeletedComment(failed: FailedTextEdit) {
+            const comments = failed.commentId === null ? undefined : details.get(failed.itemId)?.comments;
             return (
                 comments !== undefined &&
                 comments.olderCursor === null &&
-                !comments.nodes.some(comment => comment.id === edit.commentId)
+                !comments.nodes.some(comment => comment.id === failed.commentId)
             );
         }
 
+        /** The user signed in, as the edits are built for them; `null` signed out. */
         function getAccount(): EditAccount | null {
             const viewer = auth.viewer;
             const token = auth.token;

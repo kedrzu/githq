@@ -8,6 +8,7 @@ import type { ReferenceSearchQuery, RepositoryMetadataQuery } from '@githq/githu
 
 import type { PersonSuggestion } from '@/components/SuggestionTypes.js';
 import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -59,9 +60,8 @@ async function setup() {
     session.container.set(RepositoryPersistence, persistence);
     session.container.set(TrackingPersistence, persistence);
     session.container.resolve(ItemStore);
-    const suggest = session.container.resolve(MarkdownSuggestionService);
-    await suggest.readPeople('acme/web');
-    return suggest;
+    await session.container.resolve(RepositoryStore).ensure('acme/web');
+    return session.container.resolve(MarkdownSuggestionService);
 }
 
 function answer(request: TestGraphQLRequest): TestGraphQLAnswer | undefined {

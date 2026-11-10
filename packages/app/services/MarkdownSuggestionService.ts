@@ -30,11 +30,9 @@ export interface SuggestReferencesParams {
  * diacritics and a typo aside), best match first, a handful at most.
  */
 export interface MarkdownSuggestionServiceShape {
-    /** Reads the repository's people for {@link people}, unless they were read lately; never rejects. */
-    readPeople(repository: string): Promise<void>;
     /**
      * The thread's people who match, then the repository's assignable users who do, by login and name; a thread's
-     * person with the name the repository gives them. Reactive: the repository's people once read.
+     * person with the name the repository gives them. Reactive: the repository's people once read (`RepositoryStore`).
      */
     people(params: SuggestPeopleParams): PersonSuggestion[];
     /**
@@ -56,11 +54,7 @@ export const MarkdownSuggestionService = defineService({
     name: 'MarkdownSuggestionService',
     deps: { session: AccountSession, repositories: RepositoryStore, items: ItemStore, tracking: TrackingStore },
     setup({ session, repositories, items, tracking }): MarkdownSuggestionServiceShape {
-        return { readPeople, people, references, searchReferences };
-
-        async function readPeople(repository: string) {
-            await repositories.ensure(repository);
-        }
+        return { people, references, searchReferences };
 
         function people({ repository, query, thread }: SuggestPeopleParams) {
             const known = repositories.get(repository)?.assignableUsers ?? [];
@@ -113,7 +107,7 @@ function findPeople(query: string, people: readonly PersonSuggestion[]) {
     return findMatches(query, prepared).map(({ row }) => row);
 }
 
-function findReferences<T extends ReferenceSuggestion>(query: string, found: readonly T[]) {
+function findReferences(query: string, found: readonly ReferenceSuggestion[]) {
     const prepared = prepareMatchTexts(found, item => [String(item.number), item.title]);
     // No typo: a number one digit off is another issue, and a typo search over a whole repository's copy is slow.
     return findMatches(query, prepared, { typos: false })

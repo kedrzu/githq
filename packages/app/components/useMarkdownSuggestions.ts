@@ -5,6 +5,7 @@ import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { computed, ref, shallowRef, toValue, useId, watch } from 'vue';
 import type { MaybeRefOrGetter, Ref, TextareaHTMLAttributes } from 'vue';
 
+import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { MarkdownSuggestionService } from '@/services/MarkdownSuggestionService.js';
 import { getCaretRect } from '@/utils/getCaretRect.js';
 import { useGitHubSearch } from '@/utils/useGitHubSearch.js';
@@ -178,7 +179,7 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
 
         // Once per menu opened: the repository's people, unless read lately; the thread's are there meanwhile.
         if (another && found.kind === 'mention') {
-            void getService().readPeople(toValue(options.repository));
+            void container.resolve(RepositoryStore).ensure(toValue(options.repository));
         }
 
         trigger.value = found;
