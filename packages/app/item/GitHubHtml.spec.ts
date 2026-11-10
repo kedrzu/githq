@@ -19,6 +19,7 @@ test('a link githq shows points at the app’s path; the rest stay GitHub’s, o
     for (const [name, href] of [
         ['@octocat', 'https://github.com/octocat'],
         ['a1b2c3d', 'https://github.com/acme/web/commit/a1b2c3d'],
+        ['GitLab', 'https://gitlab.com/acme/web/issues/12'],
     ]) {
         const link = page.getByRole('link', { name });
         await expect.element(link).toHaveAttribute('href', href);
