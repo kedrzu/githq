@@ -109,9 +109,10 @@ const { Button, busy, disabled } = useButton();
   height: 22px;
   border-radius: 5px;
 
+  // A caller sizes the glyph with `--icon-button-glyph-size` (a split button's chevron).
   .iconButton_glyph {
-    width: 15px;
-    height: 15px;
+    width: var(--icon-button-glyph-size, 15px);
+    height: var(--icon-button-glyph-size, 15px);
   }
 }
 

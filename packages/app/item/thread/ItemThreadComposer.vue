@@ -234,17 +234,20 @@ function close(reason: CloseReason) {
   height: 14px;
 }
 
-// The action's icon in the colour of the state it leads to: a button's leads its content, before the key's.
-.itemThreadComposer_completed > span:first-child > svg:first-child,
-.itemThreadComposer_completedItem > svg:first-child {
-  color: $color-purple;
+// The action's icon in the colour of the state it leads to.
+.itemThreadComposer_completed {
+  --button-icon-color: #{$color-purple};
 }
 
-.itemThreadComposer_closed > span:first-child > svg:first-child {
-  color: $color-red;
+.itemThreadComposer_completedItem {
+  --menu-item-icon-color: #{$color-purple};
 }
 
-.itemThreadComposer_open > span:first-child > svg:first-child {
-  color: $color-green;
+.itemThreadComposer_closed {
+  --button-icon-color: #{$color-red};
+}
+
+.itemThreadComposer_open {
+  --button-icon-color: #{$color-green};
 }
 </style>

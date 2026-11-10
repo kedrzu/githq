@@ -72,6 +72,8 @@ defineSlots<{
 
 // The rule before the chevron, inside the frame the two parts draw together.
 .splitButton_menu.splitButton_menu {
+  --icon-button-glyph-size: 12px;
+
   position: relative;
   width: auto;
   height: auto;
@@ -97,11 +99,6 @@ defineSlots<{
   &[aria-expanded='true'] {
     color: $color-fg;
     background: $color-border;
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
   }
 }
 </style>

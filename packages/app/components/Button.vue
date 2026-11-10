@@ -92,7 +92,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
       <component
         :is="icon"
         v-if="icon"
-        :class="css.button_icon"
+        :class="[css.button_icon, css.button_leadIcon]"
         aria-hidden="true"
       />
       <slot />
@@ -154,6 +154,11 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   flex: none;
   width: 14px;
   height: 14px;
+}
+
+// The leading icon, not the busy spinner: a caller tints it with `--button-icon-color` (the action's state colour).
+.button_leadIcon {
+  color: var(--button-icon-color, currentcolor);
 }
 
 .button_block {
