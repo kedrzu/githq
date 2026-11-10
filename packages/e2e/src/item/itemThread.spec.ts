@@ -421,7 +421,10 @@ test('Resolve thread folds it, saying at once that the viewer resolved it; Unres
     await thread.getByRole('button', { name: 'Resolve thread' }).click();
     const review = item.entry('One thing before it goes in.');
     await expect(review).toContainText('1 thread · 1 resolved');
-    await review.getByRole('button', { name: /^Resolved src\/auth\/redirect\.ts/u }).click();
+    // Folded, the thread's row keeps the focus: the keys are still the code threads'.
+    const row = review.getByRole('button', { name: /^Resolved src\/auth\/redirect\.ts/u });
+    await expect(row).toBeFocused();
+    await row.click();
     await expect(thread).toContainText('octocat marked this thread as resolved.');
     expect(writes.map(write => write.name)).toEqual(['ResolveReviewThread']);
 
@@ -453,6 +456,120 @@ test('a reply GitHub refuses comes back with its text and why; leaving the item 
 
     await page.reload();
     await expect(thread.getByRole('textbox', { name: 'Reply' })).toHaveValue('Keep me');
+});
+
+test("the viewer's draft review shows last, as theirs alone; somebody else's draft comments show nowhere", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    const { myWork } = await openMyWork(page, github, world);
+    const threads: SampleReviewThread[] = [
+        {
+            id: 'T_theirs',
+            path: 'src/auth/redirect.ts',
+            line: 2,
+            comments: ['<p>Not sent by sofiab yet.</p>'],
+            pending: true,
+        },
+    ];
+    answerReview(github, { repository: 'acme/web', number: 15, id: sample.pullRequest, files: [], threads });
+    const item = new ItemViewHarness(page);
+    await myWork.row(PULL_REQUEST).click();
+    await expect(item.title).toHaveText(PULL_REQUEST);
+    // The thread is read: the pull request's other cards are on the rail.
+    await expect(item.commentBox).toBeVisible();
+    await expect(item.root).not.toContainText('Not sent by sofiab yet.');
+    await expect(item.root).not.toContainText('Your review');
+
+    // The viewer starts a draft of their own on github.com.
+    threads.push({
+        id: 'T_mine',
+        path: 'src/auth/session.ts',
+        line: 4,
+        comments: ['<p>Mine, not sent yet.</p>'],
+        pending: true,
+        author: 'octocat',
+    });
+    world.setPendingReview(sample.pullRequest, { comments: 1, minutesAgo: 5 });
+    await page.reload();
+
+    const draft = item.entry('Mine, not sent yet.');
+    await expect(draft).toContainText(/^Your review\s*pending/u);
+    await expect(draft.getByRole('button', { name: 'Reply…' })).toHaveCount(0);
+    await expect(item.root).not.toContainText('Not sent by sofiab yet.');
+    const order = await item.root
+        .getByRole('listitem')
+        .evaluateAll(entries => entries.map(entry => entry.textContent ?? ''));
+    expect(order.at(-1)).toContain('Mine, not sent yet.');
+});
+
+test('a long thread folds its middle but never the oldest review with a thread still open, nor what comes after it', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    for (let index = 1; index <= 10; index++) {
+        world.comment(sample.pullRequest, { author: 'hubot', body: `Before ${index}.`, minutesAgo: 300 - index });
+    }
+
+    world.review(sample.pullRequest, {
+        id: 'R_settled',
+        author: 'mlaine',
+        state: 'COMMENTED',
+        bodyHtml: '<p>All settled.</p>',
+        minutesAgo: 285,
+    });
+    world.review(sample.pullRequest, {
+        id: 'R_waiting',
+        author: 'hubot',
+        state: 'CHANGES_REQUESTED',
+        bodyHtml: '<p>Still waiting on this.</p>',
+        minutesAgo: 280,
+    });
+    for (let index = 1; index <= 15; index++) {
+        world.comment(sample.pullRequest, { author: 'hubot', body: `After ${index}.`, minutesAgo: 200 - index });
+    }
+
+    const { myWork } = await openMyWork(page, github, world);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        id: sample.pullRequest,
+        files: [],
+        threads: [
+            {
+                id: 'T_settled',
+                path: 'src/auth/session.ts',
+                line: 4,
+                isResolved: true,
+                comments: ['<p>Settled.</p>'],
+                reviewId: 'R_settled',
+            },
+            {
+                id: 'T_waiting',
+                path: 'src/auth/redirect.ts',
+                line: 2,
+                comments: ['<p>What if there is no return address?</p>'],
+                reviewId: 'R_waiting',
+            },
+        ],
+    });
+    const item = new ItemViewHarness(page);
+    await myWork.row(PULL_REQUEST).click();
+
+    const waiting = item.entry('Still waiting on this.');
+    await expect(waiting.getByRole('group', { name: 'Thread by sofiab on src/auth/redirect.ts' })).toContainText(
+        'What if there is no return address?',
+    );
+    await expect(item.root.getByRole('button', { name: /^Show \d+ earlier events/u })).toBeVisible();
+    // Folded: what came before it, the review whose threads are all resolved among them.
+    await expect(item.entry('All settled.')).toHaveCount(0);
+    await expect(item.entry('Before 10.')).toHaveCount(0);
+    // Kept: everything after it, the newest five and more.
+    await expect(item.root.getByRole('listitem').filter({ hasText: /After \d+\./u })).toHaveCount(15);
 });
 
 function user(login: string) {

@@ -33,8 +33,10 @@ export interface SampleReviewThread {
     readonly comments: readonly string[];
     /** The review its first comment came in; none by default. */
     readonly reviewId?: string;
-    /** Its comments are in the viewer's draft review. */
+    /** Its comments are in a draft review: the viewer's when {@link author} is the viewer. */
     readonly pending?: boolean;
+    /** Who wrote its comments; sofiab by default. */
+    readonly author?: string;
 }
 
 export interface AnswerReviewParams {
@@ -272,7 +274,7 @@ function toThreadNode(thread: SampleReviewThread) {
             pageInfo: { hasNextPage: false, endCursor: null },
             nodes: thread.comments.map((bodyHTML, index) => ({
                 id: `${thread.id}_${index}`,
-                author: { login: 'sofiab', avatarUrl: '' },
+                author: { login: thread.author ?? 'sofiab', avatarUrl: '' },
                 bodyHTML,
                 createdAt: '2026-01-01T00:00:00Z',
                 url: `https://github.com/acme/web/pull/15#discussion_${thread.id}_${index}`,
