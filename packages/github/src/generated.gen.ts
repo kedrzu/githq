@@ -2945,6 +2945,7 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -2953,6 +2954,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             review: {
+                                id: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -3661,6 +3663,7 @@ export type ItemDetailQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -3669,6 +3672,7 @@ export type ItemDetailQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             review: {
+                                id: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -6054,6 +6058,7 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -6062,6 +6067,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             review: {
+                                id: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -6770,6 +6776,7 @@ export type ItemDetailsQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -6778,6 +6785,7 @@ export type ItemDetailsQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             review: {
+                                id: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -10410,6 +10418,7 @@ export type ThreadMiddleQuery = {
                             id: string;
                             createdAt: string;
                             dismissalMessage: string | null;
+                            previousReviewState: PullRequestReviewState;
                             actor:
                                 | { login: string; avatarUrl: string }
                                 | { login: string; avatarUrl: string }
@@ -10418,6 +10427,7 @@ export type ThreadMiddleQuery = {
                                 | { login: string; avatarUrl: string }
                                 | null;
                             review: {
+                                id: string;
                                 author:
                                     | { login: string; avatarUrl: string }
                                     | { login: string; avatarUrl: string }
@@ -13867,6 +13877,7 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   dismissalMessage: string | null;
+                  previousReviewState: PullRequestReviewState;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -13875,6 +13886,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
                   review: {
+                      id: string;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -14580,6 +14592,7 @@ export type PullRequestDetailFieldsFragment = {
                   id: string;
                   createdAt: string;
                   dismissalMessage: string | null;
+                  previousReviewState: PullRequestReviewState;
                   actor:
                       | { login: string; avatarUrl: string }
                       | { login: string; avatarUrl: string }
@@ -14588,6 +14601,7 @@ export type PullRequestDetailFieldsFragment = {
                       | { login: string; avatarUrl: string }
                       | null;
                   review: {
+                      id: string;
                       author:
                           | { login: string; avatarUrl: string }
                           | { login: string; avatarUrl: string }
@@ -15831,6 +15845,7 @@ type ThreadEventFields_ReviewDismissedEvent_Fragment = {
     id: string;
     createdAt: string;
     dismissalMessage: string | null;
+    previousReviewState: PullRequestReviewState;
     actor:
         | { login: string; avatarUrl: string }
         | { login: string; avatarUrl: string }
@@ -15839,6 +15854,7 @@ type ThreadEventFields_ReviewDismissedEvent_Fragment = {
         | { login: string; avatarUrl: string }
         | null;
     review: {
+        id: string;
         author:
             | { login: string; avatarUrl: string }
             | { login: string; avatarUrl: string }
@@ -17833,7 +17849,9 @@ export const ThreadEventFieldsFragmentDoc = new TypedDocumentString(
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl
@@ -18952,7 +18970,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl
@@ -21071,7 +21091,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl
@@ -22438,7 +22460,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl
@@ -23498,7 +23522,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl
@@ -26585,7 +26611,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
       avatarUrl
     }
     dismissalMessage
+    previousReviewState
     review {
+      id
       author {
         login
         avatarUrl

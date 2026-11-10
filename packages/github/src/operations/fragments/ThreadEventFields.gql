@@ -163,7 +163,9 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             avatarUrl
         }
         dismissalMessage
+        previousReviewState
         review {
+            id
             author {
                 login
                 avatarUrl
