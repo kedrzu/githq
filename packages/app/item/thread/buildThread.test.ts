@@ -333,6 +333,33 @@ test("the CI line names the commit the detail read its checks with, though the r
     });
 });
 
+test("the fold's other events leave out the close a merge came with, held as one with it", () => {
+    const merged: ThreadEvent = {
+        ...base('ME_1', MLAINE, 100),
+        kind: 'merged',
+        commit: null,
+        into: 'main',
+        closedToo: true,
+    };
+    const detail: ItemDetail = {
+        ...F1_PULL_REQUEST_DETAIL,
+        comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
+        events: {
+            // E1, 3 not read, the merge and its close.
+            totalCount: 6,
+            commitCount: 0,
+            oldest: [{ ...base('E1', DKIM, 0), kind: 'pinned' }],
+            newest: [merged],
+            middle: { after: 'a', before: 'b' },
+        },
+    };
+
+    const thread = buildThread({ detail });
+
+    expect(idsOf(thread)).toEqual(['E1', 'fold', 'ME_1']);
+    expect(foldOf(thread)).toEqual(fold({ otherEvents: 3, unread: true }));
+});
+
 test('shown by the user, a long thread read whole folds no more', () => {
     const many = manyComments(30);
     const thread = buildThread({ detail: issueDetail([], many), unfolded: true });

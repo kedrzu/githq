@@ -395,6 +395,46 @@ test('a long thread keeps its first events apart from its newest, with the curso
     });
 });
 
+test('a merged pull request is told merged once: the ClosedEvent GitHub gives with the merge, at its time, is left out', () => {
+    const merger = { login: 'mlaine', avatarUrl: '' };
+    const closedByHand: ThreadEventFieldsFragment = {
+        __typename: 'ClosedEvent',
+        id: 'CE_1',
+        createdAt: '2026-10-26T09:00:00Z',
+        actor: merger,
+        stateReason: null,
+        closer: null,
+        duplicateOf: null,
+    };
+    // As GitHub gave them for cli/cli#14998: the merge, then a close at the same second.
+    const merged: ThreadEventFieldsFragment = {
+        __typename: 'MergedEvent',
+        id: 'ME_1',
+        createdAt: MONDAY,
+        actor: merger,
+        mergeRefName: 'main',
+        commit: { abbreviatedOid: 'abc1234', url: 'https://github.com/acme/web/commit/abc1234' },
+    };
+    const closedWithMerge: ThreadEventFieldsFragment = { ...closedByHand, id: 'CE_2', createdAt: MONDAY };
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: { pageInfo: { endCursor: 'after-2' }, nodes: [] },
+            lastEvents: {
+                totalCount: 3,
+                pageInfo: { startCursor: 'before-1' },
+                nodes: [closedByHand, merged, closedWithMerge],
+            },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events.newest).toMatchObject([
+        { id: 'CE_1', kind: 'closed' },
+        { id: 'ME_1', kind: 'merged', closedToo: true },
+    ]);
+});
+
 test('a pull request linked to an issue is the other side, whichever side GitHub reports the link from', () => {
     const issue = { __typename: 'Issue' as const, ...ref('I_1', 12) };
     const pullRequest = { __typename: 'PullRequest' as const, ...ref('PR_1', 15) };

@@ -187,7 +187,18 @@ export type ThreadEvent =
               readonly duplicateOf: ThreadRef | null;
           }
       >
-    | ThreadEventOf<'merged', { readonly commit: ThreadCommitRef | null; readonly into: string }>
+    | ThreadEventOf<
+          'merged',
+          {
+              readonly commit: ThreadCommitRef | null;
+              readonly into: string;
+              /**
+               * GitHub gave the ClosedEvent the merge made with it, at the same time (`toThreadEvents`): left out, though
+               * {@link ItemEvents.totalCount} counts it.
+               */
+              readonly closedToo: boolean;
+          }
+      >
     | ThreadEventOf<'headRefDeleted', { readonly branch: string }>
     | ThreadEventOf<'connected' | 'disconnected', { readonly ref: ThreadRef }>
     | ThreadEventOf<

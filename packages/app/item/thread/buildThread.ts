@@ -382,19 +382,29 @@ function countFolded(folded: readonly ThreadItem[]): FoldCounts {
     return { commits, comments, otherEvents };
 }
 
-/** What GitHub counts in the thread and the detail does not hold: the comments before those read, the events' middle. */
+/**
+ * What GitHub counts in the thread and the detail does not hold: the comments before those read, the events' middle.
+ * A close held with its merge (`closedToo`) counts as held; one in the middle cannot be told from any other event.
+ */
 function countUnread(detail: ItemDetail): FoldCounts {
     const { comments, events } = detail;
     const heldComments = new Set([...comments.first, ...comments.nodes].map(comment => comment.id)).size;
-    const held = new Map([...events.oldest, ...events.newest].map(event => [event.id, event.kind === 'commit']));
-    const heldCommits = [...held.values()].filter(Boolean).length;
+    const heldEvents = new Map([...events.oldest, ...events.newest].map(event => [event.id, event]));
+    let heldCommits = 0;
+    let heldOthers = 0;
+    for (const event of heldEvents.values()) {
+        if (event.kind === 'commit') {
+            heldCommits += 1;
+        } else {
+            heldOthers += event.kind === 'merged' && event.closedToo ? 2 : 1;
+        }
+    }
+
     return {
         comments: comments.olderCursor === null ? 0 : Math.max(0, comments.totalCount - heldComments),
         commits: events.middle === null ? 0 : Math.max(0, events.commitCount - heldCommits),
         otherEvents:
-            events.middle === null
-                ? 0
-                : Math.max(0, events.totalCount - events.commitCount - (held.size - heldCommits)),
+            events.middle === null ? 0 : Math.max(0, events.totalCount - events.commitCount - heldOthers),
     };
 }
 
