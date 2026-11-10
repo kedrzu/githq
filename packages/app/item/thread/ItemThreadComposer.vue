@@ -136,6 +136,7 @@ function close(reason: CloseReason) {
             <MenuItem
               :class="css.itemThreadComposer_completedItem"
               :icon="CircleCheck"
+              kbd="Enter"
               @select="close('COMPLETED')"
               >{{ t(l.closeCompleted) }}</MenuItem
             >
