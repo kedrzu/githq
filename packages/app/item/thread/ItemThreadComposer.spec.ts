@@ -4,17 +4,8 @@ import { page, userEvent } from 'vitest/browser';
 
 import * as stories from './ItemThreadComposer.stories.js';
 
-const {
-    Archived,
-    ClosedIssue,
-    ClosedPullRequest,
-    CommentOnly,
-    Locked,
-    MergedPullRequest,
-    OpenIssue,
-    OpenIssueWriting,
-    OpenPullRequest,
-} = composeStories(stories);
+const { Archived, ClosedIssue, ClosedPullRequest, CommentOnly, Locked, MergedPullRequest, OpenIssue, OpenPullRequest } =
+    composeStories(stories);
 
 const box = () => page.getByRole('textbox', { name: 'Comment' });
 const commentButton = () => page.getByRole('button', { name: 'Comment', exact: true });
@@ -55,36 +46,6 @@ test('Comment is dimmed and does nothing while nothing is typed; ⌘↵ and the 
     await userEvent.click(commentButton());
     expect(onEdit).toHaveBeenLastCalledWith({ kind: 'comment', body: 'Second', keptInThread: true });
     await expect.element(box()).toHaveValue('');
-});
-
-test('with text typed the close button reads "Close with comment": the comment goes first, then the close, and the box empties', async () => {
-    await OpenIssueWriting.run();
-    const { onEdit } = OpenIssueWriting.args;
-    const body = OpenIssueWriting.args.text ?? '';
-
-    await userEvent.click(page.getByRole('button', { name: 'Close with comment', exact: true }));
-
-    expect(onEdit).toHaveBeenCalledTimes(2);
-    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body, keptInThread: true });
-    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'COMPLETED' });
-    await expect.element(box()).toHaveValue('');
-    await expect.element(page.getByRole('button', { name: 'Close issue', exact: true })).toBeVisible();
-});
-
-test("the menu's reason takes the comment along too, before the close", async () => {
-    await OpenIssueWriting.run();
-    const { onEdit } = OpenIssueWriting.args;
-
-    await userEvent.click(page.getByRole('button', { name: 'More ways to close' }));
-    await userEvent.click(page.getByRole('menuitem', { name: 'Close as not planned' }));
-
-    expect(onEdit).toHaveBeenCalledTimes(2);
-    expect(onEdit).toHaveBeenNthCalledWith(1, {
-        kind: 'comment',
-        body: OpenIssueWriting.args.text,
-        keptInThread: true,
-    });
-    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'NOT_PLANNED' });
 });
 
 test('an open pull request closes from its button; a closed one, issue or pull request, reopens', async () => {

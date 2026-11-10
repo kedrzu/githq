@@ -1,4 +1,4 @@
-<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the comment goes first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. -->
+<!-- The thread's last entry (I4): the viewer's avatar in the rail's gutter and the Markdown editor beside it, with the item's close or reopen button and Comment (`Mod+Enter`, dimmed while nothing is typed). An open issue closes as completed from its button (`⇧X`) and as not planned from the button's menu; an open pull request closes, a closed one reopens, a merged one has nothing to close. With text typed the close button reads "Close with comment": the item view posts the comment first, then the close. What is typed is the item's draft (`text`). Where the user can't comment — the conversation locked to collaborators, the repository archived — one quiet line says so instead of the editor. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import {
@@ -37,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** A comment, a close or a reopen; a close with a comment sends the comment first. */
+  /** A comment, a close or a reopen; the item view posts what is typed before a close. */
   edit: [request: EditRequest];
 }>();
 
@@ -77,7 +77,6 @@ function submit() {
 }
 
 function close(reason: CloseReason) {
-  submit();
   emit('edit', { kind: 'close', reason });
 }
 </script>

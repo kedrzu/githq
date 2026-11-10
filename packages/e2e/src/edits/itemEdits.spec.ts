@@ -149,6 +149,54 @@ test('"Close as not planned" from the close menu, with a comment typed, posts it
     await expect(item.commentBox).toHaveValue('');
 });
 
+test('⇧X with a comment typed and the box left posts the comment, then closes the issue, in that order on GitHub', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Fixed by the token refresh.');
+    await item.commentBox.press('Escape');
+    await page.keyboard.press('Shift+X');
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'COMPLETED', comments: ['Fixed by the token refresh.'] });
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expectClosedWithUndo(shell);
+    await expect(item.commentBox).toHaveValue('');
+});
+
+test('the item menu\'s "Close as not planned", with a comment typed, posts it, then closes the issue as not planned', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Not something we will do.');
+    await item.menuButton.click();
+    await page.getByRole('menuitem', { name: /^Close issue/ }).click();
+    await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED', comments: ['Not something we will do.'] });
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expect(item.commentBox).toHaveValue('');
+});
+
 test('a comment typed in one item is kept while the user looks at another', async ({ page, github }) => {
     const sample = createSampleEditableWork();
     const { myWork } = await openMyWork(page, github, sample.world);

@@ -432,7 +432,7 @@ function getEditCommands(): Command[] {
     now: props.now,
     stateOptions: stateActions.value,
     stateTitle: getStateTitle(),
-    edit: request => emit('edit', request),
+    edit,
     merge: () => emit('merge'),
     mergeChecks: checkCounts.value,
     viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
@@ -448,7 +448,7 @@ function getEditCommands(): Command[] {
       reviewers: () => reviewsRef.value?.openPicker() ?? false,
       // Only an open issue has two ways to close: `⇧X` takes the usual one, as the composer's button does.
       state: () => {
-        emit('edit', { kind: 'close', reason: 'COMPLETED' });
+        edit({ kind: 'close', reason: 'COMPLETED' });
         return true;
       },
       status: () => projectsRef.value?.openByRole('status') ?? false,
@@ -456,6 +456,20 @@ function getEditCommands(): Command[] {
       iteration: () => projectsRef.value?.openByRole('iteration') ?? false,
     },
   });
+}
+
+/**
+ * A close of the item — by the composer's button, `⇧X` or a menu — takes what is typed in the comment box along: the
+ * comment goes first, then the close, and the box empties. A reopen leaves it.
+ */
+function edit(request: EditRequest) {
+  const body = commentDraft.value.trim();
+  if (request.kind === 'close' && body) {
+    emit('edit', { kind: 'comment', body, keptInThread: true });
+    commentDraft.value = '';
+  }
+
+  emit('edit', request);
 }
 
 function getItemCommands(): Command[] {
@@ -852,7 +866,7 @@ function getProjectOptions(): CommandOption[] {
                     :can-comment="canComment"
                     :can-close="permissions?.state === true"
                     :read-only="readOnly"
-                    @edit="emit('edit', $event)"
+                    @edit="edit"
                   />
                 </template>
               </ItemThread>

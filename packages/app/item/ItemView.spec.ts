@@ -304,6 +304,20 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
 });
 
+test('with text typed the close button reads "Close with comment": the comment goes first, then the close, and the box empties', async () => {
+    await IssueInPanel.run();
+    const { onEdit } = IssueInPanel.args;
+
+    await userEvent.fill(page.getByRole('textbox', { name: 'Comment' }), '  Fixed in #12  ');
+    await userEvent.click(page.getByRole('button', { name: 'Close with comment', exact: true }));
+
+    expect(onEdit).toHaveBeenCalledTimes(2);
+    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: 'Fixed in #12', keptInThread: true });
+    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
+    await expect.element(page.getByRole('button', { name: 'Close issue', exact: true })).toBeVisible();
+});
+
 test('the composer ends the thread and scrolls with it: nothing is pinned under the content', async () => {
     await IssueInPanel.run();
 
