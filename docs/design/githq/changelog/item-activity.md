@@ -19,7 +19,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   `$fg`, “commented 2 days ago” 12 `$fg-dim`, an “Author” chip, ⋯) and content padded 14 16 16 16, gap 10. Text `$fg`
   13.5, line height 1.6. Hidden parts show how Markdown renders: a heading (14 / 600), a bullet list, and a
   “Closes #1188” line with the reference in `$accent`.
-- [ ] `Activity / Event` (`umLcQ`): padding 4 0 4 42, gap 12; a 28 px badge (`$bg-3`, `$border`) with a 14 px icon,
+- [x] `Activity / Event` (`umLcQ`): padding 4 0 4 42, gap 12; a 28 px badge (`$bg-3`, `$border`) with a 14 px icon,
   then one line: avatar, who (12.5 / 500 `$fg`), what (`$fg-2`), an optional label, a hidden `Ref` (`tDaJo`, 12.5 /
   500 `$accent`, “#15”, new) for a referenced issue, pull request or commit, the rest (wraps under itself), and the
   time at the right. With no person (CI, a Status change made by a project workflow) the avatar and who are
@@ -29,7 +29,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   (`X0iztw`, “· edited” after the time) and a `Failed` band (`I8YLPw`) at the bottom of the card: `#F851491A` fill,
   `#F8514959` top border, padding 8 10 8 14, a red circle-alert, “Not sent: GitHub can't be reached.” (12.5 `$fg`),
   Discard and Retry (`Button / medium`).
-- [ ] `Activity / Push` (`lkjfC`): padding-left 42 so the badge sits on the rail; “mlaine pushed 3 commits”, then up
+- [x] `Activity / Push` (`lkjfC`): padding-left 42 so the badge sits on the rail; “mlaine pushed 3 commits”, then up
   to three `Activity / Commit` (`pbG2Y`) rows, then “Show N more commits” (`kt6I8`, `$accent`). A commit's message
   wraps under itself; the CI dot and the hash stay at the right.
 - [ ] `Activity / Review` (`b1us0`): the reviewer's 28 px avatar in the gutter (the head's avatar is hidden), card
@@ -56,12 +56,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   then a 36 px head line, “dkim commented on src/store/schema.ts · 2d” (author 13 / 600 `$fg`, the file in `$mono`
   12), and the thread under it (gap 6), open and resolved. `Activity / Code comment · resolved` (`NXXMN`): the same
   with the thread folded into `Activity / Resolved threads`, showing the first line of the comment.
-- [ ] `Activity / Fold` (`lshuQ`): a break in the rail with one clickable band. Padding 4 0 4 42, gap 12.
+- [x] `Activity / Fold` (`lshuQ`): a break in the rail with one clickable band. Padding 4 0 4 42, gap 12.
   `Rail break`: 28 × 48, `$bg-item` (it hides the solid rail), six 2 × 4 `$border` dashes 4 apart. `Band`, the whole
   of it the click target: `$bg-2`, `$border-2` stroke, radius 8, height 40, padding 0 14; an unfold-vertical icon and
   “Show 18 earlier events” (13 / 500 `$accent`), then what is folded, “10 commits · 3 comments · 5 other events”
   (12 `$fg-dim`, an icon each), and a chevron at the right.
-- [ ] `Activity / Fold · narrow` (`SeqKu`), for the side panel: the same with the band on two lines (“Show 18 earlier
+- [x] `Activity / Fold · narrow` (`SeqKu`), for the side panel: the same with the band on two lines (“Show 18 earlier
   events” and the chevron, then the counts) and a 64 px rail break with eight dashes.
 - [ ] `Activity / New since you looked` (`t2x5CU`): “3 new since you looked” (12 / 600 `$accent`) and an accent rule,
   indented 40.
@@ -121,12 +121,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     code thread whose comment is marked “Pending”, no reply or resolve bands, and the pending toolbar on (“1 pending
     comment · Only you can see them.”, Discard review…, Submit review… ⇧S).
 - [ ] New `Activity / Code thread · outdated` (`Tc0aE`): the excerpt's “Outdated” mark (amber history icon) on.
-- [ ] New `Activity / Thread · short` (`uKgRc`): an event and two comments, the thread drawn on screens that are about
+- [x] New `Activity / Thread · short` (`uKgRc`): an event and two comments, the thread drawn on screens that are about
   something else.
-- [ ] New `Activity / Thread · loading` (`FZHVU`): on the rail a badge with loader-circle and “Loading 4 comments and 6
+- [x] New `Activity / Thread · loading` (`FZHVU`): on the rail a badge with loader-circle and “Loading 4 comments and 6
   events from GitHub” (12.5 `$fg-dim`), then a skeleton event, a skeleton comment card and another skeleton event
   (`$bg-3` circles and bars).
-- [ ] New `Activity / Thread · failed` (`V75cQv`): a badge with an amber cloud-off on the rail and a `$bg-2` card
+- [x] New `Activity / Thread · failed` (`V75cQv`): a badge with an amber cloud-off on the rail and a `$bg-2` card
   (`$border-2`, radius 8, padding 10 14 12 14, gap 10): “The comments and events couldn't be loaded” (12.5 / 500),
   “GitHub can't be reached. The description above is from this device.” (12 `$fg-dim`), then Try again and Open on
   GitHub (`Button / medium`).
@@ -156,7 +156,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [x] Item view / stacked (`jOPlc`) and Item view / split (`a80hmX`), the issue item views of D1–D3 and every list
   screen: the composer is `Activity / Composer · issue` (was the pull request one), and the description is dkim's,
   “commented 3 days ago”, like the title (was mlaine's, 2 days ago).
-- [ ] App · Freshness, “3d · List fresh, item's comments still loading” (`d6TZng`): the thread is
+- [x] App · Freshness, “3d · List fresh, item's comments still loading” (`d6TZng`): the thread is
   `Activity / Thread · loading` (was a hand-drawn “Activity · loading” skeleton).
 
 ## Pull request screens (App · Pull request)
@@ -190,7 +190,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] F12 · A resolved thread, folded and open (`pqJ1l`): a resolved thread folded and open, in a review (top) and on
   its own (bottom).
 - [x] Rail line on F5, F9, F10 and F11 runs from the description card to the composer's avatar.
-- [ ] New F13 · Every event in the thread (`U9JZ1`): every timeline event githq shows, as `Activity / Event`s, with a
+- [x] New F13 · Every event in the thread (`U9JZ1`): every timeline event githq shows, as `Activity / Event`s, with a
   chip saying what each counts as in a fold (“commits”, “other events”) and “issues too” where an issue has it. Left,
   pull request: pushed (drawn as Activity / Push), force-pushed, assigned, unassigned, renamed, labeled, unlabeled,
   milestoned, demilestoned, review requested, review request removed, review dismissed, ready for review, converted to
@@ -226,11 +226,11 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   `#DA3633` fill — Primer's red emphasis, so the white label reaches AA). Esc, Cancel, J / K, opening another item and
   closing the item ask; Esc again keeps editing; an unchanged edit closes without a question. F15 (`BLYpR`) gains a
   third row showing it (`u1CA8R`), and its caption says so.
-- [ ] New F16 · The thread loading, empty, or not loaded (`Q2H7SU`): three columns at panel width. Loading the first
+- [x] New F16 · The thread loading, empty, or not loaded (`Q2H7SU`): three columns at panel width. Loading the first
   time: the description and the composer are there, the rail shows how many items GitHub reported and a skeleton;
   later opens come from the local copy with no skeleton. Empty: the rail runs from the description straight to the
   composer. Not loaded: `Activity / Thread · failed` on the rail; what is there stays.
-- [ ] F16 (`Q2H7SU`) corrected to what an item's detail holds: the description comes with the comments and events, not
+- [x] F16 (`Q2H7SU`) corrected to what an item's detail holds: the description comes with the comments and events, not
   with the item's row, so before the first read none of them is on the device. Loading and Not loaded hide the
   description card (`C7P6R`, `Pflvp`); the loading skeleton's first card stands for it. `Activity / Thread · failed`
   (`V75cQv`) reads “The description, comments and events couldn't be loaded” and “GitHub can't be reached, so they
@@ -253,7 +253,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   Composer: `Activity / Composer · closed`. The list's selected row (`Z9BxYw` in the list pane) is this issue:
   purple circle-check, “Sub-issue links are lost when the parent is in another repository”, mlaine/tasklet#12, mlaine's
   avatar, Done, 5m (was fitloop/webapp#1187).
-- [ ] I3 · Issue in modal · not planned and locked (`NVC4S`): mlaine/tasklet#16 “Parent links break after a transfer”
+- [x] I3 · Issue in modal · not planned and locked (`NVC4S`): mlaine/tasklet#16 “Parent links break after a transfer”
   by sren-dev, the viewer (a contributor; the sidebar's account avatar is sren-dev's, “SR” `#E8A87C`, was mlaine's).
   The thread: sren-dev's description (`Item / Body`, “commented 3 days ago”), transferred from mlaine/tasklet-mobile,
   closed as a duplicate of #12, sren-dev's comment, reopened, mlaine's comment, then one merged line “closed this as
