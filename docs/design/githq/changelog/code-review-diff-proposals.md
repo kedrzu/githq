@@ -69,7 +69,7 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   reading line's side (the hunk above for a gap below the reading line, the hunk below for one above it); a gap of 20
   or fewer opens whole. Before: a row click showed all. Hovering the row lights the arrow the click takes (D42).
 - [ ] Keyboard for gaps: no line cursor. ↓ ↑ scroll the diff by a line; E expands the gap nearest the reading line, 20
-  toward its hunk; ⇧E shows all of it. Before: the line cursor stopped on the row, ↓/↑ picked the arrow, ↵ expanded.
+  toward its hunk (⇧E was planned for all of it, but it is Re-run failed checks; see below). Before: the line cursor stopped on the row, ↓/↑ picked the arrow, ↵ expanded.
 - [ ] Diff / Gap · focused (`ioejG`): stays, as Tab focus on an arrow; its hint "↓ ↵ shows 20 below line 47" →
   "↵ shows 20 below line 47".
 - [ ] Diff / Gap · reset by a push (`PujfA`, new): "Context you expanded here was reset by the push · 134 lines" in
@@ -77,8 +77,8 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
 - [ ] CR103 (`DE6MF`): the third excerpt is "Hover: the row shows 20 toward the nearest hunk" (`rNiAV`); the fourth,
   before "Keyboard: the line cursor stops on the row", is "E: 20 toward the nearest hunk" (`DPR1z`): lines 66–67
   shown under the hunk, then the gap with 114 lines left. Caption rewritten.
-- [ ] CR29 key sheet (`upmZG`): "Line by line" ↓ ↑ → "Scroll by a line"; new row in Files, after Collapse: E ⇧E
-  "Show 20 hidden lines, or all" (`DaMeF`). Caption: C takes the current file's line at the reading line.
+- [ ] CR29 key sheet (`upmZG`): "Line by line" ↓ ↑ → "Scroll by a line"; new row in Files, after Collapse: E
+  "Show 20 more hidden lines" (`DaMeF`). Caption: C takes the current file's line at the reading line.
 - [ ] C acts on the current file's line at the reading line, or on its line nearest to it while the file is held off
   the line (D44, D32), so C, V and Space always hit the same file. Captions of CR70 and CR108 say so.
 - [ ] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
@@ -117,3 +117,7 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   the patch is in its numbers come from the hunk headers and are filled in: CR60, CR111, CR113, CR116 (whose gaps now
   read "8,112 lines above" and "53,276 lines below", so the numbers keep four digits). The bars still start where the
   code will.
+- [ ] No ⇧E for a whole gap: ⇧E is a pull request's Re-run failed checks (`PULL_REQUEST_COMMAND_KEYS`), which the
+  review keeps. E shows 20 more each time it is pressed; the command menu's "Show all hidden lines" opens the whole gap
+  nearest the reading line (D42). CR29's row (`DaMeF`) lost its ⇧E key (`VZFSa`, deleted) and reads "Show 20 more
+  hidden lines"; the captions of CR29 (`V0GWA`) and CR103 (`dj9sp`) say so.

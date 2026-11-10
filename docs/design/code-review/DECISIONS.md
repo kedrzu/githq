@@ -565,7 +565,7 @@ filters, C comments on the line under the cursor, R replies to the focused threa
 submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
 There is no line cursor: ↓ ↑ scroll the diff by a line, and C takes the current file's line at the reading line
-(D44), so C, V and Space always act on the same file; E and ⇧E open the hidden lines nearest it (D42). (owner,
+(D44), so C, V and Space always act on the same file; E opens the hidden lines nearest it (D42). (owner,
 2026-11-10; CR29)
 
 A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
@@ -714,10 +714,11 @@ the nearest hunk, the one on the reading line's side (D44): the hunk above for a
 below for one above it; a gap of 20 or fewer opens whole. The row carries the enclosing declaration only when it is a
 real one (a class, function or method signature), never a comment opener or a brace, and no hunk header: our hunks
 are not git's (D6), so its numbers would not match github.com's. The gap at the top of a file has only ↑, the one at
-its end only ↓. From the keyboard, E expands the gap nearest the reading line, 20 toward its hunk, and ⇧E shows all of
-it. Hover lights the arrow under the pointer, or on the rest of the row the arrow a click takes; Tab focus outlines it
+its end only ↓. From the keyboard, E expands the gap nearest the reading line, 20 toward its hunk each time it is pressed, and
+"Show all hidden lines" in the command menu opens all of it; ⇧E stays Re-run failed checks, a pull request's key
+that the review keeps. Hover lights the arrow under the pointer, or on the rest of the row the arrow a click takes; Tab focus outlines it
 in accent. A push that changes the file resets what was expanded in it (D14), and its gaps say so once (CR62).**
-(2026-11-10, owner's pick of the agent's second variant; row click, E ⇧E and no hunk header by the owner the same
+(2026-11-10, owner's pick of the agent's second variant; row click, E and no hunk header by the owner the same
 day; CR103; replaces D29's "Show 20 · Show all")
 
 **Rejected.**

@@ -316107,7 +316107,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "? lists them. Nothing new for J and K; [ ] for files and N ⇧N for threads; x { } select as in the brief; V ticks; ↓ ↑ scroll by a line; E shows 20 hidden lines of the gap nearest the reading line and ⇧E all of it (D42); C comments on the current file's line at the reading line, a third down (D44), and R replies to the focused thread. The two columns take VS Code's ⌘B and ⌥⌘B.",
+                      "content": "? lists them. Nothing new for J and K; [ ] for files and N ⇧N for threads; x { } select as in the brief; V ticks; ↓ ↑ scroll by a line; E shows 20 more hidden lines of the gap nearest the reading line each time it's pressed, the whole gap from the command menu (D42; ⇧E stays Re-run failed checks); C comments on the current file's line at the reading line, a third down (D44), and R replies to the focused thread. The two columns take VS Code's ⌘B and ⌥⌘B.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -317769,17 +317769,6 @@
                                               "content": "E"
                                             }
                                           }
-                                        },
-                                        {
-                                          "id": "VZFSa",
-                                          "type": "ref",
-                                          "ref": "w9kS9",
-                                          "name": "Kbd ⇧E",
-                                          "descendants": {
-                                            "luKkY": {
-                                              "content": "⇧E"
-                                            }
-                                          }
                                         }
                                       ]
                                     },
@@ -317788,7 +317777,7 @@
                                       "id": "o4e3tG",
                                       "name": "Label",
                                       "fill": "$fg-2",
-                                      "content": "Show 20 hidden lines, or all",
+                                      "content": "Show 20 more hidden lines",
                                       "fontFamily": "$font",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
@@ -346028,7 +346017,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "As github.com: in the gutter, ↓ shows 20 lines below the hunk above and ↑ 20 above the hunk below; a gap of 20 or fewer has one ↕ for all of it. A click on the rest of the row shows 20 toward the nearest hunk, the one on the reading line's side (D44), and hovering the row lights the arrow it will take. The enclosing declaration sits in the row only when it's a real one; no hunk header, since our hunks aren't git's (D6). Top of the file has only ↑, the end only ↓. E expands the gap nearest the reading line, 20 toward its hunk; ⇧E shows all of it.",
+                      "content": "As github.com: in the gutter, ↓ shows 20 lines below the hunk above and ↑ 20 above the hunk below; a gap of 20 or fewer has one ↕ for all of it. A click on the rest of the row shows 20 toward the nearest hunk, the one on the reading line's side (D44), and hovering the row lights the arrow it will take. The enclosing declaration sits in the row only when it's a real one; no hunk header, since our hunks aren't git's (D6). Top of the file has only ↑, the end only ↓. E expands the gap nearest the reading line, 20 toward its hunk each time it's pressed; \"Show all hidden lines\" in the command menu opens all of it.",
                       "lineHeight": 1.5,
                       "fontFamily": "$font",
                       "fontSize": 12.5,
