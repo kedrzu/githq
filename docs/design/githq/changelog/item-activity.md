@@ -32,27 +32,27 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [x] `Activity / Push` (`lkjfC`): padding-left 42 so the badge sits on the rail; “mlaine pushed 3 commits”, then up
   to three `Activity / Commit` (`pbG2Y`) rows, then “Show N more commits” (`kt6I8`, `$accent`). A commit's message
   wraps under itself; the CI dot and the hash stay at the right.
-- [ ] `Activity / Review` (`b1us0`): the reviewer's 28 px avatar in the gutter (the head's avatar is hidden), card
+- [x] `Activity / Review` (`b1us0`): the reviewer's 28 px avatar in the gutter (the head's avatar is hidden), card
   with a 36 px head (author 13 / 600, verdict, time, “2 threads · 1 resolved”), body padded 14 16 16 16, gap 14: the
   summary (`ZCoSV`, `$fg` 13.5, line height 1.6), then each code thread, then the resolved threads folded. Hidden
   `Pending toolbar` (`TFpRb`, an instance of `Review / Pending toolbar`) at the bottom of the card.
-- [ ] `Activity / Code thread` (`BGMhn`): one card (`$bg`, `$border-2`, radius 8): the code excerpt
+- [x] `Activity / Code thread` (`BGMhn`): one card (`$bg`, `$border-2`, radius 8): the code excerpt
   (`Activity / Code excerpt`, `VAMmB`) and the comments (padding 12, gap 10), then a `$bg-2` band with your avatar
   (the viewer: “ML” `#C9A26B` on these screens, was “MK”) and the “Reply…” field (R), then a band with a
   `Button / medium` “Resolve thread” (green check). Hidden `Resolved head` (chevron, check, “Resolved” 12.5 / 500,
   “Hide” `$accent` at the right) and hidden `Status` text next to the button.
-- [ ] `Activity / Code thread · resolved` (`GlhsY`): resolved head on, the button reads “Unresolve” (rotate-ccw),
+- [x] `Activity / Code thread · resolved` (`GlhsY`): resolved head on, the button reads “Unresolve” (rotate-ccw),
   followed by “mlaine marked this thread as resolved.”; the reply band stays.
-- [ ] `Activity / Code thread · replying` (`phPkk`): “Reply…” opens `Activity / Editor` in the reply band, inside the
+- [x] `Activity / Code thread · replying` (`phPkk`): “Reply…” opens `Activity / Editor` in the reply band, inside the
   card (Cancel with Esc, Reply with ⌘↵); it grows downwards and nothing above moves. Resolve stays below. The band's
   avatar is the viewer (“ML”, was “MK”) and the reply reads “And 4a1c9e2 adds a base in another repository to the e2e,
   so it can't come back.” (was a reply from another pull request).
-- [ ] `Activity / Resolved threads` (`mrRDc`): a resolved thread folds by default into one clickable row: `$bg`,
+- [x] `Activity / Resolved threads` (`mrRDc`): a resolved thread folds by default into one clickable row: `$bg`,
   `$border-2` stroke, radius 8, height 40, padding 0 12, gap 8: chevron-right, green check, “Resolved” (12.5 / 500
   `$fg-2`), the file in `$mono` 11.5, the participants' avatars, “2 comments”, and “Show” in `$accent`. A hidden
   `Excerpt` (the comment's first line) replaces the file where the file is already known. It opens to
   `Activity / Code thread · resolved`. Activity / Review uses it.
-- [ ] `Activity / Code comment` (`cwCtr`): a code thread posted on its own, without a review. Avatar in the gutter,
+- [x] `Activity / Code comment` (`cwCtr`): a code thread posted on its own, without a review. Avatar in the gutter,
   then a 36 px head line, “dkim commented on src/store/schema.ts · 2d” (author 13 / 600 `$fg`, the file in `$mono`
   12), and the thread under it (gap 6), open and resolved. `Activity / Code comment · resolved` (`NXXMN`): the same
   with the thread folded into `Activity / Resolved threads`, showing the first line of the comment.
@@ -111,7 +111,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   - `Activity / Mention menu` (`w5xhn`), 280 wide: “People”, then avatar, login and name per row.
   - `Activity / Reference menu` (`eKbTa`), 480 wide: “Issues and pull requests in mlaine/tasklet”, then a state
     icon, the number in `$mono` and the title per row.
-- [ ] New review variants of `Activity / Review`:
+- [x] New review variants of `Activity / Review`:
   - `Activity / Review · approved` (`I99H9c`): dkim, “approved” in `$green`, a summary, no threads.
   - `Activity / Review · commented` (`YKqKB`): “reviewed” in `$fg-dim`, a summary and one thread opened by dkim.
   - `Activity / Review · commented, no summary` (`DwBhj`): the same without the summary.
@@ -120,7 +120,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   - `Activity / Review · pending` (`PwdqU`): “Your review”, “pending” in `$amber`, the card's border `#D2992280`, one
     code thread whose comment is marked “Pending”, no reply or resolve bands, and the pending toolbar on (“1 pending
     comment · Only you can see them.”, Discard review…, Submit review… ⇧S).
-- [ ] New `Activity / Code thread · outdated` (`Tc0aE`): the excerpt's “Outdated” mark (amber history icon) on.
+- [x] New `Activity / Code thread · outdated` (`Tc0aE`): the excerpt's “Outdated” mark (amber history icon) on.
 - [x] New `Activity / Thread · short` (`uKgRc`): an event and two comments, the thread drawn on screens that are about
   something else.
 - [x] New `Activity / Thread · loading` (`FZHVU`): on the rail a badge with loader-circle and “Loading 4 comments and 6
@@ -130,7 +130,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   (`$border-2`, radius 8, padding 10 14 12 14, gap 10): “The comments and events couldn't be loaded” (12.5 / 500),
   “GitHub can't be reached. The description above is from this device.” (12 `$fg-dim`), then Try again and Open on
   GitHub (`Button / medium`).
-- [ ] Comment and review summary text in the thread: `$fg` (was `$fg-2`), 13.5, line height 1.6.
+- [x] Comment and review summary text in the thread: `$fg` (was `$fg-2`), 13.5, line height 1.6.
 - [ ] Text links that do something are `$accent` (were `$fg-dim` or `$fg-2`): “Show N more commits” (`kt6I8`), “Show
   the whole description” in Review / Conversation (`c05P2`), “Hide” on a resolved code thread (`V3M4mU`), “Log” and its
   arrow in Item / Checks (`ujCTy`, `SQWpM`, `DiElt`, `VTG3K`), “Request” in Item / Reviews (`pu5lX`).
@@ -182,12 +182,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] F9 · PR in panel · the thread (`r9heB`): the same thread in the 560 px panel, with `Activity / Fold · narrow`.
   The description is this pull request's (“Moves issues, pull requests and project items into IndexedDB…”, was an
   issue's), 4 days ago; the title says 4 days; no “opened this pull request” event.
-- [ ] F10 · PR full page · replying in a thread (`ToA4h`): a reply being written in the review's code thread (its text
+- [x] F10 · PR full page · replying in a thread (`ToA4h`): a reply being written in the review's code thread (its text
   now about this pull request), and the resolved thread opened. Same order and times as F5, no “opened” event. Screen
   height 2303.
 - [x] F11 · PR in panel · writing a comment (`VNBoD`): the panel scrolled to the end, with a comment being written
   (“Close with comment”).
-- [ ] F12 · A resolved thread, folded and open (`pqJ1l`): a resolved thread folded and open, in a review (top) and on
+- [x] F12 · A resolved thread, folded and open (`pqJ1l`): a resolved thread folded and open, in a review (top) and on
   its own (bottom).
 - [x] Rail line on F5, F9, F10 and F11 runs from the description card to the composer's avatar.
 - [x] New F13 · Every event in the thread (`U9JZ1`): every timeline event githq shows, as `Activity / Event`s, with a
@@ -213,7 +213,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     event on this screen, a merged line once).
   - Never shown: subscribed, unsubscribed, mentioned, deployments, comment deleted, and automatic events with no
     person except CI and an automated Status change.
-- [ ] New F14 · Reviews in the thread (`l01YB`): approved, commented with and without a summary, dismissed (folded,
+- [x] New F14 · Reviews in the thread (`l01YB`): approved, commented with and without a summary, dismissed (folded,
   followed by “mlaine dismissed sofiab's review: Addressed in 3f2a9b1”), your pending review (at the end of the thread,
   above the composer; only you see it), and an outdated code thread on its own.
 - [x] New F15 · A comment's ⋯ menu, and editing in place (`BLYpR`): the menu open on your own comment (from ⋯ or a right
@@ -256,7 +256,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     modal the first Esc leaves the box, the next closes the item.
 - [x] F15's caption (`o9BXr`): a right click opens the card's menu outside its text; on the text GitHub rendered the
   browser's menu stays, as everywhere GitHub's rendering shows (GitHub links, #247).
-- [ ] Code threads brought in line with what was built:
+- [x] Code threads brought in line with what was built:
   - F10's caption (`WEgWr`): the reply box is code review's own, so its ⌘↵ button says what it does there — Reply, Add to
     draft while your review draft is open, or Start a review when your setting puts replies into a review first; a
     changed reply asks before it is discarded, as an edit does; a refused resolve says why in the band; a code thread
