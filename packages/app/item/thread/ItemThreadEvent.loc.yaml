@@ -138,14 +138,6 @@ pinned:
   en: pinned this issue
 unpinned:
   en: unpinned this issue
-markedAsDuplicate:
-  en: marked this as a duplicate of {ref}
-markedAsCanonical:
-  en: marked {ref} as a duplicate of this
-unmarkedAsDuplicate:
-  en: unmarked this as a duplicate of {ref}
-unmarkedAsCanonical:
-  en: unmarked {ref} as a duplicate of this
 checksFailed:
   en: '{failed} of {total} checks failed on {commit}: {names}'
 ci:

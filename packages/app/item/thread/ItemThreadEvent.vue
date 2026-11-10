@@ -269,21 +269,6 @@ function renderEvent(event: SingleThreadEvent, after: boolean): VNodeChild[] {
       }
 
       return say(after ? l.lockedAfter : l.locked);
-    case 'markedAsDuplicate':
-    case 'unmarkedAsDuplicate': {
-      // Seen from the issue it is a duplicate of, the other one is the duplicate.
-      const canonical = event.canonical?.id === props.item.id;
-      const other = canonical ? event.duplicate : event.canonical;
-      const key =
-        event.kind === 'markedAsDuplicate'
-          ? canonical
-            ? l.markedAsCanonical
-            : l.markedAsDuplicate
-          : canonical
-            ? l.unmarkedAsCanonical
-            : l.unmarkedAsDuplicate;
-      return sayWith(key, { ref: other ? renderRef(other) : '' });
-    }
     default:
       return assertNever(event);
   }
@@ -462,9 +447,6 @@ function getEventLook(event: SingleThreadEvent): EventLook {
       return { icon: Pin, tone: 'muted' };
     case 'unpinned':
       return { icon: PinOff, tone: 'muted' };
-    case 'markedAsDuplicate':
-    case 'unmarkedAsDuplicate':
-      return { icon: Copy, tone: 'muted' };
     default:
       return assertNever(event);
   }

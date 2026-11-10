@@ -408,14 +408,6 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
             return { ...toEventBase(node), kind: 'pinned' };
         case 'UnpinnedEvent':
             return { ...toEventBase(node), kind: 'unpinned' };
-        case 'MarkedAsDuplicateEvent':
-        case 'UnmarkedAsDuplicateEvent':
-            return {
-                ...toEventBase(node),
-                kind: node.__typename === 'MarkedAsDuplicateEvent' ? 'markedAsDuplicate' : 'unmarkedAsDuplicate',
-                canonical: node.canonical && toThreadRef(node.canonical),
-                duplicate: node.duplicate && toThreadRef(node.duplicate),
-            };
         // Not read (`THREAD_EVENT_TYPES`): comments, reviews and code threads come apart, the rest githq never shows.
         case 'AddedToMergeQueueEvent':
         case 'AddedToProjectEvent':
@@ -445,6 +437,7 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'IssueFieldAddedEvent':
         case 'IssueFieldChangedEvent':
         case 'IssueFieldRemovedEvent':
+        case 'MarkedAsDuplicateEvent':
         case 'MentionedEvent':
         case 'MovedColumnsInProjectEvent':
         case 'PullRequestCommitCommentThread':
@@ -455,6 +448,7 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'RemovedFromProjectEvent':
         case 'RemovedFromStackEvent':
         case 'SubscribedEvent':
+        case 'UnmarkedAsDuplicateEvent':
         case 'UnsubscribedEvent':
         case 'UserBlockedEvent':
             return null;

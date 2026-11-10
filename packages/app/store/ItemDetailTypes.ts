@@ -224,11 +224,7 @@ export type ThreadEvent =
           }
       >
     | ThreadEventOf<'transferred', { /** `owner/name`; `null` when it is gone. */ readonly from: string | null }>
-    | ThreadEventOf<'locked', { readonly reason: LockReason | null }>
-    | ThreadEventOf<
-          'markedAsDuplicate' | 'unmarkedAsDuplicate',
-          { readonly canonical: ThreadRef | null; readonly duplicate: ThreadRef | null }
-      >;
+    | ThreadEventOf<'locked', { readonly reason: LockReason | null }>;
 
 /** What every event but a commit has. */
 type ThreadEventOf<TKind extends string, TFields extends object> = {

@@ -763,10 +763,6 @@ function getUndoKey(event: SingleThreadEvent): UndoKey | null {
             return event.project && { undoneBy: 'removedFromProject', thing: event.project.url };
         case 'removedFromProject':
             return event.project && { undoneBy: 'addedToProject', thing: event.project.url };
-        case 'markedAsDuplicate':
-            return event.canonical && { undoneBy: 'unmarkedAsDuplicate', thing: event.canonical.id };
-        case 'unmarkedAsDuplicate':
-            return event.canonical && { undoneBy: 'markedAsDuplicate', thing: event.canonical.id };
         case 'pinned':
             return { undoneBy: 'unpinned', thing: '' };
         case 'unpinned':
