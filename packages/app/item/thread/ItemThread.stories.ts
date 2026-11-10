@@ -3,8 +3,10 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { IssueDetail, ItemComment } from '@/store/ItemDetailTypes.js';
+import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { CHANGES_REQUESTED_REVIEW, DB_THREAD, REVIEW_VIEWER, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
 import { F5_PULL_REQUEST, F5_PULL_REQUEST_DETAIL, I1_ISSUE, I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
@@ -224,6 +226,39 @@ export const Empty: Story = {
 
 /** F16, right: GitHub did not give the thread — no description card; why, Try again and Open on GitHub. */
 export const Failed: Story = { args: { detail: null, failed: true, readAgain: fn(() => Promise.resolve()) } };
+
+/**
+ * F12: the pull request with sofiab's review — its open thread on `src/store/db.ts` with Reply… and Resolve thread, its
+ * resolved one folded — written through code review's writing (here one that keeps its boxes in memory).
+ */
+export const CodeThreads: Story = {
+    args: {
+        item: F1_PULL_REQUEST,
+        detail: {
+            ...F1_PULL_REQUEST_DETAIL,
+            reviewSummaries: [...F1_PULL_REQUEST_DETAIL.reviewSummaries, CHANGES_REQUESTED_REVIEW.review],
+        },
+        viewer: REVIEW_VIEWER,
+        people: [REVIEW_VIEWER],
+        reviewThreads: [DB_THREAD, SCHEMA_THREAD],
+        reviewWriting: new FakeReviewWriting(),
+    },
+    parameters: ON_PAGE,
+};
+
+/** F10, `Activity / Code thread · replying`: Reply… opened the editor in the thread's band, Cancel and Reply. */
+export const CodeThreadReplying: Story = {
+    args: { ...CodeThreads.args, reviewWriting: new FakeReviewWriting() },
+    parameters: ON_PAGE,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(await canvas.findByRole('button', { name: 'Reply…' }));
+        await userEvent.type(
+            await canvas.findByRole('textbox', { name: 'Reply' }),
+            'And 4a1c9e2 adds a base in another repository to the e2e.',
+        );
+    },
+};
 
 /** I1's thread with 16 more comments by sofiab, an hour apart, after its events. */
 function longThread(): IssueDetail {

@@ -599,6 +599,20 @@ test('the oldest review with a thread still open stays below the fold; one all r
     expect(foldOf(built)).toEqual(fold({ comments: 9 }));
 });
 
+test('a review whose resolved thread holds a reply being written is never folded away', () => {
+    const comments = Array.from({ length: 24 }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 1));
+    const detail: ItemDetail = {
+        ...pullRequestDetail([], comments),
+        reviewSummaries: [review('R0', DKIM, 'COMMENTED', 9.5, '<p>Settled.</p>')],
+    };
+    const reviewThreads = [reviewThread('T0', [threadComment('T0-0', DKIM, 9.5, 'R0')], { isResolved: true })];
+
+    expect(idsOf(buildThread({ detail, reviewThreads }))).not.toContain('R0');
+    const built = buildThread({ detail, reviewThreads, keepShown: new Set(['T0']) });
+
+    expect(idsOf(built)).toEqual(['C1', 'C2', 'fold', 'R0', ...comments.slice(9).map(entry => entry.id)]);
+});
+
 test('asking for a review someone already gave asks for another review; a remove cancels either', () => {
     const detail: ItemDetail = {
         ...pullRequestDetail(

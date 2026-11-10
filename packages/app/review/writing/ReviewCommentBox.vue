@@ -11,9 +11,11 @@ import Button from '@/components/Button.vue';
 import TextArea from '@/components/TextArea.vue';
 
 import { REVIEW_KEYS } from '../useReviewKeySheet.js';
+import { getCommentWays } from './getCommentWays.js';
 import * as l from './ReviewCommentBox.loc.js';
 import ReviewFailureNote from './ReviewFailureNote.vue';
 import type { ReviewCommentFailure, ReviewCommentTarget, ReviewCommentWay } from './ReviewWriting.js';
+import { useCommentFailureText } from './useCommentFailureText.js';
 
 const props = defineProps<{
   target: ReviewCommentTarget;
@@ -48,6 +50,7 @@ const emit = defineEmits<{
 const text = defineModel<string>('text', { default: '' });
 
 const t = useTranslate();
+const getFailureText = useCommentFailureText();
 const field = useTemplateRef<InstanceType<typeof TextArea>>('field');
 
 const isReply = computed(() => props.target.threadId !== null);
@@ -60,41 +63,10 @@ const where = computed(() => {
   return startLine === null ? t(l.onLine, { line }) : t(l.onLines, { start: startLine, end: line });
 });
 const hasText = computed(() => text.value.trim() !== '');
-const first = computed((): { way: ReviewCommentWay; label: string } => {
-  if (props.draftOpen) {
-    return { way: 'joinDraft', label: t(l.addToDraft) };
-  }
-
-  return props.draftFirst
-    ? { way: 'startDraft', label: t(l.startReview) }
-    : { way: 'single', label: isReply.value ? t(l.reply) : t(l.comment) };
-});
-const second = computed((): { way: ReviewCommentWay; label: string } => {
-  if (props.draftOpen) {
-    return { way: 'joinAndSubmit', label: t(l.submitDraft, { count: props.draftCount + 1 }) };
-  }
-
-  return props.draftFirst
-    ? { way: 'single', label: isReply.value ? t(l.replyNow) : t(l.commentNow) }
-    : { way: 'startDraft', label: t(l.startReview) };
-});
-const failureText = computed(() => {
-  const { failure } = props;
-  switch (failure?.kind) {
-    case undefined:
-      return null;
-    case 'refused':
-      return failure.message === null ? t(l.refusedNoReason) : t(l.refused, { reason: failure.message });
-    case 'notReached':
-      return t(l.notReached);
-    case 'noDraft':
-      return t(l.noDraft);
-    case 'draftFound':
-      return t(l.draftFound);
-    default:
-      return assertNever(failure);
-  }
-});
+const ways = computed(() => getCommentWays(props.draftOpen, props.draftFirst));
+const first = computed(() => ({ way: ways.value.first, label: getLabel(ways.value.first) }));
+const second = computed(() => ({ way: ways.value.second, label: getLabel(ways.value.second) }));
+const failureText = computed(() => (props.failure ? getFailureText(props.failure) : null));
 
 onMounted(takeFocus);
 watch(() => props.focused, takeFocus);
@@ -103,6 +75,25 @@ watch(() => props.focused, takeFocus);
 function takeFocus() {
   if (props.focused) {
     field.value?.focus({ preventScroll: true });
+  }
+}
+
+function getLabel(way: ReviewCommentWay) {
+  switch (way) {
+    case 'single':
+      if (props.draftFirst) {
+        return isReply.value ? t(l.replyNow) : t(l.commentNow);
+      }
+
+      return isReply.value ? t(l.reply) : t(l.comment);
+    case 'startDraft':
+      return t(l.startReview);
+    case 'joinDraft':
+      return t(l.addToDraft);
+    case 'joinAndSubmit':
+      return t(l.submitDraft, { count: props.draftCount + 1 });
+    default:
+      return assertNever(way);
   }
 }
 

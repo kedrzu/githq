@@ -127,8 +127,10 @@ const props = withDefaults(
     failedEdits?: readonly FailedTextEdit[];
     /** A pull request's review threads, as code review reads them: its thread's reviews hold them. */
     reviewThreads?: readonly ReviewThread[];
-    /** Code review's writing of the pull request: the viewer's draft review in the thread finishes through it. */
+    /** Code review's writing of the pull request: the viewer's draft review, replies and resolving go through it. */
     reviewWriting?: ReviewWriting | null;
+    /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
+    reviewDraftFirst?: boolean;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -908,6 +910,7 @@ function getProjectOptions(): CommandOption[] {
                 :people="threadPeople"
                 :review-threads="reviewThreads"
                 :review-writing="reviewWriting"
+                :review-draft-first="reviewDraftFirst"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
                 @edit="emit('edit', $event)"

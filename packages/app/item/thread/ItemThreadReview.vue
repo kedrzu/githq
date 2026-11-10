@@ -8,6 +8,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 
 import GitHubHtml from '../GitHubHtml.vue';
 import type { ThreadReview } from './buildThread.js';
+import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import * as l from './ItemThreadReview.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
@@ -19,6 +20,8 @@ const props = defineProps<{
   now: number;
   /** Who is signed in: the reply bands' avatar. */
   viewer?: ItemUser | null;
+  /** The viewer's replies in its threads; a resolved one being replied to shows opened. */
+  replies?: CodeThreadReplies | null;
 }>();
 
 const emit = defineEmits<{
@@ -60,7 +63,13 @@ const counts = computed(() => {
   const all = t(l.threads, { count: total });
   return resolved.length === 0 ? all : t(l.threadsResolved, { threads: all, resolved: resolved.length });
 });
-const bodyShown = computed(() => !dismissed.value || shown.value);
+/** A dismissed review shows once opened, or while a reply is written in one of its threads. */
+const bodyShown = computed(
+  () =>
+    !dismissed.value ||
+    shown.value ||
+    [...props.entry.threads, ...props.entry.resolved].some(thread => props.replies?.get(thread.id)),
+);
 
 function getDismissedText(before: ThreadReview['dismissedFrom']) {
   switch (before) {
@@ -127,6 +136,7 @@ function setOpened(id: string, open: boolean) {
           :key="thread.id"
           :thread="thread"
           :viewer="viewer"
+          :replies="replies"
           @reply="emit('reply', thread.id)"
           @set-resolved="emit('setResolved', thread.id, $event)"
         />
@@ -135,9 +145,10 @@ function setOpened(id: string, open: boolean) {
           :key="thread.id"
         >
           <ItemThreadCodeThread
-            v-if="opened.has(thread.id)"
+            v-if="opened.has(thread.id) || replies?.get(thread.id)"
             :thread="thread"
             :viewer="viewer"
+            :replies="replies"
             @hide="setOpened(thread.id, false)"
             @reply="emit('reply', thread.id)"
             @set-resolved="emit('setResolved', thread.id, $event)"

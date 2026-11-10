@@ -1,0 +1,8 @@
+resolveFailed:
+  en: "Couldn't resolve it: {reason}"
+unresolveFailed:
+  en: "Couldn't open it again: {reason}"
+notReached:
+  en: GitHub wasn't reached.
+noReason:
+  en: GitHub gave no reason.

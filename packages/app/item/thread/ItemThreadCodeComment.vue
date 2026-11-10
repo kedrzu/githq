@@ -8,6 +8,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import type { ThreadCodeComment } from './buildThread.js';
+import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import * as l from './ItemThreadCodeComment.loc.js';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 import ItemThreadResolvedRow from './ItemThreadResolvedRow.vue';
@@ -18,6 +19,8 @@ const props = defineProps<{
   now: number;
   /** Who is signed in: the reply band's avatar. */
   viewer?: ItemUser | null;
+  /** The viewer's replies in the thread; resolved, being replied to, it shows opened. */
+  replies?: CodeThreadReplies | null;
 }>();
 
 const emit = defineEmits<{
@@ -58,7 +61,7 @@ const age = computed(() => (first.value ? formatAge(Date.parse(first.value.creat
         >
       </p>
       <ItemThreadResolvedRow
-        v-if="entry.thread.isResolved && !opened"
+        v-if="entry.thread.isResolved && !opened && !replies?.get(entry.thread.id)"
         :thread="entry.thread"
         excerpt
         @click="opened = true"
@@ -67,6 +70,7 @@ const age = computed(() => (first.value ? formatAge(Date.parse(first.value.creat
         v-else
         :thread="entry.thread"
         :viewer="viewer"
+        :replies="replies"
         @hide="opened = false"
         @reply="emit('reply')"
         @set-resolved="emit('setResolved', $event)"

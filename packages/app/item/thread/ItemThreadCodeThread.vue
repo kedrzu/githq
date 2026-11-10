@@ -1,4 +1,4 @@
-<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. -->
+<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
@@ -8,9 +8,15 @@ import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import ReviewThreadComment from '@/review/threads/ReviewThreadComment.vue';
+import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
+import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
+import { useCommentFailureText } from '@/review/writing/useCommentFailureText.js';
+import { useResolveFailureText } from '@/review/writing/useResolveFailureText.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
+import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import * as l from './ItemThreadCodeThread.loc.js';
+import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadExcerpt from './ItemThreadExcerpt.vue';
 
 const props = defineProps<{
@@ -19,6 +25,8 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** In the viewer's draft review: no reply or resolve. */
   draft?: boolean;
+  /** The viewer's replies and what writes them; none, "Reply…" only says it was clicked. */
+  replies?: CodeThreadReplies | null;
 }>();
 
 const emit = defineEmits<{
@@ -31,6 +39,8 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const getCommentFailureText = useCommentFailureText();
+const getResolveFailureText = useResolveFailureText();
 
 const who = computed(() => props.thread.comments[0]?.author?.login ?? t(l.ghost));
 const canReply = computed(() => !props.draft && props.thread.viewerCanReply);
@@ -40,6 +50,12 @@ const canToggle = computed(
 /** Who resolved it, when GitHub says. */
 const resolver = computed(() => (props.thread.isResolved ? props.thread.resolvedBy : null));
 const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
+const reply = computed(() => props.replies?.get(props.thread.id) ?? null);
+const box = computed(() => reply.value?.box ?? null);
+const resolveFailure = computed(() => {
+  const failure = props.replies?.getResolveFailure(props.thread.id) ?? null;
+  return failure && getResolveFailureText(failure, props.thread.isResolved);
+});
 </script>
 
 <template>
@@ -47,6 +63,8 @@ const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
     role="group"
     :aria-label="t(l.label, { who, path: thread.path })"
     :class="css.itemThreadCodeThread"
+    :data-code-thread="thread.id"
+    tabindex="-1"
   >
     <p
       v-if="thread.isResolved"
@@ -78,17 +96,48 @@ const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
         :key="comment.id"
         :comment="comment"
       />
+      <ReviewSentComment
+        v-for="sent in reply?.sent ?? []"
+        :key="sent.id"
+        :status="sent.status"
+        :author="viewer ?? null"
+      />
     </div>
     <div
       v-if="canReply"
-      :class="css.itemThreadCodeThread_reply"
+      :class="[css.itemThreadCodeThread_reply, box && css.itemThreadCodeThread_reply_open]"
     >
       <Avatar
         :name="viewerLogin"
         :src="viewer?.avatarUrl"
         decorative
       />
+      <div
+        v-if="box && replies"
+        :class="css.itemThreadCodeThread_replyBox"
+      >
+        <ItemThreadEditor
+          :text="box.text"
+          kind="reply"
+          :save-label="replies.saveLabel"
+          :repository="replies.repository"
+          :item-number="replies.itemNumber"
+          :people="replies.people"
+          :autofocus="box.focused"
+          :changed="box.changed"
+          :asking="box.asking"
+          @update:text="replies.setText(thread.id, $event)"
+          @update:asking="replies.setAsking(thread.id, $event)"
+          @save="replies.send(thread.id)"
+          @cancel="replies.cancel(thread.id)"
+        />
+        <ReviewFailureNote
+          v-if="box.failure"
+          :text="getCommentFailureText(box.failure)"
+        />
+      </div>
       <Button
+        v-else
         :class="css.itemThreadCodeThread_replyField"
         variant="field"
         size="compact"
@@ -99,7 +148,7 @@ const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
       </Button>
     </div>
     <div
-      v-if="canToggle || resolver"
+      v-if="canToggle || resolver || resolveFailure"
       :class="css.itemThreadCodeThread_actions"
     >
       <Button
@@ -116,12 +165,18 @@ const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
         :class="css.itemThreadCodeThread_status"
         >{{ t(l.resolvedBy, { who: resolver.login }) }}</span
       >
+      <ReviewFailureNote
+        v-if="resolveFailure"
+        :text="resolveFailure"
+      />
     </div>
   </div>
 </template>
 
 <style lang="scss" module="css">
 .itemThreadCodeThread {
+  @include focus-ring;
+
   min-width: 0;
   overflow: hidden;
   background: $color-bg;
@@ -193,6 +248,20 @@ const viewerLogin = computed(() => props.viewer?.login ?? t(l.ghost));
   padding: $spacing-8 $spacing-12;
   background: $color-bg-2;
   border-top: 1px solid $color-border;
+}
+
+// The editor open: the avatar level with its head, the band growing downwards.
+.itemThreadCodeThread_reply_open {
+  align-items: flex-start;
+  padding: $spacing-10 $spacing-12;
+}
+
+.itemThreadCodeThread_replyBox {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: $spacing-6;
+  min-width: 0;
 }
 
 // Twice the class: the button's own look comes from a stylesheet that may load after this one.

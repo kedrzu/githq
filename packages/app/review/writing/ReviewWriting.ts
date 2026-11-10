@@ -42,6 +42,10 @@ export type ReviewCommentFailure =
 export type ReviewCommentStatus =
     | { readonly kind: 'editing' }
     | { readonly kind: 'failed'; readonly failure: ReviewCommentFailure }
+    | ReviewSentStatus;
+
+/** A comment box sent: it shows as the comment, not the box. */
+export type ReviewSentStatus =
     /** Shows as a comment at once (`AGENTS.md`), its text still kept until GitHub answers. */
     | { readonly kind: 'sending'; readonly way: ReviewCommentWay; readonly body: string }
     /** GitHub took it: it shows like this until the threads read again have it. */

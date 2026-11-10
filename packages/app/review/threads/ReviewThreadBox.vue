@@ -1,7 +1,6 @@
 <!-- A review thread's box (`Review / Thread`): its comments, under an amber "Outdated" head saying how it was placed (D30). Resolved it is one 32 px line whatever else, with who, the first line and how many comments, and that line opens it; opened, the comments follow. The accent edge says it is the thread N and ⇧N are at (D32). Under the comments, what the viewer may do: Reply…, or "Add to your draft…" in a thread holding a pending comment, which `R` also does on the focused one, gives way while its box is open under the thread, and Resolve, or Unresolve on one opened (CR74). A change of state GitHub didn't take says so here, in the state it went back to. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { ChevronDown, ChevronUp, CircleCheck, History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -15,6 +14,7 @@ import type { ReviewThread } from './ReviewThread.js';
 import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import ReviewFailureNote from '../writing/ReviewFailureNote.vue';
 import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
+import { useResolveFailureText } from '../writing/useResolveFailureText.js';
 
 const props = defineProps<{
   thread: ReviewThread;
@@ -37,26 +37,16 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const getFailureText = useResolveFailureText();
 
 const first = computed(() => props.thread.comments[0] ?? null);
 const who = computed(() => first.value?.author?.login ?? t(l.ghost));
 const firstLine = computed(() => getHtmlFirstLine(first.value?.bodyHTML ?? ''));
 /** A reply here joins the draft the thread already has a comment in (CR36, CR75, CR76). */
 const inDraft = computed(() => props.thread.comments.some(comment => comment.state === 'PENDING'));
-const failureText = computed(() => {
-  const failure = props.resolveFailure;
-  const reason = props.thread.isResolved ? l.unresolveFailed : l.resolveFailed;
-  switch (failure?.kind) {
-    case undefined:
-      return null;
-    case 'refused':
-      return t(reason, { reason: failure.message ?? t(l.noReason) });
-    case 'notReached':
-      return t(reason, { reason: t(l.notReached) });
-    default:
-      return assertNever(failure);
-  }
-});
+const failureText = computed(() =>
+  props.resolveFailure ? getFailureText(props.resolveFailure, props.thread.isResolved) : null,
+);
 </script>
 
 <template>

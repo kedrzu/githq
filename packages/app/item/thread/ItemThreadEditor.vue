@@ -1,8 +1,8 @@
-<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. One GitHub did not take opens again with the text and why, under the editor. Left with its text changed, it asks first in its footer (`Activity / Comment · editing, discard?`): Keep editing (`Escape`) or Discard (`Enter`); the cursor stays in the text. -->
+<!-- A comment or the description edited in place (`Activity / Comment · editing`, F15): the writer's avatar in the rail's gutter and the Markdown editor with the text, its border in the accent; Cancel (`Escape`) puts the card back unchanged, Update (`Mod+Enter`) saves. A reply in a code thread (`Activity / Code thread · replying`, F10) is the same editor without the gutter, in the thread's reply band: Cancel and Reply. One GitHub did not take opens again with the text and why, under the editor. Left with its text changed, it asks first in its footer (`Activity / Comment · editing, discard?`): Keep editing (`Escape`) or Discard (`Enter`); the cursor stays in the text. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert } from 'lucide-vue-next';
-import { onMounted, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import Avatar from '@/components/Avatar.vue';
@@ -16,9 +16,14 @@ import * as l from './ItemThreadEditor.loc.js';
 
 const props = defineProps<{
   /** `null` for a deleted account. */
-  author: ItemUser | null;
-  /** The description rather than a comment: "Update description", and it may be left empty. */
-  description?: boolean;
+  author?: ItemUser | null;
+  /**
+   * What is written: a comment edited; the description — "Update description", and it may be left empty; a reply in a
+   * code thread, with no gutter — its {@link saveLabel} says where it goes.
+   */
+  kind?: 'comment' | 'description' | 'reply';
+  /** A reply's button: "Reply", or what code review's first key would do with it. */
+  saveLabel?: string;
   /** `owner/name`, which the editor's preview and suggestions are of. */
   repository: string;
   /** The number of the item it is on, which `#` does not suggest. */
@@ -44,15 +49,21 @@ const text = defineModel<string>('text', { required: true });
 const asking = defineModel<boolean>('asking', { default: false });
 
 const SAVE_KEY = 'Mod+Enter';
+const LABELS = {
+  comment: { label: l.editComment, save: l.updateComment, question: l.discardComment },
+  description: { label: l.editDescription, save: l.updateDescription, question: l.discardDescription },
+  reply: { label: l.reply, save: l.reply, question: l.discardReply },
+} as const;
+
 const t = useTranslate();
 const editTexts = useEditTexts();
 const editorRef = useTemplateRef<InstanceType<typeof MarkdownEditor>>('editor');
 
-onMounted(async () => {
-  if (props.autofocus) {
-    await editorRef.value?.focus('head');
-  }
-});
+const labels = computed(() => LABELS[props.kind ?? 'comment']);
+
+onMounted(takeFocus);
+// A reply box open already takes the focus again when asked to.
+watch(() => props.autofocus, takeFocus);
 
 // The question is answered from the text: the cursor goes there, and the footer asking it into view.
 watch(asking, async value => {
@@ -61,9 +72,16 @@ watch(asking, async value => {
   }
 });
 
+/** A reply opens with the caret at the end, its buttons in view; an edit with its head in view. */
+async function takeFocus() {
+  if (props.autofocus) {
+    await editorRef.value?.focus(props.kind === 'reply' ? 'end' : 'head');
+  }
+}
+
 /** GitHub takes no empty comment. */
 function canSave() {
-  return props.description || text.value.trim() !== '';
+  return props.kind === 'description' || text.value.trim() !== '';
 }
 
 function save() {
@@ -106,10 +124,13 @@ function onKeydown(event: KeyboardEvent) {
 
 <template>
   <div
-    :class="css.itemThreadEditor"
+    :class="kind === 'reply' ? css.itemThreadEditor_reply : css.itemThreadEditor"
     @keydown="onKeydown"
   >
-    <div :class="css.itemThreadEditor_gutter">
+    <div
+      v-if="kind !== 'reply'"
+      :class="css.itemThreadEditor_gutter"
+    >
       <Avatar
         :name="author?.login ?? ''"
         :src="author?.avatarUrl"
@@ -125,7 +146,7 @@ function onKeydown(event: KeyboardEvent) {
         :repository="repository"
         :item-number="itemNumber"
         :people="people"
-        :label="description ? t(l.editDescription) : t(l.editComment)"
+        :label="t(labels.label)"
         @submit="save"
         @cancel="onEscape"
       >
@@ -140,7 +161,7 @@ function onKeydown(event: KeyboardEvent) {
           <span
             :class="css.itemThreadEditor_question"
             role="status"
-            >{{ description ? t(l.discardDescription) : t(l.discardComment) }}</span
+            >{{ t(labels.question) }}</span
           >
         </template>
         <template
@@ -185,7 +206,7 @@ function onKeydown(event: KeyboardEvent) {
             :unavailable="!canSave()"
             @click="save"
           >
-            {{ description ? t(l.updateDescription) : t(l.updateComment) }}
+            {{ saveLabel ?? t(labels.save) }}
           </Button>
         </template>
       </MarkdownEditor>
@@ -207,6 +228,12 @@ function onKeydown(event: KeyboardEvent) {
 // As a card of the thread: the avatar in the thread's gutter, level with the editor's head.
 .itemThreadEditor {
   @include item-thread-row;
+}
+
+.itemThreadEditor_reply {
+  display: flex;
+  flex: 1;
+  min-width: 0;
 }
 
 .itemThreadEditor_gutter {

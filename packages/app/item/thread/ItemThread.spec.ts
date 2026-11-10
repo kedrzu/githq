@@ -5,11 +5,14 @@ import { shallowReactive } from 'vue';
 
 import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { ItemComment } from '@/store/ItemDetailTypes.js';
+import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
+import { DB_THREAD } from '@/testing/sampleReviews.js';
 
 import * as stories from './ItemThread.stories.js';
 
 const {
+    CodeThreads,
     IssueInPanel,
     PullRequestInPanel,
     NotSent,
@@ -452,4 +455,106 @@ test("events and comments read show in one time order; the user's comment on its
     ].map(text => texts.findIndex(entry => entry.includes(text)));
     expect(order).toEqual(order.toSorted((a, b) => a - b));
     expect(order).not.toContain(-1);
+});
+
+/** The open thread of sofiab's review, `src/store/db.ts`. */
+function dbThread() {
+    return page.getByRole('group', { name: 'Thread by sofiab on src/store/db.ts' });
+}
+
+/** The pull request with sofiab's review, written through a fresh writing. */
+async function openCodeThreads(writing = new FakeReviewWriting()) {
+    const args = shallowReactive({ ...CodeThreads.args, reviewWriting: writing });
+    await CodeThreads.run({ args });
+    return { args, writing };
+}
+
+test('Reply… opens the editor in the band, the cursor in it; Cancel on nothing typed closes it, the focus back on the thread', async () => {
+    const { writing } = await openCodeThreads();
+
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    const field = dbThread().getByRole('textbox', { name: 'Reply' });
+    await expect.element(field).toHaveFocus();
+    expect(writing.targets).toEqual([expect.objectContaining({ threadId: DB_THREAD.id, path: 'src/store/db.ts' })]);
+
+    await userEvent.click(dbThread().getByRole('button', { name: 'Cancel' }));
+    await expect.element(field).not.toBeInTheDocument();
+    await expect.element(dbThread()).toHaveFocus();
+    expect(writing.targets).toEqual([]);
+});
+
+test('a reply with text asks before it is let go: Esc asks, Esc keeps writing, Enter discards it', async () => {
+    const { writing } = await openCodeThreads();
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.keyboard('Not yet');
+
+    await userEvent.keyboard('{Escape}');
+    await expect.element(dbThread().getByRole('status')).toHaveTextContent('Discard your reply?');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(dbThread().getByRole('status')).not.toBeInTheDocument();
+    await expect.element(dbThread().getByRole('textbox', { name: 'Reply' })).toHaveValue('Not yet');
+
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('{Enter}');
+    await expect.element(dbThread().getByRole('textbox', { name: 'Reply' })).not.toBeInTheDocument();
+    expect(writing.targets).toEqual([]);
+    expect(writing.sent).toEqual([]);
+});
+
+test('⌘↵ sends the reply as code review would, which shows at once; one GitHub refused comes back with its text and why', async () => {
+    const { writing } = await openCodeThreads();
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.keyboard('Migrated, see e81f0a3.');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    expect(writing.sent).toEqual([{ body: 'Migrated, see e81f0a3.', way: 'single', threadId: DB_THREAD.id }]);
+    await expect.element(dbThread().getByText('Migrated, see e81f0a3.')).toBeVisible();
+    await expect.element(dbThread().getByText('Sending…')).toBeVisible();
+    await expect.element(dbThread().getByRole('button', { name: 'Reply…' })).toBeVisible();
+
+    const [box] = writing.targets;
+    writing.answer(box?.id ?? '', { kind: 'failed', failure: { kind: 'refused', message: 'The thread is locked' } });
+    await expect.element(dbThread().getByRole('textbox', { name: 'Reply' })).toHaveValue('Migrated, see e81f0a3.');
+    await expect.element(dbThread().getByRole('alert')).toHaveTextContent('The thread is locked');
+});
+
+test('with the viewer’s draft open a reply joins it: its button says so', async () => {
+    const { writing } = await openCodeThreads(new FakeReviewWriting({ draftOpen: true }));
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.keyboard('In the draft');
+    await userEvent.click(dbThread().getByRole('button', { name: 'Add to draft' }));
+
+    expect(writing.sent).toEqual([{ body: 'In the draft', way: 'joinDraft', threadId: DB_THREAD.id }]);
+});
+
+test('Resolve thread goes through the writing, and the thread says the viewer resolved it at once', async () => {
+    const { args, writing } = await openCodeThreads();
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    expect(writing.resolved).toEqual([{ threadId: DB_THREAD.id, resolved: true }]);
+
+    // As the writing draws it: resolved at once, GitHub not yet saying who did.
+    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
+        thread.id === DB_THREAD.id ? { ...thread, isResolved: true } : thread,
+    );
+    await userEvent.click(page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u }));
+    await expect.element(dbThread()).toHaveTextContent('mlaine marked this thread as resolved.');
+});
+
+test('on a focused code thread J and K move between the code threads and R opens its reply editor', async () => {
+    await openCodeThreads();
+    // dkim's code comment, resolved: opened, a code thread too.
+    await userEvent.click(page.getByRole('button', { name: /^Resolved/u }));
+    const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
+    await userEvent.click(dbThread().getByText('That’s what the e2e trips on.', { exact: false }));
+    await expect.element(dbThread()).toHaveFocus();
+
+    await userEvent.keyboard('j');
+    await expect.element(schema).toHaveFocus();
+    await userEvent.keyboard('j');
+    await expect.element(schema).toHaveFocus();
+    await userEvent.keyboard('k');
+    await expect.element(dbThread()).toHaveFocus();
+
+    await userEvent.keyboard('r');
+    await expect.element(dbThread().getByRole('textbox', { name: 'Reply' })).toHaveFocus();
 });

@@ -23,6 +23,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
@@ -60,6 +61,7 @@ const repositories = useService(RepositoryStore);
 const auth = useService(AuthStore);
 const drafts = useService(CommentDrafts);
 const mergePanel = useService(MergePanelStore);
+const tracking = useService(TrackingStore);
 const route = useRoute();
 const router = useRouter();
 
@@ -439,6 +441,7 @@ type HistoryMove = 'push' | 'replace';
       :failed-edits="failedEdits"
       :review-threads="opened.reviewThreads"
       :review-writing="opened.reviewWriting"
+      :review-draft-first="tracking.reviewCommentChoice === 'draft'"
       @edit="edit"
       @retry-comment="retryComment"
       @discard-comment="drafts.discardFailed($event)"
@@ -494,6 +497,7 @@ type HistoryMove = 'push' | 'replace';
     :failed-edits="failedEdits"
     :review-threads="opened.reviewThreads"
     :review-writing="opened.reviewWriting"
+    :review-draft-first="tracking.reviewCommentChoice === 'draft'"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"

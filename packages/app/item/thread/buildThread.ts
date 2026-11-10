@@ -192,7 +192,10 @@ export interface BuildThreadParams {
     readonly failedComments?: readonly FailedComment[];
     /** The user showed the folded middle: nothing folds, unless the detail no longer holds all of it. */
     readonly unfolded?: boolean;
-    /** The comments the user must see, never folded away: an editor open on them, an edit GitHub did not take. */
+    /**
+     * The comments and code threads the user must see, never folded away, by their ids: an editor open on a comment, an
+     * edit GitHub did not take, a reply being written in a thread.
+     */
     readonly keepShown?: ReadonlySet<string>;
     /** A pull request's review threads, as code review reads and writes them (`ReviewFiles.openThreads`). */
     readonly reviewThreads?: readonly ReviewThread[];
@@ -566,12 +569,16 @@ function getTimedId(entry: Timed) {
 
 /**
  * Never folded away: the user's comment on its way or not taken, an edit of theirs in flight, open or refused, their
- * draft review.
+ * draft review, a review or code comment with their reply being written in one of its threads.
  */
 function mustShow(entry: ThreadItem, keepShown: ReadonlySet<string>) {
     switch (entry.kind) {
         case 'comment':
             return entry.comment.pendingBody !== undefined || keepShown.has(entry.id);
+        case 'review':
+            return [...entry.threads, ...entry.resolved].some(({ id }) => keepShown.has(id));
+        case 'codeComment':
+            return keepShown.has(entry.thread.id);
         case 'failedComment':
         case 'pendingReview':
             return true;

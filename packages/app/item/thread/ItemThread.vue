@@ -1,5 +1,6 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked: then `J`/`K` move to the next and previous code thread and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. -->
 <script lang="ts" setup>
+import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
@@ -9,14 +10,17 @@ import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import { getCommentWays } from '@/review/writing/getCommentWays.js';
 import { getPendingComments } from '@/review/writing/getPendingComments.js';
-import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
+import type { ReviewCommentTarget, ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
+import { isScreenKey } from '@/utils/isScreenKey.js';
 
 import GitHubHtml from '../GitHubHtml.vue';
 import type { ItemReference } from '../itemRoutes.js';
 import { buildThread } from './buildThread.js';
+import type { CodeThreadReplies, CodeThreadReply, CodeThreadSentReply } from './CodeThreadReplies.js';
 import * as l from './ItemThread.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeComment from './ItemThreadCodeComment.vue';
@@ -56,8 +60,13 @@ const props = defineProps<{
   people?: readonly ItemUser[];
   /** A pull request's review threads, as code review reads them: its reviews and code comments hold them. */
   reviewThreads?: readonly ReviewThread[];
-  /** Code review's writing of the pull request, the same that wrote them: the viewer's draft review finishes there. */
+  /**
+   * Code review's writing of the pull request, the same that wrote them: the viewer's draft review finishes there, and
+   * replies and resolving go through it.
+   */
   reviewWriting?: ReviewWriting | null;
+  /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
+  reviewDraftFirst?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -82,6 +91,7 @@ defineSlots<{
 
 const t = useTranslate();
 const editTexts = useEditTexts();
+const rootRef = useTemplateRef('root');
 const commentsRef = useTemplateRef('comments');
 /** The first item the fold revealed: focusable, so the keyboard picks up where the fold was. */
 const revealedId = ref<string | null>(null);
@@ -107,9 +117,81 @@ let quoted: string | null = null;
 let editOpened = false;
 /** The comment Delete… picked, asked about once the menu closed. */
 let deleting: string | null = null;
+/** The code thread whose reply box asks whether to discard the reply. */
+const askingReply = ref<string | null>(null);
+/** The code thread whose reply box takes the focus, for the moment it takes it. */
+const focusedReply = ref<string | null>(null);
+/** The threads the viewer resolved here: they say so at once, before the threads read again name who did. */
+const resolvedHere = ref<ReadonlySet<string>>(new Set());
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
+/** The threads, the viewer as who resolved those resolved here. */
+const shownThreads = computed(() => {
+  const threads = props.reviewThreads ?? [];
+  const { viewer } = props;
+  if (resolvedHere.value.size === 0 || !viewer) {
+    return threads;
+  }
+
+  return threads.map(thread =>
+    thread.isResolved && resolvedHere.value.has(thread.id) ? { ...thread, resolvedBy: viewer } : thread,
+  );
+});
+/** Code review's boxes of replies, by their thread: the one being written, and those sent until the threads read have them. */
+const replyBoxes = computed(() => {
+  const byThread = new Map<string, ReplyBoxes>();
+  const writing = props.reviewWriting;
+  for (const target of writing?.targets ?? []) {
+    if (target.threadId === null) {
+      continue;
+    }
+
+    const held = byThread.get(target.threadId) ?? { box: null, sent: [] };
+    const status = writing?.getStatus(target.id);
+    byThread.set(
+      target.threadId,
+      status?.kind === 'sending' || status?.kind === 'sent'
+        ? { ...held, sent: [...held.sent, { id: target.id, status }] }
+        : { ...held, box: target },
+    );
+  }
+
+  return byThread;
+});
+/** What `Mod+Enter` does with a reply: what code review's first key does with it. */
+const replyWay = computed(
+  () => getCommentWays(props.reviewWriting?.draftOpen ?? false, props.reviewDraftFirst ?? false).first,
+);
+const replies = computed((): CodeThreadReplies | null => {
+  const writing = props.reviewWriting;
+  if (!writing) {
+    return null;
+  }
+
+  return {
+    repository: props.item.repository.nameWithOwner,
+    itemNumber: props.item.number,
+    people: props.people ?? [],
+    saveLabel: getReplyLabel(),
+    get: getReply,
+    getResolveFailure: threadId => writing.getResolveFailure(threadId),
+    setText: (threadId, text) => {
+      const box = replyBoxes.value.get(threadId)?.box;
+      if (box) {
+        writing.setText(box.id, text);
+      }
+    },
+    setAsking: setReplyAsking,
+    send: sendReply,
+    cancel: cancelReply,
+  };
+});
+/** The threads of the viewer's draft review: no reply there. */
+const draftThreads = computed(
+  () =>
+    new Set(entries.value.flatMap(entry => (entry.kind === 'pendingReview' ? entry.threads : [])).map(({ id }) => id)),
+);
 /** Everything after the description, in the thread's order: an edited comment is never folded away. */
 const entries = computed(() =>
   props.detail
@@ -117,8 +199,8 @@ const entries = computed(() =>
         detail: props.detail,
         failedComments: props.failedComments,
         unfolded: unfolded.value,
-        keepShown: new Set([...editorsRef.value.keys()].filter(id => id !== null)),
-        reviewThreads: props.reviewThreads,
+        keepShown: new Set([...[...editorsRef.value.keys()].filter(id => id !== null), ...replyBoxes.value.keys()]),
+        reviewThreads: shownThreads.value,
         pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
         viewerLogin: props.viewer?.login ?? null,
       })
@@ -139,6 +221,9 @@ watch(
       revealedId.value = null;
       unfolded.value = false;
       foldFailed.value = false;
+      askingReply.value = null;
+      focusedReply.value = null;
+      resolvedHere.value = new Set();
     }
 
     for (const edit of failed ?? []) {
@@ -160,25 +245,61 @@ defineExpose({
 });
 
 function askToLeave(go: () => void) {
-  const ids = [null, ...entries.value.flatMap(entry => (entry.kind === 'comment' ? [entry.id] : []))];
-  const changed = ids.find(id => isChanged(id));
+  const changed = getAskables().find(askable =>
+    askable.kind === 'editor' ? isChanged(askable.id) : isReplyChanged(askable.threadId),
+  );
   if (changed === undefined) {
     return false;
   }
 
   leaving = go;
-
-  // Asked already: asked again a tick on, so that it comes back into view and takes the cursor again.
-  if (askingRef.value === changed) {
-    askingRef.value = undefined;
-    void nextTick(() => {
-      askingRef.value = changed;
-    });
+  if (changed.kind === 'editor') {
+    askingReply.value = null;
+    askAgain(askingRef, changed.id, undefined);
   } else {
-    askingRef.value = changed;
+    askingRef.value = undefined;
+    askAgain(askingReply, changed.threadId, null);
   }
 
   return true;
+}
+
+/** What may ask before the item is left, in the thread's order: the editors, and the reply boxes of the code threads. */
+function getAskables(): Askable[] {
+  const askables: Askable[] = [{ kind: 'editor', id: null }];
+  for (const entry of entries.value) {
+    switch (entry.kind) {
+      case 'comment':
+        askables.push({ kind: 'editor', id: entry.id });
+        break;
+      case 'review':
+        for (const { id } of [...entry.threads, ...entry.resolved]) {
+          askables.push({ kind: 'reply', threadId: id });
+        }
+
+        break;
+      case 'codeComment':
+        askables.push({ kind: 'reply', threadId: entry.thread.id });
+        break;
+      default:
+        break;
+    }
+  }
+
+  return askables;
+}
+
+/** Asked already: asked again a tick on, so that it comes back into view and takes the cursor again. */
+function askAgain<T>(asking: { value: T }, id: T, none: T) {
+  if (asking.value !== id) {
+    asking.value = id;
+    return;
+  }
+
+  asking.value = none;
+  void nextTick(() => {
+    asking.value = id;
+  });
 }
 
 function openEditor(id: string | null, text: string) {
@@ -322,15 +443,196 @@ async function showEarlier() {
   commentsRef.value?.querySelector<HTMLElement>(':scope > [tabindex="-1"]')?.focus();
 }
 
+function getReplyLabel() {
+  const way = replyWay.value;
+  switch (way) {
+    case 'single':
+      return t(l.reply);
+    case 'startDraft':
+      return t(l.startReview);
+    case 'joinDraft':
+    case 'joinAndSubmit':
+      return t(l.addToDraft);
+    default:
+      return assertNever(way);
+  }
+}
+
+function getReply(threadId: string): CodeThreadReply | null {
+  const held = replyBoxes.value.get(threadId);
+  const writing = props.reviewWriting;
+  if (!held || !writing) {
+    return null;
+  }
+
+  if (!held.box) {
+    return { box: null, sent: held.sent };
+  }
+
+  const status = writing.getStatus(held.box.id);
+  return {
+    box: {
+      text: writing.getText(held.box.id),
+      failure: status.kind === 'failed' ? status.failure : null,
+      changed: isReplyChanged(threadId),
+      asking: askingReply.value === threadId,
+      focused: focusedReply.value === threadId,
+    },
+    sent: held.sent,
+  };
+}
+
+/** Text in it, or GitHub refused it: what GitHub refused is kept until the user lets it go. */
+function isReplyChanged(threadId: string) {
+  const box = replyBoxes.value.get(threadId)?.box;
+  const writing = props.reviewWriting;
+  if (!box || !writing) {
+    return false;
+  }
+
+  return writing.getText(box.id).trim() !== '' || writing.getStatus(box.id).kind === 'failed';
+}
+
+/** Code review's box on the thread's lines, the one being written there if there is one; it takes the focus. */
+async function openReply(threadId: string) {
+  const thread = shownThreads.value.find(({ id }) => id === threadId);
+  const writing = props.reviewWriting;
+  if (!thread || !writing || !thread.viewerCanReply || draftThreads.value.has(threadId)) {
+    return;
+  }
+
+  const line = thread.line ?? thread.originalLine ?? 1;
+  writing.open({
+    path: thread.path,
+    side: thread.diffSide === 'LEFT' ? 'before' : 'after',
+    line,
+    startLine: thread.startLine === null || thread.startLine === line ? null : thread.startLine,
+    threadId,
+  });
+  focusedReply.value = threadId;
+  await nextTick();
+  focusedReply.value = null;
+}
+
+function sendReply(threadId: string) {
+  const box = replyBoxes.value.get(threadId)?.box;
+  if (box) {
+    props.reviewWriting?.send(box.id, replyWay.value);
+    void focusThread(threadId);
+  }
+}
+
+/** Cancel on an empty reply, or Discard: the box goes with its text, the focus back to its thread. */
+function cancelReply(threadId: string) {
+  const go = askingReply.value === threadId ? leaving : null;
+  const box = replyBoxes.value.get(threadId)?.box;
+  if (box) {
+    props.reviewWriting?.close(box.id);
+  }
+
+  if (askingReply.value === threadId) {
+    askingReply.value = null;
+    leaving = null;
+  }
+
+  void focusThread(threadId);
+  go?.();
+}
+
+/** The reply box's own question (Cancel, Escape) and Keep editing: neither goes anywhere after. */
+function setReplyAsking(threadId: string, asking: boolean) {
+  leaving = null;
+  if (asking) {
+    askingReply.value = threadId;
+  } else if (askingReply.value === threadId) {
+    askingReply.value = null;
+  }
+}
+
+function setResolved(threadId: string, resolved: boolean) {
+  const here = new Set(resolvedHere.value);
+  if (resolved) {
+    here.add(threadId);
+  } else {
+    here.delete(threadId);
+  }
+
+  resolvedHere.value = here;
+  props.reviewWriting?.setResolved(threadId, resolved);
+}
+
+/** Once it is drawn again: the keys are the thread's, as they were before its reply box opened. */
+async function focusThread(threadId: string) {
+  await nextTick();
+  findThreadCard(threadId)?.focus({ preventScroll: true });
+}
+
+function findThreadCard(threadId: string) {
+  return rootRef.value?.querySelector<HTMLElement>(`[data-code-thread="${CSS.escape(threadId)}"]`) ?? null;
+}
+
+/**
+ * On a code thread (F5): `J`/`K` move to the next and previous one, staying at the first and the last, and `R` opens its
+ * reply editor. Taken here, before the screen's own keys — the item's and its list's — which they are anywhere else.
+ */
+function onKeydown(event: KeyboardEvent) {
+  const { target } = event;
+  const card = target instanceof Element ? target.closest<HTMLElement>('[data-code-thread]') : null;
+  if (!card || !isScreenKey(event)) {
+    return;
+  }
+
+  switch (event.key) {
+    case 'j':
+    case 'k':
+      event.preventDefault();
+      moveToThread(card, event.key === 'j' ? 1 : -1);
+      return;
+    case 'r': {
+      const threadId = card.dataset.codeThread ?? '';
+      const thread = shownThreads.value.find(({ id }) => id === threadId);
+      if (thread?.viewerCanReply && !draftThreads.value.has(threadId) && props.reviewWriting) {
+        event.preventDefault();
+        void openReply(threadId);
+      }
+    }
+  }
+}
+
+function moveToThread(from: HTMLElement, by: 1 | -1) {
+  const cards = [...(rootRef.value?.querySelectorAll<HTMLElement>('[data-code-thread]') ?? [])];
+  const next = cards[cards.indexOf(from) + by];
+  if (next) {
+    next.focus({ preventScroll: true });
+    next.scrollIntoView({ block: 'nearest' });
+  }
+}
+
 /** A card's text being edited, and the text the edit started with. */
 interface EditorText {
   readonly text: string;
   readonly start: string;
 }
+
+/** A thread's reply boxes in code review's writing. */
+interface ReplyBoxes {
+  /** The one being written, or refused. */
+  readonly box: ReviewCommentTarget | null;
+  readonly sent: readonly CodeThreadSentReply[];
+}
+
+/** What asks before the item is left: an editor, by its comment (`null` the description), or a code thread's reply box. */
+type Askable =
+  | { readonly kind: 'editor'; readonly id: string | null }
+  | { readonly kind: 'reply'; readonly threadId: string };
 </script>
 
 <template>
-  <div :class="css.itemThread">
+  <div
+    ref="root"
+    :class="css.itemThread"
+    @keydown="onKeydown"
+  >
     <!-- The description comes with the detail: before it, no card of it — the rail's skeleton or why stands for it. -->
     <ItemThreadMissing
       v-if="!detail"
@@ -350,7 +652,7 @@ interface EditorText {
         :autofocus="focusedEditor === null"
         :changed="isChanged(null)"
         :asking="askingRef === null"
-        description
+        kind="description"
         @update:text="setText(null, $event)"
         @update:asking="setAsking(null, $event)"
         @save="saveEdit(null, detail.body)"
@@ -484,12 +786,18 @@ interface EditorText {
             :entry="entry"
             :now="now"
             :viewer="viewer"
+            :replies="replies"
+            @reply="openReply"
+            @set-resolved="setResolved"
           />
           <ItemThreadCodeComment
             v-else-if="entry.kind === 'codeComment'"
             :entry="entry"
             :now="now"
             :viewer="viewer"
+            :replies="replies"
+            @reply="openReply(entry.thread.id)"
+            @set-resolved="setResolved(entry.thread.id, $event)"
           />
           <ItemThreadCard
             v-else-if="entry.kind === 'failedComment'"
