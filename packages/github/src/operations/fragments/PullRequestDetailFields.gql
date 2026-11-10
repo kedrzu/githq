@@ -16,6 +16,12 @@ fragment PullRequestDetailFields on PullRequest {
     commentPage: comments(last: 50) {
         ...CommentPageFields
     }
+    # The first two comments, which a thread shows above its fold (F5) however many come after them.
+    firstComments: comments(first: 2) {
+        nodes {
+            ...IssueCommentFields
+        }
+    }
     # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
     # first; what lies between is read on demand (`ThreadMiddle`). `$pullRequestEventTypes` is `THREAD_EVENT_TYPES`
     # (`ItemDetailStore`).

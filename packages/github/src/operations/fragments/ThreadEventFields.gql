@@ -277,6 +277,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
             ...ThreadRefFields
         }
     }
+    ... on DisconnectedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        source {
+            ...ThreadRefFields
+        }
+        subject {
+            ...ThreadRefFields
+        }
+    }
     # Referenced in a commit's message; `commit` is `null` where the viewer cannot see it.
     ... on ReferencedEvent {
         id
@@ -317,6 +331,18 @@ fragment ThreadEventFields on PullRequestTimelineItems {
         }
     }
     ... on ParentIssueAddedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        parent {
+            ...ThreadRefFields
+        }
+    }
+    # The removes are read for what they cancel (F13's burst rule) and shown worded like their add.
+    ... on ParentIssueRemovedEvent {
         id
         createdAt
         actor {
@@ -369,6 +395,19 @@ fragment ThreadEventFields on PullRequestTimelineItems {
         }
     }
     ... on AddedToProjectV2Event {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        wasAutomated
+        project {
+            title
+            url
+        }
+    }
+    ... on RemovedFromProjectV2Event {
         id
         createdAt
         actor {
@@ -442,6 +481,20 @@ fragment ThreadEventFields on PullRequestTimelineItems {
         }
     }
     ... on MarkedAsDuplicateEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        canonical {
+            ...ThreadRefFields
+        }
+        duplicate {
+            ...ThreadRefFields
+        }
+    }
+    ... on UnmarkedAsDuplicateEvent {
         id
         createdAt
         actor {

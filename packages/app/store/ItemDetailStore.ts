@@ -38,6 +38,7 @@ const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
     'CONNECTED_EVENT',
     'CROSS_REFERENCED_EVENT',
     'DEMILESTONED_EVENT',
+    'DISCONNECTED_EVENT',
     'ISSUE_TYPE_ADDED_EVENT',
     'ISSUE_TYPE_CHANGED_EVENT',
     'ISSUE_TYPE_REMOVED_EVENT',
@@ -46,9 +47,11 @@ const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
     'MARKED_AS_DUPLICATE_EVENT',
     'MILESTONED_EVENT',
     'PARENT_ISSUE_ADDED_EVENT',
+    'PARENT_ISSUE_REMOVED_EVENT',
     'PINNED_EVENT',
     'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
     'REFERENCED_EVENT',
+    'REMOVED_FROM_PROJECT_V2_EVENT',
     'RENAMED_TITLE_EVENT',
     'REOPENED_EVENT',
     'SUB_ISSUE_ADDED_EVENT',
@@ -57,6 +60,7 @@ const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
     'UNASSIGNED_EVENT',
     'UNLABELED_EVENT',
     'UNLOCKED_EVENT',
+    'UNMARKED_AS_DUPLICATE_EVENT',
     'UNPINNED_EVENT',
 ];
 
@@ -368,6 +372,7 @@ export const ItemDetailStore = defineService({
                 ...detail,
                 comments: {
                     totalCount: older.totalCount,
+                    first: detail.comments.first,
                     nodes: [...older.nodes, ...detail.comments.nodes],
                     olderCursor: older.olderCursor,
                 },
