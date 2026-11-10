@@ -1,4 +1,4 @@
-<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. -->
+<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again: an empty reply box closes with it, one with text or refused asks first as its Cancel does, a reply on its way goes on. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
@@ -31,7 +31,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** Fold the resolved thread again. */
+  /** Fold the resolved thread again: its reply box closed, or let go once asked; a reply on its way goes on. */
   hide: [];
   /** "Reply…" was clicked. */
   reply: [];
@@ -60,6 +60,40 @@ const resolveFailure = computed(() => {
 /** The focus is in the thread: `R` opens its reply editor, as on code review's focused thread. */
 const focused = ref(false);
 const replyKey = computed(() => (focused.value && props.replies ? REVIEW_KEYS.reply : undefined));
+/** Hide asked whether to discard the reply: Discard folds the thread too. */
+const hiding = ref(false);
+
+/** An empty reply box closes with it; one with text, or refused, asks first, as its Cancel does. */
+function hide() {
+  const open = box.value;
+  if (open?.changed && props.replies) {
+    hiding.value = true;
+    props.replies.setAsking(props.thread.id, true);
+    return;
+  }
+
+  if (open) {
+    props.replies?.cancel(props.thread.id);
+  }
+
+  emit('hide');
+}
+
+function setAsking(asking: boolean) {
+  if (!asking) {
+    hiding.value = false;
+  }
+
+  props.replies?.setAsking(props.thread.id, asking);
+}
+
+function cancelReply() {
+  props.replies?.cancel(props.thread.id);
+  if (hiding.value) {
+    hiding.value = false;
+    emit('hide');
+  }
+}
 
 function onFocusOut(event: FocusEvent) {
   const { currentTarget, relatedTarget } = event;
@@ -97,7 +131,7 @@ function onFocusOut(event: FocusEvent) {
         tone="accent"
         :class="css.itemThreadCodeThread_hide"
         aria-expanded="true"
-        @click="emit('hide')"
+        @click="hide"
       >
         {{ t(l.hide) }}
       </Button>
@@ -140,9 +174,9 @@ function onFocusOut(event: FocusEvent) {
           :changed="box.changed"
           :asking="box.asking"
           @update:text="replies.setText(thread.id, $event)"
-          @update:asking="replies.setAsking(thread.id, $event)"
+          @update:asking="setAsking"
           @save="replies.send(thread.id)"
-          @cancel="replies.cancel(thread.id)"
+          @cancel="cancelReply"
         />
         <ReviewFailureNote
           v-if="box.failure"

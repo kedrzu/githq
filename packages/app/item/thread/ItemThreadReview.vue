@@ -35,8 +35,11 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-/** The resolved threads the user opened. */
-const opened = ref<ReadonlySet<string>>(new Set());
+/**
+ * The resolved threads the user opened (`true`) or hid (`false`); the others show opened while a reply is written in
+ * them. One hidden stays folded with its reply on its way, kept in the writing until opened again.
+ */
+const opened = ref<ReadonlyMap<string, boolean>>(new Map());
 /** A dismissed review the user opened. */
 const shown = ref(false);
 
@@ -85,15 +88,12 @@ function getDismissedText(before: ThreadReview['dismissedFrom']) {
   }
 }
 
-function setOpened(id: string, open: boolean) {
-  const next = new Set(opened.value);
-  if (open) {
-    next.add(id);
-  } else {
-    next.delete(id);
-  }
+function isOpened(threadId: string) {
+  return opened.value.get(threadId) ?? props.replies?.get(threadId) != null;
+}
 
-  opened.value = next;
+function setOpened(threadId: string, open: boolean) {
+  opened.value = new Map(opened.value).set(threadId, open);
 }
 
 function hide(threadId: string) {
@@ -154,7 +154,7 @@ function hide(threadId: string) {
           :key="thread.id"
         >
           <ItemThreadCodeThread
-            v-if="opened.has(thread.id) || replies?.get(thread.id)"
+            v-if="isOpened(thread.id)"
             :thread="thread"
             :viewer="viewer"
             :replies="replies"

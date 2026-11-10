@@ -685,6 +685,49 @@ test('Hide folds an opened resolved thread to its row, which keeps the focus, so
     await expect.element(dbThread()).toHaveFocus();
 });
 
+test('Hide on a resolved thread being replied to closes an empty reply and folds; a reply with text asks first, Discard folds', async () => {
+    const { writing } = await openCodeThreads();
+    // dkim's code comment, resolved: opened and replied to.
+    const row = page.getByRole('button', { name: /^Resolved/u });
+    const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
+    await userEvent.click(row);
+    await userEvent.click(schema.getByRole('button', { name: 'Reply…' }));
+    await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
+    await expect.element(row).toHaveFocus();
+    expect(writing.targets).toEqual([]);
+
+    await userEvent.click(row);
+    await userEvent.click(schema.getByRole('button', { name: 'Reply…' }));
+    await userEvent.keyboard('Not yet');
+    await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
+    await expect.element(schema.getByRole('status')).toHaveTextContent('Discard your reply?');
+    await userEvent.keyboard('{Escape}');
+    await expect.element(schema.getByRole('textbox', { name: 'Reply' })).toHaveValue('Not yet');
+
+    await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
+    await userEvent.keyboard('{Enter}');
+    await expect.element(row).toHaveFocus();
+    expect(writing.targets).toEqual([]);
+});
+
+test('Hide on a resolved thread of a review folds it with its reply on its way, which shows again once it is opened', async () => {
+    const { writing } = await openCodeThreads();
+    await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
+    const row = page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u });
+    await userEvent.click(row);
+    await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
+    await userEvent.keyboard('Migrated, see e81f0a3.');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+    await expect.element(dbThread().getByText('Sending…')).toBeVisible();
+
+    await userEvent.click(dbThread().getByRole('button', { name: 'Hide' }));
+    await expect.element(row).toHaveFocus();
+    expect(writing.sent).toEqual([{ body: 'Migrated, see e81f0a3.', way: 'single', threadId: DB_THREAD.id }]);
+
+    await userEvent.click(row);
+    await expect.element(dbThread().getByText('Sending…')).toBeVisible();
+});
+
 test('on a focused code thread J and K move between the code threads and R opens its reply editor', async () => {
     await openCodeThreads();
     // dkim's code comment, resolved: opened, a code thread too.

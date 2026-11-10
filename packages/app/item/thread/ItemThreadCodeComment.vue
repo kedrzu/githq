@@ -33,11 +33,17 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-/** The user opened it, resolved. */
-const opened = ref(false);
+/**
+ * The user opened it, resolved (`true`), or hid it (`false`); `null`, it shows opened while a reply is written in it.
+ * Hidden, it stays folded with its reply on its way, kept in the writing until opened again.
+ */
+const opened = ref<boolean | null>(null);
 
 const first = computed(() => props.entry.thread.comments[0] ?? null);
 const login = computed(() => first.value?.author?.login ?? t(l.ghost));
+const folded = computed(
+  () => props.entry.thread.isResolved && !(opened.value ?? props.replies?.get(props.entry.thread.id) != null),
+);
 const age = computed(() => (first.value ? formatAge(Date.parse(first.value.createdAt), props.now) : ''));
 
 function hide() {
@@ -68,7 +74,7 @@ function hide() {
         >
       </p>
       <ItemThreadResolvedRow
-        v-if="entry.thread.isResolved && !opened && !replies?.get(entry.thread.id)"
+        v-if="folded"
         :thread="entry.thread"
         excerpt
         @click="opened = true"
