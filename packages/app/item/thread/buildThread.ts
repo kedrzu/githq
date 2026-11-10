@@ -134,7 +134,8 @@ type Timed =
  * An item's thread after the description as it is drawn, oldest first (item-activity F5, F13): every comment and event
  * read, by time — one person's events within 10 minutes on one line, an add and a remove of the same thing gone, one
  * author's commits as one push, a pull request's failed checks once they finished — then the user's comments on their
- * way, then those GitHub did not take. An event no person made is left out but a project workflow's Status change.
+ * way, then those GitHub did not take. An event no person made is left out but a project workflow's Status change, and
+ * so is the close GitHub gives with a merge, at its time: the merge says it all.
  * A long middle folds to one band ({@link ThreadFold}, `foldThread`).
  *
  * @__NO_SIDE_EFFECTS__
@@ -163,11 +164,14 @@ export function buildThread({
         }
     }
 
-    for (const event of [...detail.events.oldest, ...detail.events.newest]) {
+    const events = [...detail.events.oldest, ...detail.events.newest];
+    // Whichever page each was read in.
+    const mergedAt = new Set(events.flatMap(event => (event.kind === 'merged' ? [event.createdAt] : [])));
+    for (const event of events) {
         const at = Date.parse(event.createdAt);
         if (event.kind === 'commit') {
             timed.push({ at, kind: 'commit', commit: event });
-        } else if (isShown(event)) {
+        } else if (isShown(event) && !(event.kind === 'closed' && mergedAt.has(event.createdAt))) {
             timed.push({ at, kind: 'event', event });
         }
     }
@@ -390,21 +394,14 @@ function countFolded(folded: readonly ThreadItem[]): FoldCounts {
 
 /**
  * What GitHub counts in the thread and the detail does not hold: the comments before those read, the events' middle.
- * A close held with its merge (`closedToo`) counts as held; one in the middle cannot be told from any other event.
+ * A merge's close held counts as held, though not drawn; one in the middle cannot be told from any other event.
  */
 function countUnread(detail: ItemDetail): FoldCounts {
     const { comments, events } = detail;
     const heldComments = new Set([...comments.first, ...comments.nodes].map(comment => comment.id)).size;
-    const heldEvents = new Map([...events.oldest, ...events.newest].map(event => [event.id, event]));
-    let heldCommits = 0;
-    let heldOthers = 0;
-    for (const event of heldEvents.values()) {
-        if (event.kind === 'commit') {
-            heldCommits += 1;
-        } else {
-            heldOthers += event.kind === 'merged' && event.closedToo ? 2 : 1;
-        }
-    }
+    const heldEvents = [...new Map([...events.oldest, ...events.newest].map(event => [event.id, event])).values()];
+    const heldCommits = heldEvents.filter(event => event.kind === 'commit').length;
+    const heldOthers = heldEvents.length - heldCommits;
 
     return {
         comments: comments.olderCursor === null ? 0 : Math.max(0, comments.totalCount - heldComments),

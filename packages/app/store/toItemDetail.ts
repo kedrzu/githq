@@ -192,9 +192,7 @@ function toItemEvents(node: DetailEvents, commitCount: number): ItemEvents {
 }
 
 /**
- * A page of the events of the item `itemId`'s thread, oldest first; the kinds githq does not read left out, and so is
- * the ClosedEvent GitHub gives with a merge, at its time — the merge says it all (`closedToo`). Only within the page:
- * a merge and its close read in two pages stay two.
+ * A page of the events of the item `itemId`'s thread, oldest first; the kinds githq does not read left out.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -202,16 +200,7 @@ export function toThreadEvents(
     nodes: readonly (ThreadEventFieldsFragment | null)[] | null,
     itemId: string,
 ): ThreadEvent[] {
-    const events = mapNotNull(nodes ?? [], node => node && toThreadEvent(node, itemId));
-    const mergedAt = new Set(events.flatMap(event => (event.kind === 'merged' ? [event.createdAt] : [])));
-    const closedAt = new Set(events.flatMap(event => (event.kind === 'closed' ? [event.createdAt] : [])));
-    return events.flatMap(event => {
-        if (event.kind === 'closed' && mergedAt.has(event.createdAt)) {
-            return [];
-        }
-
-        return event.kind === 'merged' && closedAt.has(event.createdAt) ? [{ ...event, closedToo: true }] : [event];
-    });
+    return mapNotNull(nodes ?? [], node => node && toThreadEvent(node, itemId));
 }
 
 /**
@@ -310,7 +299,6 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
                 kind: 'merged',
                 commit: node.commit,
                 into: node.mergeRefName,
-                closedToo: false,
             };
         case 'HeadRefDeletedEvent':
             return { ...toEventBase(node), kind: 'headRefDeleted', branch: node.headRefName };

@@ -395,7 +395,7 @@ test('a long thread keeps its first events apart from its newest, with the curso
     });
 });
 
-test('a merged pull request is told merged once: the ClosedEvent GitHub gives with the merge, at its time, is left out', () => {
+test('a merged pull request keeps the ClosedEvent GitHub gives with the merge: every event held, no middle', () => {
     const merger = { login: 'mlaine', avatarUrl: '' };
     const closedByHand: ThreadEventFieldsFragment = {
         __typename: 'ClosedEvent',
@@ -429,10 +429,14 @@ test('a merged pull request is told merged once: the ClosedEvent GitHub gives wi
         FETCHED_AT,
     );
 
-    expect(detail?.events.newest).toMatchObject([
-        { id: 'CE_1', kind: 'closed' },
-        { id: 'ME_1', kind: 'merged', closedToo: true },
-    ]);
+    expect(detail?.events).toMatchObject({
+        newest: [
+            { id: 'CE_1', kind: 'closed' },
+            { id: 'ME_1', kind: 'merged' },
+            { id: 'CE_2', kind: 'closed' },
+        ],
+        middle: null,
+    });
 });
 
 test('a pull request linked to an issue is the other side, whichever side GitHub reports the link from', () => {

@@ -325,14 +325,50 @@ test('the CI line names the commit the detail read its checks with, though the r
     });
 });
 
-test("the fold's other events leave out the close a merge came with, held as one with it", () => {
-    const merged: ThreadEvent = {
-        ...base('ME_1', MLAINE, 100),
-        kind: 'merged',
-        commit: null,
-        into: 'main',
-        closedToo: true,
+test('a merge is told once: the close GitHub gives with it, at its time, is not drawn, wherever each was read', () => {
+    const detail: ItemDetail = {
+        ...F1_PULL_REQUEST_DETAIL,
+        comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
+        events: {
+            totalCount: 3,
+            commitCount: 0,
+            // The merge in the first page, its close in the newest one.
+            oldest: [merged('ME_1', 100)],
+            newest: [closed('CE_1', 50), closed('CE_2', 100)],
+            middle: null,
+        },
     };
+
+    const thread = buildThread({ detail });
+
+    expect(idsOf(thread)).toEqual(['CE_1', 'ME_1']);
+    expect(lineOf(thread, 'ME_1').parts.map(part => part.kind)).toEqual(['single']);
+});
+
+test("a merged pull request held whole folds as any other: the first 2 above, the band's counts what showing it reveals", () => {
+    const detail: ItemDetail = {
+        ...F1_PULL_REQUEST_DETAIL,
+        comments: { totalCount: 25, first: [], nodes: manyComments(25), olderCursor: null },
+        events: {
+            totalCount: 2,
+            commitCount: 0,
+            oldest: [],
+            newest: [merged('ME_1', 10), closed('CE_1', 10)],
+            middle: null,
+        },
+    };
+
+    const thread = buildThread({ detail });
+    const shown = buildThread({ detail, unfolded: true });
+
+    expect(idsOf(thread)).toEqual(['C1', 'C2', 'fold', 'C21', 'C22', 'C23', 'C24', 'C25']);
+    expect(foldOf(thread)).toEqual(fold({ comments: 18, otherEvents: 1 }));
+    const revealed = shown.slice(2, -5);
+    expect(revealed.filter(entry => entry.kind === 'comment')).toHaveLength(18);
+    expect(revealed.filter(entry => entry.kind === 'events')).toHaveLength(1);
+});
+
+test("the fold's other events count the close a merge came with, held, as GitHub does: once with the merge", () => {
     const detail: ItemDetail = {
         ...F1_PULL_REQUEST_DETAIL,
         comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
@@ -341,7 +377,7 @@ test("the fold's other events leave out the close a merge came with, held as one
             totalCount: 6,
             commitCount: 0,
             oldest: [{ ...base('E1', DKIM, 0), kind: 'pinned' }],
-            newest: [merged],
+            newest: [merged('ME_1', 100), closed('CE_1', 100)],
             middle: { after: 'a', before: 'b' },
         },
     };
@@ -433,6 +469,14 @@ function at(minutes: number) {
 
 function base(id: string, actor: ItemUser | null, minutes: number) {
     return { id, actor, createdAt: at(minutes) };
+}
+
+function merged(id: string, minutes: number): ThreadEvent {
+    return { ...base(id, MLAINE, minutes), kind: 'merged', commit: null, into: 'main' };
+}
+
+function closed(id: string, minutes: number): ThreadEvent {
+    return { ...base(id, MLAINE, minutes), kind: 'closed', stateReason: null, closer: null, duplicateOf: null };
 }
 
 function ref(id: string, number: number) {

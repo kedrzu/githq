@@ -183,7 +183,6 @@ export const EVERY_PULL_REQUEST_EVENT: readonly ThreadEvent[] = spaced([
         kind: 'merged',
         commit: { abbreviatedOid: '3f2a9b1', url: 'https://github.com/kedrzu/githq/commit/3f2a9b1' },
         into: 'main',
-        closedToo: true,
     },
     { kind: 'headRefDeleted', branch: 'idb-store' },
 ]);
