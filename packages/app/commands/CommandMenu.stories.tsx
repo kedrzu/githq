@@ -232,7 +232,7 @@ const Harness = defineComponent({
                             detail={D1_ISSUE_DETAIL}
                             arrangement="panel"
                             now={SAMPLE_NOW}
-                            loadAllComments={() => Promise.resolve()}
+                            loadThreadMiddle={() => Promise.resolve()}
                             editing={props.editing}
                             onEdit={edit}
                         />

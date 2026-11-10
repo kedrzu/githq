@@ -3,13 +3,24 @@ import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { shallowReactive } from 'vue';
 
+import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { ItemComment } from '@/store/ItemDetailTypes.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import * as stories from './ItemThread.stories.js';
 
-const { IssueInPanel, PullRequestInPanel, NotSent, NotSentReadOnly, EditRefused, SendingAmongEvents } =
-    composeStories(stories);
+const {
+    IssueInPanel,
+    PullRequestInPanel,
+    NotSent,
+    NotSentReadOnly,
+    EditRefused,
+    SendingAmongEvents,
+    LongThread,
+    Loading,
+    Empty,
+    Failed,
+} = composeStories(stories);
 
 /** The card of the comment that reads `text`. */
 function card(text: string) {
@@ -24,36 +35,49 @@ async function openMenu(text: string) {
 const MINE = 'Opened #1205';
 const THEIRS = 'Same on mobile.';
 
-test('comments older than those read are folded before them; the fold reads them and is busy until they are in', async () => {
-    const { promise, resolve } = Promise.withResolvers<void>();
-    const loadAll = vi.fn(() => promise);
-    await IssueInPanel.run({ args: { ...IssueInPanel.args, loadAll } });
+test('what GitHub has and the detail does not hold is folded; the band reads it, busy until it is in, and says when it failed', async () => {
+    let answer = Promise.withResolvers<void>();
+    const loadMiddle = vi.fn(() => answer.promise);
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, loadMiddle } });
 
-    const fold = page.getByRole('button', { name: /^Show 2 earlier comments/ });
+    const fold = page.getByRole('button', { name: /^Show 2 earlier events/ });
+    await expect.element(fold).toHaveTextContent(/2 comments/);
     await userEvent.click(fold);
-    expect(loadAll).toHaveBeenCalledTimes(1);
+    expect(loadMiddle).toHaveBeenCalledTimes(1);
     await expect.element(fold).toHaveAttribute('aria-busy', 'true');
 
-    resolve();
+    answer.reject(new Error('GitHub cannot be reached'));
+    await expect.element(fold).toHaveTextContent(/They couldn.t be loaded from GitHub\. Try again\./);
     await expect.element(fold).not.toHaveAttribute('aria-busy');
+
+    // Read again from the band; still not held, the fold stays, without the failure.
+    answer = Promise.withResolvers<void>();
+    await userEvent.click(fold);
+    expect(loadMiddle).toHaveBeenCalledTimes(2);
+    answer.resolve();
+    await expect.element(fold).not.toHaveAttribute('aria-busy');
+    await expect.element(fold).not.toHaveTextContent(/couldn.t be loaded/);
 });
 
-test('the comments the fold reveals take the focus at the first of them, so the keyboard keeps its place', async () => {
+test('the items the fold reveals go in place, the first of them taking the focus, so the keyboard keeps its place', async () => {
     const [newest] = D1_ISSUE_DETAIL.comments.nodes;
     const older: ItemComment[] = [
         { ...newest!, id: 'C_OLDER_1', bodyHtml: '<p>The first comment on the issue.</p>' },
         { ...newest!, id: 'C_OLDER_2', bodyHtml: '<p>The second comment on the issue.</p>' },
     ];
     // GitHub's answer: the detail with every comment, as the store puts it in.
-    const loadAll = vi.fn(() => {
+    const loadMiddle = vi.fn(() => {
         const { comments } = D1_ISSUE_DETAIL;
-        args.detail = { ...D1_ISSUE_DETAIL, comments: { ...comments, nodes: [...older, ...comments.nodes] } };
+        args.detail = {
+            ...D1_ISSUE_DETAIL,
+            comments: { ...comments, nodes: [...older, ...comments.nodes], olderCursor: null },
+        };
         return Promise.resolve();
     });
-    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadAll });
+    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadMiddle });
     await IssueInPanel.run({ args });
 
-    page.getByRole('button', { name: /^Show 2 earlier comments/ })
+    page.getByRole('button', { name: /^Show 2 earlier events/ })
         .element()
         .focus();
     await userEvent.keyboard('{Enter}');
@@ -62,6 +86,71 @@ test('the comments the fold reveals take the focus at the first of them, so the 
     await expect
         .element(page.getByRole('listitem').filter({ hasText: 'The first comment on the issue.' }))
         .toHaveFocus();
+});
+
+test('a long thread read whole folds its middle by the counts of each group, and shows it without asking GitHub', async () => {
+    const loadMiddle = vi.fn(() => Promise.resolve());
+    await LongThread.run({ args: { ...LongThread.args, loadMiddle } });
+
+    const entries = page.getByRole('listitem');
+    const fold = page.getByRole('button', { name: /^Show 23 earlier events/ });
+    await expect.element(fold).toHaveTextContent(/15 comments\s*8 other events/);
+    expect(fold.element().textContent).not.toMatch(/commit/);
+    // The first two, the fold, the newest five.
+    expect(entries.elements()).toHaveLength(8);
+    await expect.element(entries.nth(1)).toHaveTextContent(/added this to parent/);
+    await expect.element(entries.nth(3)).toHaveTextContent('Fixed by #15 once it lands');
+
+    await userEvent.click(fold);
+
+    expect(loadMiddle).not.toHaveBeenCalled();
+    await expect.element(fold).not.toBeInTheDocument();
+    expect(entries.elements()).toHaveLength(30);
+    await expect.element(entries.nth(2)).toHaveFocus();
+});
+
+test('a comment with an edit GitHub did not take is never folded away: its editor stays in view', async () => {
+    const failedEdits: FailedTextEdit[] = [
+        {
+            itemId: LongThread.args.item!.id,
+            commentId: 'C_LONG_3',
+            body: 'Follow-up 3, edited.',
+            reason: { kind: 'offline' },
+        },
+    ];
+    await LongThread.run({ args: { ...LongThread.args, failedEdits } });
+
+    await expect.element(page.getByRole('textbox', { name: 'Edit comment' })).toHaveValue('Follow-up 3, edited.');
+    await expect.element(page.getByRole('button', { name: /^Show \d+ earlier events/ })).toBeInTheDocument();
+});
+
+test('F16: opened the first time, the description stands and the rail says what is being read, as the row counts it', async () => {
+    await Loading.run();
+
+    await expect.element(page.getByRole('status')).toHaveTextContent('Loading 4 comments and the events from GitHub');
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toBeInTheDocument();
+    expect(page.getByRole('alert').query()).toBeNull();
+});
+
+test('F16: with nothing between them, the description goes straight to the composer', async () => {
+    await Empty.run();
+
+    await expect.element(page.getByText('Recurring visits created before the DST change')).toBeInTheDocument();
+    expect(page.getByRole('listitem').query()).toBeNull();
+    expect(page.getByRole('status').query()).toBeNull();
+});
+
+test('F16: not given by GitHub, the rail says so with Try again, which reads it again, and Open on GitHub', async () => {
+    const readAgain = vi.fn(() => Promise.resolve());
+    await Failed.run({ args: { ...Failed.args, readAgain } });
+
+    await expect.element(page.getByRole('alert')).toHaveTextContent("The comments and events couldn't be loaded");
+    await expect
+        .element(page.getByRole('link', { name: 'Open on GitHub' }))
+        .toHaveAttribute('href', Failed.args.item!.url);
+    await userEvent.click(page.getByRole('button', { name: 'Try again' }));
+    expect(readAgain).toHaveBeenCalledTimes(1);
+    expect(page.getByRole('status').query()).toBeNull();
 });
 
 test('with every comment read there is nothing to fold', async () => {
@@ -304,16 +393,20 @@ test('Edit from a right click leaves the focus in the editor it opened, not wher
         id: 'C_OLDER',
         body: 'An older one of mine.',
         bodyHtml: '<p>An older one of mine.</p>',
+        createdAt: new Date(Date.parse(D1_ISSUE_DETAIL.comments.nodes[0]!.createdAt) - 60 * 60_000).toISOString(),
     };
-    const loadAll = vi.fn(() => {
+    const loadMiddle = vi.fn(() => {
         const { comments } = D1_ISSUE_DETAIL;
-        args.detail = { ...D1_ISSUE_DETAIL, comments: { ...comments, nodes: [older, ...comments.nodes] } };
+        args.detail = {
+            ...D1_ISSUE_DETAIL,
+            comments: { totalCount: 3, first: [], nodes: [older, ...comments.nodes], olderCursor: null },
+        };
         return Promise.resolve();
     });
-    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadAll });
+    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadMiddle });
     await IssueInPanel.run({ args });
     // The comment the fold revealed has the focus, which the closing menu would give back.
-    await userEvent.click(page.getByRole('button', { name: /^Show 2 earlier comments/ }));
+    await userEvent.click(page.getByRole('button', { name: /^Show 2 earlier events/ }));
     await expect.element(card('An older one of mine.')).toHaveFocus();
 
     await userEvent.click(card('An older one of mine.').getByText('An older one'), { button: 'right' });

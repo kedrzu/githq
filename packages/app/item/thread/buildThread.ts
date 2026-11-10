@@ -13,6 +13,14 @@ import type { Item, ItemLabel, ItemUser } from '@/store/ItemTypes.js';
 
 /** How long one person's events straight after each other share a line, from the first of them (F13). */
 const BURST_MS = 10 * 60_000;
+/** A thread folds once it has more items than this (F5), the description and the composer apart. */
+const FOLD_OVER = 20;
+/** How many of the first items stay above the fold. */
+const KEEP_ABOVE = 2;
+/** How many of the last items stay below it, at least. */
+const KEEP_BELOW = 5;
+/** Fewer items than this to fold: nothing folds. */
+const FOLD_AT_LEAST = 6;
 
 /**
  * One entry of an item's thread, as it is drawn (item-activity F5, F13): the description, a comment, a line of one
@@ -24,7 +32,8 @@ export type ThreadItem =
     | ThreadEventLine
     | ThreadPush
     | ThreadChecksFailed
-    | { readonly kind: 'failedComment'; readonly id: string; readonly failed: FailedComment };
+    | { readonly kind: 'failedComment'; readonly id: string; readonly failed: FailedComment }
+    | ThreadFold;
 
 /**
  * Events of one person straight after each other (a burst, F13) on one line: the parts in the order they first came,
@@ -86,12 +95,32 @@ export interface ThreadChecksFailed {
     readonly updatedAt: string;
 }
 
+/**
+ * The middle of a long thread, folded to one band (F5): what it hides, counted by group — those GitHub has and the
+ * detail does not hold yet among them. Their sum is how many it hides.
+ */
+export interface ThreadFold {
+    readonly kind: 'fold';
+    readonly id: 'fold';
+    /** The commits of the pushes it hides. */
+    readonly commits: number;
+    readonly comments: number;
+    /** The events but commits; a line of one person's events counts once. */
+    readonly otherEvents: number;
+    /** Some of them are not read yet: showing them reads the thread's middle first. */
+    readonly unread: boolean;
+}
+
 /** The parameters of {@link buildThread}. */
 export interface BuildThreadParams {
     readonly item: Item;
     readonly detail: ItemDetail;
     /** The user's comments GitHub did not take, in the order they were written. */
     readonly failedComments?: readonly FailedComment[];
+    /** The user showed the folded middle: nothing folds, unless the detail no longer holds all of it. */
+    readonly unfolded?: boolean;
+    /** The comments the user must see, never folded away: an editor open on them, an edit GitHub did not take. */
+    readonly keepShown?: ReadonlySet<string>;
 }
 
 type MergingKind = Exclude<ThreadEventPart['kind'], 'single'>;
@@ -107,10 +136,17 @@ type Timed =
  * read, by time — one person's events within 10 minutes on one line, an add and a remove of the same thing gone, one
  * author's commits as one push, a pull request's failed checks once they finished — then the user's comments on their
  * way, then those GitHub did not take. An event no person made is left out but a project workflow's Status change.
+ * A long middle folds to one band ({@link ThreadFold}, `foldThread`).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildThread({ item, detail, failedComments = [] }: BuildThreadParams): ThreadItem[] {
+export function buildThread({
+    item,
+    detail,
+    failedComments = [],
+    unfolded = false,
+    keepShown = new Set(),
+}: BuildThreadParams): ThreadItem[] {
     const timed: Timed[] = [];
     const pending: ThreadItem[] = [];
     const seen = new Set<string>();
@@ -145,12 +181,161 @@ export function buildThread({ item, detail, failedComments = [] }: BuildThreadPa
 
     // Stable: what GitHub lists in one order at one time stays in it.
     const ordered = timed.toSorted((a, b) => a.at - b.at);
-    return [
-        { kind: 'description', id: 'description' },
+    const items = [
         ...groupTimed(ordered),
         ...pending,
         ...failedComments.map((failed): ThreadItem => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
     ];
+    return [{ kind: 'description', id: 'description' }, ...foldThread(items, { detail, unfolded, keepShown })];
+}
+
+/** What {@link foldThread} folds by. */
+interface FoldParams {
+    readonly detail: ItemDetail;
+    readonly unfolded: boolean;
+    readonly keepShown: ReadonlySet<string>;
+}
+
+/**
+ * The F5 rule: more than 20 items fold — the first 2 stay above, and below stays everything from {@link getBelowStart};
+ * fewer than 6 to fold and nothing folds. What GitHub has and the detail does not hold counts as folded, and folds
+ * whatever the counts: it cannot be shown.
+ */
+function foldThread(items: readonly ThreadItem[], { detail, unfolded, keepShown }: FoldParams): ThreadItem[] {
+    const unread = countUnread(detail);
+    const unreadCount = unread.commits + unread.comments + unread.otherEvents;
+    if (unfolded && unreadCount === 0) {
+        return [...items];
+    }
+
+    const above = countAbove(items, detail);
+    const below = Math.max(above, getBelowStart(items, above, keepShown));
+    const folded = items.slice(above, below);
+    if (unreadCount === 0 && (items.length <= FOLD_OVER || folded.length < FOLD_AT_LEAST)) {
+        return [...items];
+    }
+
+    const counts = countFolded(folded);
+    const fold: ThreadFold = {
+        kind: 'fold',
+        id: 'fold',
+        commits: counts.commits + unread.commits,
+        comments: counts.comments + unread.comments,
+        otherEvents: counts.otherEvents + unread.otherEvents,
+        unread: unreadCount > 0,
+    };
+    return [...items.slice(0, above), fold, ...items.slice(below)];
+}
+
+/** The first items that stay above the fold: 2, but never one GitHub told after what the detail does not hold. */
+function countAbove(items: readonly ThreadItem[], detail: ItemDetail) {
+    const firstComments = new Set(detail.comments.first.map(comment => comment.id));
+    const oldestEvents = new Set(detail.events.oldest.map(event => event.id));
+    const commentGap = detail.comments.olderCursor !== null;
+    const eventGap = detail.events.middle !== null;
+    let above = 0;
+    for (const entry of items.slice(0, KEEP_ABOVE)) {
+        if (isAfterGap(entry)) {
+            break;
+        }
+
+        above += 1;
+    }
+
+    return above;
+
+    function isAfterGap(entry: ThreadItem) {
+        switch (entry.kind) {
+            case 'comment':
+                return commentGap && !firstComments.has(entry.id);
+            case 'events':
+            case 'push':
+                return eventGap && !oldestEvents.has(entry.id);
+            case 'checksFailed':
+                return eventGap;
+            case 'failedComment':
+                return true;
+            case 'description':
+            case 'fold':
+                return false;
+            default:
+                return assertNever(entry);
+        }
+    }
+}
+
+/**
+ * Where what stays below the fold starts (F5): the earliest of the 5th item from the end and the first item, after the
+ * `above` ones, the user must see ({@link mustShow}). M4 adds the oldest review or code comment with an unresolved
+ * thread to these, M5 the first item new since the user looked.
+ */
+function getBelowStart(items: readonly ThreadItem[], above: number, keepShown: ReadonlySet<string>) {
+    const fifthFromEnd = Math.max(0, items.length - KEEP_BELOW);
+    const firstShown = items.findIndex((entry, index) => index >= above && mustShow(entry, keepShown));
+    return firstShown >= 0 ? Math.min(fifthFromEnd, firstShown) : fifthFromEnd;
+}
+
+/** Never folded away: the user's comment on its way or not taken, an edit of theirs in flight, open or refused. */
+function mustShow(entry: ThreadItem, keepShown: ReadonlySet<string>) {
+    switch (entry.kind) {
+        case 'comment':
+            return entry.comment.pendingBody !== undefined || keepShown.has(entry.id);
+        case 'failedComment':
+            return true;
+        default:
+            return false;
+    }
+}
+
+/** What the fold's groups count. */
+interface FoldCounts {
+    readonly commits: number;
+    readonly comments: number;
+    readonly otherEvents: number;
+}
+
+function countFolded(folded: readonly ThreadItem[]): FoldCounts {
+    let commits = 0;
+    let comments = 0;
+    let otherEvents = 0;
+    for (const entry of folded) {
+        switch (entry.kind) {
+            case 'comment':
+                comments += 1;
+                break;
+            case 'events':
+            case 'checksFailed':
+                otherEvents += 1;
+                break;
+            case 'push':
+                commits += entry.commits.length;
+                break;
+            case 'description':
+            case 'failedComment':
+            case 'fold':
+                break;
+            default:
+                assertNever(entry);
+        }
+    }
+
+    return { commits, comments, otherEvents };
+}
+
+/** What GitHub counts in the thread and the detail does not hold: the comments before those read, the events' middle. */
+function countUnread(detail: ItemDetail): FoldCounts {
+    const { comments, events } = detail;
+    const heldComments = new Set([...comments.first, ...comments.nodes].map(comment => comment.id)).size;
+    const held = new Map([...events.oldest, ...events.newest].map(event => [event.id, event.kind === 'commit']));
+    const heldCommits = [...held.values()].filter(Boolean).length;
+    return {
+        comments: comments.olderCursor === null ? 0 : Math.max(0, comments.totalCount - heldComments),
+        commits: events.middle === null ? 0 : Math.max(0, events.commitCount - heldCommits),
+        otherEvents:
+            events.middle === null
+                ? 0
+                : Math.max(0, events.totalCount - events.commitCount - (held.size - heldCommits)),
+    };
 }
 
 /** Never shown (F13): an automatic event with no person, but a project workflow's Status change. */

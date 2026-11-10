@@ -32,7 +32,7 @@ const meta = {
         position: { index: 6, count: 13 },
         closes: [],
         now: SAMPLE_NOW,
-        loadAllComments: fn(() => Promise.resolve()),
+        loadThreadMiddle: fn(() => Promise.resolve()),
         editing: SAMPLE_MAINTAINER_EDITING,
         onEdit: fn(),
         onNeedProjects: fn(),

@@ -1,10 +1,22 @@
-showEarlierComments:
+showEarlier:
   plural: count
   en:
-    one: Show 1 earlier comment
-    many: Show {count} earlier comments
+    one: Show 1 earlier event
+    many: Show {count} earlier events
+commits:
+  plural: count
+  en:
+    one: 1 commit
+    many: '{count} commits'
 comments:
   plural: count
   en:
     one: 1 comment
     many: '{count} comments'
+otherEvents:
+  plural: count
+  en:
+    one: 1 other event
+    many: '{count} other events'
+failed:
+  en: They couldn't be loaded from GitHub. Try again.

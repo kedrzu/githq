@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
+import type { IssueDetail, ItemComment } from '@/store/ItemDetailTypes.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { F5_PULL_REQUEST, F5_PULL_REQUEST_DETAIL, I1_ISSUE, I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
@@ -39,7 +40,7 @@ const meta = {
         item: D1_ISSUE,
         detail: D1_ISSUE_DETAIL,
         now: SAMPLE_NOW,
-        loadAll: fn(() => Promise.resolve()),
+        loadMiddle: fn(() => Promise.resolve()),
         canQuote: true,
     },
     // On an item view's background, as wide as its main column (`parameters.width`), ending in the composer.
@@ -199,5 +200,40 @@ export const EditAsksToDiscard: Story = {
     },
 };
 
-/** Opened before its detail is read: the composer is there already. */
+/**
+ * I2-like, on a page: I1's thread grown long — the first two items above the fold, the middle folded to one band with
+ * its counts by group, the newest five below.
+ */
+export const LongThread: Story = { args: { item: I1_ISSUE, detail: longThread() }, parameters: ON_PAGE };
+
+/** I2: the same in the side panel, the band on two lines. */
+export const LongThreadInPanel: Story = { args: LongThread.args };
+
+/** F16, left: opened the first time, before its thread is on this device — the description's head, a skeleton. */
 export const Loading: Story = { args: { detail: null } };
+
+/** F16, middle: nothing happened yet — the rail runs from the description straight to the composer. */
+export const Empty: Story = {
+    args: {
+        detail: {
+            ...D1_ISSUE_DETAIL,
+            comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
+        },
+    },
+};
+
+/** F16, right: GitHub did not give the thread — why, Try again and Open on GitHub. */
+export const Failed: Story = { args: { detail: null, failed: true, readAgain: fn(() => Promise.resolve()) } };
+
+/** I1's thread with 16 more comments by sofiab, an hour apart, after its events. */
+function longThread(): IssueDetail {
+    const [template] = I1_ISSUE_DETAIL.comments.nodes;
+    const more = Array.from({ length: 16 }, (_, index): ItemComment => ({
+        ...template!,
+        id: `C_LONG_${index + 1}`,
+        bodyHtml: `<p>Follow-up ${index + 1}.</p>`,
+        createdAt: new Date(SAMPLE_NOW - (17 - index) * 60 * 60_000 + 30 * 60_000).toISOString(),
+    }));
+    const { comments } = I1_ISSUE_DETAIL;
+    return { ...I1_ISSUE_DETAIL, comments: { ...comments, totalCount: 18, nodes: [...comments.nodes, ...more] } };
+}

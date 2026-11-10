@@ -6,7 +6,7 @@ import type { ItemUser } from '@/store/ItemTypes.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import { buildThread } from './buildThread.js';
-import type { ThreadEventLine, ThreadItem } from './buildThread.js';
+import type { ThreadEventLine, ThreadFold, ThreadItem } from './buildThread.js';
 
 const START = Date.parse('2026-11-02T10:00:00Z');
 const MLAINE: ItemUser = { login: 'mlaine', avatarUrl: '' };
@@ -212,10 +212,138 @@ test('no CI event while a check still runs, when none failed, or when GitHub cut
     }
 });
 
+test('more than 20 items fold: the first 2 stay above, the last 5 below, the rest is one band', () => {
+    const twenty = manyComments(20);
+    expect(idsOf(buildIssueThread([], twenty))).toEqual(twenty.map(entry => entry.id));
+
+    const thread = buildIssueThread([], manyComments(21));
+
+    expect(idsOf(thread)).toEqual(['C1', 'C2', 'fold', 'C17', 'C18', 'C19', 'C20', 'C21']);
+    expect(foldOf(thread)).toEqual(fold({ comments: 14 }));
+});
+
+test('fewer than 6 left to fold: nothing folds; what the user must see stays below, the fold ending before it', () => {
+    const many = manyComments(21);
+
+    // The 7th held open (an editor, a refused edit): 4 left to fold.
+    const short = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), keepShown: new Set(['C7']) });
+    expect(idsOf(short)).toEqual(many.map(entry => entry.id));
+
+    const thread = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), keepShown: new Set(['C9']) });
+    expect(idsOf(thread)).toEqual(['C1', 'C2', 'fold', ...many.slice(8).map(entry => entry.id)]);
+    expect(foldOf(thread)).toEqual(fold({ comments: 6 }));
+});
+
+test("the user's comments on their way, refused or being edited are never folded away, however many", () => {
+    const sent = manyComments(20);
+    const editing = { ...sent[9]!, pendingBody: 'Edited, on its way' };
+    const pending = [1, 2, 3, 4, 5, 6].map(index => ({ ...comment(`pending:${index}`, MLAINE, 100 + index) }));
+    const thread = buildThread({
+        item: D1_ISSUE,
+        detail: issueDetail([], [...sent.slice(0, 9), editing, ...sent.slice(10), ...pending]),
+        failedComments: [failedComment(1)],
+    });
+
+    expect(idsOf(thread)).toEqual([
+        'C1',
+        'C2',
+        'fold',
+        ...sent.slice(9).map(entry => entry.id),
+        ...pending.map(entry => entry.id),
+        'failed:1',
+    ]);
+});
+
+test('the fold counts by group: the commits of its pushes, its comments, its other events with one line counted once', () => {
+    const written = Array.from({ length: 18 }, (_, index) =>
+        comment(`C${index + 1}`, SOFIAB, index < 2 ? index + 1 : index + 10),
+    );
+    const thread = buildPullRequestThread(
+        [
+            commitAt('a1', MLAINE, 3),
+            commitAt('a2', MLAINE, 4),
+            commitAt('a3', MLAINE, 5),
+            { ...base('E1', DKIM, 6), kind: 'labeled', label: BUG },
+            { ...base('E2', DKIM, 7), kind: 'labeled', label: STORAGE },
+            { ...base('E3', DKIM, 8), kind: 'pinned' },
+            commitAt('b1', SOFIAB, 9),
+            commitAt('b2', SOFIAB, 10),
+        ],
+        written,
+    );
+
+    // C1, C2; folded: 3 commits, DKIM's line, 2 commits, C3–C13; below: C14–C18.
+    expect(idsOf(thread)).toEqual(['C1', 'C2', 'fold', 'C14', 'C15', 'C16', 'C17', 'C18']);
+    expect(foldOf(thread)).toEqual(fold({ commits: 5, comments: 11, otherEvents: 1 }));
+});
+
+test('what GitHub has and the detail does not hold counts as folded, and folds however short the rest', () => {
+    const [c1, c2, c3, c4, c5] = manyComments(5);
+    const detail: ItemDetail = {
+        ...D1_ISSUE_DETAIL,
+        comments: { totalCount: 12, first: [c1!, c2!], nodes: [c3!, c4!, c5!], olderCursor: 'older' },
+        events: {
+            totalCount: 9,
+            commitCount: 0,
+            oldest: [{ ...base('E1', DKIM, 0.5), kind: 'pinned' }],
+            newest: [{ ...base('E2', DKIM, 200), kind: 'unpinned' }],
+            middle: { after: 'a', before: 'b' },
+        },
+    };
+
+    const thread = buildThread({ item: D1_ISSUE, detail });
+
+    expect(idsOf(thread)).toEqual(['E1', 'C1', 'fold', 'C2', 'C3', 'C4', 'C5', 'E2']);
+    expect(foldOf(thread)).toEqual(fold({ comments: 7, otherEvents: 7, unread: true }));
+    // The first comments not held either: nothing GitHub told after the comments not held goes above them.
+    const newestOnly: ItemDetail = { ...detail, comments: { ...detail.comments, first: [] } };
+    expect(idsOf(buildThread({ item: D1_ISSUE, detail: newestOnly }))).toEqual(['E1', 'fold', 'C3', 'C4', 'C5', 'E2']);
+    // Shown, with the middle still not held: it stays folded — nothing to show it with.
+    expect(foldOf(buildThread({ item: D1_ISSUE, detail, unfolded: true })).unread).toBe(true);
+});
+
+test('shown by the user, a long thread read whole folds no more', () => {
+    const many = manyComments(30);
+    const thread = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), unfolded: true });
+
+    expect(idsOf(thread)).toEqual(many.map(entry => entry.id));
+});
+
 const PROJECT = { title: 'tasklet Roadmap', url: 'https://github.com/users/mlaine/projects/1' };
 
 function buildIssueThread(events: ThreadEvent[], comments: ItemComment[] = []) {
     return buildThread({ item: D1_ISSUE, detail: issueDetail(events, comments) });
+}
+
+function buildPullRequestThread(events: ThreadEvent[], comments: ItemComment[]) {
+    return buildThread({ item: F1_PULL_REQUEST, detail: pullRequestDetail(events, comments) });
+}
+
+/** `count` comments by sofiab, a minute apart, `C1` the oldest. */
+function manyComments(count: number) {
+    return Array.from({ length: count }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 1));
+}
+
+/** The ids after the description. */
+function idsOf(thread: ThreadItem[]) {
+    return withoutDescription(thread).map(entry => entry.id);
+}
+
+function foldOf(thread: ThreadItem[]): ThreadFold {
+    const found = thread.find(entry => entry.kind === 'fold');
+    if (found?.kind !== 'fold') {
+        throw new Error('No fold');
+    }
+
+    return found;
+}
+
+function fold(counts: Partial<Omit<ThreadFold, 'kind' | 'id'>>): ThreadFold {
+    return { kind: 'fold', id: 'fold', commits: 0, comments: 0, otherEvents: 0, unread: false, ...counts };
+}
+
+function failedComment(id: number): FailedComment {
+    return { id, itemId: D1_ISSUE.id, body: 'Not sent', reason: { kind: 'offline' }, retrying: false };
 }
 
 function issueDetail(newest: ThreadEvent[], nodes: ItemComment[], first: ItemComment[] = []): ItemDetail {

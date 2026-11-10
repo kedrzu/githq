@@ -1,10 +1,12 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. When GitHub has older comments than were read, a fold after the description reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device, the description's card stands with its head and a skeleton, the rail says what is being read with a skeleton of its own, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
+import Skeleton from '@/components/Skeleton.vue';
+import SkeletonBar from '@/components/SkeletonBar.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
@@ -21,6 +23,7 @@ import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadEvent from './ItemThreadEvent.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
 import ItemThreadMenu from './ItemThreadMenu.vue';
+import ItemThreadMissing from './ItemThreadMissing.vue';
 import ItemThreadPush from './ItemThreadPush.vue';
 
 const props = defineProps<{
@@ -29,8 +32,12 @@ const props = defineProps<{
   detail: ItemDetail | null;
   /** Epoch ms the ages are counted to. */
   now: number;
-  /** Reads the comments not read yet; resolves once all are in. */
-  loadAll: () => Promise<void>;
+  /** Reads the middle of the thread the detail does not hold — events and comments; resolves once all are in. */
+  loadMiddle: () => Promise<void>;
+  /** None of the thread is on this device and GitHub did not give it: not reached, or refused. */
+  failed?: boolean;
+  /** Reads the detail again after {@link failed}; resolves once GitHub answered. */
+  readAgain?: () => Promise<void>;
   /** The user's comments GitHub did not take, in the order they were written. */
   failedComments?: readonly FailedComment[];
   /** Who wrote them: the user signed in. */
@@ -68,8 +75,12 @@ defineSlots<{
 const t = useTranslate();
 const editTexts = useEditTexts();
 const commentsRef = useTemplateRef('comments');
-/** The first comment the fold revealed: focusable, so the keyboard picks up where the fold was. */
+/** The first item the fold revealed: focusable, so the keyboard picks up where the fold was. */
 const revealedId = ref<string | null>(null);
+/** The user showed the folded middle. */
+const unfolded = ref(false);
+/** Reading the folded middle failed: the band says so. */
+const foldFailed = ref(false);
 /** Each card edited in place, by its comment's id; `null` for the description. */
 const editorsRef = shallowRef<ReadonlyMap<string | null, EditorText>>(new Map());
 /** The editor whose footer asks whether to discard its changes. */
@@ -87,16 +98,17 @@ let editOpened = false;
 /** The comment Delete… picked, asked about once the menu closed. */
 let deleting: string | null = null;
 
-/** Everything after the description, in the thread's order. */
+/** Everything after the description, in the thread's order: an edited comment is never folded away. */
 const entries = computed(() =>
   props.detail
-    ? buildThread({ item: props.item, detail: props.detail, failedComments: props.failedComments }).filter(
-        entry => entry.kind !== 'description',
-      )
+    ? buildThread({
+        item: props.item,
+        detail: props.detail,
+        failedComments: props.failedComments,
+        unfolded: unfolded.value,
+        keepShown: new Set([...editorsRef.value.keys()].filter(id => id !== null)),
+      }).filter(entry => entry.kind !== 'description')
     : [],
-);
-const folded = computed(() =>
-  props.detail ? props.detail.comments.totalCount - entries.value.filter(entry => entry.kind === 'comment').length : 0,
 );
 
 // Another item: none of the last one's editors stays — its Update would save that item's text into this one's.
@@ -110,6 +122,8 @@ watch(
       focusedEditor.value = undefined;
       deletingId.value = null;
       revealedId.value = null;
+      unfolded.value = false;
+      foldFailed.value = false;
     }
 
     for (const edit of failed ?? []) {
@@ -260,10 +274,27 @@ function copyLink(url: string) {
   void navigator.clipboard.writeText(url);
 }
 
-// The fold goes with what it hid; focus moves to the first comment it revealed instead of falling to the page.
-async function showEarlier() {
-  await props.loadAll();
-  revealedId.value = props.detail?.comments.nodes[0]?.id ?? null;
+// The fold goes with what it hid; focus moves to the first item it revealed, where it stood, instead of falling to the
+// page. What the detail does not hold is read first; a read that fails leaves the fold, saying so.
+async function showEarlier(unread: boolean) {
+  const at = entries.value.findIndex(entry => entry.kind === 'fold');
+  const id = props.item.id;
+  foldFailed.value = false;
+  if (unread) {
+    try {
+      await props.loadMiddle();
+    } catch {
+      foldFailed.value = props.item.id === id;
+      return;
+    }
+  }
+
+  if (props.item.id !== id) {
+    return;
+  }
+
+  unfolded.value = true;
+  revealedId.value = entries.value[at]?.id ?? null;
   await nextTick();
   commentsRef.value?.querySelector<HTMLElement>(':scope > [tabindex="-1"]')?.focus();
 }
@@ -276,13 +307,35 @@ interface EditorText {
 </script>
 
 <template>
-  <div :class="[css.itemThread, !detail && css.itemThread_loading]">
-    <p
-      v-if="!detail"
-      :class="css.itemThread_note"
-    >
-      {{ t(l.loading) }}
-    </p>
+  <div :class="css.itemThread">
+    <template v-if="!detail">
+      <!-- The description's text comes with the detail: its head stands, its text on its way. -->
+      <ItemThreadCard
+        v-if="!failed"
+        :author="item.author"
+        :created-at="item.createdAt"
+        :now="now"
+        description
+      >
+        <Skeleton :class="css.itemThread_skeleton">
+          <SkeletonBar
+            :width="440"
+            :height="8"
+            tone="weak"
+          />
+          <SkeletonBar
+            :width="300"
+            :height="8"
+            tone="weak"
+          />
+        </Skeleton>
+      </ItemThreadCard>
+      <ItemThreadMissing
+        :item="item"
+        :failed="failed"
+        :read-again="readAgain"
+      />
+    </template>
     <template v-else>
       <ItemThreadEditor
         v-if="editorsRef.has(null)"
@@ -338,11 +391,6 @@ interface EditorText {
           />
         </template>
       </ItemThreadCard>
-      <ItemThreadFold
-        v-if="folded > 0"
-        :comments="folded"
-        @click="showEarlier"
-      />
       <ol
         v-if="entries.length > 0"
         ref="comments"
@@ -354,7 +402,15 @@ interface EditorText {
           :tabindex="entry.id === revealedId ? -1 : undefined"
           :class="css.itemThread_comment"
         >
-          <template v-if="entry.kind === 'comment'">
+          <ItemThreadFold
+            v-if="entry.kind === 'fold'"
+            :commits="entry.commits"
+            :comments="entry.comments"
+            :other-events="entry.otherEvents"
+            :failed="foldFailed"
+            @click="showEarlier(entry.unread)"
+          />
+          <template v-else-if="entry.kind === 'comment'">
             <ItemThreadEditor
               v-if="editorsRef.has(entry.comment.id)"
               :text="editorsRef.get(entry.comment.id)?.text ?? ''"
@@ -491,11 +547,6 @@ interface EditorText {
   }
 }
 
-// Nothing on a rail yet: the composer under the note.
-.itemThread_loading::before {
-  content: none;
-}
-
 // 8 between the items, as the design's feed (`Activity / Thread · short`).
 .itemThread_comments {
   display: flex;
@@ -509,6 +560,14 @@ interface EditorText {
 // The first comment the fold revealed, once it has the focus.
 .itemThread_comment {
   @include focus-ring;
+}
+
+// The description's text on its way, as two lines of it.
+.itemThread_skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-10;
+  padding: $spacing-4 0;
 }
 
 // A body or comment GitHub rendered, at the thread's reading size.

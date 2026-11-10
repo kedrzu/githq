@@ -1,7 +1,10 @@
 import { expect, test } from '../fixtures.js';
 import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
+import { GitHubHttpError } from '../github/GitHubMock.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
+import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
+import { signIn } from '../session.js';
 
 const ISSUE = 'Sign-in loops after the token expires';
 const PULL_REQUEST = 'Redirect once after sign-in';
@@ -88,6 +91,68 @@ test("a pull request's commits show as a push and its events after it, by who di
     const push = item.entry('pushed 1 commit');
     await expect(push).toContainText(PULL_REQUEST);
     await expect(item.entry('asked hubot for a review')).toContainText('monalisa');
+});
+
+test('a long thread folds its middle to one band; clicking it reads what was not read and shows it all in place, the focus on the first revealed', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    // 60: more than the 2 first and the 50 newest an opened item reads, so the middle is read on demand.
+    for (let index = 1; index <= 60; index++) {
+        world.comment(sample.issue, { author: 'hubot', body: `Note ${index}.`, minutesAgo: 200 - index });
+    }
+
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+
+    const fold = item.root.getByRole('button', { name: /^Show 53 earlier events/ });
+    await expect(fold).toContainText('53 comments');
+    await expect(item.entry('Note ')).toHaveCount(7);
+    await expect(item.entry('Note 56.')).toBeVisible();
+
+    await fold.click();
+
+    await expect(fold).toHaveCount(0);
+    await expect(item.entry('Note ')).toHaveCount(60);
+    const order = await item.root
+        .getByRole('listitem')
+        .evaluateAll(entries => entries.map(entry => /Note (\d+)\./u.exec(entry.textContent ?? '')?.[1] ?? ''));
+    expect(order.filter(Boolean).map(Number)).toEqual(Array.from({ length: 60 }, (_, index) => index + 1));
+    await expect(item.entry('Note 3.')).toBeFocused();
+});
+
+test('F16: an item whose thread GitHub did not give says so on the rail; Try again reads it, Open on GitHub goes there', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.comment(sample.issue, { author: 'hubot', body: 'Seen it twice today.', minutesAgo: 3 });
+    world.install(github);
+    // Neither the prefetch of my work nor the opened item gets its detail.
+    github.graphql('ItemDetails', new GitHubHttpError(502, 'Bad gateway'));
+    github.graphql('ItemDetail', new GitHubHttpError(502, 'Bad gateway'));
+    await signIn(page, github);
+    const myWork = new MyWorkScreenHarness(page);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+
+    const failed = item.root.getByRole('alert');
+    await expect(failed).toContainText("The comments and events couldn't be loaded");
+    await expect(failed.getByRole('link', { name: 'Open on GitHub' })).toHaveAttribute(
+        'href',
+        'https://github.com/acme/web/issues/12',
+    );
+    await expect(item.commentBox).toBeVisible();
+
+    world.install(github);
+    await failed.getByRole('button', { name: 'Try again' }).click();
+
+    await expect(item.entry('Seen it twice today.')).toBeVisible();
+    await expect(failed).toHaveCount(0);
 });
 
 function user(login: string) {

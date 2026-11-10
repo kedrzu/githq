@@ -1,20 +1,46 @@
-<!-- A break in an item's thread where older entries are not shown (`Activity / Fold`): the rail turns dashed beside one band, the whole of it a button on nzyme's `useButton` — "Show 18 earlier comments", what is folded, a chevron — busy while they are read. Where the thread is narrow (a panel) the band takes two lines. -->
+<!-- A break in an item's thread where its middle is not shown (`Activity / Fold`, F5): the rail turns dashed beside one band, the whole of it a button on nzyme's `useButton` — "Show 18 earlier events", what is folded by group ("10 commits · 3 comments · 5 other events", a group with none left out), a chevron — busy while they are read. A read that failed says so in place of the groups; the band reads again. Where the thread is narrow (a panel) the band takes two lines. -->
 <script lang="ts" setup>
 import { useButton } from '@nzyme/vue-forms/components/useButton.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { ChevronDown, MessageSquare, UnfoldVertical } from 'lucide-vue-next';
+import {
+  ChevronDown,
+  CircleAlert,
+  CircleDot,
+  GitCommitHorizontal,
+  MessageSquare,
+  UnfoldVertical,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import * as l from './ItemThreadFold.loc.js';
 
-defineProps({
+const props = defineProps({
   ...useButton.props,
-  /** How many comments are folded. */
-  comments: { type: Number, required: true },
+  /** The commits of the pushes folded. */
+  commits: { type: Number, default: 0 },
+  comments: { type: Number, default: 0 },
+  /** The events but commits folded; a line of one person's events counts once. */
+  otherEvents: { type: Number, default: 0 },
+  /** Reading them failed: the band says so, and reads again. */
+  failed: { type: Boolean, default: false },
 });
 defineEmits(useButton.emits);
 
 const { Button, busy } = useButton();
 const t = useTranslate();
+
+const groups = computed(() =>
+  [
+    { key: 'commits', icon: GitCommitHorizontal, text: t(l.commits, { count: props.commits }), count: props.commits },
+    { key: 'comments', icon: MessageSquare, text: t(l.comments, { count: props.comments }), count: props.comments },
+    {
+      key: 'otherEvents',
+      icon: CircleDot,
+      text: t(l.otherEvents, { count: props.otherEvents }),
+      count: props.otherEvents,
+    },
+  ].filter(group => group.count > 0),
+);
 </script>
 
 <template>
@@ -32,15 +58,33 @@ const t = useTranslate();
           :class="css.itemThreadFold_showIcon"
           aria-hidden="true"
         />
-        {{ t(l.showEarlierComments, { count: comments }) }}
+        {{ t(l.showEarlier, { count: commits + comments + otherEvents }) }}
       </span>
-      <span :class="css.itemThreadFold_summary">
-        <span :class="css.itemThreadFold_count">
-          <MessageSquare
+      <span
+        v-if="failed"
+        :class="[css.itemThreadFold_summary, css.itemThreadFold_failed]"
+      >
+        <CircleAlert
+          :class="css.itemThreadFold_failedIcon"
+          aria-hidden="true"
+        />
+        {{ t(l.failed) }}
+      </span>
+      <span
+        v-else
+        :class="css.itemThreadFold_summary"
+      >
+        <span
+          v-for="group in groups"
+          :key="group.key"
+          :class="css.itemThreadFold_count"
+        >
+          <component
+            :is="group.icon"
             :class="css.itemThreadFold_countIcon"
             aria-hidden="true"
           />
-          {{ t(l.comments, { count: comments }) }}
+          {{ group.text }}
         </span>
       </span>
       <ChevronDown
@@ -154,6 +198,19 @@ $dash-offset: ($item-thread-rail-break-width - $item-thread-rail-width) * 0.5;
   width: 12px;
   height: 12px;
   color: $color-fg-3;
+}
+
+.itemThreadFold_failed {
+  gap: $spacing-5;
+  font-size: $font-size-xs;
+  color: $color-fg;
+}
+
+.itemThreadFold_failedIcon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  color: $color-red;
 }
 
 .itemThreadFold_chevron {

@@ -41,7 +41,7 @@ const Harness = defineComponent({
                         detail={D1_ISSUE_DETAIL}
                         arrangement="panel"
                         now={SAMPLE_NOW}
-                        loadAllComments={() => Promise.resolve()}
+                        loadThreadMiddle={() => Promise.resolve()}
                         editing={SAMPLE_MAINTAINER_EDITING}
                         onClose={() => (closed.value = 'closed')}
                     />

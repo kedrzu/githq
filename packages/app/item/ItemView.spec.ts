@@ -151,13 +151,13 @@ test('the arrangement switch asks for another arrangement', async () => {
     expect(IssueSplit.args.onArrange).toHaveBeenCalledWith('panel');
 });
 
-test('opened before its detail arrives: the row shows at once and the comments say they are loading', async () => {
+test('opened before its detail arrives: the row shows at once and the thread says it is loading', async () => {
     await LoadingComments.run();
 
     await expect
         .element(page.getByRole('heading', { name: 'Calendar shows wrong timezone for recurring bookings' }))
         .toBeInTheDocument();
-    await expect.element(page.getByText('Loading comments…')).toBeInTheDocument();
+    await expect.element(page.getByText('Loading 4 comments and the events from GitHub')).toBeInTheDocument();
     await expect.element(page.getByText('In progress')).toBeInTheDocument();
 });
 

@@ -100,8 +100,12 @@ const props = withDefaults(
     closes?: readonly Item[];
     /** Epoch ms the ages are counted to. */
     now: number;
-    /** Reads the comments not read yet. */
-    loadAllComments: () => Promise<void>;
+    /** Reads the middle of the thread not read yet, its events and comments (the fold, F5). */
+    loadThreadMiddle: () => Promise<void>;
+    /** None of its detail is on this device and GitHub did not give it (F16). */
+    detailFailed?: boolean;
+    /** Reads its detail again after {@link detailFailed}. */
+    readDetailAgain?: () => Promise<void>;
     /** What the user may change and the pickers offer; without it the view only shows. */
     editing?: ItemEditing | null;
     /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D25). */
@@ -884,7 +888,9 @@ function getProjectOptions(): CommandOption[] {
                 :item="item"
                 :detail="detail"
                 :now="now"
-                :load-all="loadAllComments"
+                :load-middle="loadThreadMiddle"
+                :failed="detailFailed"
+                :read-again="readDetailAgain"
                 :failed-comments="failedComments"
                 :viewer="viewer"
                 :can-retry="editing != null && canComment"
