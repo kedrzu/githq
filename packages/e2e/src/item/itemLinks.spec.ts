@@ -1,9 +1,11 @@
 import type { Locator } from '@playwright/test';
 
+import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
 import { expect, test } from '../fixtures.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
+import { answerReview } from '../review/answerReview.js';
 
 const LINKING = 'Explain how tokens expire';
 const LINKED = 'Tokens expire an hour early';
@@ -137,6 +139,57 @@ test('a comment the item did not read is read from GitHub with the middle, then 
     expect(github.graphqlCalls.map(call => call.name)).toContain('ThreadMiddle');
 });
 
+test('a link to a comment of a pull request keeps it in view while the review threads above it arrive, until the user scrolls', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.review(sample.pullRequest, {
+        id: 'R_hubot',
+        author: 'hubot',
+        state: 'CHANGES_REQUESTED',
+        bodyHtml: '<p>A few things before it goes in.</p>',
+        minutesAgo: 60,
+    });
+    const linked = `issuecomment-${world.comment(sample.pullRequest, { author: 'hubot', body: 'Linked remark', minutesAgo: 5 })}`;
+    await openMyWork(page, github, world);
+    const review = answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [],
+        // Tall enough, together, to push the comment under them out of view.
+        threads: Array.from({ length: 8 }, (_, index) => ({
+            id: `T_${index}`,
+            path: `src/auth/file${index}.ts`,
+            line: 2,
+            diffHunk: '@@ -1,2 +1,2 @@\n const back = read()\n-go(back)\n+go(back ?? home)',
+            comments: [`<p>Thread ${index}: what if there is no return address?</p>`],
+            reviewId: 'R_hubot',
+        })),
+    });
+    const release = review.holdThreads();
+    const item = new ItemViewHarness(page);
+
+    await page.goto(`/acme/web/pull/15#${linked}`);
+    await expect(item.linkedComment).toHaveId(linked);
+    await expect(item.linkedComment).toBeInViewport();
+
+    release();
+    await expect(item.root.getByText('Thread 7: what if')).toBeAttached();
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await expect(item.linkedComment).toBeInViewport();
+
+    // The user scrolls: the comment lets go, and the thread stays where they put it.
+    const anchored = await getScrollTop(item.content);
+    await item.content.hover();
+    await page.mouse.wheel(0, -400);
+    await expect.poll(() => getScrollTop(item.content)).toBeLessThan(anchored);
+    const scrolled = await getScrollTop(item.content);
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    expect(await getScrollTop(item.content)).toBe(scrolled);
+});
+
 test('Back to an address naming a comment returns to where the item was scrolled, not to the comment', async ({
     page,
     github,
@@ -147,7 +200,10 @@ test('Back to an address naming a comment returns to where the item was scrolled
     await page.goto(`/acme/web/issues/31#${folded}`);
     await expect(item.linkedComment).toBeInViewport();
 
-    // Near the top, the description's link still in full view, so clicking it scrolls nothing.
+    // The user scrolls, which lets the comment go, up near the top: the description's link still in full view, so
+    // clicking it scrolls nothing.
+    await item.content.hover();
+    await page.mouse.wheel(0, -100);
     await item.content.evaluate((element, top) => {
         element.scrollTop = top;
     }, SCROLLED);

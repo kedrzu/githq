@@ -59,6 +59,8 @@ export interface AnsweredReview {
     heal(path: string): void;
     /** This file's content waits until the returned function is called. */
     hold(path: string): () => void;
+    /** The review threads' read waits until the returned function is called. */
+    holdThreads(): () => void;
     /** GitHub refuses marks until {@link allowMarks}. */
     refuseMarks(message: string): void;
     allowMarks(): void;
@@ -86,6 +88,7 @@ const MERGE_BASE_OID = 'fork0000';
 export function answerReview(github: GitHubMock, params: AnswerReviewParams): AnsweredReview {
     const failures = new Map<string, string>();
     const held = new Map<string, Promise<void>>();
+    let threadsHeld: Promise<void> | null = null;
     const marked: string[] = [];
     let markRequests = 0;
     const asked: string[] = [];
@@ -129,16 +132,19 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             },
         };
     });
-    github.graphql('PullRequestReviewThreads', () => ({
-        repository: {
-            pullRequest: {
-                reviewThreads: {
-                    pageInfo: { hasNextPage: false, endCursor: null },
-                    nodes: (params.threads ?? []).map(toThreadNode),
+    github.graphql('PullRequestReviewThreads', async () => {
+        await threadsHeld;
+        return {
+            repository: {
+                pullRequest: {
+                    reviewThreads: {
+                        pageInfo: { hasNextPage: false, endCursor: null },
+                        nodes: (params.threads ?? []).map(toThreadNode),
+                    },
                 },
             },
-        },
-    }));
+        };
+    });
     answerCompare(HEAD_OID);
     github.rest('GET', `${repositoryPath}/pulls/${params.number}/files`, () => ({
         status: 200,
@@ -231,6 +237,14 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         },
         fail: (path, message) => failures.set(path, message),
         heal: path => failures.delete(path),
+        holdThreads() {
+            const { promise, resolve } = Promise.withResolvers<void>();
+            threadsHeld = promise;
+            return () => {
+                threadsHeld = null;
+                resolve();
+            };
+        },
         hold(path) {
             let release = () => {};
             held.set(

@@ -39,6 +39,8 @@ export interface OpenedItemViewModel {
      * drawn over them: read when it opens, not on every poll. Empty for an issue, and until read.
      */
     readonly reviewThreads: readonly ReviewThread[];
+    /** A pull request's review threads are being read, nothing of them read before, on disk or from GitHub. */
+    readonly reviewThreadsLoading: boolean;
     /** Code review's writing of those threads and of the viewer's draft review; `null` for an issue, and signed out. */
     readonly reviewWriting: ReviewWriting | null;
     /** GitHub says there is no such item, or the user may not see it. */
@@ -144,6 +146,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         item,
         detail,
         reviewThreads: computed(() => reviewModel.value?.threads ?? []),
+        reviewThreadsLoading: computed(() => reviewModel.value?.threadsState.kind === 'loading'),
         reviewWriting: computed(() => reviewModel.value?.writing ?? null),
         missing: computed(() => found.value === null),
         failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),

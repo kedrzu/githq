@@ -129,6 +129,8 @@ const props = withDefaults(
     failedEdits?: readonly FailedTextEdit[];
     /** A pull request's review threads, as code review reads them: its thread's reviews hold them. */
     reviewThreads?: readonly ReviewThread[];
+    /** They are being read, none read before: the thread is busy. */
+    reviewThreadsLoading?: boolean;
     /** Code review's writing of the pull request: the viewer's draft review, replies and resolving go through it. */
     reviewWriting?: ReviewWriting | null;
     /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
@@ -912,6 +914,7 @@ function getProjectOptions(): CommandOption[] {
                 :failed-edits="failedEdits"
                 :people="threadPeople"
                 :review-threads="reviewThreads"
+                :review-threads-loading="reviewThreadsLoading"
                 :review-writing="reviewWriting"
                 :review-draft-first="reviewDraftFirst"
                 @retry="emit('retryComment', $event)"
