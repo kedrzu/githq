@@ -42,6 +42,7 @@ const SECTIONS: SectionInput[] = [
             ['Projects', 'projects'],
             ['Pull requests and reviews', 'pull-requests-and-reviews'],
             ['The command menu', 'command-menu'],
+            ['Open GitHub links in githq', 'open-github-links-in-githq'],
         ],
     ],
     [
