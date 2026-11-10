@@ -70,6 +70,8 @@ const focusedEditor = ref<string | null | undefined>(undefined);
 const deletingId = ref<string | null>(null);
 /** The text Quote reply picked, handed over once the menu closed: the composer then keeps the focus it takes. */
 let quoted: string | null = null;
+/** Edit opened an editor from a menu, which took the focus: the closing menu leaves it there. */
+let editOpened = false;
 
 const folded = computed(() =>
   props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
@@ -112,6 +114,7 @@ function getFailure(id: string | null) {
 }
 
 function startEdit(id: string | null, body: string) {
+  editOpened = true;
   focusedEditor.value = id;
   setEditor(id, body);
 }
@@ -147,11 +150,16 @@ function quote(body: string) {
 }
 
 function onMenuClose(event: Event) {
-  if (quoted !== null) {
+  if (editOpened || quoted !== null) {
     event.preventDefault();
-    emit('quoteReply', quoted);
-    quoted = null;
   }
+
+  if (quoted !== null) {
+    emit('quoteReply', quoted);
+  }
+
+  editOpened = false;
+  quoted = null;
 }
 
 function copyLink(url: string) {

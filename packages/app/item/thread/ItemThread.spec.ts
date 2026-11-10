@@ -204,3 +204,35 @@ test("an editor open on one item is not on the next: Update could otherwise save
     expect(page.getByRole('textbox', { name: 'Edit description' }).query()).toBeNull();
     expect(onEdit).not.toHaveBeenCalled();
 });
+
+test('Edit from a right click leaves the focus in the editor it opened, not where it was: what is typed lands there', async () => {
+    const mine = D1_ISSUE_DETAIL.comments.nodes[1]!;
+    const older: ItemComment = {
+        ...mine,
+        id: 'C_OLDER',
+        body: 'An older one of mine.',
+        bodyHtml: '<p>An older one of mine.</p>',
+    };
+    const loadAll = vi.fn(() => {
+        const { comments } = D1_ISSUE_DETAIL;
+        args.detail = { ...D1_ISSUE_DETAIL, comments: { ...comments, nodes: [older, ...comments.nodes] } };
+        return Promise.resolve();
+    });
+    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadAll });
+    await IssueInPanel.run({ args });
+    // The comment the fold revealed has the focus, which the closing menu would give back.
+    await userEvent.click(page.getByRole('button', { name: /^Show 2 earlier comments/ }));
+    await expect.element(card('An older one of mine.')).toHaveFocus();
+
+    await userEvent.click(card('An older one of mine.').getByText('An older one'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await expect.element(editor).toHaveFocus();
+    // The menu gives the focus back a tick after it closed.
+    await new Promise(resolve => {
+        setTimeout(resolve, 50);
+    });
+    await userEvent.keyboard(' Typed away.');
+
+    await expect.element(editor).toHaveValue('An older one of mine. Typed away.');
+});
