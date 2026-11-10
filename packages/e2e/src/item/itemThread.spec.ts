@@ -4,6 +4,7 @@ import { GitHubHttpError } from '../github/GitHubMock.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
+import { answerReview } from '../review/answerReview.js';
 import { signIn } from '../session.js';
 
 const ISSUE = 'Sign-in loops after the token expires';
@@ -90,6 +91,67 @@ test("a pull request's commits show as a push and its events after it, by who di
     const push = item.entry('pushed 1 commit');
     await expect(push).toContainText(PULL_REQUEST);
     await expect(item.entry('asked hubot for a review')).toContainText('monalisa');
+});
+
+test("a pull request's review shows with its threads, a resolved one folded until opened, and a code comment posted alone on its own", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.review(sample.pullRequest, {
+        id: 'R_hubot',
+        author: 'hubot',
+        state: 'CHANGES_REQUESTED',
+        bodyHtml: '<p>One thing before it goes in.</p>',
+        minutesAgo: 30,
+    });
+    const { myWork } = await openMyWork(page, github, world);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [],
+        threads: [
+            {
+                id: 'T_open',
+                path: 'src/auth/redirect.ts',
+                line: 2,
+                diffHunk: '@@ -1,2 +1,2 @@\n const back = read()\n-go(back)\n+go(back ?? home)',
+                comments: ['<p>What if there is no return address?</p>'],
+                reviewId: 'R_hubot',
+            },
+            {
+                id: 'T_resolved',
+                path: 'src/auth/session.ts',
+                line: 4,
+                isResolved: true,
+                comments: ['<p>A typo in the name.</p>', '<p>Fixed.</p>'],
+                reviewId: 'R_hubot',
+            },
+            { id: 'T_alone', path: 'src/auth/token.ts', line: 7, comments: ['<p>Posted on its own.</p>'] },
+        ],
+    });
+    const item = new ItemViewHarness(page);
+    await myWork.row(PULL_REQUEST).click();
+
+    const review = item.entry('One thing before it goes in.');
+    await expect(review).toContainText(/hubot\s*requested changes/u);
+    await expect(review).toContainText('2 threads · 1 resolved');
+    const open = review.getByRole('group', { name: 'Thread by sofiab on src/auth/redirect.ts' });
+    await expect(open).toContainText('What if there is no return address?');
+    await expect(open).toContainText('go(back ?? home)');
+
+    await expect(review).not.toContainText('A typo in the name.');
+    await review.getByRole('button', { name: /^Resolved src\/auth\/session\.ts/u }).click();
+    const resolved = review.getByRole('group', { name: 'Thread by sofiab on src/auth/session.ts' });
+    await expect(resolved).toContainText('A typo in the name.');
+    await expect(resolved).toContainText('mlaine marked this thread as resolved.');
+    await resolved.getByRole('button', { name: 'Hide' }).click();
+    await expect(review).not.toContainText('A typo in the name.');
+
+    const alone = item.entry('Posted on its own.');
+    await expect(alone).toContainText(/^sofiab\s*commented on\s*src\/auth\/token\.ts/u);
+    await expect(alone).not.toContainText('One thing before it goes in.');
 });
 
 test('a Status change a project workflow made names no one, unlike one a person made', async ({ page, github }) => {

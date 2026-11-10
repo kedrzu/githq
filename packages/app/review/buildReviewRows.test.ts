@@ -46,6 +46,7 @@ function threadOnLine(line: number, overrides: Partial<ReviewThread> = {}): Revi
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
+        resolvedBy: null,
         comments: [],
         ...overrides,
     };

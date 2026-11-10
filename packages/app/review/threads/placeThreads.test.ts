@@ -45,6 +45,7 @@ function threadWith(overrides: Partial<ReviewThread> & { readonly diffHunk?: str
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
+        resolvedBy: null,
         comments: [
             {
                 id: 'C',

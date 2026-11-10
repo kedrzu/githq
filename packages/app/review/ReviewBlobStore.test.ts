@@ -44,6 +44,7 @@ const THREADS: readonly ReviewThread[] = [
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
+        resolvedBy: null,
         comments: [],
     },
 ];

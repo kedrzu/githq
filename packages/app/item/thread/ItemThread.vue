@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
@@ -9,6 +9,8 @@ import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import { getPendingComments } from '@/review/writing/getPendingComments.js';
+import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 
@@ -17,13 +19,16 @@ import type { ItemReference } from '../itemRoutes.js';
 import { buildThread } from './buildThread.js';
 import * as l from './ItemThread.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
+import ItemThreadCodeComment from './ItemThreadCodeComment.vue';
 import ItemThreadDeleteDialog from './ItemThreadDeleteDialog.vue';
 import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadEvent from './ItemThreadEvent.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
 import ItemThreadMenu from './ItemThreadMenu.vue';
 import ItemThreadMissing from './ItemThreadMissing.vue';
+import ItemThreadPendingReview from './ItemThreadPendingReview.vue';
 import ItemThreadPush from './ItemThreadPush.vue';
+import ItemThreadReview from './ItemThreadReview.vue';
 
 const props = defineProps<{
   item: Item;
@@ -51,6 +56,8 @@ const props = defineProps<{
   people?: readonly ItemUser[];
   /** A pull request's review threads, as code review reads them: its reviews and code comments hold them. */
   reviewThreads?: readonly ReviewThread[];
+  /** Code review's writing of the pull request, the same that wrote them: the viewer's draft review finishes there. */
+  reviewWriting?: ReviewWriting | null;
 }>();
 
 const emit = defineEmits<{
@@ -101,6 +108,8 @@ let editOpened = false;
 /** The comment Delete… picked, asked about once the menu closed. */
 let deleting: string | null = null;
 
+/** The viewer's draft review's comments, as its dialogs list them. */
+const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
 /** Everything after the description, in the thread's order: an edited comment is never folded away. */
 const entries = computed(() =>
   props.detail
@@ -283,10 +292,6 @@ async function onMenuClose(event: Event) {
     await focusMenu(asked);
     deletingId.value = asked;
   }
-}
-
-function getComments(threads: readonly ReviewThread[]) {
-  return threads.flatMap(thread => thread.comments);
 }
 
 function copyLink(url: string) {
@@ -474,38 +479,18 @@ interface EditorText {
             :push="entry"
             :now="now"
           />
-          <!-- Reviews, code comments and the draft review as plain cards for now, their comments one after another. -->
-          <ItemThreadCard
+          <ItemThreadReview
             v-else-if="entry.kind === 'review'"
-            :author="entry.review.author"
-            :created-at="entry.review.submittedAt"
+            :entry="entry"
             :now="now"
-          >
-            <GitHubHtml
-              v-if="entry.review.bodyHtml"
-              :class="css.itemThread_text"
-              :html="entry.review.bodyHtml"
-            />
-            <GitHubHtml
-              v-for="comment in getComments([...entry.threads, ...entry.resolved])"
-              :key="comment.id"
-              :class="css.itemThread_text"
-              :html="comment.bodyHTML"
-            />
-          </ItemThreadCard>
-          <ItemThreadCard
+            :viewer="viewer"
+          />
+          <ItemThreadCodeComment
             v-else-if="entry.kind === 'codeComment'"
-            :author="entry.thread.comments[0]?.author ?? null"
-            :created-at="entry.thread.comments[0]?.createdAt"
+            :entry="entry"
             :now="now"
-          >
-            <GitHubHtml
-              v-for="comment in getComments([entry.thread])"
-              :key="comment.id"
-              :class="css.itemThread_text"
-              :html="comment.bodyHTML"
-            />
-          </ItemThreadCard>
+            :viewer="viewer"
+          />
           <ItemThreadCard
             v-else-if="entry.kind === 'failedComment'"
             :author="viewer ?? null"
@@ -544,19 +529,15 @@ interface EditorText {
               </div>
             </template>
           </ItemThreadCard>
-          <ItemThreadCard
+          <ItemThreadPendingReview
             v-else-if="entry.kind === 'pendingReview'"
-            :author="viewer ?? null"
-            :created-at="entry.review?.createdAt"
+            :entry="entry"
             :now="now"
-          >
-            <GitHubHtml
-              v-for="comment in getComments(entry.threads)"
-              :key="comment.id"
-              :class="css.itemThread_text"
-              :html="comment.bodyHTML"
-            />
-          </ItemThreadCard>
+            :viewer="viewer ?? null"
+            :number="item.number"
+            :writing="reviewWriting ?? null"
+            :comments="pendingComments"
+          />
         </li>
       </ol>
     </template>

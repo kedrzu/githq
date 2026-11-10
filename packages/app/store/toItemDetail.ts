@@ -305,6 +305,8 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
                 ...toEventBase(node),
                 kind: 'reviewDismissed',
                 reviewer: toDetailAuthor(node.review?.author),
+                reviewId: node.review?.id ?? null,
+                previousState: node.previousReviewState,
                 message: node.dismissalMessage,
             };
         case 'ReadyForReviewEvent':

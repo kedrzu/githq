@@ -492,7 +492,16 @@ test('reviews come by when submitted with the threads they started, resolved apa
     const older = reviewThread('T4', [threadComment('T4-0', DKIM, 1, 'R0')]);
     const detail: ItemDetail = {
         ...pullRequestDetail(
-            [{ ...base('E1', MLAINE, 50), kind: 'reviewDismissed', reviewer: PNOWAK, message: null }],
+            [
+                {
+                    ...base('E1', MLAINE, 50),
+                    kind: 'reviewDismissed',
+                    reviewer: PNOWAK,
+                    reviewId: 'R5',
+                    previousState: 'CHANGES_REQUESTED',
+                    message: null,
+                },
+            ],
             [comment('C1', DKIM, 25)],
         ),
         reviewSummaries: [
@@ -513,10 +522,17 @@ test('reviews come by when submitted with the threads they started, resolved apa
         review: review('R1', SOFIAB, 'CHANGES_REQUESTED', 10, '<p>Two things.</p>'),
         threads: [opened],
         resolved: [resolved],
+        dismissedFrom: null,
     };
     expect(built.find(entry => entry.id === 'R1')).toEqual(expected);
     expect(built.find(entry => entry.id === 'T3')).toEqual({ kind: 'codeComment', id: 'T3', thread: alone });
-    expect(built.find(entry => entry.id === 'R5')).toMatchObject({ kind: 'review', threads: [], resolved: [] });
+    // A dismissed review says what it was, as its dismissal tells.
+    expect(built.find(entry => entry.id === 'R5')).toMatchObject({
+        kind: 'review',
+        threads: [],
+        resolved: [],
+        dismissedFrom: 'CHANGES_REQUESTED',
+    });
 });
 
 test('a draft review shows only to its author, last before the composer; nobody else’s draft comment shows anywhere', () => {
@@ -778,6 +794,7 @@ function reviewThread(id: string, comments: ReviewThreadComment[], changes: Part
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: false,
+        resolvedBy: null,
         comments,
         ...changes,
     };

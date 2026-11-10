@@ -1,3 +1,4 @@
+import type { PullRequestReviewState } from '@githq/github/generated.gen.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { FailedComment } from '@/edits/CommentDrafts.js';
@@ -64,6 +65,11 @@ export interface ThreadReview {
     readonly threads: readonly ReviewThread[];
     /** The threads it started that are resolved, in GitHub's order: drawn apart, folded. */
     readonly resolved: readonly ReviewThread[];
+    /**
+     * What a dismissed review was before ("requested changes · dismissed"), as its dismissal says; `null` when the
+     * detail does not hold the dismissal, or the review was not dismissed.
+     */
+    readonly dismissedFrom: PullRequestReviewState | null;
 }
 
 /**
@@ -265,7 +271,12 @@ export function buildThread({
     }
 
     const summaries = detail.kind === 'pullRequest' ? detail.reviewSummaries : [];
-    const reviews = placeReviews({ summaries, reviewThreads, viewerLogin });
+    const dismissals = new Map(
+        events.flatMap(event =>
+            event.kind === 'reviewDismissed' && event.reviewId !== null ? [[event.reviewId, event.previousState]] : [],
+        ),
+    );
+    const reviews = placeReviews({ summaries, reviewThreads, viewerLogin, dismissals });
     timed.push(...reviews.timed);
     const draft =
         viewerLogin !== null && (pendingReview !== null || reviews.draft.length > 0)
@@ -294,6 +305,8 @@ interface PlaceReviewsParams {
     readonly summaries: readonly ItemReviewSummary[];
     readonly reviewThreads: readonly ReviewThread[];
     readonly viewerLogin: string | null;
+    /** What each review dismissed was before, by the review's id. */
+    readonly dismissals: ReadonlyMap<string, PullRequestReviewState>;
 }
 
 /** The reviews and code comments placed by time, and the threads the viewer's draft starts. */
@@ -307,7 +320,7 @@ interface PlacedReviews {
  * says nothing (`COMMENTED`, no text) is a code comment when it started one thread and nothing when it started none: a
  * reply's carrier. A comment of anybody's draft but the viewer's never shows — GitHub would not list one.
  */
-function placeReviews({ summaries, reviewThreads, viewerLogin }: PlaceReviewsParams): PlacedReviews {
+function placeReviews({ summaries, reviewThreads, viewerLogin, dismissals }: PlaceReviewsParams): PlacedReviews {
     const held = new Set(summaries.map(review => review.id));
     const byReview = new Map<string, ReviewThread[]>();
     const alone: ReviewThread[] = [];
@@ -350,6 +363,7 @@ function placeReviews({ summaries, reviewThreads, viewerLogin }: PlaceReviewsPar
             review,
             threads: own.filter(thread => !thread.isResolved),
             resolved: own.filter(thread => thread.isResolved),
+            dismissedFrom: review.state === 'DISMISSED' ? (dismissals.get(review.id) ?? null) : null,
         };
         timed.push({ at: Date.parse(review.submittedAt), kind: 'item', item });
     }

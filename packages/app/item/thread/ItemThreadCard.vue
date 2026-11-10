@@ -1,4 +1,4 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description, its ⋯ — and what they wrote below. Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when (or a review's verdict and when, `verdict`), "· edited" once changed, an "Author" chip on the description, what the head says at its end (`aside`), its ⋯ — and what they wrote below, when anything. The viewer's draft review has an amber border (`pending`). Its menu (`menu`) opens from the ⋯ and from a right click on the card — not on GitHub's rendering of what was written, which keeps the browser's own menu, or a githq link's (`GitHubLinks`). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -28,6 +28,10 @@ const props = defineProps<{
   sending?: boolean;
   /** GitHub did not take it. */
   failed?: boolean;
+  /** The viewer's draft review: the amber border (`Activity / Review · pending`). */
+  pending?: boolean;
+  /** Said instead of the login: "Your review". */
+  name?: string;
   /**
    * Its ⋯ takes the focus: the keyboard goes on from the card after its edit was cancelled or its deletion was not
    * confirmed, rather than from the page — the editor and the dialog are gone with what had it.
@@ -41,8 +45,12 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
-  /** What was written. */
-  default(): unknown;
+  /** What was written; none, no body (a dismissed review folded). */
+  default?(): unknown;
+  /** Instead of "commented": a review's verdict, the age after it. */
+  verdict?(): unknown;
+  /** At the end of the head: a review's threads, "Show review". */
+  aside?(): unknown;
   /** The entries of the card's menu, from its ⋯ at the end of its head or a right click on the card. */
   menu?(): unknown;
   /** A band at the bottom of the card, under what was written. */
@@ -53,13 +61,13 @@ const t = useTranslate();
 const headRef = useTemplateRef<HTMLElement>('head');
 
 const login = computed(() => props.author?.login ?? t(l.deletedUser));
-const when = computed(() => {
+const age = computed(() => {
   if (props.createdAt === undefined) {
     return '';
   }
 
   const formatWhen = props.description ? formatTimeAgo : formatAge;
-  return t(l.commented, { when: formatWhen(Date.parse(props.createdAt), props.now) });
+  return formatWhen(Date.parse(props.createdAt), props.now);
 });
 
 // The ⋯ is the head's only button.
@@ -84,12 +92,15 @@ watchPostEffect(() => {
           decorative
         />
       </div>
-      <div :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed]">
+      <div
+        :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed, pending && css.itemThreadCard_pending]"
+      >
         <p
           ref="head"
           :class="css.itemThreadCard_head"
         >
-          <span :class="css.itemThreadCard_author">{{ login }}</span>
+          <span :class="css.itemThreadCard_author">{{ name ?? login }}</span>
+          <slot name="verdict" />
           <span
             v-if="failed"
             :class="[css.itemThreadCard_when, css.itemThreadCard_notSent]"
@@ -104,7 +115,7 @@ watchPostEffect(() => {
             v-else
             :class="css.itemThreadCard_when"
             :datetime="createdAt"
-            >{{ when }}</time
+            >{{ $slots.verdict || age === '' ? age : t(l.commented, { when: age }) }}</time
           >
           <span
             v-if="edited"
@@ -112,6 +123,7 @@ watchPostEffect(() => {
             >{{ t(l.edited) }}</span
           >
           <span :class="css.itemThreadCard_spacer" />
+          <slot name="aside" />
           <span
             v-if="description"
             :class="css.itemThreadCard_chip"
@@ -131,7 +143,10 @@ watchPostEffect(() => {
             <slot name="menu" />
           </Menu>
         </p>
-        <div :class="css.itemThreadCard_body">
+        <div
+          v-if="$slots.default"
+          :class="css.itemThreadCard_body"
+        >
           <slot />
         </div>
         <slot name="footer" />
@@ -167,6 +182,10 @@ watchPostEffect(() => {
   border-color: $color-border-danger-strong;
 }
 
+.itemThreadCard_pending {
+  border-color: rgba($color-amber, 0.5);
+}
+
 .itemThreadCard_head {
   display: flex;
   gap: $spacing-6;
@@ -177,6 +196,11 @@ watchPostEffect(() => {
   white-space: nowrap;
   background: $color-bg-2;
   border-bottom: 1px solid $color-border;
+
+  // Nothing under it: the card's own border closes it.
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 .itemThreadCard_author {

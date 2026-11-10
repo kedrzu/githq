@@ -58,6 +58,7 @@ import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -126,6 +127,8 @@ const props = withDefaults(
     failedEdits?: readonly FailedTextEdit[];
     /** A pull request's review threads, as code review reads them: its thread's reviews hold them. */
     reviewThreads?: readonly ReviewThread[];
+    /** Code review's writing of the pull request: the viewer's draft review in the thread finishes through it. */
+    reviewWriting?: ReviewWriting | null;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -904,6 +907,7 @@ function getProjectOptions(): CommandOption[] {
                 :failed-edits="failedEdits"
                 :people="threadPeople"
                 :review-threads="reviewThreads"
+                :review-writing="reviewWriting"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
                 @edit="emit('edit', $event)"

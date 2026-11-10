@@ -4,6 +4,8 @@ import type {
     ReviewThreadCommentFieldsFragment,
 } from '@githq/github/generated.gen.js';
 
+import type { ItemUser } from '@/store/ItemTypes.js';
+
 /** A comment of a {@link ReviewThread}, with `bodyHTML` as GitHub rendered and sanitized it: shown through `GitHubHtml`. */
 export type ReviewThreadComment = ReviewThreadCommentFieldsFragment;
 
@@ -26,6 +28,8 @@ export interface ReviewThread {
     readonly viewerCanReply: boolean;
     readonly viewerCanResolve: boolean;
     readonly viewerCanUnresolve: boolean;
+    /** Who resolved it; `null` while open, and for a deleted account. */
+    readonly resolvedBy: ItemUser | null;
     /** All of them, oldest first. They share the code they were written on: the first's `diffHunk` and `originalCommit`. */
     readonly comments: readonly ReviewThreadComment[];
 }

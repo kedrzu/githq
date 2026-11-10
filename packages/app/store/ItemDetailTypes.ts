@@ -168,6 +168,10 @@ export type ThreadEvent =
           {
               /** Whose review it was; `null` for a deleted account. */
               readonly reviewer: ItemUser | null;
+              /** The review's id; `null` when GitHub no longer gives the review. */
+              readonly reviewId: string | null;
+              /** What the review was before: its card says so ("requested changes · dismissed", F14). */
+              readonly previousState: PullRequestReviewState;
               readonly message: string | null;
           }
       >
