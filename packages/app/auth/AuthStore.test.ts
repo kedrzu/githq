@@ -1,5 +1,6 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
+import { createHash } from 'node:crypto';
 
 import {
     OAUTH_AUTHORIZE_PATH,
@@ -19,8 +20,8 @@ import { Browser } from '@/services/Browser.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 
-import type { SignInResult, Viewer } from './AuthStore.js';
-import { AuthStore, PENDING_SIGN_IN_KEY, VIEWER_KEY } from './AuthStore.js';
+import type { SignInResult, TokenRejection, Viewer } from './AuthStore.js';
+import { AuthStore, PENDING_SIGN_IN_KEY, TOKEN_REJECTIONS_KEY, VIEWER_KEY } from './AuthStore.js';
 import { TOKEN_KEY } from './TokenVault.js';
 
 const ORIGIN = 'https://githq.test';
@@ -133,6 +134,33 @@ test('a stored user opens the app at once; a stored token GitHub rejects signs o
     expect(browser.local.has(VIEWER_KEY)).toBe(false);
     // Only the session is forgotten.
     expect(browser.local.get('githq.sidebarCollapsed')).toBe('true');
+});
+
+test('a rejected token leaves a record of the sign-out that GitHub’s security log can match, never the token', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES, rejectToken: true });
+    const earlier = Array.from({ length: 10 }, (_, index) => ({ at: `earlier ${index}` }));
+    const { auth, browser } = setup(github, {
+        [TOKEN_KEY]: 'gho_revoked',
+        [VIEWER_KEY]: JSON.stringify(VIEWER),
+        [TOKEN_REJECTIONS_KEY]: JSON.stringify(earlier),
+    });
+
+    await auth.refreshViewer();
+    await waitUntil(() => browser.local.get(TOKEN_REJECTIONS_KEY) !== JSON.stringify(earlier));
+
+    const stored = browser.local.get(TOKEN_REJECTIONS_KEY) ?? '';
+    const rejections = JSON.parse(stored) as TokenRejection[];
+    // GitHub's `hashed_token`: the SHA-256 of the token, base64.
+    const hash = createHash('sha256').update('gho_revoked').digest('base64');
+    expect(rejections).toHaveLength(10);
+    expect(rejections[0]).toEqual({ at: 'earlier 1' } as unknown as TokenRejection);
+    expect(rejections.at(-1)).toEqual({
+        at: expect.any(String),
+        tokenHash: hash,
+        status: 401,
+        githubMessage: 'Bad credentials',
+    });
+    expect(stored).not.toContain('gho_revoked');
 });
 
 test('a stored token keeps the session when GitHub cannot be reached', async () => {

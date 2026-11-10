@@ -12,8 +12,10 @@ use tauri::State;
 /// The service the token is filed under in the credential store: the app's identifier (`tauri.conf.json`).
 const SERVICE: &str = "dev.githq.desktop";
 
-/// The account the token is filed under in the credential store.
-const ACCOUNT: &str = "github-token";
+/// The account the token is filed under in the credential store: `github-token` for a release build, with the
+/// environment appended for any other (`github-token-dev`), so a dev build never touches the release app's token.
+/// Picked by `build.rs` from `GITHQ_ENV`.
+const ACCOUNT: &str = env!("GITHQ_CREDENTIAL_ACCOUNT");
 
 /// Why a credential store could not do what was asked; only ever logged.
 #[derive(Debug)]

@@ -55,6 +55,27 @@ export type SignInResult =
 export const VIEWER_KEY = 'githq.viewer';
 /** The sign-in under way (`sessionStorage`): its `state` and where to return, while the user is on GitHub. */
 export const PENDING_SIGN_IN_KEY = 'githq.signIn';
+/**
+ * The last sign-outs on a token GitHub rejected ({@link TokenRejection}), oldest first, kept across sign-ins. Evidence
+ * for why a session ended, to set against GitHub's security log.
+ */
+export const TOKEN_REJECTIONS_KEY = 'githq.tokenRejections';
+/** How many {@link TOKEN_REJECTIONS_KEY} keeps. */
+const MAX_TOKEN_REJECTIONS = 10;
+
+/** One sign-out on a token GitHub rejected. */
+export interface TokenRejection {
+    /** When, as an ISO date. */
+    readonly at: string;
+    /**
+     * The token's SHA-256, base64: what GitHub's security log shows as `hashed_token`, so the log says when the token
+     * was issued and whether GitHub destroyed it. Never the token itself.
+     */
+    readonly tokenHash: string;
+    readonly status: number;
+    /** GitHub's own words for the refusal (`Bad credentials`), when it gave any. */
+    readonly githubMessage: string | null;
+}
 
 interface PendingSignIn {
     state: string;
@@ -232,12 +253,32 @@ export const AuthStore = defineService({
                 }
 
                 if (isTokenRejected(error)) {
-                    logger.warn('GitHub rejected the stored token; signing out');
+                    logger.warn('GitHub rejected the stored token; signing out', {
+                        githubMessage: error.githubMessage,
+                    });
+                    void recordRejection(token, error);
                     signOut('tokenRejected');
                 } else {
                     logger.warn('Could not refresh the signed-in user', { error });
                 }
             }
+        }
+
+        /** Keeps the evidence of a rejection under {@link TOKEN_REJECTIONS_KEY}, dropping the oldest past the limit. */
+        async function recordRejection(token: string, error: GitHubApiError) {
+            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+            const rejection: TokenRejection = {
+                at: new Date().toISOString(),
+                tokenHash: btoa(String.fromCodePoint(...new Uint8Array(digest))),
+                status: error.status,
+                githubMessage: error.githubMessage ?? null,
+            };
+            const stored = parseJson(browser.localStorage.getItem(TOKEN_REJECTIONS_KEY));
+            const earlier = Array.isArray(stored) ? stored : [];
+            browser.localStorage.setItem(
+                TOKEN_REJECTIONS_KEY,
+                JSON.stringify([...earlier, rejection].slice(-MAX_TOKEN_REJECTIONS)),
+            );
         }
 
         async function acceptToken(token: string, returnTo: string, signal?: AbortSignal): Promise<SignInResult> {
@@ -407,6 +448,6 @@ export const AuthStore = defineService({
     },
 });
 
-function isTokenRejected(error: unknown) {
+function isTokenRejected(error: unknown): error is GitHubApiError {
     return error instanceof GitHubApiError && error.status === 401;
 }
