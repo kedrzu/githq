@@ -264,9 +264,14 @@ export class ReviewScreenHarness {
         return this.diff.getByRole('button', { name: names[shows] });
     }
 
+    /** Every gap in the diff: a row of hidden lines. */
+    get gaps(): Locator {
+        return this.diff.locator('[tid="review-gap"]');
+    }
+
     /** A gap in the diff by what its count says, "94 lines", which it says while the pointer is not on it. */
     gap(count: string): Locator {
-        return this.diff.locator('[tid="review-gap"]').filter({ has: this.page.getByText(count, { exact: true }) });
+        return this.gaps.filter({ has: this.page.getByText(count, { exact: true }) });
     }
 
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */

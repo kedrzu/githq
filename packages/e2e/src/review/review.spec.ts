@@ -832,7 +832,7 @@ test('a gap\'s arrows show 20 lines from their hunk and hold the row on that sid
 
     await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
-    await expect(review.diff.locator('[tid="review-gap"]')).toHaveCount(0);
+    await expect(review.gaps).toHaveCount(0);
 });
 
 test('⌘B hides the file list and remembers it, the toggle and the view options say so; [ and ] still walk the files', async ({
