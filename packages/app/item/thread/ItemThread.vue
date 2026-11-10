@@ -4,6 +4,7 @@ import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import type { Ref } from 'vue';
 
 import Button from '@/components/Button.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
@@ -12,6 +13,7 @@ import { useEditTexts } from '@/edits/useEditTexts.js';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import { getCommentWays } from '@/review/writing/getCommentWays.js';
 import { getPendingComments } from '@/review/writing/getPendingComments.js';
+import { getReplyTarget } from '@/review/writing/getReplyTarget.js';
 import type { ReviewCommentTarget, ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
@@ -271,10 +273,10 @@ function askToLeave(go: () => void) {
   leaving = go;
   if (changed.kind === 'editor') {
     askingReply.value = null;
-    askAgain(askingRef, changed.id, undefined);
+    askAgain({ asking: askingRef, id: changed.id, none: undefined });
   } else {
     askingRef.value = undefined;
-    askAgain(askingReply, changed.threadId, null);
+    askAgain({ asking: askingReply, id: changed.threadId, none: null });
   }
 
   return true;
@@ -306,7 +308,7 @@ function getAskables(): Askable[] {
 }
 
 /** Asked already: asked again a tick on, so that it comes back into view and takes the cursor again. */
-function askAgain<T>(asking: { value: T }, id: T, none: T) {
+function askAgain<T>({ asking, id, none }: AskAgainParams<T>) {
   if (asking.value !== id) {
     asking.value = id;
     return;
@@ -517,14 +519,7 @@ async function openReply(threadId: string) {
     return;
   }
 
-  const line = thread.line ?? thread.originalLine ?? 1;
-  writing.open({
-    path: thread.path,
-    side: thread.diffSide === 'LEFT' ? 'before' : 'after',
-    line,
-    startLine: thread.startLine === null || thread.startLine === line ? null : thread.startLine,
-    threadId,
-  });
+  writing.open({ path: thread.path, ...getReplyTarget(thread) });
   focusedReply.value = threadId;
   await nextTick();
   focusedReply.value = null;
@@ -629,6 +624,13 @@ function moveToThread(from: HTMLElement, by: 1 | -1) {
 interface ToggledThread {
   readonly id: string;
   readonly resolved: boolean;
+}
+
+/** Who is asked again, by its ref, and the value that means nobody is. */
+interface AskAgainParams<T> {
+  readonly asking: Ref<T>;
+  readonly id: T;
+  readonly none: T;
 }
 
 /** A card's text being edited, and the text the edit started with. */
