@@ -12,7 +12,7 @@ defineProps<{
   line: DiffSplitRow;
   diff: FileDiff;
   syntax: FileSyntax | null;
-  /** The lines a comment is being written on: tinted. */
+  /** The lines a comment is being written on: tinted, their numbers in accent. */
   commented: CommentedLines;
 }>();
 
@@ -39,6 +39,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
         <DiffLineNumber
           :class="css.diffRowSplit_number"
           :line="line.left.line"
+          :commented="isLineCommented(commented, 'before', line.left.line)"
           @gutter="emit('gutter', $event, 'before', line.left?.line ?? 0)"
         />
         <DiffCode
@@ -59,6 +60,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
         <DiffLineNumber
           :class="css.diffRowSplit_number"
           :line="line.right.line"
+          :commented="isLineCommented(commented, 'after', line.right.line)"
           @gutter="emit('gutter', $event, 'after', line.right?.line ?? 0)"
         />
         <DiffCode
@@ -110,7 +112,7 @@ function getText(lines: readonly string[], cell: DiffCell) {
 }
 
 .diffRowSplit_cell_commented {
-  background: rgba($color-accent, 0.14);
+  background: rgba($color-accent, 0.18);
 }
 
 .diffRowSplit_number {

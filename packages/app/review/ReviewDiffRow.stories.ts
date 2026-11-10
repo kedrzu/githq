@@ -75,7 +75,7 @@ export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'l
 /** CR5: unified. */
 export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
 
-/** CR70: lines a comment is being written on are tinted. */
+/** CR70, D43: lines a comment is being written on are tinted, their numbers on that side in accent. */
 export const SplitCommented: Story = {
     args: { commented: [{ side: 'after', start: 3, end: 5 }] },
     render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }), { commented: args.commented }),

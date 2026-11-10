@@ -14,7 +14,7 @@ const props = defineProps<{
   line: DiffUnifiedRow;
   diff: FileDiff;
   syntax: FileSyntax | null;
-  /** The lines a comment is being written on: tinted. */
+  /** The lines a comment is being written on: tinted, their numbers in accent. */
   commented: CommentedLines;
 }>();
 
@@ -47,11 +47,13 @@ const isCommented = computed(() => {
     <DiffLineNumber
       :class="css.diffRowUnified_number"
       :line="line.oldLine"
+      :commented="line.oldLine !== null && isLineCommented(commented, 'before', line.oldLine)"
       @gutter="emit('gutter', $event, 'before', line.oldLine ?? 0)"
     />
     <DiffLineNumber
       :class="css.diffRowUnified_number"
       :line="line.newLine"
+      :commented="line.newLine !== null && isLineCommented(commented, 'after', line.newLine)"
       @gutter="emit('gutter', $event, 'after', line.newLine ?? 0)"
     />
     <span :class="css.diffRowUnified_sign">{{ line.sign }}</span>
@@ -93,7 +95,7 @@ const isCommented = computed(() => {
 }
 
 .diffRowUnified_commented {
-  background: linear-gradient(rgba($color-accent, 0.14), rgba($color-accent, 0.14)), $color-bg;
+  background: linear-gradient(rgba($color-accent, 0.18), rgba($color-accent, 0.18)), $color-bg;
 }
 
 .diffRowUnified_number {

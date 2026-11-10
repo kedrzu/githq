@@ -6,8 +6,18 @@ import { estimateReviewRowHeight } from './buildReviewRows.js';
 import type { ReviewGapRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
 
-const { CodeKinds, Collapsed, ExpansionReset, Gaps, Split, SplitColoured, Unified, UnifiedColoured } =
-    composeStories(stories);
+const {
+    CodeKinds,
+    Collapsed,
+    ExpansionReset,
+    Gaps,
+    Split,
+    SplitColoured,
+    SplitCommented,
+    Unified,
+    UnifiedColoured,
+    UnifiedCommented,
+} = composeStories(stories);
 
 test('the end of a file, open or collapsed to its header, is drawn as tall as estimated', async () => {
     await Collapsed.run();
@@ -154,3 +164,46 @@ function getCode(text: string) {
     expect(code, text).toBeDefined();
     return code!;
 }
+
+test.each([
+    ['split', Split],
+    ['unified', Unified],
+])(
+    "a line's number under the pointer is underlined with a comment icon before it, the code untouched, %s",
+    async (_layout, Story) => {
+        await Story.run();
+        const number = page.getByRole('button', { name: 'Comment on line 3' }).first().element();
+        const marker = () => number.querySelector('svg')!;
+        const code = number.closest('div')!.querySelector('code')!;
+        const background = getComputedStyle(code.closest('div')!).backgroundColor;
+
+        expect(getComputedStyle(marker()).display).toBe('none');
+
+        await userEvent.hover(number);
+        expect(getComputedStyle(marker()).display).toBe('block');
+        expect(getComputedStyle(number).textDecorationLine).toBe('underline');
+        expect(marker().getBoundingClientRect().right).toBeLessThanOrEqual(
+            number.querySelector('span')!.getBoundingClientRect().left,
+        );
+        expect(getComputedStyle(code.closest('div')!).backgroundColor).toBe(background);
+
+        await userEvent.hover(code);
+        expect(getComputedStyle(marker()).display).toBe('none');
+    },
+);
+
+test.each([
+    ['split', SplitCommented],
+    ['unified', UnifiedCommented],
+])('the lines a comment is being written on have their numbers on that side in accent, %s', async (_layout, Story) => {
+    await Story.run();
+    await expect.element(page.getByRole('button', { name: 'Comment on line 3' }).first()).toBeVisible();
+    const accent = page
+        .getByRole('button', { name: /^Comment on line/ })
+        .elements()
+        .filter(number => getComputedStyle(number).color === 'rgb(123, 135, 247)')
+        .map(number => number.textContent.trim());
+
+    // The story comments on lines 3–5 of the newer side.
+    expect(accent).toEqual(['3', '4', '5']);
+});

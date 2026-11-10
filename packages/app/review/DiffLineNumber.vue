@@ -1,11 +1,14 @@
-<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag or ⇧click for a range (CR73), all told by the event to whoever decides. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. -->
+<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag or ⇧click for a range (CR73), all told by the event to whoever decides. Under the pointer it turns accent and underlined, a comment icon in the margin before it (D43); a line a comment is being written on has it in accent. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { MessageSquarePlus } from 'lucide-vue-next';
 
 import * as l from './DiffLineNumber.loc.js';
 
 defineProps<{
   line: number | null;
+  /** A comment is being written on the line: in accent. */
+  commented?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -20,14 +23,21 @@ const t = useTranslate();
     <button
       v-if="line !== null"
       type="button"
-      :class="css.diffLineNumber_button"
+      :class="[css.diffLineNumber_button, commented && css.diffLineNumber_button_commented]"
       tabindex="-1"
       :aria-label="t(l.commentOn, { line })"
       @click="emit('gutter', $event)"
       @pointerdown="emit('gutter', $event)"
       @pointerenter="emit('gutter', $event)"
     >
-      {{ line }}
+      <span :class="css.diffLineNumber_text">
+        <MessageSquarePlus
+          :class="css.diffLineNumber_marker"
+          :size="12"
+          aria-hidden="true"
+        />
+        {{ line }}
+      </span>
     </button>
   </span>
 </template>
@@ -54,6 +64,30 @@ const t = useTranslate();
 
   &:hover {
     color: $color-accent;
+    text-decoration: underline;
+  }
+}
+
+.diffLineNumber_button_commented {
+  color: $color-accent;
+}
+
+.diffLineNumber_text {
+  position: relative;
+}
+
+.diffLineNumber_marker {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  display: none;
+  margin-right: $spacing-4;
+  color: $color-accent;
+  pointer-events: none;
+  transform: translateY(-50%);
+
+  .diffLineNumber_button:hover & {
+    display: block;
   }
 }
 </style>
