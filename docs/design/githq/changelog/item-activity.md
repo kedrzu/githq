@@ -238,6 +238,22 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   this device.”). The caption says so, and that a read failing later changes nothing on screen.
 - [x] `Activity / Thread · loading` (`FZHVU`): the line reads “Loading 4 comments and the events from GitHub” (was “…
   and 6 events…”): before the detail arrives the item's row knows how many comments it has, not how many events.
+- [x] Captions brought in line with what was built (2026-11-10):
+  - F13 (`U9JZ1`) “One line per burst” (`fdTFK`): objects of one kind merge in the order the kinds first came; one keeps
+    its title, several show references only (“mentioned this in #14, #15, and #16”); one author's commits in a row are
+    one push, split where more than an hour passed between two of them (GitHub gives no push time).
+  - F13 “CI, failures only” (`n0ntVn`): “CI” where a person would be, no avatar; only the newest run of each check
+    counts, and a cancelled run is not a failure.
+  - F13 “In a fold” (`F5ti1`): the counts are GitHub's own, the close that comes with a merge is not an event of its
+    own. F13's caption (`HADwB`): “marked as a duplicate” is not shown, the close says it.
+  - F5's caption (`s4L7N6`), the fold: everything stays in time order; what GitHub hasn't given yet, of the comments or
+    of the events, folds with the middle; expanding reads it and puts it in place.
+  - F15's caption (`o9BXr`): Discard after J / K, another item or closing goes where you were going; Update description
+    on the description; a refused edit gives a toast and opens the editor again; Copy link is quiet.
+  - I4's caption (`L5oEi3`): ⇧X and the item menu's close also post the typed comment first; a comment not sent has no
+    toast, its card says it; @ lists the thread's people first, # the repository's items from this device when tracked,
+    else GitHub's search once typing pauses, never the item itself; the suggestion list stays inside the item; in a
+    modal the first Esc leaves the box, the next closes the item.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
