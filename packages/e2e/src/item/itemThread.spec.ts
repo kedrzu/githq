@@ -6,6 +6,7 @@ import { GitHubHttpError } from '../github/GitHubMock.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { ReviewScreenHarness } from '../harnesses/ReviewScreen.harness.js';
+import { SettingsScreenHarness } from '../harnesses/SettingsScreen.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import type { GitHubMock } from '../github/GitHubMock.js';
 import { answerReview } from '../review/answerReview.js';
@@ -378,7 +379,7 @@ async function openReviewThread(page: Page, github: GitHubMock) {
     await myWork.row(PULL_REQUEST).click();
     const thread = item.root.getByRole('group', { name: 'Thread by sofiab on src/auth/redirect.ts' });
     await expect(thread).toContainText(QUESTION);
-    return { item, thread, writes, refused };
+    return { item, thread, writes, refused, sample };
 }
 
 test('R on a code thread clicked opens its reply editor; the reply goes as code review sends it, shows at once, and code review shows it', async ({
@@ -410,6 +411,44 @@ test('R on a code thread clicked opens its reply editor; the reply goes as code 
     await page.keyboard.press('d');
     const review = new ReviewScreenHarness(page);
     await expect(review.thread(QUESTION)).toContainText('Home is the fallback now.');
+});
+
+test('with the draft chosen, a reply from the thread starts a review on the head GitHub has now, code review never opened', async ({
+    page,
+    github,
+}) => {
+    const { item, thread, writes, sample } = await openReviewThread(page, github);
+    github.graphqlDocument('StartPullRequestReview', ({ variables }) => {
+        writes.push({ name: 'StartPullRequestReview', variables });
+        sample.world.setPendingReview(sample.pullRequest, { comments: 1, minutesAgo: 0 });
+        return {
+            data: { addPullRequestReview: { pullRequestReview: { id: 'DRAFT', createdAt: new Date().toISOString() } } },
+        };
+    });
+    await page.goto('/settings?tab=review');
+    await new SettingsScreenHarness(page).reviewComment('Add it to a draft review').click();
+    await page.goBack();
+    await expect(thread).toContainText(QUESTION);
+    // Pushed after the item was read: its row still names the head before.
+    const head = sample.world.push(sample.pullRequest, 'sofiab', 'Fall back to home');
+
+    await thread.getByRole('button', { name: 'Reply…' }).click();
+    await expect(thread.getByRole('button', { name: 'Start a review' })).toBeVisible();
+    await page.keyboard.type('Home is the fallback now.');
+    await page.keyboard.press(REPLY_KEY);
+
+    await expect(thread).toContainText('Home is the fallback now.');
+    expect(writes).toEqual([
+        { name: 'StartPullRequestReview', variables: { pullRequestId: sample.pullRequest, commitOID: head } },
+        {
+            name: 'AddPullRequestReviewThreadReply',
+            variables: {
+                pullRequestReviewThreadId: 'T_open',
+                body: 'Home is the fallback now.',
+                pullRequestReviewId: 'DRAFT',
+            },
+        },
+    ]);
 });
 
 test('Resolve thread folds it, saying at once that the viewer resolved it; Unresolve opens it again', async ({
