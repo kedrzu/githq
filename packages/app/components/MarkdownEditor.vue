@@ -137,7 +137,7 @@ async function showPreview() {
 
 // As typed: `insertText` keeps the edit in the text area's undo history and reports it as input, which updates the
 // text. Every engine the app runs on (Chromium, WebKit, Gecko) takes it in a text area.
-function useTool(tool: MarkdownTool) {
+function applyTool(tool: MarkdownTool) {
   const element = input.value;
   if (!element) {
     return;
@@ -197,7 +197,7 @@ function useTool(tool: MarkdownTool) {
               :class="css.markdownEditor_tool"
               :aria-label="t(l[tool])"
               :disabled="disabled || readonly"
-              @click="useTool(tool)"
+              @click="applyTool(tool)"
             >
               <component
                 :is="TOOL_ICONS[tool]"
