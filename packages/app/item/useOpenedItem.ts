@@ -128,13 +128,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         }
 
         try {
-            // A page at a time, until all is read — or the detail was read again meanwhile and neither cursor moved.
-            let cursors = readMiddleCursors(current);
-            while (cursors !== null) {
-                await details.loadThreadMiddle(current);
-                const next = readMiddleCursors(current);
-                cursors = next === cursors ? null : next;
-            }
+            await loadPages(current, readMiddleCursors, details.loadThreadMiddle);
         } catch (error) {
             logger.warn("The middle of an item's thread could not be read", { id: current, error });
             throw error;
@@ -156,15 +150,23 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         }
 
         try {
-            // 100 at a time, until none are left — or the detail was read again meanwhile and the cursor did not move.
-            let cursor = readCursor(current);
-            while (cursor !== null) {
-                await loadPage(current);
-                const next = readCursor(current);
-                cursor = next === cursor ? null : next;
-            }
+            await loadPages(current, readCursor, loadPage);
         } catch (error) {
             logger.warn('Older comments or reviews could not be read', { id: current, error });
+        }
+    }
+
+    async function loadPages(
+        current: string,
+        readCursor: (id: string) => string | null,
+        loadPage: (id: string) => Promise<void>,
+    ) {
+        // A page at a time, until all is read — or the detail was read again meanwhile and the cursor did not move.
+        let cursor = readCursor(current);
+        while (cursor !== null) {
+            await loadPage(current);
+            const next = readCursor(current);
+            cursor = next === cursor ? null : next;
         }
     }
 }
