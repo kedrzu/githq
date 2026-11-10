@@ -220,6 +220,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   click), the comment being edited in place, the saved comment with “· edited”, and someone else's comment where you
   can't write: Quote reply and Copy link only. Delete… asks once. The description card has the same menu without
   Delete.
+- [x] New `Activity / Comment · editing, discard?` (`BVHXx`, a variant of `Activity / Comment · editing`): leaving an
+  edit whose text was changed asks in the editor's footer first, as code review's CR97 does: an amber circle-alert and
+  “Discard your changes to this comment?” (`$fg`) where “Markdown” was, then Keep editing (Esc) and Discard (↵,
+  `#DA3633` fill — Primer's red emphasis, so the white label reaches AA). Esc, Cancel, J / K, opening another item and
+  closing the item ask; Esc again keeps editing; an unchanged edit closes without a question. F15 (`BLYpR`) gains a
+  third row showing it (`u1CA8R`), and its caption says so.
 - [ ] New F16 · The thread loading, empty, or not loaded (`Q2H7SU`): three columns at panel width. Loading the first
   time: the description and the composer are there, the rail shows how many items GitHub reported and a skeleton;
   later opens come from the local copy with no skeleton. Empty: the rail runs from the description straight to the
