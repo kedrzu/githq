@@ -59,9 +59,11 @@ export function withGitHubLinks(options: WithGitHubLinksOptions = {}): Decorator
                     });
                 }
 
+                // Once: a new component each render would remount the content at every line that changes under it.
+                const content = story();
                 return () =>
                     h('div', [
-                        h(story()),
+                        h(content),
                         h('p', { tid: 'at' }, `At: ${router.currentRoute.value.fullPath}`),
                         h('p', { tid: 'on-github' }, `On GitHub: ${onGitHub.value}`),
                         options.inItem ? h('p', { tid: 'opened' }, `Opened: ${opened.value}`) : null,
