@@ -39,11 +39,13 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // nzyme's text area props: `modelValue` (the text), `label` (the text area's accessible name), `placeholder`,
 // `disabled`, `readonly`; the repository the text is written in, `owner/name`, which the preview links `#42` and
 // mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
-// (who opened it, who commented), whom `@` suggests first.
+// (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
+// suggest.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
   people: { type: Array as PropType<readonly PersonSuggestion[]>, default: () => [] },
+  itemNumber: { type: Number, default: undefined },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -86,6 +88,7 @@ const suggestions = useMarkdownSuggestions({
   textarea: input,
   repository: () => props.repository,
   people: () => props.people,
+  itemNumber: () => props.itemNumber,
 });
 
 const headRef = useTemplateRef<HTMLElement>('head');

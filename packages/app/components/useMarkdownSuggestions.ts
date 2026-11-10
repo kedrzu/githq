@@ -21,6 +21,8 @@ export interface UseMarkdownSuggestionsOptions {
     readonly repository: MaybeRefOrGetter<string>;
     /** The thread's people, suggested first. */
     readonly people: MaybeRefOrGetter<readonly PersonSuggestion[]>;
+    /** The number of the item written on, which `#` does not offer: it would point at itself. */
+    readonly itemNumber?: MaybeRefOrGetter<number | undefined>;
 }
 
 /** The suggestions at the caret, and what the text area needs to show and drive them. */
@@ -101,11 +103,7 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
         minLength: 1,
     });
     const list = computed((): SuggestionList | null => {
-        const shown =
-            held.value ??
-            (trigger.value?.kind === 'reference' && searched.value
-                ? { kind: 'reference', rows: searched.value }
-                : null);
+        const shown = getShown();
         return shown && shown.rows.length > 0 && anchor.value !== null ? shown : null;
     });
     // The text area stays a text box — ARIA lets a `textarea` take no other role — that owns the menu as a combobox
@@ -145,6 +143,20 @@ export function useMarkdownSuggestions(options: UseMarkdownSuggestionsOptions): 
         pick,
         highlight,
     });
+
+    function getShown(): SuggestionList | null {
+        const shown =
+            held.value ??
+            (trigger.value?.kind === 'reference' && searched.value
+                ? { kind: 'reference', rows: searched.value }
+                : null);
+        const itself = toValue(options.itemNumber);
+        if (shown?.kind !== 'reference' || itself === undefined) {
+            return shown;
+        }
+
+        return { kind: 'reference', rows: shown.rows.filter(row => row.number !== itself) };
+    }
 
     // Resolved once suggesting starts, not for every editor mounted: an editor no one types `@` or `#` in needs none.
     function getService() {

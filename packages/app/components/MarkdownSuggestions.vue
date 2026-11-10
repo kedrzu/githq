@@ -203,9 +203,12 @@ const heading = computed(() =>
   flex: none;
 }
 
+// One width for `#1` to `#12345`: the titles start in one column.
 .markdownSuggestions_number {
+  min-width: 6ch;
   font-family: $font-family-mono;
   font-size: $font-size-xs;
+  font-variant-numeric: tabular-nums;
 }
 
 .markdownSuggestions_detail {

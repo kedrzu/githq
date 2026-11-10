@@ -21,6 +21,8 @@ const props = defineProps<{
   description?: boolean;
   /** `owner/name`, which the editor's preview and suggestions are of. */
   repository: string;
+  /** The number of the item it is on, which `#` does not suggest. */
+  itemNumber: number;
   /** The thread's people, whom `@` suggests first. */
   people?: readonly ItemUser[];
   /** Why GitHub did not take it the last time it was saved; `null` when it was not refused. */
@@ -75,6 +77,7 @@ function save() {
         v-model="text"
         :class="css.itemThreadEditor_editor"
         :repository="repository"
+        :item-number="itemNumber"
         :people="people"
         :label="description ? t(l.editDescription) : t(l.editComment)"
         @submit="save"

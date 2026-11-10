@@ -233,6 +233,19 @@ test("# alone lists a tracked repository's issues, the latest updated first", as
     await expect.poll(suggested).toEqual(['#32 Rebuild links', '#31 Sign-in loops on Safari']);
 });
 
+test('# does not offer the item the editor is written on: it would point at itself', async () => {
+    const { text } = await mountSuggestingEditor({
+        tracked: [
+            { ...sampleIssue('I_self'), number: 31, title: 'Sign-in loops on Safari' },
+            { ...sampleIssue('I_other'), number: 32, title: 'Sign-in loops on Firefox' },
+        ],
+        itemNumber: 31,
+    });
+
+    await userEvent.type(text, '#sign');
+    await expect.poll(suggested).toEqual(['#32 Sign-in loops on Firefox']);
+});
+
 test('# alone in a repository not tracked asks GitHub nothing until a character follows', async () => {
     const { text, searched } = await mountSuggestingEditor({ found: { '': [issue(7, 'Seven')] } });
 
@@ -299,6 +312,8 @@ interface SuggestingEditorParams {
     readonly hold?: (query: string) => Promise<void> | null;
     /** acme/web is tracked, and these are its items in the local copy. */
     readonly tracked?: readonly IssueItem[];
+    /** The item the editor is written on. */
+    readonly itemNumber?: number;
     readonly onSubmit?: () => void;
     readonly onCancel?: () => void;
 }
@@ -332,6 +347,7 @@ async function mountSuggestingEditor(params: SuggestingEditorParams) {
                 label: 'Comment',
                 modelValue: text.value,
                 repository: 'acme/web',
+                itemNumber: params.itemNumber,
                 people: [
                     { login: 'sofiab', name: 'Sofia Berg', avatarUrl: 'https://avatars.test/sofiab' },
                     { login: 'sophie-k', name: 'Sophie Klein', avatarUrl: 'https://avatars.test/sophie-k' },

@@ -115,6 +115,7 @@ function close(reason: CloseReason) {
       v-model="text"
       :class="css.itemThreadComposer_editor"
       :repository="item.repository.nameWithOwner"
+      :item-number="item.number"
       :people="people"
       :label="t(l.comment)"
       :placeholder="t(l.placeholder)"
