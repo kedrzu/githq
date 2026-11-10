@@ -380,7 +380,7 @@ function withEvents(node: IssueDetailFieldsFragment, count: number): IssueDetail
         ...node,
         firstEvents: { pageInfo: { endCursor: 'event-2' }, nodes: events(1, 2) },
         lastEvents: {
-            totalCount: count,
+            filteredCount: count,
             pageInfo: { startCursor: `event-${newestFrom}` },
             nodes: events(newestFrom, count),
         },

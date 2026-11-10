@@ -160,7 +160,7 @@ function toPullRequestDetail(node: PullRequestDetailFieldsFragment, fetchedAt: n
 interface DetailEvents {
     readonly id: string;
     readonly firstEvents: EventPage<{ readonly endCursor: string | null }>;
-    readonly lastEvents: EventPage<{ readonly startCursor: string | null }> & { readonly totalCount: number };
+    readonly lastEvents: EventPage<{ readonly startCursor: string | null }> & { readonly filteredCount: number };
 }
 
 interface EventPage<TPageInfo> {
@@ -180,10 +180,10 @@ function toItemEvents(node: DetailEvents, commitCount: number): ItemEvents {
     const oldest = toThreadEvents(node.firstEvents.nodes, node.id).filter(event => !newestIds.has(event.id));
     const after = node.firstEvents.pageInfo.endCursor;
     const before = node.lastEvents.pageInfo.startCursor;
-    const unread = oldest.length + newest.length < node.lastEvents.totalCount;
+    const unread = oldest.length + newest.length < node.lastEvents.filteredCount;
 
     return {
-        totalCount: node.lastEvents.totalCount,
+        totalCount: node.lastEvents.filteredCount,
         commitCount,
         oldest,
         newest,
@@ -523,7 +523,7 @@ function toDetailBase(
         locked: node.locked,
         reactions,
         comments: toItemComments(node.commentPage, node.firstComments.nodes ?? []),
-        events: toItemEvents(node, node.__typename === 'PullRequest' ? node.commitEvents.totalCount : 0),
+        events: toItemEvents(node, node.__typename === 'PullRequest' ? node.commitEvents.filteredCount : 0),
         projects: mapNotNull(node.projectItems?.nodes ?? [], projectItem =>
             projectItem && !projectItem.isArchived ? toDetailProject(projectItem) : null,
         ),

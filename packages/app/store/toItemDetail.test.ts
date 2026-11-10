@@ -354,7 +354,7 @@ test("a short thread's first and newest events overlap: each is kept once, and n
         {
             ...sampleIssueDetailNode('I_1', MONDAY),
             firstEvents: { pageInfo: { endCursor: 'E_2' }, nodes: events.slice(0, 2) },
-            lastEvents: { totalCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
+            lastEvents: { filteredCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
         },
         FETCHED_AT,
     );
@@ -377,11 +377,11 @@ test('a long thread keeps its first events apart from its newest, with the curso
                 nodes: [labeled('E_1', 'bug'), labeled('E_2', 'docs')],
             },
             lastEvents: {
-                totalCount: 60,
+                filteredCount: 60,
                 pageInfo: { startCursor: 'before-51' },
                 nodes: [labeled('E_51', 'ui')],
             },
-            commitEvents: { totalCount: 12 },
+            commitEvents: { filteredCount: 12 },
         },
         FETCHED_AT,
     );
@@ -393,6 +393,22 @@ test('a long thread keeps its first events apart from its newest, with the curso
         newest: [{ id: 'E_51' }],
         middle: { after: 'after-2', before: 'before-51' },
     });
+});
+
+test("a pull request's thread counts the events of the kinds it reads, not the whole timeline GitHub's totalCount counts", () => {
+    const events = [labeled('E_1', 'bug'), labeled('E_2', 'docs'), labeled('E_3', 'ui')];
+    // With `itemTypes`, GitHub's `totalCount` counts the whole timeline (kedrzu/githq#219); `filteredCount` these.
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: { pageInfo: { endCursor: 'E_2' }, nodes: events.slice(0, 2) },
+            lastEvents: { filteredCount: 3, pageInfo: { startCursor: 'E_1' }, nodes: events },
+            commitEvents: { filteredCount: 1 },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toMatchObject({ totalCount: 3, commitCount: 1, oldest: [], middle: null });
 });
 
 test('a merged pull request keeps the ClosedEvent GitHub gives with the merge: every event held, no middle', () => {
@@ -421,7 +437,7 @@ test('a merged pull request keeps the ClosedEvent GitHub gives with the merge: e
             ...samplePullRequestDetailNode('PR_1', MONDAY),
             firstEvents: { pageInfo: { endCursor: 'after-2' }, nodes: [] },
             lastEvents: {
-                totalCount: 3,
+                filteredCount: 3,
                 pageInfo: { startCursor: 'before-1' },
                 nodes: [closedByHand, merged, closedWithMerge],
             },

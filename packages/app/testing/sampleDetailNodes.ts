@@ -3,7 +3,7 @@ import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from 
 /** No events: the first two and the newest of none. */
 const NO_EVENTS = {
     firstEvents: { pageInfo: { endCursor: null }, nodes: [] },
-    lastEvents: { totalCount: 0, pageInfo: { startCursor: null }, nodes: [] },
+    lastEvents: { filteredCount: 0, pageInfo: { startCursor: null }, nodes: [] },
 };
 
 const REPOSITORY: IssueDetailFieldsFragment['repository'] = {
@@ -104,7 +104,7 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
         firstComments: { nodes: [] },
         ...NO_EVENTS,
-        commitEvents: { totalCount: 0 },
+        commitEvents: { filteredCount: 0 },
         commits: { totalCount: 1 },
         headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },

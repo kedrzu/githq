@@ -23,7 +23,8 @@ fragment IssueDetailFields on Issue {
     }
     # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
     # first; what lies between is read on demand (`ThreadMiddle`). `$issueEventTypes` is `THREAD_EVENT_TYPES`
-    # (`ItemDetailStore`).
+    # (`ItemDetailStore`). Counts are `filteredCount`: with `itemTypes`, a pull request's `totalCount` counts its
+    # whole timeline (kedrzu/githq#219: 65, 55 of them commits).
     firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
         pageInfo {
             endCursor
@@ -33,7 +34,7 @@ fragment IssueDetailFields on Issue {
         }
     }
     lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
-        totalCount
+        filteredCount
         pageInfo {
             startCursor
         }

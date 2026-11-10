@@ -1686,7 +1686,7 @@ export type ItemDetailQuery = {
                   > | null;
               };
               lastEvents: {
-                  totalCount: number;
+                  filteredCount: number;
                   pageInfo: { startCursor: string | null };
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
@@ -3394,7 +3394,7 @@ export type ItemDetailQuery = {
                   > | null;
               };
               lastEvents: {
-                  totalCount: number;
+                  filteredCount: number;
                   pageInfo: { startCursor: string | null };
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
@@ -4203,7 +4203,7 @@ export type ItemDetailQuery = {
                       | null
                   > | null;
               };
-              commitEvents: { totalCount: number };
+              commitEvents: { filteredCount: number };
               commits: { totalCount: number };
               headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
@@ -5171,7 +5171,7 @@ export type ItemDetailsQuery = {
                   > | null;
               };
               lastEvents: {
-                  totalCount: number;
+                  filteredCount: number;
                   pageInfo: { startCursor: string | null };
                   nodes: Array<
                       | { __typename: 'AddedToProjectEvent' }
@@ -6879,7 +6879,7 @@ export type ItemDetailsQuery = {
                   > | null;
               };
               lastEvents: {
-                  totalCount: number;
+                  filteredCount: number;
                   pageInfo: { startCursor: string | null };
                   nodes: Array<
                       | { __typename: 'AddedToMergeQueueEvent' }
@@ -7688,7 +7688,7 @@ export type ItemDetailsQuery = {
                       | null
                   > | null;
               };
-              commitEvents: { totalCount: number };
+              commitEvents: { filteredCount: number };
               commits: { totalCount: number };
               headRepository: { nameWithOwner: string } | null;
               statusCheckRollup: {
@@ -12485,7 +12485,7 @@ export type IssueDetailFieldsFragment = {
         > | null;
     };
     lastEvents: {
-        totalCount: number;
+        filteredCount: number;
         pageInfo: { startCursor: string | null };
         nodes: Array<
             | { __typename: 'AddedToProjectEvent' }
@@ -15254,7 +15254,7 @@ export type PullRequestDetailFieldsFragment = {
         > | null;
     };
     lastEvents: {
-        totalCount: number;
+        filteredCount: number;
         pageInfo: { startCursor: string | null };
         nodes: Array<
             | { __typename: 'AddedToMergeQueueEvent' }
@@ -16060,7 +16060,7 @@ export type PullRequestDetailFieldsFragment = {
             | null
         > | null;
     };
-    commitEvents: { totalCount: number };
+    commitEvents: { filteredCount: number };
     commits: { totalCount: number };
     headRepository: { nameWithOwner: string } | null;
     statusCheckRollup: {
@@ -19964,7 +19964,7 @@ export const IssueDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -21967,7 +21967,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -21976,7 +21976,7 @@ export const PullRequestDetailFieldsFragmentDoc = new TypedDocumentString(
     }
   }
   commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
-    totalCount
+    filteredCount
   }
   commits {
     totalCount
@@ -23262,7 +23262,7 @@ fragment IssueDetailFields on Issue {
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -23550,7 +23550,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -23559,7 +23559,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
-    totalCount
+    filteredCount
   }
   commits {
     totalCount
@@ -24350,7 +24350,7 @@ fragment IssueDetailFields on Issue {
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -24638,7 +24638,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
-    totalCount
+    filteredCount
     pageInfo {
       startCursor
     }
@@ -24647,7 +24647,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
   }
   commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
-    totalCount
+    filteredCount
   }
   commits {
     totalCount

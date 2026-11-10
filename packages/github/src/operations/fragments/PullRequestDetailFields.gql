@@ -24,7 +24,8 @@ fragment PullRequestDetailFields on PullRequest {
     }
     # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
     # first; what lies between is read on demand (`ThreadMiddle`). `$pullRequestEventTypes` is `THREAD_EVENT_TYPES`
-    # (`ItemDetailStore`).
+    # (`ItemDetailStore`). Counts are `filteredCount`: with `itemTypes`, a pull request's `totalCount` counts its
+    # whole timeline (kedrzu/githq#219: 65, 55 of them commits).
     firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
         pageInfo {
             endCursor
@@ -34,7 +35,7 @@ fragment PullRequestDetailFields on PullRequest {
         }
     }
     lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
-        totalCount
+        filteredCount
         pageInfo {
             startCursor
         }
@@ -44,7 +45,7 @@ fragment PullRequestDetailFields on PullRequest {
     }
     # How many of the events are commits, for the fold's counts (F5); the rest are other events.
     commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
-        totalCount
+        filteredCount
     }
     commits {
         totalCount

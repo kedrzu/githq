@@ -3072,7 +3072,8 @@ export class GitHubWorld {
             return {
                 ...this.toIssueNode(item),
                 ...details,
-                ...toDetailEvents(item.events),
+                // An issue's `totalCount` counts by `itemTypes` (nuxt/nuxt#30000), a pull request's does not.
+                ...toDetailEvents(item.events, 0),
                 parent: null,
                 subIssues: noIssues,
                 blockedBy: noIssues,
@@ -3083,12 +3084,17 @@ export class GitHubWorld {
         const node = this.toPullRequestNode(item, item.pullRequest);
         const events = this.toPullRequestEvents(item, item.pullRequest);
         const commitCount = events.filter(event => event.__typename === 'PullRequestCommit').length;
+        // The whole timeline, as GitHub's `totalCount` counts it for a pull request whatever the `itemTypes`
+        // (kedrzu/githq#219).
+        const timeline = events.length + item.comments.length + item.pullRequest.reviews.length;
+        // Answered whole, though the detail reads only `filteredCount`.
+        const commitEvents = { totalCount: timeline, filteredCount: commitCount };
         return {
             ...node,
             ...details,
-            ...toDetailEvents(events),
+            ...toDetailEvents(events, timeline - events.length),
             commits: { totalCount: commitCount },
-            commitEvents: { totalCount: commitCount },
+            commitEvents,
             headRepository: { nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
@@ -3604,9 +3610,10 @@ function toCommentPage(item: WorldItem, before: number, count: number, reader: C
 
 /**
  * The events an opened item reads at once: the first ones and the newest ones, as GitHub pages them; a cursor is the
- * index of its event.
+ * index of its event. `filteredCount` counts these events, `totalCount` the `others` of the timeline too: a pull
+ * request's comments and reviews, which GitHub counts in it whatever the `itemTypes`.
  */
-function toDetailEvents<TEvent>(events: readonly TEvent[]) {
+function toDetailEvents<TEvent>(events: readonly TEvent[], others: number) {
     const lastStart = Math.max(0, events.length - LAST_EVENTS);
     const firstEnd = Math.min(FIRST_EVENTS, events.length);
     return {
@@ -3615,7 +3622,8 @@ function toDetailEvents<TEvent>(events: readonly TEvent[]) {
             nodes: events.slice(0, firstEnd),
         },
         lastEvents: {
-            totalCount: events.length,
+            totalCount: events.length + others,
+            filteredCount: events.length,
             pageInfo: { startCursor: lastStart < events.length ? `C${lastStart}` : null },
             nodes: events.slice(lastStart),
         },
