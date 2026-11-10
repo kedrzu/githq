@@ -558,6 +558,26 @@ $row-surface-inset: $spacing-2 $spacing-8;
     height: $height;
 }
 
+// A line on the item's thread's rail with a badge on it (`ItemThreadEvent`, `ItemThreadPush`, `ItemThreadMissing`): the
+// row, the badge's 28px centred on the rail, and the badge, whose fill hides the rail running behind it.
+@mixin item-thread-badge-row {
+    display: flex;
+    gap: $spacing-12;
+    padding: $spacing-4 0 $spacing-4 ($item-thread-rail-offset + $item-thread-rail-width * 0.5 - 14px);
+}
+
+@mixin item-thread-badge {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: $color-bg-3;
+    border: 1px solid $color-border;
+    border-radius: 50%;
+}
+
 // An issue or pull request's kind and state icon in GitHub's colour, by `getItemKind`'s tone: included in the icon's
 // class, it gives it one modifier per tone (`_open`, `_done`, `_closed`, `_draft`) — a list's row and card, the opened
 // item, the review's toolbar, a reference suggested in a comment.

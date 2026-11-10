@@ -103,23 +103,12 @@ async function showMore() {
 </template>
 
 <style lang="scss" module="css">
-// The badge's 28px centred on the rail (`ItemThread`), as an event's.
 .itemThreadPush {
-  display: flex;
-  gap: $spacing-12;
-  padding: $spacing-4 0 $spacing-4 ($item-thread-rail-offset + $item-thread-rail-width * 0.5 - 14px);
+  @include item-thread-badge-row;
 }
 
 .itemThreadPush_badge {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: $color-bg-3;
-  border: 1px solid $color-border;
-  border-radius: 50%;
+  @include item-thread-badge;
 }
 
 .itemThreadPush_badgeIcon {
