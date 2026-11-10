@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
 import type { ChangelogDevelopment, ChangelogRelease } from './buildChangelog.js';
+import { withGitHubLinks } from '@/testing/withGitHubLinks.js';
+
 import ChangelogView from './ChangelogView.vue';
 
 const COMMITS_URL = 'https://github.com/kedrzu/githq/commits/632d28b';
@@ -73,6 +75,7 @@ const meta = {
         onOpenOnGitHub: fn(),
     },
     parameters: { layout: 'fullscreen' },
+    decorators: [withGitHubLinks()],
 } satisfies Meta<typeof ChangelogView>;
 
 export default meta;

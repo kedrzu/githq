@@ -117,14 +117,10 @@ export const FoldedDescription: Story = {
     args: { detail: { ...quietDetail(), bodyHtml: LONG_TEXT.repeat(6) } },
     play: async ({ canvas, canvasElement }) => {
         const unfold = await canvas.findByRole('button', { name: 'Show the whole description' });
-        const before = canvasElement.querySelector('[class*="gitHubHtml"]')?.parentElement?.clientHeight ?? 0;
-        await expect(before).toBe(100);
+        const fold = canvasElement.querySelector('[class*="reviewConversation_fold"]');
+        await expect(fold?.clientHeight).toBe(100);
         await userEvent.click(unfold);
-        await waitFor(() =>
-            expect(canvasElement.querySelector('[class*="gitHubHtml"]')?.parentElement?.clientHeight).toBeGreaterThan(
-                100,
-            ),
-        );
+        await waitFor(() => expect(fold?.clientHeight).toBeGreaterThan(100));
         await expect(canvas.queryByRole('button', { name: 'Show the whole description' })).toBeNull();
     },
 };

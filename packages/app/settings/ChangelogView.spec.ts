@@ -85,9 +85,7 @@ test('U43: a Development build has its one fold first, counted and grouped, whos
     await expect.element(fold(/^githq 0\.2\.0/)).not.toHaveTextContent(/New|Running/);
     await expect.element(page.getByText("4 changes you'd notice, out of 7 commits.")).toBeVisible();
     await expect.element(page.getByRole('heading', { name: 'Features' })).toBeVisible();
-    await expect
-        .element(page.getByRole('link', { name: '#135' }))
-        .toHaveAttribute('href', 'https://github.com/kedrzu/githq/pull/135');
+    await expect.element(page.getByRole('link', { name: '#135' })).toHaveAttribute('href', '/kedrzu/githq/pull/135');
 
     await userEvent.click(page.getByRole('button', { name: /^All commits on GitHub/ }));
     expect(Development.args.onOpenOnGitHub).toHaveBeenCalledExactlyOnceWith(COMMITS_URL);
@@ -143,4 +141,26 @@ test('U48 on a Development build links to its commits, where its changes are', a
 
     await userEvent.click(page.getByRole('button', { name: /^All commits on GitHub/ }));
     expect(FailedOnDevelopment.args.onOpenOnGitHub).toHaveBeenCalledExactlyOnceWith(COMMITS_URL);
+});
+
+test('a pull request number links to that pull request in the app, with Open and Open on GitHub on the right click', async () => {
+    await Development.run();
+    const link = page.getByRole('link', { name: '#135' });
+
+    await expect.element(link).toHaveAttribute('data-githq-link', 'https://github.com/kedrzu/githq/pull/135');
+    await expect.element(link).not.toHaveAttribute('target');
+
+    await userEvent.click(link);
+    await expect.element(page.getByTestId('at')).toHaveTextContent('At: /kedrzu/githq/pull/135');
+
+    await userEvent.click(page.getByRole('link', { name: '#133' }), { button: 'right' });
+    const items = page.getByRole('menu').getByRole('menuitem');
+    await expect.element(items.first()).toHaveTextContent(/^\s*Open\s*$/);
+    await expect.element(items.nth(1)).toHaveTextContent(/^\s*Open on GitHub\s*$/);
+    expect(items.elements()).toHaveLength(2);
+
+    await userEvent.click(page.getByRole('menuitem', { name: 'Open on GitHub' }));
+    await expect
+        .element(page.getByTestId('on-github'))
+        .toHaveTextContent('On GitHub: https://github.com/kedrzu/githq/pull/133');
 });

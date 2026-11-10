@@ -188,6 +188,12 @@ declare module 'vue-router' {
         /** The route is an item's own page (`ITEM_PAGE_PATHS`). */
         itemPage?: boolean;
         /**
+         * The route shows what GitHub shows at the same address (an item, a repository, a project, a run, "my work"),
+         * so a github.com link to it may open here (`shell/gitHubLinks.ts`). Not set on githq's own pages (settings,
+         * sign-in, download), on GitHub's settings of a repository or a project, nor on a hand-off.
+         */
+        gitHubScreen?: boolean;
+        /**
          * The screen wants the app sidebar as the rail (code review's D24), whatever the user keeps it as: it is forced
          * by the shell for as long as the route lasts and never written to their preference.
          */

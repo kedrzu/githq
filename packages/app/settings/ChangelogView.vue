@@ -1,4 +1,4 @@
-<!-- The Changelog section of Settings, in the desktop app only (desktop releases D17, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests link to GitHub. No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. -->
+<!-- The Changelog section of Settings, in the desktop app only (desktop releases D17, U41–U48): every version a fold of its own, newest first, the first open and the rest collapsed, each opening by itself (↑↓ and Space, or the mouse), with "New" on what the user didn't have before this update and "Running" on what is installed. A Stable version shows its release as GitHub rendered it (`GitHubHtml`); a Development build has one fold for everything since the last Stable, filtered as release notes are, whose pull requests open in githq (`GitHubLinks`, as links to GitHub's HTML do). No versions yet (U45), quiet lines while they load (U46), waiting for the connection (U47), and a failure (U48). `O` opens the same on GitHub: on a Development build its commits once they show or failed to load, else the releases; offline nothing can open, so nothing is offered. -->
 <script lang="ts">
 /** What the section has to show. */
 export type ChangelogContent =
@@ -12,6 +12,7 @@ export type ChangelogContent =
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight, Check, ChevronDown, ChevronRight, Info, TriangleAlert, WifiOff } from 'lucide-vue-next';
 import { computed, reactive, ref, useId, useTemplateRef } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { useCommands } from '@/commands/useCommands.js';
 import Button from '@/components/Button.vue';
@@ -21,6 +22,8 @@ import GitHubHtml from '@/item/GitHubHtml.vue';
 import type { ChangeGroupKind } from '@/scripts/releasePlan.js';
 
 import { RELEASES_URL } from '@/landing/landingLinks.js';
+import { getGitHubLinkTarget, GITHQ_LINK_ATTRIBUTE } from '@/shell/gitHubLinks.js';
+import GitHubLinks from '@/shell/GitHubLinks.vue';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 
 import { getPullRequestUrl } from './buildChangelog.js';
@@ -50,6 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+const router = useRouter();
 const id = useId();
 const list = useTemplateRef<HTMLElement>('list');
 
@@ -177,6 +181,16 @@ function isOtherControlFocused() {
 
 function openOnGitHub() {
   emit('openOnGitHub', gitHubUrl.value);
+}
+
+/** A pull request's link: githq's path, marked with GitHub's address, or GitHub's address in a new tab. */
+function getPullRequestLink(number: number) {
+  const url = getPullRequestUrl(number);
+  // A pull request is never a workflow, the one address that depends on what is tracked.
+  const target = getGitHubLinkTarget(url, { router, isTracked: () => true });
+  return target
+    ? { href: target.path, [GITHQ_LINK_ATTRIBUTE]: url }
+    : { href: url, target: '_blank', rel: 'noopener noreferrer' };
 }
 
 function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
@@ -308,37 +322,34 @@ function getCountLine({ groups, commits, limited }: ChangelogDevelopment) {
                 :class="css.changelogView_release"
                 :html="version.html"
               />
-              <div
-                v-else-if="version.groups.length > 0"
-                :class="css.changelogView_development"
-              >
-                <p :class="css.changelogView_count">{{ getCountLine(version) }}</p>
-                <section
-                  v-for="group in version.groups"
-                  :key="group.kind"
-                  :class="css.changelogView_group"
-                >
-                  <h4 :class="css.changelogView_groupTitle">{{ t(GROUP_TITLES[group.kind]) }}</h4>
-                  <ul :class="css.changelogView_changes">
-                    <li
-                      v-for="(change, changeIndex) in group.changes"
-                      :key="changeIndex"
-                      :class="css.changelogView_change"
-                    >
-                      {{ change.description }}
-                      <a
-                        v-if="change.pullRequest !== undefined"
-                        :class="css.changelogView_pullRequest"
-                        :href="getPullRequestUrl(change.pullRequest)"
-                        target="_blank"
-                        rel="noopener noreferrer"
+              <GitHubLinks v-else-if="version.groups.length > 0">
+                <div :class="css.changelogView_development">
+                  <p :class="css.changelogView_count">{{ getCountLine(version) }}</p>
+                  <section
+                    v-for="group in version.groups"
+                    :key="group.kind"
+                    :class="css.changelogView_group"
+                  >
+                    <h4 :class="css.changelogView_groupTitle">{{ t(GROUP_TITLES[group.kind]) }}</h4>
+                    <ul :class="css.changelogView_changes">
+                      <li
+                        v-for="(change, changeIndex) in group.changes"
+                        :key="changeIndex"
+                        :class="css.changelogView_change"
                       >
-                        #{{ change.pullRequest }}
-                      </a>
-                    </li>
-                  </ul>
-                </section>
-              </div>
+                        {{ change.description }}
+                        <a
+                          v-if="change.pullRequest !== undefined"
+                          :class="css.changelogView_pullRequest"
+                          v-bind="getPullRequestLink(change.pullRequest)"
+                        >
+                          #{{ change.pullRequest }}
+                        </a>
+                      </li>
+                    </ul>
+                  </section>
+                </div>
+              </GitHubLinks>
               <div
                 v-else
                 :class="css.changelogView_message"
