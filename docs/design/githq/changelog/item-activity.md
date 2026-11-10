@@ -131,7 +131,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   “GitHub can't be reached. The description above is from this device.” (12 `$fg-dim`), then Try again and Open on
   GitHub (`Button / medium`).
 - [x] Comment and review summary text in the thread: `$fg` (was `$fg-2`), 13.5, line height 1.6.
-- [ ] Text links that do something are `$accent` (were `$fg-dim` or `$fg-2`): “Show N more commits” (`kt6I8`), “Show
+- [x] Text links that do something are `$accent` (were `$fg-dim` or `$fg-2`): “Show N more commits” (`kt6I8`), “Show
   the whole description” in Review / Conversation (`c05P2`), “Hide” on a resolved code thread (`V3M4mU`), “Log” and its
   arrow in Item / Checks (`ujCTy`, `SQWpM`, `DiElt`, `VTG3K`), “Request” in Item / Reviews (`pu5lX`).
 - [x] New variable `bg-item` = `#11161C`: the background of an item view, between the list's `$bg` and `$bg-2`, which
@@ -264,6 +264,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   - `Activity / Review · pending` (`PwdqU`): the pending toolbar's note is code review's, “Others can't see them until
     you submit.” (was “Only you can see them.”); F14's caption (`klRij`) says the toolbar and its dialogs are code
     review's.
+  - F14's caption (`klRij`): a review with no summary and a single thread reads as a code comment (`Activity / Code
+    comment`): GitHub can't tell it from a comment posted on its own; `· commented, no summary` is for two or more.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
