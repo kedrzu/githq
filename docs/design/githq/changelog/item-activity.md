@@ -100,9 +100,9 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [x] New `Activity / Comment · sending` (`OmV5q`): the new card in the thread right after Comment, the card at 60 %
   opacity, “Sending…” for the time. New `Activity / Comment · failed` (`a4VAuV`): “Not sent” in `$red`, the card's
   border `#F8514980`, the `Failed` band on.
-- [ ] New `Activity / Comment · editing` (`ehuxk`, a variant of the composer): the comment's card becomes the editor in
+- [x] New `Activity / Comment · editing` (`ehuxk`, a variant of the composer): the comment's card becomes the editor in
   place, with the comment's text, an accent border, Cancel (Esc) and Update comment (⌘↵).
-- [ ] New menus, drawn as popovers (`$bg-2`, `$border-2`, radius 9, padding 4, shadow `#000000A0` 0 12 32), from
+- [x] New menus, drawn as popovers (`$bg-2`, `$border-2`, radius 9, padding 4, shadow `#000000A0` 0 12 32), from
   `Activity / Menu item` (`vC9fN`: radius 5, padding 5 8, gap 9; icon 14 `$fg-2`, a hidden avatar, label 13 `$fg`, a
   hidden sub-label 12.5 `$fg-dim`, a hidden key) and `Activity / Menu item · selected` (`m8UXn`, `$sel`):
   - `Activity / Close menu` (`PRnLo`): Close as completed (purple, ↵), Close as not planned. No Close as duplicate:
@@ -216,7 +216,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 - [ ] New F14 · Reviews in the thread (`l01YB`): approved, commented with and without a summary, dismissed (folded,
   followed by “mlaine dismissed sofiab's review: Addressed in 3f2a9b1”), your pending review (at the end of the thread,
   above the composer; only you see it), and an outdated code thread on its own.
-- [ ] New F15 · A comment's ⋯ menu, and editing in place (`BLYpR`): the menu open on your own comment (from ⋯ or a right
+- [x] New F15 · A comment's ⋯ menu, and editing in place (`BLYpR`): the menu open on your own comment (from ⋯ or a right
   click), the comment being edited in place, the saved comment with “· edited”, and someone else's comment where you
   can't write: Quote reply and Copy link only. Delete… asks once. The description card has the same menu without
   Delete.
@@ -248,7 +248,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   not planned and locked the conversation to collaborators”. The title says Closed in `$fg-2` with circle-slash.
   Composer: `Activity / Composer · read-only`, with sren-dev's avatar. The modal is 780 high at y 60 (was 700 at y 100)
   so the whole thread fits.
-- [ ] I4 · The composer's states (`OGRTF`): issue closing with a reason (the close menu open under the button), issue
+- [x] I4 · The composer's states (`OGRTF`): issue closing with a reason (the close menu open under the button), issue
   with text typed, closed issue and closed pull request (Reopen), merged pull request, locked and archived (read-only),
   Preview, @ typed (the mention menu at the caret), # typed (the reference menu), a sent comment (the sending card and
   an empty composer) and one that wasn't sent (the failed card). In the menus ↑↓ move, ↵ or Tab inserts, Esc closes.
