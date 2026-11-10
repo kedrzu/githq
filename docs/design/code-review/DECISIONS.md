@@ -564,6 +564,10 @@ which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
 submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
+There is no line cursor: ↓ ↑ scroll the diff by a line, and C takes the current file's line at the reading line
+(D44), so C, V and Space always act on the same file; E and ⇧E open the hidden lines nearest it (D42). (owner,
+2026-11-10; CR29)
+
 A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
 
 ⇧↓ is CR73's: from the diff it takes the next line into the last box written in; in a box only while the box is empty, for with text in it it is the text's own selection. ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
@@ -680,6 +684,11 @@ with Keep writing (Esc) and Discard (↵), no dialog. After Discard a toast offe
 reopens the box under its line with its text.** (2026-11-10, owner: the agent's second and third variants together;
 CR97, CR98)
 
+Focus stays in the field while it asks, so ↵ there means Discard, not a new line, and typing anything takes the
+question away and goes back to writing. Restore ⌘Z works only while no text field has focus, since in a field ⌘Z is
+the field's own undo. The toast's Dismiss has no key, because Esc leaves the review; with a draft open the toast sits
+above the pending review's toolbar (CR35), never over it. (owner, 2026-11-10)
+
 **Rejected.**
 
 - Esc closing without a question and leaving an "Unsent comment" row under the line (CR96, agent's first
@@ -700,11 +709,16 @@ background shows between them for a moment.** (2026-11-10, owner's pick of the a
 ## D42
 
 **Hidden lines open from arrows in the number gutter, as on github.com: ↓ shows 20 lines below the hunk above, ↑ 20
-above the hunk below, and a gap of 20 or fewer has one ↕ for all of it; a click elsewhere on the row shows all. The row
-carries the enclosing declaration only when it is a real one (a class, function or method signature), never a comment
-opener or a brace. The gap at the top of a file has only ↑, the one at its end only ↓. From the keyboard the line
-cursor stops on the row, ↓/↑ pick the arrow and ↵ expands. Hover lights the arrow under the pointer, focus outlines it
-in accent.** (2026-11-10, owner's pick of the agent's second variant; CR103; replaces D29's "Show 20 · Show all")
+above the hunk below, and a gap of 20 or fewer has one ↕ for all of it. A click elsewhere on the row shows 20 toward
+the nearest hunk, the one on the reading line's side (D44): the hunk above for a gap below the reading line, the hunk
+below for one above it; a gap of 20 or fewer opens whole. The row carries the enclosing declaration only when it is a
+real one (a class, function or method signature), never a comment opener or a brace, and no hunk header: our hunks
+are not git's (D6), so its numbers would not match github.com's. The gap at the top of a file has only ↑, the one at
+its end only ↓. From the keyboard, E expands the gap nearest the reading line, 20 toward its hunk, and ⇧E shows all of
+it. Hover lights the arrow under the pointer, or on the rest of the row the arrow a click takes; Tab focus outlines it
+in accent. A push that changes the file resets what was expanded in it (D14), and its gaps say so once (CR62).**
+(2026-11-10, owner's pick of the agent's second variant; row click, E ⇧E and no hunk header by the owner the same
+day; CR103; replaces D29's "Show 20 · Show all")
 
 **Rejected.**
 
@@ -729,7 +743,9 @@ under the pointer marked.** (2026-11-10, owner's pick of the agent's second vari
 chevron, and its block's edge in accent; pinned or in place, expanded, collapsed or viewed alike. It is the file whose
 block crosses a reading line a third down under the pinned header, sliding down near the end of the diff; a click in
 a file, `[` `]`, the file list or V moving on holds it until it leaves the screen or the reader scrolls a fair
-distance. The reading line is never drawn.** (2026-11-10, owner's pick of the agent's first variant; CR108)
+distance. The reading line is never drawn. C comments on the current file's line at the reading line, or on its line
+nearest to it while the file is held off the line, so C, V and Space always act on the same file (D32).**
+(2026-11-10, owner's pick of the agent's first variant; C by the owner the same day; CR108)
 
 **Rejected.**
 
@@ -738,13 +754,29 @@ distance. The reading line is never drawn.** (2026-11-10, owner's pick of the ag
 
 ## D45
 
-**Heights and placeholders come from GitHub's per-file patch. A binary or too-large file shows its final one-line
-note from the first frame. A file with known hunks draws D38's bars in its real hunk layout, with its gap rows in place
-and their counts, and since the patch says which lines are added and deleted, those bars take the line's tint. When
-the height is only a guess (whitespace hidden, files past GitHub's 3,000-file listing) the file reserves it with bars;
-with whitespace hidden that is an upper bound, so the file can only shrink, and the reading anchor (D7) holds what is
-read.** (2026-11-10, owner: the tint "if we know where the added and deleted lines are", and the agent's second
-variant for a guess; CR111, CR113; amends D38's count and its "no colour")
+**Heights and placeholders come from GitHub's per-file patch once it arrives. The patch is a separate, paginated request
+(`GET …/pulls/{n}/files`, 100 files a page), so until a file's page is in, the file is its header and D38's grey bars,
+as many as its additions and deletions: a guess (CR115). Then the patch decides:**
+
+- **no patch, 0/0 lines and MODIFIED, ADDED or DELETED: binary, its final one-line note;**
+- **RENAMED with 0/0 lines: "Renamed, no changes", its final one-line note;**
+- **a patch: D38's bars in its real hunk layout, its gap rows in place with their counts, and since the patch says
+  which lines are added and deleted, those bars take the line's tint (CR111);**
+- **no patch but lines: GitHub left the diff out for its size, so the grey bars stay, sized from the additions and
+  deletions, a guess.**
+
+**"Too large to diff here" (D35, in bytes) is not in the patch: it shows once the file's blob says so, the bars turning
+into the note (CR116). Even a patch's layout is close, not exact, because our diff is not git's (D6) and may differ by a
+few rows; D7's anchor absorbs what differs. With whitespace hidden the bars keep the patch's layout but stay grey
+(CR113): which lines stay changed is not known until the file is diffed.** (2026-11-10, owner: the tint "if we know
+where the added and deleted lines are", and the agent's second variant for a guess; corrected the same day for what
+the patch does not give; CR111, CR113, CR115, CR116; amends D38's count and its "no colour")
+
+When GitHub omits `patch` is not documented (D6: third-party reports of binary files and very large diffs). Files past
+GitHub's 3,000-file listing are not in the diff at all (D35), so they need no placeholder.
+
+Open: MODIFIED, ADDED or DELETED with 0/0 lines and no patch is also a mode change or an empty file. Until the blob
+(`isBinary`, `byteSize`) says otherwise it reads as binary; their own notes are not drawn.
 
 **Rejected.**
 
