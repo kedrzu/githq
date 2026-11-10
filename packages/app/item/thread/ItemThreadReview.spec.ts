@@ -52,8 +52,8 @@ test('resolved threads of one file say their first lines after it, so they can b
     await ResolvedInOneFile.run();
 
     const rows = page.getByRole('button', { name: /^Resolved/u });
-    await expect.element(rows.first()).toHaveAccessibleName(/^Resolved src\/store\/schema\.ts Nit: the version/u);
-    await expect.element(rows.last()).toHaveAccessibleName(/^Resolved src\/store\/schema\.ts STORES reads/u);
+    await expect.element(rows.first()).toHaveAccessibleName(/^Resolved src\/store\/schema\.ts · Nit: the version/u);
+    await expect.element(rows.last()).toHaveAccessibleName(/^Resolved src\/store\/schema\.ts · STORES reads/u);
 
     await ChangesRequested.run();
     await expect

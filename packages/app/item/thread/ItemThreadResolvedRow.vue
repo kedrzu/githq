@@ -66,7 +66,7 @@ const firstLine = computed(() => getHtmlFirstLine(props.thread.comments[0]?.body
     <span
       v-if="says !== 'path'"
       :class="css.itemThreadResolvedRow_excerpt"
-      >{{ firstLine }}</span
+      >· {{ firstLine }}</span
     >
     <span :class="css.itemThreadResolvedRow_spacer" />
     <span :class="css.itemThreadResolvedRow_people">
