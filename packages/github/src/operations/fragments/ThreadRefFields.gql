@@ -1,0 +1,23 @@
+# An issue or pull request an event of the thread points at — linked, referenced, closing, a duplicate, a sub-issue or
+# a parent; may live in another repository.
+fragment ThreadRefFields on IssueOrPullRequest {
+    __typename
+    ... on Issue {
+        id
+        url
+        number
+        title
+        repository {
+            nameWithOwner
+        }
+    }
+    ... on PullRequest {
+        id
+        url
+        number
+        title
+        repository {
+            nameWithOwner
+        }
+    }
+}

@@ -1,0 +1,458 @@
+# An event of an item's thread (item-activity F13), read from `timelineItems` with the item types of
+# `THREAD_EVENT_TYPES` (`ItemDetailStore`). On the pull request's union, a superset of the issue's, so both timelines
+# spread it. Comments come from `commentPage`; reviews and code threads are not read yet. No connection is nested in
+# it: each event costs one node.
+fragment ThreadEventFields on PullRequestTimelineItems {
+    __typename
+    # A commit of a push (F13 draws them grouped, the thread model groups them); GitHub says nothing of the push itself.
+    ... on PullRequestCommit {
+        id
+        url
+        # Aliased: `commit` of the merged and referenced events may be `null`, this one may not.
+        pushedCommit: commit {
+            abbreviatedOid
+            messageHeadline
+            committedDate
+            author {
+                name
+                user {
+                    login
+                    avatarUrl
+                }
+            }
+            statusCheckRollup {
+                state
+            }
+        }
+    }
+    ... on HeadRefForcePushedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        beforeCommit {
+            abbreviatedOid
+        }
+        afterCommit {
+            abbreviatedOid
+        }
+    }
+    ... on AssignedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        assignee {
+            ... on Actor {
+                login
+                avatarUrl
+            }
+        }
+    }
+    ... on UnassignedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        assignee {
+            ... on Actor {
+                login
+                avatarUrl
+            }
+        }
+    }
+    ... on RenamedTitleEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        previousTitle
+        currentTitle
+    }
+    ... on LabeledEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        label {
+            name
+            color
+        }
+    }
+    ... on UnlabeledEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        label {
+            name
+            color
+        }
+    }
+    ... on MilestonedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        milestoneTitle
+    }
+    ... on DemilestonedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        milestoneTitle
+    }
+    ... on ReviewRequestedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        requestedReviewer {
+            ... on User {
+                login
+                avatarUrl
+            }
+            ... on Team {
+                slug
+                name
+            }
+        }
+    }
+    ... on ReviewRequestRemovedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        requestedReviewer {
+            ... on User {
+                login
+                avatarUrl
+            }
+            ... on Team {
+                slug
+                name
+            }
+        }
+    }
+    ... on ReviewDismissedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        dismissalMessage
+        previousReviewState
+        review {
+            author {
+                login
+                avatarUrl
+            }
+        }
+    }
+    ... on ReadyForReviewEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on ConvertToDraftEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on BaseRefChangedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        previousRefName
+        currentRefName
+    }
+    # "mentioned this in": another issue or pull request named this one.
+    ... on CrossReferencedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        willCloseTarget
+        source {
+            ...ThreadRefFields
+        }
+    }
+    ... on ClosedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        stateReason
+        closer {
+            __typename
+            ... on PullRequest {
+                ...ThreadRefFields
+            }
+            ... on Commit {
+                abbreviatedOid
+                url
+            }
+        }
+        duplicateOf {
+            ...ThreadRefFields
+        }
+    }
+    ... on ReopenedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on MergedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        mergeRefName
+        commit {
+            abbreviatedOid
+            url
+        }
+    }
+    ... on HeadRefDeletedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        headRefName
+    }
+    # A pull request linked to an issue by hand ("linked a pull request"); seen from either side.
+    ... on ConnectedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        source {
+            ...ThreadRefFields
+        }
+        subject {
+            ...ThreadRefFields
+        }
+    }
+    # Referenced in a commit's message; `commit` is `null` where the viewer cannot see it.
+    ... on ReferencedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        commit {
+            abbreviatedOid
+            url
+            messageHeadline
+        }
+        commitRepository {
+            nameWithOwner
+        }
+    }
+    ... on SubIssueAddedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        subIssue {
+            ...ThreadRefFields
+        }
+    }
+    ... on SubIssueRemovedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        subIssue {
+            ...ThreadRefFields
+        }
+    }
+    ... on ParentIssueAddedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        parent {
+            ...ThreadRefFields
+        }
+    }
+    # Set, changed and cleared are one kind in the thread: "set the type to Bug".
+    ... on IssueTypeAddedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        issueType {
+            name
+            color
+        }
+    }
+    ... on IssueTypeChangedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        issueType {
+            name
+            color
+        }
+        prevIssueType {
+            name
+            color
+        }
+    }
+    ... on IssueTypeRemovedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        issueType {
+            name
+            color
+        }
+    }
+    ... on AddedToProjectV2Event {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        wasAutomated
+        project {
+            title
+            url
+        }
+    }
+    # The only change in a project GitHub reports (F13).
+    ... on ProjectV2ItemStatusChangedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        wasAutomated
+        previousStatus
+        status
+        project {
+            title
+            url
+        }
+    }
+    ... on TransferredEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        fromRepository {
+            nameWithOwner
+        }
+    }
+    ... on LockedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        lockReason
+    }
+    ... on UnlockedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on PinnedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on UnpinnedEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+    }
+    ... on MarkedAsDuplicateEvent {
+        id
+        createdAt
+        actor {
+            login
+            avatarUrl
+        }
+        canonical {
+            ...ThreadRefFields
+        }
+        duplicate {
+            ...ThreadRefFields
+        }
+    }
+}

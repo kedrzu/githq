@@ -15,6 +15,26 @@ fragment IssueDetailFields on Issue {
     commentPage: comments(last: 50) {
         ...CommentPageFields
     }
+    # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
+    # first; what lies between is read on demand (`ThreadMiddle`). `$issueEventTypes` is `THREAD_EVENT_TYPES`
+    # (`ItemDetailStore`).
+    firstEvents: timelineItems(first: 2, itemTypes: $issueEventTypes) {
+        pageInfo {
+            endCursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
+    lastEvents: timelineItems(last: 50, itemTypes: $issueEventTypes) {
+        totalCount
+        pageInfo {
+            startCursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
     parent {
         ...LinkedIssueFields
     }

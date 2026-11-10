@@ -16,6 +16,30 @@ fragment PullRequestDetailFields on PullRequest {
     commentPage: comments(last: 50) {
         ...CommentPageFields
     }
+    # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
+    # first; what lies between is read on demand (`ThreadMiddle`). `$pullRequestEventTypes` is `THREAD_EVENT_TYPES`
+    # (`ItemDetailStore`).
+    firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
+        pageInfo {
+            endCursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
+    lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
+        totalCount
+        pageInfo {
+            startCursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
+    # How many of the events are commits, for the fold's counts (F5); the rest are other events.
+    commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
+        totalCount
+    }
     commits {
         totalCount
     }

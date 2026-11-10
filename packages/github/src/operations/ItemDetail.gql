@@ -1,5 +1,9 @@
-# The opened issue or pull request (D18).
-query ItemDetail($id: ID!) {
+# The opened issue or pull request (D18); the event types are `THREAD_EVENT_TYPES` (`ItemDetailStore`).
+query ItemDetail(
+    $id: ID!
+    $issueEventTypes: [IssueTimelineItemsItemType!]!
+    $pullRequestEventTypes: [PullRequestTimelineItemsItemType!]!
+) {
     node(id: $id) {
         ... on Issue {
             ...IssueDetailFields

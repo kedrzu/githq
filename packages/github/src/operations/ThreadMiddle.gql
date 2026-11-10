@@ -1,0 +1,59 @@
+# The middle of an item's thread (the fold, F5), 100 events and 100 comments at most a call. The details hold the first
+# events and the newest events and comments: the events not read lie after the first ones' `endCursor` and before the
+# newest ones' `startCursor`, the comments not read before the oldest one's `startCursor` (the two connections page
+# apart). Either part is left out when all of it is read (`readEvents`, `readComments`). A page with more after it
+# (`hasNextPage`) goes on from its `endCursor`; one with more before it (`hasPreviousPage`), from its `startCursor`.
+# The event types are `THREAD_EVENT_TYPES` (`ItemDetailStore`).
+query ThreadMiddle(
+    $id: ID!
+    $readEvents: Boolean!
+    $eventsAfter: String
+    $eventsBefore: String
+    $readComments: Boolean!
+    $commentsBefore: String
+    $issueEventTypes: [IssueTimelineItemsItemType!]!
+    $pullRequestEventTypes: [PullRequestTimelineItemsItemType!]!
+) {
+    node(id: $id) {
+        ... on Issue {
+            id
+            eventPage: timelineItems(
+                first: 100
+                after: $eventsAfter
+                before: $eventsBefore
+                itemTypes: $issueEventTypes
+            ) @include(if: $readEvents) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    ...ThreadEventFields
+                }
+            }
+            commentPage: comments(last: 100, before: $commentsBefore) @include(if: $readComments) {
+                ...CommentPageFields
+            }
+        }
+        ... on PullRequest {
+            id
+            eventPage: timelineItems(
+                first: 100
+                after: $eventsAfter
+                before: $eventsBefore
+                itemTypes: $pullRequestEventTypes
+            ) @include(if: $readEvents) {
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+                nodes {
+                    ...ThreadEventFields
+                }
+            }
+            commentPage: comments(last: 100, before: $commentsBefore) @include(if: $readComments) {
+                ...CommentPageFields
+            }
+        }
+    }
+}
