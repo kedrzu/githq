@@ -10,10 +10,9 @@ import { Logger } from '@nzyme/logging/Logger.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { computed, shallowRef, watch } from 'vue';
 
-import { AuthStore } from '@/auth/AuthStore.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { ItemStore } from '@/store/ItemStore.js';
-import type { ItemUser, PullRequestPendingReview } from '@/store/ItemTypes.js';
+import type { PullRequestPendingReview } from '@/store/ItemTypes.js';
 
 import type { DiffLineSide } from '../diff/buildDiffRows.js';
 import { getFailureText } from '../utils/getFailureText.js';
@@ -87,10 +86,9 @@ export const ReviewWritingFactory = defineFactory({
         blobs: ReviewBlobStore,
         items: ItemStore,
         details: ItemDetailStore,
-        auth: AuthStore,
         logger: Logger,
     },
-    setup({ blobs, items, details, auth, logger }, params: ReviewWritingFactoryParams): ReviewWritingHandle {
+    setup({ blobs, items, details, logger }, params: ReviewWritingFactoryParams): ReviewWritingHandle {
         const { sdk, login, listKey } = params;
 
         const targetsRef = shallowRef<readonly ReviewCommentTarget[]>([]);
@@ -525,7 +523,7 @@ export const ReviewWritingFactory = defineFactory({
             }
 
             resolvesInFlight.add(threadId);
-            setInMap(resolvedRef, threadId, { isResolved: resolved, resolvedBy: resolved ? getViewer() : null });
+            setInMap(resolvedRef, threadId, { isResolved: resolved, resolvedBy: resolved ? { login } : null });
             setInMap(resolveFailuresRef, threadId, null);
             enqueue(async () => {
                 const failure = await catchWrite(async () => {
@@ -555,11 +553,6 @@ export const ReviewWritingFactory = defineFactory({
                     }
                 });
             });
-        }
-
-        function getViewer(): ItemUser | null {
-            const { viewer } = auth;
-            return viewer?.login === login ? { login, avatarUrl: viewer.avatarUrl } : null;
         }
 
         function finishDraft(finish: ReviewFinish) {
@@ -776,7 +769,7 @@ export const ReviewWritingFactory = defineFactory({
 /** A thread's state drawn over the one read: resolved by the viewer, or opened again. */
 interface ThreadResolution {
     readonly isResolved: boolean;
-    readonly resolvedBy: ItemUser | null;
+    readonly resolvedBy: ReviewThread['resolvedBy'];
 }
 
 class NoDraftError extends Error {}

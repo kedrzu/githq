@@ -26,7 +26,6 @@ query PullRequestReviewThreads($owner: String!, $name: String!, $number: Int!, $
                     viewerCanUnresolve
                     resolvedBy {
                         login
-                        avatarUrl
                     }
                     comments(first: 50) {
                         pageInfo {

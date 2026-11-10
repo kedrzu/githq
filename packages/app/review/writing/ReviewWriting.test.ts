@@ -1134,7 +1134,7 @@ test('a thread resolved here names the viewer at once; once read again, it names
     await waitUntil(() => writes().length === 1 && model.threads[0]?.resolvedBy === null, { timeoutMs: 2000 });
 
     // hubot unresolves it and resolves it again on github.com.
-    const hubot = { login: 'hubot', avatarUrl: 'https://avatars.test/hubot' };
+    const hubot = { login: 'hubot' };
     github.threads = [{ ...sampleThread(), isResolved: true, resolvedBy: hubot }];
     session.container.resolve(ReviewFiles).open(REFERENCE);
     await waitUntil(() => model.threads[0]?.resolvedBy?.login === 'hubot', { timeoutMs: 2000 });

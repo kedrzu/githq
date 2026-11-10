@@ -271,7 +271,7 @@ function toThreadNode(thread: SampleReviewThread) {
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
-        resolvedBy: thread.isResolved ? { login: thread.resolvedBy ?? 'mlaine', avatarUrl: '' } : null,
+        resolvedBy: thread.isResolved ? { login: thread.resolvedBy ?? 'mlaine' } : null,
         comments: {
             pageInfo: { hasNextPage: false, endCursor: null },
             nodes: thread.comments.map((bodyHTML, index) => ({

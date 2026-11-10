@@ -28,8 +28,8 @@ export interface ReviewThread {
     readonly viewerCanReply: boolean;
     readonly viewerCanResolve: boolean;
     readonly viewerCanUnresolve: boolean;
-    /** Who resolved it; `null` while open, and for a deleted account. */
-    readonly resolvedBy: ItemUser | null;
+    /** Who resolved it, by login: all the thread says of them. `null` while open, and for a deleted account. */
+    readonly resolvedBy: Pick<ItemUser, 'login'> | null;
     /** All of them, oldest first. They share the code they were written on: the first's `diffHunk` and `originalCommit`. */
     readonly comments: readonly ReviewThreadComment[];
 }
