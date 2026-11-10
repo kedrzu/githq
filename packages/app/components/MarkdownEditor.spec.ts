@@ -1,7 +1,17 @@
+import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
+import { waitFor } from '@nzyme/utils/waitFor.js';
+import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
+import { IocPlugin } from '@nzyme/vue-ioc/IocPlugin.js';
 import { composeStories } from '@storybook/vue3';
-import { expect, test, vi } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { createApp, h, ref } from 'vue';
 
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+import { RenderMarkdownCommand } from '@/services/RenderMarkdownCommand.js';
+import type { RenderMarkdownCommandShape } from '@/services/RenderMarkdownCommand.js';
+
+import MarkdownEditor from './MarkdownEditor.vue';
 import * as stories from './MarkdownEditor.stories.js';
 
 const { Empty, PreviewFailed, Typed } = composeStories(stories);
@@ -18,6 +28,22 @@ test("Preview shows GitHub's rendering without the tools; Write brings back the 
 
     await userEvent.click(page.getByRole('tab', { name: 'Write' }));
     await expect.element(text).toHaveValue('could you take another look?');
+});
+
+test('moved to another item on Preview, it shows that item’s text rendered in its own repository, never the last one', async () => {
+    const { view, ...item } = mountMovingEditor({ text: 'Fixed in #12', repository: 'acme/web' });
+    await userEvent.click(view.getByRole('tab', { name: 'Preview' }));
+    await expect.element(view.getByText('acme/web: Fixed in #12')).toBeVisible();
+
+    // The same text, in another repository: its #12 is another one.
+    item.repository.value = 'acme/api';
+    await expect.element(view.getByText('acme/api: Fixed in #12')).toBeVisible();
+    await expect.element(view.getByText('acme/web: Fixed in #12')).not.toBeInTheDocument();
+
+    // Another text: the last item's rendering does not stay while this one's is on its way.
+    item.text.value = 'Duplicate of #3';
+    await expect.element(view.getByText('acme/api: Fixed in #12')).not.toBeInTheDocument();
+    await expect.element(view.getByText('acme/api: Duplicate of #3')).toBeVisible();
 });
 
 test('a preview GitHub could not render says so, and the text stays as typed', async () => {
@@ -74,3 +100,41 @@ test('Mod+Enter and Escape inside it are reported, not acted on', async () => {
     await userEvent.keyboard('{Escape}');
     expect(onCancel).toHaveBeenCalledTimes(1);
 });
+
+/**
+ * The editor as the item view holds it: its text and repository the opened item's, changed under it when the user
+ * moves on; GitHub rendering a text as `repository: text`, a moment later.
+ */
+function mountMovingEditor(initial: { text: string; repository: string }) {
+    const text = ref(initial.text);
+    const repository = ref(initial.repository);
+    const render: RenderMarkdownCommandShape = async params => {
+        await waitFor(50);
+        return `<p>${params.context}: ${params.text}</p>`;
+    };
+    const container = createContainer();
+    container.set(LanguageContext, () => APP_LANGUAGE);
+    container.set(RenderMarkdownCommand, render);
+    const app = createApp({
+        setup: () => () =>
+            h(MarkdownEditor, {
+                label: 'Comment',
+                modelValue: text.value,
+                repository: repository.value,
+                'onUpdate:modelValue': (value: string | null | undefined) => {
+                    text.value = value ?? '';
+                },
+            }),
+    });
+    app.use(IocPlugin, { container });
+    const root = document.createElement('div');
+    root.setAttribute('tid', 'moving-editor');
+    document.body.append(root);
+    app.mount(root);
+    onTestFinished(() => {
+        app.unmount();
+        root.remove();
+    });
+
+    return { text, repository, view: page.getByTestId('moving-editor') };
+}

@@ -4,6 +4,7 @@ import { useTextArea } from '@nzyme/vue-forms/components/useTextArea.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   AtSign,
@@ -20,7 +21,7 @@ import {
   TextQuote,
 } from 'lucide-vue-next';
 import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoot, ToolbarSeparator } from 'reka-ui';
-import { nextTick, ref, shallowRef } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
@@ -77,12 +78,35 @@ const render = useService(RenderMarkdownCommand);
 const logger = useLogger();
 
 const tab = ref<'write' | 'preview'>('write');
-/** The last preview asked for, of `text`. */
-const preview = shallowRef<
-  | { text: string; status: 'loading' }
-  | { text: string; status: 'ready'; html: string }
-  | { text: string; status: 'failed' }
->();
+/**
+ * GitHub's rendering of a text in a repository: the last one asked for on the Preview tab, kept while the user writes
+ * on. Rendered again once the text or the repository is not the one rendered (the caller moved to another item).
+ */
+const preview = useDataSource({
+  params: () => ({ text: field.value ?? '', repository: props.repository, shown: tab.value === 'preview' }),
+  load: async (params, rendered: RenderedPreview | null | undefined): Promise<RenderedPreview | null> => {
+    if (!params.shown || !params.text.trim() || (rendered && isCurrent(rendered))) {
+      return rendered ?? null;
+    }
+
+    try {
+      const html = await render({ text: params.text, context: params.repository });
+      // Answered after the text or the repository changed: what is shown stays.
+      return isCurrent(params) ? { text: params.text, repository: params.repository, html } : preview.value;
+    } catch (error) {
+      if (!isCurrent(params)) {
+        return preview.value;
+      }
+
+      throw error;
+    }
+  },
+  default: null,
+  behavior: 'eager',
+  onError: error => logger.warn('The Markdown preview could not be rendered', { error }),
+});
+/** The rendering of the text as it is now, in the repository it is written in; `null` while there is none. */
+const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ? preview.value : null));
 
 defineExpose({
   /** Puts the cursor in the text area, on the Write tab. */
@@ -110,29 +134,10 @@ function onKeydown(event: KeyboardEvent) {
 
 function onTab(value: string | number) {
   tab.value = value === 'preview' ? 'preview' : 'write';
-  if (tab.value === 'preview') {
-    void showPreview();
-  }
 }
 
-async function showPreview() {
-  const text = field.value ?? '';
-  if (!text.trim() || (preview.value?.text === text && preview.value.status !== 'failed')) {
-    return;
-  }
-
-  preview.value = { text, status: 'loading' };
-  try {
-    const html = await render({ text, context: props.repository });
-    if (preview.value.text === text) {
-      preview.value = { text, status: 'ready', html };
-    }
-  } catch (error) {
-    logger.warn('The Markdown preview could not be rendered', { error });
-    if (preview.value.text === text) {
-      preview.value = { text, status: 'failed' };
-    }
-  }
+function isCurrent({ text, repository }: { text: string; repository: string }) {
+  return text === (field.value ?? '') && repository === props.repository;
 }
 
 // As typed: `insertText` keeps the edit in the text area's undo history and reports it as input, which updates the
@@ -149,6 +154,13 @@ function applyTool(tool: MarkdownTool) {
   document.execCommand('insertText', false, edit.insert);
 
   element.setSelectionRange(edit.selection.start, edit.selection.end);
+}
+
+/** GitHub's rendering of `text`, written in `repository`. */
+interface RenderedPreview {
+  readonly text: string;
+  readonly repository: string;
+  readonly html: string;
 }
 </script>
 
@@ -221,28 +233,28 @@ function applyTool(tool: MarkdownTool) {
       :class="css.markdownEditor_body"
     >
       <p
-        v-if="!preview || !field.value?.trim()"
+        v-if="!field.value?.trim()"
         :class="css.markdownEditor_note"
       >
         {{ t(l.previewEmpty) }}
       </p>
+      <GitHubHtml
+        v-else-if="shownPreview"
+        :class="css.markdownEditor_rendered"
+        :html="shownPreview.html"
+      />
       <p
-        v-else-if="preview.status === 'loading'"
-        :class="css.markdownEditor_note"
-      >
-        {{ t(l.previewLoading) }}
-      </p>
-      <p
-        v-else-if="preview.status === 'failed'"
+        v-else-if="preview.error && !preview.pending"
         :class="css.markdownEditor_note"
       >
         {{ t(l.previewFailed) }}
       </p>
-      <GitHubHtml
+      <p
         v-else
-        :class="css.markdownEditor_rendered"
-        :html="preview.html"
-      />
+        :class="css.markdownEditor_note"
+      >
+        {{ t(l.previewLoading) }}
+      </p>
     </TabsContent>
     <div :class="css.markdownEditor_footer">
       <FileText
