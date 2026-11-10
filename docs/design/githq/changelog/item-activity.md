@@ -53,7 +53,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   `Excerpt` (the comment's first line) replaces the file where the file is already known. It opens to
   `Activity / Code thread · resolved`. Activity / Review uses it.
 - [x] `Activity / Code comment` (`cwCtr`): a code thread posted on its own, without a review. Avatar in the gutter,
-  then a 36 px head line, “dkim commented on src/store/schema.ts · 2d” (author 13 / 600 `$fg`, the file in `$mono`
+  then a 36 px head line, “dkim commented on src/store/schema.ts 2d” (author 13 / 600 `$fg`, the file in `$mono`
   12), and the thread under it (gap 6), open and resolved. `Activity / Code comment · resolved` (`NXXMN`): the same
   with the thread folded into `Activity / Resolved threads`, showing the first line of the comment.
 - [x] `Activity / Fold` (`lshuQ`): a break in the rail with one clickable band. Padding 4 0 4 42, gap 12.
