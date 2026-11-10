@@ -1660,28 +1660,16 @@ export class GitHubWorld {
                 ]);
             }
 
-            const found = [...this.items.values()].find(
-                item =>
-                    !item.deleted &&
-                    item.repository.toLowerCase() === nameWithOwner &&
-                    item.number === Number(variables.number),
-            );
+            const found = this.findByNumber(variables);
             return { repository: { issueOrPullRequest: found ? { id: found.id } : null } };
         });
         // Read when a pull request opens, for its thread's reviews: the world's have no thread on the code.
         // `answerReview` gives a test's pull request its own.
         github.graphql('PullRequestReviewThreads', ({ variables }) => {
-            const nameWithOwner = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
-            const found = [...this.items.values()].some(
-                item =>
-                    !item.deleted &&
-                    item.pullRequest !== null &&
-                    item.repository.toLowerCase() === nameWithOwner &&
-                    item.number === Number(variables.number),
-            );
+            const pullRequest = this.findByNumber(variables)?.pullRequest;
             return {
                 repository: {
-                    pullRequest: found
+                    pullRequest: pullRequest
                         ? { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] } }
                         : null,
                 },
@@ -2086,6 +2074,14 @@ export class GitHubWorld {
     private findRepository(variables: Readonly<Record<string, unknown>>) {
         const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
         return [...this.repositories.values()].find(repository => repository.nameWithOwner.toLowerCase() === name);
+    }
+
+    /** The item the variables name (`owner`, `name`, `number`) in any case, as GitHub finds it; `undefined` with none. */
+    private findByNumber(variables: Readonly<Record<string, unknown>>) {
+        const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
+        return [...this.items.values()].find(
+            item => !item.deleted && item.repository.toLowerCase() === name && item.number === Number(variables.number),
+        );
     }
 
     /** The repositories of `owner` as the tracking screens list them. */
