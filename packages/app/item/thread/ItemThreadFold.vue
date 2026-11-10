@@ -54,12 +54,14 @@ const t = useTranslate();
 <style lang="scss" module="css">
 // The band's line breaks under this width: the side panel's thread.
 $narrow: 600px;
+// From the break's left edge to its dashes, so the dashes run where the rail does.
+$dash-offset: ($item-thread-rail-break-width - $item-thread-rail-width) * 0.5;
 
 .itemThreadFold {
   display: flex;
   gap: $spacing-12;
   // The rail break centred on the rail (`ItemThread`).
-  padding-left: 42px;
+  padding-left: $item-thread-rail-offset - $dash-offset;
   container-type: inline-size;
 }
 
@@ -67,13 +69,13 @@ $narrow: 600px;
 .itemThreadFold_break {
   position: relative;
   flex: none;
-  width: 28px;
+  width: $item-thread-rail-break-width;
   background: $color-bg-item;
 
   &::before {
     position: absolute;
-    inset: 2px auto 2px 13px;
-    width: 2px;
+    inset: 2px auto 2px $dash-offset;
+    width: $item-thread-rail-width;
     content: '';
     background: repeating-linear-gradient($color-border 0 4px, transparent 4px 8px);
   }

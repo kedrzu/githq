@@ -99,16 +99,17 @@ const when = computed(() => {
 </template>
 
 <style lang="scss" module="css">
-// The thread's gap: avatars in a 28px column, 12px from the card.
+// Avatars in the thread's gutter, beside the card.
 .itemThreadCard {
   display: flex;
-  gap: $spacing-12;
+  gap: $item-thread-gutter-gap;
 }
 
 .itemThreadCard_gutter {
   display: flex;
   flex: none;
   align-items: center;
+  width: $item-thread-gutter-width;
   height: 36px;
 }
 

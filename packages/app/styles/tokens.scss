@@ -265,6 +265,20 @@ $commit-row-age-width: 30px;
 $commit-row-narrow-width: 640px;
 
 // ---------------------------------------------------------------------------------------------------
+// The item's thread (`item/thread/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The column of avatars on the left of the thread's cards and of the composer (`ItemThreadCard`,
+// `ItemThreadComposer`): as wide as a large avatar, this far from the card beside it.
+$item-thread-gutter-width: 28px;
+$item-thread-gutter-gap: $spacing-12;
+// The rail (`ItemThread`): a line behind the cards, its left edge this far from the thread's.
+$item-thread-rail-offset: 55px;
+$item-thread-rail-width: 2px;
+// A fold's break (`ItemThreadFold`): the dashed stretch of rail beside a folded band, centred on the rail.
+$item-thread-rail-break-width: 28px;
+
+// ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
 // ---------------------------------------------------------------------------------------------------
 

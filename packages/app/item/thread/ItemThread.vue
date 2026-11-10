@@ -171,9 +171,9 @@ const folded = computed(() =>
 
   &::before {
     position: absolute;
-    inset: 0 auto 0 55px;
+    inset: 0 auto 0 $item-thread-rail-offset;
     z-index: -1;
-    width: 2px;
+    width: $item-thread-rail-width;
     content: '';
     background: $color-border;
   }

@@ -184,17 +184,17 @@ function close(reason: CloseReason) {
 </template>
 
 <style lang="scss" module="css">
-// As a card of the thread: the avatar in the rail's 28px gutter, level with the editor's head, 12px from it.
+// As a card of the thread: the avatar in the thread's gutter, level with the editor's head.
 .itemThreadComposer {
   display: flex;
-  gap: $spacing-12;
+  gap: $item-thread-gutter-gap;
 }
 
 .itemThreadComposer_gutter {
   display: flex;
   flex: none;
   align-items: center;
-  width: 28px;
+  width: $item-thread-gutter-width;
   height: 38px;
 }
 
