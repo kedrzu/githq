@@ -438,6 +438,9 @@ interface RenderedPreview {
   padding: $spacing-10 $spacing-12;
   font-family: inherit;
   font-size: $font-size-md;
+  // Markdown as typed: Inter's contextual alternates would draw `-->` as an arrow and `<=` as one sign.
+  font-feature-settings: 'calt' 0;
+  font-variant-ligatures: none;
   line-height: $line-height-normal;
   color: $color-fg;
   resize: none;
