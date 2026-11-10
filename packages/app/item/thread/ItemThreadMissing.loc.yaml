@@ -6,9 +6,9 @@ loadingCounted:
 loading:
   en: Loading the events from GitHub
 failedTitle:
-  en: The comments and events couldn't be loaded
+  en: The description, comments and events couldn't be loaded
 failedWhy:
-  en: GitHub can't be reached, or refused to give them.
+  en: GitHub can't be reached, so they aren't on this device yet.
 tryAgain:
   en: Try again
 openOnGitHub:

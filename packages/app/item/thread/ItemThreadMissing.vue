@@ -1,4 +1,4 @@
-<!-- What stands on an item's rail while none of its thread is on this device (F16). Being read the first time (`Activity / Thread · loading`): a badge with a loader, "Loading 4 comments and the events from GitHub" — the count as the item's row knows it — and a skeleton in the thread's shape, an event, a comment's card, an event. Not given — GitHub not reached, or refusing (`Activity / Thread · failed`): a badge with a cloud gone, why, Try again — busy while it reads — and Open on GitHub. -->
+<!-- What stands on an item's rail while none of its thread — the description, comments and events, which come together — is on this device (F16): no description card, the skeleton's comment card stands for it. Being read the first time (`Activity / Thread · loading`): a badge with a loader, "Loading 4 comments and the events from GitHub" — the count as the item's row knows it — and a skeleton in the thread's shape, an event, a comment's card, an event. Not given — GitHub not reached, or refusing (`Activity / Thread · failed`): a badge with a cloud gone, why, Try again — busy while it reads — and Open on GitHub. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowUpRight, CloudOff, LoaderCircle, RotateCw } from 'lucide-vue-next';
@@ -145,27 +145,17 @@ const t = useTranslate();
   gap: $spacing-8;
 }
 
-// A line on the rail, its 28px badge centred on it as an event's (`ItemThreadEvent`).
 .itemThreadMissing_row {
-  display: flex;
-  gap: $spacing-12;
+  @include item-thread-badge-row;
+
   align-items: center;
-  padding: $spacing-4 0 $spacing-4 ($item-thread-rail-offset + $item-thread-rail-width * 0.5 - 14px);
   margin: 0;
 }
 
-// Its fill hides the rail running behind it.
 .itemThreadMissing_badge {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
+  @include item-thread-badge;
+
   align-self: flex-start;
-  width: 28px;
-  height: 28px;
-  background: $color-bg-3;
-  border: 1px solid $color-border;
-  border-radius: 50%;
 }
 
 .itemThreadMissing_icon {

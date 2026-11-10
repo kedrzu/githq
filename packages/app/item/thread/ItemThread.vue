@@ -1,12 +1,10 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device, the description's card stands with its head and a skeleton, the rail says what is being read with a skeleton of its own, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
 import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
-import Skeleton from '@/components/Skeleton.vue';
-import SkeletonBar from '@/components/SkeletonBar.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
@@ -308,34 +306,13 @@ interface EditorText {
 
 <template>
   <div :class="css.itemThread">
-    <template v-if="!detail">
-      <!-- The description's text comes with the detail: its head stands, its text on its way. -->
-      <ItemThreadCard
-        v-if="!failed"
-        :author="item.author"
-        :created-at="item.createdAt"
-        :now="now"
-        description
-      >
-        <Skeleton :class="css.itemThread_skeleton">
-          <SkeletonBar
-            :width="440"
-            :height="8"
-            tone="weak"
-          />
-          <SkeletonBar
-            :width="300"
-            :height="8"
-            tone="weak"
-          />
-        </Skeleton>
-      </ItemThreadCard>
-      <ItemThreadMissing
-        :item="item"
-        :failed="failed"
-        :read-again="readAgain"
-      />
-    </template>
+    <!-- The description comes with the detail: before it, no card of it — the rail's skeleton or why stands for it. -->
+    <ItemThreadMissing
+      v-if="!detail"
+      :item="item"
+      :failed="failed"
+      :read-again="readAgain"
+    />
     <template v-else>
       <ItemThreadEditor
         v-if="editorsRef.has(null)"
@@ -560,14 +537,6 @@ interface EditorText {
 // The first comment the fold revealed, once it has the focus.
 .itemThread_comment {
   @include focus-ring;
-}
-
-// The description's text on its way, as two lines of it.
-.itemThread_skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-10;
-  padding: $spacing-4 0;
 }
 
 // A body or comment GitHub rendered, at the thread's reading size.

@@ -209,7 +209,7 @@ export const LongThread: Story = { args: { item: I1_ISSUE, detail: longThread() 
 /** I2: the same in the side panel, the band on two lines. */
 export const LongThreadInPanel: Story = { args: LongThread.args };
 
-/** F16, left: opened the first time, before its thread is on this device — the description's head, a skeleton. */
+/** F16, left: opened the first time, before its thread is on this device — no description card, the rail's skeleton. */
 export const Loading: Story = { args: { detail: null } };
 
 /** F16, middle: nothing happened yet — the rail runs from the description straight to the composer. */
@@ -222,7 +222,7 @@ export const Empty: Story = {
     },
 };
 
-/** F16, right: GitHub did not give the thread — why, Try again and Open on GitHub. */
+/** F16, right: GitHub did not give the thread — no description card; why, Try again and Open on GitHub. */
 export const Failed: Story = { args: { detail: null, failed: true, readAgain: fn(() => Promise.resolve()) } };
 
 /** I1's thread with 16 more comments by sofiab, an hour apart, after its events. */

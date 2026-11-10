@@ -124,11 +124,12 @@ test('a comment with an edit GitHub did not take is never folded away: its edito
     await expect.element(page.getByRole('button', { name: /^Show \d+ earlier events/ })).toBeInTheDocument();
 });
 
-test('F16: opened the first time, the description stands and the rail says what is being read, as the row counts it', async () => {
+test('F16: opened the first time, the rail says what is being read, as the row counts it, with no description card', async () => {
     await Loading.run();
 
     await expect.element(page.getByRole('status')).toHaveTextContent('Loading 4 comments and the events from GitHub');
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toBeInTheDocument();
+    expect(page.getByText('Author', { exact: true }).query()).toBeNull();
     expect(page.getByRole('alert').query()).toBeNull();
 });
 
@@ -144,7 +145,10 @@ test('F16: not given by GitHub, the rail says so with Try again, which reads it 
     const readAgain = vi.fn(() => Promise.resolve());
     await Failed.run({ args: { ...Failed.args, readAgain } });
 
-    await expect.element(page.getByRole('alert')).toHaveTextContent("The comments and events couldn't be loaded");
+    await expect
+        .element(page.getByRole('alert'))
+        .toHaveTextContent("The description, comments and events couldn't be loaded");
+    expect(page.getByText('Author', { exact: true }).query()).toBeNull();
     await expect
         .element(page.getByRole('link', { name: 'Open on GitHub' }))
         .toHaveAttribute('href', Failed.args.item!.url);
