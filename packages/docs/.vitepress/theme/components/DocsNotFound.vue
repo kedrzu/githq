@@ -1,4 +1,4 @@
-<!-- The docs' "not found" page, in the default theme's `not-found` slot. The build writes it to `dist/404.html`, which the app's Worker returns with a 404 for an unknown `/docs/…` address. -->
+<!-- The docs' "not found" page, in the default theme's `not-found` slot: back to the docs' first page (`/docs/`, there is no home page) or into the app; the top bar keeps its search, as there is no sidebar here. The build writes it to `dist/404.html`, which the app's Worker returns with a 404 for an unknown `/docs/…` address. -->
 <script lang="ts" setup>
 import { ArrowUpRight, BookOpen } from 'lucide-vue-next';
 import { withBase } from 'vitepress';
@@ -12,7 +12,9 @@ import { withBase } from 'vitepress';
   >
     <p :class="css.notFound_code">404</p>
     <h1 :class="css.notFound_title">This page isn't in the docs</h1>
-    <p :class="css.notFound_text">It may have moved, or the address has a typo. Start again from the docs' home.</p>
+    <p :class="css.notFound_text">
+      It may have moved, or the address has a typo. Start again from the beginning of the docs, or search them.
+    </p>
     <div :class="css.notFound_links">
       <a
         :class="[css.notFound_link, css.notFound_link__primary]"
@@ -22,7 +24,7 @@ import { withBase } from 'vitepress';
           :class="css.notFound_icon"
           aria-hidden="true"
         />
-        Docs home
+        Start of the docs
       </a>
       <!-- Outside the docs' base, with a target: VitePress's router leaves it to the browser (`DocsOpenGithq`). -->
       <a

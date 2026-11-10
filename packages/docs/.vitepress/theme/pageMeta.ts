@@ -22,7 +22,8 @@ export function usePageMeta() {
     const { page, frontmatter, theme } = useData<DefaultTheme.Config>();
 
     const section = computed<DocsSection | undefined>(() => {
-        const folder = page.value.relativePath.split('/')[0];
+        // The file's own folder: the first page is served as `index.md` (`rewrites`), its `relativePath`.
+        const folder = page.value.filePath.split('/')[0];
         return sections.find(candidate => candidate.id === folder);
     });
 

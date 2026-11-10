@@ -83,6 +83,9 @@ const UpdatedToast = __DESKTOP__
 const UpdateReadyToast = __DESKTOP__
   ? defineAsyncComponent({ loader: () => import('@/desktop/UpdateReadyToast.vue'), suspensible: false })
   : null;
+const QuitHintToast = __DESKTOP__
+  ? defineAsyncComponent({ loader: () => import('@/desktop/QuitHintToast.vue'), suspensible: false })
+  : null;
 // The web's toast of a newer deploy, in the web builds only; the desktop app has its own updater.
 const NewVersionToast = __DESKTOP__
   ? null
@@ -446,6 +449,10 @@ function showLastFailure() {
     <component
       :is="UpdateReadyToast"
       v-if="UpdateReadyToast"
+    />
+    <component
+      :is="QuitHintToast"
+      v-if="QuitHintToast"
     />
     <component
       :is="NewVersionToast"

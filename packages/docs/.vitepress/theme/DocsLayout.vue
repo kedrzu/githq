@@ -1,4 +1,4 @@
-<!-- The default theme's layout with the docs' own parts in its slots: the wordmark and "Open githq" in the top bar, the search field atop the phone's menu, the breadcrumb, the footer's edit link and date, the outline's links, the home page and the "not found" page. -->
+<!-- The default theme's layout with the docs' own parts in its slots: the wordmark and "Open githq" in the top bar, the search field atop the sidebar, the breadcrumb, the footer's edit link and date, the outline's links and the "not found" page. -->
 <script lang="ts" setup>
 import DefaultTheme from 'vitepress/theme';
 import { computed } from 'vue';
@@ -6,11 +6,10 @@ import { computed } from 'vue';
 import DocsBrand from './components/DocsBrand.vue';
 import DocsBreadcrumb from './components/DocsBreadcrumb.vue';
 import DocsFooterMeta from './components/DocsFooterMeta.vue';
-import DocsHome from './components/DocsHome.vue';
-import DocsMenuSearch from './components/DocsMenuSearch.vue';
 import DocsNotFound from './components/DocsNotFound.vue';
 import DocsOpenGithq from './components/DocsOpenGithq.vue';
 import DocsOutlineLinks from './components/DocsOutlineLinks.vue';
+import DocsSidebarSearch from './components/DocsSidebarSearch.vue';
 import { usePageMeta } from './pageMeta.js';
 
 const { Layout } = DefaultTheme;
@@ -30,7 +29,7 @@ const style = computed(() => ({ '--docs-section-title': section.value ? JSON.str
       <DocsOpenGithq />
     </template>
     <template #sidebar-nav-before>
-      <DocsMenuSearch />
+      <DocsSidebarSearch />
     </template>
     <template #doc-before>
       <DocsBreadcrumb />
@@ -40,10 +39,6 @@ const style = computed(() => ({ '--docs-section-title': section.value ? JSON.str
     </template>
     <template #aside-outline-after>
       <DocsOutlineLinks />
-    </template>
-    <!-- `src/index.md` is a `home` page with no hero or features of the default theme's: this is all of it. -->
-    <template #home-hero-before>
-      <DocsHome />
     </template>
     <template #not-found>
       <DocsNotFound />

@@ -3,7 +3,7 @@
 
 // Under 960 (`DOC5 · An article on a phone`, `DOC6 · The menu on a phone`): the top bar holds the wordmark, the search
 // and the menu button; the bar under it names the section and opens "On this page"; the menu is the sidebar, filling
-// the screen under the top bar, with the search field atop it (`DocsMenuSearch`).
+// the screen under the top bar, with the search field atop it (`DocsSidebarSearch`).
 @media (width < 960px) {
     html.dark {
         // The top bar stays at the top, as the landing page's does, with the section's bar under it.
@@ -30,7 +30,7 @@
             padding-right: 44px;
         }
 
-        // A page with no sidebar (the home page, "not found") has no menu button: the search ends the bar.
+        // A page with no sidebar ("not found") has no menu button: the search ends the bar.
         .VPNavBar:not(.has-sidebar) .content-body {
             padding-right: 0;
         }

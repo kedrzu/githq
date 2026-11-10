@@ -287,19 +287,19 @@ test('"Documentation" in the command menu and in the account menu opens the docs
     await menu.open();
     await menu.field.pressSequentially('docs');
     await menu.option(/^Documentation/u).click();
-    await expectDocsHome(await fromCommandMenu);
+    await expectDocsStart(await fromCommandMenu);
     expect(page.url()).toBe(appUrl);
 
     const fromAccountMenu = page.context().waitForEvent('page');
     await shell.account(SAMPLE_VIEWER.viewer.login).click();
     await page.getByRole('menu').getByRole('menuitem', { name: 'Documentation' }).click();
-    await expectDocsHome(await fromAccountMenu);
+    await expectDocsStart(await fromAccountMenu);
     expect(page.url()).toBe(appUrl);
 });
 
-/** A tab opened on the docs home page (`/docs/`). */
-async function expectDocsHome(tab: Page) {
+/** A tab opened on the docs (`/docs/`), which is their first page: they have no home page. */
+async function expectDocsStart(tab: Page) {
     await expect(tab).toHaveURL('/docs/');
-    await expect(tab.getByRole('heading', { level: 1 })).toHaveText('How githq works, and how to use it');
+    await expect(tab.getByRole('heading', { level: 1 })).toHaveText('What is githq');
     await tab.close();
 }

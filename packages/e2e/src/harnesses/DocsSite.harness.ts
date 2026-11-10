@@ -2,9 +2,9 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Playwright harness for the docs (`packages/docs`, VitePress under `/docs/`): the home page's section cards, an
- * article with its sidebar, outline, "Updated" line and edit link, the "not found" page, the phone's menu and the
- * search (the default theme's local search, ⌘K or `/`).
+ * Playwright harness for the docs (`packages/docs`, VitePress under `/docs/`): an article with its sidebar, outline,
+ * "Updated" line and edit link, the "not found" page, the phone's menu and the search (the default theme's local
+ * search: the field atop the sidebar, ⌘K or `/`).
  */
 export class DocsSiteHarness {
     readonly page: Page;
@@ -13,14 +13,9 @@ export class DocsSiteHarness {
         this.page = page;
     }
 
-    /** The page's title: the home page's hero, an article's or the "not found" page's `h1`. */
+    /** The page's title: an article's or the "not found" page's `h1`. */
     get heading(): Locator {
         return this.page.getByRole('heading', { level: 1 });
-    }
-
-    /** The home page's card of each section, in order. */
-    get sectionCards(): Locator {
-        return this.page.getByTestId('docs-section-card');
     }
 
     /** The sidebar, every section's pages; off the screen on a phone until {@link menuButton} opens it. */
@@ -68,6 +63,11 @@ export class DocsSiteHarness {
         return this.page.getByRole('button', { name: 'Menu' });
     }
 
+    /** The search field atop the sidebar, which opens the search; on a phone, in the menu. */
+    get sidebarSearch(): Locator {
+        return this.page.getByTestId('docs-sidebar-search');
+    }
+
     /** The search's field, there while the search is open. */
     get searchField(): Locator {
         return this.page.getByRole('searchbox');
@@ -86,6 +86,17 @@ export class DocsSiteHarness {
         await expect(async () => {
             if (!(await this.searchField.isVisible())) {
                 await this.page.keyboard.press(key);
+            }
+
+            await expect(this.searchField).toBeFocused({ timeout: 1000 });
+        }).toPass();
+    }
+
+    /** Clicks {@link sidebarSearch} until the search opens: a click before the page has hydrated is lost. */
+    async openSearchFromSidebar(): Promise<void> {
+        await expect(async () => {
+            if (!(await this.searchField.isVisible())) {
+                await this.sidebarSearch.click();
             }
 
             await expect(this.searchField).toBeFocused({ timeout: 1000 });
