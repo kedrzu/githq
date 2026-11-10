@@ -31,7 +31,7 @@ export interface EditTexts {
     /** A row's note on its edit undone: "“regression” label undone". */
     undone(subject: EditSubject): string;
     /** Why a comment stays in the thread unposted: "Not sent: GitHub can't be reached." */
-    notSent(reason: EditFailureReason, repository: string): string;
+    notSent(reason: EditFailureReason): string;
 }
 
 /** The words of the user's edits, in the app's language. */
@@ -145,28 +145,16 @@ export function useEditTexts(): EditTexts {
             : t(l.undone, { change: capitalize(change(subject)) });
     }
 
-    function notSent(failure: EditFailureReason, repository: string) {
+    function notSent(failure: EditFailureReason) {
         switch (failure.kind) {
             case 'offline':
             case 'notReached':
                 return t(l.notSentOffline);
-            case 'dropped':
-                return t(l.notSentDropped, { repository });
-            case 'notAllowed':
-                return t(l.notSentNotAllowed, { repository });
-            case 'missing':
-                return t(l.notSentMissing);
-            case 'organizationRestricted':
-                return t(l.notSentOrganizationRestricted, { organization: failure.organization });
+            // GitHub's own words say more than "refused by GitHub".
             case 'refused':
                 return t(l.notSentRefused, { message: failure.message.replace(/\.$/u, '') });
-            // Not what a comment fails with.
-            case 'rulesNotConfirmed':
-            case 'notActions':
-            case 'nothingFailed':
-                return t(l.notSentOther);
             default:
-                return assertNever(failure);
+                return t(l.notSent, { reason: shortReason(failure) });
         }
     }
 

@@ -147,7 +147,7 @@ async function showEarlier() {
                 <span
                   :class="css.itemThread_failedText"
                   role="alert"
-                  >{{ editTexts.notSent(comment.reason, item.repository.nameWithOwner) }}</span
+                  >{{ editTexts.notSent(comment.reason) }}</span
                 >
                 <Button
                   size="compact"
