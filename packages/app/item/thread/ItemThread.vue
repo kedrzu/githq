@@ -100,7 +100,6 @@ let deleting: string | null = null;
 const entries = computed(() =>
   props.detail
     ? buildThread({
-        item: props.item,
         detail: props.detail,
         failedComments: props.failedComments,
         unfolded: unfolded.value,

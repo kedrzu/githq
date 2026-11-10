@@ -10,7 +10,7 @@ import ItemThreadPush from './ItemThreadPush.vue';
 /** The thread's width in a panel. */
 const IN_PANEL = 512;
 
-const [SIX_COMMITS, THREE_COMMITS] = buildThread({ item: F5_PULL_REQUEST, detail: F5_PULL_REQUEST_DETAIL }).filter(
+const [SIX_COMMITS, THREE_COMMITS] = buildThread({ detail: F5_PULL_REQUEST_DETAIL }).filter(
     (entry): entry is ThreadPush => entry.kind === 'push',
 );
 

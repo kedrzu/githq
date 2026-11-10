@@ -120,7 +120,6 @@ test("the description comes first, then comments and events by time, then the us
         retrying: false,
     };
     const thread = buildThread({
-        item: D1_ISSUE,
         detail: issueDetail(
             [
                 { ...base('E1', MLAINE, 5), kind: 'pinned' },
@@ -145,7 +144,6 @@ test("the description comes first, then comments and events by time, then the us
 
 test("one author's commits straight after each other are one push; a comment or another author starts the next", () => {
     const thread = buildThread({
-        item: F1_PULL_REQUEST,
         detail: pullRequestDetail(
             [
                 commitAt('a1', MLAINE, 0),
@@ -166,16 +164,18 @@ test("one author's commits straight after each other are one push; a comment or 
 
 test("once the newest commit's checks finished with a failure, the thread says which failed, when the last finished", () => {
     const thread = buildThread({
-        item: { ...F1_PULL_REQUEST, headRefOid: 'e81f0a3c0ffee' },
-        detail: pullRequestDetail([commitAt('e81f0a3', MLAINE, 0)], [comment('C1', SOFIAB, 30)], {
-            checks: [
-                check('e2e', 'failing', 20),
-                check('typecheck', 'failing', 40),
-                check('e2e', 'failing', 25),
-                check('lint', 'passing', 50),
-            ],
-            checkCount: 4,
-        }),
+        detail: {
+            ...pullRequestDetail([commitAt('e81f0a3', MLAINE, 0)], [comment('C1', SOFIAB, 30)], {
+                checks: [
+                    check('e2e', 'failing', 20),
+                    check('typecheck', 'failing', 40),
+                    check('e2e', 'failing', 25),
+                    check('lint', 'passing', 50),
+                ],
+                checkCount: 4,
+            }),
+            item: { ...F1_PULL_REQUEST, headRefOid: 'e81f0a3c0ffee' },
+        },
     });
 
     expect(thread.map(entry => entry.id)).toEqual(['PRC_e81f0a3', 'C1', 'checks:e81f0a3c0ffee']);
@@ -201,7 +201,6 @@ test('no CI event while a check still runs, when none failed, or when GitHub cut
         [cut, 120],
     ] as const) {
         const thread = buildThread({
-            item: F1_PULL_REQUEST,
             detail: pullRequestDetail([], [], { checks, checkCount }),
         });
         expect(thread.filter(entry => entry.kind === 'checksFailed')).toEqual([]);
@@ -222,10 +221,10 @@ test('fewer than 6 left to fold: nothing folds; what the user must see stays bel
     const many = manyComments(21);
 
     // The 7th held open (an editor, a refused edit): 4 left to fold.
-    const short = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), keepShown: new Set(['C7']) });
+    const short = buildThread({ detail: issueDetail([], many), keepShown: new Set(['C7']) });
     expect(idsOf(short)).toEqual(many.map(entry => entry.id));
 
-    const thread = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), keepShown: new Set(['C9']) });
+    const thread = buildThread({ detail: issueDetail([], many), keepShown: new Set(['C9']) });
     expect(idsOf(thread)).toEqual(['C1', 'C2', 'fold', ...many.slice(8).map(entry => entry.id)]);
     expect(foldOf(thread)).toEqual(fold({ comments: 6 }));
 });
@@ -235,7 +234,6 @@ test("the user's comments on their way, refused or being edited are never folded
     const editing = { ...sent[9]!, pendingBody: 'Edited, on its way' };
     const pending = [1, 2, 3, 4, 5, 6].map(index => ({ ...comment(`pending:${index}`, MLAINE, 100 + index) }));
     const thread = buildThread({
-        item: D1_ISSUE,
         detail: issueDetail([], [...sent.slice(0, 9), editing, ...sent.slice(10), ...pending]),
         failedComments: [failedComment(1)],
     });
@@ -287,16 +285,16 @@ test('what GitHub has and the detail does not hold counts as folded, and folds h
         },
     };
 
-    const thread = buildThread({ item: D1_ISSUE, detail });
+    const thread = buildThread({ detail });
 
     // The events not held may lie anywhere between E1 and E2: the comments held between them fold too.
     expect(idsOf(thread)).toEqual(['E1', 'fold', 'E2']);
     expect(foldOf(thread)).toEqual(fold({ comments: 12, otherEvents: 7, unread: true }));
     // The first comments not held either: they may be older than E1, which cannot stay above them.
     const newestOnly: ItemDetail = { ...detail, comments: { ...detail.comments, first: [] } };
-    expect(idsOf(buildThread({ item: D1_ISSUE, detail: newestOnly }))).toEqual(['fold', 'E2']);
+    expect(idsOf(buildThread({ detail: newestOnly }))).toEqual(['fold', 'E2']);
     // Shown, with the middle still not held: it stays folded — nothing to show it with.
-    expect(foldOf(buildThread({ item: D1_ISSUE, detail, unfolded: true })).unread).toBe(true);
+    expect(foldOf(buildThread({ detail, unfolded: true })).unread).toBe(true);
 });
 
 test("what stays around the fold keeps the time order of what it hides, whichever stream's middle is not held", () => {
@@ -314,16 +312,30 @@ test("what stays around the fold keeps the time order of what it hides, whicheve
         },
     };
 
-    const thread = buildThread({ item: F1_PULL_REQUEST, detail });
+    const thread = buildThread({ detail });
 
     // C1 came after commits not read yet, C21–C25 before some: none of them stays out of the fold.
     expect(idsOf(thread)).toEqual(['PRC_a1', 'fold', 'PRC_b1']);
     expect(foldOf(thread)).toEqual(fold({ commits: 7, comments: 25, unread: true }));
 });
 
+test("the CI line names the commit the detail read its checks with, though the row has moved on to a newer one", () => {
+    const thread = buildThread({
+        detail: {
+            ...pullRequestDetail([], [], { checks: [check('e2e', 'failing', 20)], checkCount: 1 }),
+            item: { ...F1_PULL_REQUEST, headRefOid: 'old0000c0ffee' },
+        },
+    });
+
+    expect(thread.find(entry => entry.kind === 'checksFailed')).toMatchObject({
+        id: 'checks:old0000c0ffee',
+        commit: { abbreviatedOid: 'old0000' },
+    });
+});
+
 test('shown by the user, a long thread read whole folds no more', () => {
     const many = manyComments(30);
-    const thread = buildThread({ item: D1_ISSUE, detail: issueDetail([], many), unfolded: true });
+    const thread = buildThread({ detail: issueDetail([], many), unfolded: true });
 
     expect(idsOf(thread)).toEqual(many.map(entry => entry.id));
 });
@@ -331,11 +343,11 @@ test('shown by the user, a long thread read whole folds no more', () => {
 const PROJECT = { title: 'tasklet Roadmap', url: 'https://github.com/users/mlaine/projects/1' };
 
 function buildIssueThread(events: ThreadEvent[], comments: ItemComment[] = []) {
-    return buildThread({ item: D1_ISSUE, detail: issueDetail(events, comments) });
+    return buildThread({ detail: issueDetail(events, comments) });
 }
 
 function buildPullRequestThread(events: ThreadEvent[], comments: ItemComment[]) {
-    return buildThread({ item: F1_PULL_REQUEST, detail: pullRequestDetail(events, comments) });
+    return buildThread({ detail: pullRequestDetail(events, comments) });
 }
 
 /** `count` comments by sofiab, a minute apart, `C1` the oldest. */

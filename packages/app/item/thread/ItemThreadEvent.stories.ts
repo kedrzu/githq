@@ -75,7 +75,7 @@ export const NoPerson: Story = {
 
 /** A thread's lines of events and failed checks, as `ItemThread` shows them. */
 function linesOf(detail: ItemDetail): (ThreadEventLine | ThreadChecksFailed)[] {
-    return buildThread({ item: detail.item, detail }).filter(
+    return buildThread({ detail }).filter(
         (entry): entry is ThreadEventLine | ThreadChecksFailed =>
             entry.kind === 'events' || entry.kind === 'checksFailed',
     );

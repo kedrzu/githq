@@ -112,7 +112,6 @@ export interface ThreadFold {
 
 /** The parameters of {@link buildThread}. */
 export interface BuildThreadParams {
-    readonly item: Item;
     readonly detail: ItemDetail;
     /** The user's comments GitHub did not take, in the order they were written. */
     readonly failedComments?: readonly FailedComment[];
@@ -140,7 +139,6 @@ type Timed =
  * @__NO_SIDE_EFFECTS__
  */
 export function buildThread({
-    item,
     detail,
     failedComments = [],
     unfolded = false,
@@ -173,7 +171,9 @@ export function buildThread({
         }
     }
 
-    const checks = detail.kind === 'pullRequest' && item.kind === 'pullRequest' ? getChecksFailed(item, detail) : null;
+    // The head the detail read its checks with: the row held may have moved on to a newer push since.
+    const head = detail.item;
+    const checks = detail.kind === 'pullRequest' && head.kind === 'pullRequest' ? getChecksFailed(head, detail) : null;
     if (checks) {
         timed.push({ at: Date.parse(checks.updatedAt), kind: 'item', item: checks });
     }
