@@ -136,6 +136,9 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   user-select: none;
   background: none;
   border: 1px solid transparent;
+  // A caller joining another control to its end drops its end border with `--button-border-end-width: 0` (a split
+  // button's menu).
+  border-inline-end-width: var(--button-border-end-width, 1px);
   border-radius: 7px;
 }
 
@@ -188,10 +191,12 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   }
 }
 
+// A caller joining another control to its end sets `--button-padding-end` and `--button-radius` (a split button).
 .button_compact {
   padding: $spacing-5 $spacing-10;
+  padding-inline-end: var(--button-padding-end, #{$spacing-10});
   font-size: $font-size-sm;
-  border-radius: $radius-md;
+  border-radius: var(--button-radius, #{$radius-md});
 
   .button_content {
     gap: $spacing-6;
@@ -380,7 +385,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   }
 
   &.button_compact {
-    padding-inline-end: $spacing-8;
+    padding-inline-end: var(--button-padding-end, #{$spacing-8});
   }
 
   &.button_md {

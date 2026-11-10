@@ -62,28 +62,30 @@ defineSlots<{
   flex: none;
 }
 
-// Doubled: over `Button`'s and `IconButton`'s own look, whichever stylesheet comes last.
-.splitButton_main.splitButton_main {
-  padding-inline-end: $spacing-6;
-  border-right: none;
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
+// Its end joined to the chevron, which carries the frame on.
+.splitButton_main {
+  --button-padding-end: #{$spacing-6};
+  --button-border-end-width: 0;
+  --button-radius: #{$radius-md} 0 0 #{$radius-md};
 }
 
-// The rule before the chevron, inside the frame the two parts draw together.
-.splitButton_menu.splitButton_menu {
+// A segment of the frame the two parts draw together, as the button looks.
+.splitButton_menu {
   --icon-button-glyph-size: 12px;
+  --icon-button-width: auto;
+  --icon-button-height: auto;
+  --icon-button-padding: 0 #{$spacing-8} 0 #{$spacing-6};
+  --icon-button-color: #{$color-fg-2};
+  --icon-button-background: #{$color-bg-3};
+  --icon-button-border: 1px solid #{$color-border-2};
+  --icon-button-border-start: none;
+  --icon-button-radius: 0 #{$radius-md} #{$radius-md} 0;
+  --icon-button-hover-color: #{$color-fg};
+  --icon-button-hover-background: #{$color-border};
 
   position: relative;
-  width: auto;
-  height: auto;
-  padding: 0 $spacing-8 0 $spacing-6;
-  color: $color-fg-2;
-  background: $color-bg-3;
-  border: 1px solid $color-border-2;
-  border-left: none;
-  border-radius: 0 $radius-md $radius-md 0;
 
+  // The rule before the chevron.
   &::before {
     position: absolute;
     top: 50%;
@@ -93,12 +95,6 @@ defineSlots<{
     content: '';
     background: $color-border-2;
     transform: translateY(-50%);
-  }
-
-  &:hover,
-  &[aria-expanded='true'] {
-    color: $color-fg;
-    background: $color-border;
   }
 }
 </style>

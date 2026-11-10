@@ -34,10 +34,12 @@ function openLinksOutside() {
 </template>
 
 <style lang="scss" module="css">
+// A caller sets the text's size, line height and colour with `--github-html-font-size`, `--github-html-line-height` and
+// `--github-html-color` (a thread's reading size).
 .gitHubHtml {
-  font-size: $font-size-md;
-  line-height: 20px;
-  color: $color-fg-2;
+  font-size: var(--github-html-font-size, #{$font-size-md});
+  line-height: var(--github-html-line-height, 20px);
+  color: var(--github-html-color, #{$color-fg-2});
   overflow-wrap: anywhere;
 
   > :first-child {

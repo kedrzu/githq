@@ -407,10 +407,9 @@ interface RenderedPreview {
   padding: $spacing-10 $spacing-12;
 }
 
-// Doubled: over `GitHubHtml`'s own size and colour, whichever stylesheet comes last.
-.markdownEditor_rendered.markdownEditor_rendered {
-  line-height: $line-height-normal;
-  color: $color-fg;
+.markdownEditor_rendered {
+  --github-html-line-height: #{$line-height-normal};
+  --github-html-color: #{$color-fg};
 }
 
 .markdownEditor_note {

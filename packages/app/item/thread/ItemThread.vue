@@ -101,7 +101,7 @@ const folded = computed(() =>
             <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
             <p
               v-if="comment.pendingBody !== undefined"
-              :class="[css.itemThread_text, css.itemThread_typed, css.itemThread_pending]"
+              :class="[css.itemThread_typed, css.itemThread_pending]"
               v-text="comment.pendingBody"
             />
             <GitHubHtml
@@ -121,7 +121,7 @@ const folded = computed(() =>
             failed
           >
             <p
-              :class="[css.itemThread_text, css.itemThread_typed]"
+              :class="css.itemThread_typed"
               v-text="comment.body"
             />
             <template #footer>
@@ -194,22 +194,25 @@ const folded = computed(() =>
   list-style: none;
 }
 
-// Doubled: over `GitHubHtml`'s own size and colour, whichever stylesheet comes last.
-.itemThread_text.itemThread_text {
+// A body or comment GitHub rendered, at the thread's reading size.
+.itemThread_text {
+  --github-html-font-size: #{$font-size-reading};
+  --github-html-line-height: #{$line-height-reading};
+  --github-html-color: #{$color-fg};
+}
+
+// As typed: GitHub has not rendered it. As GitHub's rendering of it will read.
+.itemThread_typed {
+  margin: 0;
   font-size: $font-size-reading;
   line-height: $line-height-reading;
   color: $color-fg;
-}
-
-// As typed: GitHub has not rendered it.
-.itemThread_typed.itemThread_typed {
-  margin: 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
 // On its way, dimmed (not faded: it stays readable): GitHub's rendering replaces it once GitHub has it.
-.itemThread_pending.itemThread_pending {
+.itemThread_pending {
   color: $color-fg-dim;
 }
 
