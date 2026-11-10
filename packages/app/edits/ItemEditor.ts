@@ -348,10 +348,9 @@ export const ItemEditor = defineService({
          * with what failed. Nothing when the project is not tracked or the user may not write to it.
          */
         async function addDraftIssue(projectId: string, draft: DraftIssueInput): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
+            const account = getAccount();
             const project = projects.get(projectId);
-            if (!viewer || token === null || !project?.viewerCanUpdate || !draft.title.trim()) {
+            if (!account || !project?.viewerCanUpdate || !draft.title.trim()) {
                 return { failed: [] };
             }
 
@@ -366,7 +365,7 @@ export const ItemEditor = defineService({
                     return field ? [{ field, value }] : [];
                 }),
             });
-            return await queue.submit({ edits: [adding], account: { login: viewer.login, token }, itemCount: 1 });
+            return await queue.submit({ edits: [adding], account, itemCount: 1 });
         }
 
         /**
@@ -379,20 +378,19 @@ export const ItemEditor = defineService({
             fieldId: string,
             value: ProjectFieldInput | null,
         ): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
+            const account = getAccount();
             const stored = projects.getStoredItem(projectItemId);
             const project = stored && projects.get(stored.projectId);
             const field = project?.fields.find(candidate => candidate.id === fieldId);
             const item = project && projects.getItems(project.id).find(candidate => candidate.itemId === projectItemId);
-            if (!viewer || token === null || !project || !field || !item?.draft) {
+            if (!account || !project || !field || !item?.draft) {
                 return { failed: [] };
             }
 
             const setting = createDraftFieldEdit({ project, item, field, value });
             return await queue.submit({
                 edits: [project.viewerCanUpdate ? setting : notAllowed(setting)],
-                account: { login: viewer.login, token },
+                account,
                 itemCount: 1,
             });
         }
@@ -404,12 +402,11 @@ export const ItemEditor = defineService({
          */
         async function createIssue(request: CreateIssueRequest): Promise<CreateIssueOutcome> {
             const viewer = auth.viewer;
-            const token = auth.token;
-            if (!viewer || token === null) {
+            const account = getAccount();
+            if (!viewer || !account) {
                 return { created: false, failed: [] };
             }
 
-            const account: EditAccount = { login: viewer.login, token };
             const { issue } = request;
             const kept = repositories.get(request.repository) ?? (await repositories.ensure(request.repository));
             // Labels and people past the pages the pickers read are looked up by name.
