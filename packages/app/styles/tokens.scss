@@ -539,6 +539,21 @@ $row-surface-inset: $spacing-2 $spacing-8;
     container-type: inline-size;
 }
 
+// A card of the item's thread with its avatar in the thread's gutter (`ItemThreadCard`, `ItemThreadComposer`,
+// `ItemThreadEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
+@mixin item-thread-row {
+    display: flex;
+    gap: $item-thread-gutter-gap;
+}
+
+@mixin item-thread-gutter($height) {
+    display: flex;
+    flex: none;
+    align-items: center;
+    width: $item-thread-gutter-width;
+    height: $height;
+}
+
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.
 @mixin list-header {
     display: flex;

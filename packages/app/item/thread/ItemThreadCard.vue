@@ -130,16 +130,11 @@ const when = computed(() => {
 <style lang="scss" module="css">
 // Avatars in the thread's gutter, beside the card.
 .itemThreadCard {
-  display: flex;
-  gap: $item-thread-gutter-gap;
+  @include item-thread-row;
 }
 
 .itemThreadCard_gutter {
-  display: flex;
-  flex: none;
-  align-items: center;
-  width: $item-thread-gutter-width;
-  height: 36px;
+  @include item-thread-gutter(36px);
 }
 
 // Its fill hides the rail running behind it.

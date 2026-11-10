@@ -118,16 +118,11 @@ function save() {
 <style lang="scss" module="css">
 // As a card of the thread: the avatar in the thread's gutter, level with the editor's head.
 .itemThreadEditor {
-  display: flex;
-  gap: $item-thread-gutter-gap;
+  @include item-thread-row;
 }
 
 .itemThreadEditor_gutter {
-  display: flex;
-  flex: none;
-  align-items: center;
-  width: $item-thread-gutter-width;
-  height: 38px;
+  @include item-thread-gutter(38px);
 }
 
 .itemThreadEditor_main {
