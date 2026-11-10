@@ -174,22 +174,8 @@ const heading = computed(() =>
   flex: none;
   width: 14px;
   height: 14px;
-}
 
-.markdownSuggestions_icon_open {
-  color: $color-green;
-}
-
-.markdownSuggestions_icon_done {
-  color: $color-purple;
-}
-
-.markdownSuggestions_icon_closed {
-  color: $color-red;
-}
-
-.markdownSuggestions_icon_draft {
-  color: $color-fg-2;
+  @include item-kind-tones;
 }
 
 .markdownSuggestions_label {

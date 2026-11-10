@@ -1030,22 +1030,8 @@ $item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
   flex: none;
   width: 14px;
   height: 14px;
-}
 
-.itemView_kind_open {
-  color: $color-green;
-}
-
-.itemView_kind_done {
-  color: $color-purple;
-}
-
-.itemView_kind_closed {
-  color: $color-red;
-}
-
-.itemView_kind_draft {
-  color: $color-fg-dim;
+  @include item-kind-tones;
 }
 
 .itemView_repository {

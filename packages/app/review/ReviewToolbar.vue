@@ -220,22 +220,8 @@ const layoutOptions = computed((): SegmentedTabsOption<DiffLayout>[] => [
   flex: none;
   width: 14px;
   height: 14px;
-}
 
-.reviewToolbar_state_open {
-  color: $color-green;
-}
-
-.reviewToolbar_state_done {
-  color: $color-purple;
-}
-
-.reviewToolbar_state_closed {
-  color: $color-red;
-}
-
-.reviewToolbar_state_draft {
-  color: $color-fg-dim;
+  @include item-kind-tones;
 }
 
 .reviewToolbar_repository {

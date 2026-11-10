@@ -554,6 +554,27 @@ $row-surface-inset: $spacing-2 $spacing-8;
     height: $height;
 }
 
+// An issue or pull request's kind and state icon in GitHub's colour, by `getItemKind`'s tone: included in the icon's
+// class, it gives it one modifier per tone (`_open`, `_done`, `_closed`, `_draft`) — a list's row and card, the opened
+// item, the review's toolbar, a reference suggested in a comment.
+@mixin item-kind-tones {
+    &_open {
+        color: $color-green;
+    }
+
+    &_done {
+        color: $color-purple;
+    }
+
+    &_closed {
+        color: $color-red;
+    }
+
+    &_draft {
+        color: $color-fg-dim;
+    }
+}
+
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.
 @mixin list-header {
     display: flex;
