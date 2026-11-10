@@ -86,9 +86,9 @@ function open(path: string) {
  * The menu opens only for a link just right-clicked: a long press elsewhere (reka's, on touch) has none and opens
  * nothing. Closed, it forgets the link.
  */
-function onMenuOpen(open: boolean) {
-  menuOpen.value = open && menuPath.value !== null;
-  if (!open) {
+function onMenuOpen(opening: boolean) {
+  menuOpen.value = opening && menuPath.value !== null;
+  if (!opening) {
     menuPath.value = null;
   }
 }
