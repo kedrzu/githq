@@ -142,3 +142,5 @@ unmarkedAsCanonical:
   en: unmarked {ref} as a duplicate of this
 checksFailed:
   en: '{failed} of {total} checks failed on {commit}: {names}'
+ci:
+  en: CI

@@ -1,4 +1,4 @@
-<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest at the right. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab. A line no person made — a project workflow's Status change, a pull request's failed checks — shows no avatar and no one. -->
+<!-- One line of events on an item's thread (`Activity / Event`, item-activity F13): a badge on the rail with the first event's icon, then who — their avatar and login — and what they did, each part joined with "and" (labels as the lists' chips, issues, pull requests and commits as links in accent), wrapping under itself, and the time of the newest at the right. An item links to where the app opens it (a plain click opens it there, one with a modifier is the browser's); a commit, to GitHub in a new tab. A line no person made shows no avatar: a project workflow's Status change names no one, a pull request's failed checks name "CI" where a person's login would be (F5, F13). -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useLanguage } from '@nzyme/vue-i18n/useLanguage.js';
@@ -457,6 +457,11 @@ function getEventLook(event: SingleThreadEvent): EventLook {
         />
         <span :class="css.itemThreadEvent_who">{{ actor.login }}</span>
       </template>
+      <span
+        v-else-if="entry.kind === 'checksFailed'"
+        :class="css.itemThreadEvent_who"
+        >{{ t(l.ci) }}</span
+      >
       <span :class="css.itemThreadEvent_what"><What /></span>
       <time
         :class="css.itemThreadEvent_when"
