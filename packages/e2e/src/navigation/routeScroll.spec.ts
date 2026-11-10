@@ -43,9 +43,14 @@ test("an item's link opens the other item at the top, and Back brings the first 
     await myWork.row(NEXT).click();
     await item.arrangement('Full page').click();
     await expect(page).toHaveURL('/acme/web/pull/15');
-    const top = await scrollDown(item.content);
+    const link = item.root.getByRole('button', { name: ISSUE });
+    await scrollDown(item.content);
+    // Out of view at the end of the thread: the click would scroll to it first, after `top` was read.
+    await link.scrollIntoViewIfNeeded();
+    const top = await getScrollTop(item.content);
+    expect(top).toBeGreaterThan(0);
 
-    await item.root.getByRole('button', { name: ISSUE }).click();
+    await link.click();
     await expect(item.title).toHaveText(ISSUE);
     await expect.poll(() => getScrollTop(item.content)).toBe(0);
 
