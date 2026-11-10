@@ -133,7 +133,8 @@ test("a pull request's push of more than three commits shows the newest three an
 }) => {
     const sample = createSampleEditableWork();
     const { world } = sample;
-    // Older than the head, committed when the pull request was opened a day ago: the head stays the newest.
+    // Older than the head, committed when the pull request was opened a day ago (1460 minutes): the head stays the
+    // newest, and within an hour of them all, so one push holds the five.
     const author = 'octocat';
     for (const [index, headline] of [
         'Add the redirect',
@@ -141,7 +142,7 @@ test("a pull request's push of more than three commits shows the newest three an
         'Test the loop',
         'Drop the retry',
     ].entries()) {
-        world.commit(sample.pullRequest, { author, headline, minutesAgo: 2000 - index });
+        world.commit(sample.pullRequest, { author, headline, minutesAgo: 1500 - index });
     }
     world.failChecks(sample.pullRequest, ['e2e', 'typecheck']);
     const { myWork } = await openMyWork(page, github, world);

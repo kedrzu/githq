@@ -17,6 +17,12 @@ import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js'
 
 /** How long one person's events straight after each other share a line, from the first of them (F13). */
 const BURST_MS = 10 * 60_000;
+/**
+ * The longest gap between one author's commits in a row that still makes them one push. An approximation: a pull
+ * request's timeline tells when each commit was made (`committedDate`), not when, or in which push, it was pushed — so
+ * commits made far apart are taken as pushed apart, and a day's work pushed at once shows as several pushes.
+ */
+const PUSH_GAP_MS = 60 * 60_000;
 /** A thread folds once it has more items than this (F5), the description and the composer apart. */
 const FOLD_OVER = 20;
 /** How many of the first items stay above the fold. */
@@ -81,7 +87,10 @@ export type SingleThreadEvent = Exclude<
     { readonly kind: Exclude<MergingKind, 'subIssueAdded' | 'subIssueRemoved' | 'referenced'> | 'commit' }
 >;
 
-/** One author's commits straight after each other: GitHub tells of each commit, not of the push that brought it. */
+/**
+ * One author's commits straight after each other, none more than an hour after the one before (`PUSH_GAP_MS`): GitHub
+ * tells of each commit, not of the push that brought it.
+ */
 export interface ThreadPush {
     readonly kind: 'push';
     /** The first commit's id. */
@@ -447,7 +456,13 @@ function groupTimed(ordered: readonly Timed[]): ThreadItem[] {
         burst = null;
         if (entry.kind === 'commit') {
             const { commit } = entry;
-            if (push && getAuthorKey(push.commits[0]) === getAuthorKey(commit)) {
+            const last = push?.commits.at(-1);
+            if (
+                push &&
+                last &&
+                getAuthorKey(last) === getAuthorKey(commit) &&
+                entry.at - Date.parse(last.createdAt) <= PUSH_GAP_MS
+            ) {
                 push.commits.push(commit);
                 continue;
             }
@@ -786,8 +801,8 @@ function getReviewerKey(reviewer: ItemDetailReviewRequest) {
 }
 
 /** One push is one author's: their account, else the name git records. */
-function getAuthorKey(commit: ThreadCommit | undefined) {
-    return commit?.actor?.login ?? `name:${commit?.authorName ?? ''}`;
+function getAuthorKey(commit: ThreadCommit) {
+    return commit.actor?.login ?? `name:${commit.authorName ?? ''}`;
 }
 
 /**

@@ -181,6 +181,26 @@ test("one author's commits straight after each other are one push; a comment or 
     expect(pushes).toEqual([['a1', 'a2'], ['a3'], 'C1', ['a4', 'a5']]);
 });
 
+test("one author's commits more than an hour apart are two pushes: GitHub tells no push's time", () => {
+    const thread = buildThread({
+        detail: pullRequestDetail(
+            [
+                commitAt('a1', MLAINE, 0),
+                commitAt('a2', MLAINE, 50),
+                commitAt('a3', MLAINE, 110),
+                commitAt('a4', MLAINE, 171),
+                commitAt('a5', MLAINE, 400),
+            ],
+            [],
+        ),
+    });
+
+    const pushes = thread.map(entry =>
+        entry.kind === 'push' ? entry.commits.map(commit => commit.abbreviatedOid) : [],
+    );
+    expect(pushes).toEqual([['a1', 'a2', 'a3'], ['a4'], ['a5']]);
+});
+
 test("once the newest commit's checks finished with a failure, the thread says which failed, when the last finished", () => {
     const thread = buildThread({
         detail: {
