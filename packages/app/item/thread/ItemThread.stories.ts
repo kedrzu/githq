@@ -4,6 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { F5_PULL_REQUEST, F5_PULL_REQUEST_DETAIL, I1_ISSUE, I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import ItemThread from './ItemThread.vue';
@@ -72,6 +73,50 @@ export const PullRequestInPanel: Story = { args: { item: F1_PULL_REQUEST, detail
 /** F5: the same pull request on a page. */
 export const PullRequestOnPage: Story = { args: PullRequestInPanel.args, parameters: ON_PAGE };
 
+/** I1 on a page: the issue's events and comments in one time order, one person's events in a burst on one line. */
+export const IssueThread: Story = { args: { item: I1_ISSUE, detail: I1_ISSUE_DETAIL }, parameters: ON_PAGE };
+
+/** F5 on a page: pushes with their commits, a burst, the comments and the CI's failed checks by time. */
+export const PullRequestThread: Story = {
+    args: { item: F5_PULL_REQUEST, detail: F5_PULL_REQUEST_DETAIL },
+    parameters: ON_PAGE,
+};
+
+/** F9: the same pull request in the side panel. */
+export const PullRequestThreadInPanel: Story = { args: PullRequestThread.args };
+
+/** The user's comment on its way among the events: after everything GitHub told, then one not sent. */
+export const SendingAmongEvents: Story = {
+    args: {
+        item: I1_ISSUE,
+        detail: {
+            ...I1_ISSUE_DETAIL,
+            comments: {
+                ...I1_ISSUE_DETAIL.comments,
+                totalCount: 3,
+                nodes: [
+                    ...I1_ISSUE_DETAIL.comments.nodes,
+                    {
+                        id: 'pending:1',
+                        url: I1_ISSUE.url,
+                        author: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl },
+                        body: 'Pinned it until #15 lands.',
+                        bodyHtml: '',
+                        // This device's clock, behind GitHub's: it still comes after everything GitHub told.
+                        createdAt: new Date(SAMPLE_NOW - 3 * 60 * 60_000).toISOString(),
+                        lastEditedAt: null,
+                        viewerCanUpdate: false,
+                        viewerCanDelete: false,
+                        pendingBody: 'Pinned it until #15 lands.',
+                    },
+                ],
+            },
+        },
+        viewer: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl },
+        failedComments: [{ ...FAILED_COMMENTS[0]!, itemId: I1_ISSUE.id }],
+    },
+};
+
 /** The description left empty, a comment edited since, and the user's own on its way: the text as typed, "Sending…". */
 export const EditedAndSending: Story = {
     args: {
@@ -80,6 +125,7 @@ export const EditedAndSending: Story = {
             bodyHtml: '',
             comments: {
                 totalCount: 2,
+                first: [],
                 olderCursor: null,
                 nodes: [
                     {

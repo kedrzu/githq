@@ -1,0 +1,10 @@
+pushed:
+  plural: count
+  en:
+    one: pushed 1 commit
+    many: pushed {count} commits
+showMore:
+  plural: count
+  en:
+    one: Show 1 more commit
+    many: Show {count} more commits

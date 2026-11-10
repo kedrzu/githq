@@ -896,6 +896,7 @@ function getProjectOptions(): CommandOption[] {
                 @edit="emit('edit', $event)"
                 @discard-edit="emit('discardEdit', $event)"
                 @quote-reply="quoteReply"
+                @open="emit('open', $event)"
               >
                 <template #composer>
                   <ItemThreadComposer

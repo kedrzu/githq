@@ -8,7 +8,8 @@ import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } fr
 
 import * as stories from './ItemThread.stories.js';
 
-const { IssueInPanel, PullRequestInPanel, NotSent, NotSentReadOnly, EditRefused } = composeStories(stories);
+const { IssueInPanel, PullRequestInPanel, NotSent, NotSentReadOnly, EditRefused, SendingAmongEvents } =
+    composeStories(stories);
 
 /** The card of the comment that reads `text`. */
 function card(text: string) {
@@ -326,4 +327,25 @@ test('Edit from a right click leaves the focus in the editor it opened, not wher
     await userEvent.keyboard(' Typed away.');
 
     await expect.element(editor).toHaveValue('An older one of mine. Typed away.');
+});
+
+test("events and comments read show in one time order; the user's comment on its way and one not sent come after them", async () => {
+    await SendingAmongEvents.run();
+
+    const entries = page.getByRole('list').first().getByRole('listitem').elements();
+    const texts = entries
+        .filter(entry => entry.parentElement === entries[0]?.parentElement)
+        .map(entry => entry.textContent.replace(/\s+/gu, ' '));
+    const order = [
+        'added bug and set the type to Bug',
+        'Same here: the link to #9 is gone',
+        'linked a pull request #15',
+        'Fixed by #15 once it lands',
+        'Status set to Done in',
+        'pinned this issue',
+        'Pinned it until #15 lands.',
+        'Thanks both.',
+    ].map(text => texts.findIndex(entry => entry.includes(text)));
+    expect(order).toEqual(order.toSorted((a, b) => a - b));
+    expect(order).not.toContain(-1);
 });

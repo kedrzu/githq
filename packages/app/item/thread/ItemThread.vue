@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks — then the composer, there while the rest is read too. When GitHub has older comments than were read, a fold after the description reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
@@ -12,12 +12,16 @@ import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 
 import GitHubHtml from '../GitHubHtml.vue';
+import type { ItemReference } from '../itemRoutes.js';
+import { buildThread } from './buildThread.js';
 import * as l from './ItemThread.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadDeleteDialog from './ItemThreadDeleteDialog.vue';
 import ItemThreadEditor from './ItemThreadEditor.vue';
+import ItemThreadEvent from './ItemThreadEvent.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
 import ItemThreadMenu from './ItemThreadMenu.vue';
+import ItemThreadPush from './ItemThreadPush.vue';
 
 const props = defineProps<{
   item: Item;
@@ -52,6 +56,8 @@ const emit = defineEmits<{
   discardEdit: [commentId: string | null];
   /** Quote reply: the Markdown quoted into the composer. */
   quoteReply: [body: string];
+  /** An issue or a pull request an event names was picked. */
+  open: [reference: ItemReference];
 }>();
 
 defineSlots<{
@@ -81,8 +87,16 @@ let editOpened = false;
 /** The comment Delete… picked, asked about once the menu closed. */
 let deleting: string | null = null;
 
+/** Everything after the description, in the thread's order. */
+const entries = computed(() =>
+  props.detail
+    ? buildThread({ item: props.item, detail: props.detail, failedComments: props.failedComments }).filter(
+        entry => entry.kind !== 'description',
+      )
+    : [],
+);
 const folded = computed(() =>
-  props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
+  props.detail ? props.detail.comments.totalCount - entries.value.filter(entry => entry.kind === 'comment').length : 0,
 );
 
 // Another item: none of the last one's editors stays — its Update would save that item's text into this one's.
@@ -116,7 +130,7 @@ defineExpose({
 });
 
 function askToLeave() {
-  const ids = [null, ...(props.detail?.comments.nodes.map(comment => comment.id) ?? [])];
+  const ids = [null, ...entries.value.flatMap(entry => (entry.kind === 'comment' ? [entry.id] : []))];
   const changed = ids.find(id => isChanged(id));
   if (changed === undefined) {
     return false;
@@ -330,82 +344,92 @@ interface EditorText {
         @click="showEarlier"
       />
       <ol
-        v-if="detail.comments.nodes.length > 0 || (failedComments?.length ?? 0) > 0"
+        v-if="entries.length > 0"
         ref="comments"
         :class="css.itemThread_comments"
       >
         <li
-          v-for="comment in detail.comments.nodes"
-          :key="comment.id"
-          :tabindex="comment.id === revealedId ? -1 : undefined"
+          v-for="entry in entries"
+          :key="entry.id"
+          :tabindex="entry.id === revealedId ? -1 : undefined"
           :class="css.itemThread_comment"
         >
-          <ItemThreadEditor
-            v-if="editorsRef.has(comment.id)"
-            :text="editorsRef.get(comment.id)?.text ?? ''"
-            :author="comment.author"
-            :repository="item.repository.nameWithOwner"
-            :item-number="item.number"
-            :people="people"
-            :reason="getFailure(comment.id)"
-            :autofocus="focusedEditor === comment.id"
-            :changed="isChanged(comment.id)"
-            :asking="askingRef === comment.id"
-            @update:text="setText(comment.id, $event)"
-            @update:asking="setAsking(comment.id, $event)"
-            @save="saveEdit(comment.id, comment.body)"
-            @cancel="cancelEdit(comment.id)"
+          <template v-if="entry.kind === 'comment'">
+            <ItemThreadEditor
+              v-if="editorsRef.has(entry.comment.id)"
+              :text="editorsRef.get(entry.comment.id)?.text ?? ''"
+              :author="entry.comment.author"
+              :repository="item.repository.nameWithOwner"
+              :item-number="item.number"
+              :people="people"
+              :reason="getFailure(entry.comment.id)"
+              :autofocus="focusedEditor === entry.comment.id"
+              :changed="isChanged(entry.comment.id)"
+              :asking="askingRef === entry.comment.id"
+              @update:text="setText(entry.comment.id, $event)"
+              @update:asking="setAsking(entry.comment.id, $event)"
+              @save="saveEdit(entry.comment.id, entry.comment.body)"
+              @cancel="cancelEdit(entry.comment.id)"
+            />
+            <ItemThreadCard
+              v-else
+              :author="entry.comment.author"
+              :created-at="entry.comment.createdAt"
+              :now="now"
+              :edited="entry.comment.lastEditedAt !== null"
+              :sending="entry.comment.pendingBody !== undefined"
+              :menu-focused="menuFocus === entry.comment.id"
+              @menu-close="onMenuClose"
+            >
+              <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
+              <p
+                v-if="entry.comment.pendingBody !== undefined"
+                :class="[css.itemThread_typed, css.itemThread_pending]"
+                v-text="entry.comment.pendingBody"
+              />
+              <GitHubHtml
+                v-else
+                :class="css.itemThread_text"
+                :html="entry.comment.bodyHtml"
+              />
+              <!-- On its way, it has nothing GitHub would act on yet. -->
+              <template
+                v-if="entry.comment.pendingBody === undefined"
+                #menu
+              >
+                <ItemThreadMenu
+                  :can-edit="entry.comment.viewerCanUpdate"
+                  :can-quote="canQuote"
+                  :can-delete="entry.comment.viewerCanDelete"
+                  @edit="startEdit(entry.comment.id, entry.comment.body)"
+                  @quote-reply="quote(entry.comment.body)"
+                  @copy-link="copyLink(entry.comment.url)"
+                  @delete="askDelete(entry.comment.id)"
+                />
+              </template>
+            </ItemThreadCard>
+          </template>
+          <ItemThreadEvent
+            v-else-if="entry.kind === 'events' || entry.kind === 'checksFailed'"
+            :entry="entry"
+            :item="item"
+            :now="now"
+            @open="emit('open', $event)"
+          />
+          <ItemThreadPush
+            v-else-if="entry.kind === 'push'"
+            :push="entry"
+            :now="now"
           />
           <ItemThreadCard
-            v-else
-            :author="comment.author"
-            :created-at="comment.createdAt"
-            :now="now"
-            :edited="comment.lastEditedAt !== null"
-            :sending="comment.pendingBody !== undefined"
-            :menu-focused="menuFocus === comment.id"
-            @menu-close="onMenuClose"
-          >
-            <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
-            <p
-              v-if="comment.pendingBody !== undefined"
-              :class="[css.itemThread_typed, css.itemThread_pending]"
-              v-text="comment.pendingBody"
-            />
-            <GitHubHtml
-              v-else
-              :class="css.itemThread_text"
-              :html="comment.bodyHtml"
-            />
-            <!-- On its way, it has nothing GitHub would act on yet. -->
-            <template
-              v-if="comment.pendingBody === undefined"
-              #menu
-            >
-              <ItemThreadMenu
-                :can-edit="comment.viewerCanUpdate"
-                :can-quote="canQuote"
-                :can-delete="comment.viewerCanDelete"
-                @edit="startEdit(comment.id, comment.body)"
-                @quote-reply="quote(comment.body)"
-                @copy-link="copyLink(comment.url)"
-                @delete="askDelete(comment.id)"
-              />
-            </template>
-          </ItemThreadCard>
-        </li>
-        <li
-          v-for="comment in failedComments"
-          :key="`failed:${comment.id}`"
-        >
-          <ItemThreadCard
+            v-else-if="entry.kind === 'failedComment'"
             :author="viewer ?? null"
             :now="now"
             failed
           >
             <p
               :class="css.itemThread_typed"
-              v-text="comment.body"
+              v-text="entry.failed.body"
             />
             <template #footer>
               <div :class="css.itemThread_failed">
@@ -416,11 +440,11 @@ interface EditorText {
                 <span
                   :class="css.itemThread_failedText"
                   role="alert"
-                  >{{ editTexts.notSent(comment.reason) }}</span
+                  >{{ editTexts.notSent(entry.failed.reason) }}</span
                 >
                 <Button
                   size="compact"
-                  @click="emit('discard', comment.id)"
+                  @click="emit('discard', entry.failed.id)"
                 >
                   {{ t(l.discard) }}
                 </Button>
@@ -428,7 +452,7 @@ interface EditorText {
                   v-if="canRetry"
                   size="compact"
                   :icon="RotateCw"
-                  @click="emit('retry', comment.id)"
+                  @click="emit('retry', entry.failed.id)"
                 >
                   {{ t(l.retry) }}
                 </Button>
