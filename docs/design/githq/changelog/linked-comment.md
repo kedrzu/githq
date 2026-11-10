@@ -6,7 +6,7 @@ names the comment, the comment is outlined, as GitHub marks a comment it was lin
 - [ ] App · Pull request (`XN8vf`): new row with `Slot · F17 · A comment linked from the address` (`q73pJ`): the item
   view's Latest activity with the middle of three comments linked (left), and the same mark on the thread's card
   (right).
-- [ ] The linked comment in Latest activity (`ItemActivity.vue`, `.itemActivity_comment`): an outline only, drawn
+- [x] The linked comment in Latest activity (`ItemActivity.vue`, `.itemActivity_comment`): an outline only, drawn
   outside the comment so nothing moves, neither the comment's own content nor its neighbours.
   - Border: 1 px `$color-accent`. No background: the comment stays on the item's surface.
   - Radius: `$radius-lg` (8 px).

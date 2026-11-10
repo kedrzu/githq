@@ -102,6 +102,8 @@ const props = withDefaults(
     now: number;
     /** Reads the comments not read yet. */
     loadAllComments: () => Promise<void>;
+    /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked. */
+    linkedAnchor?: string;
     /** What the user may change and the pickers offer; without it the view only shows. */
     editing?: ItemEditing | null;
     /** The stack a pull request is in, with two or more of its pull requests in the copy: its map shows (D25). */
@@ -836,6 +838,7 @@ function getProjectOptions(): CommandOption[] {
                 :comments="detail?.comments ?? null"
                 :now="now"
                 :load-all="loadAllComments"
+                :linked-anchor="linkedAnchor"
               />
             </div>
           </div>
