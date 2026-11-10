@@ -9,6 +9,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { RepositoryNames } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Clock } from '@/services/Clock.js';
+import { findItemComment } from '@/store/findItemComment.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { ItemDetail, ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
@@ -718,9 +719,9 @@ function isAllowed(
         case 'comment':
             return permissions.comment;
         case 'editComment':
-            return detail?.comments.nodes.find(comment => comment.id === request.commentId)?.viewerCanUpdate === true;
+            return (detail && findItemComment(detail.comments, request.commentId))?.viewerCanUpdate === true;
         case 'deleteComment':
-            return detail?.comments.nodes.find(comment => comment.id === request.commentId)?.viewerCanDelete === true;
+            return (detail && findItemComment(detail.comments, request.commentId))?.viewerCanDelete === true;
         case 'editBody':
             return detail?.viewerCanUpdate === true;
         case 'projectField':

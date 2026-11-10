@@ -55,6 +55,7 @@ export const D1_ISSUE_DETAIL: IssueDetail = {
     reactions: [],
     comments: {
         totalCount: 4,
+        first: [],
         nodes: [
             comment('C_1', OLAM, 2 * HOUR, 'Same on mobile. Looks like the series start is stored in local time.'),
             comment('C_2', KEDRZU, 20 * MINUTE, 'Opened #1205 — converting at creation and migrating existing series.'),
@@ -110,6 +111,7 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
     reactions: [],
     comments: {
         totalCount: 2,
+        first: [],
         nodes: [
             comment(
                 'C_3',

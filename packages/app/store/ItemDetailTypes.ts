@@ -86,10 +86,15 @@ export interface ItemReaction {
     readonly viewerHasReacted: boolean;
 }
 
-/** The comments read so far: the newest ones, and more older ones each time they are asked for. */
+/** The comments read so far: the first two, the newest ones, and more older ones each time they are asked for. */
 export interface ItemComments {
     readonly totalCount: number;
-    /** Oldest first. */
+    /**
+     * The first two of the item's comments, which a thread keeps above its fold (F5), those not among {@link nodes}
+     * when read. Older comments read later may hold them too: each shows once (`buildThread`).
+     */
+    readonly first: readonly ItemComment[];
+    /** The newest comments, oldest first. */
     readonly nodes: readonly ItemComment[];
     /** Where the older ones not read yet start (`MoreComments`); `null` when all are read. */
     readonly olderCursor: string | null;
@@ -187,7 +192,7 @@ export type ThreadEvent =
       >
     | ThreadEventOf<'merged', { readonly commit: ThreadCommitRef | null; readonly into: string }>
     | ThreadEventOf<'headRefDeleted', { readonly branch: string }>
-    | ThreadEventOf<'connected', { readonly ref: ThreadRef }>
+    | ThreadEventOf<'connected' | 'disconnected', { readonly ref: ThreadRef }>
     | ThreadEventOf<
           'referenced',
           {
@@ -197,9 +202,15 @@ export type ThreadEvent =
               readonly repository: string;
           }
       >
-    | ThreadEventOf<'subIssueAdded' | 'subIssueRemoved' | 'parentAdded', { readonly issue: ThreadRef | null }>
+    | ThreadEventOf<
+          'subIssueAdded' | 'subIssueRemoved' | 'parentAdded' | 'parentRemoved',
+          { readonly issue: ThreadRef | null }
+      >
     | ThreadEventOf<'issueTypeChanged', { readonly from: ThreadIssueType | null; readonly to: ThreadIssueType | null }>
-    | ThreadEventOf<'addedToProject', { readonly project: ThreadProject | null; readonly wasAutomated: boolean }>
+    | ThreadEventOf<
+          'addedToProject' | 'removedFromProject',
+          { readonly project: ThreadProject | null; readonly wasAutomated: boolean }
+      >
     | ThreadEventOf<
           'projectStatusChanged',
           {
@@ -214,7 +225,7 @@ export type ThreadEvent =
     | ThreadEventOf<'transferred', { /** `owner/name`; `null` when it is gone. */ readonly from: string | null }>
     | ThreadEventOf<'locked', { readonly reason: LockReason | null }>
     | ThreadEventOf<
-          'markedAsDuplicate',
+          'markedAsDuplicate' | 'unmarkedAsDuplicate',
           { readonly canonical: ThreadRef | null; readonly duplicate: ThreadRef | null }
       >;
 

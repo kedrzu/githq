@@ -13,6 +13,7 @@ import type {
     ItemDetailReviewRequest,
     ProjectFieldValue,
 } from '@/store/ItemDetailTypes.js';
+import { findItemComment } from '@/store/findItemComment.js';
 import { isOpenPullRequest } from '@/store/isOpenPullRequest.js';
 import type { ItemOverlayLayer } from '@/store/ItemOverlay.js';
 import type {
@@ -1001,13 +1002,14 @@ function withChangedComment(
         ...detail,
         comments: {
             ...detail.comments,
+            first: detail.comments.first.map(comment => (comment.id === commentId ? change(comment) : comment)),
             nodes: detail.comments.nodes.map(comment => (comment.id === commentId ? change(comment) : comment)),
         },
     };
 }
 
 function withoutComment(detail: ItemDetail, commentId: string): ItemDetail {
-    if (!detail.comments.nodes.some(comment => comment.id === commentId)) {
+    if (!findItemComment(detail.comments, commentId)) {
         return detail;
     }
 
@@ -1016,6 +1018,7 @@ function withoutComment(detail: ItemDetail, commentId: string): ItemDetail {
         comments: {
             ...detail.comments,
             totalCount: detail.comments.totalCount - 1,
+            first: detail.comments.first.filter(comment => comment.id !== commentId),
             nodes: detail.comments.nodes.filter(comment => comment.id !== commentId),
         },
     };

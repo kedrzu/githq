@@ -69,14 +69,21 @@ export function toItemDetail(node: ItemDetailNode, fetchedAt: number): ItemDetai
 }
 
 /**
- * A page of comments (`CommentPageFields`), oldest first, with where the older ones start.
+ * A page of comments (`CommentPageFields`), oldest first, with where the older ones start, and the item's first
+ * comments (`firstComments`) the page does not hold.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function toItemComments(page: CommentPageFieldsFragment): ItemComments {
+export function toItemComments(
+    page: CommentPageFieldsFragment,
+    firstNodes: readonly (IssueCommentFieldsFragment | null)[] = [],
+): ItemComments {
+    const nodes = mapNotNull(page.nodes ?? [], comment => comment && toItemComment(comment));
+    const held = new Set(nodes.map(comment => comment.id));
     return {
         totalCount: page.totalCount,
-        nodes: mapNotNull(page.nodes ?? [], comment => comment && toItemComment(comment)),
+        first: mapNotNull(firstNodes, comment => (comment && !held.has(comment.id) ? toItemComment(comment) : null)),
+        nodes,
         olderCursor: page.pageInfo.hasPreviousPage ? page.pageInfo.startCursor : null,
     };
 }
@@ -298,10 +305,11 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'HeadRefDeletedEvent':
             return { ...toEventBase(node), kind: 'headRefDeleted', branch: node.headRefName };
         case 'ConnectedEvent':
+        case 'DisconnectedEvent':
             // Seen from either side: the other one is what was linked.
             return {
                 ...toEventBase(node),
-                kind: 'connected',
+                kind: node.__typename === 'ConnectedEvent' ? 'connected' : 'disconnected',
                 ref: toThreadRef(node.source.id === itemId ? node.subject : node.source),
             };
         case 'ReferencedEvent':
@@ -321,6 +329,8 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
             };
         case 'ParentIssueAddedEvent':
             return { ...toEventBase(node), kind: 'parentAdded', issue: node.parent && toThreadRef(node.parent) };
+        case 'ParentIssueRemovedEvent':
+            return { ...toEventBase(node), kind: 'parentRemoved', issue: node.parent && toThreadRef(node.parent) };
         case 'IssueTypeAddedEvent':
             return { ...toEventBase(node), kind: 'issueTypeChanged', from: null, to: node.issueType };
         case 'IssueTypeChangedEvent':
@@ -333,9 +343,10 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'IssueTypeRemovedEvent':
             return { ...toEventBase(node), kind: 'issueTypeChanged', from: node.issueType, to: null };
         case 'AddedToProjectV2Event':
+        case 'RemovedFromProjectV2Event':
             return {
                 ...toEventBase(node, node.wasAutomated),
-                kind: 'addedToProject',
+                kind: node.__typename === 'AddedToProjectV2Event' ? 'addedToProject' : 'removedFromProject',
                 project: node.project,
                 wasAutomated: node.wasAutomated,
             };
@@ -359,9 +370,10 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'UnpinnedEvent':
             return { ...toEventBase(node), kind: 'unpinned' };
         case 'MarkedAsDuplicateEvent':
+        case 'UnmarkedAsDuplicateEvent':
             return {
                 ...toEventBase(node),
-                kind: 'markedAsDuplicate',
+                kind: node.__typename === 'MarkedAsDuplicateEvent' ? 'markedAsDuplicate' : 'unmarkedAsDuplicate',
                 canonical: node.canonical && toThreadRef(node.canonical),
                 duplicate: node.duplicate && toThreadRef(node.duplicate),
             };
@@ -387,7 +399,6 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'ConvertedToDiscussionEvent':
         case 'DeployedEvent':
         case 'DeploymentEnvironmentChangedEvent':
-        case 'DisconnectedEvent':
         case 'HeadRefRestoredEvent':
         case 'IssueComment':
         case 'IssueCommentPinnedEvent':
@@ -397,17 +408,14 @@ export function toThreadEvent(node: ThreadEventFieldsFragment, itemId: string): 
         case 'IssueFieldRemovedEvent':
         case 'MentionedEvent':
         case 'MovedColumnsInProjectEvent':
-        case 'ParentIssueRemovedEvent':
         case 'PullRequestCommitCommentThread':
         case 'PullRequestReview':
         case 'PullRequestReviewThread':
         case 'PullRequestRevisionMarker':
         case 'RemovedFromMergeQueueEvent':
         case 'RemovedFromProjectEvent':
-        case 'RemovedFromProjectV2Event':
         case 'RemovedFromStackEvent':
         case 'SubscribedEvent':
-        case 'UnmarkedAsDuplicateEvent':
         case 'UnsubscribedEvent':
         case 'UserBlockedEvent':
             return null;
@@ -518,7 +526,7 @@ function toDetailBase(
         viewerCanUpdate: node.viewerCanUpdate,
         locked: node.locked,
         reactions,
-        comments: toItemComments(node.commentPage),
+        comments: toItemComments(node.commentPage, node.firstComments.nodes ?? []),
         events: toItemEvents(node, node.__typename === 'PullRequest' ? node.commitEvents.totalCount : 0),
         projects: mapNotNull(node.projectItems?.nodes ?? [], projectItem =>
             projectItem && !projectItem.isArchived ? toDetailProject(projectItem) : null,

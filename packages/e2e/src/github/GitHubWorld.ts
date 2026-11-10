@@ -706,6 +706,8 @@ const HEAD_MOVED = 'Head branch was modified. Review and try the merge again.';
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
 const COMMENT_PAGE = 50;
+/** The first comments an opened item reads too (`firstComments`), kept above the thread's fold. */
+const FIRST_COMMENTS = 2;
 const OLDER_COMMENT_PAGE = 100;
 const REVIEW_PAGE = 100;
 /** The events an opened item reads at once (`firstEvents`, `lastEvents`), and per page of the middle (`ThreadMiddle`). */
@@ -3009,6 +3011,9 @@ export class GitHubWorld {
             locked: item.locked,
             reactionGroups: [],
             commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE, reader),
+            firstComments: {
+                nodes: item.comments.slice(0, FIRST_COMMENTS).map(comment => toCommentNode(item, comment, reader)),
+            },
             projectItems: { nodes: item.projectItems.map(place => toProjectItemDetail(place)) },
         };
         if (!item.pullRequest) {
