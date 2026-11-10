@@ -185,7 +185,8 @@ export function buildThread({
         ...pending,
         ...failedComments.map((failed): ThreadItem => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
     ];
-    return foldThread(items, { detail, unfolded, keepShown });
+    const startedAt = new Map(ordered.map(entry => [getTimedId(entry), entry.at]));
+    return foldThread(items, { detail, unfolded, keepShown, startedAt });
 }
 
 /** What {@link foldThread} folds by. */
@@ -193,22 +194,26 @@ interface FoldParams {
     readonly detail: ItemDetail;
     readonly unfolded: boolean;
     readonly keepShown: ReadonlySet<string>;
+    /** When each item's first comment, event or commit happened, by the item's id. */
+    readonly startedAt: ReadonlyMap<string, number>;
 }
 
 /**
  * The F5 rule: more than 20 items fold — the first 2 stay above, and below stays everything from {@link getBelowStart};
  * fewer than 6 to fold and nothing folds. What GitHub has and the detail does not hold counts as folded, and folds
- * whatever the counts: it cannot be shown.
+ * whatever the counts: it cannot be shown. Around it stays only what keeps the thread in time order once it is shown
+ * ({@link getUnreadSpan}).
  */
-function foldThread(items: readonly ThreadItem[], { detail, unfolded, keepShown }: FoldParams): ThreadItem[] {
+function foldThread(items: readonly ThreadItem[], { detail, unfolded, keepShown, startedAt }: FoldParams): ThreadItem[] {
     const unread = countUnread(detail);
     const unreadCount = unread.commits + unread.comments + unread.otherEvents;
     if (unfolded && unreadCount === 0) {
         return [...items];
     }
 
-    const above = countAbove(items, detail);
-    const below = Math.max(above, getBelowStart(items, above, keepShown));
+    const span = getUnreadSpan(detail);
+    const above = countAbove(items, span.from);
+    const below = Math.max(above, getBelowStart({ items, above, keepShown, startedAt, unreadUntil: span.until }));
     const folded = items.slice(above, below);
     if (unreadCount === 0 && (items.length <= FOLD_OVER || folded.length < FOLD_AT_LEAST)) {
         return [...items];
@@ -226,15 +231,49 @@ function foldThread(items: readonly ThreadItem[], { detail, unfolded, keepShown 
     return [...items.slice(0, above), fold, ...items.slice(below)];
 }
 
-/** The first items that stay above the fold: 2, but never one GitHub told after what the detail does not hold. */
-function countAbove(items: readonly ThreadItem[], detail: ItemDetail) {
-    const firstComments = new Set(detail.comments.first.map(comment => comment.id));
-    const oldestEvents = new Set(detail.events.oldest.map(event => event.id));
-    const commentGap = detail.comments.olderCursor !== null;
-    const eventGap = detail.events.middle !== null;
+/** When what the detail does not hold may have happened: after `from`, before `until` (epoch ms). */
+interface UnreadSpan {
+    readonly from: number;
+    readonly until: number;
+}
+
+/**
+ * The time the comments and the events not held lie in, both streams together: the comments' between the first ones
+ * and the newest ones held, the events' between the oldest and the newest. An item placed by time beside both streams
+ * stays above the fold only from before it and below only from after it — else showing the middle would put what it
+ * hides on the wrong side of it.
+ */
+function getUnreadSpan({ comments, events }: ItemDetail): UnreadSpan {
+    let from = Infinity;
+    let until = -Infinity;
+    if (comments.olderCursor !== null) {
+        from = Math.min(from, getLatest(comments.first.map(comment => comment.createdAt)));
+        until = Math.max(until, getEarliest(comments.nodes.map(comment => comment.createdAt)));
+    }
+
+    if (events.middle !== null) {
+        from = Math.min(from, getLatest(events.oldest.map(event => event.createdAt)));
+        until = Math.max(until, getEarliest(events.newest.map(event => event.createdAt)));
+    }
+
+    return { from, until };
+}
+
+/** The newest of the times, `-Infinity` for none: nothing held before the gap, it may start at the very first. */
+function getLatest(times: readonly string[]) {
+    return Math.max(-Infinity, ...times.map(time => Date.parse(time)));
+}
+
+/** The oldest of the times, `Infinity` for none: nothing held after the gap, it may reach the very last. */
+function getEarliest(times: readonly string[]) {
+    return Math.min(Infinity, ...times.map(time => Date.parse(time)));
+}
+
+/** The first items that stay above the fold: 2, but never one whose newest part happened after the unread may start. */
+function countAbove(items: readonly ThreadItem[], unreadFrom: number) {
     let above = 0;
     for (const entry of items.slice(0, KEEP_ABOVE)) {
-        if (isAfterGap(entry)) {
+        if (getEndedAt(entry) > unreadFrom) {
             break;
         }
 
@@ -242,35 +281,59 @@ function countAbove(items: readonly ThreadItem[], detail: ItemDetail) {
     }
 
     return above;
+}
 
-    function isAfterGap(entry: ThreadItem) {
-        switch (entry.kind) {
-            case 'comment':
-                return commentGap && !firstComments.has(entry.id);
-            case 'events':
-            case 'push':
-                return eventGap && !oldestEvents.has(entry.id);
-            case 'checksFailed':
-                return eventGap;
-            case 'failedComment':
-                return true;
-            case 'fold':
-                return false;
-            default:
-                return assertNever(entry);
-        }
-    }
+/** The parameters of {@link getBelowStart}. */
+interface BelowStartParams {
+    readonly items: readonly ThreadItem[];
+    readonly above: number;
+    readonly keepShown: ReadonlySet<string>;
+    readonly startedAt: ReadonlyMap<string, number>;
+    /** Before when the unread may end ({@link UnreadSpan}). */
+    readonly unreadUntil: number;
 }
 
 /**
- * Where what stays below the fold starts (F5): the earliest of the 5th item from the end and the first item, after the
- * `above` ones, the user must see ({@link mustShow}). M4 adds the oldest review or code comment with an unresolved
+ * Where what stays below the fold starts (F5): the 5th item from the end, or later, where nothing before the unread
+ * may end stays below; earlier at the first item, after the `above` ones, the user must see ({@link mustShow}) —
+ * an editor never folds away, even out of time order. M4 adds the oldest review or code comment with an unresolved
  * thread to these, M5 the first item new since the user looked.
  */
-function getBelowStart(items: readonly ThreadItem[], above: number, keepShown: ReadonlySet<string>) {
-    const fifthFromEnd = Math.max(0, items.length - KEEP_BELOW);
+function getBelowStart({ items, above, keepShown, startedAt, unreadUntil }: BelowStartParams) {
+    const afterUnread = items.findIndex(entry => (startedAt.get(entry.id) ?? getEndedAt(entry)) >= unreadUntil);
+    const kept = Math.max(0, items.length - KEEP_BELOW, afterUnread < 0 ? items.length : afterUnread);
     const firstShown = items.findIndex((entry, index) => index >= above && mustShow(entry, keepShown));
-    return firstShown >= 0 ? Math.min(fifthFromEnd, firstShown) : fifthFromEnd;
+    return firstShown >= 0 ? Math.min(kept, firstShown) : kept;
+}
+
+/** When an item's newest part happened; the user's comments on their way and refused, after everything GitHub told. */
+function getEndedAt(entry: ThreadItem) {
+    switch (entry.kind) {
+        case 'comment':
+            return entry.id.startsWith('pending:') ? Infinity : Date.parse(entry.comment.createdAt);
+        case 'events':
+        case 'push':
+        case 'checksFailed':
+            return Date.parse(entry.updatedAt);
+        case 'failedComment':
+        case 'fold':
+            return Infinity;
+        default:
+            return assertNever(entry);
+    }
+}
+
+function getTimedId(entry: Timed) {
+    switch (entry.kind) {
+        case 'event':
+            return entry.event.id;
+        case 'commit':
+            return entry.commit.id;
+        case 'item':
+            return entry.item.id;
+        default:
+            return assertNever(entry);
+    }
 }
 
 /** Never folded away: the user's comment on its way or not taken, an edit of theirs in flight, open or refused. */

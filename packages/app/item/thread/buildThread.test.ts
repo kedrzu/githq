@@ -289,13 +289,36 @@ test('what GitHub has and the detail does not hold counts as folded, and folds h
 
     const thread = buildThread({ item: D1_ISSUE, detail });
 
-    expect(idsOf(thread)).toEqual(['E1', 'C1', 'fold', 'C2', 'C3', 'C4', 'C5', 'E2']);
-    expect(foldOf(thread)).toEqual(fold({ comments: 7, otherEvents: 7, unread: true }));
-    // The first comments not held either: nothing GitHub told after the comments not held goes above them.
+    // The events not held may lie anywhere between E1 and E2: the comments held between them fold too.
+    expect(idsOf(thread)).toEqual(['E1', 'fold', 'E2']);
+    expect(foldOf(thread)).toEqual(fold({ comments: 12, otherEvents: 7, unread: true }));
+    // The first comments not held either: they may be older than E1, which cannot stay above them.
     const newestOnly: ItemDetail = { ...detail, comments: { ...detail.comments, first: [] } };
-    expect(idsOf(buildThread({ item: D1_ISSUE, detail: newestOnly }))).toEqual(['E1', 'fold', 'C3', 'C4', 'C5', 'E2']);
+    expect(idsOf(buildThread({ item: D1_ISSUE, detail: newestOnly }))).toEqual(['fold', 'E2']);
     // Shown, with the middle still not held: it stays folded — nothing to show it with.
     expect(foldOf(buildThread({ item: D1_ISSUE, detail, unfolded: true })).unread).toBe(true);
+});
+
+test("what stays around the fold keeps the time order of what it hides, whichever stream's middle is not held", () => {
+    // The first two commits are one push; the commits after them are not read, the comments all are.
+    const comments = Array.from({ length: 25 }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 5));
+    const detail: ItemDetail = {
+        ...F1_PULL_REQUEST_DETAIL,
+        comments: { totalCount: 25, first: comments.slice(0, 2), nodes: comments, olderCursor: null },
+        events: {
+            totalCount: 10,
+            commitCount: 10,
+            oldest: [commitAt('a1', MLAINE, 1), commitAt('a2', MLAINE, 2)],
+            newest: [commitAt('b1', MLAINE, 50)],
+            middle: { after: 'a', before: 'b' },
+        },
+    };
+
+    const thread = buildThread({ item: F1_PULL_REQUEST, detail });
+
+    // C1 came after commits not read yet, C21–C25 before some: none of them stays out of the fold.
+    expect(idsOf(thread)).toEqual(['PRC_a1', 'fold', 'PRC_b1']);
+    expect(foldOf(thread)).toEqual(fold({ commits: 7, comments: 25, unread: true }));
 });
 
 test('shown by the user, a long thread read whole folds no more', () => {
