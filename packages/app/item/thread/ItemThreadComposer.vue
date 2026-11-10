@@ -71,7 +71,7 @@ defineExpose({
 function submit() {
   const body = text.value.trim();
   if (body) {
-    emit('edit', { kind: 'comment', body });
+    emit('edit', { kind: 'comment', body, keptInThread: true });
     text.value = '';
   }
 }

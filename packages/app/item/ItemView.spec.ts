@@ -300,7 +300,7 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
     await userEvent.keyboard('r');
     await userEvent.keyboard('Looks good{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
-    expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good' });
+    expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good', keptInThread: true });
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
 });
 

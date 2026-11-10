@@ -20,7 +20,15 @@ export type EditRequest =
     | { readonly kind: 'issueType'; readonly name: string | null }
     | { readonly kind: 'close'; readonly reason: CloseReason }
     | { readonly kind: 'reopen' }
-    | { readonly kind: 'comment'; readonly body: string }
+    | {
+          readonly kind: 'comment';
+          readonly body: string;
+          /**
+           * Posted from the item's thread: one GitHub does not take stays there as a "Not sent" card, with no toast.
+           * Otherwise (code review's conversation) it goes back into its empty box, or its toast offers to restore it.
+           */
+          readonly keptInThread?: boolean;
+      }
     | {
           readonly kind: 'projectField';
           /** The project item's id. */

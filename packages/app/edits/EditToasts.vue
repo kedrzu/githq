@@ -1,8 +1,8 @@
-<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5). A change of several items that failed for some selects those alone in the list (⇧F, on the newest toast). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
+<!-- The toasts of the user's edits that failed, for a `Toaster` (K1, K2): which edit, of which item, and why — "1 of 3 failed" for a change of several items — with the way to fix it on GitHub — refused by an organisation that has not approved githq, the way to request its approval (G5) — and a comment posted from code review's conversation that was not posted, back into its box unless it is there already (one from the item's thread stays there as its card, with no toast). A change of several items that failed for some selects those alone in the list (⇧F, on the newest toast). Each shows until dismissed or for a while; dismissed, it leaves the status bar too, while one that only timed out stays there, and clicking that brings it back. A merge refused has a toast of its own (`MergeToasts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
-import { ArrowUpRight } from 'lucide-vue-next';
+import { ArrowUpRight, Undo2 } from 'lucide-vue-next';
 
 import type { Command } from '@/commands/CommandTypes.js';
 import Button from '@/components/Button.vue';
@@ -13,6 +13,7 @@ import { Browser } from '@/services/Browser.js';
 import { getApprovalUrl } from '@/tracking/utils/getApprovalUrl.js';
 import { getGitHubUrl } from '@/tracking/trackingRoutes.js';
 
+import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
 import type { EditFailure } from './EditQueue.js';
 import { useEditTexts } from './useEditTexts.js';
@@ -22,6 +23,7 @@ import * as l from './useEditTexts.loc.js';
 const SELECT_FAILED_KEY = 'Shift+F';
 
 const queue = useService(EditQueue);
+const drafts = useService(CommentDrafts);
 const navigation = useService(ItemNavigation);
 const browser = useService(Browser);
 const texts = useEditTexts();
@@ -49,6 +51,23 @@ function getFailedIds(failure: EditFailure): string[] {
 
 function selectFailed(failure: EditFailure) {
   navigation.requestSelection(getFailedIds(failure));
+}
+
+/** A comment that was not posted and is not in its box (it went back there unless something new was typed). */
+function getUnrestoredComment(failure: EditFailure) {
+  const edit = failure.failed[0]?.edit;
+  if (edit?.subject.kind !== 'comment' || drafts.get(edit.itemId).includes(edit.subject.body)) {
+    return null;
+  }
+
+  return { itemId: edit.itemId, body: edit.subject.body };
+}
+
+function restoreComment(failure: EditFailure) {
+  const comment = getUnrestoredComment(failure);
+  if (comment) {
+    drafts.restore(comment.itemId, comment.body);
+  }
 }
 
 /**
@@ -106,6 +125,15 @@ function getLink(failure: EditFailure) {
           @click="selectFailed(failure)"
         >
           {{ t(l.selectFailed, { count: getFailedIds(failure).length }) }}
+        </Button>
+        <Button
+          v-if="getUnrestoredComment(failure)"
+          variant="secondary"
+          size="sm"
+          :icon="Undo2"
+          @click="restoreComment(failure)"
+        >
+          {{ t(l.restoreComment) }}
         </Button>
         <Button
           v-if="getLink(failure)"

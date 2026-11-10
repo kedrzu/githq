@@ -367,14 +367,39 @@ test('a project field is confirmed by its own value, and the item’s other valu
     expect(details.get('I_1')?.projects[0]?.values).toEqual(expected);
 });
 
-test('a comment GitHub does not take stays as not sent, in the order written, the box left as it is and no toast', async () => {
+test('a comment from code review GitHub does not take goes back into its empty box; over new text, its toast restores it', async () => {
+    const { editor, details, drafts, queue, github } = await setup();
+    await details.ensure('I_1');
+    github.error = { type: 'FORBIDDEN', message: 'Commenting is disabled' };
+
+    await editor.edit(['I_1'], { kind: 'comment', body: 'First try' });
+
+    expect(drafts.get('I_1')).toBe('First try');
+    expect(drafts.getFailed('I_1')).toEqual([]);
+    expect(details.get('I_1')?.comments.nodes).toEqual([]);
+
+    drafts.set('I_1', 'Something new');
+    const outcome = await editor.edit(['I_1'], { kind: 'comment', body: 'Second try' });
+
+    expect(drafts.get('I_1')).toBe('Something new');
+    // Listed for its toast, which offers to restore it; restored, it follows what was typed.
+    expect(outcome.failed.map(failed => failed.edit.subject)).toEqual([{ kind: 'comment', body: 'Second try' }]);
+    expect(queue.failures.flatMap(failure => failure.failed.map(failed => failed.edit.subject))).toContainEqual({
+        kind: 'comment',
+        body: 'Second try',
+    });
+    drafts.restore('I_1', 'Second try');
+    expect(drafts.get('I_1')).toBe('Something new\n\nSecond try');
+});
+
+test('a comment from the thread GitHub does not take stays as not sent, in the order written, the box left as it is and no toast', async () => {
     const { editor, details, drafts, queue, github } = await setup();
     await details.ensure('I_1');
     github.error = { type: 'FORBIDDEN', message: 'Commenting is disabled' };
     drafts.set('I_1', 'Something new');
 
-    await editor.edit(['I_1'], { kind: 'comment', body: 'First try' });
-    await editor.edit(['I_1'], { kind: 'comment', body: 'Second try' });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'First try', keptInThread: true });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'Second try', keptInThread: true });
 
     expect(drafts.getFailed('I_1').map(({ body, reason }) => [body, reason])).toEqual([
         ['First try', { kind: 'refused', message: 'Commenting is disabled' }],
@@ -390,7 +415,7 @@ test('a comment not sent, retried once GitHub answers, is posted and leaves the 
     const { editor, details, drafts, github } = await setup();
     await details.ensure('I_1');
     github.error = { type: 'FORBIDDEN', message: 'Commenting is disabled' };
-    await editor.edit(['I_1'], { kind: 'comment', body: 'Fixed in <b>#12</b>' });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'Fixed in <b>#12</b>', keptInThread: true });
     const [failed] = drafts.getFailed('I_1');
 
     github.error = null;
@@ -405,8 +430,8 @@ test('a retry GitHub refuses again keeps the comment where it was, with the new 
     const { editor, details, drafts, github, session } = await setup();
     await details.ensure('I_1');
     github.error = { type: 'FORBIDDEN', message: 'Commenting is disabled' };
-    await editor.edit(['I_1'], { kind: 'comment', body: 'First' });
-    await editor.edit(['I_1'], { kind: 'comment', body: 'Second' });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'First', keptInThread: true });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'Second', keptInThread: true });
     const [first] = drafts.getFailed('I_1');
 
     github.error = { type: 'FORBIDDEN', message: 'Rate limited' };
@@ -430,8 +455,8 @@ test('a comment not sent is dropped only when discarded, and on sign-out', async
     const { editor, details, drafts, github, session } = await setup();
     await details.ensure('I_1');
     github.error = { type: 'FORBIDDEN', message: 'Commenting is disabled' };
-    await editor.edit(['I_1'], { kind: 'comment', body: 'First' });
-    await editor.edit(['I_1'], { kind: 'comment', body: 'Second' });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'First', keptInThread: true });
+    await editor.edit(['I_1'], { kind: 'comment', body: 'Second', keptInThread: true });
     const [first] = drafts.getFailed('I_1');
 
     drafts.discardFailed(first?.id ?? 0);

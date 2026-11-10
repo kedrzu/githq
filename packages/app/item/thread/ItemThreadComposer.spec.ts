@@ -47,13 +47,13 @@ test('Comment is dimmed and does nothing while nothing is typed; ⌘↵ and the 
 
     await userEvent.click(box());
     await userEvent.keyboard('Looks good{ControlOrMeta>}{Enter}{/ControlOrMeta}');
-    expect(onEdit).toHaveBeenLastCalledWith({ kind: 'comment', body: 'Looks good' });
+    expect(onEdit).toHaveBeenLastCalledWith({ kind: 'comment', body: 'Looks good', keptInThread: true });
     await expect.element(box()).toHaveValue('');
 
     await userEvent.fill(box(), '  Second  ');
     await expect.element(commentButton()).not.toHaveAttribute('aria-disabled');
     await userEvent.click(commentButton());
-    expect(onEdit).toHaveBeenLastCalledWith({ kind: 'comment', body: 'Second' });
+    expect(onEdit).toHaveBeenLastCalledWith({ kind: 'comment', body: 'Second', keptInThread: true });
     await expect.element(box()).toHaveValue('');
 });
 
@@ -65,7 +65,7 @@ test('with text typed the close button reads "Close with comment": the comment g
     await userEvent.click(page.getByRole('button', { name: 'Close with comment', exact: true }));
 
     expect(onEdit).toHaveBeenCalledTimes(2);
-    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body });
+    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body, keptInThread: true });
     expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'COMPLETED' });
     await expect.element(box()).toHaveValue('');
     await expect.element(page.getByRole('button', { name: 'Close issue', exact: true })).toBeVisible();
@@ -79,7 +79,11 @@ test("the menu's reason takes the comment along too, before the close", async ()
     await userEvent.click(page.getByRole('menuitem', { name: 'Close as not planned' }));
 
     expect(onEdit).toHaveBeenCalledTimes(2);
-    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: OpenIssueWriting.args.text });
+    expect(onEdit).toHaveBeenNthCalledWith(1, {
+        kind: 'comment',
+        body: OpenIssueWriting.args.text,
+        keptInThread: true,
+    });
     expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'NOT_PLANNED' });
 });
 

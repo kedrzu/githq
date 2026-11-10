@@ -100,7 +100,7 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 ? [createStateEdit(params, null)]
                 : [];
         case 'comment':
-            return request.body.trim() ? [createCommentEdit(params, request.body)] : [];
+            return request.body.trim() ? [createCommentEdit(params, request.body, request.keptInThread ?? false)] : [];
         case 'projectField':
             return [createProjectFieldEdit(params, request)];
         case 'addToProject':
@@ -350,7 +350,7 @@ function createStateEdit(params: CreateItemEditsParams, reason: CloseReason | nu
     };
 }
 
-function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
+function createCommentEdit(params: CreateItemEditsParams, body: string, keptInThread: boolean): Edit {
     const { item, viewer, now } = params;
     const pending: ItemComment = {
         id: `pending:${now}`,
@@ -364,8 +364,8 @@ function createCommentEdit(params: CreateItemEditsParams, body: string): Edit {
 
     return {
         ...getEditIdentity(item, { kind: 'comment', body }),
-        // One not posted stays in the thread as its card, Discard and Retry on it.
-        quiet: true,
+        // One not posted from the thread stays there as its card, Discard and Retry on it.
+        quiet: keptInThread,
         optimistic: {
             item: current => ({ ...current, commentCount: current.commentCount + 1 }),
             detail: detail => withComment(detail, pending),

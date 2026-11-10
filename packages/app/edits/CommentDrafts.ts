@@ -19,8 +19,8 @@ export interface FailedComment {
 
 /**
  * What the user wrote and GitHub does not have: what is typed into each item's comment box and not posted, by item
- * id, and every comment GitHub did not take — never lost (D8), kept until it is posted or discarded. In memory only,
- * and only for the user signed in.
+ * id, and every comment GitHub did not take — never lost (D8): one posted from the item's thread kept until it is
+ * posted or discarded, any other put back into its box. In memory only, and only for the user signed in.
  */
 export type CommentDrafts = Resolved<typeof CommentDrafts>;
 export const CommentDrafts = defineService({
@@ -49,6 +49,7 @@ export const CommentDrafts = defineService({
             },
             get,
             set,
+            restore,
             getFailed,
             addFailed,
             retryFailed,
@@ -70,6 +71,12 @@ export const CommentDrafts = defineService({
             }
 
             draftsRef.value = next;
+        }
+
+        /** Puts a comment that was not posted back into the item's box: alone, or after what is typed there now. */
+        function restore(itemId: string, body: string) {
+            const current = get(itemId);
+            set(itemId, current.trim() ? `${current}\n\n${body}` : body);
         }
 
         /** The item's comments GitHub did not take and not sent again, in the order they were written; reactive. */

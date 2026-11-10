@@ -93,7 +93,8 @@ export const ItemEditor = defineService({
         /**
          * Makes the change of every item that is in memory; resolves with what failed once GitHub answered. Dropped
          * when the user signs out or another account signs in while it is being made: it is built from the ids read
-         * for the account that asked. A comment GitHub does not take stays in the thread ({@link CommentDrafts}).
+         * for the account that asked. A comment GitHub does not take stays in the thread when it was posted there; any
+         * other goes back into its empty box, or over new text its toast offers to restore it ({@link CommentDrafts}).
          */
         async function edit(itemIds: readonly string[], request: EditRequest): Promise<EditOutcome> {
             const account = getAccount();
@@ -104,8 +105,14 @@ export const ItemEditor = defineService({
 
             const outcome = await submitEdits(prepared, request, account);
             for (const { edit: failed, reason } of outcome.failed) {
-                if (failed.subject.kind === 'comment' && isSignedIn(account)) {
+                if (failed.subject.kind !== 'comment' || !isSignedIn(account)) {
+                    continue;
+                }
+
+                if (request.kind === 'comment' && request.keptInThread) {
                     drafts.addFailed(failed.itemId, failed.subject.body, reason);
+                } else if (!drafts.get(failed.itemId).trim()) {
+                    drafts.set(failed.itemId, failed.subject.body);
                 }
             }
 
@@ -122,7 +129,7 @@ export const ItemEditor = defineService({
                 return { failed: [] };
             }
 
-            const request: EditRequest = { kind: 'comment', body: comment.body };
+            const request: EditRequest = { kind: 'comment', body: comment.body, keptInThread: true };
             const account = getAccount();
             const prepared = account && (await prepareEdits([comment.itemId], request, account));
             // Not sent: it stays as it was.

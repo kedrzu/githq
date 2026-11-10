@@ -194,6 +194,8 @@ openOnGitHub:
   en: Open on GitHub
 requestAccess:
   en: Request access on GitHub
+restoreComment:
+  en: Restore comment
 selectFailed:
   plural: count
   en:
