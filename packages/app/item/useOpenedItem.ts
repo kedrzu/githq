@@ -32,12 +32,21 @@ export interface OpenedItemViewModel {
     readonly missing: boolean;
     /** Its id could not be asked for: GitHub did not answer, for about half a minute, or refused. */
     readonly failed: boolean;
+    /** None of its detail is on this device and GitHub did not give it: not reached, or refused (F16). */
+    readonly detailFailed: boolean;
     /** Asks for its id again, after {@link failed}. */
     tryAgain(): void;
     /** Reads the comments not read yet; resolves once all are in, or GitHub stopped giving them, which is logged. */
     loadAllComments(): Promise<void>;
     /** Reads the reviews not read yet, the same way. */
     loadAllReviews(): Promise<void>;
+    /**
+     * Reads the middle of its thread — the events and the comments not read yet (F5's fold) — page by page; resolves
+     * once all are in, rejects when GitHub does not give them, which is logged.
+     */
+    loadThreadMiddle(): Promise<void>;
+    /** Reads its detail from GitHub again, after {@link detailFailed}; never rejects. */
+    readDetailAgain(): Promise<void>;
 }
 
 /**
@@ -97,6 +106,9 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         detail,
         missing: computed(() => found.value === null),
         failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),
+        detailFailed: computed(
+            () => id.value !== null && detail.value === null && details.getFreshness(id.value).kind === 'stale',
+        ),
         tryAgain: () => void resolver.resolve(reference.value),
         loadAllComments: () =>
             loadAllPages(current => details.get(current)?.comments.olderCursor ?? null, details.loadOlderComments),
@@ -105,7 +117,37 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
                 const read = details.get(current);
                 return read?.kind === 'pullRequest' ? read.olderReviewCursor : null;
             }, details.loadOlderReviews),
+        loadThreadMiddle,
+        readDetailAgain: () => (id.value === null ? Promise.resolve() : details.readAgain(id.value)),
     });
+
+    async function loadThreadMiddle() {
+        const current = id.value;
+        if (current === null) {
+            return;
+        }
+
+        try {
+            // A page at a time, until all is read — or the detail was read again meanwhile and neither cursor moved.
+            let cursors = readMiddleCursors(current);
+            while (cursors !== null) {
+                await details.loadThreadMiddle(current);
+                const next = readMiddleCursors(current);
+                cursors = next === cursors ? null : next;
+            }
+        } catch (error) {
+            logger.warn("The middle of an item's thread could not be read", { id: current, error });
+            throw error;
+        }
+    }
+
+    /** Where the next page of the thread's middle starts, its events' and its comments' as one; `null` once all is read. */
+    function readMiddleCursors(current: string) {
+        const read = details.get(current);
+        const events = read?.events.middle?.after ?? null;
+        const comments = read?.comments.olderCursor ?? null;
+        return events === null && comments === null ? null : `${events}|${comments}`;
+    }
 
     async function loadAllPages(readCursor: (id: string) => string | null, loadPage: (id: string) => Promise<void>) {
         const current = id.value;

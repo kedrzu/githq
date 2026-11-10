@@ -172,6 +172,39 @@ test('older comments go before the ones read; reading the item again keeps them'
     expect(details.get('I_1')?.comments.olderCursor).toBeNull();
 });
 
+test("the thread's middle goes in place, events after the oldest and comments before the newest; reading the item again keeps it", async () => {
+    const { details, github, session } = setup(uniqueLogin());
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', MONDAY), 51, 100), 60));
+    await details.ensure('I_1');
+
+    await details.loadThreadMiddle('I_1');
+
+    expect(github.requests.at(-1)?.variables).toMatchObject({
+        id: 'I_1',
+        readEvents: true,
+        eventsAfter: 'event-2',
+        eventsBefore: 'event-11',
+        readComments: true,
+        commentsBefore: 'cursor-51',
+    });
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+    expect(read?.comments.nodes.map(comment => comment.id)).toEqual(commentIds(1, 100));
+    expect(read?.comments.olderCursor).toBeNull();
+
+    // A new event; opened again later, the first and the newest events are read again.
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', TUESDAY), 51, 100), 61));
+    await session.clock.advance(2 * 60_000);
+    await details.ensure('I_1');
+
+    const again = details.get('I_1');
+    expect([...(again?.events.oldest ?? []), ...(again?.events.newest ?? [])].map(event => event.id)).toEqual(
+        eventIds(1, 61),
+    );
+    expect(again?.events.middle).toBeNull();
+});
+
 function setup(login: string) {
     const nodes = new Map<string, IssueDetailFieldsFragment | PullRequestDetailFieldsFragment>();
     const session = createTestSession({ login, answer });
@@ -209,6 +242,23 @@ function setup(login: string) {
             case 'MoreComments': {
                 const before = Number(String(request.variables.before).replace('cursor-', ''));
                 return { data: { node: { id, commentPage: commentPage(1, before - 1) } } };
+            }
+            case 'ThreadMiddle': {
+                const after = Number(String(request.variables.eventsAfter).replace('event-', ''));
+                const before = Number(String(request.variables.eventsBefore).replace('event-', ''));
+                const comments = Number(String(request.variables.commentsBefore).replace('cursor-', ''));
+                return {
+                    data: {
+                        node: {
+                            id,
+                            eventPage: {
+                                pageInfo: { hasNextPage: false, endCursor: `event-${before - 1}` },
+                                nodes: events(after + 1, before - 1),
+                            },
+                            commentPage: commentPage(1, comments - 1),
+                        },
+                    },
+                };
             }
             default:
                 return undefined;
@@ -268,6 +318,33 @@ function commentPage(from: number, to: number): IssueDetailFieldsFragment['comme
             viewerCanDelete: false,
         })),
     };
+}
+
+/** The issue with `count` events, as the detail reads them: the first two and the newest 50. */
+function withEvents(node: IssueDetailFieldsFragment, count: number): IssueDetailFieldsFragment {
+    const newestFrom = Math.max(3, count - 49);
+    return {
+        ...node,
+        firstEvents: { pageInfo: { endCursor: 'event-2' }, nodes: events(1, 2) },
+        lastEvents: {
+            totalCount: count,
+            pageInfo: { startCursor: `event-${newestFrom}` },
+            nodes: events(newestFrom, count),
+        },
+    };
+}
+
+function events(from: number, to: number) {
+    return eventIds(from, to).map(id => ({
+        __typename: 'PinnedEvent' as const,
+        id,
+        createdAt: MONDAY,
+        actor: { login: 'mlaine', avatarUrl: '' },
+    }));
+}
+
+function eventIds(from: number, to: number) {
+    return Array.from({ length: to - from + 1 }, (_, index) => `EV_${from + index}`);
 }
 
 function commentIds(from: number, to: number) {

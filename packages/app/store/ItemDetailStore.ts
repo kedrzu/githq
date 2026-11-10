@@ -20,7 +20,7 @@ import type { ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
 import { ItemStore } from './ItemStore.js';
 import type { Item } from './ItemTypes.js';
-import { toItemComments, toItemDetail, toItemReviewPage } from './toItemDetail.js';
+import { toItemComments, toItemDetail, toItemReviewPage, toThreadEvents } from './toItemDetail.js';
 
 /**
  * How long an opened item's detail is trusted without asking GitHub again. What changes without moving the
@@ -148,6 +148,7 @@ export const ItemDetailStore = defineService({
             ensure,
             readAgain,
             loadOlderComments,
+            loadThreadMiddle,
             loadOlderReviews,
             needsFetch,
             fetchDetails,
@@ -377,6 +378,84 @@ export const ItemDetailStore = defineService({
                     olderCursor: older.olderCursor,
                 },
             };
+            detailsRef.value.set(id, updated);
+            triggerRef(detailsRef);
+            write(current, [updated]);
+            tabs.publish({ kind: 'details', details: [updated] });
+        }
+
+        /**
+         * Reads a page of the thread's middle (`ThreadMiddle`: 100 events after the oldest held, and 100 comments before
+         * the oldest held, each only while some are not held) and puts it in place: the events after the oldest ones, the
+         * comments before the newest ones. Rejects when GitHub does not answer.
+         */
+        async function loadThreadMiddle(id: string) {
+            const current = session;
+            const known = detailsRef.value.get(id);
+            if (!current || !known) {
+                return;
+            }
+
+            const { middle } = known.events;
+            const commentsBefore = known.comments.olderCursor;
+            if (!middle && !commentsBefore) {
+                return;
+            }
+
+            const { node } = await current.account.sdk.ThreadMiddle({
+                id,
+                readEvents: middle !== null,
+                eventsAfter: middle?.after,
+                eventsBefore: middle?.before,
+                readComments: commentsBefore !== null,
+                commentsBefore,
+                ...THREAD_EVENT_TYPES,
+            });
+            const detail = detailsRef.value.get(id);
+            // Read again meanwhile: the cursors these were read from may not be the detail's any more.
+            if (
+                !isCurrent(current) ||
+                !detail ||
+                detail.events.middle !== middle ||
+                detail.comments.olderCursor !== commentsBefore
+            ) {
+                return;
+            }
+
+            if (!node || !('id' in node)) {
+                logger.warn('The middle of a thread could not be read', { id });
+                return;
+            }
+
+            let updated: ItemDetail = detail;
+            if (middle && node.eventPage) {
+                const { events } = updated;
+                const newest = new Set(events.newest.map(event => event.id));
+                const read = toThreadEvents(node.eventPage.nodes, id).filter(event => !newest.has(event.id));
+                const { hasNextPage, endCursor } = node.eventPage.pageInfo;
+                updated = {
+                    ...updated,
+                    events: {
+                        ...events,
+                        oldest: [...events.oldest, ...read],
+                        middle: hasNextPage && endCursor !== null ? { after: endCursor, before: middle.before } : null,
+                    },
+                };
+            }
+
+            if (commentsBefore && node.commentPage) {
+                const older = toItemComments(node.commentPage);
+                updated = {
+                    ...updated,
+                    comments: {
+                        ...updated.comments,
+                        totalCount: older.totalCount,
+                        nodes: [...older.nodes, ...updated.comments.nodes],
+                        olderCursor: older.olderCursor,
+                    },
+                };
+            }
+
             detailsRef.value.set(id, updated);
             triggerRef(detailsRef);
             write(current, [updated]);
@@ -647,7 +726,36 @@ export const ItemDetailStore = defineService({
  * "show older" is not undone by a read in the background.
  */
 function withOlderRead(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
-    return withOlderReviews(previous, withOlderComments(previous, fresh));
+    return withOlderReviews(previous, withOlderEvents(previous, withOlderComments(previous, fresh)));
+}
+
+/**
+ * The thread's middle read before (`loadThreadMiddle`) stays, after the oldest events of the detail read again: what
+ * is still not held lies after it, before the newest events read now — or nothing, where the two meet.
+ */
+function withOlderEvents(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
+    const held = previous?.events;
+    const { events } = fresh;
+    if (!held || !events.middle || held.oldest.length <= events.oldest.length) {
+        return fresh;
+    }
+
+    const newest = new Set(events.newest.map(event => event.id));
+    const read = held.middle ? held.oldest : [...held.oldest, ...held.newest];
+    const meets = read.some(event => newest.has(event.id));
+    // Read whole before, and more than a page newer since: where the middle starts is not known.
+    if (!meets && !held.middle) {
+        return fresh;
+    }
+
+    return {
+        ...fresh,
+        events: {
+            ...events,
+            oldest: read.filter(event => !newest.has(event.id)),
+            middle: meets || !held.middle ? null : { after: held.middle.after, before: events.middle.before },
+        },
+    };
 }
 
 function withOlderReviews(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
