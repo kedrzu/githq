@@ -6,8 +6,10 @@ import { START_LOCATION } from 'vue-router';
  * the scroll of the window (vue-router's, Nuxt's) never reaches. A container says what it shows in
  * `data-route-scroll` (`item-main:<id>`): a navigation that changes what it shows opens it at the top, Back and
  * Forward bring back where it was in that entry of the history, and a container still showing the same thing stays
- * where it is — a list under an item opened over it. The window keeps Nuxt's behaviour, for the pages that scroll it
- * (the landing page, `/download`).
+ * where it is — a list under an item opened over it. A fragment (`#issuecomment-1`) names an element inside a container,
+ * which the navigation scrolls into sight there once it is on screen, unless Back or Forward return the containers to
+ * where they were. The window keeps Nuxt's behaviour, for the pages that scroll it (the landing page, `/download`):
+ * its fragment counts only for an element outside every container.
  */
 export async function scrollToRoute(
     to: RouteLocationNormalized,
@@ -15,6 +17,7 @@ export async function scrollToRoute(
     savedPosition: SavedPosition,
 ) {
     const popped = savedPosition != null;
+    const navigation = navigations;
     if (getPath(to) !== getPath(from) && from !== START_LOCATION && !pageShown) {
         await new Promise<void>(resolve => {
             pageWaiters.push(resolve);
@@ -22,7 +25,8 @@ export async function scrollToRoute(
     }
 
     await new Promise(requestAnimationFrame);
-    restoreContainers(popped);
+    // A navigation begun in the meantime has a fragment of its own, or none.
+    restoreContainers(popped, navigation === navigations ? to.hash : '');
     return getWindowPosition(to, from, savedPosition);
 }
 
@@ -38,6 +42,7 @@ type RouteScrollSnapshot = ReadonlyMap<string, RouteScrollPosition>;
 /** Keeps what the containers show and where, before a navigation changes them (`routeScrollPlugin`). */
 export function saveRouteScroll() {
     pageShown = false;
+    navigations++;
     stopAwaiting();
     before = readContainers();
     // Not `history.state`: Back and Forward have already moved it to the entry they go to.
@@ -57,6 +62,8 @@ export function onRoutePageShown() {
 }
 
 const ATTRIBUTE = 'data-route-scroll';
+/** The space left above the element a fragment names: room for the outline of the mark around it. */
+const ANCHOR_MARGIN = 12;
 
 /** Where Back or Forward found the window; vue-router does not export its type. */
 type SavedPosition = Parameters<RouterScrollBehavior>[2];
@@ -69,14 +76,21 @@ let currentEntry: number | null = null;
 let pageWaiters: (() => void)[] = [];
 /** Whether the screen showed since the navigation began: then there is nothing to wait for. */
 let pageShown = false;
+/** The navigations begun so far, so that one finishing late knows another has begun. */
+let navigations = 0;
 /**
  * Where Back or Forward returns the containers not on screen yet when the screen showed (a page whose content is a
  * chunk of its own, as "my work" is, `home/HomePage.vue`): each is put there once it comes, until the next navigation.
  */
 const awaited = new Map<string, RouteScrollPosition>();
+/**
+ * The `id` the fragment of the navigation names, while no element has it yet (a comment still being read): it is
+ * scrolled to once it comes, until the next navigation.
+ */
+let anchor: string | null = null;
 const observer = typeof MutationObserver === 'undefined' ? null : new MutationObserver(restoreAwaited);
 
-function restoreContainers(popped: boolean) {
+function restoreContainers(popped: boolean, hash: string) {
     const entry = getHistoryEntry();
     const returnedTo = popped && entry != null ? saved.get(entry) : undefined;
     currentEntry = entry;
@@ -94,8 +108,14 @@ function restoreContainers(popped: boolean) {
         }
     }
 
-    if (awaited.size > 0) {
-        observer?.observe(document.body, { childList: true, subtree: true, attributeFilter: [ATTRIBUTE] });
+    // A fragment of a vue-router location is decoded already.
+    if (hash && returnedTo === undefined) {
+        anchor = hash.slice(1);
+        scrollToAnchor();
+    }
+
+    if (awaited.size > 0 || anchor != null) {
+        observer?.observe(document.body, { childList: true, subtree: true, attributeFilter: [ATTRIBUTE, 'id'] });
     }
 
     before = new Map();
@@ -114,14 +134,36 @@ function restoreAwaited() {
         }
     }
 
-    if (awaited.size === 0) {
-        stopAwaiting();
+    scrollToAnchor();
+    if (awaited.size === 0 && anchor == null) {
+        observer?.disconnect();
     }
 }
 
 function stopAwaiting() {
     awaited.clear();
+    anchor = null;
     observer?.disconnect();
+}
+
+/** Not `scrollIntoView`: it scrolls every ancestor that can, the shell's own overflow included. */
+function scrollToAnchor() {
+    if (anchor == null) {
+        return;
+    }
+
+    const element = findById(anchor);
+    if (!element) {
+        return;
+    }
+
+    // Outside every container the element is the window's, which Nuxt's scroll has brought into sight.
+    anchor = null;
+    const container = element.closest<HTMLElement>(`[${ATTRIBUTE}]`);
+    if (container) {
+        container.scrollTop +=
+            element.getBoundingClientRect().top - container.getBoundingClientRect().top - ANCHOR_MARGIN;
+    }
 }
 
 function scrollTo(element: HTMLElement, position: RouteScrollPosition | undefined) {
@@ -159,17 +201,32 @@ function getHistoryEntry() {
     return null;
 }
 
-/** Nuxt's scroll of the window: the top of a new page, or where Back returns, or the fragment. */
+/**
+ * Nuxt's scroll of the window: the top of a new page, or where Back returns, or the fragment. A fragment naming no
+ * element of the window's own leaves it where it is: a container scrolls to it (`scrollToAnchor`).
+ */
 function getWindowPosition(to: RouteLocationNormalized, from: RouteLocationNormalized, savedPosition: SavedPosition) {
+    const fragment = to.hash && isInWindow(to.hash) ? { el: to.hash } : false;
     if (getPath(to) === getPath(from)) {
         if (to.hash) {
-            return { el: to.hash };
+            return fragment;
         }
 
         return from.hash ? { left: 0, top: 0 } : false;
     }
 
-    return savedPosition ?? (to.hash ? { el: to.hash } : { left: 0, top: 0 });
+    return savedPosition ?? (to.hash ? fragment : { left: 0, top: 0 });
+}
+
+/** Whether the element a fragment names is on screen outside every container (the landing page's own sections). */
+function isInWindow(hash: string) {
+    const element = findById(hash.slice(1));
+    return element != null && element.closest(`[${ATTRIBUTE}]`) == null;
+}
+
+/** An `id` can hold what a selector does not, a fragment being any text: escaped. */
+function findById(id: string) {
+    return document.querySelector(`#${CSS.escape(id)}`);
 }
 
 function getPath(route: RouteLocationNormalized) {
