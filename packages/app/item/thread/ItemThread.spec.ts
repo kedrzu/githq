@@ -4,7 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import { shallowReactive } from 'vue';
 
 import type { ItemComment } from '@/store/ItemDetailTypes.js';
-import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
+import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import * as stories from './ItemThread.stories.js';
 
@@ -183,4 +183,24 @@ test('an edit GitHub did not take is open again with the text and why; Cancel dr
 
     await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
     expect(onDiscardEdit).toHaveBeenCalledWith('C_2');
+});
+
+test("an editor open on one item is not on the next: Update could otherwise save one item's text into another", async () => {
+    const onEdit = vi.fn();
+    const failedEdits = EditRefused.args.failedEdits ?? [];
+    const args = shallowReactive({ ...IssueInPanel.args, failedEdits, onEdit });
+    await IssueInPanel.run({ args });
+    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    await expect.element(page.getByRole('textbox', { name: 'Edit description' })).toBeVisible();
+
+    Object.assign(args, { item: F1_PULL_REQUEST, detail: F1_PULL_REQUEST_DETAIL, failedEdits: [] });
+    await expect.element(page.getByText('Good catch, adding a cross-repo fixture')).toBeInTheDocument();
+    expect(page.getByRole('textbox', { name: /^Edit / }).query()).toBeNull();
+
+    // Back on the first item, only the edit GitHub did not take opens again; the description's editor was let go.
+    Object.assign(args, { item: D1_ISSUE, detail: D1_ISSUE_DETAIL, failedEdits });
+    await expect.element(page.getByRole('textbox', { name: 'Edit comment' })).toBeVisible();
+    expect(page.getByRole('textbox', { name: 'Edit description' }).query()).toBeNull();
+    expect(onEdit).not.toHaveBeenCalled();
 });

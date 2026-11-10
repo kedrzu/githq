@@ -75,10 +75,18 @@ const folded = computed(() =>
   props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
 );
 
+// Another item: none of the last one's editors stays — its Update would save that item's text into this one's.
 // An edit GitHub did not take opens its editor again with the text: nothing written is lost.
 watch(
-  () => props.failedEdits,
-  failed => {
+  [() => props.item.id, () => props.failedEdits],
+  ([id, failed], before) => {
+    if (id !== before[0]) {
+      editorsRef.value = new Map();
+      focusedEditor.value = undefined;
+      deletingId.value = null;
+      revealedId.value = null;
+    }
+
     for (const edit of failed ?? []) {
       if (!editorsRef.value.has(edit.commentId)) {
         setEditor(edit.commentId, edit.body);
