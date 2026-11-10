@@ -1,4 +1,4 @@
-<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) until opened, Hide folding it again. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. -->
+<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -69,13 +69,20 @@ const counts = computed(() => {
   const all = t(l.threads, { count: total });
   return resolved.length === 0 ? all : t(l.threadsResolved, { threads: all, resolved: resolved.length });
 });
-/** A dismissed review shows once opened, or while a reply is written in one of its threads. */
-const bodyShown = computed(
-  () =>
-    !dismissed.value ||
-    shown.value ||
-    [...props.entry.threads, ...props.entry.resolved].some(thread => props.replies?.get(thread.id)),
-);
+/**
+ * Nothing written and no threads, there is no body: the head alone. A dismissed review shows once opened, or while a
+ * reply is written in one of its threads.
+ */
+const bodyShown = computed(() => {
+  const { review, threads, resolved } = props.entry;
+  if (!review.bodyHtml && threads.length === 0 && resolved.length === 0) {
+    return false;
+  }
+
+  return (
+    !dismissed.value || shown.value || [...threads, ...resolved].some(thread => props.replies?.get(thread.id))
+  );
+});
 
 function getDismissedText(before: ThreadReview['dismissedFrom']) {
   switch (before) {

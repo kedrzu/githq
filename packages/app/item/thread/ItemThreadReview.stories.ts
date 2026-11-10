@@ -47,6 +47,11 @@ export const ChangesRequested: Story = {};
 /** `· approved`: in green, a summary, no threads. */
 export const Approved: Story = { args: { entry: APPROVED_REVIEW } };
 
+/** Approved with nothing written and no threads (cli/cli#14955): its head alone, as GitHub gives it, an empty summary. */
+export const ApprovedHeadOnly: Story = {
+    args: { entry: { ...APPROVED_REVIEW, review: { ...APPROVED_REVIEW.review, bodyHtml: '' } } },
+};
+
 /** `· commented`: "reviewed", a summary and a thread. */
 export const Commented: Story = { args: { entry: COMMENTED_REVIEW } };
 
