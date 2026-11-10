@@ -1,9 +1,10 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
+import { provideContext } from '@nzyme/vue-utils/context.js';
 import { SearchX } from 'lucide-vue-next';
 import { computed, nextTick, useTemplateRef, watch } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
@@ -25,6 +26,7 @@ import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 
 import type { ItemEditing } from './ItemEditing.js';
+import { ItemLinkContext } from './ItemLinkContext.js';
 import { ItemNavigation } from './ItemNavigation.js';
 import { getItemPagePath, getItemReference, getOpenedItemQuery, getReviewPath } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
@@ -52,6 +54,9 @@ const drafts = useService(CommentDrafts);
 const mergePanel = useService(MergePanelStore);
 const route = useRoute();
 const router = useRouter();
+
+// A link to an item in its body or comments opens that item as a linked one does: here, in this arrangement.
+provideContext(ItemLinkContext, { open });
 
 const opened = useOpenedItem({ reference: () => props.reference });
 // In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,

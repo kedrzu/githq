@@ -1,36 +1,76 @@
-<!-- A body or a comment as GitHub rendered it (`bodyHTML`): GitHub turns the markdown into HTML and sanitizes it, and it is shown as given — never the markdown (`body`) rendered here, which nothing would sanitize. Its links leave for a new tab without handing the app over (`noopener noreferrer`); its images stay GitHub's. -->
+<!-- A body or a comment as GitHub rendered it (`bodyHTML`): GitHub turns the markdown into HTML and sanitizes it, and it is shown as given — never the markdown (`body`) rendered here, which nothing would sanitize. Only its links change: one to an address githq shows opens in githq (`GitHubLinks`), its `href` the app's path — re-pointed when what is tracked changes, for a repository's workflows are githq's only while it is tracked; the rest leave for a new tab without handing the app over (`noopener noreferrer`), and a footnote's stays on the page. Its images stay GitHub's. -->
 <script lang="ts" setup>
-import { onMounted, onUpdated, useTemplateRef } from 'vue';
+import { useContainer } from '@nzyme/vue-ioc/useContainer.js';
+import { onMounted, shallowRef, useTemplateRef, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
-defineProps<{
+import { getGitHubLinkTarget, GITHQ_LINK_ATTRIBUTE } from '@/shell/gitHubLinks.js';
+import GitHubLinks from '@/shell/GitHubLinks.vue';
+import { TrackingStore } from '@/tracking/TrackingStore.js';
+
+defineOptions({
+  // On the HTML's own element, under its styles: a caller's class (the changelog's) sits where it always did.
+  inheritAttrs: false,
+});
+
+const props = defineProps<{
   /** GitHub's `bodyHTML`, sanitized by GitHub. Only ever what GitHub returned. */
   html: string;
 }>();
 
+const router = useRouter();
+const container = useContainer();
+/** Read once a link needs it — a workflow's, githq's only while its repository is tracked; reactive. */
+const trackingRef = shallowRef<TrackingStore | null>(null);
 const rootRef = useTemplateRef<HTMLElement>('root');
 
-onMounted(openLinksOutside);
-onUpdated(openLinksOutside);
+onMounted(pointLinks);
+// After the render: the HTML is drawn inside `GitHubLinks`, whose update this component's own hooks do not see.
+watch([() => props.html, () => trackingRef.value?.repositories], pointLinks, { flush: 'post' });
 
-function openLinksOutside() {
+/**
+ * Points each link where it opens: githq's path, marked with GitHub's address it came from, or GitHub's address in a
+ * new tab. Vue inserts GitHub's HTML as given; only these attributes of its links change, here.
+ */
+function pointLinks() {
+  const params = { router, isTracked };
   for (const link of rootRef.value?.querySelectorAll('a[href]') ?? []) {
+    const url = link.getAttribute(GITHQ_LINK_ATTRIBUTE) ?? link.getAttribute('href') ?? '';
     // A footnote's link stays on the page.
-    if (link.getAttribute('href')?.startsWith('#')) {
+    if (url.startsWith('#')) {
       continue;
     }
 
-    link.setAttribute('target', '_blank');
-    link.setAttribute('rel', 'noopener noreferrer');
+    const target = getGitHubLinkTarget(url, params);
+    if (target) {
+      link.setAttribute(GITHQ_LINK_ATTRIBUTE, url);
+      link.setAttribute('href', target.path);
+      link.removeAttribute('target');
+      link.removeAttribute('rel');
+    } else {
+      link.removeAttribute(GITHQ_LINK_ATTRIBUTE);
+      link.setAttribute('href', url);
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+    }
   }
+}
+
+function isTracked(nameWithOwner: string) {
+  trackingRef.value ??= container.resolve(TrackingStore);
+  return trackingRef.value.isTracked({ kind: 'repository', nameWithOwner });
 }
 </script>
 
 <template>
-  <div
-    ref="root"
-    :class="css.gitHubHtml"
-    v-html="html"
-  />
+  <GitHubLinks>
+    <div
+      v-bind="$attrs"
+      ref="root"
+      :class="css.gitHubHtml"
+      v-html="html"
+    />
+  </GitHubLinks>
 </template>
 
 <style lang="scss" module="css">

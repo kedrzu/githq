@@ -4,6 +4,12 @@ import { getOpenedItemRoute } from '@/item/itemRoutes.js';
 import type { ItemReference } from '@/item/itemRoutes.js';
 import { getRouteNameWithOwner, isTrackedOnlyRoute } from '@/tracking/trackingRoutes.js';
 
+/**
+ * Marks a link that opens in githq (`shell/GitHubLinks.vue`): its `href` is the app's path. Its value is the link's
+ * address on GitHub — `GitHubHtml` re-points GitHub's links from it when what is tracked changes.
+ */
+export const GITHQ_LINK_ATTRIBUTE = 'data-githq-link';
+
 /** The hosts whose addresses can be githq's; `http` and `https` alike. */
 const GITHUB_HOSTNAMES: readonly string[] = ['github.com', 'www.github.com'];
 
