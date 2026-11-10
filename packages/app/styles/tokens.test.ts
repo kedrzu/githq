@@ -9,16 +9,18 @@ const SURFACES = ['bg', 'bg-item', 'bg-2', 'bg-3', 'sel'];
 const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 /** What the code sits on: every surface, and the lines of a diff over the window. */
 const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
+/** What a failure's message sits on: every surface, and a danger band over the window. */
+const DANGER_SURFACES = [...SURFACES, 'bg-danger'];
 const SYNTAX = ['comment', 'keyword', 'string', 'constant', 'title', 'tag', 'builtin'].map(name => `syntax-${name}`);
 
 /** Every token against the surfaces it sits on (D30). Axe checks text, not icons, outlines and lines. */
 const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
-    ['fg', CODE_SURFACES, TEXT],
+    ['fg', [...CODE_SURFACES, 'bg-danger'], TEXT],
     ['fg-2', SURFACES, TEXT],
     ['fg-dim', SURFACES, TEXT],
     ['accent', SURFACES, TEXT],
     ['green', SURFACES, TEXT],
-    ['red', SURFACES, TEXT],
+    ['red', DANGER_SURFACES, TEXT],
     ['amber', SURFACES, TEXT],
     ['purple', SURFACES, TEXT],
     ['diff-added', SURFACES, TEXT],
@@ -52,6 +54,7 @@ const TAKEN_FROM: Readonly<Record<string, string>> = {
     'diff-added': '#7ee787',
     'diff-removed': '#ffa198',
     'diff-bg-added': '#2ea043/0.15', // bgColor-success-muted
+    'bg-danger': '#f85149/0.1', // bgColor-danger-muted
     'diff-bg-deleted': '#f85149/0.1', // bgColor-danger-muted
     'syntax-comment': '#9198a1', // prettylights-syntax-comment
     'syntax-keyword': '#ff7b72',
@@ -71,6 +74,8 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'graph-line-main': "the default branch's line stays brighter",
     accent: 'the brand',
     'red-quiet': "Primer's #B62324 reads 2.93 on bg",
+    'border-danger': "red at 35%, a little weaker than Primer's borderColor-danger-muted (40%)",
+    'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
 };
 
 const tokens = readTokens();

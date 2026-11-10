@@ -163,8 +163,8 @@ const failureText = computed(() => {
 .reviewPendingToolbar_failed {
   --review-pending-tone: #{$color-red};
 
-  background: rgba($color-red, 0.1);
-  border-top-color: rgba($color-red, 0.35);
+  background: $color-bg-danger;
+  border-top-color: $color-border-danger;
 
   .reviewPendingToolbar_title {
     color: $color-red;

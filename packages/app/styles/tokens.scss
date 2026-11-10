@@ -84,9 +84,19 @@ $color-amber: #d29922;
 // Primer's fgColor-done.
 $color-purple: #ab7df8;
 
-// A deleted and an added line of a diff: its background. Primer's bgColor-danger-muted (`#F85149` at 10%) and
+// Something that failed or destroys, as a band or a box: a comment GitHub refused, requesting changes. `$color-fg`
+// reads 15.8:1 on it, `$color-red` 5.1:1. Primer's bgColor-danger-muted (`$color-red` at 10%).
+$color-bg-danger: rgba($color-red, 0.1);
+// The outline of such a band or box, or of a sign-out section.
+// Exception: a little weaker than Primer's borderColor-danger-muted (`$color-red` at 40%).
+$color-border-danger: rgba($color-red, 0.35);
+// The outline of a failed card or of a chosen destructive option, which has to stand out from its neighbours.
+// Exception: stronger than Primer's borderColor-danger-muted, weaker than borderColor-danger-emphasis.
+$color-border-danger-strong: rgba($color-red, 0.5);
+
+// A deleted and an added line of a diff: its background. Primer's bgColor-danger-muted (`$color-bg-danger`) and
 // bgColor-success-muted (`#2EA043` at 15%, not derived from `$color-green`).
-$color-diff-bg-deleted: rgba(#f85149, 0.1);
+$color-diff-bg-deleted: $color-bg-danger;
 $color-diff-bg-added: rgba(#2ea043, 0.15);
 
 // Code: GitHub's `prettylights-syntax-*` colours in Primer dark, each AA (4.5:1) over every surface and over a deleted

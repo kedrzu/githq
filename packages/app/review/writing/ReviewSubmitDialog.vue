@@ -228,8 +228,8 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .reviewSubmitDialog_kind_REQUEST_CHANGES[data-state='checked'] {
-  background: rgba($color-red, 0.1);
-  border-color: rgba($color-red, 0.5);
+  background: $color-bg-danger;
+  border-color: $color-border-danger-strong;
 }
 
 .reviewSubmitDialog_comments {

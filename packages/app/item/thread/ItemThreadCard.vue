@@ -123,7 +123,7 @@ const when = computed(() => {
 }
 
 .itemThreadCard_failed {
-  border-color: rgba($color-red, 0.5);
+  border-color: $color-border-danger-strong;
 }
 
 .itemThreadCard_head {

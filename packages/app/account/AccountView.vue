@@ -452,7 +452,7 @@ function isApproved(organization: AccountOrganization) {
   gap: $spacing-16;
   align-items: center;
   padding: $spacing-16;
-  border: 1px solid rgba($color-red, 0.35);
+  border: 1px solid $color-border-danger;
   border-radius: $radius-lg;
 }
 

@@ -218,8 +218,8 @@ const folded = computed(() =>
   gap: $spacing-8;
   align-items: center;
   padding: $spacing-8 $spacing-10 $spacing-8 $spacing-14;
-  background: rgba($color-red, 0.1);
-  border-top: 1px solid rgba($color-red, 0.35);
+  background: $color-bg-danger;
+  border-top: 1px solid $color-border-danger;
 }
 
 .itemThread_failedIcon {
