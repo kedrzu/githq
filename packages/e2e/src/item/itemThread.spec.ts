@@ -442,18 +442,21 @@ test('with the draft chosen, a reply from the thread starts a review on the head
     await page.keyboard.type('Home is the fallback now.');
     await page.keyboard.press(REPLY_KEY);
 
+    // The reply shows at once; the writes go after the head is read again.
     await expect(thread).toContainText('Home is the fallback now.');
-    expect(writes).toEqual([
-        { name: 'StartPullRequestReview', variables: { pullRequestId: sample.pullRequest, commitOID: head } },
-        {
-            name: 'AddPullRequestReviewThreadReply',
-            variables: {
-                pullRequestReviewThreadId: 'T_open',
-                body: 'Home is the fallback now.',
-                pullRequestReviewId: 'DRAFT',
+    await expect
+        .poll(() => writes)
+        .toEqual([
+            { name: 'StartPullRequestReview', variables: { pullRequestId: sample.pullRequest, commitOID: head } },
+            {
+                name: 'AddPullRequestReviewThreadReply',
+                variables: {
+                    pullRequestReviewThreadId: 'T_open',
+                    body: 'Home is the fallback now.',
+                    pullRequestReviewId: 'DRAFT',
+                },
             },
-        },
-    ]);
+        ]);
 });
 
 test('Resolve thread folds it, saying at once that the viewer resolved it; Unresolve opens it again', async ({
