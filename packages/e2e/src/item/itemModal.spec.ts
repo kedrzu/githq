@@ -1,6 +1,7 @@
 import type { Locator } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
+import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
 import { CommandMenuHarness } from '../harnesses/CommandMenu.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
@@ -8,6 +9,7 @@ import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 const ISSUE = 'Sign-in loops after the token expires';
 const OTHER = 'Cache search results';
+const COMMENT = 'Reproduced on Safari.';
 
 test('the modal takes focus itself, not its first button, and keeps the app under it out of reach while open', async ({
     page,
@@ -104,6 +106,37 @@ test('the modal is widened and narrowed by dragging either edge, and keeps its w
     await page.setViewportSize({ width: 1440, height: 900 });
     await shell.drag(item.modalHandles.last(), 1000);
     await expect.poll(() => getWidth(item.modal)).toBe(1440 - 48);
+});
+
+test('in the modal Escape leaves an editor first, as in the panel: it cancels an edit, leaves the comment box, then closes', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    sample.world.comment(sample.issue, { author: sample.world.viewer, body: COMMENT, minutesAgo: 3 });
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Modal').click();
+    await expect(item.modal).toBeVisible();
+    const opened = page.url();
+
+    await item.commentAction(COMMENT, 'Edit');
+    const editor = item.root.getByRole('textbox', { name: 'Edit comment' });
+    await expect(editor).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(editor).toBeHidden();
+    await expect(item.modal).toBeVisible();
+    expect(page.url()).toBe(opened);
+
+    await item.commentBox.click();
+    await page.keyboard.press('Escape');
+    await expect(item.commentBox).not.toBeFocused();
+    await expect(item.modal).toBeVisible();
+    expect(page.url()).toBe(opened);
+
+    await page.keyboard.press('Escape');
+    await expect(item.modal).toBeHidden();
 });
 
 async function getWidth(locator: Locator) {

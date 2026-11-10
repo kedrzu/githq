@@ -23,6 +23,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemNavigation } from './ItemNavigation.js';
@@ -288,6 +289,19 @@ function focusModal(event: Event) {
   (event.target as HTMLElement).focus();
 }
 
+/**
+ * Escape in a field leaves it and the modal stays, as the panel and the page do (the item view's Escape): an editor
+ * opened in place has cancelled itself, the comment box loses the cursor. The modal hears the key before the item view,
+ * which then leaves it alone; a second Escape closes the item.
+ */
+function onModalEscape(event: KeyboardEvent) {
+  const { target } = event;
+  if (target instanceof HTMLElement && isEditableTarget(target)) {
+    event.preventDefault();
+    target.blur();
+  }
+}
+
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
@@ -304,6 +318,7 @@ function loadViewerProjects() {
     bare
     @update:open="close"
     @open-auto-focus="focusModal"
+    @escape-key-down="onModalEscape"
     @resized="modalWidth.save()"
   >
     <ItemView
