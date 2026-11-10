@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
 import Button from '@/components/Button.vue';
 import type { FailedComment } from '@/edits/CommentDrafts.js';
@@ -45,10 +45,21 @@ defineSlots<{
 
 const t = useTranslate();
 const editTexts = useEditTexts();
+const commentsRef = useTemplateRef('comments');
+/** The first comment the fold revealed: focusable, so the keyboard picks up where the fold was. */
+const revealedId = ref<string | null>(null);
 
 const folded = computed(() =>
   props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
 );
+
+// The fold goes with what it hid; focus moves to the first comment it revealed instead of falling to the page.
+async function showEarlier() {
+  await props.loadAll();
+  revealedId.value = props.detail?.comments.nodes[0]?.id ?? null;
+  await nextTick();
+  commentsRef.value?.querySelector<HTMLElement>(':scope > [tabindex="-1"]')?.focus();
+}
 </script>
 
 <template>
@@ -81,15 +92,18 @@ const folded = computed(() =>
       <ItemThreadFold
         v-if="folded > 0"
         :comments="folded"
-        @click="loadAll"
+        @click="showEarlier"
       />
       <ol
         v-if="detail.comments.nodes.length > 0 || (failedComments?.length ?? 0) > 0"
+        ref="comments"
         :class="css.itemThread_comments"
       >
         <li
           v-for="comment in detail.comments.nodes"
           :key="comment.id"
+          :tabindex="comment.id === revealedId ? -1 : undefined"
+          :class="css.itemThread_comment"
         >
           <ItemThreadCard
             :author="comment.author"
@@ -192,6 +206,11 @@ const folded = computed(() =>
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+// The first comment the fold revealed, once it has the focus.
+.itemThread_comment {
+  @include focus-ring;
 }
 
 // A body or comment GitHub rendered, at the thread's reading size.

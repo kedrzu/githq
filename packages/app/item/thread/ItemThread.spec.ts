@@ -1,6 +1,10 @@
 import { composeStories } from '@storybook/vue3';
 import { expect, test, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
+import { shallowReactive } from 'vue';
+
+import type { ItemComment } from '@/store/ItemDetailTypes.js';
+import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import * as stories from './ItemThread.stories.js';
 
@@ -18,6 +22,32 @@ test('comments older than those read are folded before them; the fold reads them
 
     resolve();
     await expect.element(fold).not.toHaveAttribute('aria-busy');
+});
+
+test('the comments the fold reveals take the focus at the first of them, so the keyboard keeps its place', async () => {
+    const [newest] = D1_ISSUE_DETAIL.comments.nodes;
+    const older: ItemComment[] = [
+        { ...newest!, id: 'C_OLDER_1', bodyHtml: '<p>The first comment on the issue.</p>' },
+        { ...newest!, id: 'C_OLDER_2', bodyHtml: '<p>The second comment on the issue.</p>' },
+    ];
+    // GitHub's answer: the detail with every comment, as the store puts it in.
+    const loadAll = vi.fn(() => {
+        const { comments } = D1_ISSUE_DETAIL;
+        args.detail = { ...D1_ISSUE_DETAIL, comments: { ...comments, nodes: [...older, ...comments.nodes] } };
+        return Promise.resolve();
+    });
+    const args = shallowReactive({ ...IssueInPanel.args, detail: D1_ISSUE_DETAIL, loadAll });
+    await IssueInPanel.run({ args });
+
+    page.getByRole('button', { name: /^Show 2 earlier comments/ })
+        .element()
+        .focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(page.getByRole('button', { name: /earlier/ })).not.toBeInTheDocument();
+    await expect
+        .element(page.getByRole('listitem').filter({ hasText: 'The first comment on the issue.' }))
+        .toHaveFocus();
 });
 
 test('with every comment read there is nothing to fold', async () => {
