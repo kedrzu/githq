@@ -125,8 +125,6 @@ const askingReply = ref<string | null>(null);
 const focusedReply = ref<string | null>(null);
 /** The threads the viewer resolved here: they say so at once, before the threads read again name who did. */
 const resolvedHere = ref<ReadonlySet<string>>(new Set());
-/** The code thread Resolve or Unresolve was clicked on, until it is drawn so: folded to its row or opened, it keeps the focus. */
-const toggledThread = ref<ToggledThread | null>(null);
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
@@ -228,7 +226,6 @@ watch(
       askingReply.value = null;
       focusedReply.value = null;
       resolvedHere.value = new Set();
-      toggledThread.value = null;
     }
 
     for (const edit of failed ?? []) {
@@ -238,19 +235,6 @@ watch(
     }
   },
   { immediate: true },
-);
-
-// The button clicked goes with the state it changed: the thread, drawn anew, takes the focus, the keys still its own.
-watch(
-  shownThreads,
-  threads => {
-    const toggled = toggledThread.value;
-    if (toggled && threads.find(({ id }) => id === toggled.id)?.isResolved === toggled.resolved) {
-      toggledThread.value = null;
-      findThreadCard(toggled.id)?.focus({ preventScroll: true });
-    }
-  },
-  { flush: 'post' },
 );
 
 defineExpose({
@@ -569,8 +553,9 @@ function setResolved(threadId: string, resolved: boolean) {
   }
 
   resolvedHere.value = here;
-  toggledThread.value = { id: threadId, resolved };
   props.reviewWriting?.setResolved(threadId, resolved);
+  // The writing draws the state at once: the thread, folded to its row or opened, takes the focus, the keys still its own.
+  void focusThread(threadId);
 }
 
 /** Once it is drawn again: the keys are the thread's, as they were before its reply box opened. */
@@ -618,12 +603,6 @@ function moveToThread(from: HTMLElement, by: 1 | -1) {
     next.focus({ preventScroll: true });
     next.scrollIntoView({ block: 'nearest' });
   }
-}
-
-/** A code thread asked to be resolved, or opened again. */
-interface ToggledThread {
-  readonly id: string;
-  readonly resolved: boolean;
 }
 
 /** Who is asked again, by its ref, and the value that means nobody is. */

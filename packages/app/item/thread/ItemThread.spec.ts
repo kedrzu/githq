@@ -6,6 +6,7 @@ import { shallowReactive } from 'vue';
 import type { FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { ItemComment } from '@/store/ItemDetailTypes.js';
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
+import type { FakeReviewWritingOptions } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { DB_THREAD } from '@/testing/sampleReviews.js';
 
@@ -463,8 +464,18 @@ function dbThread() {
 }
 
 /** The pull request with sofiab's review, written through a fresh writing. */
-async function openCodeThreads(writing = new FakeReviewWriting()) {
-    const args = shallowReactive({ ...CodeThreads.args, reviewWriting: writing });
+/** The code threads story, its writing drawing each resolve into the threads at once, as the real one does. */
+async function openCodeThreads(options: FakeReviewWritingOptions = {}) {
+    const args = shallowReactive({ ...CodeThreads.args });
+    const writing = new FakeReviewWriting({
+        ...options,
+        onResolve: ({ threadId, resolved }) => {
+            args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
+                thread.id === threadId ? { ...thread, isResolved: resolved } : thread,
+            );
+        },
+    });
+    args.reviewWriting = writing;
     await CodeThreads.run({ args });
     return { args, writing };
 }
@@ -519,7 +530,7 @@ test('⌘↵ sends the reply as code review would, which shows at once; one GitH
 });
 
 test('with the viewer’s draft open a reply joins it: its button says so', async () => {
-    const { writing } = await openCodeThreads(new FakeReviewWriting({ draftOpen: true }));
+    const { writing } = await openCodeThreads({ draftOpen: true });
     await userEvent.click(dbThread().getByRole('button', { name: 'Reply…' }));
     await userEvent.keyboard('In the draft');
     await userEvent.click(dbThread().getByRole('button', { name: 'Add to draft' }));
@@ -528,14 +539,10 @@ test('with the viewer’s draft open a reply joins it: its button says so', asyn
 });
 
 test('Resolve thread goes through the writing, and the thread says the viewer resolved it at once', async () => {
-    const { args, writing } = await openCodeThreads();
+    const { writing } = await openCodeThreads();
     await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
     expect(writing.resolved).toEqual([{ threadId: DB_THREAD.id, resolved: true }]);
 
-    // As the writing draws it: resolved at once, GitHub not yet saying who did.
-    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
-        thread.id === DB_THREAD.id ? { ...thread, isResolved: true } : thread,
-    );
     await userEvent.click(page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u }));
     await expect.element(dbThread()).toHaveTextContent('mlaine marked this thread as resolved.');
 });
@@ -560,13 +567,9 @@ test('on a focused code thread J and K move between the code threads and R opens
 });
 
 test('Resolve folds the thread to its row and the row keeps the focus, so J and K go on between the code threads', async () => {
-    const { args } = await openCodeThreads();
+    await openCodeThreads();
     const schemaRow = page.getByRole('button', { name: /^Resolved/u });
     await userEvent.click(dbThread().getByRole('button', { name: 'Resolve thread' }));
-    // As the writing draws it, once the click is done: resolved.
-    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
-        thread.id === DB_THREAD.id ? { ...thread, isResolved: true } : thread,
-    );
     const dbRow = page.getByRole('button', { name: /^Resolved src\/store\/db\.ts/u });
     await expect.element(dbRow).toHaveFocus();
 
@@ -578,9 +581,6 @@ test('Resolve folds the thread to its row and the row keeps the focus, so J and 
     // Opened again and unresolved: the thread, open, has it.
     await userEvent.keyboard('{Enter}');
     await userEvent.click(dbThread().getByRole('button', { name: 'Unresolve' }));
-    args.reviewThreads = (args.reviewThreads ?? []).map(thread =>
-        thread.id === DB_THREAD.id ? { ...thread, isResolved: false } : thread,
-    );
     await expect.element(dbThread().getByRole('button', { name: 'Resolve thread' })).toBeVisible();
     await expect.element(dbThread()).toHaveFocus();
 });

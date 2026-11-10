@@ -45,8 +45,11 @@ export class FakeReviewWriting implements ReviewWriting {
 
     private next = 0;
 
+    private readonly onResolve: ((resolve: FakeReviewResolve) => void) | undefined;
+
     constructor(options: FakeReviewWritingOptions = {}) {
         this.draftOpen = options.draftOpen ?? false;
+        this.onResolve = options.onResolve;
     }
 
     get targets(): readonly ReviewCommentTarget[] {
@@ -132,6 +135,7 @@ export class FakeReviewWriting implements ReviewWriting {
 
     setResolved(threadId: string, resolved: boolean): void {
         this.state.resolved = [...this.state.resolved, { threadId, resolved }];
+        this.onResolve?.({ threadId, resolved });
     }
 
     getResolveFailure(): ReviewWriteFailure | null {
@@ -143,6 +147,8 @@ export class FakeReviewWriting implements ReviewWriting {
 export interface FakeReviewWritingOptions {
     /** The viewer's draft review is open: a reply can only join it. */
     readonly draftOpen?: boolean;
+    /** Draws a resolve or an unresolve, as the real writing does at once: the story's threads are the caller's. */
+    readonly onResolve?: (resolve: FakeReviewResolve) => void;
 }
 
 /** What the fake holds, replaced whole on each change. */
