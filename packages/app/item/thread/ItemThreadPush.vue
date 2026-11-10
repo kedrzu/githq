@@ -93,6 +93,7 @@ async function showMore() {
       <Button
         v-if="more > 0"
         variant="link"
+        tone="accent"
         :class="css.itemThreadPush_more"
         @click="showMore"
       >
@@ -205,11 +206,5 @@ async function showMore() {
 
 .itemThreadPush_more {
   font-size: $font-size-xs;
-  color: $color-accent;
-
-  &:hover {
-    color: $color-accent;
-    text-decoration: underline;
-  }
 }
 </style>

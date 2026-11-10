@@ -205,6 +205,7 @@ async function showOlder(load: () => Promise<void>) {
           <Button
             v-if="folding && !unfolded"
             variant="link"
+            tone="accent"
             size="sm"
             @click="showDescription"
           >

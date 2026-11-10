@@ -131,6 +131,7 @@ function describe(state: PullRequestReviewState): Pick<ReviewerLine, 'icon' | 's
         <template #trigger>
           <Button
             variant="ghost"
+            tone="accent"
             size="sm"
             :icon="UserPlus"
             :kbd="EDIT_KEYS.reviewers"

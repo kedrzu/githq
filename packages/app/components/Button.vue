@@ -42,6 +42,8 @@ export const ButtonProps = {
   variant: defineProp<ButtonVariant>(),
   /** `md` when not given. */
   size: defineProp<ButtonSize>(),
+  /** `accent`: the label in the accent colour, a text link that does something ("Show 4 more commits", "Log"). */
+  tone: defineProp<'accent'>(),
   /** Leading icon, a lucide component. */
   icon: defineProp<LucideIcon>(),
   /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `keyshortcuts` too. */
@@ -90,6 +92,7 @@ const kbdTone = computed(() => {
       css.button,
       css[`button_${variant}`],
       css[`button_${size ?? 'md'}`],
+      tone && css[`button_${tone}`],
       block && css.button_block,
       kbd && css.button_keyed,
       busy && css.button_busy,
@@ -364,6 +367,19 @@ const kbdTone = computed(() => {
 
 .button_busy {
   cursor: progress;
+}
+
+// After the variants: the colour is the tone's, hovered too. Disabled, below, still dims it.
+.button_accent {
+  color: $color-accent;
+
+  &:hover {
+    color: $color-accent;
+  }
+
+  &.button_link:hover {
+    text-decoration: underline;
+  }
 }
 
 // Disabled, or shown but not possible yet (`unavailable`: `aria-disabled`, still focusable): no hover, dim.
