@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer or copies its link; an edit GitHub did not take opens again with its text and why. -->
+<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
@@ -33,6 +33,8 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** The user may comment: a failed comment can be sent again. */
   canRetry?: boolean;
+  /** The composer takes a comment: Quote reply is offered. */
+  canQuote?: boolean;
   /** The user's edits of the comments and the description GitHub did not take. */
   failedEdits?: readonly FailedTextEdit[];
   /** The thread's people, whom `@` suggests first in an editor. */
@@ -226,6 +228,7 @@ async function showEarlier() {
         <template #menu>
           <ItemThreadMenu
             :can-edit="detail.viewerCanUpdate && detail.pendingBody === undefined"
+            :can-quote="canQuote"
             @edit="startEdit(null, detail.body)"
             @quote-reply="quote(detail.body)"
             @copy-link="copyLink(item.url)"
@@ -287,6 +290,7 @@ async function showEarlier() {
             >
               <ItemThreadMenu
                 :can-edit="comment.viewerCanUpdate"
+                :can-quote="canQuote"
                 :can-delete="comment.viewerCanDelete"
                 @edit="startEdit(comment.id, comment.body)"
                 @quote-reply="quote(comment.body)"

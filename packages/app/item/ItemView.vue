@@ -485,6 +485,11 @@ function edit(request: EditRequest) {
  * comes into view with the cursor in it.
  */
 function quoteReply(body: string) {
+  // Where the composer takes no comment, the quote would sit in a draft no one sees.
+  if (!canComment.value) {
+    return;
+  }
+
   const text = body.trim();
   const quote = `${applyMarkdownTool(text, { start: 0, end: text.length }, 'quote').insert}\n\n`;
   const typed = commentDraft.value;
@@ -874,6 +879,7 @@ function getProjectOptions(): CommandOption[] {
                 :failed-comments="failedComments"
                 :viewer="viewer"
                 :can-retry="editing != null && canComment"
+                :can-quote="canComment"
                 :failed-edits="failedEdits"
                 :people="threadPeople"
                 @retry="emit('retryComment', $event)"

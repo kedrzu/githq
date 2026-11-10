@@ -39,6 +39,7 @@ const meta = {
         detail: D1_ISSUE_DETAIL,
         now: SAMPLE_NOW,
         loadAll: fn(() => Promise.resolve()),
+        canQuote: true,
     },
     // On an item view's background, as wide as its main column (`parameters.width`), ending in the composer.
     render: (args, { parameters }) => ({
@@ -121,6 +122,7 @@ export const NotSentReadOnly: Story = {
     args: {
         ...NotSent.args,
         canRetry: false,
+        canQuote: false,
         failedComments: FAILED_COMMENTS.slice(0, 1),
     },
 };

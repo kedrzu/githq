@@ -352,6 +352,11 @@ test('K1b: a conversation locked to collaborators, or an archived repository, sa
     expect(page.getByRole('textbox', { name: 'Comment' }).query()).toBeNull();
     await userEvent.keyboard('r');
     expect(document.activeElement).toBe(document.body);
+    // Quote reply would land in a draft no one sees.
+    await userEvent.click(page.getByText('Same on mobile.', { exact: false }), { button: 'right' });
+    await expect.element(page.getByRole('menuitem', { name: 'Copy link' })).toBeVisible();
+    expect(page.getByRole('menuitem', { name: 'Quote reply' }).query()).toBeNull();
+    await userEvent.keyboard('{Escape}');
 
     const metadata = SAMPLE_MAINTAINER_EDITING.metadata && { ...SAMPLE_MAINTAINER_EDITING.metadata, isArchived: true };
     await IssueInPanel.run({ args: { ...IssueInPanel.args, editing: { ...editing, metadata } } });

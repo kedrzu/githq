@@ -113,6 +113,15 @@ test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not
     expect(items.elements().map(item => item.textContent.trim())).toEqual(['Quote reply', 'Copy link']);
 });
 
+test('where the user may not comment, the menu offers no Quote reply: the quote would land in a draft no one sees', async () => {
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, canQuote: false } });
+
+    await openMenu(MINE);
+    const items = page.getByRole('menuitem');
+    await expect.element(items.nth(0)).toHaveTextContent('Edit');
+    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Copy link', 'Delete…']);
+});
+
 test('the description has the same menu without Delete, from a right click too', async () => {
     await IssueInPanel.run();
 
