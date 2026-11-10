@@ -158,6 +158,50 @@ test('"Show all" reads the comments not read yet, then shows every one', async (
     expect(IssueInPanel.args.loadAllComments).toHaveBeenCalledTimes(1);
 });
 
+test('#248: the comment the address\'s fragment names shows past "Show all", marked; every comment GitHub has carries its anchor, the one on its way none', async () => {
+    const [olam, kedrzu] = D1_ISSUE_DETAIL.comments.nodes;
+    const url = 'https://github.com/acme/web/issues/12';
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            linkedAnchor: 'issuecomment-1',
+            detail: {
+                ...D1_ISSUE_DETAIL,
+                comments: {
+                    totalCount: 4,
+                    olderCursor: null,
+                    nodes: [
+                        { ...olam!, id: 'C_1', url: `${url}#issuecomment-1`, bodyHtml: '<p>The oldest</p>' },
+                        { ...kedrzu!, id: 'C_2', url: `${url}#issuecomment-2` },
+                        { ...olam!, id: 'C_3', url: `${url}#issuecomment-3` },
+                        { ...kedrzu!, id: 'pending:1', url, bodyHtml: '', pendingBody: 'On its way' },
+                    ],
+                },
+            },
+        },
+    });
+
+    const linked = page.getByRole('listitem').filter({ hasText: 'The oldest' });
+    await expect.element(linked).toHaveAttribute('id', 'issuecomment-1');
+    await expect.element(linked).toHaveAttribute('aria-current', 'location');
+    expect(document.querySelectorAll('[aria-current="location"]')).toHaveLength(1);
+    const pending = page.getByRole('listitem').filter({ hasText: 'On its way' });
+    await expect.element(pending).not.toHaveAttribute('id');
+    expect(IssueInPanel.args.loadAllComments).not.toHaveBeenCalled();
+});
+
+test('#248: a fragment naming a comment not read yet reads the older ones from GitHub', async () => {
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, linkedAnchor: 'issuecomment-99' } });
+    await expect.poll(() => IssueInPanel.args.loadAllComments).toHaveBeenCalledTimes(1);
+});
+
+test('#248: a fragment that names no comment reads nothing and marks nothing', async () => {
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, linkedAnchor: 'pullrequestreview-1' } });
+    await expect.element(page.getByRole('button', { name: 'Show all 4' })).toBeInTheDocument();
+    expect(IssueInPanel.args.loadAllComments).not.toHaveBeenCalled();
+    expect(document.querySelector('[aria-current="location"]')).toBeNull();
+});
+
 test('opened before its detail arrives: the row shows at once and the comments say they are loading', async () => {
     await LoadingComments.run();
 

@@ -1,11 +1,11 @@
-<!-- The latest comments of an opened item, newest last (D1): the last few, and "Show all N" for the rest — those not read yet are read from GitHub then. Each comment is GitHub's own rendering (`GitHubHtml`); the user's own on its way to GitHub shows dimmed, "sending…", as the text typed — GitHub renders it once it has it. -->
+<!-- The latest comments of an opened item, newest last (D1): the last few, and "Show all N" for the rest — those not read yet are read from GitHub then. Each comment is GitHub's own rendering (`GitHubHtml`); the user's own on its way to GitHub shows dimmed, "sending…", as the text typed — GitHub renders it once it has it. Each comment GitHub has carries GitHub's anchor (`issuecomment-<id>`) as its `id`; the one the address's fragment names is shown — past "Show all", read from GitHub first when it is older than those read — and outlined while the address names it, as GitHub marks a linked comment. Bringing it into view is the router's (`shell/routeScroll.ts`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
-import type { ItemComments } from '@/store/ItemDetailTypes.js';
+import type { ItemComment, ItemComments } from '@/store/ItemDetailTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
 import GitHubHtml from './GitHubHtml.vue';
@@ -18,10 +18,14 @@ const props = defineProps<{
   now: number;
   /** Reads the comments not read yet; resolves once all are in. */
   loadAll: () => Promise<void>;
+  /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked. */
+  linkedAnchor?: string;
 }>();
 
 /** How many of the newest comments show before "Show all". */
 const LATEST = 3;
+/** How GitHub's anchor of an issue or pull request comment starts. */
+const COMMENT_ANCHOR = 'issuecomment-';
 
 const t = useTranslate();
 const expanded = ref(false);
@@ -31,10 +35,43 @@ const shown = computed(() => {
   return expanded.value ? nodes : nodes.slice(-LATEST);
 });
 const hidden = computed(() => (props.comments ? props.comments.totalCount - shown.value.length : 0));
+/** The anchors older comments were read from GitHub for: each is looked for there once, found or not. */
+const readFor = new Set<string>();
+
+// `immediate` with the default `pre` flush: the item is often in the local copy at mount, and the comment then is in
+// the first render, the one the router's scroll looks for it in.
+watch(() => [props.linkedAnchor, props.comments] as const, revealLinked, { immediate: true });
+
+function revealLinked([anchor, comments]: readonly [string | undefined, ItemComments | null]) {
+  if (!anchor?.startsWith(COMMENT_ANCHOR) || !comments) {
+    return;
+  }
+
+  if (comments.nodes.some(comment => getCommentAnchor(comment) === anchor)) {
+    if (!shown.value.some(comment => getCommentAnchor(comment) === anchor)) {
+      expanded.value = true;
+    }
+  } else if (comments.olderCursor !== null && !readFor.has(anchor)) {
+    readFor.add(anchor);
+    void showAll();
+  }
+}
+
+/** GitHub's anchor of the comment, its url's fragment; a comment on its way to GitHub has the item's url, and none. */
+function getCommentAnchor(comment: ItemComment) {
+  const hash = comment.url.indexOf('#');
+  const fragment = hash === -1 ? '' : comment.url.slice(hash + 1);
+  return fragment.startsWith(COMMENT_ANCHOR) ? fragment : undefined;
+}
 
 async function showAll() {
   await props.loadAll();
   expanded.value = true;
+}
+
+function isLinked(comment: ItemComment) {
+  const anchor = getCommentAnchor(comment);
+  return anchor !== undefined && anchor === props.linkedAnchor;
 }
 </script>
 
@@ -69,8 +106,10 @@ async function showAll() {
     >
       <li
         v-for="comment in shown"
+        :id="getCommentAnchor(comment)"
         :key="comment.id"
-        :class="css.itemActivity_comment"
+        :class="[css.itemActivity_comment, { [css.itemActivity_commentLinked]: isLinked(comment) }]"
+        :aria-current="isLinked(comment) ? 'location' : undefined"
       >
         <Avatar
           :name="comment.author?.login ?? t(l.deletedUser)"
@@ -148,8 +187,19 @@ async function showAll() {
 }
 
 .itemActivity_comment {
+  position: relative;
   display: flex;
   gap: $spacing-10;
+}
+
+// Drawn outside the comment, halfway into the list's gap, so neither it nor its neighbours move.
+.itemActivity_commentLinked::before {
+  position: absolute;
+  inset: -#{$spacing-6} -#{$spacing-8};
+  pointer-events: none;
+  content: '';
+  border: 1px solid $color-accent;
+  border-radius: $radius-lg;
 }
 
 .itemActivity_body {
