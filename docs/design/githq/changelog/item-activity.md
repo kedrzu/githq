@@ -230,6 +230,12 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   time: the description and the composer are there, the rail shows how many items GitHub reported and a skeleton;
   later opens come from the local copy with no skeleton. Empty: the rail runs from the description straight to the
   composer. Not loaded: `Activity / Thread · failed` on the rail; what is there stays.
+- [ ] F16 (`Q2H7SU`) corrected to what an item's detail holds: the description comes with the comments and events, not
+  with the item's row, so before the first read none of them is on the device. Loading and Not loaded hide the
+  description card (`C7P6R`, `Pflvp`); the loading skeleton's first card stands for it. `Activity / Thread · failed`
+  (`V75cQv`) reads “The description, comments and events couldn't be loaded” and “GitHub can't be reached, so they
+  aren't on this device yet.” (was “The comments and events couldn't be loaded” and “… The description above is from
+  this device.”). The caption says so, and that a read failing later changes nothing on screen.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
