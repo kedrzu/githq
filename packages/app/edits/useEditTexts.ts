@@ -179,6 +179,12 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedReopened, { reference });
             case 'comment':
                 return t(l.failedComment, { reference });
+            case 'textEdited':
+                return subject.commentId === null
+                    ? t(l.failedBodyEdited, { reference })
+                    : t(l.failedCommentEdited, { reference });
+            case 'commentDeleted':
+                return t(l.failedCommentDeleted, { reference });
             case 'projectField':
                 return t(l.failedProjectField, { field: subject.field, reference });
             case 'addedToProject':
@@ -236,6 +242,10 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeReopened);
             case 'comment':
                 return t(l.changeComment);
+            case 'textEdited':
+                return subject.commentId === null ? t(l.changeBodyEdited) : t(l.changeCommentEdited);
+            case 'commentDeleted':
+                return t(l.changeCommentDeleted);
             case 'projectField':
                 return subject.field;
             case 'addedToProject':
@@ -303,7 +313,10 @@ export function useEditTexts(): EditTexts {
             case 'reopened':
                 return t(l.fieldState);
             case 'comment':
+            case 'commentDeleted':
                 return t(l.fieldComment);
+            case 'textEdited':
+                return subject.commentId === null ? t(l.fieldDescription) : t(l.fieldComment);
             case 'projectField':
                 return subject.field;
             case 'addedToProject':

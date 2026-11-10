@@ -37,6 +37,7 @@ import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
+import { applyMarkdownTool } from '@/components/applyMarkdownTool.js';
 import Avatar from '@/components/Avatar.vue';
 import IconButton from '@/components/IconButton.vue';
 import LabelPill from '@/components/LabelPill.vue';
@@ -50,7 +51,7 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
-import type { FailedComment } from '@/edits/CommentDrafts.js';
+import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
@@ -118,6 +119,8 @@ const props = withDefaults(
     viewerCanEnableAutoMerge?: boolean | null;
     /** The user's comments GitHub did not take, in the order they were written. */
     failedComments?: readonly FailedComment[];
+    /** The user's edits of its comments and description GitHub did not take. */
+    failedEdits?: readonly FailedTextEdit[];
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -140,6 +143,8 @@ const emit = defineEmits<{
   retryComment: [id: number];
   /** A comment GitHub did not take is to be dropped. */
   discardComment: [id: number];
+  /** An edit GitHub did not take, of a comment or (`null`) the description, was cancelled. */
+  discardEdit: [commentId: string | null];
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
   /** "Merge…" (`⇧M`): the merge panel is wanted for the pull request. */
@@ -475,6 +480,18 @@ function edit(request: EditRequest) {
   }
 
   emit('edit', request);
+}
+
+/**
+ * Quote reply: the text quoted (`> ` on every line, then a blank line) after what is typed in the comment box, which
+ * comes into view with the cursor in it.
+ */
+function quoteReply(body: string) {
+  const text = body.trim();
+  const quote = `${applyMarkdownTool(text, { start: 0, end: text.length }, 'quote').insert}\n\n`;
+  const typed = commentDraft.value;
+  commentDraft.value = typed.trim() ? `${typed.trimEnd()}\n\n${quote}` : quote;
+  void composerRef.value?.focus();
 }
 
 function getItemCommands(): Command[] {
@@ -859,8 +876,13 @@ function getProjectOptions(): CommandOption[] {
                 :failed-comments="failedComments"
                 :viewer="viewer"
                 :can-retry="editing != null && canComment"
+                :failed-edits="failedEdits"
+                :people="threadPeople"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
+                @edit="emit('edit', $event)"
+                @discard-edit="emit('discardEdit', $event)"
+                @quote-reply="quoteReply"
               >
                 <template #composer>
                   <ItemThreadComposer

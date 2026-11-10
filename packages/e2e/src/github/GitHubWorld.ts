@@ -73,6 +73,8 @@ export type GitHubWorldMutation =
     | 'ClosePullRequest'
     | 'ReopenPullRequest'
     | 'AddComment'
+    | 'UpdateIssueComment'
+    | 'DeleteIssueComment'
     | 'AddToProject'
     | 'AddDraftIssue'
     | 'SetProjectFieldValue'
@@ -520,8 +522,15 @@ interface WorldDraft {
 interface WorldComment {
     readonly id: string;
     readonly author: string;
-    readonly body: string;
+    body: string;
     readonly createdAt: string;
+    lastEditedAt: string | null;
+}
+
+/** Who reads an item's comments: the viewer edits and deletes their own, and anyone's where they may write. */
+interface CommentReader {
+    readonly viewer: string;
+    readonly writes: boolean;
 }
 
 interface WorldPullRequest {
@@ -1027,6 +1036,7 @@ export class GitHubWorld {
             author: params.author,
             body: params.body,
             createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+            lastEditedAt: null,
         });
     }
 
@@ -1713,7 +1723,9 @@ export class GitHubWorld {
             }
 
             const before = parseCursor(variables.before) ?? item.comments.length;
-            return { node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE) } };
+            return {
+                node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE, this.readerOf(item)) },
+            };
         });
         github.graphql('MoreReviews', ({ variables }) => {
             const id = String(variables.id);
@@ -2347,17 +2359,59 @@ export class GitHubWorld {
                     author: this.viewer,
                     body: String(variables.body),
                     createdAt: new Date().toISOString(),
+                    lastEditedAt: null,
                 });
             },
             answer: item => {
                 const comment = item.comments.at(-1);
                 return {
                     addComment: {
-                        commentEdge: { node: comment ? toCommentNode(item, comment) : null },
+                        commentEdge: { node: comment ? toCommentNode(item, comment, this.readerOf(item)) : null },
                     },
                 };
             },
             refused: { addComment: null },
+        });
+        const byCommentId = (variables: Readonly<Record<string, unknown>>) =>
+            [...this.items.values()].find(item => item.comments.some(comment => comment.id === variables.id));
+        const commentOf = (item: WorldItem, variables: Readonly<Record<string, unknown>>) =>
+            item.comments.find(comment => comment.id === variables.id);
+        // GitHub lets the viewer change their own comments, and anyone's where they may write.
+        const refuseComment = (item: WorldItem, variables: Readonly<Record<string, unknown>>) => {
+            const comment = commentOf(item, variables);
+            const reader = this.readerOf(item);
+            return comment && (reader.writes || comment.author === reader.viewer)
+                ? null
+                : 'Resource not accessible by integration';
+        };
+        this.mutation(github, 'UpdateIssueComment', {
+            findItem: byCommentId,
+            refuse: refuseComment,
+            apply: (item, variables) => {
+                const comment = commentOf(item, variables);
+                if (comment) {
+                    comment.body = String(variables.body);
+                    comment.lastEditedAt = new Date().toISOString();
+                }
+            },
+            answer: (item, variables) => {
+                const comment = commentOf(item, variables);
+                return {
+                    updateIssueComment: {
+                        issueComment: comment ? toCommentNode(item, comment, this.readerOf(item)) : null,
+                    },
+                };
+            },
+            refused: { updateIssueComment: null },
+        });
+        this.mutation(github, 'DeleteIssueComment', {
+            findItem: byCommentId,
+            refuse: refuseComment,
+            apply: (item, variables) => {
+                item.comments = item.comments.filter(comment => comment.id !== variables.id);
+            },
+            answer: () => ({ deleteIssueComment: { clientMutationId: null } }),
+            refused: { deleteIssueComment: null },
         });
         this.mutation(github, 'AddToProject', {
             findItem: byItemId('contentId'),
@@ -2824,6 +2878,12 @@ export class GitHubWorld {
     }
 
     /** A live item; `undefined` for an id GitHub does not know or that was deleted. */
+    /** The viewer reading the item's comments, and whether they may write to its repository. */
+    private readerOf(item: WorldItem): CommentReader {
+        const { viewerPermission } = this.getRepository(item.repository);
+        return { viewer: this.viewer, writes: ['WRITE', 'MAINTAIN', 'ADMIN'].includes(viewerPermission) };
+    }
+
     private readItem(id: string): WorldItem | undefined {
         const item = this.items.get(id);
         return item && !item.deleted ? item : undefined;
@@ -2846,12 +2906,15 @@ export class GitHubWorld {
             return undefined;
         }
 
+        const reader = this.readerOf(item);
         const details = {
             body: '',
             bodyHTML: item.bodyHtml,
+            lastEditedAt: null,
+            viewerCanUpdate: reader.writes || item.author === reader.viewer,
             locked: item.locked,
             reactionGroups: [],
-            commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE),
+            commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE, reader),
             projectItems: { nodes: item.projectItems.map(place => toProjectItemDetail(place)) },
         };
         if (!item.pullRequest) {
@@ -3375,12 +3438,12 @@ function toProjectItemDetail(place: WorldProjectItem): ProjectItemDetailFieldsFr
  * The comments of an item before the `before`-th, `count` at most, as a page GitHub answers: its cursor is the
  * index of its first comment.
  */
-function toCommentPage(item: WorldItem, before: number, count: number) {
+function toCommentPage(item: WorldItem, before: number, count: number, reader: CommentReader) {
     const start = Math.max(0, before - count);
     return {
         totalCount: item.comments.length,
         pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
-        nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment)),
+        nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment, reader)),
     };
 }
 
@@ -3399,14 +3462,18 @@ function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams
     };
 }
 
-function toCommentNode(item: WorldItem, comment: WorldComment): IssueCommentFieldsFragment {
+function toCommentNode(item: WorldItem, comment: WorldComment, reader: CommentReader): IssueCommentFieldsFragment {
+    const mayChange = reader.writes || comment.author === reader.viewer;
     return {
         id: comment.id,
         url: `${toUrl(item)}#issuecomment-${comment.id}`,
         createdAt: comment.createdAt,
-        lastEditedAt: null,
+        lastEditedAt: comment.lastEditedAt,
         author: createUser(comment.author),
+        body: comment.body,
         bodyHTML: `<p>${escapeHtml(comment.body)}</p>`,
+        viewerCanUpdate: mayChange,
+        viewerCanDelete: mayChange,
     };
 }
 

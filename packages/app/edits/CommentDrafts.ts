@@ -18,9 +18,22 @@ export interface FailedComment {
 }
 
 /**
+ * An edit of a comment's or the description's text GitHub did not take: its editor opens again with the text, until
+ * it is saved or cancelled.
+ */
+export interface FailedTextEdit {
+    readonly itemId: string;
+    /** The comment's id; `null` for the description. */
+    readonly commentId: string | null;
+    readonly body: string;
+    readonly reason: EditFailureReason;
+}
+
+/**
  * What the user wrote and GitHub does not have: what is typed into each item's comment box and not posted, by item
  * id, and every comment GitHub did not take — never lost (D8): one posted from the item's thread kept until it is
- * posted or discarded, any other put back into its box. In memory only, and only for the user signed in.
+ * posted or discarded, any other put back into its box — and every edit of a text GitHub did not take, until saved or
+ * cancelled. In memory only, and only for the user signed in.
  */
 export type CommentDrafts = Resolved<typeof CommentDrafts>;
 export const CommentDrafts = defineService({
@@ -31,6 +44,7 @@ export const CommentDrafts = defineService({
     setup({ auth }) {
         const draftsRef = shallowRef<ReadonlyMap<string, string>>(new Map());
         const failedRef = shallowRef<readonly FailedComment[]>([]);
+        const failedEditsRef = shallowRef<readonly FailedTextEdit[]>([]);
         let nextFailed = 1;
 
         watch(
@@ -38,6 +52,7 @@ export const CommentDrafts = defineService({
             () => {
                 draftsRef.value = new Map();
                 failedRef.value = [];
+                failedEditsRef.value = [];
             },
             { flush: 'sync' },
         );
@@ -45,7 +60,7 @@ export const CommentDrafts = defineService({
         return {
             /** Whether any comment is typed and not posted, or was not taken by GitHub; reactive. */
             get hasAny() {
-                return draftsRef.value.size > 0 || failedRef.value.length > 0;
+                return draftsRef.value.size > 0 || failedRef.value.length > 0 || failedEditsRef.value.length > 0;
             },
             get,
             set,
@@ -55,6 +70,9 @@ export const CommentDrafts = defineService({
             retryFailed,
             settleFailed,
             discardFailed,
+            getFailedEdits,
+            addFailedEdit,
+            discardFailedEdit,
         };
 
         /** The item's draft; empty without one. Reactive. */
@@ -117,6 +135,24 @@ export const CommentDrafts = defineService({
 
         function discardFailed(id: number) {
             failedRef.value = failedRef.value.filter(comment => comment.id !== id);
+        }
+
+        /** The item's edits GitHub did not take; reactive. */
+        function getFailedEdits(itemId: string): FailedTextEdit[] {
+            return failedEditsRef.value.filter(edit => edit.itemId === itemId);
+        }
+
+        /** Keeps an edit GitHub did not take, in place of an earlier one of the same text. */
+        function addFailedEdit(edit: FailedTextEdit) {
+            discardFailedEdit(edit.itemId, edit.commentId);
+            failedEditsRef.value = [...failedEditsRef.value, edit];
+        }
+
+        /** Drops the edit GitHub did not take of the comment (`null`: the description): saved again, or cancelled. */
+        function discardFailedEdit(itemId: string, commentId: string | null) {
+            failedEditsRef.value = failedEditsRef.value.filter(
+                edit => edit.itemId !== itemId || edit.commentId !== commentId,
+            );
         }
 
         function update(id: number, comment: FailedComment) {

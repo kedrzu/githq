@@ -10,7 +10,7 @@ import type { RepositoryNames } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Clock } from '@/services/Clock.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
-import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
+import type { ItemDetail, ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -97,6 +97,14 @@ export const ItemEditor = defineService({
          * other goes back into its empty box, or over new text its toast offers to restore it ({@link CommentDrafts}).
          */
         async function edit(itemIds: readonly string[], request: EditRequest): Promise<EditOutcome> {
+            const editedId = getEditedText(request);
+            if (editedId !== undefined) {
+                // Saved again: the edit GitHub did not take before is this one now.
+                for (const id of itemIds) {
+                    drafts.discardFailedEdit(id, editedId);
+                }
+            }
+
             const account = getAccount();
             const prepared = account && (await prepareEdits(itemIds, request, account));
             if (!account || !prepared) {
@@ -105,6 +113,16 @@ export const ItemEditor = defineService({
 
             const outcome = await submitEdits(prepared, request, account);
             for (const { edit: failed, reason } of outcome.failed) {
+                const { subject } = failed;
+                if (subject.kind === 'textEdited' && isSignedIn(account)) {
+                    drafts.addFailedEdit({
+                        itemId: failed.itemId,
+                        commentId: subject.commentId,
+                        body: subject.body,
+                        reason,
+                    });
+                }
+
                 if (failed.subject.kind !== 'comment' || !isSignedIn(account)) {
                     continue;
                 }
@@ -187,7 +205,7 @@ export const ItemEditor = defineService({
                     viewer: { login: viewer.login, avatarUrl: viewer.avatarUrl },
                     now: new Date(clock.now()).toISOString(),
                 });
-                const allowed = isAllowed(getPermissions(item), itemRequest, places);
+                const allowed = isAllowed(getPermissions(item), itemRequest, places, details.get(item.id));
                 for (const made of madeEdits) {
                     if (!allowed) {
                         edits.push(notAllowed(made));
@@ -592,6 +610,9 @@ function needsMetadata(request: EditRequest) {
         case 'close':
         case 'reopen':
         case 'comment':
+        case 'editComment':
+        case 'deleteComment':
+        case 'editBody':
         case 'projectField':
         case 'projectFieldInProject':
         case 'addToProject':
@@ -639,8 +660,28 @@ function getNames(request: EditRequest): RepositoryNames {
     }
 }
 
-/** Whether the user may make the change of the item (D14). */
-function isAllowed(permissions: EditPermissions, request: ItemEditRequest, places: readonly ItemDetailProject[]) {
+/** The comment (`null`: the description) whose text the request edits; `undefined` for any other request. */
+function getEditedText(request: EditRequest): string | null | undefined {
+    switch (request.kind) {
+        case 'editComment':
+            return request.commentId;
+        case 'editBody':
+            return null;
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Whether the user may make the change of the item (D14). A comment's text and the description are GitHub's to say
+ * of (K1b): not read, they may not.
+ */
+function isAllowed(
+    permissions: EditPermissions,
+    request: ItemEditRequest,
+    places: readonly ItemDetailProject[],
+    detail: ItemDetail | undefined,
+) {
     switch (request.kind) {
         case 'labels':
             return permissions.labels;
@@ -655,6 +696,12 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
             return permissions.state;
         case 'comment':
             return permissions.comment;
+        case 'editComment':
+            return detail?.comments.nodes.find(comment => comment.id === request.commentId)?.viewerCanUpdate === true;
+        case 'deleteComment':
+            return detail?.comments.nodes.find(comment => comment.id === request.commentId)?.viewerCanDelete === true;
+        case 'editBody':
+            return detail?.viewerCanUpdate === true;
         case 'projectField':
             return places.find(place => place.itemId === request.projectItemId)?.viewerCanUpdate === true;
         case 'addToProject':

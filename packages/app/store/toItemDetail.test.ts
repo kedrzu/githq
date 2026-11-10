@@ -341,6 +341,9 @@ function comment(id: string) {
         createdAt: MONDAY,
         lastEditedAt: null,
         author: { login: 'octocat', avatarUrl: 'https://avatars.test/octocat' },
+        body: id,
         bodyHTML: `<p>${id}</p>`,
+        viewerCanUpdate: false,
+        viewerCanDelete: false,
     };
 }

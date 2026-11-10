@@ -16,6 +16,12 @@ failedReopened:
   en: "{reference} wasn't reopened"
 failedComment:
   en: Your comment on {reference} wasn't posted
+failedCommentEdited:
+  en: Your edit of a comment on {reference} wasn't saved
+failedBodyEdited:
+  en: Your edit of the description of {reference} wasn't saved
+failedCommentDeleted:
+  en: A comment on {reference} wasn't deleted
 failedProjectField:
   en: "{field} of {reference} wasn't set"
 failedAddedToProject:
@@ -60,6 +66,12 @@ changeReopened:
   en: reopened
 changeComment:
   en: comment
+changeCommentEdited:
+  en: comment edited
+changeBodyEdited:
+  en: description edited
+changeCommentDeleted:
+  en: comment deleted
 changeAddedToProject:
   en: added to {project}
 changeDraftAdded:
@@ -171,6 +183,8 @@ fieldState:
   en: State
 fieldComment:
   en: Comment
+fieldDescription:
+  en: Description
 fieldProjects:
   en: Projects
 fieldNewIssue:

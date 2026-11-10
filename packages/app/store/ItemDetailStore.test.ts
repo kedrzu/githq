@@ -262,7 +262,10 @@ function commentPage(from: number, to: number): IssueDetailFieldsFragment['comme
             createdAt: MONDAY,
             lastEditedAt: null,
             author: null,
+            body: id,
             bodyHTML: `<p>${id}</p>`,
+            viewerCanUpdate: false,
+            viewerCanDelete: false,
         })),
     };
 }

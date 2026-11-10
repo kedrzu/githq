@@ -10,3 +10,7 @@ authorChip:
   en: Author
 deletedUser:
   en: ghost
+commentMenu:
+  en: Comment actions
+descriptionMenu:
+  en: Description actions

@@ -7,6 +7,11 @@ defineProps<{
   disabled?: boolean;
 }>();
 
+const emit = defineEmits<{
+  /** Closed, about to give the focus back; `preventDefault()` when an entry moved it elsewhere. */
+  closeAutoFocus: [event: Event];
+}>();
+
 defineSlots<{
   /** The area: one element, which gets the menu's handlers. */
   default(): unknown;
@@ -30,6 +35,7 @@ const open = defineModel<boolean>('open', { default: false });
         :class="css.contextMenu"
         :collision-padding="8"
         data-no-commands
+        @close-auto-focus="emit('closeAutoFocus', $event)"
       >
         <slot name="content" />
       </ContextMenuContent>

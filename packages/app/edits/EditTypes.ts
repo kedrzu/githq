@@ -29,6 +29,11 @@ export type EditRequest =
            */
           readonly keptInThread?: boolean;
       }
+    /** A comment's new Markdown; one GitHub does not take opens its editor again with the text (`CommentDrafts`). */
+    | { readonly kind: 'editComment'; readonly commentId: string; readonly body: string }
+    | { readonly kind: 'deleteComment'; readonly commentId: string }
+    /** The description's new Markdown; one GitHub does not take opens its editor again with the text. */
+    | { readonly kind: 'editBody'; readonly body: string }
     | {
           readonly kind: 'projectField';
           /** The project item's id. */
@@ -92,6 +97,12 @@ export type EditSubject =
     | { readonly kind: 'reopened' }
     /** `body`: what the user wrote, put back into the comment box when GitHub does not take it. */
     | { readonly kind: 'comment'; readonly body: string }
+    /**
+     * A comment's (`commentId`) or, with `null`, the description's text edited: `body` is what the user wrote, opened
+     * again in its editor when GitHub does not take it.
+     */
+    | { readonly kind: 'textEdited'; readonly commentId: string | null; readonly body: string }
+    | { readonly kind: 'commentDeleted' }
     | { readonly kind: 'projectField'; readonly project: string; readonly field: string; readonly value: string | null }
     | { readonly kind: 'addedToProject'; readonly project: string }
     | { readonly kind: 'draftAdded'; readonly project: string; readonly title: string }

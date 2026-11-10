@@ -134,6 +134,12 @@ export class ItemViewHarness {
         return this.root.getByRole('listitem').filter({ hasText: text });
     }
 
+    /** Picks `action` ("Edit", "Delete…") from the ⋯ menu of the comment holding `text`. */
+    async commentAction(text: string, action: string): Promise<void> {
+        await this.entry(text).getByRole('button', { name: 'Comment actions' }).click();
+        await this.page.getByRole('menuitem', { name: action }).click();
+    }
+
     /** Posts a comment through the comment box: `R`, the text, ⌘↵. */
     async comment(text: string): Promise<void> {
         await this.page.keyboard.press('r');

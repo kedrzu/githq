@@ -101,6 +101,13 @@ export function createItemEdits(params: CreateItemEditsParams): Edit[] {
                 : [];
         case 'comment':
             return request.body.trim() ? [createCommentEdit(params, request.body, request.keptInThread ?? false)] : [];
+        case 'editComment':
+            // GitHub takes no empty comment.
+            return request.body.trim() ? [createCommentTextEdit(params, request.commentId, request.body)] : [];
+        case 'deleteComment':
+            return [createDeleteCommentEdit(item, request.commentId)];
+        case 'editBody':
+            return [createBodyEdit(params, request.body)];
         case 'projectField':
             return [createProjectFieldEdit(params, request)];
         case 'addToProject':
@@ -356,9 +363,13 @@ function createCommentEdit(params: CreateItemEditsParams, body: string, keptInTh
         id: `pending:${now}`,
         url: item.url,
         author: viewer,
+        body,
         bodyHtml: '',
         createdAt: now,
         lastEditedAt: null,
+        // Not GitHub's yet: nothing to edit or delete.
+        viewerCanUpdate: false,
+        viewerCanDelete: false,
         pendingBody: body,
     };
 
@@ -387,6 +398,100 @@ function createCommentEdit(params: CreateItemEditsParams, body: string, keptInTh
                     confirmedAt: comment.createdAt,
                 },
             };
+        },
+    };
+}
+
+/**
+ * A comment's text edited: shown at once as typed, marked edited, until GitHub's rendering arrives. One GitHub does not
+ * take opens its editor again with the text (`CommentDrafts`), so it says nothing else.
+ */
+function createCommentTextEdit(params: CreateItemEditsParams, commentId: string, body: string): Edit {
+    const { item, now } = params;
+    return {
+        ...getEditIdentity(item, { kind: 'textEdited', commentId, body }),
+        quiet: true,
+        optimistic: {
+            item: current => current,
+            detail: detail =>
+                withChangedComment(detail, commentId, comment => ({
+                    ...comment,
+                    body,
+                    pendingBody: body,
+                    lastEditedAt: now,
+                })),
+        },
+        send: async ({ sdk }) => {
+            const node = (await sdk.UpdateIssueComment({ id: commentId, body })).updateIssueComment?.issueComment;
+            if (!node) {
+                return toDroppedVerdict();
+            }
+
+            const comment = toItemComment(node);
+            const { lastEditedAt } = comment;
+            return {
+                kind: 'confirmed',
+                layer: {
+                    item: current => current,
+                    detail: detail => withChangedComment(detail, commentId, () => comment),
+                    // Read again since it was edited: the edit is in what was read.
+                    supersededBy: stored => lastEditedAt !== null && stored.updatedAt > lastEditedAt,
+                },
+            };
+        },
+    };
+}
+
+/** A comment deleted: gone at once; one GitHub does not delete comes back, its failure listed. */
+function createDeleteCommentEdit(item: Item, commentId: string): Edit {
+    return {
+        ...getEditIdentity(item, { kind: 'commentDeleted' }),
+        optimistic: {
+            item: current => ({ ...current, commentCount: Math.max(0, current.commentCount - 1) }),
+            detail: detail => withoutComment(detail, commentId),
+        },
+        send: async ({ sdk }) => {
+            if (!(await sdk.DeleteIssueComment({ id: commentId })).deleteIssueComment) {
+                return toDroppedVerdict();
+            }
+
+            // GitHub answers with nothing of it: gone from whatever is read, which a sync confirms.
+            return {
+                kind: 'confirmed',
+                layer: { item: current => current, detail: detail => withoutComment(detail, commentId) },
+            };
+        },
+    };
+}
+
+/**
+ * The description edited: shown at once as typed, marked edited, until GitHub's rendering arrives. One GitHub does not
+ * take opens its editor again with the text (`CommentDrafts`), so it says nothing else.
+ */
+function createBodyEdit(params: CreateItemEditsParams, body: string): Edit {
+    const { item, now } = params;
+    return {
+        ...getEditIdentity(item, { kind: 'textEdited', commentId: null, body }),
+        quiet: true,
+        optimistic: {
+            item: current => current,
+            detail: detail => ({ ...detail, body, pendingBody: body, lastEditedAt: now }),
+        },
+        send: async ({ sdk }) => {
+            const answer =
+                item.kind === 'issue'
+                    ? (await sdk.UpdateIssueBody({ id: item.id, body })).updateIssue?.issue
+                    : (await sdk.UpdatePullRequestBody({ id: item.id, body })).updatePullRequest?.pullRequest;
+            if (!answer) {
+                return toDroppedVerdict();
+            }
+
+            const { lastEditedAt, bodyHTML } = answer;
+            return confirmed(
+                answer.updatedAt,
+                current => current,
+                detail => ({ ...detail, body: answer.body, bodyHtml: bodyHTML, lastEditedAt }),
+            );
         },
     };
 }
@@ -885,6 +990,35 @@ function withComment(detail: ItemDetail, comment: ItemComment): ItemDetail {
             ...detail.comments,
             totalCount: detail.comments.totalCount + 1,
             nodes: [...detail.comments.nodes, comment],
+        },
+    };
+}
+
+function withChangedComment(
+    detail: ItemDetail,
+    commentId: string,
+    change: (comment: ItemComment) => ItemComment,
+): ItemDetail {
+    return {
+        ...detail,
+        comments: {
+            ...detail.comments,
+            nodes: detail.comments.nodes.map(comment => (comment.id === commentId ? change(comment) : comment)),
+        },
+    };
+}
+
+function withoutComment(detail: ItemDetail, commentId: string): ItemDetail {
+    if (!detail.comments.nodes.some(comment => comment.id === commentId)) {
+        return detail;
+    }
+
+    return {
+        ...detail,
+        comments: {
+            ...detail.comments,
+            totalCount: detail.comments.totalCount - 1,
+            nodes: detail.comments.nodes.filter(comment => comment.id !== commentId),
         },
     };
 }

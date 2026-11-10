@@ -1,9 +1,13 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description — and what they wrote below. A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description, its ⋯ — and what they wrote below. Its menu (`menu`) opens from the ⋯ and from a right click on the card; `status` says something for a moment after the time ("Link copied"). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
+import { Ellipsis } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
+import ContextMenu from '@/components/ContextMenu.vue';
+import IconButton from '@/components/IconButton.vue';
+import Menu from '@/components/Menu.vue';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 import { formatTimeAgo } from '@/utils/formatTimeAgo.js';
@@ -24,12 +28,19 @@ const props = defineProps<{
   sending?: boolean;
   /** GitHub did not take it. */
   failed?: boolean;
+  /** Said quietly after the time, for a moment ("Link copied"). */
+  status?: string | null;
+}>();
+
+const emit = defineEmits<{
+  /** Its menu closed, about to give the focus back; `preventDefault()` keeps it where an entry moved it. */
+  menuClose: [event: Event];
 }>();
 
 defineSlots<{
   /** What was written. */
   default(): unknown;
-  /** The card's ⋯ at the end of its head. */
+  /** The entries of the card's menu, from its ⋯ at the end of its head or a right click on the card. */
   menu?(): unknown;
   /** A band at the bottom of the card, under what was written. */
   footer?(): unknown;
@@ -49,53 +60,78 @@ const when = computed(() => {
 </script>
 
 <template>
-  <div :class="css.itemThreadCard">
-    <div :class="css.itemThreadCard_gutter">
-      <Avatar
-        :name="login"
-        :src="author?.avatarUrl"
-        size="lg"
-        decorative
-      />
-    </div>
-    <div :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed]">
-      <p :class="css.itemThreadCard_head">
-        <span :class="css.itemThreadCard_author">{{ login }}</span>
-        <span
-          v-if="failed"
-          :class="[css.itemThreadCard_when, css.itemThreadCard_notSent]"
-          >{{ t(l.notSent) }}</span
-        >
-        <span
-          v-else-if="sending"
-          :class="css.itemThreadCard_when"
-          >{{ t(l.sending) }}</span
-        >
-        <time
-          v-else
-          :class="css.itemThreadCard_when"
-          :datetime="createdAt"
-          >{{ when }}</time
-        >
-        <span
-          v-if="edited"
-          :class="css.itemThreadCard_when"
-          >{{ t(l.edited) }}</span
-        >
-        <span :class="css.itemThreadCard_spacer" />
-        <span
-          v-if="description"
-          :class="css.itemThreadCard_chip"
-          >{{ t(l.authorChip) }}</span
-        >
-        <slot name="menu" />
-      </p>
-      <div :class="css.itemThreadCard_body">
-        <slot />
+  <ContextMenu
+    :disabled="!$slots.menu"
+    @close-auto-focus="emit('menuClose', $event)"
+  >
+    <div :class="css.itemThreadCard">
+      <div :class="css.itemThreadCard_gutter">
+        <Avatar
+          :name="login"
+          :src="author?.avatarUrl"
+          size="lg"
+          decorative
+        />
       </div>
-      <slot name="footer" />
+      <div :class="[css.itemThreadCard_card, failed && css.itemThreadCard_failed]">
+        <p :class="css.itemThreadCard_head">
+          <span :class="css.itemThreadCard_author">{{ login }}</span>
+          <span
+            v-if="failed"
+            :class="[css.itemThreadCard_when, css.itemThreadCard_notSent]"
+            >{{ t(l.notSent) }}</span
+          >
+          <span
+            v-else-if="sending"
+            :class="css.itemThreadCard_when"
+            >{{ t(l.sending) }}</span
+          >
+          <time
+            v-else
+            :class="css.itemThreadCard_when"
+            :datetime="createdAt"
+            >{{ when }}</time
+          >
+          <span
+            v-if="edited"
+            :class="css.itemThreadCard_when"
+            >{{ t(l.edited) }}</span
+          >
+          <!-- The rest of the line, where a status shows. -->
+          <span
+            :class="[css.itemThreadCard_when, css.itemThreadCard_spacer]"
+            role="status"
+            >{{ status }}</span
+          >
+          <span
+            v-if="description"
+            :class="css.itemThreadCard_chip"
+            >{{ t(l.authorChip) }}</span
+          >
+          <Menu
+            v-if="$slots.menu"
+            align="end"
+            @close-auto-focus="emit('menuClose', $event)"
+          >
+            <template #trigger>
+              <IconButton
+                :icon="Ellipsis"
+                :label="description ? t(l.descriptionMenu) : t(l.commentMenu)"
+              />
+            </template>
+            <slot name="menu" />
+          </Menu>
+        </p>
+        <div :class="css.itemThreadCard_body">
+          <slot />
+        </div>
+        <slot name="footer" />
+      </div>
     </div>
-  </div>
+    <template #content>
+      <slot name="menu" />
+    </template>
+  </ContextMenu>
 </template>
 
 <style lang="scss" module="css">

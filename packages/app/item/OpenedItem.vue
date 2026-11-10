@@ -109,6 +109,7 @@ const commentDraft = computed({
 });
 
 const failedComments = computed(() => (opened.id === null ? [] : drafts.getFailed(opened.id)));
+const failedEdits = computed(() => (opened.id === null ? [] : drafts.getFailedEdits(opened.id)));
 
 const editing = computed((): ItemEditing | null => {
   const { item } = opened;
@@ -268,6 +269,12 @@ function edit(request: EditRequest) {
   }
 }
 
+function discardEdit(commentId: string | null) {
+  if (opened.id !== null) {
+    drafts.discardFailedEdit(opened.id, commentId);
+  }
+}
+
 function retryComment(id: number) {
   void editor.retryComment(id);
 }
@@ -316,9 +323,11 @@ function loadViewerProjects() {
       :merge-checks="mergeOptions.options?.checks ?? null"
       :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
       :failed-comments="failedComments"
+      :failed-edits="failedEdits"
       @edit="edit"
       @retry-comment="retryComment"
       @discard-comment="drafts.discardFailed($event)"
+      @discard-edit="discardEdit"
       @merge="merge"
       @need-projects="loadViewerProjects"
       @close="close"
@@ -365,9 +374,11 @@ function loadViewerProjects() {
     :merge-checks="mergeOptions.options?.checks ?? null"
     :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
     :failed-comments="failedComments"
+    :failed-edits="failedEdits"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"
+    @discard-edit="discardEdit"
     @merge="merge"
     @need-projects="loadViewerProjects"
     @close="close"

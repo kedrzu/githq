@@ -86,9 +86,12 @@ export function toItemComment(comment: IssueCommentFieldsFragment): ItemComment 
         id: comment.id,
         url: comment.url,
         author: toDetailAuthor(comment.author),
+        body: comment.body,
         bodyHtml: comment.bodyHTML,
         createdAt: comment.createdAt,
         lastEditedAt: comment.lastEditedAt,
+        viewerCanUpdate: comment.viewerCanUpdate,
+        viewerCanDelete: comment.viewerCanDelete,
     };
 }
 
@@ -216,6 +219,8 @@ function toDetailBase(
         fetchedAt,
         body: node.body,
         bodyHtml: node.bodyHTML,
+        lastEditedAt: node.lastEditedAt,
+        viewerCanUpdate: node.viewerCanUpdate,
         locked: node.locked,
         reactions,
         comments: toItemComments(node.commentPage),

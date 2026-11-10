@@ -45,6 +45,8 @@ export const D1_ISSUE_DETAIL: IssueDetail = {
     body: 'Recurring visits created before the DST change render one hour late in the week view.',
     bodyHtml:
         '<p>Recurring visits created before the DST change render one hour late in the week view. Single visits are fine. Repro: weekly visit on Oct 20, switch to Nov 3.</p>',
+    lastEditedAt: null,
+    viewerCanUpdate: true,
     locked: false,
     reactions: [],
     comments: {
@@ -97,6 +99,8 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
     body: 'Moves issues, pull requests and project items into IndexedDB.',
     bodyHtml:
         '<p>Moves issues, pull requests and project items into IndexedDB so reads never wait on the network. Schema v1: one store per kind, indexed by repository and <code>updatedAt</code>.</p>',
+    lastEditedAt: null,
+    viewerCanUpdate: true,
     locked: false,
     reactions: [],
     comments: {
@@ -217,9 +221,13 @@ function comment(id: string, author: ItemComment['author'], age: number, text: s
         id,
         url: `https://github.com/acme/web/issues/1#${id}`,
         author,
+        body: text,
         bodyHtml: `<p>${text}</p>`,
         createdAt: ago(age),
         lastEditedAt: null,
+        // GitHub lets the viewer edit and delete their own.
+        viewerCanUpdate: author?.login === SAMPLE_VIEWER.login,
+        viewerCanDelete: author?.login === SAMPLE_VIEWER.login,
     };
 }
 

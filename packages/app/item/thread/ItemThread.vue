@@ -1,11 +1,12 @@
-<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. -->
+<!-- An opened item's whole history as one thread on a rail: the description as its first card, then every comment read so far, oldest first, then the composer — there while the rest is read too. When GitHub has older comments than were read, a fold before them reads the rest. Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed — GitHub renders it once it has it. A comment GitHub did not take stays after the comments read, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer or copies its link; an edit GitHub did not take opens again with its text and why. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
-import { computed, nextTick, ref, useTemplateRef } from 'vue';
+import { computed, nextTick, onScopeDispose, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
-import type { FailedComment } from '@/edits/CommentDrafts.js';
+import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
+import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
@@ -13,7 +14,10 @@ import type { Item, ItemUser } from '@/store/ItemTypes.js';
 import GitHubHtml from '../GitHubHtml.vue';
 import * as l from './ItemThread.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
+import ItemThreadDeleteDialog from './ItemThreadDeleteDialog.vue';
+import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
+import ItemThreadMenu from './ItemThreadMenu.vue';
 
 const props = defineProps<{
   item: Item;
@@ -29,6 +33,10 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** The user may comment: a failed comment can be sent again. */
   canRetry?: boolean;
+  /** The user's edits of the comments and the description GitHub did not take. */
+  failedEdits?: readonly FailedTextEdit[];
+  /** The thread's people, whom `@` suggests first in an editor. */
+  people?: readonly ItemUser[];
 }>();
 
 const emit = defineEmits<{
@@ -36,6 +44,12 @@ const emit = defineEmits<{
   retry: [id: number];
   /** Drop the failed comment. */
   discard: [id: number];
+  /** A comment or the description edited, or a comment deleted. */
+  edit: [request: EditRequest];
+  /** An edit GitHub did not take was cancelled: of the comment, or (`null`) the description. */
+  discardEdit: [commentId: string | null];
+  /** Quote reply: the Markdown quoted into the composer. */
+  quoteReply: [body: string];
 }>();
 
 defineSlots<{
@@ -48,10 +62,104 @@ const editTexts = useEditTexts();
 const commentsRef = useTemplateRef('comments');
 /** The first comment the fold revealed: focusable, so the keyboard picks up where the fold was. */
 const revealedId = ref<string | null>(null);
+/** How long "Link copied" shows. */
+const COPIED_MS = 2000;
+/** The text of each card edited in place, by its comment's id; `null` for the description. */
+const editorsRef = shallowRef<ReadonlyMap<string | null, string>>(new Map());
+/** The editor the user just opened: it takes the focus. */
+const focusedEditor = ref<string | null | undefined>(undefined);
+/** The comment asked to be deleted, while the dialog asks. */
+const deletingId = ref<string | null>(null);
+/** The card whose link was just copied (`null`: the description); `undefined` for none. */
+const copiedId = ref<string | null | undefined>(undefined);
+let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+/** The text Quote reply picked, handed over once the menu closed: the composer then keeps the focus it takes. */
+let quoted: string | null = null;
+onScopeDispose(() => clearTimeout(copiedTimer));
+
+// An edit GitHub did not take opens its editor again with the text: nothing written is lost.
+watch(
+  () => props.failedEdits,
+  failed => {
+    for (const edit of failed ?? []) {
+      if (!editorsRef.value.has(edit.commentId)) {
+        setEditor(edit.commentId, edit.body);
+      }
+    }
+  },
+  { immediate: true },
+);
 
 const folded = computed(() =>
   props.detail ? props.detail.comments.totalCount - props.detail.comments.nodes.length : 0,
 );
+
+function setEditor(id: string | null, text: string | null) {
+  const next = new Map(editorsRef.value);
+  if (text === null) {
+    next.delete(id);
+  } else {
+    next.set(id, text);
+  }
+
+  editorsRef.value = next;
+}
+
+function getFailure(id: string | null) {
+  return props.failedEdits?.find(edit => edit.commentId === id)?.reason ?? null;
+}
+
+function startEdit(id: string | null, body: string) {
+  focusedEditor.value = id;
+  setEditor(id, body);
+}
+
+function cancelEdit(id: string | null) {
+  setEditor(id, null);
+  if (getFailure(id)) {
+    emit('discardEdit', id);
+  }
+}
+
+/** Saved as it was: nothing to send, unless it is an edit GitHub did not take. */
+function saveEdit(id: string | null, body: string) {
+  const text = editorsRef.value.get(id) ?? '';
+  setEditor(id, null);
+  if (text === body && !getFailure(id)) {
+    return;
+  }
+
+  emit('edit', id === null ? { kind: 'editBody', body: text } : { kind: 'editComment', commentId: id, body: text });
+}
+
+function confirmDelete() {
+  const id = deletingId.value;
+  deletingId.value = null;
+  if (id !== null) {
+    emit('edit', { kind: 'deleteComment', commentId: id });
+  }
+}
+
+function quote(body: string) {
+  quoted = body;
+}
+
+function onMenuClose(event: Event) {
+  if (quoted !== null) {
+    event.preventDefault();
+    emit('quoteReply', quoted);
+    quoted = null;
+  }
+}
+
+function copyLink(id: string | null, url: string) {
+  void navigator.clipboard.writeText(url);
+  copiedId.value = id;
+  clearTimeout(copiedTimer);
+  copiedTimer = setTimeout(() => {
+    copiedId.value = undefined;
+  }, COPIED_MS);
+}
 
 // The fold goes with what it hid; focus moves to the first comment it revealed instead of falling to the page.
 async function showEarlier() {
@@ -71,14 +179,37 @@ async function showEarlier() {
       {{ t(l.loading) }}
     </p>
     <template v-else>
+      <ItemThreadEditor
+        v-if="editorsRef.has(null)"
+        :text="editorsRef.get(null) ?? ''"
+        :author="item.author"
+        :repository="item.repository.nameWithOwner"
+        :people="people"
+        :reason="getFailure(null)"
+        :autofocus="focusedEditor === null"
+        description
+        @update:text="setEditor(null, $event)"
+        @save="saveEdit(null, detail.body)"
+        @cancel="cancelEdit(null)"
+      />
       <ItemThreadCard
+        v-else
         :author="item.author"
         :created-at="item.createdAt"
         :now="now"
+        :edited="detail.lastEditedAt !== null"
+        :sending="detail.pendingBody !== undefined"
+        :status="copiedId === null ? t(l.linkCopied) : null"
         description
+        @menu-close="onMenuClose"
       >
+        <p
+          v-if="detail.pendingBody !== undefined"
+          :class="[css.itemThread_typed, css.itemThread_pending]"
+          v-text="detail.pendingBody"
+        />
         <GitHubHtml
-          v-if="detail.bodyHtml"
+          v-else-if="detail.bodyHtml"
           :class="css.itemThread_text"
           :html="detail.bodyHtml"
         />
@@ -88,6 +219,14 @@ async function showEarlier() {
         >
           {{ t(l.noDescription) }}
         </p>
+        <template #menu>
+          <ItemThreadMenu
+            :can-edit="detail.viewerCanUpdate && detail.pendingBody === undefined"
+            @edit="startEdit(null, detail.body)"
+            @quote-reply="quote(detail.body)"
+            @copy-link="copyLink(null, item.url)"
+          />
+        </template>
       </ItemThreadCard>
       <ItemThreadFold
         v-if="folded > 0"
@@ -105,12 +244,27 @@ async function showEarlier() {
           :tabindex="comment.id === revealedId ? -1 : undefined"
           :class="css.itemThread_comment"
         >
+          <ItemThreadEditor
+            v-if="editorsRef.has(comment.id)"
+            :text="editorsRef.get(comment.id) ?? ''"
+            :author="comment.author"
+            :repository="item.repository.nameWithOwner"
+            :people="people"
+            :reason="getFailure(comment.id)"
+            :autofocus="focusedEditor === comment.id"
+            @update:text="setEditor(comment.id, $event)"
+            @save="saveEdit(comment.id, comment.body)"
+            @cancel="cancelEdit(comment.id)"
+          />
           <ItemThreadCard
+            v-else
             :author="comment.author"
             :created-at="comment.createdAt"
             :now="now"
             :edited="comment.lastEditedAt !== null"
             :sending="comment.pendingBody !== undefined"
+            :status="copiedId === comment.id ? t(l.linkCopied) : null"
+            @menu-close="onMenuClose"
           >
             <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
             <p
@@ -123,6 +277,20 @@ async function showEarlier() {
               :class="css.itemThread_text"
               :html="comment.bodyHtml"
             />
+            <!-- On its way, it has nothing GitHub would act on yet. -->
+            <template
+              v-if="comment.pendingBody === undefined"
+              #menu
+            >
+              <ItemThreadMenu
+                :can-edit="comment.viewerCanUpdate"
+                :can-delete="comment.viewerCanDelete"
+                @edit="startEdit(comment.id, comment.body)"
+                @quote-reply="quote(comment.body)"
+                @copy-link="copyLink(comment.id, comment.url)"
+                @delete="deletingId = comment.id"
+              />
+            </template>
           </ItemThreadCard>
         </li>
         <li
@@ -170,6 +338,11 @@ async function showEarlier() {
       </ol>
     </template>
     <slot name="composer" />
+    <ItemThreadDeleteDialog
+      :open="deletingId !== null"
+      @update:open="deletingId = null"
+      @delete="confirmDelete"
+    />
   </div>
 </template>
 

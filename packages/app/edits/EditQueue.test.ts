@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
 import type {
+    IssueCommentFieldsFragment,
     ProjectItemDetailFieldsFragment,
     RepositoryLabelQuery,
     RepositoryMetadataQuery,
@@ -467,6 +468,132 @@ test('a comment not sent is dropped only when discarded, and on sign-out', async
     expect(drafts.hasAny).toBe(false);
 });
 
+test('a comment edited shows at once as typed and edited, then as GitHub rendered it', async () => {
+    const { editor, details, github, session } = await setup();
+    github.comments = [sampleComment('IC_1', 'First take')];
+    await details.ensure('I_1');
+    const held = createPromise();
+    github.hold(held.promise);
+
+    const done = editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_1', body: 'Second take' });
+    await session.clock.advance(0);
+
+    expect(details.get('I_1')?.comments.nodes).toMatchObject([
+        { id: 'IC_1', body: 'Second take', pendingBody: 'Second take', lastEditedAt: expect.any(String) },
+    ]);
+
+    held.resolve();
+    expect(await done).toEqual({ failed: [] });
+    expect(github.mutations()).toEqual([
+        { operation: 'UpdateIssueComment', variables: { id: 'IC_1', body: 'Second take' } },
+    ]);
+    const [comment] = details.get('I_1')?.comments.nodes ?? [];
+    expect([comment?.bodyHtml, comment?.pendingBody, comment?.lastEditedAt]).toEqual([
+        '<p>Second take</p>',
+        undefined,
+        CONFIRMED,
+    ]);
+});
+
+test('an edit GitHub refuses never loses the text: the comment reads as it was, and the text waits with why, no toast', async () => {
+    const { editor, details, drafts, queue, github } = await setup();
+    github.comments = [sampleComment('IC_1', 'First take')];
+    await details.ensure('I_1');
+    github.error = { type: 'FORBIDDEN', message: 'Comment is too long' };
+
+    await editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_1', body: 'Second take' });
+
+    expect(details.get('I_1')?.comments.nodes.map(comment => [comment.body, comment.pendingBody])).toEqual([
+        ['First take', undefined],
+    ]);
+    expect(drafts.getFailedEdits('I_1')).toEqual([
+        {
+            itemId: 'I_1',
+            commentId: 'IC_1',
+            body: 'Second take',
+            reason: { kind: 'refused', message: 'Comment is too long' },
+        },
+    ]);
+    expect(queue.failures).toEqual([]);
+
+    // Saved again, it waits no more.
+    github.error = null;
+    await editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_1', body: 'Shorter' });
+    expect(drafts.getFailedEdits('I_1')).toEqual([]);
+    expect(details.get('I_1')?.comments.nodes[0]?.body).toBe('Shorter');
+});
+
+test('a comment deleted is gone at once; one GitHub refuses to delete comes back, with its toast', async () => {
+    const { editor, details, queue, github, session } = await setup();
+    github.comments = [sampleComment('IC_1', 'Keep'), sampleComment('IC_2', 'Drop')];
+    await details.ensure('I_1');
+    const held = createPromise();
+    github.hold(held.promise);
+
+    const done = editor.edit(['I_1'], { kind: 'deleteComment', commentId: 'IC_2' });
+    await session.clock.advance(0);
+    expect(details.get('I_1')?.comments.nodes.map(comment => comment.id)).toEqual(['IC_1']);
+    expect(details.get('I_1')?.comments.totalCount).toBe(1);
+
+    held.resolve();
+    expect(await done).toEqual({ failed: [] });
+    expect(github.mutations()).toEqual([{ operation: 'DeleteIssueComment', variables: { id: 'IC_2' } }]);
+    expect(details.get('I_1')?.comments.nodes.map(comment => comment.id)).toEqual(['IC_1']);
+
+    github.error = { type: 'FORBIDDEN', message: 'Resource not accessible by integration' };
+    const refused = await editor.edit(['I_1'], { kind: 'deleteComment', commentId: 'IC_1' });
+
+    expect(refused.failed.map(failed => failed.edit.subject)).toEqual([{ kind: 'commentDeleted' }]);
+    expect(details.get('I_1')?.comments.nodes.map(comment => comment.id)).toEqual(['IC_1']);
+    expect(queue.failures).toMatchObject([{ toast: true }]);
+});
+
+test('K1b: what GitHub does not let the viewer edit or delete is never sent, and the text written is kept', async () => {
+    const { editor, details, drafts, github } = await setup();
+    github.comments = [sampleComment('IC_1', 'Theirs', { viewerCanUpdate: false, viewerCanDelete: false })];
+    github.bodyEditable = false;
+    await details.ensure('I_1');
+
+    const edited = await editor.edit(['I_1'], { kind: 'editComment', commentId: 'IC_1', body: 'Mine now' });
+    const deleted = await editor.edit(['I_1'], { kind: 'deleteComment', commentId: 'IC_1' });
+    const described = await editor.edit(['I_1'], { kind: 'editBody', body: 'New description' });
+
+    expect([edited, deleted, described].flatMap(outcome => outcome.failed.map(failed => failed.reason))).toEqual([
+        { kind: 'notAllowed' },
+        { kind: 'notAllowed' },
+        { kind: 'notAllowed' },
+    ]);
+    expect(github.mutations()).toEqual([]);
+    expect(details.get('I_1')?.comments.nodes.map(comment => comment.body)).toEqual(['Theirs']);
+    expect(drafts.getFailedEdits('I_1').map(edit => [edit.commentId, edit.body])).toEqual([
+        ['IC_1', 'Mine now'],
+        [null, 'New description'],
+    ]);
+});
+
+test('the description edited shows at once as typed and edited, then as GitHub rendered it', async () => {
+    const { editor, details, github, session } = await setup();
+    await details.ensure('I_1');
+    const held = createPromise();
+    github.hold(held.promise);
+
+    const done = editor.edit(['I_1'], { kind: 'editBody', body: 'Steps to reproduce' });
+    await session.clock.advance(0);
+    expect(details.get('I_1')).toMatchObject({ body: 'Steps to reproduce', pendingBody: 'Steps to reproduce' });
+
+    held.resolve();
+    expect(await done).toEqual({ failed: [] });
+    expect(github.mutations()).toEqual([
+        { operation: 'UpdateIssueBody', variables: { id: 'I_1', body: 'Steps to reproduce' } },
+    ]);
+    const detail = details.get('I_1');
+    expect([detail?.bodyHtml, detail?.pendingBody, detail?.lastEditedAt]).toEqual([
+        '<p>Steps to reproduce</p>',
+        undefined,
+        CONFIRMED,
+    ]);
+});
+
 /** The fake GitHub of a test: what it answers the edits with. */
 interface FakeGitHub {
     readonly viewer: string;
@@ -479,6 +606,10 @@ interface FakeGitHub {
     readonly dropFor: Set<string>;
     /** What every answer fails with. */
     error: GitHubGraphQLErrorEntry | null;
+    /** I_1's comments, as its detail reads them and the comment edits change them. */
+    comments: IssueCommentFieldsFragment[];
+    /** Whether GitHub lets the viewer edit I_1's description. */
+    bodyEditable: boolean;
     /** The edits received, in order. */
     mutations(): { operation: string; variables: Readonly<Record<string, unknown>> }[];
     /** The tokens the edits carried. */
@@ -568,6 +699,8 @@ async function setup(options: SetupOptions = {}) {
         keepState: true,
         dropFor: new Set(),
         error: null,
+        comments: [],
+        bodyEditable: true,
         mutations: () => received().map(({ operation, variables }) => ({ operation, variables })),
         tokens: () => received().map(request => request.token),
         hold: promise => {
@@ -617,6 +750,12 @@ async function setup(options: SetupOptions = {}) {
                     data: {
                         node: {
                             ...sampleIssueDetailNode(String(request.variables.id), BEFORE),
+                            viewerCanUpdate: github.bodyEditable,
+                            commentPage: {
+                                totalCount: github.comments.length,
+                                pageInfo: { hasPreviousPage: false, startCursor: null },
+                                nodes: github.comments,
+                            },
                             projectItems: { nodes: [place()] },
                         },
                     },
@@ -670,12 +809,43 @@ async function setup(options: SetupOptions = {}) {
                                     createdAt: CONFIRMED,
                                     lastEditedAt: null,
                                     author: { login, avatarUrl: `https://avatars.test/${login}` },
+                                    body: 'Fixed in <b>#12</b>',
                                     bodyHTML: '<p>Fixed in <b>#12</b></p>',
+                                    viewerCanUpdate: true,
+                                    viewerCanDelete: true,
                                 },
                             },
                         },
                     },
                 };
+            case 'UpdateIssueComment': {
+                github.comments = github.comments.map(comment =>
+                    comment.id === request.variables.id
+                        ? {
+                              ...comment,
+                              body: String(request.variables.body),
+                              bodyHTML: `<p>${String(request.variables.body)}</p>`,
+                              lastEditedAt: CONFIRMED,
+                          }
+                        : comment,
+                );
+                const issueComment = github.comments.find(comment => comment.id === request.variables.id) ?? null;
+                return { data: { updateIssueComment: { issueComment } } };
+            }
+            case 'DeleteIssueComment':
+                github.comments = github.comments.filter(comment => comment.id !== request.variables.id);
+                return { data: { deleteIssueComment: { clientMutationId: null } } };
+            case 'UpdateIssueBody': {
+                const body = String(request.variables.body);
+                const issue = {
+                    id: request.variables.id,
+                    updatedAt: CONFIRMED,
+                    lastEditedAt: CONFIRMED,
+                    body,
+                    bodyHTML: `<p>${body}</p>`,
+                };
+                return { data: { updateIssue: { issue } } };
+            }
             default:
                 return undefined;
         }
@@ -702,6 +872,26 @@ async function setup(options: SetupOptions = {}) {
             data: adding ? { addLabelsToLabelable: { labelable } } : { removeLabelsFromLabelable: { labelable } },
         };
     }
+}
+
+/** A comment on I_1 as GitHub reads it; the viewer may edit and delete it unless told otherwise. */
+function sampleComment(
+    id: string,
+    body: string,
+    overrides: Partial<IssueCommentFieldsFragment> = {},
+): IssueCommentFieldsFragment {
+    return {
+        id,
+        url: `https://github.com/acme/web/issues/1#issuecomment-${id}`,
+        createdAt: BEFORE,
+        lastEditedAt: null,
+        author: { login: 'octocat', avatarUrl: 'https://avatars.test/octocat' },
+        body,
+        bodyHTML: `<p>${body}</p>`,
+        viewerCanUpdate: true,
+        viewerCanDelete: true,
+        ...overrides,
+    };
 }
 
 /** An edit of `itemId` drawing nothing, that GitHub answers with `answer`. */

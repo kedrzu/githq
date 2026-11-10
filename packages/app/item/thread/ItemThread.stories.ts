@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { fn } from 'storybook/test';
 
-import type { FailedComment } from '@/edits/CommentDrafts.js';
+import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
@@ -89,9 +89,12 @@ export const EditedAndSending: Story = {
                         id: 'pending:1',
                         url: D1_ISSUE.url,
                         author: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl },
+                        body: 'Fixed in #1205.\n\nThe series start is converted when it is created.',
                         bodyHtml: '',
                         createdAt: new Date(SAMPLE_NOW).toISOString(),
                         lastEditedAt: null,
+                        viewerCanUpdate: false,
+                        viewerCanDelete: false,
                         pendingBody: 'Fixed in #1205.\n\nThe series start is converted when it is created.',
                     },
                 ],
@@ -119,6 +122,22 @@ export const NotSentReadOnly: Story = {
         ...NotSent.args,
         canRetry: false,
         failedComments: FAILED_COMMENTS.slice(0, 1),
+    },
+};
+
+/** F15: the user's edit of their comment GitHub did not take, open again in place with the text and why. */
+export const EditRefused: Story = {
+    args: {
+        failedEdits: [
+            {
+                itemId: D1_ISSUE.id,
+                commentId: 'C_2',
+                body: 'Opened #1205 — converting at creation. Migrating existing series in a follow-up.',
+                reason: { kind: 'refused', message: 'Body is too long.' },
+            } satisfies FailedTextEdit,
+        ],
+        onEdit: fn(),
+        onDiscardEdit: fn(),
     },
 };
 

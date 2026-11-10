@@ -29,6 +29,15 @@ export interface ItemDetailBase {
     readonly body: string;
     /** GitHub's own rendering of the body, sanitized by GitHub. */
     readonly bodyHtml: string;
+    /**
+     * The body as the user saved it and GitHub has not answered yet: shown as typed until GitHub's rendering replaces
+     * it. Never kept.
+     */
+    readonly pendingBody?: string;
+    /** When the body was last edited; `null` when never. */
+    readonly lastEditedAt: string | null;
+    /** GitHub lets the viewer edit the body (K1b). */
+    readonly viewerCanUpdate: boolean;
     /** Its conversation is locked to collaborators: only they may comment (`getEditPermissions`). */
     readonly locked: boolean;
     /** Only the reactions given, in GitHub's order. */
@@ -88,13 +97,19 @@ export interface ItemComment {
     readonly url: string;
     /** `null` for a deleted account. */
     readonly author: ItemUser | null;
+    /** Markdown, as written — what an edit starts from. */
+    readonly body: string;
     /** GitHub's own rendering, sanitized by GitHub; empty for a comment on its way. */
     readonly bodyHtml: string;
     readonly createdAt: string;
     readonly lastEditedAt: string | null;
+    /** GitHub lets the viewer edit it (K1b). */
+    readonly viewerCanUpdate: boolean;
+    /** GitHub lets the viewer delete it (K1b). */
+    readonly viewerCanDelete: boolean;
     /**
-     * Posted by the user and on its way to GitHub: what they typed, shown at once as text — GitHub renders the
-     * markdown once it has it. Never kept (M3 editing).
+     * Posted or edited by the user and on its way to GitHub: what they typed, shown at once as text — GitHub renders
+     * the markdown once it has it. Never kept (M3 editing).
      */
     readonly pendingBody?: string;
 }

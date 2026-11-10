@@ -8,7 +8,20 @@ import { D1_ISSUE_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import * as stories from './ItemThread.stories.js';
 
-const { IssueInPanel, PullRequestInPanel, NotSent, NotSentReadOnly } = composeStories(stories);
+const { IssueInPanel, PullRequestInPanel, NotSent, NotSentReadOnly, EditRefused } = composeStories(stories);
+
+/** The card of the comment that reads `text`. */
+function card(text: string) {
+    return page.getByRole('listitem').filter({ hasText: text });
+}
+
+/** Opens the ⋯ menu of the comment that reads `text`. */
+async function openMenu(text: string) {
+    await userEvent.click(card(text).getByRole('button', { name: 'Comment actions' }));
+}
+
+const MINE = 'Opened #1205';
+const THEIRS = 'Same on mobile.';
 
 test('comments older than those read are folded before them; the fold reads them and is busy until they are in', async () => {
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -79,4 +92,95 @@ test('where the user may no longer comment, a comment not sent stays readable wi
     await expect.element(page.getByText('The cross-repository case is fixed in 3f2a9b1')).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Discard' })).toBeVisible();
     expect(page.getByRole('button', { name: 'Retry' }).query()).toBeNull();
+});
+
+test("K1b: the user's own comment offers Edit and Delete…; one GitHub does not let them change, only Quote reply and Copy link", async () => {
+    await IssueInPanel.run();
+
+    await openMenu(MINE);
+    const items = page.getByRole('menuitem');
+    await expect.element(items.nth(0)).toHaveTextContent('Edit');
+    expect(items.elements().map(item => item.textContent.trim())).toEqual([
+        'Edit',
+        'Quote reply',
+        'Copy link',
+        'Delete…',
+    ]);
+    await userEvent.keyboard('{Escape}');
+
+    await openMenu(THEIRS);
+    await expect.element(items.nth(0)).toHaveTextContent('Quote reply');
+    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Quote reply', 'Copy link']);
+});
+
+test('the description has the same menu without Delete, from a right click too', async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByText('Recurring visits created before the DST change'), { button: 'right' });
+
+    const items = page.getByRole('menuitem');
+    await expect.element(items.nth(0)).toHaveTextContent('Edit');
+    expect(items.elements().map(item => item.textContent.trim())).toEqual(['Edit', 'Quote reply', 'Copy link']);
+});
+
+test("Edit opens the comment's Markdown in place; Cancel (Esc) puts the card back unchanged, nothing sent", async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    await openMenu(MINE);
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await expect.element(editor).toHaveFocus();
+    await expect.element(editor).toHaveValue('Opened #1205 — converting at creation and migrating existing series.');
+
+    await userEvent.type(editor, ' Typed away.');
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(editor).not.toBeInTheDocument();
+    await expect.element(card(MINE)).toHaveTextContent(/migrating existing series\.$/u);
+    expect(onEdit).not.toHaveBeenCalled();
+});
+
+test('⌘↵ saves the edit through the edit path and closes the editor', async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    await openMenu(MINE);
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await userEvent.clear(editor);
+    await userEvent.type(editor, 'Opened a pull request.');
+    await userEvent.keyboard('{ControlOrMeta>}{Enter}{/ControlOrMeta}');
+
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'editComment', commentId: 'C_2', body: 'Opened a pull request.' });
+    await expect.element(editor).not.toBeInTheDocument();
+});
+
+test('Delete… asks once; only the confirmation deletes', async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    await openMenu(MINE);
+    await userEvent.click(page.getByRole('menuitem', { name: 'Delete…' }));
+    const dialog = page.getByRole('dialog', { name: 'Delete this comment?' });
+    await expect.element(dialog).toBeVisible();
+    expect(onEdit).not.toHaveBeenCalled();
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Delete comment' }));
+    expect(onEdit).toHaveBeenCalledWith({ kind: 'deleteComment', commentId: 'C_2' });
+    await expect.element(dialog).not.toBeInTheDocument();
+});
+
+test('an edit GitHub did not take is open again with the text and why; Cancel drops it', async () => {
+    const onDiscardEdit = vi.fn();
+    await EditRefused.run({ args: { ...EditRefused.args, onDiscardEdit } });
+
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await expect
+        .element(editor)
+        .toHaveValue('Opened #1205 — converting at creation. Migrating existing series in a follow-up.');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Not sent: GitHub refused it: Body is too long.');
+
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }));
+    expect(onDiscardEdit).toHaveBeenCalledWith('C_2');
 });
