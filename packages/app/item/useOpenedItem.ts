@@ -126,13 +126,12 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
     );
 
     // Opened, a pull request has its review threads read, from the disk at once and then GitHub — again only when it is
-    // opened again, or by someone else signed in.
+    // opened again, or by someone else signed in. Each source is compared by value: the row is replaced on every poll.
     watch(
-        () =>
-            [
-                item.value?.kind === 'pullRequest' ? formatItemReference(getItemReference(item.value)) : null,
-                accounts.current,
-            ] as const,
+        [
+            () => (item.value?.kind === 'pullRequest' ? formatItemReference(getItemReference(item.value)) : null),
+            () => accounts.current,
+        ],
         ([key]) => {
             const current = item.value;
             reviewModel.value = key !== null && current ? reviewFiles.openThreads(getItemReference(current)) : null;
