@@ -220,10 +220,40 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   click), the comment being edited in place, the saved comment with “· edited”, and someone else's comment where you
   can't write: Quote reply and Copy link only. Delete… asks once. The description card has the same menu without
   Delete.
+- [ ] New `Activity / Comment · editing, discard?` (`BVHXx`, a variant of `Activity / Comment · editing`): leaving an
+  edit whose text was changed asks in the editor's footer first, as code review's CR97 does: an amber circle-alert and
+  “Discard your changes to this comment?” (`$fg`) where “Markdown” was, then Keep editing (Esc) and Discard (↵,
+  `#DA3633` fill — Primer's red emphasis, so the white label reaches AA). Esc, Cancel, J / K, opening another item and
+  closing the item ask; Esc again keeps editing; an unchanged edit closes without a question. F15 (`BLYpR`) gains a
+  third row showing it (`u1CA8R`), and its caption says so.
 - [ ] New F16 · The thread loading, empty, or not loaded (`Q2H7SU`): three columns at panel width. Loading the first
   time: the description and the composer are there, the rail shows how many items GitHub reported and a skeleton;
   later opens come from the local copy with no skeleton. Empty: the rail runs from the description straight to the
   composer. Not loaded: `Activity / Thread · failed` on the rail; what is there stays.
+- [ ] F16 (`Q2H7SU`) corrected to what an item's detail holds: the description comes with the comments and events, not
+  with the item's row, so before the first read none of them is on the device. Loading and Not loaded hide the
+  description card (`C7P6R`, `Pflvp`); the loading skeleton's first card stands for it. `Activity / Thread · failed`
+  (`V75cQv`) reads “The description, comments and events couldn't be loaded” and “GitHub can't be reached, so they
+  aren't on this device yet.” (was “The comments and events couldn't be loaded” and “… The description above is from
+  this device.”). The caption says so, and that a read failing later changes nothing on screen.
+- [ ] `Activity / Thread · loading` (`FZHVU`): the line reads “Loading 4 comments and the events from GitHub” (was “…
+  and 6 events…”): before the detail arrives the item's row knows how many comments it has, not how many events.
+- [ ] Captions brought in line with what was built (2026-11-10):
+  - F13 (`U9JZ1`) “One line per burst” (`fdTFK`): objects of one kind merge in the order the kinds first came; one keeps
+    its title, several show references only (“mentioned this in #14, #15, and #16”); one author's commits in a row are
+    one push, split where more than an hour passed between two of them (GitHub gives no push time).
+  - F13 “CI, failures only” (`n0ntVn`): “CI” where a person would be, no avatar; only the newest run of each check
+    counts, and a cancelled run is not a failure.
+  - F13 “In a fold” (`F5ti1`): the counts are GitHub's own, the close that comes with a merge is not an event of its
+    own. F13's caption (`HADwB`): “marked as a duplicate” is not shown, the close says it.
+  - F5's caption (`s4L7N6`), the fold: everything stays in time order; what GitHub hasn't given yet, of the comments or
+    of the events, folds with the middle; expanding reads it and puts it in place.
+  - F15's caption (`o9BXr`): Discard after J / K, another item or closing goes where you were going; Update description
+    on the description; a refused edit gives a toast and opens the editor again; Copy link is quiet.
+  - I4's caption (`L5oEi3`): ⇧X and the item menu's close also post the typed comment first; a comment not sent has no
+    toast, its card says it; @ lists the thread's people first, # the repository's items from this device when tracked,
+    else GitHub's search once typing pauses, never the item itself; the suggestion list stays inside the item; in a
+    modal the first Esc leaves the box, the next closes the item.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
