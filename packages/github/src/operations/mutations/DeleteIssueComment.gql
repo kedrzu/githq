@@ -1,0 +1,6 @@
+# Deletes a comment; GitHub answers with nothing of it, and keeps no copy.
+mutation DeleteIssueComment($id: ID!) {
+    deleteIssueComment(input: { id: $id }) {
+        clientMutationId
+    }
+}

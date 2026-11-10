@@ -3,6 +3,9 @@ fragment IssueDetailFields on Issue {
     ...IssueFields
     body
     bodyHTML
+    lastEditedAt
+    # GitHub says whether the viewer may edit the description (K1b).
+    viewerCanUpdate
     # Locked to collaborators: only people with write access may comment (`getEditPermissions`).
     locked
     reactionGroups {
