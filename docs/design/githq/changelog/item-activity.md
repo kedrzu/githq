@@ -254,6 +254,8 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     toast, its card says it; @ lists the thread's people first, # the repository's items from this device when tracked,
     else GitHub's search once typing pauses, never the item itself; the suggestion list stays inside the item; in a
     modal the first Esc leaves the box, the next closes the item.
+- [x] F15's caption (`o9BXr`): a right click opens the card's menu outside its text; on the text GitHub rendered the
+  browser's menu stays, as everywhere GitHub's rendering shows (GitHub links, #247).
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
