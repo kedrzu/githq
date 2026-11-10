@@ -1,5 +1,9 @@
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
-import type { IssueTimelineItemsItemType, PullRequestTimelineItemsItemType } from '@githq/github/generated.gen.js';
+import type {
+    CommentPageFieldsFragment,
+    IssueTimelineItemsItemType,
+    PullRequestTimelineItemsItemType,
+} from '@githq/github/generated.gen.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -184,11 +188,7 @@ export const ItemDetailStore = defineService({
                 return;
             }
 
-            const updated = change(detail);
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            store(current, change(detail));
         }
 
         /**
@@ -368,20 +368,7 @@ export const ItemDetailStore = defineService({
                 return;
             }
 
-            const older = toItemComments(node.commentPage);
-            const updated: ItemDetail = {
-                ...detail,
-                comments: {
-                    totalCount: older.totalCount,
-                    first: detail.comments.first,
-                    nodes: [...older.nodes, ...detail.comments.nodes],
-                    olderCursor: older.olderCursor,
-                },
-            };
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            store(current, withCommentPage(detail, node.commentPage));
         }
 
         /**
@@ -444,22 +431,10 @@ export const ItemDetailStore = defineService({
             }
 
             if (commentsBefore && node.commentPage) {
-                const older = toItemComments(node.commentPage);
-                updated = {
-                    ...updated,
-                    comments: {
-                        ...updated.comments,
-                        totalCount: older.totalCount,
-                        nodes: [...older.nodes, ...updated.comments.nodes],
-                        olderCursor: older.olderCursor,
-                    },
-                };
+                updated = withCommentPage(updated, node.commentPage);
             }
 
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            store(current, updated);
         }
 
         /**
@@ -487,15 +462,11 @@ export const ItemDetailStore = defineService({
             }
 
             const older = toItemReviewPage(node.reviews);
-            const updated: ItemDetail = {
+            store(current, {
                 ...detail,
                 reviewSummaries: [...older.reviewSummaries, ...detail.reviewSummaries],
                 olderReviewCursor: older.olderReviewCursor,
-            };
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            });
         }
 
         /**
@@ -689,6 +660,14 @@ export const ItemDetailStore = defineService({
             tabs.publish({ kind: 'details', details: kept });
         }
 
+        /** Puts one detail changed in memory, on disk and in the user's other tabs. */
+        function store(current: Session, detail: ItemDetail) {
+            detailsRef.value.set(detail.id, detail);
+            triggerRef(detailsRef);
+            write(current, [detail]);
+            tabs.publish({ kind: 'details', details: [detail] });
+        }
+
         function write(current: Session, details: readonly ItemDetail[]) {
             persistence.saveDetails(current.account.login, details).catch((error: unknown) => {
                 logger.warn('Could not keep item details; they are read again from GitHub next time', { error });
@@ -798,6 +777,20 @@ function withOlderComments(previous: ItemDetail | undefined, fresh: ItemDetail):
             ...fresh.comments,
             nodes: [...previous.comments.nodes.slice(0, joinAt), ...fresh.comments.nodes],
             olderCursor: previous.comments.olderCursor,
+        },
+    };
+}
+
+/** The detail with a page of older comments (`MoreComments`, `ThreadMiddle`) put before those it holds. */
+function withCommentPage(detail: ItemDetail, page: CommentPageFieldsFragment): ItemDetail {
+    const older = toItemComments(page);
+    return {
+        ...detail,
+        comments: {
+            ...detail.comments,
+            totalCount: older.totalCount,
+            nodes: [...older.nodes, ...detail.comments.nodes],
+            olderCursor: older.olderCursor,
         },
     };
 }
