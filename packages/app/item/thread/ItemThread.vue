@@ -2,7 +2,7 @@
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, RotateCw } from 'lucide-vue-next';
-import { computed, nextTick, onScopeDispose, ref, shallowRef, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, ref, shallowRef, useTemplateRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
@@ -62,20 +62,14 @@ const editTexts = useEditTexts();
 const commentsRef = useTemplateRef('comments');
 /** The first comment the fold revealed: focusable, so the keyboard picks up where the fold was. */
 const revealedId = ref<string | null>(null);
-/** How long "Link copied" shows. */
-const COPIED_MS = 2000;
 /** The text of each card edited in place, by its comment's id; `null` for the description. */
 const editorsRef = shallowRef<ReadonlyMap<string | null, string>>(new Map());
 /** The editor the user just opened: it takes the focus. */
 const focusedEditor = ref<string | null | undefined>(undefined);
 /** The comment asked to be deleted, while the dialog asks. */
 const deletingId = ref<string | null>(null);
-/** The card whose link was just copied (`null`: the description); `undefined` for none. */
-const copiedId = ref<string | null | undefined>(undefined);
-let copiedTimer: ReturnType<typeof setTimeout> | undefined;
 /** The text Quote reply picked, handed over once the menu closed: the composer then keeps the focus it takes. */
 let quoted: string | null = null;
-onScopeDispose(() => clearTimeout(copiedTimer));
 
 // An edit GitHub did not take opens its editor again with the text: nothing written is lost.
 watch(
@@ -152,13 +146,8 @@ function onMenuClose(event: Event) {
   }
 }
 
-function copyLink(id: string | null, url: string) {
+function copyLink(url: string) {
   void navigator.clipboard.writeText(url);
-  copiedId.value = id;
-  clearTimeout(copiedTimer);
-  copiedTimer = setTimeout(() => {
-    copiedId.value = undefined;
-  }, COPIED_MS);
 }
 
 // The fold goes with what it hid; focus moves to the first comment it revealed instead of falling to the page.
@@ -199,7 +188,6 @@ async function showEarlier() {
         :now="now"
         :edited="detail.lastEditedAt !== null"
         :sending="detail.pendingBody !== undefined"
-        :status="copiedId === null ? t(l.linkCopied) : null"
         description
         @menu-close="onMenuClose"
       >
@@ -224,7 +212,7 @@ async function showEarlier() {
             :can-edit="detail.viewerCanUpdate && detail.pendingBody === undefined"
             @edit="startEdit(null, detail.body)"
             @quote-reply="quote(detail.body)"
-            @copy-link="copyLink(null, item.url)"
+            @copy-link="copyLink(item.url)"
           />
         </template>
       </ItemThreadCard>
@@ -263,7 +251,6 @@ async function showEarlier() {
             :now="now"
             :edited="comment.lastEditedAt !== null"
             :sending="comment.pendingBody !== undefined"
-            :status="copiedId === comment.id ? t(l.linkCopied) : null"
             @menu-close="onMenuClose"
           >
             <!-- `v-text`: text only, without the template's whitespace around it, which `pre-wrap` would show. -->
@@ -287,7 +274,7 @@ async function showEarlier() {
                 :can-delete="comment.viewerCanDelete"
                 @edit="startEdit(comment.id, comment.body)"
                 @quote-reply="quote(comment.body)"
-                @copy-link="copyLink(comment.id, comment.url)"
+                @copy-link="copyLink(comment.url)"
                 @delete="deletingId = comment.id"
               />
             </template>

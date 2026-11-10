@@ -1,4 +1,4 @@
-<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description, its ⋯ — and what they wrote below. Its menu (`menu`) opens from the ⋯ and from a right click on the card; `status` says something for a moment after the time ("Link copied"). A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
+<!-- One card on an item's thread (`ItemThread`): the writer's avatar in the rail's gutter, level with the card's head — who, "commented" and when, "· edited" once changed, an "Author" chip on the description, its ⋯ — and what they wrote below. Its menu (`menu`) opens from the ⋯ and from a right click on the card. A comment on its way says "Sending…" for its time; one GitHub did not take says "Not sent", in red like its border, with why below it (`footer`). -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { Ellipsis } from 'lucide-vue-next';
@@ -28,8 +28,6 @@ const props = defineProps<{
   sending?: boolean;
   /** GitHub did not take it. */
   failed?: boolean;
-  /** Said quietly after the time, for a moment ("Link copied"). */
-  status?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -97,12 +95,7 @@ const when = computed(() => {
             :class="css.itemThreadCard_when"
             >{{ t(l.edited) }}</span
           >
-          <!-- The rest of the line, where a status shows. -->
-          <span
-            :class="[css.itemThreadCard_when, css.itemThreadCard_spacer]"
-            role="status"
-            >{{ status }}</span
-          >
+          <span :class="css.itemThreadCard_spacer" />
           <span
             v-if="description"
             :class="css.itemThreadCard_chip"
