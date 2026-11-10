@@ -43,7 +43,7 @@ const editorRef = useTemplateRef<InstanceType<typeof MarkdownEditor>>('editor');
 
 onMounted(async () => {
   if (props.autofocus) {
-    await editorRef.value?.focus();
+    await editorRef.value?.focus('head');
   }
 });
 

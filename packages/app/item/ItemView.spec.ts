@@ -337,6 +337,55 @@ test('R brings the composer into view leaving the space the end of the scroll le
     expect(scroll.scrollTop).toBeCloseTo(scroll.scrollHeight - scroll.clientHeight, 0);
 });
 
+test('Quote reply of a long comment leaves its HTML comments out and brings the end of the box, where the cursor is, into view', async () => {
+    const [first, mine] = D1_ISSUE_DETAIL.comments.nodes;
+    const lines = Array.from({ length: 60 }, (_, index) => `Step ${index + 1}.`);
+    const long = {
+        ...mine!,
+        id: 'C_LONG',
+        body: `<!-- Fill in the steps -->\n${lines.join('\n')}`,
+        bodyHtml: '<p>Steps</p>',
+    };
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            detail: { ...D1_ISSUE_DETAIL, comments: { ...D1_ISSUE_DETAIL.comments, nodes: [first!, long] } },
+        },
+    });
+    const scroll = getContentScroll();
+    scroll.scrollTop = 0;
+
+    await userEvent.click(page.getByText('Steps', { exact: true }), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Quote reply' }));
+
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await expect.element(box).toHaveFocus();
+    await expect.element(box).toHaveValue(`${lines.map(line => `> ${line}`).join('\n')}\n\n`);
+    await expect
+        .poll(() => isInView(page.getByRole('button', { name: 'Comment', exact: true }).element(), scroll))
+        .toBe(true);
+});
+
+test("Edit of a long comment keeps the editor's head in view, not only the caret at its end", async () => {
+    const [first, mine] = D1_ISSUE_DETAIL.comments.nodes;
+    const body = Array.from({ length: 60 }, (_, index) => `Step ${index + 1}.`).join('\n');
+    const long = { ...mine!, id: 'C_LONG', body, bodyHtml: '<p>Steps</p>' };
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            detail: { ...D1_ISSUE_DETAIL, comments: { ...D1_ISSUE_DETAIL.comments, nodes: [first!, long] } },
+        },
+    });
+    const scroll = getContentScroll();
+
+    await userEvent.click(page.getByText('Steps', { exact: true }), { button: 'right' });
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+
+    await expect.element(page.getByRole('textbox', { name: 'Edit comment' })).toHaveFocus();
+    const tabs = page.getByRole('tab', { name: 'Write' }).all();
+    await expect.poll(() => isInView(tabs[0]!.element(), scroll)).toBe(true);
+});
+
 test('K1b: a conversation locked to collaborators, or an archived repository, says so in place of the composer, and R has nothing to focus', async () => {
     const editing = {
         ...SAMPLE_MAINTAINER_EDITING,
@@ -379,6 +428,13 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
 });
 
 /** The panel's scrolling content: the column holding the item's heading. */
+/** `element` is wholly inside what `scroll` shows. */
+function isInView(element: Element, scroll: HTMLElement) {
+    const box = element.getBoundingClientRect();
+    const view = scroll.getBoundingClientRect();
+    return box.top >= view.top && box.bottom <= view.bottom;
+}
+
 function getContentScroll() {
     const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
     if (!scroll) {

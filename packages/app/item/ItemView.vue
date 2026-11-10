@@ -481,8 +481,8 @@ function edit(request: EditRequest) {
 }
 
 /**
- * Quote reply: the text quoted (`> ` on every line, then a blank line) after what is typed in the comment box, which
- * comes into view with the cursor in it.
+ * Quote reply: the text quoted (`> ` on every line, then a blank line), without its HTML comments, after what is typed
+ * in the comment box, which takes the cursor with its end in view.
  */
 function quoteReply(body: string) {
   // Where the composer takes no comment, the quote would sit in a draft no one sees.
@@ -490,7 +490,11 @@ function quoteReply(body: string) {
     return;
   }
 
-  const text = body.trim();
+  // HTML comments (an issue template's hints) render as nothing: quoted, they would show.
+  const text = body
+    .replace(/<!--[\s\S]*?-->/gu, '')
+    .replace(/\n{3,}/gu, '\n\n')
+    .trim();
   const quote = `${applyMarkdownTool(text, { start: 0, end: text.length }, 'quote').insert}\n\n`;
   const typed = commentDraft.value;
   commentDraft.value = typed.trim() ? `${typed.trimEnd()}\n\n${quote}` : quote;

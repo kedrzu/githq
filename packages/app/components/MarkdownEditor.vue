@@ -21,7 +21,7 @@ import {
   TextQuote,
 } from 'lucide-vue-next';
 import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoot, ToolbarSeparator } from 'reka-ui';
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import type { PropType } from 'vue';
 
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
@@ -88,6 +88,8 @@ const suggestions = useMarkdownSuggestions({
   people: () => props.people,
 });
 
+const headRef = useTemplateRef<HTMLElement>('head');
+const footerRef = useTemplateRef<HTMLElement>('footer');
 const tab = ref<'write' | 'preview'>('write');
 /**
  * GitHub's rendering of a text in a repository: the last one asked for on the Preview tab, kept while the user writes
@@ -120,14 +122,23 @@ const preview = useDataSource({
 const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ? preview.value : null));
 
 defineExpose({
-  /** Puts the cursor in the text area, on the Write tab. */
+  /**
+   * Puts the cursor in the text area, on the Write tab, and brings into view the editor's `head` (a long text opened
+   * to edit: its tabs and tools, the caret wherever it is) or its `end` (where the caret is after a quote).
+   */
   focus,
 });
 
-async function focus() {
+async function focus(reveal: 'head' | 'end') {
   tab.value = 'write';
   await nextTick();
-  input.value?.focus();
+  // Not scrolled to the caret by the browser: on a long text that takes the head out of view.
+  input.value?.focus({ preventScroll: true });
+  // A frame on, the text area has grown to its text (`useTextArea` sizes it a tick after the text changes).
+  await new Promise(resolve => {
+    requestAnimationFrame(resolve);
+  });
+  (reveal === 'head' ? headRef : footerRef).value?.scrollIntoView({ block: 'nearest' });
 }
 
 // The suggestions take their keys first: with them open, Enter inserts one and Escape closes them only.
@@ -185,7 +196,10 @@ interface RenderedPreview {
     @update:model-value="onTab"
     @keydown="onKeydown"
   >
-    <div :class="css.markdownEditor_head">
+    <div
+      ref="head"
+      :class="css.markdownEditor_head"
+    >
       <TabsList :class="css.markdownEditor_tabs">
         <TabsTrigger
           value="write"
@@ -286,7 +300,10 @@ interface RenderedPreview {
         {{ t(l.previewLoading) }}
       </p>
     </TabsContent>
-    <div :class="css.markdownEditor_footer">
+    <div
+      ref="footer"
+      :class="css.markdownEditor_footer"
+    >
       <FileText
         :class="css.markdownEditor_footerIcon"
         aria-hidden="true"

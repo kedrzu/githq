@@ -63,10 +63,11 @@ const stateAction = computed(() => {
 });
 
 defineExpose({
-  /** Brings the composer into view and puts the cursor in it. */
+  /** Puts the cursor in it, its end in view: where the cursor is after a quote. Read only, brings it into view. */
   focus: async () => {
+    await editorRef.value?.focus('end');
+    // The editor's end in view, the rest of it follows as far as it fits: the space the scroll leaves under it too.
     rootRef.value?.scrollIntoView({ block: 'nearest' });
-    await editorRef.value?.focus();
   },
 });
 
