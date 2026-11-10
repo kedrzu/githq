@@ -366,7 +366,8 @@ interface Session {
 
 interface Model {
     readonly files: PullRequestFiles;
-    reopen(): void;
+    /** `withFiles`: its list of files is wanted too, read from then on if it was not. */
+    reopen(withFiles: boolean): void;
     drop(): void;
     /** Viewed marks or comments are on their way to GitHub: dropping the model would forget how they end. */
     isSending(): boolean;
@@ -425,14 +426,22 @@ export const ReviewFiles = defineService({
 
         accounts.onChange(follow);
 
-        return { open };
+        return {
+            /**
+             * The files of the pull request, reading them when first opened. Opened again while held it is the same model,
+             * its list read anew behind what it shows; only the last {@link MAX_MODELS_HELD} opened are, and the one a
+             * screen shows is always the last opened. `null` while signed out.
+             */
+            open: (reference: ItemReference) => openModel(reference, true),
+            /**
+             * The same model as {@link open}, for its threads and their writing alone: what the opened item's thread shows
+             * of code review (item-activity M4). Its list of files and their contents are not read until it is opened
+             * whole; opened again while held, its threads are read anew. `null` while signed out.
+             */
+            openThreads: (reference: ItemReference) => openModel(reference, false),
+        };
 
-        /**
-         * The files of the pull request, reading them when first opened. Opened again while held it is the same model,
-         * its list read anew behind what it shows; only the last {@link MAX_MODELS_HELD} opened are, and the one a screen
-         * shows is always the last opened. `null` while signed out.
-         */
-        function open(reference: ItemReference): PullRequestFiles | null {
+        function openModel(reference: ItemReference, withList: boolean): PullRequestFiles | null {
             const current = session;
             if (!current) {
                 return null;
@@ -440,10 +449,10 @@ export const ReviewFiles = defineService({
 
             const key = formatItemReference(reference);
             const held = current.models.get(key);
-            const model = held ?? createModel(current, reference);
+            const model = held ?? createModel(current, reference, withList);
             current.models.delete(key);
             current.models.set(key, model);
-            held?.reopen();
+            held?.reopen(withList);
             dropOldestModels(current);
             return model.files;
         }
@@ -475,7 +484,7 @@ export const ReviewFiles = defineService({
             };
         }
 
-        function createModel(current: Session, reference: ItemReference): Model {
+        function createModel(current: Session, reference: ItemReference, withList: boolean): Model {
             const repository = { owner: reference.owner, name: reference.name };
             const nameWithOwner = `${reference.owner}/${reference.name}`;
             const listKey = formatItemReference(reference);
@@ -523,6 +532,10 @@ export const ReviewFiles = defineService({
             let stateRead = false;
             /** The filter that goes to disk: the last that has run. */
             let filterToKeep = NO_FILTER;
+            /** Opened for more than its threads ({@link ReviewFiles.openThreads}): its list of files is read. */
+            let listWanted = withList;
+            /** What the disk holds of what the user did in the pull request, read once. */
+            let stateLoading: Promise<void> | null = null;
 
             const listReader = createSingleRunner({ handler: readListsAsked });
             const marksSender = createSingleRunner({ handler: sendViewedMarks });
@@ -1018,7 +1031,18 @@ export const ReviewFiles = defineService({
                 return mark.pending || mark.changedAt > askedAt;
             }
 
-            function reopen() {
+            /** Opened for its threads, only they are read anew; the first open for its files starts their list. */
+            function reopen(withFiles: boolean) {
+                if (!withFiles || !listWanted) {
+                    void threadsReader.execute();
+                    if (withFiles) {
+                        listWanted = true;
+                        void loadList();
+                    }
+
+                    return;
+                }
+
                 const list = listRef.value;
                 switch (list.kind) {
                     case 'failed':
@@ -1076,9 +1100,13 @@ export const ReviewFiles = defineService({
                 listRef.value = LOADING;
                 void loadThreads();
                 void writing.restoreBoxes();
+                await (listWanted ? loadList() : ensureState());
+            }
+
+            async function loadList() {
                 const [kept] = await Promise.all([
                     readFromDisk(() => blobs.readFileList(login, listKey)),
-                    stateRead ? null : loadState(),
+                    ensureState(),
                 ]);
                 if (dropped) {
                     return;
@@ -1091,6 +1119,11 @@ export const ReviewFiles = defineService({
                 }
 
                 await listReader.execute();
+            }
+
+            function ensureState() {
+                stateLoading ??= loadState();
+                return stateLoading;
             }
 
             /** Done before the list is `ready`, for a reopened pull request to draw in place at once. */

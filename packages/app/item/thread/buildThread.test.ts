@@ -1,18 +1,32 @@
 import { expect, test } from 'bun:test';
 
 import type { FailedComment } from '@/edits/CommentDrafts.js';
-import type { ItemCheck, ItemComment, ItemDetail, ThreadCommit, ThreadEvent } from '@/store/ItemDetailTypes.js';
+import type { ReviewThread, ReviewThreadComment } from '@/review/threads/ReviewThread.js';
+import type {
+    ItemCheck,
+    ItemComment,
+    ItemDetail,
+    ItemReviewSummary,
+    PullRequestDetail,
+    ThreadCommit,
+    ThreadEvent,
+} from '@/store/ItemDetailTypes.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 
 import { buildThread } from './buildThread.js';
-import type { ThreadEventLine, ThreadFold, ThreadItem } from './buildThread.js';
+import type { ThreadEventLine, ThreadFold, ThreadItem, ThreadPendingReview, ThreadReview } from './buildThread.js';
 
 const START = Date.parse('2026-11-02T10:00:00Z');
 const MLAINE: ItemUser = { login: 'mlaine', avatarUrl: '' };
 const DKIM: ItemUser = { login: 'dkim', avatarUrl: '' };
 const SOFIAB: ItemUser = { login: 'sofiab', avatarUrl: '' };
+const PNOWAK: ItemUser = { login: 'pnowak', avatarUrl: '' };
+/** The viewer's draft review. */
+const PENDING_ID = 'PRR_pending';
 const BUG = { name: 'bug', color: 'd73a4a' };
+/** A pull request with no reviews: a test gives it those it is about. */
+const PR_DETAIL: PullRequestDetail = { ...F1_PULL_REQUEST_DETAIL, reviewSummaries: [] };
 const STORAGE = { name: 'storage', color: '7b87f7' };
 
 test("one person's events within 10 minutes share a line, objects of one kind merged, in the order they came", () => {
@@ -364,7 +378,7 @@ test("what stays around the fold keeps the time order of what it hides, whicheve
     // The first two commits are one push; the commits after them are not read, the comments all are.
     const comments = Array.from({ length: 25 }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 5));
     const detail: ItemDetail = {
-        ...F1_PULL_REQUEST_DETAIL,
+        ...PR_DETAIL,
         comments: { totalCount: 25, first: comments.slice(0, 2), nodes: comments, olderCursor: null },
         events: {
             totalCount: 10,
@@ -398,7 +412,7 @@ test('the CI line names the commit the detail read its checks with, though the r
 
 test('a merge is told once: the close GitHub gives with it, at its time, is not drawn, wherever each was read', () => {
     const detail: ItemDetail = {
-        ...F1_PULL_REQUEST_DETAIL,
+        ...PR_DETAIL,
         comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
         events: {
             totalCount: 3,
@@ -418,7 +432,7 @@ test('a merge is told once: the close GitHub gives with it, at its time, is not 
 
 test("a merged pull request held whole folds as any other: the first 2 above, the band's counts what showing it reveals", () => {
     const detail: ItemDetail = {
-        ...F1_PULL_REQUEST_DETAIL,
+        ...PR_DETAIL,
         comments: { totalCount: 25, first: [], nodes: manyComments(25), olderCursor: null },
         events: {
             totalCount: 2,
@@ -441,7 +455,7 @@ test("a merged pull request held whole folds as any other: the first 2 above, th
 
 test("the fold's other events count the close a merge came with, held, as GitHub does: once with the merge", () => {
     const detail: ItemDetail = {
-        ...F1_PULL_REQUEST_DETAIL,
+        ...PR_DETAIL,
         comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
         events: {
             // E1, 3 not read, the merge and its close.
@@ -464,6 +478,134 @@ test('shown by the user, a long thread read whole folds no more', () => {
     const thread = buildThread({ detail: issueDetail([], many), unfolded: true });
 
     expect(idsOf(thread)).toEqual(many.map(entry => entry.id));
+});
+
+test('reviews come by when submitted with the threads they started, resolved apart; a code comment alone is an item; a reply carries none', () => {
+    // As nuxt/nuxt#36890 had them: a reply to a thread is a review of its own, saying nothing, starting nothing.
+    const opened = reviewThread('T1', [
+        threadComment('T1-0', SOFIAB, 10, 'R1'),
+        threadComment('T1-1', MLAINE, 20, 'R2'),
+    ]);
+    const resolved = reviewThread('T2', [threadComment('T2-0', SOFIAB, 10, 'R1')], { isResolved: true });
+    const alone = reviewThread('T3', [threadComment('T3-0', DKIM, 30, 'R3')]);
+    // Its review older than those read.
+    const older = reviewThread('T4', [threadComment('T4-0', DKIM, 1, 'R0')]);
+    const detail: ItemDetail = {
+        ...pullRequestDetail(
+            [{ ...base('E1', MLAINE, 50), kind: 'reviewDismissed', reviewer: PNOWAK, message: null }],
+            [comment('C1', DKIM, 25)],
+        ),
+        reviewSummaries: [
+            review('R5', PNOWAK, 'DISMISSED', 5, '<p>Not like this.</p>'),
+            review('R1', SOFIAB, 'CHANGES_REQUESTED', 10, '<p>Two things.</p>'),
+            review('R2', MLAINE, 'COMMENTED', 20),
+            review('R3', DKIM, 'COMMENTED', 30),
+            review('R4', DKIM, 'APPROVED', 40),
+        ],
+    };
+
+    const built = buildThread({ detail, reviewThreads: [older, opened, resolved, alone] });
+
+    expect(idsOf(built)).toEqual(['T4', 'R5', 'R1', 'C1', 'T3', 'R4', 'E1']);
+    const expected: ThreadReview = {
+        kind: 'review',
+        id: 'R1',
+        review: review('R1', SOFIAB, 'CHANGES_REQUESTED', 10, '<p>Two things.</p>'),
+        threads: [opened],
+        resolved: [resolved],
+    };
+    expect(built.find(entry => entry.id === 'R1')).toEqual(expected);
+    expect(built.find(entry => entry.id === 'T3')).toEqual({ kind: 'codeComment', id: 'T3', thread: alone });
+    expect(built.find(entry => entry.id === 'R5')).toMatchObject({ kind: 'review', threads: [], resolved: [] });
+});
+
+test('a draft review shows only to its author, last before the composer; nobody else’s draft comment shows anywhere', () => {
+    const draft = reviewThread('D1', [threadComment('D1-0', MLAINE, 60, PENDING_ID, 'PENDING')]);
+    const othersDraft = reviewThread('X1', [threadComment('X1-0', DKIM, 61, 'PRR_dkim', 'PENDING')]);
+    const replied = reviewThread('T1', [
+        threadComment('T1-0', SOFIAB, 10, 'R1'),
+        threadComment('T1-1', MLAINE, 62, PENDING_ID, 'PENDING'),
+        threadComment('T1-2', DKIM, 63, 'PRR_dkim', 'PENDING'),
+    ]);
+    const params = {
+        detail: {
+            ...pullRequestDetail([], []),
+            reviewSummaries: [review('R1', SOFIAB, 'COMMENTED', 10, '<p>Hm.</p>')],
+        },
+        reviewThreads: [draft, othersDraft, replied],
+        failedComments: [failedComment(1)],
+    };
+    const pendingReview = { id: PENDING_ID, commentCount: 2, createdAt: at(60) };
+
+    const own = buildThread({ ...params, pendingReview, viewerLogin: MLAINE.login });
+
+    const expected: ThreadPendingReview = {
+        kind: 'pendingReview',
+        id: 'pendingReview',
+        review: pendingReview,
+        threads: [draft],
+    };
+    expect(idsOf(own)).toEqual(['R1', 'failed:1', 'pendingReview']);
+    expect(own.at(-1)).toEqual(expected);
+    expect(commentIdsOf(own)).toEqual(['T1-0', 'T1-1', 'D1-0']);
+
+    // Signed in as someone with no draft: none shows, and nobody's draft comments.
+    const other = buildThread({ ...params, pendingReview: null, viewerLogin: SOFIAB.login });
+    expect(idsOf(other)).toEqual(['R1', 'failed:1']);
+    expect(commentIdsOf(other)).toEqual(['T1-0']);
+
+    // Nobody signed in: no draft is anyone's.
+    const nobody = buildThread({ ...params, pendingReview, viewerLogin: null });
+    expect(idsOf(nobody)).toEqual(['R1', 'failed:1']);
+    expect(commentIdsOf(nobody)).toEqual(['T1-0']);
+});
+
+test('the oldest review with a thread still open stays below the fold; one all resolved folds, counted as a comment', () => {
+    const comments = Array.from({ length: 24 }, (_, index) => comment(`C${index + 1}`, SOFIAB, index + 1));
+    const detail: ItemDetail = {
+        ...pullRequestDetail([], comments),
+        reviewSummaries: [
+            review('R0', DKIM, 'COMMENTED', 6.5, '<p>Settled.</p>'),
+            review('R1', DKIM, 'CHANGES_REQUESTED', 10.5, '<p>One thing.</p>'),
+            review('R2', DKIM, 'COMMENTED', 11.5),
+        ],
+    };
+    const reviewThreads = [
+        reviewThread('T0', [threadComment('T0-0', DKIM, 6.5, 'R0')], { isResolved: true }),
+        reviewThread('T1', [threadComment('T1-0', DKIM, 10.5, 'R1')]),
+        // A code comment still open, after: the review is the oldest.
+        reviewThread('T2', [threadComment('T2-0', DKIM, 11.5, 'R2')]),
+    ];
+
+    const built = buildThread({ detail, reviewThreads });
+
+    expect(idsOf(built)).toEqual(['C1', 'C2', 'fold', 'R1', 'C11', 'T2', ...comments.slice(11).map(entry => entry.id)]);
+    expect(foldOf(built)).toEqual(fold({ comments: 9 }));
+});
+
+test('asking for a review someone already gave asks for another review; a remove cancels either', () => {
+    const detail: ItemDetail = {
+        ...pullRequestDetail(
+            [
+                { ...base('E0', MLAINE, 5), kind: 'reviewRequested', reviewer: { kind: 'user', user: SOFIAB } },
+                { ...base('E1', MLAINE, 50), kind: 'reviewRequested', reviewer: { kind: 'user', user: SOFIAB } },
+                { ...base('E2', MLAINE, 51), kind: 'reviewRequested', reviewer: { kind: 'user', user: DKIM } },
+                { ...base('E3', MLAINE, 70), kind: 'reviewRequested', reviewer: { kind: 'user', user: SOFIAB } },
+                { ...base('E4', MLAINE, 71), kind: 'reviewRequestRemoved', reviewer: { kind: 'user', user: SOFIAB } },
+            ],
+            [],
+        ),
+        reviewSummaries: [review('R1', SOFIAB, 'APPROVED', 10)],
+    };
+
+    const built = buildThread({ detail });
+
+    expect(idsOf(built)).toEqual(['E0', 'R1', 'E1']);
+    expect(lineOf(built, 'E0').parts).toEqual([{ kind: 'reviewRequested', objects: [{ kind: 'user', user: SOFIAB }] }]);
+    expect(lineOf(built, 'E1').parts).toEqual([
+        { kind: 'reviewRequestedAgain', objects: [{ kind: 'user', user: SOFIAB }] },
+        { kind: 'reviewRequested', objects: [{ kind: 'user', user: DKIM }] },
+    ]);
 });
 
 const PROJECT = { title: 'tasklet Roadmap', url: 'https://github.com/users/mlaine/projects/1' };
@@ -514,9 +656,9 @@ function pullRequestDetail(
     newest: ThreadEvent[],
     nodes: ItemComment[],
     checks?: Pick<typeof F1_PULL_REQUEST_DETAIL, 'checks' | 'checkCount'>,
-): ItemDetail {
+): PullRequestDetail {
     return {
-        ...F1_PULL_REQUEST_DETAIL,
+        ...PR_DETAIL,
         checks: checks?.checks ?? [],
         checkCount: checks?.checkCount ?? 0,
         comments: { totalCount: nodes.length, first: [], nodes, olderCursor: null },
@@ -601,4 +743,79 @@ function check(name: string, state: ItemCheck['state'], completedMinutes: number
         startedAt: at(completedMinutes ?? 0),
         completedAt: completedMinutes === null ? null : at(completedMinutes),
     };
+}
+
+function review(
+    id: string,
+    author: ItemUser,
+    state: ItemReviewSummary['state'],
+    minutes: number,
+    bodyHtml = '',
+): ItemReviewSummary {
+    return {
+        id,
+        url: `https://github.com/kedrzu/githq/pull/1#pullrequestreview-${id}`,
+        author,
+        state,
+        bodyHtml,
+        submittedAt: at(minutes),
+    };
+}
+
+function reviewThread(id: string, comments: ReviewThreadComment[], changes: Partial<ReviewThread> = {}): ReviewThread {
+    return {
+        id,
+        path: 'src/store/schema.ts',
+        line: 12,
+        startLine: null,
+        originalLine: 12,
+        originalStartLine: null,
+        diffSide: 'RIGHT',
+        startDiffSide: null,
+        isOutdated: false,
+        isResolved: false,
+        subjectType: 'LINE',
+        viewerCanReply: true,
+        viewerCanResolve: true,
+        viewerCanUnresolve: false,
+        comments,
+        ...changes,
+    };
+}
+
+function threadComment(
+    id: string,
+    author: ItemUser,
+    minutes: number,
+    reviewId: string,
+    state: ReviewThreadComment['state'] = 'SUBMITTED',
+): ReviewThreadComment {
+    return {
+        id,
+        author,
+        bodyHTML: `<p>${id}</p>`,
+        createdAt: at(minutes),
+        url: `https://github.com/kedrzu/githq/pull/1#discussion_${id}`,
+        diffHunk: '@@ -1 +1 @@\n+const a = 1;',
+        outdated: false,
+        state,
+        originalCommit: { oid: 'c0ffee00', abbreviatedOid: 'c0ffee0' },
+        pullRequestReview: { id: reviewId },
+    };
+}
+
+/** Every code comment the thread shows, wherever. */
+function commentIdsOf(built: ThreadItem[]) {
+    return built.flatMap(entry => {
+        switch (entry.kind) {
+            case 'review':
+                return [...entry.threads, ...entry.resolved].flatMap(held => held.comments.map(each => each.id));
+            case 'codeComment':
+                return entry.thread.comments.map(each => each.id);
+            case 'pendingReview':
+                return entry.threads.flatMap(held => held.comments.map(each => each.id));
+            default:
+                return [];
+        }
+    });
 }

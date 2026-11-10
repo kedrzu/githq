@@ -1666,6 +1666,25 @@ export class GitHubWorld {
             );
             return { repository: { issueOrPullRequest: found ? { id: found.id } : null } };
         });
+        // Read when a pull request opens, for its thread's reviews: the world's have no thread on the code.
+        // `answerReview` gives a test's pull request its own.
+        github.graphql('PullRequestReviewThreads', ({ variables }) => {
+            const nameWithOwner = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
+            const found = [...this.items.values()].some(
+                item =>
+                    !item.deleted &&
+                    item.pullRequest !== null &&
+                    item.repository.toLowerCase() === nameWithOwner &&
+                    item.number === Number(variables.number),
+            );
+            return {
+                repository: {
+                    pullRequest: found
+                        ? { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] } }
+                        : null,
+                },
+            };
+        });
         github.graphql('ItemsByIds', ({ variables }) => {
             const ids = readIds(variables);
             return new GitHubPartialAnswer<'ItemsByIds'>(

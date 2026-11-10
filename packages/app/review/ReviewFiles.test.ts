@@ -1952,6 +1952,32 @@ test('a pull request GitHub says is gone takes its kept threads with it', async 
     });
 });
 
+test("opened for its threads, a pull request reads them alone, anew on each open; its review's open reads the files into the same model", async () => {
+    const github = createGitHub();
+    github.file({ path: 'a.ts', changeType: 'ADDED', after: 'a' });
+    github.setThreads([threadOn('a.ts', 'T1')]);
+    const session = createTestSession({ login: uniqueLogin(), answer: github.answer, answerRest: github.answerRest });
+    setIndexedDbPersistence(session.container);
+    const files = session.container.resolve(ReviewFiles);
+
+    const model = files.openThreads(REFERENCE);
+    if (!model) {
+        throw new Error('Signed in, so it opens');
+    }
+
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+    expect(reviewOperations(session)).toEqual([]);
+
+    github.setThreads([threadOn('a.ts', 'T2')]);
+    expect(files.openThreads(REFERENCE)).toBe(model);
+    await waitUntil(() => model.threads[0]?.id === 'T2', { timeoutMs: 2000 });
+    expect(reviewOperations(session)).toEqual([]);
+
+    expect(files.open(REFERENCE)).toBe(model);
+    await settled(model);
+    expect(model.getState('a.ts')).toEqual({ kind: 'ready', before: null, after: 'a' });
+});
+
 interface TestFile {
     readonly path: string;
     readonly changeType: ReviewFile['changeType'];

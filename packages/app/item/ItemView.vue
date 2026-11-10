@@ -57,6 +57,7 @@ import { countMergeChecks } from '@/merge/countMergeChecks.js';
 import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -123,6 +124,8 @@ const props = withDefaults(
     failedComments?: readonly FailedComment[];
     /** The user's edits of its comments and description GitHub did not take. */
     failedEdits?: readonly FailedTextEdit[];
+    /** A pull request's review threads, as code review reads them: its thread's reviews hold them. */
+    reviewThreads?: readonly ReviewThread[];
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -900,6 +903,7 @@ function getProjectOptions(): CommandOption[] {
                 :can-quote="canComment"
                 :failed-edits="failedEdits"
                 :people="threadPeople"
+                :review-threads="reviewThreads"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
                 @edit="emit('edit', $event)"

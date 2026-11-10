@@ -2,9 +2,13 @@ import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import { makeRef } from '@nzyme/vue-utils/reactivity/makeRef.js';
-import { computed, watch } from 'vue';
+import { computed, shallowRef, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 
+import { AccountSession } from '@/auth/AccountSession.js';
+import { ReviewFiles } from '@/review/ReviewFiles.js';
+import type { PullRequestFiles } from '@/review/ReviewFiles.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import { ItemStore } from '@/store/ItemStore.js';
@@ -12,6 +16,7 @@ import type { Item } from '@/store/ItemTypes.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
 import { ItemResolver } from './ItemResolver.js';
+import { formatItemReference, getItemReference } from './itemRoutes.js';
 import type { ItemReference } from './itemRoutes.js';
 
 /** Options of {@link useOpenedItem}. */
@@ -28,6 +33,11 @@ export interface OpenedItemViewModel {
     readonly item: Item | null;
     /** Body, comments, checks, every project field; `null` until read. */
     readonly detail: ItemDetail | null;
+    /**
+     * A pull request's review threads, code review's own (`ReviewFiles.openThreads`), with what is on its way to GitHub
+     * drawn over them: read when it opens, not on every poll. Empty for an issue, and until read.
+     */
+    readonly reviewThreads: readonly ReviewThread[];
     /** GitHub says there is no such item, or the user may not see it. */
     readonly missing: boolean;
     /** Its id could not be asked for: GitHub did not answer, for about half a minute, or refused. */
@@ -68,6 +78,8 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
     const details = useService(ItemDetailStore);
     const items = useService(ItemStore);
     const navigation = useService(ItemNavigation);
+    const reviewFiles = useService(ReviewFiles);
+    const accounts = useService(AccountSession);
     const logger = useLogger();
 
     const reference = makeRef(options.reference);
@@ -75,6 +87,7 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
     const id = computed(() => found.value ?? null);
     const item = computed(() => (id.value === null ? null : (details.getItem(id.value) ?? null)));
     const detail = computed(() => (id.value === null ? null : (details.get(id.value) ?? null)));
+    const reviewModel = shallowRef<PullRequestFiles | null>(null);
 
     watch(
         reference,
@@ -109,10 +122,26 @@ export function useOpenedItem(options: UseOpenedItemOptions): OpenedItemViewMode
         },
     );
 
+    // Opened, a pull request has its review threads read, from the disk at once and then GitHub — again only when it is
+    // opened again, or by someone else signed in.
+    watch(
+        () =>
+            [
+                item.value?.kind === 'pullRequest' ? formatItemReference(getItemReference(item.value)) : null,
+                accounts.current,
+            ] as const,
+        ([key]) => {
+            const current = item.value;
+            reviewModel.value = key !== null && current ? reviewFiles.openThreads(getItemReference(current)) : null;
+        },
+        { immediate: true },
+    );
+
     return reactive<OpenedItemViewModel>({
         id,
         item,
         detail,
+        reviewThreads: computed(() => reviewModel.value?.threads ?? []),
         missing: computed(() => found.value === null),
         failed: computed(() => found.value === undefined && resolver.hasFailed(reference.value)),
         detailFailed: computed(

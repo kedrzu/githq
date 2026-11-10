@@ -26,6 +26,8 @@ demilestoned:
   en: removed this from the {milestone} milestone
 reviewRequested:
   en: asked {reviewers} for a review
+reviewRequestedAgain:
+  en: asked {reviewers} for another review
 reviewRequestRemoved:
   en: removed the review request for {reviewers}
 reviewDismissed:

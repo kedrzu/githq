@@ -8,6 +8,7 @@ import Button from '@/components/Button.vue';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { useEditTexts } from '@/edits/useEditTexts.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
 import type { Item, ItemUser } from '@/store/ItemTypes.js';
 
@@ -48,6 +49,8 @@ const props = defineProps<{
   failedEdits?: readonly FailedTextEdit[];
   /** The thread's people, whom `@` suggests first in an editor. */
   people?: readonly ItemUser[];
+  /** A pull request's review threads, as code review reads them: its reviews and code comments hold them. */
+  reviewThreads?: readonly ReviewThread[];
 }>();
 
 const emit = defineEmits<{
@@ -106,6 +109,9 @@ const entries = computed(() =>
         failedComments: props.failedComments,
         unfolded: unfolded.value,
         keepShown: new Set([...editorsRef.value.keys()].filter(id => id !== null)),
+        reviewThreads: props.reviewThreads,
+        pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
+        viewerLogin: props.viewer?.login ?? null,
       })
     : [],
 );
@@ -277,6 +283,10 @@ async function onMenuClose(event: Event) {
     await focusMenu(asked);
     deletingId.value = asked;
   }
+}
+
+function getComments(threads: readonly ReviewThread[]) {
+  return threads.flatMap(thread => thread.comments);
 }
 
 function copyLink(url: string) {
@@ -464,6 +474,38 @@ interface EditorText {
             :push="entry"
             :now="now"
           />
+          <!-- Reviews, code comments and the draft review as plain cards for now, their comments one after another. -->
+          <ItemThreadCard
+            v-else-if="entry.kind === 'review'"
+            :author="entry.review.author"
+            :created-at="entry.review.submittedAt"
+            :now="now"
+          >
+            <GitHubHtml
+              v-if="entry.review.bodyHtml"
+              :class="css.itemThread_text"
+              :html="entry.review.bodyHtml"
+            />
+            <GitHubHtml
+              v-for="comment in getComments([...entry.threads, ...entry.resolved])"
+              :key="comment.id"
+              :class="css.itemThread_text"
+              :html="comment.bodyHTML"
+            />
+          </ItemThreadCard>
+          <ItemThreadCard
+            v-else-if="entry.kind === 'codeComment'"
+            :author="entry.thread.comments[0]?.author ?? null"
+            :created-at="entry.thread.comments[0]?.createdAt"
+            :now="now"
+          >
+            <GitHubHtml
+              v-for="comment in getComments([entry.thread])"
+              :key="comment.id"
+              :class="css.itemThread_text"
+              :html="comment.bodyHTML"
+            />
+          </ItemThreadCard>
           <ItemThreadCard
             v-else-if="entry.kind === 'failedComment'"
             :author="viewer ?? null"
@@ -501,6 +543,19 @@ interface EditorText {
                 </Button>
               </div>
             </template>
+          </ItemThreadCard>
+          <ItemThreadCard
+            v-else-if="entry.kind === 'pendingReview'"
+            :author="viewer ?? null"
+            :created-at="entry.review?.createdAt"
+            :now="now"
+          >
+            <GitHubHtml
+              v-for="comment in getComments(entry.threads)"
+              :key="comment.id"
+              :class="css.itemThread_text"
+              :html="comment.bodyHTML"
+            />
           </ItemThreadCard>
         </li>
       </ol>

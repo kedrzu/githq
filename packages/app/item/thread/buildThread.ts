@@ -1,11 +1,13 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { FailedComment } from '@/edits/CommentDrafts.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type {
     ItemCheck,
     ItemComment,
     ItemDetail,
     ItemDetailReviewRequest,
+    ItemReviewSummary,
     PullRequestDetail,
     ThreadCommit,
     ThreadCommitRef,
@@ -13,7 +15,7 @@ import type {
     ThreadReferencedCommit,
     ThreadRef,
 } from '@/store/ItemDetailTypes.js';
-import type { ItemLabel, ItemUser, PullRequestItem } from '@/store/ItemTypes.js';
+import type { ItemLabel, ItemUser, PullRequestItem, PullRequestPendingReview } from '@/store/ItemTypes.js';
 
 /** How long one person's events straight after each other share a line, from the first of them (F13). */
 const BURST_MS = 10 * 60_000;
@@ -33,16 +35,60 @@ const KEEP_BELOW = 5;
 const FOLD_AT_LEAST = 6;
 
 /**
- * One entry of an item's thread after the description, as it is drawn (item-activity F5, F13): a comment, a line of
- * one person's events, a push of commits, a pull request's failed checks, a comment GitHub did not take.
+ * One entry of an item's thread after the description, as it is drawn (item-activity F5, F13, F14): a comment, a line of
+ * one person's events, a push of commits, a pull request's failed checks, a review, a code comment, a comment GitHub did
+ * not take, the viewer's draft review.
  */
 export type ThreadItem =
     | { readonly kind: 'comment'; readonly id: string; readonly comment: ItemComment }
     | ThreadEventLine
     | ThreadPush
     | ThreadChecksFailed
+    | ThreadReview
+    | ThreadCodeComment
     | { readonly kind: 'failedComment'; readonly id: string; readonly failed: FailedComment }
+    | ThreadPendingReview
     | ThreadFold;
+
+/**
+ * A submitted review (F14) with its summary and the threads it started — a thread is its first comment's review's, a
+ * reply on another review's thread being a review of its own that started nothing. A dismissed one is a review too
+ * (`DISMISSED`), and the dismissal follows it as an event.
+ */
+export interface ThreadReview {
+    readonly kind: 'review';
+    /** The review's id. */
+    readonly id: string;
+    readonly review: ItemReviewSummary;
+    /** The threads it started still open, in GitHub's order. */
+    readonly threads: readonly ReviewThread[];
+    /** The threads it started that are resolved, in GitHub's order: drawn apart, folded. */
+    readonly resolved: readonly ReviewThread[];
+}
+
+/**
+ * A comment on the code posted on its own, without a review (`Activity / Code comment`): GitHub makes it a review
+ * `COMMENTED` with no text that started this one thread. Also a thread whose review the detail does not hold.
+ */
+export interface ThreadCodeComment {
+    readonly kind: 'codeComment';
+    /** The thread's id. */
+    readonly id: string;
+    readonly thread: ReviewThread;
+}
+
+/**
+ * The viewer's own draft review (F14, `Activity / Review · pending`), last before the composer: GitHub shows a draft
+ * to its author alone, and so does the thread — never one of anybody else's comments in it.
+ */
+export interface ThreadPendingReview {
+    readonly kind: 'pendingReview';
+    readonly id: 'pendingReview';
+    /** What the row knows of it; `null` when only its comments tell of it yet. */
+    readonly review: PullRequestPendingReview | null;
+    /** The threads the draft starts; its replies on other threads stay in those. */
+    readonly threads: readonly ReviewThread[];
+}
 
 /**
  * Events of one person straight after each other (a burst, F13) on one line: the parts in the order they first came,
@@ -67,7 +113,8 @@ export type ThreadEventPart =
     | ThreadMergedPart<'labeled' | 'unlabeled', ItemLabel>
     /** `null` for a deleted account. */
     | ThreadMergedPart<'assigned' | 'unassigned', ItemUser | null>
-    | ThreadMergedPart<'reviewRequested' | 'reviewRequestRemoved', ItemDetailReviewRequest>
+    /** `reviewRequestedAgain`: of someone who reviewed it before ("asked sofiab for another review", F5). */
+    | ThreadMergedPart<'reviewRequested' | 'reviewRequestedAgain' | 'reviewRequestRemoved', ItemDetailReviewRequest>
     | ThreadMergedPart<'crossReferenced' | 'subIssueAdded' | 'subIssueRemoved', ThreadRef>
     | ThreadMergedPart<'referenced', ThreadReferencedCommit>
     | { readonly kind: 'single'; readonly event: SingleThreadEvent };
@@ -141,6 +188,12 @@ export interface BuildThreadParams {
     readonly unfolded?: boolean;
     /** The comments the user must see, never folded away: an editor open on them, an edit GitHub did not take. */
     readonly keepShown?: ReadonlySet<string>;
+    /** A pull request's review threads, as code review reads and writes them (`ReviewFiles.openThreads`). */
+    readonly reviewThreads?: readonly ReviewThread[];
+    /** The viewer's draft review as the item's row knows it (`PullRequestItem.pendingReview`). */
+    readonly pendingReview?: PullRequestPendingReview | null;
+    /** Who is signed in: the only one whose draft review shows. Without one, no draft does. */
+    readonly viewerLogin?: string | null;
 }
 
 type MergingKind = Exclude<ThreadEventPart['kind'], 'single'>;
@@ -152,11 +205,13 @@ type Timed =
     | { readonly at: number; readonly kind: 'item'; readonly item: ThreadItem };
 
 /**
- * An item's thread after the description as it is drawn, oldest first (item-activity F5, F13): every comment and event
- * read, by time — one person's events within 10 minutes on one line, an add and a remove of the same thing gone, one
- * author's commits as one push, a pull request's failed checks once they finished — then the user's comments on their
- * way, then those GitHub did not take. An event no person made is left out but a project workflow's Status change, and
- * so is the close GitHub gives with a merge, at its time: the merge says it all.
+ * An item's thread after the description as it is drawn, oldest first (item-activity F5, F13, F14): every comment, event
+ * and review read, by time — one person's events within 10 minutes on one line, an add and a remove of the same thing
+ * gone, one author's commits as one push, a pull request's failed checks once they finished, a review with the threads
+ * it started, a code comment posted alone — then the user's comments on their way, then those GitHub did not take, then
+ * the viewer's draft review. An event no person made is left out but a project workflow's Status change, and so is the
+ * close GitHub gives with a merge, at its time: the merge says it all; and so is a review that says nothing and started
+ * no thread, which GitHub makes of every reply.
  * A long middle folds to one band ({@link ThreadFold}, `foldThread`).
  *
  * @__NO_SIDE_EFFECTS__
@@ -166,6 +221,9 @@ export function buildThread({
     failedComments = [],
     unfolded = false,
     keepShown = new Set(),
+    reviewThreads = [],
+    pendingReview = null,
+    viewerLogin = null,
 }: BuildThreadParams): ThreadItem[] {
     const timed: Timed[] = [];
     const pending: ThreadItem[] = [];
@@ -206,15 +264,122 @@ export function buildThread({
         timed.push({ at: Date.parse(checks.updatedAt), kind: 'item', item: checks });
     }
 
+    const summaries = detail.kind === 'pullRequest' ? detail.reviewSummaries : [];
+    const reviews = placeReviews({ summaries, reviewThreads, viewerLogin });
+    timed.push(...reviews.timed);
+    const draft =
+        viewerLogin !== null && (pendingReview !== null || reviews.draft.length > 0)
+            ? ({
+                  kind: 'pendingReview',
+                  id: 'pendingReview',
+                  review: pendingReview,
+                  threads: reviews.draft,
+              } satisfies ThreadPendingReview)
+            : null;
+
     // Stable: what GitHub lists in one order at one time stays in it.
     const ordered = timed.toSorted((a, b) => a.at - b.at);
     const items = [
-        ...groupTimed(ordered),
+        ...groupTimed(ordered, getFirstReviews(summaries)),
         ...pending,
         ...failedComments.map((failed): ThreadItem => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
+        ...(draft ? [draft] : []),
     ];
     const startedAt = new Map(ordered.map(entry => [getTimedId(entry), entry.at]));
     return foldThread(items, { detail, unfolded, keepShown, startedAt });
+}
+
+/** The parameters of {@link placeReviews}. */
+interface PlaceReviewsParams {
+    readonly summaries: readonly ItemReviewSummary[];
+    readonly reviewThreads: readonly ReviewThread[];
+    readonly viewerLogin: string | null;
+}
+
+/** The reviews and code comments placed by time, and the threads the viewer's draft starts. */
+interface PlacedReviews {
+    readonly timed: readonly Timed[];
+    readonly draft: readonly ReviewThread[];
+}
+
+/**
+ * Each thread goes to the review its first comment came with; one of the viewer's draft to the draft. A review that
+ * says nothing (`COMMENTED`, no text) is a code comment when it started one thread and nothing when it started none: a
+ * reply's carrier. A comment of anybody's draft but the viewer's never shows — GitHub would not list one.
+ */
+function placeReviews({ summaries, reviewThreads, viewerLogin }: PlaceReviewsParams): PlacedReviews {
+    const held = new Set(summaries.map(review => review.id));
+    const byReview = new Map<string, ReviewThread[]>();
+    const alone: ReviewThread[] = [];
+    const draft: ReviewThread[] = [];
+    for (const read of reviewThreads) {
+        const comments = read.comments.filter(
+            comment => comment.state !== 'PENDING' || (viewerLogin !== null && comment.author?.login === viewerLogin),
+        );
+        const [first] = comments;
+        if (!first) {
+            continue;
+        }
+
+        const thread = comments.length === read.comments.length ? read : { ...read, comments };
+        const reviewId = first.pullRequestReview?.id;
+        if (first.state === 'PENDING') {
+            draft.push(thread);
+        } else if (reviewId !== undefined && held.has(reviewId)) {
+            byReview.set(reviewId, [...(byReview.get(reviewId) ?? []), thread]);
+        } else {
+            alone.push(thread);
+        }
+    }
+
+    const timed: Timed[] = [];
+    for (const review of summaries) {
+        const own = byReview.get(review.id) ?? [];
+        const [only] = own;
+        if (review.state === 'COMMENTED' && review.bodyHtml === '' && own.length <= 1) {
+            if (only) {
+                alone.push(only);
+            }
+
+            continue;
+        }
+
+        const item: ThreadReview = {
+            kind: 'review',
+            id: review.id,
+            review,
+            threads: own.filter(thread => !thread.isResolved),
+            resolved: own.filter(thread => thread.isResolved),
+        };
+        timed.push({ at: Date.parse(review.submittedAt), kind: 'item', item });
+    }
+
+    for (const thread of alone) {
+        const [first] = thread.comments;
+        if (first) {
+            timed.push({
+                at: Date.parse(first.createdAt),
+                kind: 'item',
+                item: { kind: 'codeComment', id: thread.id, thread },
+            });
+        }
+    }
+
+    return { timed, draft };
+}
+
+/** When each person first reviewed, by login (epoch ms): a request of them after it asks for another review. */
+function getFirstReviews(summaries: readonly ItemReviewSummary[]): ReadonlyMap<string, number> {
+    const first = new Map<string, number>();
+    for (const review of summaries) {
+        const login = review.author?.login;
+        const at = Date.parse(review.submittedAt);
+        if (login !== undefined && at < (first.get(login) ?? Infinity)) {
+            first.set(login, at);
+        }
+    }
+
+    return first;
 }
 
 /** What {@link foldThread} folds by. */
@@ -326,14 +491,28 @@ interface BelowStartParams {
 /**
  * Where what stays below the fold starts (F5): the 5th item from the end, or later, where nothing before the unread
  * may end stays below; earlier at the first item, after the `above` ones, the user must see ({@link mustShow}) —
- * an editor never folds away, even out of time order. M4 adds the oldest review or code comment with an unresolved
- * thread to these, M5 the first item new since the user looked.
+ * an editor never folds away, even out of time order — or the oldest review or code comment with a thread still
+ * open ({@link hasOpenThread}). M5 adds the first item new since the user looked.
  */
 function getBelowStart({ items, above, keepShown, startedAt, unreadUntil }: BelowStartParams) {
     const afterUnread = items.findIndex(entry => (startedAt.get(entry.id) ?? getEndedAt(entry)) >= unreadUntil);
     const kept = Math.max(items.length - KEEP_BELOW, afterUnread < 0 ? items.length : afterUnread);
-    const firstShown = items.findIndex((entry, index) => index >= above && mustShow(entry, keepShown));
+    const firstShown = items.findIndex(
+        (entry, index) => index >= above && (mustShow(entry, keepShown) || hasOpenThread(entry)),
+    );
     return firstShown >= 0 ? Math.min(kept, firstShown) : kept;
+}
+
+/** A review or a code comment with a thread not resolved: someone may still be waiting on it. */
+function hasOpenThread(entry: ThreadItem) {
+    switch (entry.kind) {
+        case 'review':
+            return entry.threads.length > 0;
+        case 'codeComment':
+            return !entry.thread.isResolved;
+        default:
+            return false;
+    }
 }
 
 /** When an item's newest part happened; the user's comments on their way and refused, after everything GitHub told. */
@@ -345,7 +524,12 @@ function getEndedAt(entry: ThreadItem) {
         case 'push':
         case 'checksFailed':
             return Date.parse(entry.updatedAt);
+        case 'review':
+            return Date.parse(entry.review.submittedAt);
+        case 'codeComment':
+            return Date.parse(entry.thread.comments[0]?.createdAt ?? '');
         case 'failedComment':
+        case 'pendingReview':
         case 'fold':
             return Infinity;
         default:
@@ -366,12 +550,16 @@ function getTimedId(entry: Timed) {
     }
 }
 
-/** Never folded away: the user's comment on its way or not taken, an edit of theirs in flight, open or refused. */
+/**
+ * Never folded away: the user's comment on its way or not taken, an edit of theirs in flight, open or refused, their
+ * draft review.
+ */
 function mustShow(entry: ThreadItem, keepShown: ReadonlySet<string>) {
     switch (entry.kind) {
         case 'comment':
             return entry.comment.pendingBody !== undefined || keepShown.has(entry.id);
         case 'failedComment':
+        case 'pendingReview':
             return true;
         default:
             return false;
@@ -391,7 +579,11 @@ function countFolded(folded: readonly ThreadItem[]): FoldCounts {
     let otherEvents = 0;
     for (const entry of folded) {
         switch (entry.kind) {
+            // F13: comments, reviews and code comments.
             case 'comment':
+            case 'review':
+            case 'codeComment':
+            case 'pendingReview':
                 comments += 1;
                 break;
             case 'events':
@@ -435,7 +627,10 @@ function isShown(event: Exclude<ThreadEvent, ThreadCommit>) {
     return event.actor !== null || (event.kind === 'projectStatusChanged' && event.wasAutomated);
 }
 
-function groupTimed(ordered: readonly Timed[]): ThreadItem[] {
+/**
+ * @param firstReviews When each person first reviewed ({@link getFirstReviews}).
+ */
+function groupTimed(ordered: readonly Timed[], firstReviews: ReadonlyMap<string, number>): ThreadItem[] {
     const items: Building[] = [];
     let burst: Burst | null = null;
     let push: MutablePush | null = null;
@@ -448,7 +643,7 @@ function groupTimed(ordered: readonly Timed[]): ThreadItem[] {
                 continue;
             }
 
-            burst = startBurst(event, entry.at);
+            burst = startBurst({ event, at: entry.at, firstReviews });
             items.push(burst.line);
             continue;
         }
@@ -483,6 +678,8 @@ function groupTimed(ordered: readonly Timed[]): ThreadItem[] {
 interface Burst {
     readonly line: BurstLine;
     readonly at: number;
+    /** When each person first reviewed ({@link getFirstReviews}). */
+    readonly firstReviews: ReadonlyMap<string, number>;
 }
 
 /** A line whose parts are still being merged; finished into a {@link ThreadEventLine}. */
@@ -564,17 +761,26 @@ function continuesBurst({ burst, event, at }: ContinuesBurstParams) {
     return actor !== null && event.actor?.login === actor.login && at - burst.at <= BURST_MS;
 }
 
-function startBurst(event: Exclude<ThreadEvent, ThreadCommit>, at: number): Burst {
+/** The parameters of {@link startBurst}. */
+interface StartBurstParams {
+    readonly event: Exclude<ThreadEvent, ThreadCommit>;
+    /** When the event happened. */
+    readonly at: number;
+    readonly firstReviews: ReadonlyMap<string, number>;
+}
+
+function startBurst({ event, at, firstReviews }: StartBurstParams): Burst {
     const burst: Burst = {
         line: { kind: 'burst', id: event.id, actor: event.actor, parts: [], updatedAt: event.createdAt },
         at,
+        firstReviews,
     };
     addToBurst(burst, event);
     return burst;
 }
 
 /** The event joins the line: its objects go to the part of its kind, and an add and a remove of one thing cancel. */
-function addToBurst({ line }: Burst, event: Exclude<ThreadEvent, ThreadCommit>) {
+function addToBurst({ line, firstReviews }: Burst, event: Exclude<ThreadEvent, ThreadCommit>) {
     line.updatedAt = event.createdAt;
     switch (event.kind) {
         case 'labeled':
@@ -593,17 +799,29 @@ function addToBurst({ line }: Burst, event: Exclude<ThreadEvent, ThreadCommit>) 
                 entry: { key: event.assignee?.login ?? null, object: event.assignee },
             });
         case 'reviewRequested':
-        case 'reviewRequestRemoved':
+        case 'reviewRequestRemoved': {
+            const { reviewer } = event;
             // A reviewer GitHub no longer knows: nothing to name.
-            if (!event.reviewer) {
+            if (!reviewer) {
                 return;
             }
 
+            const key = getReviewerKey(reviewer);
+            const reviewedAt = reviewer.kind === 'user' ? firstReviews.get(reviewer.user.login) : undefined;
+            const kind =
+                event.kind === 'reviewRequested' && reviewedAt !== undefined && reviewedAt < Date.parse(event.createdAt)
+                    ? 'reviewRequestedAgain'
+                    : event.kind;
+            const opposites: (MergingPart<string, ItemDetailReviewRequest> | undefined)[] =
+                kind === 'reviewRequestRemoved'
+                    ? [findPart(line, 'reviewRequested'), findPart(line, 'reviewRequestedAgain')]
+                    : [findPart(line, 'reviewRequestRemoved')];
             return mergeInto({
-                part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
-                opposite: findPart(line, event.kind === 'reviewRequested' ? 'reviewRequestRemoved' : 'reviewRequested'),
-                entry: { key: getReviewerKey(event.reviewer), object: event.reviewer },
+                part: findPart(line, kind) ?? addPart(line, { kind, entries: [] }),
+                opposite: opposites.find(part => part?.entries.some(other => other.key === key)),
+                entry: { key, object: reviewer },
             });
+        }
         case 'crossReferenced':
             return mergeInto({
                 part: findPart(line, event.kind) ?? addPart(line, { kind: event.kind, entries: [] }),
@@ -702,6 +920,7 @@ function toPart(part: MutablePart): ThreadEventPart[] {
         case 'unassigned':
             return toMergedPart(part);
         case 'reviewRequested':
+        case 'reviewRequestedAgain':
         case 'reviewRequestRemoved':
             return toMergedPart(part);
         case 'crossReferenced':

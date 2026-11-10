@@ -134,6 +134,7 @@ function renderPart(part: ThreadEventPart, after: boolean): VNodeChild[] {
       return sayWith(l[part.kind], { users: formatList(part.objects.map(getLogin)) });
     }
     case 'reviewRequested':
+    case 'reviewRequestedAgain':
     case 'reviewRequestRemoved':
       return sayWith(l[part.kind], { reviewers: formatList(part.objects.map(getReviewRequestName)) });
     case 'crossReferenced':
@@ -369,6 +370,7 @@ function getPartLook(part: ThreadEventPart): EventLook {
     case 'unassigned':
       return { icon: UserMinus, tone: 'muted' };
     case 'reviewRequested':
+    case 'reviewRequestedAgain':
       return { icon: Eye, tone: 'muted' };
     case 'reviewRequestRemoved':
       return { icon: EyeOff, tone: 'muted' };
