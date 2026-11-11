@@ -35,7 +35,7 @@ import type { Item } from './ItemTypes.js';
  * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` or what a tab says of itself changes, so tabs of two githq versions do not
  * hear each other, and a tab of one is not left waiting for a tab of another.
  */
-export const LOCAL_DATABASE_VERSION = 21;
+export const LOCAL_DATABASE_VERSION = 22;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -80,7 +80,7 @@ interface LocalDatabase extends DBSchema {
     workflows: { key: string; value: RepositoryWorkflows };
     commits: { key: [string, string]; value: KeptCommit; indexes: { repository: string } };
     commitRefs: { key: string; value: KeptCommitRefs };
-    looked: { key: string; value: ItemLooked; indexes: { lookedAt: number } };
+    looked: { key: string; value: ItemLooked };
 }
 
 /**
@@ -120,7 +120,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         deleteDetails,
         loadLooked,
         saveLooked,
-        deleteLookedBefore,
         loadRepositories,
         saveRepository,
         saveViewerProjects,
@@ -236,13 +235,6 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function saveLooked(login: string, looked: ItemLooked) {
         const db = await getOpen(login);
         await db.put('looked', looked);
-    }
-
-    async function deleteLookedBefore(login: string, before: number) {
-        const db = await getOpen(login);
-        const tx = db.transaction('looked', 'readwrite');
-        const ids = await tx.store.index('lookedAt').getAllKeys(IDBKeyRange.upperBound(before, true));
-        await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
     }
 
     async function loadRepositories(login: string): Promise<PersistedRepositories> {
@@ -389,7 +381,7 @@ function openDatabase(name: string) {
             db.createObjectStore('workflows', { keyPath: 'nameWithOwner' });
             db.createObjectStore('commits', { keyPath: ['repository', 'oid'] }).createIndex('repository', 'repository');
             db.createObjectStore('commitRefs', { keyPath: 'repository' });
-            db.createObjectStore('looked', { keyPath: 'id' }).createIndex('lookedAt', 'lookedAt');
+            db.createObjectStore('looked', { keyPath: 'id' });
         },
     });
 }

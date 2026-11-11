@@ -6,8 +6,6 @@ export interface ItemLooked {
     readonly id: string;
     /** The newest item of its thread they saw (epoch ms, GitHub's time): what came after it is new to them. */
     readonly seenUntil: number;
-    /** When they left it (epoch ms, this device's clock): what was not looked at for long is dropped. */
-    readonly lookedAt: number;
 }
 
 /**
@@ -19,8 +17,6 @@ export interface ItemLookedPersistenceShape {
     loadLooked(login: string, id: string): Promise<ItemLooked | null>;
     /** Adds it or replaces the one of its item. */
     saveLooked(login: string, looked: ItemLooked): Promise<void>;
-    /** Drops every item last looked at before `before` (epoch ms). */
-    deleteLookedBefore(login: string, before: number): Promise<void>;
 }
 
 /** Where the times are kept; the app sets IndexedDB (`createIndexedDbPersistence`). */

@@ -3,9 +3,7 @@ import { Logger } from '@nzyme/logging/Logger.js';
 
 import { AccountSession } from '@/auth/AccountSession.js';
 import type { Account } from '@/auth/AccountSession.js';
-import { Clock } from '@/services/Clock.js';
 
-import { KEEP_DETAIL_MS } from './ItemDetailStore.js';
 import { ItemLookedPersistence } from './ItemLookedPersistence.js';
 import type { ItemLooked } from './ItemLookedPersistence.js';
 import { ItemStore } from './ItemStore.js';
@@ -24,15 +22,15 @@ export interface ItemLookedStoreShape {
 /** The signed-in user the times are kept for, captured when they signed in. */
 interface Session {
     readonly account: Account;
-    /** Resolves once their local copy is open and the old times dropped; never rejects. */
+    /** Resolves once their local copy is open; never rejects. */
     readonly ready: Promise<void>;
 }
 
 /**
  * When the signed-in user last looked at each item, kept in their local copy (a rebuildable cache: on a new device
  * nothing is marked) and gone with it when they sign out — one account's never marks another's items. Read from the
- * copy each time, so another tab's looking counts too; an item not looked at for as long as a detail is kept is
- * dropped when the user signs in.
+ * copy each time, so another tab's looking counts too. Never dropped while the copy stays: a time is a few bytes an
+ * item, and the copy is rebuilt with every new layout (`LOCAL_DATABASE_VERSION`).
  */
 export const ItemLookedStore = defineService({
     name: 'ItemLookedStore',
@@ -40,10 +38,9 @@ export const ItemLookedStore = defineService({
         accounts: AccountSession,
         items: ItemStore,
         persistence: ItemLookedPersistence,
-        clock: Clock,
         logger: Logger,
     },
-    setup({ accounts, items, persistence, clock, logger }): ItemLookedStoreShape {
+    setup({ accounts, items, persistence, logger }): ItemLookedStoreShape {
         let session: Session | null = null;
 
         accounts.onChange(follow);
@@ -76,7 +73,7 @@ export const ItemLookedStore = defineService({
                 return;
             }
 
-            void save(current, { id, seenUntil, lookedAt: clock.now() });
+            void save(current, { id, seenUntil });
         }
 
         async function save(current: Session, looked: ItemLooked) {
@@ -96,21 +93,7 @@ export const ItemLookedStore = defineService({
 
         /** Another account signed in, or none: what was kept for the one before is theirs alone, and goes with their copy. */
         function follow(account: Account | null) {
-            session = account ? { account, ready: dropOld(account) } : null;
-        }
-
-        /** Once the account's copy is open (`ItemStore`), the items not looked at for long are dropped. */
-        async function dropOld(account: Account) {
-            await items.ready();
-            if (!accounts.isCurrent(account)) {
-                return;
-            }
-
-            try {
-                await persistence.deleteLookedBefore(account.login, clock.now() - KEEP_DETAIL_MS);
-            } catch (error) {
-                logger.warn('Could not drop the items not looked at for long', { error });
-            }
+            session = account ? { account, ready: items.ready() } : null;
         }
 
         /** Whether `current` is still the session — here and in the store every request was authorised by. */
