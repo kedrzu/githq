@@ -62,12 +62,6 @@ brief: `docs/design/githq/ui/README.md`.
   in `packages/e2e/src/accessibility/`, and `packages/app/styles/tokens.test.ts` for the contrast axe doesn't measure
   (icons, outlines, graph lines). A log round made during implementation names the failing story or test.
 
-## Commands
-
-- `bun nzyme pen check | diff | render | merge`: `scripts/pen.ts`, a plugin listed under `nzyme.plugins`. The check
-  runs in `bun run lint` and `lint:check`; `setup.sh` registers the merge driver.
-- `bunx pen …` runs the pinned `@pen.dev/cli`. `bunx pen login` once per machine is the owner's to do.
-
 If the practice document isn't inlined below, read `nzyme/docs/practice/design.md` before changing the design.
 
 Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.
