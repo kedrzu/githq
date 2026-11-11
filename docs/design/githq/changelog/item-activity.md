@@ -5,10 +5,10 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 
 ## The thread's parts
 
-- [ ] App · Pull request (`XN8vf`): `Components · Activity` frame (`X7uA3I`) at the top holds every part of the thread,
+- [x] App · Pull request (`XN8vf`): `Components · Activity` frame (`X7uA3I`) at the top holds every part of the thread,
   in rows: `Shared`, `Item thread`, `Writing`, `Editor, composer and menus` (`QgFYf`), `Composer states` (`DGsJK`),
   `Comments and reviews` (`rOA90`), `Thread parts` (`P9LTxZ`).
-- [ ] The thread: one rail down the left, events one line on it, comments and reviews cards beside it. Avatars of
+- [x] The thread: one rail down the left, events one line on it, comments and reviews cards beside it. Avatars of
   whoever wrote something sit in a 40 px gutter (28 px avatar, gap 12), level with the card's 36 px head; cards start
   right of it. The rail is a 2 px `$border` line at x 55 (the centre of the event badges) that runs from the
   description card down to the composer card, joining them instead of passing through an icon. Only events have a
@@ -63,7 +63,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   (12 `$fg-dim`, an icon each), and a chevron at the right.
 - [x] `Activity / Fold · narrow` (`SeqKu`), for the side panel: the same with the band on two lines (“Show 18 earlier
   events” and the chevron, then the counts) and a 64 px rail break with eight dashes.
-- [ ] `Activity / New since you looked` (`t2x5CU`): “3 new since you looked” (12 / 600 `$accent`) and an accent rule,
+- [x] `Activity / New since you looked` (`t2x5CU`): “3 new since you looked” (12 / 600 `$accent`) and an accent rule,
   indented 40.
 - [x] `Button / medium` (`TH5d7`), the size of the merge box's buttons: padding 5 8 5 10, radius 6, `$bg-3` with a
   `$border-2` stroke, icon 13, label 12.5 / 500, key. `Button / medium · primary` (`t0PlX5`): `$accent`, label
@@ -161,14 +161,14 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 
 ## Pull request screens (App · Pull request)
 
-- [ ] F5 · PR full page · the thread (`Hqwu7`): the thread on the full page. Its order, all chronological: description
+- [x] F5 · PR full page · the thread (`Hqwu7`): the thread on the full page. Its order, all chronological: description
   (4 days ago), mlaine pushed 6 commits (4d), mlaine added storage and asked sofiab and dkim for a review (4d), the fold
   (18 earlier events), sofiab's review (2d, one open thread and one resolved), dkim's code comment, resolved (2d,
   moved up from after dkim's comment), mlaine pushed 3 commits (1d), CI: 2 of 9 checks failed on e81f0a3 (1d), dkim's
   comment (1d), “2 new since you looked”, mlaine asked sofiab for another review (3h), mlaine's comment (2h), the
   composer. The “mlaine opened this pull request” event is gone (the description card is the opening). The title
   reads “mlaine · opened 4 days ago” and the description “commented 4 days ago” (were 2 days). Screen height 1959.
-- [ ] F5's caption gains three rules:
+- [x] F5's caption gains three rules:
   - The fold: a thread folds once it has more than 20 items (events, pushes, comments, reviews; not the description or
     the composer). The first 2 items stay above it. Below it stays everything from the earliest of: the 5th item from
     the end, the first item new since you looked, and the oldest review or code comment with a thread still
@@ -179,7 +179,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     until you leave the item.
   - R: with a code thread focused (J/K, or clicked) R opens that thread's reply box; otherwise R scrolls to the composer
     and focuses it, as “Comment” in the command menu does.
-- [ ] F9 · PR in panel · the thread (`r9heB`): the same thread in the 560 px panel, with `Activity / Fold · narrow`.
+- [x] F9 · PR in panel · the thread (`r9heB`): the same thread in the 560 px panel, with `Activity / Fold · narrow`.
   The description is this pull request's (“Moves issues, pull requests and project items into IndexedDB…”, was an
   issue's), 4 days ago; the title says 4 days; no “opened this pull request” event.
 - [x] F10 · PR full page · replying in a thread (`ToA4h`): a reply being written in the review's code thread (its text
@@ -270,13 +270,13 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
 - [ ] New top-level frame `App · Issue` (`xO0zP`), right of App · Pull request, with its own letter I.
-- [ ] I1 · Issue full page · the thread (`ugRqZ`): open issue mlaine/tasklet#12 “Sub-issue links are lost when the
+- [x] I1 · Issue full page · the thread (`ugRqZ`): open issue mlaine/tasklet#12 “Sub-issue links are lost when the
   parent is in another repository”, dkim, 6 days ago, on the full page at reading width, no Reviews section. The
   thread: dkim added bug and set the type to Bug (one line), added to parent #9, added to tasklet Roadmap, “mlaine
   changed Status to Todo in tasklet Roadmap”, sofiab's comment, self-assigned, added sub-issue #13, “mlaine changed
   Status to In progress in tasklet Roadmap”, removed sub-issue #10, linked pull request #15, referenced in commit 4a1c9e2, mentioned in #14, “2 new since
   you looked”, dkim's comment, pinned. 14 items, so nothing folds. Composer: `Activity / Composer · issue`.
-- [ ] I2 · Issue in panel · closed by a merged pull request (`OrT0n`): the same issue in the panel after #15 merged,
+- [x] I2 · Issue in panel · closed by a merged pull request (`OrT0n`): the same issue in the panel after #15 merged,
   scrolled to the end: two items, the narrow fold (“Show 15 earlier events · 2 comments · 13 other events”), dkim's
   comment, “4 new since you looked”, “mlaine closed this as completed in #15”, “Status set to Done in tasklet Roadmap
   by a project workflow” (automated, so no person), unpinned, sofiab's comment. The title says Closed in purple.
