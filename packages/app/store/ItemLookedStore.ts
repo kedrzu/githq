@@ -11,12 +11,32 @@ import { ItemStore } from './ItemStore.js';
 /** When the signed-in user last looked at items, on this device (item-activity F5, "New since you looked"). */
 export interface ItemLookedStoreShape {
     /**
-     * The newest item of `id`'s thread the user saw when they last left it (epoch ms); `null` when they never looked
-     * at it on this device, when it could not be read, or when another account signed in meanwhile.
+     * The user opens `id`: when they last looked at it, and when they opened it. Held while it stays open — opened
+     * again in another arrangement (panel, modal, page), it gets the same, though its thread was marked seen since —
+     * until another item opens, it is left ({@link leave}) or another account signs in.
      */
-    read(id: string): Promise<number | null>;
-    /** The user leaves `id` having seen its thread up to `seenUntil` (epoch ms). Ignored while signed out. */
+    open(id: string): Promise<ItemOpening>;
+    /** The user left `id` (closed it): opened again, it is read afresh. */
+    leave(id: string): void;
+    /** The user has seen `id`'s thread up to `seenUntil` (epoch ms). Ignored while signed out. */
     mark(id: string, seenUntil: number): void;
+}
+
+/** An item as the user opened it. */
+export interface ItemOpening {
+    /**
+     * The newest item of its thread the user had seen before (epoch ms); `null` when they never looked at it on this
+     * device, when it could not be read, or when another account signed in meanwhile.
+     */
+    readonly lookedAt: number | null;
+    /** When it was opened (epoch ms, this device's clock). */
+    readonly openedAt: number;
+}
+
+/** The item open now, as it was opened. */
+interface Held {
+    readonly id: string;
+    readonly opening: Promise<ItemOpening>;
 }
 
 /** The signed-in user the times are kept for, captured when they signed in. */
@@ -30,7 +50,8 @@ interface Session {
  * When the signed-in user last looked at each item, kept in their local copy (a rebuildable cache: on a new device
  * nothing is marked) and gone with it when they sign out — one account's never marks another's items. Read from the
  * copy each time, so another tab's looking counts too. Never dropped while the copy stays: a time is a few bytes an
- * item, and the copy is rebuilt with every new layout (`LOCAL_DATABASE_VERSION`).
+ * item, and the copy is rebuilt with every new layout (`LOCAL_DATABASE_VERSION`). The item open now is held in memory
+ * as it was opened, for its thread is marked seen while it shows: the time read then is the one its line keeps.
  */
 export const ItemLookedStore = defineService({
     name: 'ItemLookedStore',
@@ -42,10 +63,28 @@ export const ItemLookedStore = defineService({
     },
     setup({ accounts, items, persistence, logger }): ItemLookedStoreShape {
         let session: Session | null = null;
+        let held: Held | null = null;
 
         accounts.onChange(follow);
 
-        return { read, mark };
+        return { open, leave, mark };
+
+        function open(id: string) {
+            if (held?.id === id) {
+                return held.opening;
+            }
+
+            const openedAt = Date.now();
+            const opening = read(id).then((lookedAt): ItemOpening => ({ lookedAt, openedAt }));
+            held = session ? { id, opening } : null;
+            return opening;
+        }
+
+        function leave(id: string) {
+            if (held?.id === id) {
+                held = null;
+            }
+        }
 
         async function read(id: string) {
             const current = session;
@@ -94,6 +133,7 @@ export const ItemLookedStore = defineService({
         /** Another account signed in, or none: what was kept for the one before is theirs alone, and goes with their copy. */
         function follow(account: Account | null) {
             session = account ? { account, ready: items.ready() } : null;
+            held = null;
         }
 
         /** Whether `current` is still the session — here and in the store every request was authorised by. */

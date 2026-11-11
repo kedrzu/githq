@@ -655,7 +655,7 @@ test('what someone else wrote since the user last looked shows after "1 new sinc
     await expect(item.newSince).toHaveCount(0);
 });
 
-test('what arrives while the tab is hidden is not counted as looked at when the hidden tab is left: it shows as new next time', async ({
+test('what arrives while the tab is hidden is not counted as looked at: it shows as new next time', async ({
     page,
     github,
 }) => {
@@ -675,11 +675,82 @@ test('what arrives while the tab is hidden is not counted as looked at when the 
     // The hidden tab's poll reads the item again: the comment is in its thread, never seen.
     await page.clock.fastForward('02:01');
     await expect(item.entry('Arrived while away.')).toHaveCount(1);
-    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
 
     await page.reload();
     await expect(item.newSince).toHaveText('1 new since you looked');
     await expect(item.entryAfter(item.newSince)).toContainText('Arrived while away.');
+});
+
+test('the line stays while the item moves between the panel and the modal: it goes once the user leaves the item', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the minute an opened item's detail is trusted can be skipped.
+    await page.clock.install();
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.comment(sample.issue, { author: 'monalisa', body: 'Seen it twice today.', minutesAgo: 30 });
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Seen it twice today.')).toBeVisible();
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+
+    world.comment(sample.issue, { author: 'hubot', body: 'Still happens on mobile.', minutesAgo: 0 });
+    await page.clock.fastForward('01:01');
+    await myWork.row(ISSUE).click();
+    await expect(item.newSince).toHaveText('1 new since you looked');
+
+    await item.arrangement('Modal').click();
+    await expect(item.modal).toBeVisible();
+    await expect(item.newSince).toHaveText('1 new since you looked');
+    await expect(item.entryAfter(item.newSince)).toContainText('Still happens on mobile.');
+    await item.arrangement('Panel').click();
+    await expect(item.modal).toHaveCount(0);
+    await expect(item.newSince).toHaveText('1 new since you looked');
+
+    // Left for another item and back: seen.
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Still happens on mobile.')).toBeVisible();
+    await expect(item.newSince).toHaveCount(0);
+});
+
+test('an item opened in a hidden tab and left unseen is not counted as looked at', async ({ page, github }) => {
+    // Time runs as usual, and the minute an opened item's detail is trusted can be skipped.
+    await page.clock.install();
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.comment(sample.issue, { author: 'monalisa', body: 'Seen it twice today.', minutesAgo: 30 });
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Seen it twice today.')).toBeVisible();
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+
+    world.comment(sample.issue, { author: 'hubot', body: 'Still happens on mobile.', minutesAgo: 0 });
+    await page.clock.fastForward('01:01');
+    // Loaded again in the background, as a tab restored hidden is: never shown.
+    await page.addInitScript(() => {
+        if (sessionStorage.getItem('e2e:hidden') === '1') {
+            Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+        }
+    });
+    await page.evaluate(() => sessionStorage.setItem('e2e:hidden', '1'));
+    await page.reload();
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Still happens on mobile.')).toBeVisible();
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+
+    await page.evaluate(() => sessionStorage.removeItem('e2e:hidden'));
+    await page.reload();
+    await myWork.row(ISSUE).click();
+    await expect(item.newSince).toHaveText('1 new since you looked');
+    await expect(item.entryAfter(item.newSince)).toContainText('Still happens on mobile.');
 });
 
 /** The tab hidden, as switching to another one does. */
