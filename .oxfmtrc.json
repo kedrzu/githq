@@ -14,7 +14,6 @@
         "playwright-report",
         "node_modules",
         "*.loc.ts",
-        "coverage",
         "storybook-static",
         "*.md",
         ".context",

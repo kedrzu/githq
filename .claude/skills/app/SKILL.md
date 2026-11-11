@@ -1,13 +1,12 @@
 ---
 name: app
 description: >-
-    The Nuxt app in packages/app: where screens, routes, stories, specs and build targets live in
-    githq. Use when creating, changing or reviewing a screen, a route, a Vue component or a Nuxt setting.
+    The Nuxt app in packages/app and its UI: screens, routes, Vue components (.vue) with their stories,
+    styling and accessibility, build targets. Use before creating, changing or reviewing a screen, a
+    route, a component or a Nuxt setting.
 ---
 
 # App
-
-Read `nzyme/plugins/nzyme/skills/ui/SKILL.md` before building a component; it holds the practice.
 
 ## Paths
 
@@ -29,3 +28,7 @@ Read `nzyme/plugins/nzyme/skills/ui/SKILL.md` before building a component; it ho
 ## Decisions
 
 - Targets, the landing page and the UI package: `ARCHITECTURE.md`, "App and UI" and "Decisions".
+
+Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.
+
+!`cat nzyme/docs/practice/ui.md`

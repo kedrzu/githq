@@ -33,7 +33,7 @@
         "tests": "TZ=UTC bun test --timeout 10000 --pass-with-no-tests --path-ignore-patterns='**/*.spec.ts' --path-ignore-patterns='**/dist/**' ./packages ./scripts",
         "test:stories": "nx run-many -t test:stories --exclude='@nzyme/*'",
         "e2e": "bun --cwd packages/e2e test",
-        "clean": "del \"**/dist\" \"**/dist-cjs\" \"**/.output\" \"**/.nuxt\" \"**/.nx\" \"**/.nzyme\" \"**/*.tsbuildinfo\" \"**/storybook-static\" \"**/test-results\" \"**/playwright-report\" \"!**/node_modules/**\"",
+        "clean": "del \"**/dist\" \"**/.output\" \"**/.nuxt\" \"**/.nx\" \"**/.nzyme\" \"**/*.tsbuildinfo\" \"**/storybook-static\" \"**/test-results\" \"**/playwright-report\" \"!**/node_modules/**\"",
         "clean:npm": "del \"**/node_modules\"",
         "reinstall": "bun run clean && bun run clean:npm && bun install",
         "index": "nzyme index",

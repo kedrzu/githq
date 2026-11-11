@@ -10,10 +10,15 @@ export default [
         // The local build's (`build:local`), the server-rendered landing page's chunks included.
         '**/.output-local/**',
         '**/.nuxt-local/**',
+        // The desktop build's (`build:desktop`).
+        '**/.output-desktop/**',
+        '**/.nuxt-desktop/**',
         '**/storybook-static/**',
         // VitePress's dev server's prebundled dependencies (`packages/docs`, gitignored).
         '**/.vitepress/cache/**',
         '**/playwright-report/**',
+        // Playwright's results, `error-context.md` of a failed test included.
+        '**/test-results/**',
         '**/*.loc.ts',
         '**/*.loc.js',
         // Cargo's build of the desktop app, which holds the bundled app's files compressed under `.js` names.
