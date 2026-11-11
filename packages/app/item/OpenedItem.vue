@@ -102,6 +102,11 @@ const looked = useDataSource({
 const lookedAt = computed(() => (looked.value?.id === opened.id ? looked.value.at : null));
 /** The item shown and what its thread was built from, as long as it is. */
 let shown: Shown | null = null;
+/**
+ * Set once the hidden tab kept what it showed: the thread goes on following what syncs, unseen, so leaving keeps
+ * nothing more until the tab shows again.
+ */
+let keptHidden = false;
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
@@ -170,7 +175,7 @@ const editing = computed((): ItemEditing | null => {
 });
 
 // Leaving the item — another opened, closing it — keeps the newest of its thread they saw as the next time's; so does
-// the tab hidden once its time is read, or left.
+// the tab hidden once its time is read, or left — but not once hidden: what arrives then was never seen.
 watch(
   () => [opened.id, opened.detail ? { detail: opened.detail, reviewThreads: opened.reviewThreads } : null] as const,
   ([id, thread], before) => {
@@ -184,8 +189,11 @@ watch(
   { immediate: true },
 );
 onWindowEvent('visibilitychange', () => {
-  if (document.visibilityState === 'hidden' && looked.value?.id === opened.id) {
+  if (document.visibilityState === 'visible') {
+    keptHidden = false;
+  } else if (looked.value?.id === opened.id) {
     markShown();
+    keptHidden = true;
   }
 });
 onWindowEvent('pagehide', markShown);
@@ -304,7 +312,7 @@ function leave() {
 }
 
 function markShown() {
-  if (!shown) {
+  if (!shown || keptHidden) {
     return;
   }
 

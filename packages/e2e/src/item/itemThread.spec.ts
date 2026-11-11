@@ -655,6 +655,41 @@ test('what someone else wrote since the user last looked shows after "1 new sinc
     await expect(item.newSince).toHaveCount(0);
 });
 
+test('what arrives while the tab is hidden is not counted as looked at when the hidden tab is left: it shows as new next time', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the hidden tab's poll can be skipped.
+    await page.clock.install();
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.comment(sample.issue, { author: 'monalisa', body: 'Seen it twice today.', minutesAgo: 30 });
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Seen it twice today.')).toBeVisible();
+
+    await setTabHidden(page);
+    world.comment(sample.issue, { author: 'hubot', body: 'Arrived while away.', minutesAgo: 0 });
+    world.retitle(sample.issue, ISSUE);
+    // The hidden tab's poll reads the item again: the comment is in its thread, never seen.
+    await page.clock.fastForward('02:01');
+    await expect(item.entry('Arrived while away.')).toHaveCount(1);
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
+
+    await page.reload();
+    await expect(item.newSince).toHaveText('1 new since you looked');
+    await expect(item.entryAfter(item.newSince)).toContainText('Arrived while away.');
+});
+
+/** The tab hidden, as switching to another one does. */
+async function setTabHidden(page: Page) {
+    await page.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+        document.dispatchEvent(new Event('visibilitychange', { bubbles: true }));
+    });
+}
+
 function user(login: string) {
     return { login, avatarUrl: `https://avatars.githubusercontent.com/${login}` };
 }
