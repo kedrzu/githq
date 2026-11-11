@@ -48,8 +48,8 @@ From the repo root; the check order is in the `verify` skill.
 
 - Talk to the owner in Polish. Everything in the repo or on GitHub is in English (code, docs, commits, PRs, issues).
 - Greenfield: no backwards compatibility, no migrating or cleaning up old local data, storage keys or addresses.
-- Implementation tasks read `nzyme:code-conventions` plus the skill of each nzyme package touched. Work inside
-  `nzyme/` follows `nzyme/CLAUDE.md`.
+- Work inside `nzyme/` follows `nzyme/CLAUDE.md`. Sessions start at the repo root: the repo skills inline
+  `nzyme/docs/practice/*.md` by a path relative to it, and fail to load from a subdirectory.
 - Don't install `nzyme@nzyme` from the marketplace (it shadows the submodule's skills). Change shared skills in
   kedrzu/skills, not here.
 

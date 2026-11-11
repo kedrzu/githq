@@ -4,13 +4,13 @@ description: >-
     githq's OAuth client secrets in Bitwarden Secrets Manager, read through @nzyme/secrets: the
     provider, the `bun nzyme secrets` commands, what runs with them and what happens on a machine without
     store access. Use when a task needs a credential, when `bun run dev` warns about the secret store, when
-    sign-in in development answers `not_configured`, or when adding or changing a secret.
+    sign-in in development answers `not_configured`, when adding or changing a secret, and before running
+    anything that could print the environment or read the keychain.
 ---
 
 # Secrets
 
-Read `nzyme/plugins/nzyme/skills/secrets/SKILL.md` before touching a secret; it holds the practice, above
-all how a value stays out of the transcript. API: `nzyme/packages/secrets/README.md`; the store's setup:
+API: `nzyme/packages/secrets/README.md`; the store's setup:
 `nzyme/packages/bitwarden/README.md`. Why this store: `ARCHITECTURE.md#decisions`.
 
 ## Paths
@@ -50,3 +50,7 @@ the Worker reads goes there too, which also makes `wrangler deploy` require it i
 
 Until #118 removes it, a non-empty root `.env` wins: Bun and Nx load it into the environment, and `secrets list`
 reports those names `overridden by environment`. To use the store in a checkout, or to test it, move `.env` aside.
+
+Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.
+
+!`cat nzyme/docs/practice/secrets.md`
