@@ -135,6 +135,8 @@ const props = withDefaults(
     reviewWriting?: ReviewWriting | null;
     /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
     reviewDraftFirst?: boolean;
+    /** When the user last looked at the item before opening it (`useItemLooked`): its thread marks what is new since. */
+    lookedAt?: number | null;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -917,6 +919,7 @@ function getProjectOptions(): CommandOption[] {
                 :review-threads-loading="reviewThreadsLoading"
                 :review-writing="reviewWriting"
                 :review-draft-first="reviewDraftFirst"
+                :looked-at="lookedAt"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
                 @edit="emit('edit', $event)"

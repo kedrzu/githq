@@ -49,7 +49,8 @@ export type ThreadItem =
     | ThreadCodeComment
     | { readonly kind: 'failedComment'; readonly id: string; readonly failed: FailedComment }
     | ThreadPendingReview
-    | ThreadFold;
+    | ThreadFold
+    | ThreadNewSince;
 
 /**
  * A submitted review (F14) with its summary and the threads it started — a thread is its first comment's review's, a
@@ -185,6 +186,19 @@ export interface ThreadFold {
     readonly otherEvents: number;
 }
 
+/**
+ * Where what others did since the viewer last looked starts (`Activity / New since you looked`, F5): before the first
+ * such item, saying how many there are from it on.
+ */
+export interface ThreadNewSince {
+    readonly kind: 'newSince';
+    readonly id: 'newSince';
+    /** The items from {@link firstId} on not the viewer's own. */
+    readonly count: number;
+    /** The first item new since the viewer looked: the line stands before it. */
+    readonly firstId: string;
+}
+
 /** The parameters of {@link buildThread}. */
 export interface BuildThreadParams {
     readonly detail: ItemDetail;
@@ -203,6 +217,17 @@ export interface BuildThreadParams {
     readonly pendingReview?: PullRequestPendingReview | null;
     /** Who is signed in: the only one whose draft review shows. Without one, no draft does. */
     readonly viewerLogin?: string | null;
+    /**
+     * When the viewer last looked at the item (epoch ms, the newest item they saw then; `ItemLookedStore`): what others
+     * did after it, and after the viewer's own newest comment, review or event, is new ({@link ThreadNewSince}).
+     * `null`: never looked on this device — nothing is new.
+     */
+    readonly lookedAt?: number | null;
+    /**
+     * The item the line stood before when it was first drawn: it stays there while the item is open, whatever the
+     * viewer posts meanwhile. Its id, as {@link ThreadNewSince.firstId} gave it.
+     */
+    readonly newSinceId?: string | null;
 }
 
 type MergingKind = Exclude<ThreadEventPart['kind'], 'single'>;
@@ -221,7 +246,8 @@ type Timed =
  * the viewer's draft review. An event no person made is left out but a project workflow's Status change, and so is the
  * close GitHub gives with a merge, at its time: the merge says it all; and so is a review that says nothing and started
  * no thread, which GitHub makes of every reply.
- * A long middle folds to one band ({@link ThreadFold}, `foldThread`).
+ * A long middle folds to one band ({@link ThreadFold}, `foldThread`), and a line marks where what others did since the
+ * viewer last looked starts ({@link ThreadNewSince}).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -233,6 +259,8 @@ export function buildThread({
     reviewThreads = [],
     pendingReview = null,
     viewerLogin = null,
+    lookedAt = null,
+    newSinceId = null,
 }: BuildThreadParams): ThreadItem[] {
     const timed: Timed[] = [];
     const pending: ThreadItem[] = [];
@@ -300,7 +328,111 @@ export function buildThread({
         ...(draft ? [draft] : []),
     ];
     const startedAt = new Map(ordered.map(entry => [getTimedId(entry), entry.at]));
-    return foldThread(items, { detail, unfolded, keepShown, startedAt });
+    const newSince = lookedAt === null ? null : findNewSince({ items, lookedAt, newSinceId, viewerLogin });
+    const folded = foldThread(items, { detail, unfolded, keepShown, startedAt, newSinceId: newSince?.firstId ?? null });
+    const before = newSince ? folded.findIndex(entry => entry.id === newSince.firstId) : -1;
+    return newSince && before >= 0 ? folded.toSpliced(before, 0, newSince) : folded;
+}
+
+/**
+ * When the newest item of the thread happened (epoch ms), of those GitHub has: what the viewer saw of it, once they
+ * leave it. `null` while it has none but the description.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getThreadNewestAt(params: BuildThreadParams): number | null {
+    let newest: number | null = null;
+    for (const entry of buildThread({ ...params, unfolded: true, lookedAt: null })) {
+        const ended = getEndedAt(entry);
+        if (Number.isFinite(ended) && (newest === null || ended > newest)) {
+            newest = ended;
+        }
+    }
+
+    return newest;
+}
+
+/** The parameters of {@link findNewSince}. */
+interface FindNewSinceParams {
+    readonly items: readonly ThreadItem[];
+    readonly lookedAt: number;
+    readonly newSinceId: string | null;
+    readonly viewerLogin: string | null;
+}
+
+/**
+ * The line before the first item someone else made after the viewer looked — and after the viewer's own newest item,
+ * for what they did counts as looking — or before the item it stood before already; `null` when nothing is new.
+ */
+function findNewSince({ items, lookedAt, newSinceId, viewerLogin }: FindNewSinceParams): ThreadNewSince | null {
+    let first = newSinceId === null ? -1 : items.findIndex(entry => entry.id === newSinceId);
+    if (first < 0) {
+        let since = lookedAt;
+        for (const entry of items) {
+            const ended = getEndedAt(entry);
+            if (isViewers(entry, viewerLogin) && Number.isFinite(ended)) {
+                since = Math.max(since, ended);
+            }
+        }
+
+        first = items.findIndex(entry => isNew(entry, since, viewerLogin));
+    }
+
+    const firstEntry = items[first];
+    if (!firstEntry) {
+        return null;
+    }
+
+    const count = items.slice(first).filter(entry => isNew(entry, lookedAt, viewerLogin)).length;
+    return { kind: 'newSince', id: 'newSince', count, firstId: firstEntry.id };
+}
+
+/** Someone else's item after `since`: a comment, a line of events, a push, the CI line, a review, a code comment. */
+function isNew(entry: ThreadItem, since: number, viewerLogin: string | null) {
+    switch (entry.kind) {
+        case 'comment':
+        case 'events':
+        case 'push':
+        case 'checksFailed':
+        case 'review':
+        case 'codeComment':
+            return !isViewers(entry, viewerLogin) && getEndedAt(entry) > since;
+        case 'failedComment':
+        case 'pendingReview':
+        case 'fold':
+        case 'newSince':
+            return false;
+        default:
+            return assertNever(entry);
+    }
+}
+
+/** The viewer made it: their comment, also one on its way or refused, their events, push, review or code comment. */
+function isViewers(entry: ThreadItem, viewerLogin: string | null): boolean {
+    switch (entry.kind) {
+        case 'comment':
+            return entry.id.startsWith('pending:') || isViewer(entry.comment.author, viewerLogin);
+        case 'events':
+        case 'push':
+            return isViewer(entry.actor, viewerLogin);
+        case 'review':
+            return isViewer(entry.review.author, viewerLogin);
+        case 'codeComment':
+            return isViewer(entry.thread.comments[0]?.author ?? null, viewerLogin);
+        case 'failedComment':
+        case 'pendingReview':
+            return true;
+        case 'checksFailed':
+        case 'fold':
+        case 'newSince':
+            return false;
+        default:
+            return assertNever(entry);
+    }
+}
+
+function isViewer(user: ItemUser | null, viewerLogin: string | null) {
+    return viewerLogin !== null && user?.login === viewerLogin;
 }
 
 /** The parameters of {@link placeReviews}. */
@@ -406,6 +538,8 @@ interface FoldParams {
     readonly keepShown: ReadonlySet<string>;
     /** When each item's first comment, event or commit happened, by the item's id. */
     readonly startedAt: ReadonlyMap<string, number>;
+    /** The first item new since the viewer looked ({@link ThreadNewSince}): never folded away. */
+    readonly newSinceId: string | null;
 }
 
 /**
@@ -416,7 +550,7 @@ interface FoldParams {
  */
 function foldThread(
     items: readonly ThreadItem[],
-    { detail, unfolded, keepShown, startedAt }: FoldParams,
+    { detail, unfolded, keepShown, startedAt, newSinceId }: FoldParams,
 ): ThreadItem[] {
     const unread = countUnread(detail);
     const unreadCount = unread.commits + unread.comments + unread.otherEvents;
@@ -426,7 +560,10 @@ function foldThread(
 
     const span = getUnreadSpan(detail);
     const above = countAbove(items, span.from);
-    const below = Math.max(above, getBelowStart({ items, above, keepShown, startedAt, unreadUntil: span.until }));
+    const below = Math.max(
+        above,
+        getBelowStart({ items, above, keepShown, startedAt, newSinceId, unreadUntil: span.until }),
+    );
     const folded = items.slice(above, below);
     if (unreadCount === 0 && (items.length <= FOLD_OVER || folded.length < FOLD_AT_LEAST)) {
         return [...items];
@@ -501,6 +638,7 @@ interface BelowStartParams {
     readonly above: number;
     readonly keepShown: ReadonlySet<string>;
     readonly startedAt: ReadonlyMap<string, number>;
+    readonly newSinceId: string | null;
     /** Before when the unread may end ({@link UnreadSpan}). */
     readonly unreadUntil: number;
 }
@@ -508,14 +646,15 @@ interface BelowStartParams {
 /**
  * Where what stays below the fold starts (F5): the 5th item from the end, or later, where nothing before the unread
  * may end stays below; earlier at the first item, after the `above` ones, the user must see ({@link mustShow}) —
- * an editor never folds away, even out of time order — or the oldest review or code comment with a thread still
- * open ({@link hasOpenThread}). M5 adds the first item new since the user looked.
+ * an editor never folds away, even out of time order — the first item new since the viewer looked, or the oldest review
+ * or code comment with a thread still open ({@link hasOpenThread}).
  */
-function getBelowStart({ items, above, keepShown, startedAt, unreadUntil }: BelowStartParams) {
+function getBelowStart({ items, above, keepShown, startedAt, newSinceId, unreadUntil }: BelowStartParams) {
     const afterUnread = items.findIndex(entry => (startedAt.get(entry.id) ?? getEndedAt(entry)) >= unreadUntil);
     const kept = Math.max(items.length - KEEP_BELOW, afterUnread < 0 ? items.length : afterUnread);
     const firstShown = items.findIndex(
-        (entry, index) => index >= above && (mustShow(entry, keepShown) || hasOpenThread(entry)),
+        (entry, index) =>
+            index >= above && (mustShow(entry, keepShown) || entry.id === newSinceId || hasOpenThread(entry)),
     );
     return firstShown >= 0 ? Math.min(kept, firstShown) : kept;
 }
@@ -548,6 +687,7 @@ function getEndedAt(entry: ThreadItem) {
         case 'failedComment':
         case 'pendingReview':
         case 'fold':
+        case 'newSince':
             return Infinity;
         default:
             return assertNever(entry);
@@ -616,6 +756,7 @@ function countFolded(folded: readonly ThreadItem[]): FoldCounts {
                 break;
             case 'failedComment':
             case 'fold':
+            case 'newSince':
                 break;
             default:
                 assertNever(entry);

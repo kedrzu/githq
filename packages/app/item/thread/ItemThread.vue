@@ -1,4 +1,4 @@
-<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment GitHub has carries GitHub's anchor (`issuecomment-<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
+<!-- An opened item's whole history as one thread on a rail, oldest first (`buildThread`): the description as its first card, then every comment and event read so far by time — one person's events within minutes on one line (`ItemThreadEvent`), a push with its commits (`ItemThreadPush`), a pull request's failed checks, its reviews with the threads they started (`ItemThreadReview`) and comments on the code posted alone (`ItemThreadCodeComment`) — the threads code review's own, read and written as there — and the viewer's draft review last, with code review's toolbar to finish it (`ItemThreadPendingReview`) — then the composer, there while the rest is read too. Where what others did since the viewer last looked at the item starts, a line says how many there are (`ItemThreadNewSince`, F5), before the same item until another item opens, whatever the viewer posts meanwhile; the fold never hides that item. A long middle folds to one band (`buildThread`, F5): clicking it reads what GitHub has and the detail does not hold, and shows it all in place, the focus on the first revealed item; one the user must see — their comment on its way or not taken, an edit of theirs open or in flight — is never folded away. Before any of the thread is on this device — the description comes with it — no card stands: the rail says what is being read with a skeleton whose first card stands for the description, and once GitHub did not give it, why, with Try again and Open on GitHub (`ItemThreadMissing`, F16). Every text is GitHub's own rendering (`GitHubHtml`); the user's own comment on its way shows at once as the text typed, after everything GitHub told — GitHub renders it once it has it. A comment GitHub did not take stays after it, as typed, with why and Discard and Retry (Retry only while the user may comment) — until it is posted or discarded. Each card's menu (⋯ or a right click, F15) edits it in place (`ItemThreadEditor`) and deletes it — only where GitHub says the user may (K1b) — quotes it into the composer (while the user may comment) or copies its link; an edit GitHub did not take opens again with its text and why. An edit cancelled, or a delete not confirmed, gives the focus back to the card's ⋯. An edit whose text was changed asks before it is let go (`ItemThreadEditor`) — also when the user leaves the item (`askToLeave`). A code thread's "Reply…" opens its reply editor (F10), written through code review's own boxes (`CodeThreadReplies`), so it goes as code review's first key would send it and asks the same question before it is let go; Resolve and Unresolve show at once, the viewer as who resolved it. A code thread takes the focus when clicked, and keeps it — folded to its row or opened — once Resolve, Unresolve, opening it from its row or Hide redraws it: then `J`/`K` move to the next and previous code thread, a folded row among them, and `R` opens its reply editor (F5), instead of stepping through the items and going to the composer. Each comment GitHub has carries GitHub's anchor (`issuecomment-<id>`) as its `id`; the one the address's fragment names is shown — the fold unfolds, the middle read from GitHub first when the detail does not hold all of it — and its card's border is in the accent while the address names it, as GitHub marks a linked comment. Bringing it into view is the router's (`shell/routeScroll.ts`), which keeps it there while the thread says it is busy (`aria-busy`): its detail, the middle or a pull request's review threads still being read. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -32,6 +32,7 @@ import ItemThreadEvent from './ItemThreadEvent.vue';
 import ItemThreadFold from './ItemThreadFold.vue';
 import ItemThreadMenu from './ItemThreadMenu.vue';
 import ItemThreadMissing from './ItemThreadMissing.vue';
+import ItemThreadNewSince from './ItemThreadNewSince.vue';
 import ItemThreadPendingReview from './ItemThreadPendingReview.vue';
 import ItemThreadPush from './ItemThreadPush.vue';
 import ItemThreadReview from './ItemThreadReview.vue';
@@ -73,6 +74,11 @@ const props = defineProps<{
   reviewDraftFirst?: boolean;
   /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked. */
   linkedAnchor?: string;
+  /**
+   * When the viewer last looked at the item before opening it (epoch ms, `useItemLooked`): a line marks where what
+   * others did since starts. `null` when never on this device.
+   */
+  lookedAt?: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -134,6 +140,8 @@ const askingReply = ref<string | null>(null);
 const focusedReply = ref<string | null>(null);
 /** The anchors the middle was read for: each is looked for there once, found or not. */
 const readFor = new Set<string>();
+/** The item "N new since you looked" first stood before: it stays there while the item is open. */
+const newSinceId = ref<string | null>(null);
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
@@ -202,6 +210,8 @@ const entries = computed(() =>
         reviewThreads: props.reviewThreads ?? [],
         pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
         viewerLogin: props.viewer?.login ?? null,
+        lookedAt: props.lookedAt ?? null,
+        newSinceId: newSinceId.value,
       })
     : [],
 );
@@ -222,12 +232,25 @@ watch(
       foldFailed.value = false;
       askingReply.value = null;
       focusedReply.value = null;
+      newSinceId.value = null;
     }
 
     for (const edit of failed ?? []) {
       if (!editorsRef.value.has(edit.commentId)) {
         openEditor(edit.commentId, edit.body);
       }
+    }
+  },
+  { immediate: true },
+);
+
+// Drawn once, the line stays before the item it stood before, whatever the viewer posts after.
+watch(
+  entries,
+  list => {
+    const line = list.find(entry => entry.kind === 'newSince');
+    if (line?.kind === 'newSince') {
+      newSinceId.value = line.firstId;
     }
   },
   { immediate: true },
@@ -757,8 +780,12 @@ type Askable =
           :class="css.itemThread_comment"
           :aria-current="entry.kind === 'comment' && isLinked(entry.comment) ? 'location' : undefined"
         >
+          <ItemThreadNewSince
+            v-if="entry.kind === 'newSince'"
+            :count="entry.count"
+          />
           <ItemThreadFold
-            v-if="entry.kind === 'fold'"
+            v-else-if="entry.kind === 'fold'"
             :commits="entry.commits"
             :comments="entry.comments"
             :other-events="entry.otherEvents"

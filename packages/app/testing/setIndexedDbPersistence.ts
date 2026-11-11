@@ -6,6 +6,7 @@ import { RepositoryPersistence } from '@/repos/RepositoryPersistence.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import type { IndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
+import { ItemLookedPersistence } from '@/store/ItemLookedPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { LocalCopyVersion } from '@/store/LocalCopyVersion.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
@@ -22,6 +23,7 @@ export function setIndexedDbPersistence(
 ) {
     container.set(ItemPersistence, persistence);
     container.set(ItemDetailPersistence, persistence);
+    container.set(ItemLookedPersistence, persistence);
     container.set(RepositoryPersistence, persistence);
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);

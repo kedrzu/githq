@@ -9,12 +9,15 @@ import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import type { FakeReviewWritingOptions } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { DB_THREAD } from '@/testing/sampleReviews.js';
+import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
+import { I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
 
 import * as stories from './ItemThread.stories.js';
 
 const {
     CodeThreads,
     IssueInPanel,
+    IssueThread,
     PullRequestInPanel,
     NotSent,
     NotSentReadOnly,
@@ -799,4 +802,29 @@ test('a thread opened, unresolved and resolved again folds to its row, in a revi
     await userEvent.click(schema.getByRole('button', { name: 'Unresolve' }));
     await userEvent.click(schema.getByRole('button', { name: 'Resolve thread' }));
     await expect.element(schemaRow).toHaveFocus();
+});
+
+test('"N new since you looked" stands before the first item others made since, and stays there when the viewer comments', async () => {
+    const viewer = { login: 'kedrzu', avatarUrl: '' };
+    const args = shallowReactive({ ...IssueThread.args, viewer });
+    await IssueThread.run({ args });
+
+    const line = page.getByRole('listitem').filter({ hasText: /^3 new since you looked$/u });
+    await expect.element(line).toBeVisible();
+    expect(line.element().nextElementSibling?.textContent).toContain('Fixed by #15 once it lands');
+
+    const own: ItemComment = {
+        ...I1_ISSUE_DETAIL.comments.nodes[1]!,
+        id: 'C_OWN',
+        author: viewer,
+        body: 'On it.',
+        bodyHtml: '<p>On it.</p>',
+        createdAt: new Date(SAMPLE_NOW).toISOString(),
+    };
+    const { comments } = I1_ISSUE_DETAIL;
+    args.detail = { ...I1_ISSUE_DETAIL, comments: { ...comments, totalCount: 3, nodes: [...comments.nodes, own] } };
+
+    await expect.element(page.getByText('On it.')).toBeVisible();
+    await expect.element(line).toBeVisible();
+    expect(line.element().nextElementSibling?.textContent).toContain('Fixed by #15 once it lands');
 });

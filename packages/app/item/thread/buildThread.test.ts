@@ -14,8 +14,15 @@ import type {
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 
-import { buildThread } from './buildThread.js';
-import type { ThreadEventLine, ThreadFold, ThreadItem, ThreadPendingReview, ThreadReview } from './buildThread.js';
+import { buildThread, getThreadNewestAt } from './buildThread.js';
+import type {
+    ThreadEventLine,
+    ThreadFold,
+    ThreadItem,
+    ThreadNewSince,
+    ThreadPendingReview,
+    ThreadReview,
+} from './buildThread.js';
 
 const START = Date.parse('2026-11-02T10:00:00Z');
 const MLAINE: ItemUser = { login: 'mlaine', avatarUrl: '' };
@@ -638,6 +645,103 @@ test('asking for a review someone already gave asks for another review; a remove
     ]);
 });
 
+test("what others did since the viewer looked starts after a line saying how many; the viewer's own items are never new", () => {
+    const detail = issueDetail(
+        [{ ...base('E1', SOFIAB, 12), kind: 'labeled', label: BUG }],
+        [comment('C1', DKIM, 1), comment('C2', MLAINE, 9), comment('C3', DKIM, 13), comment('pending:1', MLAINE, 14)],
+    );
+
+    const built = buildThread({ detail, viewerLogin: MLAINE.login, lookedAt: Date.parse(at(10)) });
+
+    expect(idsOf(built)).toEqual(['C1', 'C2', 'newSince', 'E1', 'C3', 'pending:1']);
+    expect(newSinceOf(built)).toEqual({ kind: 'newSince', id: 'newSince', count: 2, firstId: 'E1' });
+});
+
+test("the viewer's own newest item counts as looking: what others did before it is not new", () => {
+    const detail = issueDetail([], [comment('C1', DKIM, 11), comment('C2', MLAINE, 12), comment('C3', DKIM, 13)]);
+
+    const built = buildThread({ detail, viewerLogin: MLAINE.login, lookedAt: Date.parse(at(10)) });
+
+    expect(idsOf(built)).toEqual(['C1', 'C2', 'newSince', 'C3']);
+    expect(newSinceOf(built).count).toBe(1);
+
+    // Only the viewer did anything since: no line.
+    const own = issueDetail([], [comment('C1', DKIM, 1), comment('C2', MLAINE, 12)]);
+    expect(idsOf(buildThread({ detail: own, viewerLogin: MLAINE.login, lookedAt: Date.parse(at(10)) }))).toEqual([
+        'C1',
+        'C2',
+    ]);
+});
+
+test('never looked on this device, or nothing new: no line', () => {
+    const detail = issueDetail([], [comment('C1', DKIM, 1), comment('C2', SOFIAB, 2)]);
+
+    expect(idsOf(buildThread({ detail, viewerLogin: MLAINE.login }))).toEqual(['C1', 'C2']);
+    expect(idsOf(buildThread({ detail, viewerLogin: MLAINE.login, lookedAt: Date.parse(at(2)) }))).toEqual([
+        'C1',
+        'C2',
+    ]);
+});
+
+test('the line stays before the item it first stood before, while the viewer comments and others go on', () => {
+    const before = issueDetail([], [comment('C1', DKIM, 1), comment('C2', DKIM, 11)]);
+    const lookedAt = Date.parse(at(10));
+    const first = newSinceOf(buildThread({ detail: before, viewerLogin: MLAINE.login, lookedAt }));
+
+    const after = issueDetail(
+        [],
+        [comment('C1', DKIM, 1), comment('C2', DKIM, 11), comment('C3', MLAINE, 12), comment('C4', SOFIAB, 13)],
+    );
+    const built = buildThread({ detail: after, viewerLogin: MLAINE.login, lookedAt, newSinceId: first.firstId });
+
+    expect(idsOf(built)).toEqual(['C1', 'newSince', 'C2', 'C3', 'C4']);
+    expect(newSinceOf(built).count).toBe(2);
+});
+
+test('the first item new since the viewer looked stays below the fold', () => {
+    const many = manyComments(24);
+
+    const built = buildThread({
+        detail: issueDetail([], many),
+        viewerLogin: MLAINE.login,
+        lookedAt: Date.parse(at(8.5)),
+    });
+
+    expect(idsOf(built)).toEqual(['C1', 'C2', 'fold', 'newSince', ...many.slice(8).map(entry => entry.id)]);
+    expect(foldOf(built)).toEqual(fold({ comments: 6 }));
+    expect(newSinceOf(built).count).toBe(16);
+});
+
+test("a pull request's pushes, reviews and code comments by others are new; the viewer's draft review and failed comment are not", () => {
+    const detail: ItemDetail = {
+        ...pullRequestDetail([commitAt('a1', DKIM, 11)], [comment('C1', DKIM, 1)]),
+        reviewSummaries: [review('R0', MLAINE, 'APPROVED', 5), review('R1', SOFIAB, 'APPROVED', 20)],
+    };
+    const reviewThreads = [reviewThread('T1', [threadComment('T1-0', DKIM, 22, 'PRR_alone')])];
+
+    const built = buildThread({
+        detail,
+        reviewThreads,
+        failedComments: [failedComment(1)],
+        pendingReview: { id: PENDING_ID, commentCount: 0, createdAt: at(30) },
+        viewerLogin: MLAINE.login,
+        lookedAt: Date.parse(at(10)),
+    });
+
+    expect(idsOf(built)).toEqual(['C1', 'R0', 'newSince', 'PRC_a1', 'R1', 'T1', 'failed:1', 'pendingReview']);
+    expect(newSinceOf(built).count).toBe(3);
+});
+
+test("what the viewer saw ends at the thread's newest item GitHub has: not at their comments on their way or refused", () => {
+    const detail = issueDetail(
+        [{ ...base('E1', SOFIAB, 12), kind: 'labeled', label: BUG }],
+        [comment('C1', DKIM, 3), comment('pending:1', MLAINE, 20)],
+    );
+
+    expect(getThreadNewestAt({ detail, failedComments: [failedComment(1)] })).toBe(Date.parse(at(12)));
+    expect(getThreadNewestAt({ detail: issueDetail([], []) })).toBeNull();
+});
+
 const PROJECT = { title: 'tasklet Roadmap', url: 'https://github.com/users/mlaine/projects/1' };
 
 function buildIssueThread(events: ThreadEvent[], comments: ItemComment[] = []) {
@@ -661,6 +765,15 @@ function foldOf(thread: ThreadItem[]): ThreadFold {
     const found = thread.find(entry => entry.kind === 'fold');
     if (found?.kind !== 'fold') {
         throw new Error('No fold');
+    }
+
+    return found;
+}
+
+function newSinceOf(thread: ThreadItem[]): ThreadNewSince {
+    const found = thread.find(entry => entry.kind === 'newSince');
+    if (found?.kind !== 'newSince') {
+        throw new Error('No line');
     }
 
     return found;

@@ -22,6 +22,7 @@ import type { RepositoryWorkflows } from '@/workflows/WorkflowTypes.js';
 
 import type { ItemDetailPersistenceShape, ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
+import type { ItemLooked, ItemLookedPersistenceShape } from './ItemLookedPersistence.js';
 import type { ItemChanges, ItemPersistenceShape, PersistedItems } from './ItemPersistence.js';
 import type { LocalCopyVersionShape } from './LocalCopyVersion.js';
 import type { MyWorkGroup, SyncLoop, SyncLoopState } from './ItemStoreTypes.js';
@@ -29,12 +30,12 @@ import type { Item } from './ItemTypes.js';
 
 /**
  * The layout of the database and of what it holds. Raise it whenever either changes (the `Item`, `ItemDetail`,
- * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking, `RepositoryWorkflows`, `KeptCommit` or `KeptCommitRefs` types too): a database of another version is dropped
+ * `RepositoryMetadata`, `Project`, `ProjectItem`, tracking, `RepositoryWorkflows`, `KeptCommit`, `KeptCommitRefs` or `ItemLooked` types too): a database of another version is dropped
  * and rebuilt, never migrated — it is a cache. It names the channel the tabs talk over (`TabChannel`) and the lock of
  * the tab that syncs (`SyncLeadership`) too: raise it when a `TabMessage` or what a tab says of itself changes, so tabs of two githq versions do not
  * hear each other, and a tab of one is not left waiting for a tab of another.
  */
-export const LOCAL_DATABASE_VERSION = 20;
+export const LOCAL_DATABASE_VERSION = 21;
 
 /** The database of `login`'s local copy. */
 export function getLocalDatabaseName(login: string) {
@@ -44,6 +45,7 @@ export function getLocalDatabaseName(login: string) {
 /** The local copy in IndexedDB, behind each of the interfaces its parts are kept through. */
 export type IndexedDbPersistence = ItemPersistenceShape &
     ItemDetailPersistenceShape &
+    ItemLookedPersistenceShape &
     RepositoryPersistenceShape &
     TrackingPersistenceShape &
     ProjectPersistenceShape &
@@ -78,6 +80,7 @@ interface LocalDatabase extends DBSchema {
     workflows: { key: string; value: RepositoryWorkflows };
     commits: { key: [string, string]; value: KeptCommit; indexes: { repository: string } };
     commitRefs: { key: string; value: KeptCommitRefs };
+    looked: { key: string; value: ItemLooked; indexes: { lookedAt: number } };
 }
 
 /**
@@ -85,7 +88,8 @@ interface LocalDatabase extends DBSchema {
  * (memberships, sync state, the viewer's projects), `details` (by item id), `repositories`
  * (by `owner/name`), `projects` (by id), `projectItems` (by project item id), `trackedSync` (each tracked
  * repository's and project's sync state), `workflows` (each tracked repository's, by `owner/name`), `commits` (by
- * `[repository, oid]`, kept for good) and `commitRefs` (each repository's branches and tags, by `owner/name`). One object for the interfaces it is set as: they share the
+ * `[repository, oid]`, kept for good), `commitRefs` (each repository's branches and tags, by `owner/name`) and `looked`
+ * (when the user last looked at each item, by its id). One object for the interfaces it is set as: they share the
  * connection.
  *
  * Only {@link ItemPersistenceShape.load} opens the database. A connection gives way when another one wants
@@ -114,6 +118,9 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
         loadDetail,
         saveDetails,
         deleteDetails,
+        loadLooked,
+        saveLooked,
+        deleteLookedBefore,
         loadRepositories,
         saveRepository,
         saveViewerProjects,
@@ -218,6 +225,23 @@ export function createIndexedDbPersistence(): IndexedDbPersistence {
     async function deleteDetails(login: string, ids: readonly string[]) {
         const db = await getOpen(login);
         const tx = db.transaction('details', 'readwrite');
+        await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
+    }
+
+    async function loadLooked(login: string, id: string) {
+        const db = await getOpen(login);
+        return (await db.get('looked', id)) ?? null;
+    }
+
+    async function saveLooked(login: string, looked: ItemLooked) {
+        const db = await getOpen(login);
+        await db.put('looked', looked);
+    }
+
+    async function deleteLookedBefore(login: string, before: number) {
+        const db = await getOpen(login);
+        const tx = db.transaction('looked', 'readwrite');
+        const ids = await tx.store.index('lookedAt').getAllKeys(IDBKeyRange.upperBound(before, true));
         await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
     }
 
@@ -365,6 +389,7 @@ function openDatabase(name: string) {
             db.createObjectStore('workflows', { keyPath: 'nameWithOwner' });
             db.createObjectStore('commits', { keyPath: ['repository', 'oid'] }).createIndex('repository', 'repository');
             db.createObjectStore('commitRefs', { keyPath: 'repository' });
+            db.createObjectStore('looked', { keyPath: 'id' }).createIndex('lookedAt', 'lookedAt');
         },
     });
 }

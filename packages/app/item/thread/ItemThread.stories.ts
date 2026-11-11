@@ -17,6 +17,7 @@ import ItemThreadComposer from './ItemThreadComposer.vue';
 const IN_PANEL = 512;
 /** The reading width a page keeps its main column to. */
 const ON_PAGE = { width: 760 };
+const HOUR = 60 * 60_000;
 
 /** The user's comments GitHub did not take: one while offline, one refused. */
 const FAILED_COMMENTS: FailedComment[] = [
@@ -76,12 +77,21 @@ export const PullRequestInPanel: Story = { args: { item: F1_PULL_REQUEST, detail
 /** F5: the same pull request on a page. */
 export const PullRequestOnPage: Story = { args: PullRequestInPanel.args, parameters: ON_PAGE };
 
-/** I1 on a page: the issue's events and comments in one time order, one person's events in a burst on one line. */
-export const IssueThread: Story = { args: { item: I1_ISSUE, detail: I1_ISSUE_DETAIL }, parameters: ON_PAGE };
+/**
+ * I1 on a page: the issue's events and comments in one time order, one person's events in a burst on one line; last
+ * looked at four hours ago, "3 new since you looked" before dkim's comment.
+ */
+export const IssueThread: Story = {
+    args: { item: I1_ISSUE, detail: I1_ISSUE_DETAIL, lookedAt: SAMPLE_NOW - 4 * HOUR },
+    parameters: ON_PAGE,
+};
 
-/** F5 on a page: pushes with their commits, a burst, the comments and the CI's failed checks by time. */
+/**
+ * F5 on a page: pushes with their commits, a burst, the comments and the CI's failed checks by time; last looked at
+ * three hours ago, "1 new since you looked" before the review asked for again.
+ */
 export const PullRequestThread: Story = {
-    args: { item: F5_PULL_REQUEST, detail: F5_PULL_REQUEST_DETAIL },
+    args: { item: F5_PULL_REQUEST, detail: F5_PULL_REQUEST_DETAIL, lookedAt: SAMPLE_NOW - 3 * HOUR },
     parameters: ON_PAGE,
 };
 

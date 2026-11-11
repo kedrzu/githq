@@ -619,6 +619,43 @@ test('a long thread folds its middle but never the oldest review with a thread s
     await expect(item.root.getByRole('listitem').filter({ hasText: /After \d+\./u })).toHaveCount(15);
 });
 
+test('what someone else wrote since the user last looked shows after "1 new since you looked"; what the user wrote never counts', async ({
+    page,
+    github,
+}) => {
+    // Time runs as usual, and the minute an opened item's detail is trusted can be skipped.
+    await page.clock.install();
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.comment(sample.issue, { author: 'monalisa', body: 'Seen it twice today.', minutesAgo: 30 });
+    const { myWork } = await openMyWork(page, github, world);
+    const item = new ItemViewHarness(page);
+    const newSince = item.root.getByRole('listitem').filter({ hasText: /new since you looked/u });
+
+    // Never looked at on this device: nothing is new.
+    await myWork.row(ISSUE).click();
+    await expect(item.entry('Seen it twice today.')).toBeVisible();
+    await expect(newSince).toHaveCount(0);
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+
+    world.comment(sample.issue, { author: 'hubot', body: 'Still happens on mobile.', minutesAgo: 0 });
+    await page.clock.fastForward('01:01');
+    await myWork.row(ISSUE).click();
+
+    await expect(newSince).toHaveText('1 new since you looked');
+    await expect(newSince.locator('xpath=following-sibling::li[1]')).toContainText('Still happens on mobile.');
+    await myWork.row(SECOND_ISSUE).click();
+    await expect(item.title).toHaveText(SECOND_ISSUE);
+
+    world.comment(sample.issue, { author: SAMPLE_VIEWER.viewer.login, body: 'Fixed on my side.', minutesAgo: 0 });
+    await page.clock.fastForward('01:01');
+    await myWork.row(ISSUE).click();
+
+    await expect(item.entry('Fixed on my side.')).toBeVisible();
+    await expect(newSince).toHaveCount(0);
+});
+
 function user(login: string) {
     return { login, avatarUrl: `https://avatars.githubusercontent.com/${login}` };
 }

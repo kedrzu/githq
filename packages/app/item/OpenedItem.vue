@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item is handed to the view too, for its thread's "N new since you looked"; leaving the item — another opened, closing it, the tab hidden or left — keeps the newest of its thread they saw (`useItemLooked`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -43,6 +43,7 @@ import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
 import { useItemStack } from './useItemStack.js';
 import { useItemWalk } from './useItemWalk.js';
+import { useItemLooked } from './useItemLooked.js';
 import { useOpenedItem } from './useOpenedItem.js';
 
 const props = defineProps<{
@@ -77,6 +78,11 @@ const walk = useItemWalk({
   followsCursor: listed => props.arrangement === 'panel' || (props.arrangement === 'modal' && !listed),
 });
 const stack = useItemStack(() => opened.item);
+// When the user last looked at it, for its thread's "N new since you looked"; leaving it keeps what they saw.
+const lookedAt = useItemLooked({
+  id: () => opened.id,
+  thread: () => (opened.detail ? { detail: opened.detail, reviewThreads: opened.reviewThreads } : null),
+});
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
@@ -446,6 +452,7 @@ type HistoryMove = 'push' | 'replace';
       :review-threads-loading="opened.reviewThreadsLoading"
       :review-writing="opened.reviewWriting"
       :review-draft-first="tracking.reviewCommentChoice === 'draft'"
+      :looked-at="lookedAt"
       @edit="edit"
       @retry-comment="retryComment"
       @discard-comment="drafts.discardFailed($event)"
@@ -504,6 +511,7 @@ type HistoryMove = 'push' | 'replace';
     :review-threads-loading="opened.reviewThreadsLoading"
     :review-writing="opened.reviewWriting"
     :review-draft-first="tracking.reviewCommentChoice === 'draft'"
+    :looked-at="lookedAt"
     @edit="edit"
     @retry-comment="retryComment"
     @discard-comment="drafts.discardFailed($event)"

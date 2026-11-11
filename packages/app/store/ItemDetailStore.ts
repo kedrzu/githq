@@ -32,7 +32,7 @@ import { getCursorAfter, toItemComments, toItemDetail, toItemReviewPage, toThrea
  */
 const RECHECK_AFTER_MS = 60_000;
 /** How long a kept detail survives without being read again: the copy must not grow without end. */
-const KEEP_DETAIL_MS = 30 * 24 * 60 * 60_000;
+export const KEEP_DETAIL_MS = 30 * 24 * 60 * 60_000;
 
 /** The events both an issue's and a pull request's thread show (item-activity F13, "issues too", closed, reopened). */
 const SHARED_EVENT_TYPES: IssueTimelineItemsItemType[] = [
