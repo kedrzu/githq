@@ -42,7 +42,17 @@ test('a comment on its way to GitHub is not on the pull request yet', () => {
 });
 
 function comment(id: string, createdAt: string): ItemComment {
-    return { id, url: '', author: null, bodyHtml: '<p>text</p>', createdAt, lastEditedAt: null };
+    return {
+        id,
+        url: '',
+        author: null,
+        body: 'text',
+        bodyHtml: '<p>text</p>',
+        createdAt,
+        lastEditedAt: null,
+        viewerCanUpdate: false,
+        viewerCanDelete: false,
+    };
 }
 
 function review(id: string, submittedAt: string, overrides: Partial<ItemReviewSummary> = {}): ItemReviewSummary {

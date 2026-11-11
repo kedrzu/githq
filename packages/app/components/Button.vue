@@ -15,9 +15,11 @@ import type { LucideIcon } from 'lucide-vue-next';
  * - `link`: text only, inline in a sentence ("Why?") or a row's meta line ("Open on GitHub").
  * - `field`: looks like a text field, for a button that opens one ("Search… ⌘K" in the sidebar).
  * - `danger`: red outline, an action that deletes something ("Sign out and clear").
+ * - `destructive`: red fill, the answer to a question that throws something away ("Discard" changes to a comment).
  */
 export type ButtonVariant =
   | 'danger'
+  | 'destructive'
   | 'field'
   | 'framed'
   | 'ghost'
@@ -27,8 +29,11 @@ export type ButtonVariant =
   | 'primary'
   | 'secondary';
 
-/** `sm` toolbars, `md` forms and footers, `lg` a page's single call to action, `xl` the landing page's hero. */
-export type ButtonSize = 'lg' | 'md' | 'sm' | 'xl';
+/**
+ * `sm` toolbars, `compact` the actions of a card or an editor in an item's thread (Comment, Resolve thread), `md` forms
+ * and footers, `lg` a page's single call to action, `xl` the landing page's hero.
+ */
+export type ButtonSize = 'compact' | 'lg' | 'md' | 'sm' | 'xl';
 
 /** nzyme's button props (`type`, `busy`, `disabled`, `link`, `noWait`) and the look. */
 export const ButtonProps = {
@@ -37,6 +42,8 @@ export const ButtonProps = {
   variant: defineProp<ButtonVariant>(),
   /** `md` when not given. */
   size: defineProp<ButtonSize>(),
+  /** `accent`: the label in the accent colour, a text link that does something ("Show 4 more commits", "Log"). */
+  tone: defineProp<'accent'>(),
   /** Leading icon, a lucide component. */
   icon: defineProp<LucideIcon>(),
   /** Keyboard hint after the label, in the app's notation (`Mod+Enter`). Only drawn: give the shortcut to `keyshortcuts` too. */
@@ -66,7 +73,17 @@ const { Button, busy, disabled } = useButton();
 const t = useTranslate();
 
 const variant = computed(() => props.variant ?? 'secondary');
-const kbdTone = computed(() => (variant.value === 'primary' || variant.value === 'light' ? 'onFill' : 'default'));
+const kbdTone = computed(() => {
+  switch (variant.value) {
+    case 'primary':
+    case 'light':
+      return 'onFill';
+    case 'destructive':
+      return 'onDanger';
+    default:
+      return 'default';
+  }
+});
 </script>
 
 <template>
@@ -75,6 +92,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
       css.button,
       css[`button_${variant}`],
       css[`button_${size ?? 'md'}`],
+      tone && css[`button_${tone}`],
       block && css.button_block,
       kbd && css.button_keyed,
       busy && css.button_busy,
@@ -89,7 +107,7 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
       <component
         :is="icon"
         v-if="icon"
-        :class="css.button_icon"
+        :class="[css.button_icon, css.button_leadIcon]"
         aria-hidden="true"
       />
       <slot />
@@ -133,6 +151,9 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   user-select: none;
   background: none;
   border: 1px solid transparent;
+  // A caller joining another control to its end drops its end border with `--button-border-end-width: 0` (a split
+  // button's menu).
+  border-inline-end-width: var(--button-border-end-width, 1px);
   border-radius: 7px;
 }
 
@@ -151,6 +172,11 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   flex: none;
   width: 14px;
   height: 14px;
+}
+
+// The leading icon, not the busy spinner: a caller tints it with `--button-icon-color` (the action's state colour).
+.button_leadIcon {
+  color: var(--button-icon-color, currentcolor);
 }
 
 .button_block {
@@ -177,6 +203,23 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 
   .button_content {
     gap: $spacing-6;
+  }
+}
+
+// A caller joining another control to its end sets `--button-padding-end` and `--button-radius` (a split button).
+.button_compact {
+  padding: $spacing-5 $spacing-10;
+  padding-inline-end: var(--button-padding-end, #{$spacing-10});
+  font-size: $font-size-sm;
+  border-radius: var(--button-radius, #{$radius-md});
+
+  .button_content {
+    gap: $spacing-6;
+  }
+
+  .button_icon {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -269,6 +312,15 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   }
 }
 
+.button_destructive {
+  color: $color-on-emphasis;
+  background: $color-red-emphasis;
+
+  &:hover {
+    background: color-mix(in srgb, #{$color-red-emphasis} 88%, black);
+  }
+}
+
 .button_ghost {
   color: $color-fg-2;
 
@@ -317,6 +369,19 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
   cursor: progress;
 }
 
+// After the variants: the colour is the tone's, hovered too. Disabled, below, still dims it.
+.button_accent {
+  color: $color-accent;
+
+  &:hover {
+    color: $color-accent;
+  }
+
+  &.button_link:hover {
+    text-decoration: underline;
+  }
+}
+
 // Disabled, or shown but not possible yet (`unavailable`: `aria-disabled`, still focusable): no hover, dim.
 .button_disabled,
 .button[aria-disabled='true'] {
@@ -354,6 +419,10 @@ const kbdTone = computed(() => (variant.value === 'primary' || variant.value ===
 .button_keyed {
   &.button_sm {
     padding-inline-end: 3px;
+  }
+
+  &.button_compact {
+    padding-inline-end: var(--button-padding-end, #{$spacing-8});
   }
 
   &.button_md {

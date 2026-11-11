@@ -12,6 +12,7 @@ import type { TestGraphQLAnswer, TestRestAnswer } from '@/testing/createTestSess
 import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { MergePanelStore } from './MergePanelStore.js';
 import { PullRequestCommands } from './PullRequestCommands.js';
@@ -47,7 +48,7 @@ async function setup(
     answerRest?: () => TestRestAnswer,
 ) {
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: request => answers[request.operation],
         answerRest,
     });
@@ -174,7 +175,7 @@ test('a revert GitHub answers once another account signed in leaves no toast the
 
     const reverting = commands.run(MERGED, { kind: 'revert' });
     await session.clock.advance(0);
-    session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
+    session.signInFromAnotherTab(uniqueLogin());
     await session.clock.advance(0);
     held.resolve();
 

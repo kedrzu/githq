@@ -23,21 +23,24 @@ export interface UseGitHubSearchOptions<T> {
      * so another account drops what was asked for the one before.
      */
     readonly ask: () => ((text: string) => Promise<T>) | null;
+    /** Fewer typed characters ask GitHub nothing; 2 by default. */
+    readonly minLength?: number;
 }
 
 /**
- * Typing that asks GitHub (D34, E8; mobile D34, G18): from two typed characters, once typing pauses. Latest wins: a
+ * Typing that asks GitHub (D34, E8; mobile D34, G18): from two typed characters (or `minLength`), once typing pauses. Latest wins: a
  * change cancels the wait, and what was asked before it is dropped when it answers.
  * @util
  */
 export function useGitHubSearch<T>(options: UseGitHubSearchOptions<T>): Readonly<ShallowRef<GitHubSearch<T>>> {
     const state = shallowRef<GitHubSearch<T>>({ kind: 'tooShort' });
+    const minLength = options.minLength ?? MIN_LENGTH;
 
     // Synchronous, so nothing can answer between the change and the older question being dropped.
     watch(
         [options.text, options.ask],
         ([text, ask], _before, onCleanup) => {
-            if (!ask || text.length < MIN_LENGTH) {
+            if (!ask || text.length < minLength) {
                 state.value = { kind: 'tooShort' };
                 return;
             }

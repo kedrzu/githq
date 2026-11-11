@@ -1,0 +1,152 @@
+and:
+  en: and
+deletedUser:
+  en: ghost
+forcePushed:
+  en: force-pushed {branch} from {before} to {after}
+forcePushedBranch:
+  en: force-pushed {branch}
+assigned:
+  en: assigned {users}
+selfAssigned:
+  en: self-assigned this
+unassigned:
+  en: unassigned {users}
+selfUnassigned:
+  en: removed their assignment
+renamed:
+  en: changed the title from “{from}” to “{to}”
+labeled:
+  en: added {labels}
+unlabeled:
+  en: removed {labels}
+milestoned:
+  en: added this to the {milestone} milestone
+demilestoned:
+  en: removed this from the {milestone} milestone
+reviewRequested:
+  en: asked {reviewers} for a review
+reviewRequestedAgain:
+  en: asked {reviewers} for another review
+reviewRequestRemoved:
+  en: removed the review request for {reviewers}
+reviewRequestedSelf:
+  en: requested their own review
+reviewRequestedAgainSelf:
+  en: requested their own review again
+reviewRequestRemovedSelf:
+  en: removed their review request
+reviewDismissed:
+  en: dismissed {reviewer}’s review
+reviewDismissedWithMessage:
+  en: 'dismissed {reviewer}’s review: {message}'
+readyForReview:
+  en: marked this pull request as ready for review
+convertedToDraft:
+  en: marked this pull request as a draft
+baseChanged:
+  en: changed the base branch from {from} to {to}
+crossReferenced:
+  en: mentioned this in {ref} {title}
+crossReferencedMany:
+  en: mentioned this in {refs}
+closed:
+  en: closed this
+closedCompleted:
+  en: closed this as completed
+closedCompletedIn:
+  en: closed this as completed in {ref}
+closedNotPlanned:
+  en: closed this as not planned
+closedDuplicate:
+  en: closed this as a duplicate of {ref}
+closedAsDuplicate:
+  en: closed this as a duplicate
+reopened:
+  en: reopened this
+merged:
+  en: merged commit {commit} into {branch}
+mergedNoCommit:
+  en: merged this into {branch}
+headRefDeleted:
+  en: deleted the {branch} branch
+connectedPullRequest:
+  en: linked a pull request {ref} that will close this issue
+disconnectedPullRequest:
+  en: unlinked a pull request {ref}
+referenced:
+  en: referenced this in commit {commit} {title}
+referencedMany:
+  en: referenced this in commits {commits}
+referencedHidden:
+  en: referenced this in a commit in {repository}
+subIssueAdded:
+  en: added sub-issue {ref} {title}
+subIssuesAdded:
+  en: added sub-issues {refs}
+subIssueAddedHidden:
+  en: added a sub-issue
+subIssueRemoved:
+  en: removed sub-issue {ref} {title}
+subIssuesRemoved:
+  en: removed sub-issues {refs}
+subIssueRemovedHidden:
+  en: removed a sub-issue
+parentAdded:
+  en: added this to parent {ref} {title}
+parentAddedHidden:
+  en: added this to a parent issue
+parentRemoved:
+  en: removed this from parent {ref} {title}
+parentRemovedHidden:
+  en: removed this from its parent issue
+issueTypeSet:
+  en: set the type to {to}
+issueTypeChanged:
+  en: changed the type from {from} to {to}
+issueTypeRemoved:
+  en: removed the type {from}
+addedToProject:
+  en: added this to {project}
+removedFromProject:
+  en: removed this from {project}
+hiddenProject:
+  en: a project
+projectStatusChanged:
+  en: changed Status to {status} in {project}
+projectStatusCleared:
+  en: cleared Status in {project}
+projectStatusAutomated:
+  en: Status set to {status} in {project} by a project workflow
+projectStatusClearedAutomated:
+  en: Status cleared in {project} by a project workflow
+transferred:
+  en: transferred this issue from {repository}
+transferredHidden:
+  en: transferred this issue from another repository
+locked:
+  en: locked this conversation to collaborators
+lockedAfter:
+  en: locked the conversation to collaborators
+lockedAs:
+  en: locked this conversation as {reason}
+lockedAsAfter:
+  en: locked the conversation as {reason}
+OFF_TOPIC:
+  en: off-topic
+RESOLVED:
+  en: resolved
+SPAM:
+  en: spam
+TOO_HEATED:
+  en: too heated
+unlocked:
+  en: unlocked this conversation
+pinned:
+  en: pinned this issue
+unpinned:
+  en: unpinned this issue
+checksFailed:
+  en: '{failed} of {total} checks failed on {commit}: {names}'
+ci:
+  en: CI

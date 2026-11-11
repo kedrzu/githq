@@ -16,6 +16,7 @@ import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { samplePullRequestNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { MergePanelStore } from './MergePanelStore.js';
 import type { MergeSubmission } from './MergeTypes.js';
@@ -744,7 +745,7 @@ test('PM34: merged with a chosen email the panel leaves first, and the merge is 
 });
 
 async function setup() {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const answers: {
         put: TestRestAnswer | undefined;
         /** What the merge of the stack's first one (`PR_0`, #1) is answered. */

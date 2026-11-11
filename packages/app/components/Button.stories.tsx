@@ -1,6 +1,6 @@
 import Form from '@nzyme/vue-forms/components/Form.vue';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ArrowUpRight, Github, ListFilter, LogOut, Plus, Rows3, Search, Star } from 'lucide-vue-next';
+import { ArrowUpRight, CircleCheck, Github, ListFilter, LogOut, Plus, Rows3, Search, Star } from 'lucide-vue-next';
 import { defineComponent, ref } from 'vue';
 
 import { StoryPage, StoryRow, StorySection } from '@/.storybook/StoryLayout.jsx';
@@ -62,6 +62,24 @@ export const Gallery: Story = {
                         kbd="Mod+Enter"
                     >
                         Create issue
+                    </Button>
+                </StoryRow>
+            </StorySection>
+            <StorySection title="An item's thread — compact, with and without an icon">
+                <StoryRow>
+                    <Button
+                        size="compact"
+                        icon={CircleCheck}
+                        kbd="Escape"
+                    >
+                        Resolve thread
+                    </Button>
+                    <Button
+                        variant="primary"
+                        size="compact"
+                        kbd="Mod+Enter"
+                    >
+                        Comment
                     </Button>
                 </StoryRow>
             </StorySection>

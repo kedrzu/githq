@@ -1,0 +1,9 @@
+# Edits an issue's description; answers with the description GitHub kept.
+mutation UpdateIssueBody($id: ID!, $body: String!) {
+    updateIssue(input: { id: $id, body: $body }) {
+        issue {
+            id
+            ...ItemBodyResultFields
+        }
+    }
+}

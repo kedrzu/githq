@@ -93,6 +93,17 @@ export class ItemViewHarness {
         return this.root.getByRole('textbox', { name: 'Comment' });
     }
 
+    /** The line saying why the user can't comment, in place of the comment box. */
+    get readOnlyComposer(): Locator {
+        // `\s`: short words are held to the next by no-break spaces.
+        return this.root.getByText(/so\syou\scan\sread\sit\sbut\snot\scomment|so\sit\stakes\sno\snew\scomments/);
+    }
+
+    /** A button of the composer at the thread's end, by its label: "Close issue", "More ways to close", "Comment". */
+    composerButton(name: string): Locator {
+        return this.root.getByRole('button', { name, exact: true });
+    }
+
     /** The switch's button moving the item to `name`. */
     arrangement(name: ItemArrangementName): Locator {
         return this.root.getByRole('group', { name: 'Arrangement' }).getByRole('button', { name, exact: true });
@@ -118,12 +129,11 @@ export class ItemViewHarness {
         return this.title.locator('xpath=following-sibling::p[1]').getByText(text, { exact: true });
     }
 
-    /** The comments of its activity ("Latest activity"), those shown, oldest first. */
+    /** The comments of its thread, those shown, oldest first: the entries with a comment's ⋯. */
     get comments(): Locator {
         return this.root
-            .locator('section')
-            .filter({ has: this.page.getByRole('heading', { name: 'Latest activity' }) })
-            .getByRole('listitem');
+            .getByRole('listitem')
+            .filter({ has: this.page.getByRole('button', { name: 'Comment actions' }) });
     }
 
     /** The comment the address's fragment names, marked as the current location (`aria-current="location"`). */
@@ -134,6 +144,22 @@ export class ItemViewHarness {
     /** A comment or a reviewer's line holding `text`. */
     entry(text: string): Locator {
         return this.root.getByRole('listitem').filter({ hasText: text });
+    }
+
+    /** The line "N new since you looked" standing before what others did since the item was last open here. */
+    get newSince(): Locator {
+        return this.root.getByRole('listitem').filter({ hasText: /new since you looked/u });
+    }
+
+    /** The thread's entry right after `entry`. */
+    entryAfter(entry: Locator): Locator {
+        return entry.locator('xpath=following-sibling::li[1]');
+    }
+
+    /** Picks `action` ("Edit", "Delete…") from the ⋯ menu of the comment holding `text`. */
+    async commentAction(text: string, action: string): Promise<void> {
+        await this.entry(text).getByRole('button', { name: 'Comment actions' }).click();
+        await this.page.getByRole('menuitem', { name: action }).click();
     }
 
     /** Posts a comment through the comment box: `R`, the text, ⌘↵. */

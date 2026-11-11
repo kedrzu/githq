@@ -1,4 +1,5 @@
-# A comment as the item view shows it; `bodyHTML` is GitHub's own rendering, sanitized by GitHub.
+# A comment as the item view shows it; `bodyHTML` is GitHub's own rendering, sanitized by GitHub, `body` the Markdown an
+# edit starts from. GitHub says whether the viewer may edit or delete it (K1b).
 fragment IssueCommentFields on IssueComment {
     id
     url
@@ -8,5 +9,8 @@ fragment IssueCommentFields on IssueComment {
         login
         avatarUrl
     }
+    body
     bodyHTML
+    viewerCanUpdate
+    viewerCanDelete
 }

@@ -13,6 +13,7 @@ import { SettingsSync } from '@/settings/sync/SettingsSync.js';
 import { NewVersion } from '@/shell/NewVersion.js';
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
 import { ItemDetailPersistence } from '@/store/ItemDetailPersistence.js';
+import { ItemLookedPersistence } from '@/store/ItemLookedPersistence.js';
 import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { LocalCopyVersion } from '@/store/LocalCopyVersion.js';
@@ -55,6 +56,7 @@ function startServices(container: Container) {
     const persistence = createIndexedDbPersistence();
     container.set(ItemPersistence, persistence);
     container.set(ItemDetailPersistence, persistence);
+    container.set(ItemLookedPersistence, persistence);
     container.set(RepositoryPersistence, persistence);
     container.set(TrackingPersistence, persistence);
     container.set(ProjectPersistence, persistence);

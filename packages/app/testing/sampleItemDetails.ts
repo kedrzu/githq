@@ -5,6 +5,7 @@ import type {
     ItemCheck,
     ItemComment,
     ItemDetailProject,
+    ItemEvents,
     PullRequestDetail,
 } from '@/store/ItemDetailTypes.js';
 import type { IssueItem, Item, PullRequestItem } from '@/store/ItemTypes.js';
@@ -15,6 +16,9 @@ import { SAMPLE_VIEWER } from './sampleViewer.js';
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
+
+/** A thread with no events: the samples' threads are their comments (events come with the thread's own samples). */
+const NO_EVENTS: ItemEvents = { totalCount: 0, commitCount: 0, oldest: [], newest: [], middle: null };
 
 const KEDRZU = sampleUser(SAMPLE_VIEWER.login, '#d6a23a');
 const OLAM = sampleUser('olam', '#7fb3d5');
@@ -45,15 +49,20 @@ export const D1_ISSUE_DETAIL: IssueDetail = {
     body: 'Recurring visits created before the DST change render one hour late in the week view.',
     bodyHtml:
         '<p>Recurring visits created before the DST change render one hour late in the week view. Single visits are fine. Repro: weekly visit on Oct 20, switch to Nov 3.</p>',
+    lastEditedAt: null,
+    viewerCanUpdate: true,
+    locked: false,
     reactions: [],
     comments: {
         totalCount: 4,
+        first: [],
         nodes: [
             comment('C_1', OLAM, 2 * HOUR, 'Same on mobile. Looks like the series start is stored in local time.'),
             comment('C_2', KEDRZU, 20 * MINUTE, 'Opened #1205 — converting at creation and migrating existing series.'),
         ],
         olderCursor: 'cursor-older',
     },
+    events: NO_EVENTS,
     projects: [
         project('Platform Q4', { status: ['In progress', 'YELLOW'], priority: 'High', estimate: 3 }),
         project('Bug triage', { status: ['Confirmed', 'GREEN'], severity: 'Major' }),
@@ -96,9 +105,13 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
     body: 'Moves issues, pull requests and project items into IndexedDB.',
     bodyHtml:
         '<p>Moves issues, pull requests and project items into IndexedDB so reads never wait on the network. Schema v1: one store per kind, indexed by repository and <code>updatedAt</code>.</p>',
+    lastEditedAt: null,
+    viewerCanUpdate: true,
+    locked: false,
     reactions: [],
     comments: {
         totalCount: 2,
+        first: [],
         nodes: [
             comment(
                 'C_3',
@@ -110,6 +123,7 @@ export const F1_PULL_REQUEST_DETAIL: PullRequestDetail = {
         ],
         olderCursor: null,
     },
+    events: NO_EVENTS,
     projects: [project('githq Roadmap', { status: ['In review', 'PURPLE'], priority: 'High', estimate: 5 })],
     commitCount: 4,
     headRepository: 'kedrzu/githq',
@@ -215,9 +229,13 @@ function comment(id: string, author: ItemComment['author'], age: number, text: s
         id,
         url: `https://github.com/acme/web/issues/1#${id}`,
         author,
+        body: text,
         bodyHtml: `<p>${text}</p>`,
         createdAt: ago(age),
         lastEditedAt: null,
+        // GitHub lets the viewer edit and delete their own.
+        viewerCanUpdate: author?.login === SAMPLE_VIEWER.login,
+        viewerCanDelete: author?.login === SAMPLE_VIEWER.login,
     };
 }
 
@@ -229,6 +247,7 @@ function check(workflow: string | null, name: string, state: ItemCheck['state'],
         name,
         workflow,
         state,
+        cancelled: false,
         url: `https://github.com/acme/web/actions/runs/1#${name}`,
         startedAt,
         completedAt: state === 'pending' ? null : ago(0),

@@ -1,4 +1,4 @@
-<!-- What a dialog about a draft review is drawn in (CR39, CR75): in the middle of the screen, its title and Esc above, what it says in between, its buttons along the bottom. The keys are the dialog's while it is open. -->
+<!-- What a short dialog is drawn in — a draft review's (CR39, CR75), deleting a comment (F15): in the middle of the screen, its title and Esc above, what it says in between, its buttons along the bottom. The keys are the dialog's while it is open. -->
 <script lang="ts" setup>
 import { useTemplateRef } from 'vue';
 
@@ -47,16 +47,16 @@ function onOpenFocus(event: Event) {
   >
     <div
       ref="root"
-      :class="css.reviewDialogFrame"
+      :class="css.dialogFrame"
       data-no-commands
       data-layer
       @keydown="emit('keydown', $event)"
     >
       <DialogHead :title="title" />
-      <div :class="[css.reviewDialogFrame_body, bodyClass]">
+      <div :class="[css.dialogFrame_body, bodyClass]">
         <slot />
       </div>
-      <footer :class="css.reviewDialogFrame_footer">
+      <footer :class="css.dialogFrame_footer">
         <slot name="footer" />
       </footer>
     </div>
@@ -64,13 +64,13 @@ function onOpenFocus(event: Event) {
 </template>
 
 <style lang="scss" module="css">
-.reviewDialogFrame {
+.dialogFrame {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-.reviewDialogFrame_body {
+.dialogFrame_body {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -79,7 +79,7 @@ function onOpenFocus(event: Event) {
   overflow-y: auto;
 }
 
-.reviewDialogFrame_footer {
+.dialogFrame_footer {
   display: flex;
   gap: $spacing-8;
   align-items: center;

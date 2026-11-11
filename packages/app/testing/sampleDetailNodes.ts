@@ -1,5 +1,11 @@
 import type { IssueDetailFieldsFragment, PullRequestDetailFieldsFragment } from '@githq/github/generated.gen.js';
 
+/** No events: the first two and the newest of none. */
+const NO_EVENTS = {
+    firstEvents: { edges: [], nodes: [] },
+    lastEvents: { filteredCount: 0, edges: [], nodes: [] },
+};
+
 const REPOSITORY: IssueDetailFieldsFragment['repository'] = {
     nameWithOwner: 'acme/web',
     isPrivate: false,
@@ -30,8 +36,13 @@ export function sampleIssueDetailNode(id: string, updatedAt: string): IssueDetai
         repository: REPOSITORY,
         body: `Body of ${id}`,
         bodyHTML: `<p>Body of ${id}</p>`,
+        lastEditedAt: null,
+        viewerCanUpdate: true,
+        locked: false,
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        firstComments: { nodes: [] },
+        ...NO_EVENTS,
         parent: null,
         subIssues: { totalCount: 0, nodes: [] },
         blockedBy: { totalCount: 0, nodes: [] },
@@ -86,8 +97,14 @@ export function samplePullRequestDetailNode(id: string, updatedAt: string): Pull
         baseRef: { target: { oid: 'base-oid' } },
         body: `Body of ${id}`,
         bodyHTML: `<p>Body of ${id}</p>`,
+        lastEditedAt: null,
+        viewerCanUpdate: true,
+        locked: false,
         reactionGroups: [],
         commentPage: { totalCount: 0, pageInfo: { hasPreviousPage: false, startCursor: null }, nodes: [] },
+        firstComments: { nodes: [] },
+        ...NO_EVENTS,
+        commitEvents: { filteredCount: 0 },
         commits: { totalCount: 1 },
         headRepository: { nameWithOwner: 'acme/web' },
         latestReviews: { nodes: [] },

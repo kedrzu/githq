@@ -16,6 +16,7 @@ import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { RepositoryPersistence } from './RepositoryPersistence.js';
 import { RepositoryStore } from './RepositoryStore.js';
@@ -236,8 +237,4 @@ function viewerProjects(): ViewerProjectsQuery {
             },
         },
     };
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

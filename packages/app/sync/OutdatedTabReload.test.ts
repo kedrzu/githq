@@ -13,6 +13,7 @@ import { getLocalDatabaseName, LOCAL_DATABASE_VERSION } from '@/store/IndexedDbP
 import { ItemStore } from '@/store/ItemStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { OutdatedTabReload } from './OutdatedTabReload.js';
 import { ReloadHolds } from './ReloadHolds.js';
@@ -98,7 +99,7 @@ test('text a component holds keeps the tab from reloading until it lets go', asy
 });
 
 async function openTab() {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const session = createTestSession({ login, answer: () => ({ data: {} }) });
     setIndexedDbPersistence(session.container);
     session.container.resolve(OutdatedTabReload);

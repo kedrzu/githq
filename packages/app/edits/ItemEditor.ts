@@ -9,14 +9,16 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import type { RepositoryNames } from '@/repos/RepositoryStore.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { Clock } from '@/services/Clock.js';
+import { findItemComment } from '@/store/findItemComment.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
-import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
+import type { ItemDetail, ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
+import type { FailedTextEdit } from './CommentDrafts.js';
 import { createDraftFieldEdit } from './createDraftFieldEdit.js';
 import { createDraftIssueEdit } from './createDraftIssueEdit.js';
 import { createIssueEdit } from './createIssueEdit.js';
@@ -62,6 +64,17 @@ export const ItemEditor = defineService({
             { flush: 'sync' },
         );
 
+        // An edit GitHub did not take of a comment deleted since can't be saved, and its editor, drawn where the
+        // comment was, has no Cancel: it goes once the item's comments, all read, no longer hold that comment.
+        watch(
+            () => drafts.failedEdits.filter(isOfDeletedComment),
+            gone => {
+                for (const failed of gone) {
+                    drafts.discardFailedEdit(failed.itemId, failed.commentId);
+                }
+            },
+        );
+
         return {
             /** What was closed with Undo still on offer, oldest first; reactive. */
             get closes() {
@@ -70,6 +83,7 @@ export const ItemEditor = defineService({
             getPermissions,
             getPlaces,
             edit,
+            retryComment,
             undoClose,
             forgetClose,
             addDraftIssue,
@@ -85,23 +99,90 @@ export const ItemEditor = defineService({
                 viewerLogin: auth.viewer?.login ?? '',
                 permission: metadata?.viewerPermission ?? item.repository.viewerPermission,
                 archived: metadata?.isArchived,
+                locked: details.get(item.id)?.locked,
             });
         }
 
         /**
          * Makes the change of every item that is in memory; resolves with what failed once GitHub answered. Dropped
          * when the user signs out or another account signs in while it is being made: it is built from the ids read
-         * for the account that asked.
+         * for the account that asked. A comment GitHub does not take stays in the thread when it was posted there; any
+         * other goes back into its empty box, or over new text its toast offers to restore it ({@link CommentDrafts}).
          */
         async function edit(itemIds: readonly string[], request: EditRequest): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
-            if (!viewer || token === null) {
+            const editedId = getEditedText(request);
+            if (editedId !== undefined) {
+                // Saved again: the edit GitHub did not take before is this one now.
+                for (const id of itemIds) {
+                    drafts.discardFailedEdit(id, editedId);
+                }
+            }
+
+            const account = getAccount();
+            const prepared = account && (await prepareEdits(itemIds, request, account));
+            if (!account || !prepared) {
                 return { failed: [] };
             }
 
-            const account: EditAccount = { login: viewer.login, token };
+            const outcome = await submitEdits(prepared, request, account);
+            for (const { edit: failed, reason } of outcome.failed) {
+                const { subject } = failed;
+                if (subject.kind === 'textEdited' && isSignedIn(account)) {
+                    drafts.addFailedEdit({
+                        itemId: failed.itemId,
+                        commentId: subject.commentId,
+                        body: subject.body,
+                        reason,
+                    });
+                }
 
+                if (failed.subject.kind !== 'comment' || !isSignedIn(account)) {
+                    continue;
+                }
+
+                if (request.kind === 'comment' && request.keptInThread) {
+                    drafts.addFailed(failed.itemId, failed.subject.body, reason);
+                } else if (!drafts.get(failed.itemId).trim()) {
+                    drafts.set(failed.itemId, failed.subject.body);
+                }
+            }
+
+            return outcome;
+        }
+
+        /**
+         * Sends a comment GitHub did not take again, as any comment is sent: posted, it leaves the failed ones; not,
+         * it stays where it was with why. Resolves with what failed.
+         */
+        async function retryComment(id: number): Promise<EditOutcome> {
+            const comment = drafts.retryFailed(id);
+            if (!comment) {
+                return { failed: [] };
+            }
+
+            const request: EditRequest = { kind: 'comment', body: comment.body, keptInThread: true };
+            const account = getAccount();
+            const prepared = account && (await prepareEdits([comment.itemId], request, account));
+            // Not sent: it stays as it was.
+            if (!account || !prepared || prepared.edits.length === 0) {
+                drafts.settleFailed(id, comment.reason);
+                return { failed: [] };
+            }
+
+            const outcome = await submitEdits(prepared, request, account);
+            drafts.settleFailed(id, outcome.failed[0]?.reason ?? null);
+            return outcome;
+        }
+
+        /**
+         * The edits of every item of the request that is in memory, those the user may not make marked as such;
+         * `null` once the user who asked is not signed in any more.
+         */
+        async function prepareEdits(
+            itemIds: readonly string[],
+            request: EditRequest,
+            account: EditAccount,
+        ): Promise<PreparedEdits | null> {
             const edits: Edit[] = [];
             // By repository: the items of a selection in one repository look the same names up once.
             const prepared = new Map<string, Promise<PreparedMetadata>>();
@@ -124,8 +205,9 @@ export const ItemEditor = defineService({
                     metadata = await preparing;
                 }
 
-                if (!isSignedIn(account)) {
-                    return { failed: [] };
+                const viewer = auth.viewer;
+                if (!viewer || !isSignedIn(account)) {
+                    return null;
                 }
 
                 const madeEdits = createItemEdits({
@@ -136,7 +218,7 @@ export const ItemEditor = defineService({
                     viewer: { login: viewer.login, avatarUrl: viewer.avatarUrl },
                     now: new Date(clock.now()).toISOString(),
                 });
-                const allowed = isAllowed(getPermissions(item), itemRequest, places);
+                const allowed = isAllowed(getPermissions(item), itemRequest, places, details.get(item.id));
                 for (const made of madeEdits) {
                     if (!allowed) {
                         edits.push(notAllowed(made));
@@ -146,6 +228,15 @@ export const ItemEditor = defineService({
                 }
             }
 
+            return { edits, itemCount };
+        }
+
+        /** Sends the edits made; resolves with what failed once GitHub answered. */
+        async function submitEdits(
+            { edits, itemCount }: PreparedEdits,
+            request: EditRequest,
+            account: EditAccount,
+        ): Promise<EditOutcome> {
             const closeId = request.kind === 'close' ? offerUndo(edits) : null;
             const outcome = await queue.submit({ edits, account, itemCount });
             if (closeId !== null) {
@@ -157,11 +248,6 @@ export const ItemEditor = defineService({
             for (const { edit: failed, reason } of outcome.failed) {
                 if (reason.kind === 'missing') {
                     stale.add(failed.reference.split('#')[0] ?? '');
-                }
-
-                // A comment not posted goes back into its empty box; over new text, its toast offers to restore it.
-                if (failed.subject.kind === 'comment' && isSignedIn(account) && !drafts.get(failed.itemId).trim()) {
-                    drafts.set(failed.itemId, failed.subject.body);
                 }
             }
 
@@ -293,10 +379,9 @@ export const ItemEditor = defineService({
          * with what failed. Nothing when the project is not tracked or the user may not write to it.
          */
         async function addDraftIssue(projectId: string, draft: DraftIssueInput): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
+            const account = getAccount();
             const project = projects.get(projectId);
-            if (!viewer || token === null || !project?.viewerCanUpdate || !draft.title.trim()) {
+            if (!account || !project?.viewerCanUpdate || !draft.title.trim()) {
                 return { failed: [] };
             }
 
@@ -311,7 +396,7 @@ export const ItemEditor = defineService({
                     return field ? [{ field, value }] : [];
                 }),
             });
-            return await queue.submit({ edits: [adding], account: { login: viewer.login, token }, itemCount: 1 });
+            return await queue.submit({ edits: [adding], account, itemCount: 1 });
         }
 
         /**
@@ -324,20 +409,19 @@ export const ItemEditor = defineService({
             fieldId: string,
             value: ProjectFieldInput | null,
         ): Promise<EditOutcome> {
-            const viewer = auth.viewer;
-            const token = auth.token;
+            const account = getAccount();
             const stored = projects.getStoredItem(projectItemId);
             const project = stored && projects.get(stored.projectId);
             const field = project?.fields.find(candidate => candidate.id === fieldId);
             const item = project && projects.getItems(project.id).find(candidate => candidate.itemId === projectItemId);
-            if (!viewer || token === null || !project || !field || !item?.draft) {
+            if (!account || !project || !field || !item?.draft) {
                 return { failed: [] };
             }
 
             const setting = createDraftFieldEdit({ project, item, field, value });
             return await queue.submit({
                 edits: [project.viewerCanUpdate ? setting : notAllowed(setting)],
-                account: { login: viewer.login, token },
+                account,
                 itemCount: 1,
             });
         }
@@ -349,12 +433,11 @@ export const ItemEditor = defineService({
          */
         async function createIssue(request: CreateIssueRequest): Promise<CreateIssueOutcome> {
             const viewer = auth.viewer;
-            const token = auth.token;
-            if (!viewer || token === null) {
+            const account = getAccount();
+            if (!viewer || !account) {
                 return { created: false, failed: [] };
             }
 
-            const account: EditAccount = { login: viewer.login, token };
             const { issue } = request;
             const kept = repositories.get(request.repository) ?? (await repositories.ensure(request.repository));
             // Labels and people past the pages the pickers read are looked up by name.
@@ -425,6 +508,22 @@ export const ItemEditor = defineService({
                       },
                   ]
                 : [];
+        }
+
+        function isOfDeletedComment(failed: FailedTextEdit) {
+            const comments = failed.commentId === null ? undefined : details.get(failed.itemId)?.comments;
+            return (
+                comments !== undefined &&
+                comments.olderCursor === null &&
+                !comments.nodes.some(comment => comment.id === failed.commentId)
+            );
+        }
+
+        /** The user signed in, as the edits are built for them; `null` signed out. */
+        function getAccount(): EditAccount | null {
+            const viewer = auth.viewer;
+            const token = auth.token;
+            return viewer && token !== null ? { login: viewer.login, token } : null;
         }
 
         function isSignedIn(account: EditAccount) {
@@ -507,6 +606,13 @@ interface ResolvedItem {
     readonly request: EditRequest;
 }
 
+/** The edits of an action, ready to be sent. */
+interface PreparedEdits {
+    readonly edits: readonly Edit[];
+    /** How many items the action was about. */
+    readonly itemCount: number;
+}
+
 /** The metadata an item's edits are made with. */
 interface PreparedMetadata {
     readonly metadata: RepositoryMetadata | null;
@@ -526,6 +632,9 @@ function needsMetadata(request: EditRequest) {
         case 'close':
         case 'reopen':
         case 'comment':
+        case 'editComment':
+        case 'deleteComment':
+        case 'editBody':
         case 'projectField':
         case 'projectFieldInProject':
         case 'addToProject':
@@ -573,8 +682,28 @@ function getNames(request: EditRequest): RepositoryNames {
     }
 }
 
-/** Whether the user may make the change of the item (D14). */
-function isAllowed(permissions: EditPermissions, request: ItemEditRequest, places: readonly ItemDetailProject[]) {
+/** The comment (`null`: the description) whose text the request edits; `undefined` for any other request. */
+function getEditedText(request: EditRequest): string | null | undefined {
+    switch (request.kind) {
+        case 'editComment':
+            return request.commentId;
+        case 'editBody':
+            return null;
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Whether the user may make the change of the item (D14). A comment's text and the description are GitHub's to say
+ * of (K1b): not read, they may not.
+ */
+function isAllowed(
+    permissions: EditPermissions,
+    request: ItemEditRequest,
+    places: readonly ItemDetailProject[],
+    detail: ItemDetail | undefined,
+) {
     switch (request.kind) {
         case 'labels':
             return permissions.labels;
@@ -589,6 +718,12 @@ function isAllowed(permissions: EditPermissions, request: ItemEditRequest, place
             return permissions.state;
         case 'comment':
             return permissions.comment;
+        case 'editComment':
+            return (detail && findItemComment(detail.comments, request.commentId))?.viewerCanUpdate === true;
+        case 'deleteComment':
+            return (detail && findItemComment(detail.comments, request.commentId))?.viewerCanDelete === true;
+        case 'editBody':
+            return detail?.viewerCanUpdate === true;
         case 'projectField':
             return places.find(place => place.itemId === request.projectItemId)?.viewerCanUpdate === true;
         case 'addToProject':

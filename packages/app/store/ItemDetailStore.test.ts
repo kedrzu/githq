@@ -12,6 +12,7 @@ import type { Freshness } from '@/sync/Freshness.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
 import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName } from './IndexedDbPersistence.js';
 import { ItemDetailPersistence } from './ItemDetailPersistence.js';
@@ -22,6 +23,27 @@ import { ItemStore } from './ItemStore.js';
 import { toItem } from './toItem.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
+/** The events F13 draws for an issue only, and the removes that cancel their adds. */
+const ISSUE_ONLY_EVENT_TYPES: unknown[] = [
+    'ADDED_TO_PROJECT_V2_EVENT',
+    'CONNECTED_EVENT',
+    'DISCONNECTED_EVENT',
+    'ISSUE_TYPE_ADDED_EVENT',
+    'ISSUE_TYPE_CHANGED_EVENT',
+    'ISSUE_TYPE_REMOVED_EVENT',
+    'LOCKED_EVENT',
+    'PARENT_ISSUE_ADDED_EVENT',
+    'PARENT_ISSUE_REMOVED_EVENT',
+    'PINNED_EVENT',
+    'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
+    'REFERENCED_EVENT',
+    'REMOVED_FROM_PROJECT_V2_EVENT',
+    'SUB_ISSUE_ADDED_EVENT',
+    'SUB_ISSUE_REMOVED_EVENT',
+    'TRANSFERRED_EVENT',
+    'UNLOCKED_EVENT',
+    'UNPINNED_EVENT',
+];
 const TUESDAY = '2026-10-27T10:00:00Z';
 
 test('an opened item shows its kept detail at once; one behind its item is read again in the background and replaces it', async () => {
@@ -133,6 +155,16 @@ test('another account taking over in another tab: the details leave memory and d
     expect(await databaseNames()).not.toContain(getLocalDatabaseName(alice));
 });
 
+test("a pull request's thread reads none of the events only an issue has (F13)", async () => {
+    const { details, github } = setup(uniqueLogin());
+    github.nodes.set('PR_read', samplePullRequestDetailNode('PR_read', MONDAY));
+    await details.ensure('PR_read');
+
+    const request = github.requests.find(entry => entry.operation === 'ItemDetail');
+    const read = request?.variables.pullRequestEventTypes;
+    expect(Array.isArray(read) && read.filter(type => ISSUE_ONLY_EVENT_TYPES.includes(type))).toEqual([]);
+});
+
 test('older reviews go before the ones read; reading the pull request again keeps them', async () => {
     const { details, github, session } = setup(uniqueLogin());
     github.nodes.set('PR_1', { ...samplePullRequestDetailNode('PR_1', MONDAY), reviews: reviewPage(101, 200) });
@@ -172,7 +204,81 @@ test('older comments go before the ones read; reading the item again keeps them'
     expect(details.get('I_1')?.comments.olderCursor).toBeNull();
 });
 
-function setup(login: string) {
+test("the thread's middle goes in place, events after the oldest and comments before the newest; reading the item again keeps it", async () => {
+    const { details, github, session } = setup(uniqueLogin());
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', MONDAY), 51, 100), 60));
+    await details.ensure('I_1');
+
+    await details.loadThreadMiddle('I_1');
+
+    expect(github.requests.at(-1)?.variables).toMatchObject({
+        id: 'I_1',
+        readEvents: true,
+        // GitHub's cursors skip the events at their time: from one older than the last held, to one newer than the first.
+        eventsAfter: 'event-1',
+        eventsBefore: 'event-12',
+        readComments: true,
+        commentsBefore: 'cursor-51',
+    });
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+    expect(read?.comments.nodes.map(comment => comment.id)).toEqual(commentIds(1, 100));
+    expect(read?.comments.olderCursor).toBeNull();
+
+    // A new event; opened again later, the first and the newest events are read again.
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', TUESDAY), 51, 100), 61));
+    await session.clock.advance(2 * 60_000);
+    await details.ensure('I_1');
+
+    const again = details.get('I_1');
+    expect([...(again?.events.oldest ?? []), ...(again?.events.newest ?? [])].map(event => event.id)).toEqual(
+        eventIds(1, 61),
+    );
+    expect(again?.events.middle).toBeNull();
+});
+
+test("the thread's middle read while the item is read again in the background still goes in place: its cursors did not move", async () => {
+    const { details, github, session } = setup(uniqueLogin());
+    github.nodes.set('I_1', withEvents(withComments(sampleIssueDetailNode('I_1', MONDAY), 51, 100), 60));
+    await details.ensure('I_1');
+
+    const held = createPromise();
+    session.github.holdIf = request => (request.operation === 'ThreadMiddle' ? held.promise : null);
+    const middle = details.loadThreadMiddle('I_1');
+    await session.clock.advance(0);
+    // Read again meanwhile: an equal middle, a new object.
+    await details.readAgain('I_1');
+    held.resolve();
+    await middle;
+
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+    expect(read?.comments.olderCursor).toBeNull();
+});
+
+test("the thread's middle read page by page loses none of the events GitHub's cursors skip, and holds each once", async () => {
+    const { details, github } = setup(uniqueLogin(), { middlePage: 4 });
+    github.nodes.set('I_1', withEvents(sampleIssueDetailNode('I_1', MONDAY), 60));
+    await details.ensure('I_1');
+
+    await details.loadThreadMiddle('I_1');
+    await details.loadThreadMiddle('I_1');
+    await details.loadThreadMiddle('I_1');
+
+    const read = details.get('I_1');
+    expect(read?.events.oldest.map(event => event.id)).toEqual(eventIds(1, 10));
+    expect(read?.events.middle).toBeNull();
+});
+
+/** How the test's GitHub answers. */
+interface SetupOptions {
+    /** How many events a page of the middle holds (`ThreadMiddle`). */
+    readonly middlePage?: number;
+}
+
+function setup(login: string, { middlePage = 100 }: SetupOptions = {}) {
     const nodes = new Map<string, IssueDetailFieldsFragment | PullRequestDetailFieldsFragment>();
     const session = createTestSession({ login, answer });
     const persistence = createIndexedDbPersistence();
@@ -209,6 +315,34 @@ function setup(login: string) {
             case 'MoreComments': {
                 const before = Number(String(request.variables.before).replace('cursor-', ''));
                 return { data: { node: { id, commentPage: commentPage(1, before - 1) } } };
+            }
+            case 'ThreadMiddle': {
+                const count = node?.lastEvents.filteredCount ?? 0;
+                const after = parseEventCursor(request.variables.eventsAfter);
+                const before = parseEventCursor(request.variables.eventsBefore);
+                // As GitHub's: `after` and `before` compare the time only, the events at their cursor's time left out.
+                const between = Array.from({ length: count }, (_, index) => index + 1).filter(
+                    number =>
+                        (after === null || eventMinute(number) > eventMinute(after)) &&
+                        (before === null || eventMinute(number) < eventMinute(before)),
+                );
+                const page = between.slice(0, middlePage);
+                const comments = Number(String(request.variables.commentsBefore).replace('cursor-', ''));
+                return {
+                    data: {
+                        node: {
+                            id,
+                            eventPage: {
+                                pageInfo: {
+                                    hasNextPage: between.length > page.length,
+                                    endCursor: page.length > 0 ? `event-${page.at(-1)}` : null,
+                                },
+                                ...eventPage(page),
+                            },
+                            commentPage: commentPage(1, comments - 1),
+                        },
+                    },
+                };
             }
             default:
                 return undefined;
@@ -262,17 +396,56 @@ function commentPage(from: number, to: number): IssueDetailFieldsFragment['comme
             createdAt: MONDAY,
             lastEditedAt: null,
             author: null,
+            body: id,
             bodyHTML: `<p>${id}</p>`,
+            viewerCanUpdate: false,
+            viewerCanDelete: false,
         })),
     };
 }
 
-function commentIds(from: number, to: number) {
-    return Array.from({ length: to - from + 1 }, (_, index) => `IC_${from + index}`);
+/** The issue with `count` events, as the detail reads them: the first two and the newest 50. */
+function withEvents(node: IssueDetailFieldsFragment, count: number): IssueDetailFieldsFragment {
+    const newestFrom = Math.max(3, count - 49);
+    const newest = Array.from({ length: count - newestFrom + 1 }, (_, index) => newestFrom + index);
+    return {
+        ...node,
+        firstEvents: eventPage([1, 2]),
+        lastEvents: { filteredCount: count, ...eventPage(newest) },
+    };
 }
 
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
+/** The events `numbers` as a page of `timelineItems`, each with its cursor (`event-<number>`). */
+function eventPage(numbers: readonly number[]) {
+    return {
+        edges: numbers.map(number => ({ cursor: `event-${number}` })),
+        nodes: numbers.map(number => ({
+            __typename: 'PinnedEvent' as const,
+            id: `EV_${number}`,
+            createdAt: new Date(Date.parse(MONDAY) + eventMinute(number) * 60_000).toISOString(),
+            actor: { login: 'mlaine', avatarUrl: '' },
+        })),
+    };
+}
+
+/**
+ * The minute after Monday 10:00 the event `number` happened: its number, but the 3rd, 6th and 11th happened at the
+ * same time as the one before them — where GitHub's cursors skip events.
+ */
+function eventMinute(number: number) {
+    return [3, 6, 11].includes(number) ? number - 1 : number;
+}
+
+function parseEventCursor(cursor: unknown) {
+    return typeof cursor === 'string' ? Number(cursor.replace('event-', '')) : null;
+}
+
+function eventIds(from: number, to: number) {
+    return Array.from({ length: to - from + 1 }, (_, index) => `EV_${from + index}`);
+}
+
+function commentIds(from: number, to: number) {
+    return Array.from({ length: to - from + 1 }, (_, index) => `IC_${from + index}`);
 }
 
 async function databaseNames() {

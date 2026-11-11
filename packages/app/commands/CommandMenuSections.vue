@@ -9,8 +9,6 @@ import CommandSubmenu from './CommandSubmenu.vue';
 defineProps<{
   /** The groups of actions, in order; an empty one is left out. */
   sections: readonly (readonly Command[])[];
-  /** The action whose submenu is open as the menu opens (its key opened the menu there). */
-  openId?: string | null;
 }>();
 </script>
 
@@ -27,7 +25,6 @@ defineProps<{
       <CommandSubmenu
         v-if="command.options"
         :command="command"
-        :start-open="command.id === openId"
       />
       <MenuItem
         v-else

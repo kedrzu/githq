@@ -40,8 +40,6 @@ deletedUser:
   en: ghost
 closes:
   en: Closes
-noDescription:
-  en: No description provided.
 stateActions:
   en: Close or reopen
 closeCompleted:

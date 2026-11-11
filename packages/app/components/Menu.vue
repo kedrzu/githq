@@ -12,6 +12,11 @@ withDefaults(
   { align: 'start', side: 'bottom' },
 );
 
+const emit = defineEmits<{
+  /** Closed, about to give the focus back to the trigger; `preventDefault()` when an entry moved it elsewhere. */
+  closeAutoFocus: [event: Event];
+}>();
+
 defineSlots<{
   /** The trigger: one button (`Button`, `IconButton`), which gets the menu's handlers and ARIA. */
   trigger(): unknown;
@@ -34,6 +39,7 @@ const open = defineModel<boolean>('open', { default: false });
         :side="side"
         :side-offset="4"
         :collision-padding="8"
+        @close-auto-focus="emit('closeAutoFocus', $event)"
       >
         <slot />
       </DropdownMenuContent>

@@ -8,7 +8,7 @@ import { START_LOCATION } from 'vue-router';
  * Forward bring back where it was in that entry of the history, and a container still showing the same thing stays
  * where it is — a list under an item opened over it. A fragment (`#issuecomment-1`) names an element inside a container,
  * which the navigation scrolls into sight there once it is on screen, unless Back or Forward return the containers to
- * where they were. The window keeps Nuxt's behaviour, for the pages that scroll it (the landing page, `/download`):
+ * where they were — and keeps there while what is above it is still coming (`holdAnchor`). The window keeps Nuxt's behaviour, for the pages that scroll it (the landing page, `/download`):
  * its fragment counts only for an element outside every container.
  */
 export async function scrollToRoute(
@@ -64,6 +64,12 @@ export function onRoutePageShown() {
 const ATTRIBUTE = 'data-route-scroll';
 /** The space left above the element a fragment names: room for the outline of the mark around it. */
 const ANCHOR_MARGIN = 12;
+/** How long the element a fragment names is held with nothing above it moving, nor anything busy, before it is let go. */
+const HOLD_SETTLED_MS = 500;
+/** How long it is held at most, whatever is still coming. */
+const HOLD_MAX_MS = 10_000;
+/** What the user does to move the content themselves: the element is let go at once. */
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
 
 /** Where Back or Forward found the window; vue-router does not export its type. */
 type SavedPosition = Parameters<RouterScrollBehavior>[2];
@@ -88,6 +94,8 @@ const awaited = new Map<string, RouteScrollPosition>();
  * scrolled to once it comes, until the next navigation.
  */
 let anchor: string | null = null;
+/** Lets go of the element a fragment named, held where it was brought (`holdAnchor`); `null` when none is held. */
+let releaseHeld: (() => void) | null = null;
 const observer = typeof MutationObserver === 'undefined' ? null : new MutationObserver(restoreAwaited);
 
 function restoreContainers(popped: boolean, hash: string) {
@@ -144,6 +152,7 @@ function stopAwaiting() {
     awaited.clear();
     anchor = null;
     observer?.disconnect();
+    releaseHeld?.();
 }
 
 /** Not `scrollIntoView`: it scrolls every ancestor that can, the shell's own overflow included. */
@@ -158,12 +167,68 @@ function scrollToAnchor() {
     }
 
     // Outside every container the element is the window's, which Nuxt's scroll has brought into sight.
+    const id = anchor;
     anchor = null;
     const container = element.closest<HTMLElement>(`[${ATTRIBUTE}]`);
     if (container) {
-        container.scrollTop +=
-            element.getBoundingClientRect().top - container.getBoundingClientRect().top - ANCHOR_MARGIN;
+        scrollToElement(container, element);
+        holdAnchor(id, container);
     }
+}
+
+/**
+ * Keeps the element a fragment named where it was brought while what is above it still comes in and grows — a pull
+ * request's review threads read after its comments, cards drawn once their data is in: each frame it is put back.
+ * It is let go once nothing has moved it, and nothing in the container is busy (`aria-busy`, as a thread being read
+ * says), for {@link HOLD_SETTLED_MS}; at {@link HOLD_MAX_MS} whatever is still coming; at once when the user scrolls,
+ * types or clicks; and at the next navigation.
+ */
+function holdAnchor(id: string, container: HTMLElement) {
+    releaseHeld?.();
+    const startedAt = performance.now();
+    let settledAt = startedAt;
+    let frame = requestAnimationFrame(keep);
+    for (const type of USER_SCROLL_EVENTS) {
+        window.addEventListener(type, release, { capture: true, passive: true });
+    }
+
+    releaseHeld = release;
+
+    function keep(now: number) {
+        const element = findById(id);
+        if (!element || !container.isConnected || now - startedAt > HOLD_MAX_MS) {
+            release();
+            return;
+        }
+
+        const top = container.scrollTop;
+        scrollToElement(container, element);
+        if (container.scrollTop !== top || container.querySelector('[aria-busy="true"]')) {
+            settledAt = now;
+        }
+
+        if (now - settledAt > HOLD_SETTLED_MS) {
+            release();
+            return;
+        }
+
+        frame = requestAnimationFrame(keep);
+    }
+
+    function release() {
+        cancelAnimationFrame(frame);
+        for (const type of USER_SCROLL_EVENTS) {
+            window.removeEventListener(type, release, { capture: true });
+        }
+
+        if (releaseHeld === release) {
+            releaseHeld = null;
+        }
+    }
+}
+
+function scrollToElement(container: HTMLElement, element: Element) {
+    container.scrollTop += element.getBoundingClientRect().top - container.getBoundingClientRect().top - ANCHOR_MARGIN;
 }
 
 function scrollTo(element: HTMLElement, position: RouteScrollPosition | undefined) {

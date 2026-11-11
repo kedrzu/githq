@@ -34,6 +34,11 @@ export interface ItemMoveOnRequest {
     readonly merged: readonly string[];
 }
 
+/** The opened item staying where a step would have taken it from: an edit there with changes asks first. */
+export interface ItemStayRequest {
+    readonly id: string;
+}
+
 /** An Undo of a close, asking the cursor back to what it reopens (D29). */
 export interface ItemReturnRequest {
     /** The items reopened, in the order they were closed in. */
@@ -46,7 +51,7 @@ export interface ItemReturnRequest {
  * What opening items carries from one moment to the next, shared by the lists and the item view: the
  * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
  * independent switches) — the list they are opened from, the item opened last, which the list selects
- * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, an Undo of a close asking the cursor back, the item whose comment box takes the cursor
+ * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, an Undo of a close asking the cursor back, the opened item staying where a step would have left it, the item whose comment box takes the cursor
  * once it opens ("Comment" in a list's context menu), the step a review is being walked by, for the next to say, and a review asked to open at its submit dialog.
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
@@ -61,6 +66,7 @@ export const ItemNavigation = defineService({
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
         const moveOnRequestRef = shallowRef<ItemMoveOnRequest | null>(null);
         const returnRequestRef = shallowRef<ItemReturnRequest | null>(null);
+        const stayRequestRef = shallowRef<ItemStayRequest | null>(null);
         const commentRequestRef = shallowRef<string | null>(null);
         let reviewWalk: ReviewWalk | null = null;
         let reviewToSubmit: string | null = null;
@@ -97,6 +103,10 @@ export const ItemNavigation = defineService({
             get returnRequest() {
                 return returnRequestRef.value;
             },
+            /** The opened item staying put last, for the list's cursor to come back to it; a new object for every request. Reactive. */
+            get stayRequest() {
+                return stayRequestRef.value;
+            },
             /** The id of the item whose comment box takes the cursor once it opens; reactive. */
             get commentRequest() {
                 return commentRequestRef.value;
@@ -107,6 +117,7 @@ export const ItemNavigation = defineService({
             requestSelection,
             requestMoveOn,
             requestReturn,
+            requestStay,
             requestComment,
             noteReviewWalk,
             takeReviewWalk,
@@ -136,6 +147,10 @@ export const ItemNavigation = defineService({
 
         function requestReturn(request: ItemReturnRequest) {
             returnRequestRef.value = request;
+        }
+
+        function requestStay(id: string) {
+            stayRequestRef.value = { id };
         }
 
         /** `null` once the item opened took it. */

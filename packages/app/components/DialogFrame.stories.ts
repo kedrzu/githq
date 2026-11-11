@@ -1,23 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import Button from '@/components/Button.vue';
-
-import ReviewDialogFrame from './ReviewDialogFrame.vue';
+import Button from './Button.vue';
+import DialogFrame from './DialogFrame.vue';
 
 const meta = {
-    component: ReviewDialogFrame,
+    component: DialogFrame,
     args: { open: true, title: 'Submit your review of #1202', width: 600 },
     render: args => ({
-        components: { Button, ReviewDialogFrame },
+        components: { Button, DialogFrame },
         setup: () => ({ args }),
         template: `
-            <ReviewDialogFrame v-bind="args">
+            <DialogFrame v-bind="args">
                 <p>What the dialog says.</p>
                 <template #footer><Button size="sm" variant="light">Submit review</Button></template>
-            </ReviewDialogFrame>
+            </DialogFrame>
         `,
     }),
-} satisfies Meta<typeof ReviewDialogFrame>;
+} satisfies Meta<typeof DialogFrame>;
 
 export default meta;
 

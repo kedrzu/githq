@@ -17,6 +17,7 @@ import { fakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
 import type { FakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
 import { sampleCommit } from '@/testing/sampleCommits.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
 import type { CommitChecksRead, CommitGraphPlace, CommitState } from './CommitTypes.js';
@@ -1148,6 +1149,7 @@ test('only the commit asked for has its checks read, once a minute, and a re-rea
                 name: 'first',
                 workflow: 'ci',
                 state: 'passing',
+                cancelled: false,
                 url: 'https://github.com/acme/web/actions/runs/1',
                 startedAt: null,
                 completedAt: null,
@@ -1402,8 +1404,4 @@ function checkRun(name: string): PullRequestCheckFieldsFragment {
         completedAt: null,
         checkSuite: { workflowRun: { workflow: { name: 'ci' } } },
     };
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

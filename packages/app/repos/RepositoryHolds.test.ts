@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { RepositoryHolds } from './RepositoryHolds.js';
 
@@ -160,8 +161,4 @@ async function advance(tabs: readonly ReturnType<typeof openTab>[], ms: number) 
     for (const tab of tabs) {
         await tab.session.clock.advance(0);
     }
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

@@ -5,6 +5,7 @@ import { createActionsWorld } from '@/testing/createActionsWorld.js';
 import type { ActionsWorld } from '@/testing/createActionsWorld.js';
 import type { TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { WorkflowRunHistory } from './WorkflowRunHistory.js';
 import type { WorkflowRunHistoryQuery } from './WorkflowRunHistory.js';
@@ -171,7 +172,7 @@ test('with the core allowance used up nothing is asked: a page asked for says it
 
 function setup(world: ActionsWorld) {
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: () => undefined,
         answerRest: request => world.answerRest(request),
     });

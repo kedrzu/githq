@@ -5,25 +5,28 @@ import { expect, test } from 'bun:test';
 
 const TEXT = 4.5;
 const GRAPHICS = 3;
-const SURFACES = ['bg', 'bg-2', 'bg-3', 'sel'];
+const SURFACES = ['bg', 'bg-item', 'bg-2', 'bg-3', 'sel'];
 const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 /** What the code sits on: every surface, and the lines of a diff over the window. */
 const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
+/** What a failure's message sits on: every surface, and a danger band over the window. */
+const DANGER_SURFACES = [...SURFACES, 'bg-danger'];
 const SYNTAX = ['comment', 'keyword', 'string', 'constant', 'title', 'tag', 'builtin'].map(name => `syntax-${name}`);
 
 /** Every token against the surfaces it sits on (D30). Axe checks text, not icons, outlines and lines. */
 const PAIRS: readonly (readonly [string, readonly string[], number])[] = [
-    ['fg', CODE_SURFACES, TEXT],
+    ['fg', [...CODE_SURFACES, 'bg-danger'], TEXT],
     ['fg-2', SURFACES, TEXT],
     ['fg-dim', SURFACES, TEXT],
     ['accent', SURFACES, TEXT],
     ['green', SURFACES, TEXT],
-    ['red', SURFACES, TEXT],
+    ['red', DANGER_SURFACES, TEXT],
     ['amber', SURFACES, TEXT],
     ['purple', SURFACES, TEXT],
     ['diff-added', SURFACES, TEXT],
     ['diff-removed', SURFACES, TEXT],
     ['on-light', ['accent', 'button-light', 'button-light-hover'], TEXT],
+    ['on-emphasis', ['red-emphasis'], TEXT],
     ['fg-3', SURFACES, GRAPHICS],
     ['control-border', SURFACES, GRAPHICS],
     ['focus', SURFACES, GRAPHICS],
@@ -48,10 +51,13 @@ const TAKEN_FROM: Readonly<Record<string, string>> = {
     green: '#3fb950', // fgColor-success
     red: '#f85149', // fgColor-danger
     amber: '#d29922', // fgColor-attention
+    'red-emphasis': '#da3633', // bgColor-danger-emphasis
+    'on-emphasis': '#ffffff', // fgColor-onEmphasis
     purple: '#ab7df8', // fgColor-done
     'diff-added': '#7ee787',
     'diff-removed': '#ffa198',
     'diff-bg-added': '#2ea043/0.15', // bgColor-success-muted
+    'bg-danger': '#f85149/0.1', // bgColor-danger-muted
     'diff-bg-deleted': '#f85149/0.1', // bgColor-danger-muted
     'syntax-comment': '#9198a1', // prettylights-syntax-comment
     'syntax-keyword': '#ff7b72',
@@ -64,12 +70,15 @@ const TAKEN_FROM: Readonly<Record<string, string>> = {
 
 /** Values that differ from Primer on purpose, and why. Anything else that is not `TAKEN_FROM` is an accident. */
 const EXCEPTIONS: Readonly<Record<string, string>> = {
+    'bg-item': "an opened item's background, between Primer's bgColor-default and bgColor-muted",
     'bg-3': "Primer's control-bgColor-rest #212830 fails red (4.44) and fg-3 (2.81) on it",
     sel: 'accent at 10.2% over bg, as bgColor-accent-muted is over GitHub',
     'fg-dim': 'Primer has two levels of text, we have three',
     'graph-line-main': "the default branch's line stays brighter",
     accent: 'the brand',
     'red-quiet': "Primer's #B62324 reads 2.93 on bg",
+    'border-danger': "red at 35%, a little weaker than Primer's borderColor-danger-muted (40%)",
+    'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
 };
 
 const tokens = readTokens();

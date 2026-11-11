@@ -8,6 +8,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedRepository } from '@/tracking/TrackingTypes.js';
 
@@ -379,7 +380,7 @@ test('answers for a session that ended are dropped', async () => {
         ]),
     );
     // Another user, syncing too, signs in on this browser while this one's read is under way.
-    const other = `user-${crypto.randomUUID()}`;
+    const other = uniqueLogin();
     const theirs = documentOf([{ ...API, tracking: true }]);
     session.localStorage.set(
         `githq.settings.${other}`,
@@ -538,7 +539,7 @@ test("a file found for a user who signed out since is not combined into the next
     github.writeFile(documentOf([{ ...DOCS, tracking: true }]));
     const found = await inspectUsable(sync);
 
-    session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
+    session.signInFromAnotherTab(uniqueLogin());
     await tracking.ready();
     await session.clock.advance(0);
     const theirs = tracking.document;
@@ -794,7 +795,7 @@ test('a comment choice of a newer build reads as single and stays in the file un
 });
 
 /** Signed in as `login`; with `localStorage`, the tab of an earlier session reloaded. */
-async function open(login = `user-${crypto.randomUUID()}`, localStorage?: Map<string, string>) {
+async function open(login = uniqueLogin(), localStorage?: Map<string, string>) {
     const github = createSettingsGitHub(login);
     const session = createTestSession({
         login,

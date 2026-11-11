@@ -30,6 +30,7 @@ import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackingChoice } from '@/tracking/TrackingStore.js';
 
@@ -450,8 +451,4 @@ function answerDetails(world: TrackingWorld, request: TestGraphQLRequest): TestG
         const node = nodeOf(world, id);
         return { ...sampleIssueDetailNode(id, node.updatedAt), title: node.title };
     }
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

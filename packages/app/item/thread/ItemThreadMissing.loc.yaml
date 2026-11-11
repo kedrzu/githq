@@ -1,0 +1,15 @@
+loadingCounted:
+  plural: count
+  en:
+    one: Loading 1 comment and the events from GitHub
+    many: Loading {count} comments and the events from GitHub
+loading:
+  en: Loading the events from GitHub
+failedTitle:
+  en: The description, comments and events couldn't be loaded
+failedWhy:
+  en: GitHub can't be reached, so they aren't on this device yet.
+tryAgain:
+  en: Try again
+openOnGitHub:
+  en: Open on GitHub

@@ -8,7 +8,7 @@ import type { EditFailure, FailedEdit } from './EditQueue.js';
 import type { Edit, EditFailureReason, EditSubject } from './EditTypes.js';
 import * as l from './useEditTexts.loc.js';
 
-/** The words of the user's edits — toasts (K1, K2), the status bar (D15), a row's "undone". */
+/** The words of the user's edits — toasts (K1, K2), the status bar (D15), a row's "undone", a comment not sent. */
 export interface EditTexts {
     /** A failure's toast title. */
     failureTitle(failure: EditFailure): string;
@@ -30,6 +30,8 @@ export interface EditTexts {
     unanswered(reference: string | null): string;
     /** A row's note on its edit undone: "“regression” label undone". */
     undone(subject: EditSubject): string;
+    /** Why a comment stays in the thread unposted: "Not sent: GitHub can't be reached." */
+    notSent(reason: EditFailureReason): string;
 }
 
 /** The words of the user's edits, in the app's language. */
@@ -44,6 +46,7 @@ export function useEditTexts(): EditTexts {
         failed,
         unanswered,
         undone,
+        notSent,
     };
 
     function failureTitle(failure: EditFailure) {
@@ -142,6 +145,19 @@ export function useEditTexts(): EditTexts {
             : t(l.undone, { change: capitalize(change(subject)) });
     }
 
+    function notSent(failure: EditFailureReason) {
+        switch (failure.kind) {
+            case 'offline':
+            case 'notReached':
+                return t(l.notSentOffline);
+            // GitHub's own words say more than "refused by GitHub".
+            case 'refused':
+                return t(l.notSentRefused, { message: failure.message.replace(/\.$/u, '') });
+            default:
+                return t(l.notSent, { reason: shortReason(failure) });
+        }
+    }
+
     function failedTitle(edit: Edit) {
         const { subject, reference } = edit;
         switch (subject.kind) {
@@ -163,6 +179,12 @@ export function useEditTexts(): EditTexts {
                 return t(l.failedReopened, { reference });
             case 'comment':
                 return t(l.failedComment, { reference });
+            case 'textEdited':
+                return subject.commentId === null
+                    ? t(l.failedBodyEdited, { reference })
+                    : t(l.failedCommentEdited, { reference });
+            case 'commentDeleted':
+                return t(l.failedCommentDeleted, { reference });
             case 'projectField':
                 return t(l.failedProjectField, { field: subject.field, reference });
             case 'addedToProject':
@@ -220,6 +242,10 @@ export function useEditTexts(): EditTexts {
                 return t(l.changeReopened);
             case 'comment':
                 return t(l.changeComment);
+            case 'textEdited':
+                return subject.commentId === null ? t(l.changeBodyEdited) : t(l.changeCommentEdited);
+            case 'commentDeleted':
+                return t(l.changeCommentDeleted);
             case 'projectField':
                 return subject.field;
             case 'addedToProject':
@@ -287,7 +313,10 @@ export function useEditTexts(): EditTexts {
             case 'reopened':
                 return t(l.fieldState);
             case 'comment':
+            case 'commentDeleted':
                 return t(l.fieldComment);
+            case 'textEdited':
+                return subject.commentId === null ? t(l.fieldDescription) : t(l.fieldComment);
             case 'projectField':
                 return subject.field;
             case 'addedToProject':

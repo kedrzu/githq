@@ -53,24 +53,28 @@ test('a comment shows at once as on its way, then as posted', async ({ page, git
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await expect(item.root).toContainText('No comments yet.');
+    // The detail is read: the thread is in.
+    await expect(item.root).toContainText('No description provided.');
 
     const release = sample.world.holdEdits();
     await item.comment('Reproduced on Safari too.');
 
     const comment = item.entry('Reproduced on Safari too.');
-    await expect(comment).toContainText('sending…');
+    await expect(comment).toContainText('Sending…');
     await expect(item.commentBox).toHaveValue('');
     expect(sample.world.stateOf(sample.issue).comments).toEqual([]);
 
     release();
-    await expect(comment).not.toContainText('sending…');
+    await expect(comment).not.toContainText('Sending…');
     await expect(comment).toContainText('octocat');
     await expect.poll(() => sample.world.stateOf(sample.issue).comments).toEqual(['Reproduced on Safari too.']);
     await expectConfirmed(shell);
 });
 
-test('⇧X closes an issue as not planned', async ({ page, github }) => {
+test('⇧X closes an issue as completed; the composer, reopening it, closes it again as not planned', async ({
+    page,
+    github,
+}) => {
     const sample = createSampleEditableWork();
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
@@ -81,13 +85,134 @@ test('⇧X closes an issue as not planned', async ({ page, github }) => {
     await expect(page).toHaveURL('/acme/web/issues/12');
 
     await page.keyboard.press('Shift+X');
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'COMPLETED' });
+    await expectClosedWithUndo(shell);
+    await expect(item.statePill('Closed')).toBeVisible();
+
+    await item.composerButton('Reopen issue').click();
+    await expect.poll(() => sample.world.stateOf(sample.issue)).toMatchObject({ state: 'OPEN' });
+    await item.composerButton('More ways to close').click();
     await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
 
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
         .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
-    await expectClosedWithUndo(shell);
     await expect(item.statePill('Not planned')).toBeVisible();
+});
+
+test('"Close with comment" posts the comment, then closes the issue, in that order on GitHub', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Fixed by the token refresh.');
+    await item.composerButton('Close with comment').click();
+
+    await expect.poll(() => sample.world.stateOf(sample.issue).state).toBe('CLOSED');
+    expect(sample.world.stateOf(sample.issue).comments).toEqual(['Fixed by the token refresh.']);
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expectClosedWithUndo(shell);
+    await expect(item.commentBox).toHaveValue('');
+});
+
+test('"Close as not planned" from the close menu, with a comment typed, posts it, then closes the issue as not planned', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Not something we will do.');
+    await item.composerButton('More ways to close').click();
+    await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED', comments: ['Not something we will do.'] });
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expect(item.statePill('Not planned')).toBeVisible();
+    await expect(item.commentBox).toHaveValue('');
+});
+
+test('⇧X with a comment typed and the box left posts the comment, then closes the issue, in that order on GitHub', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork, shell } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Fixed by the token refresh.');
+    await item.commentBox.press('Escape');
+    await page.keyboard.press('Shift+X');
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'COMPLETED', comments: ['Fixed by the token refresh.'] });
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expectClosedWithUndo(shell);
+    await expect(item.commentBox).toHaveValue('');
+});
+
+test('the item menu\'s "Close as not planned", with a comment typed, posts it, then closes the issue as not planned', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await item.arrangement('Full page').click();
+    await expect(item.root).toContainText('No description provided.');
+
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Not something we will do.');
+    await item.menuButton.click();
+    await page.getByRole('menuitem', { name: /^Close issue/ }).click();
+    await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
+
+    await expect
+        .poll(() => sample.world.stateOf(sample.issue))
+        .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED', comments: ['Not something we will do.'] });
+    expect(sample.world.edits.map(edit => edit.mutation)).toEqual(['AddComment', 'CloseIssue']);
+    await expect(item.commentBox).toHaveValue('');
+});
+
+test('a comment typed in one item is kept while the user looks at another', async ({ page, github }) => {
+    const sample = createSampleEditableWork();
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+    await myWork.row(ISSUE).click();
+    await page.keyboard.press('r');
+    await item.commentBox.fill('Half a thought');
+    await item.commentBox.press('Escape');
+
+    await myWork.row('Redirect once after sign-in').click();
+    await expect(item.title).toHaveText('Redirect once after sign-in');
+    await expect(item.commentBox).toHaveValue('');
+
+    await myWork.row(ISSUE).click();
+    await expect(item.commentBox).toHaveValue('Half a thought');
+    expect(sample.world.edits).toEqual([]);
 });
 
 test('⇧X closes a pull request at once, and Undo reopens it on GitHub', async ({ page, github }) => {

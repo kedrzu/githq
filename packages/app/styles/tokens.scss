@@ -15,6 +15,9 @@ $color-bg: #0d1117;
 // The sidebar, the status bar, boxes on the landing page.
 // Primer's bgColor-muted.
 $color-bg-2: #151b23;
+// An opened item, in a panel, a modal or a page: set apart from the list's window, a step below the sidebar.
+// Exception: between Primer's bgColor-default and bgColor-muted.
+$color-bg-item: #11161c;
 // A hovered or current row in the sidebar, keyboard hints.
 // Exception: Primer's control-bgColor-rest (`#212830`) would fail red (4.44:1) and fg-3 (2.81:1) on it.
 $color-bg-3: #1c2128;
@@ -78,12 +81,26 @@ $color-red: #f85149;
 $color-red-quiet: #ac4d52;
 // Primer's fgColor-attention.
 $color-amber: #d29922;
+// The fill of the answer that throws something away (Discard in a question), and the label on it: Primer's
+// bgColor-danger-emphasis and fgColor-onEmphasis, 4.6:1. `$color-red` would read 3.4:1 under a white label.
+$color-red-emphasis: #da3633;
+$color-on-emphasis: #ffffff;
 // Primer's fgColor-done.
 $color-purple: #ab7df8;
 
-// A deleted and an added line of a diff: its background. Primer's bgColor-danger-muted (`#F85149` at 10%) and
+// Something that failed or destroys, as a band or a box: a comment GitHub refused, requesting changes. `$color-fg`
+// reads 15.8:1 on it, `$color-red` 5.1:1. Primer's bgColor-danger-muted (`$color-red` at 10%).
+$color-bg-danger: rgba($color-red, 0.1);
+// The outline of such a band or box, or of a sign-out section.
+// Exception: a little weaker than Primer's borderColor-danger-muted (`$color-red` at 40%).
+$color-border-danger: rgba($color-red, 0.35);
+// The outline of a failed card or of a chosen destructive option, which has to stand out from its neighbours.
+// Exception: stronger than Primer's borderColor-danger-muted, weaker than borderColor-danger-emphasis.
+$color-border-danger-strong: rgba($color-red, 0.5);
+
+// A deleted and an added line of a diff: its background. Primer's bgColor-danger-muted (`$color-bg-danger`) and
 // bgColor-success-muted (`#2EA043` at 15%, not derived from `$color-green`).
-$color-diff-bg-deleted: rgba(#f85149, 0.1);
+$color-diff-bg-deleted: $color-bg-danger;
 $color-diff-bg-added: rgba(#2ea043, 0.15);
 
 // Code: GitHub's `prettylights-syntax-*` colours in Primer dark, each AA (4.5:1) over every surface and over a deleted
@@ -126,6 +143,10 @@ $font-size-xl: 15px;
 $font-size-display: 30px;
 // The title of an item's row and of a stack's entry in a list.
 $font-size-row-title: 13.5px;
+
+// What people wrote in an item's thread: a description, a comment.
+$font-size-reading: 13.5px;
+$line-height-reading: 1.6;
 
 $font-weight-normal: 400;
 $font-weight-medium: 500;
@@ -178,6 +199,10 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
+// The most an opened item's main column holds on a page of its own; it stays centred in the rest.
+$item-reading-width: 760px;
+// The same in a modal, which is narrower and keeps its column a shorter line.
+$item-modal-reading-width: 700px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;
@@ -244,6 +269,20 @@ $run-tick-height: 14px;
 $commit-row-author-width: 110px;
 $commit-row-age-width: 30px;
 $commit-row-narrow-width: 640px;
+
+// ---------------------------------------------------------------------------------------------------
+// The item's thread (`item/thread/`)
+// ---------------------------------------------------------------------------------------------------
+
+// The column of avatars on the left of the thread's cards and of the composer (`ItemThreadCard`,
+// `ItemThreadComposer`): as wide as a large avatar, this far from the card beside it.
+$item-thread-gutter-width: 28px;
+$item-thread-gutter-gap: $spacing-12;
+// The rail (`ItemThread`): a line behind the cards, its left edge this far from the thread's.
+$item-thread-rail-offset: 55px;
+$item-thread-rail-width: 2px;
+// A fold's break (`ItemThreadFold`): the dashed stretch of rail beside a folded band, centred on the rail.
+$item-thread-rail-break-width: 28px;
 
 // ---------------------------------------------------------------------------------------------------
 // The landing page (`landing/`)
@@ -502,6 +541,62 @@ $row-surface-inset: $spacing-2 $spacing-8;
     align-items: center;
     padding-right: $spacing-20;
     container-type: inline-size;
+}
+
+// A card of the item's thread with its avatar in the thread's gutter (`ItemThreadCard`, `ItemThreadComposer`,
+// `ItemThreadEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
+@mixin item-thread-row {
+    display: flex;
+    gap: $item-thread-gutter-gap;
+}
+
+@mixin item-thread-gutter($height) {
+    display: flex;
+    flex: none;
+    align-items: center;
+    width: $item-thread-gutter-width;
+    height: $height;
+}
+
+// A line on the item's thread's rail with a badge on it (`ItemThreadEvent`, `ItemThreadPush`, `ItemThreadMissing`): the
+// row, the badge's 28px centred on the rail, and the badge, whose fill hides the rail running behind it.
+@mixin item-thread-badge-row {
+    display: flex;
+    gap: $spacing-12;
+    padding: $spacing-4 0 $spacing-4 ($item-thread-rail-offset + $item-thread-rail-width * 0.5 - 14px);
+}
+
+@mixin item-thread-badge {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: $color-bg-3;
+    border: 1px solid $color-border;
+    border-radius: 50%;
+}
+
+// An issue or pull request's kind and state icon in GitHub's colour, by `getItemKind`'s tone: included in the icon's
+// class, it gives it one modifier per tone (`_open`, `_done`, `_closed`, `_draft`) — a list's row and card, the opened
+// item, the review's toolbar, a reference suggested in a comment.
+@mixin item-kind-tones {
+    &_open {
+        color: $color-green;
+    }
+
+    &_done {
+        color: $color-purple;
+    }
+
+    &_closed {
+        color: $color-red;
+    }
+
+    &_draft {
+        color: $color-fg-dim;
+    }
 }
 
 // The bar at the top of a list or a screen, under which its content scrolls: its title and tools in a row.

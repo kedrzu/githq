@@ -5,10 +5,10 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
+import DialogFrame from '@/components/DialogFrame.vue';
 
 import type { PendingComment } from './getPendingComments.js';
 import * as l from './ReviewDiscardDialog.loc.js';
-import ReviewDialogFrame from './ReviewDialogFrame.vue';
 import ReviewPendingList from './ReviewPendingList.vue';
 
 const props = defineProps<{
@@ -35,7 +35,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <ReviewDialogFrame
+  <DialogFrame
     v-model:open="open"
     :title="t(l.title, { number: props.number })"
     :width="500"
@@ -66,7 +66,7 @@ function onKeydown(event: KeyboardEvent) {
         {{ t(l.discard, { count: commentCount }) }}
       </Button>
     </template>
-  </ReviewDialogFrame>
+  </DialogFrame>
 </template>
 
 <style lang="scss" module="css">

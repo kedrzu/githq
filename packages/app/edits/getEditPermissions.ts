@@ -50,6 +50,8 @@ export interface GetEditPermissionsParams {
     readonly permission: RepositoryPermission | null;
     /** The repository is archived: read-only for everyone. */
     readonly archived?: boolean;
+    /** The item's conversation is locked to collaborators; `undefined` until its detail is read. */
+    readonly locked?: boolean;
 }
 
 /** Nothing may be edited. */
@@ -85,6 +87,8 @@ export const NO_EDITS: EditPermissions = {
  *
  * Where the two sources differ the REST docs say labels, assignees and milestones also need push access; the
  * roles table (TRIAGE) is what github.com does, and a write GitHub drops anyway is caught as a rejection (D14).
+ * A conversation locked to collaborators takes comments only from "people with write access and repository owners
+ * and collaborators" (docs.github.com, "Locking conversations", read 2026-11-09): WRITE and above here.
  * A merged pull request can no longer be closed, reopened or made a draft. Deleting a branch while its pull request is
  * open would close it, so that is not offered; a fork's deleted branch can't be restored here (merging D16).
  *
@@ -106,7 +110,7 @@ export function getEditPermissions(params: GetEditPermissionsParams): EditPermis
     const merging = item.kind === 'pullRequest' && item.merging !== undefined;
 
     return {
-        comment: true,
+        comment: !params.locked || write,
         labels: triage,
         assignees: triage,
         milestone: triage,

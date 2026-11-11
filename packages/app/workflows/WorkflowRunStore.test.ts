@@ -15,6 +15,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { ReloadHolds } from '@/sync/ReloadHolds.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { JobLogRefusal } from './utils/JobLogRefusal.js';
@@ -222,7 +223,7 @@ test.each(['tooLarge', 'refused'] as const)(
     async reason => {
         const world = worldWithRun();
         const session = createTestSession({
-            login: `user-${crypto.randomUUID()}`,
+            login: uniqueLogin(),
             answer: () => undefined,
             answerRest: request => {
                 if (request.operation.endsWith('/logs')) {
@@ -533,7 +534,7 @@ function rerunRequests(requests: readonly TestGraphQLRequest[]) {
 
 function setup(world: ActionsWorld, rerunAnswer: () => TestRestAnswer = () => ({ status: 201, body: {} })) {
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: () => undefined,
         answerRest: request =>
             request.operation.endsWith('/rerun-failed-jobs') ? rerunAnswer() : world.answerRest(request),

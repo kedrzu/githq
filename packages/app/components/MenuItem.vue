@@ -89,7 +89,8 @@ defineSlots<{
   flex: none;
   width: 14px;
   height: 14px;
-  color: $color-fg-2;
+  // A caller tints one item's icon with `--menu-item-icon-color` (the state an action leads to).
+  color: var(--menu-item-icon-color, #{$color-fg-2});
 }
 
 .menuItem_text {

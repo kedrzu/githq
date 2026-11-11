@@ -205,6 +205,7 @@ async function showOlder(load: () => Promise<void>) {
           <Button
             v-if="folding && !unfolded"
             variant="link"
+            tone="accent"
             size="sm"
             @click="showDescription"
           >
@@ -270,7 +271,6 @@ async function showOlder(load: () => Promise<void>) {
         v-model:text="commentDraft"
         :disabled="commentDisabled"
         :placeholder="draftOpen ? t(l.composerWithDraft) : t(l.composer)"
-        :focus-key="null"
         @submit="onComment"
       />
     </footer>

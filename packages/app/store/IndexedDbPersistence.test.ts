@@ -14,6 +14,7 @@ import type { PersistedRepositories } from '@/repos/RepositoryPersistence.js';
 import type { RepositoryMetadata } from '@/repos/RepositoryTypes.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName, LOCAL_DATABASE_VERSION } from './IndexedDbPersistence.js';
 import type { ItemDetailVersion } from './ItemDetailPersistence.js';
@@ -176,10 +177,6 @@ function detail(id: string, fetchedAt: number): ItemDetail {
     }
 
     return read;
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }
 
 async function databaseNames() {

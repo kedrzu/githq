@@ -297,22 +297,8 @@ const waitingDraft = computed(() =>
     width: 13px;
     height: 13px;
   }
-}
 
-.itemRow_kind_open {
-  color: $color-green;
-}
-
-.itemRow_kind_done {
-  color: $color-purple;
-}
-
-.itemRow_kind_closed {
-  color: $color-red;
-}
-
-.itemRow_kind_draft {
-  color: $color-fg-dim;
+  @include item-kind-tones;
 }
 
 .itemRow_content {

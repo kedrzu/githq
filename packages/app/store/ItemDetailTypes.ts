@@ -1,12 +1,15 @@
 import type {
     IssueState,
     IssueStateReason,
+    IssueTypeColor,
+    LockReason,
     ProjectV2SingleSelectFieldOptionColor,
     PullRequestReviewState,
     ReactionContent,
+    StatusState,
 } from '@githq/github/generated.gen.js';
 
-import type { Item, ItemUser } from './ItemTypes.js';
+import type { Item, ItemLabel, ItemUser } from './ItemTypes.js';
 
 /**
  * What an opened issue or pull request shows beyond its row (D18): fetched when it is opened, prefetched for
@@ -29,9 +32,21 @@ export interface ItemDetailBase {
     readonly body: string;
     /** GitHub's own rendering of the body, sanitized by GitHub. */
     readonly bodyHtml: string;
+    /**
+     * The body as the user saved it and GitHub has not answered yet: shown as typed until GitHub's rendering replaces
+     * it. Never kept.
+     */
+    readonly pendingBody?: string;
+    /** When the body was last edited; `null` when never. */
+    readonly lastEditedAt: string | null;
+    /** GitHub lets the viewer edit the body (K1b). */
+    readonly viewerCanUpdate: boolean;
+    /** Its conversation is locked to collaborators: only they may comment (`getEditPermissions`). */
+    readonly locked: boolean;
     /** Only the reactions given, in GitHub's order. */
     readonly reactions: readonly ItemReaction[];
     readonly comments: ItemComments;
+    readonly events: ItemEvents;
     /** Its places in projects with every field value, archived ones left out (D13). */
     readonly projects: readonly ItemDetailProject[];
 }
@@ -71,10 +86,15 @@ export interface ItemReaction {
     readonly viewerHasReacted: boolean;
 }
 
-/** The comments read so far: the newest ones, and more older ones each time they are asked for. */
+/** The comments read so far: the first two, the newest ones, and more older ones each time they are asked for. */
 export interface ItemComments {
     readonly totalCount: number;
-    /** Oldest first. */
+    /**
+     * The first two of the item's comments, which a thread keeps above its fold (F5), those not among {@link nodes}
+     * when read. Older comments read later may hold them too: each shows once (`buildThread`).
+     */
+    readonly first: readonly ItemComment[];
+    /** The newest comments, oldest first. */
     readonly nodes: readonly ItemComment[];
     /** Where the older ones not read yet start (`MoreComments`); `null` when all are read. */
     readonly olderCursor: string | null;
@@ -86,15 +106,193 @@ export interface ItemComment {
     readonly url: string;
     /** `null` for a deleted account. */
     readonly author: ItemUser | null;
+    /** Markdown, as written — what an edit starts from. */
+    readonly body: string;
     /** GitHub's own rendering, sanitized by GitHub; empty for a comment on its way. */
     readonly bodyHtml: string;
     readonly createdAt: string;
     readonly lastEditedAt: string | null;
+    /** GitHub lets the viewer edit it (K1b). */
+    readonly viewerCanUpdate: boolean;
+    /** GitHub lets the viewer delete it (K1b). */
+    readonly viewerCanDelete: boolean;
     /**
-     * Posted by the user and on its way to GitHub: what they typed, shown at once as text — GitHub renders the
-     * markdown once it has it. Never kept (M3 editing).
+     * Posted or edited by the user and on its way to GitHub: what they typed, shown at once as text — GitHub renders
+     * the markdown once it has it. Never kept (M3 editing).
      */
     readonly pendingBody?: string;
+}
+
+/**
+ * The events of the item's thread read so far (item-activity F13), comments and reviews apart: the first ones and the
+ * newest ones, and the middle once it is asked for (`ThreadMiddle`).
+ */
+export interface ItemEvents {
+    /** How many events the thread has, of the kinds githq reads (`THREAD_EVENT_TYPES`), commits included. */
+    readonly totalCount: number;
+    /** How many of them are a pull request's commits; `0` for an issue. The rest are the fold's "other events" (F5). */
+    readonly commitCount: number;
+    /** The oldest events, oldest first, with the events not read yet after them; empty when every event is read. */
+    readonly oldest: readonly ThreadEvent[];
+    /** The newest events, oldest first. */
+    readonly newest: readonly ThreadEvent[];
+    /** Where the events not read yet lie, between {@link oldest} and {@link newest}; `null` when every one is read. */
+    readonly middle: ItemEventsMiddle | null;
+}
+
+/**
+ * The cursors around the events of a thread not read yet (`ThreadMiddle`'s `eventsAfter` and `eventsBefore`). GitHub's
+ * cursors skip the events at their own time, so they lie within what is read, not at its edge (`getCursorAfter`).
+ */
+export interface ItemEventsMiddle {
+    /** An event of the oldest read, older than the last of them; `null`: from the first event. */
+    readonly after: string | null;
+    /** An event of the newest read, newer than the first of them; `null`: to the last event. */
+    readonly before: string | null;
+}
+
+/**
+ * An event of an item's thread, as GitHub reports it (item-activity F13). `actor` is who did it: `null` for a deleted
+ * account, and for a change a project workflow made (`wasAutomated`), which GitHub attributes to the project's owner.
+ */
+export type ThreadEvent =
+    | ThreadCommit
+    | ThreadEventOf<'forcePushed', { readonly beforeOid: string | null; readonly afterOid: string | null }>
+    | ThreadEventOf<'assigned' | 'unassigned', { readonly assignee: ItemUser | null }>
+    | ThreadEventOf<'renamed', { readonly from: string; readonly to: string }>
+    | ThreadEventOf<'labeled' | 'unlabeled', { readonly label: ItemLabel }>
+    | ThreadEventOf<'milestoned' | 'demilestoned', { readonly milestone: string }>
+    | ThreadEventOf<'reviewRequested' | 'reviewRequestRemoved', { readonly reviewer: ItemDetailReviewRequest | null }>
+    | ThreadEventOf<
+          'reviewDismissed',
+          {
+              /** Whose review it was; `null` for a deleted account. */
+              readonly reviewer: ItemUser | null;
+              /** The review's id; `null` when GitHub no longer gives the review. */
+              readonly reviewId: string | null;
+              /** What the review was before: its card says so ("requested changes · dismissed", F14). */
+              readonly previousState: PullRequestReviewState;
+              readonly message: string | null;
+          }
+      >
+    | ThreadEventOf<'readyForReview' | 'convertedToDraft' | 'reopened' | 'unlocked' | 'pinned' | 'unpinned', object>
+    | ThreadEventOf<'baseChanged', { readonly from: string; readonly to: string }>
+    | ThreadEventOf<
+          'crossReferenced',
+          {
+              /** The issue or pull request that mentioned this one. */
+              readonly source: ThreadRef;
+          }
+      >
+    | ThreadEventOf<
+          'closed',
+          {
+              readonly stateReason: IssueStateReason | null;
+              /** What closed it: a pull request merged or a commit pushed; `null` when closed by hand. */
+              readonly closer: ThreadCloser | null;
+              /** The issue it was closed as a duplicate of. */
+              readonly duplicateOf: ThreadRef | null;
+          }
+      >
+    | ThreadEventOf<
+          'merged',
+          {
+              readonly commit: ThreadCommitRef | null;
+              readonly into: string;
+          }
+      >
+    | ThreadEventOf<'headRefDeleted', { readonly branch: string }>
+    | ThreadEventOf<'connected' | 'disconnected', { readonly ref: ThreadRef }>
+    | ThreadEventOf<
+          'referenced',
+          {
+              /** `null` where the viewer cannot see the commit. */
+              readonly commit: ThreadReferencedCommit | null;
+              /** `owner/name` of the commit's repository. */
+              readonly repository: string;
+          }
+      >
+    | ThreadEventOf<
+          'subIssueAdded' | 'subIssueRemoved' | 'parentAdded' | 'parentRemoved',
+          { readonly issue: ThreadRef | null }
+      >
+    | ThreadEventOf<'issueTypeChanged', { readonly from: ThreadIssueType | null; readonly to: ThreadIssueType | null }>
+    | ThreadEventOf<'addedToProject' | 'removedFromProject', { readonly project: ThreadProject | null }>
+    | ThreadEventOf<
+          'projectStatusChanged',
+          {
+              readonly project: ThreadProject | null;
+              /** The Status option's name now; empty when cleared. */
+              readonly to: string;
+              readonly wasAutomated: boolean;
+          }
+      >
+    | ThreadEventOf<'transferred', { /** `owner/name`; `null` when it is gone. */ readonly from: string | null }>
+    | ThreadEventOf<'locked', { readonly reason: LockReason | null }>;
+
+/** What every event but a commit has. */
+type ThreadEventOf<TKind extends string, TFields extends object> = {
+    readonly kind: TKind;
+    readonly id: string;
+    readonly createdAt: string;
+    readonly actor: ItemUser | null;
+} & TFields;
+
+/** A commit of a pull request: GitHub reports each, not the push that brought it — the thread model groups them. */
+export interface ThreadCommit {
+    readonly kind: 'commit';
+    readonly id: string;
+    /** When it was committed: GitHub keeps no time of the push. */
+    readonly createdAt: string;
+    /** Its author's GitHub account; `null` when the author's email belongs to none. */
+    readonly actor: ItemUser | null;
+    /** The author's name as git records it. */
+    readonly authorName: string | null;
+    readonly abbreviatedOid: string;
+    readonly messageHeadline: string;
+    /** The commit within the pull request on GitHub. */
+    readonly url: string;
+    /** Its checks together; `null` when none ran. */
+    readonly ci: StatusState | null;
+}
+
+/** An issue or a pull request an event points at; may live in another repository. */
+export interface ThreadRef {
+    readonly kind: 'issue' | 'pullRequest';
+    readonly id: string;
+    readonly url: string;
+    readonly number: number;
+    readonly title: string;
+    /** `owner/name`. */
+    readonly repository: string;
+}
+
+/** A commit an event points at. */
+export interface ThreadCommitRef {
+    readonly abbreviatedOid: string;
+    readonly url: string;
+}
+
+/** A commit that referenced an item. */
+export interface ThreadReferencedCommit extends ThreadCommitRef {
+    readonly messageHeadline: string;
+}
+
+/** What closed an item. */
+export type ThreadCloser =
+    | { readonly kind: 'pullRequest'; readonly pullRequest: ThreadRef }
+    | ({ readonly kind: 'commit' } & ThreadCommitRef);
+
+/** An issue type. */
+export interface ThreadIssueType {
+    readonly name: string;
+    readonly color: IssueTypeColor;
+}
+
+/** A project an event happened in. */
+export interface ThreadProject {
+    readonly title: string;
+    readonly url: string;
 }
 
 /** An issue linked to another — its parent, a sub-issue, one it is blocked by or blocking. */
@@ -127,6 +325,11 @@ export interface ItemCheck {
     /** The Actions workflow a check run belongs to (GitHub shows "workflow / name"); `null` otherwise. */
     readonly workflow: string | null;
     readonly state: ItemCheckState;
+    /**
+     * A check run cancelled — by hand, or by a newer run of its workflow. `failing` as GitHub tells it, but no failure
+     * of the code: the thread's CI line leaves it out.
+     */
+    readonly cancelled: boolean;
     readonly url: string | null;
     readonly startedAt: string | null;
     /** `null` while it runs, and for a commit status (GitHub keeps only when it was set). */

@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 
 import { createTestSession } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { LastRepositoryTab } from './LastRepositoryTab.js';
@@ -60,7 +61,3 @@ test("a repository's link opens the section it was left on, Issues before it has
     tabs.remember('octocat/app', 'issues');
     expect(tabs.getPath('octocat/app')).toBe('/octocat/app/issues');
 });
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
-}

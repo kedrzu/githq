@@ -166,10 +166,11 @@ export const EditQueue = defineService({
             }
 
             const failed = (await Promise.all(runs)).flat();
+            const listed = failed.filter(entry => !entry.edit.quiet);
 
-            if (failed.length > 0 && session === current) {
+            if (listed.length > 0 && session === current) {
                 const parts = failed.length - failed.filter(entry => edits.includes(entry.edit)).length;
-                report({ itemCount, editCount: edits.length + parts, failed });
+                report({ itemCount, editCount: edits.length + parts, failed: listed });
             }
 
             return { failed };
@@ -256,7 +257,10 @@ export const EditQueue = defineService({
                 return [];
             }
 
-            markUndone(current, edit);
+            if (!edit.quiet) {
+                markUndone(current, edit);
+            }
+
             return [{ edit, reason: verdict.reason }];
         }
 

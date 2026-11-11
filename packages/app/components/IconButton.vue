@@ -77,20 +77,25 @@ const { Button, busy, disabled } = useButton();
 .iconButton {
   @include focus-ring;
 
+  // A caller restyles one as a segment of a joined control with `--icon-button-padding`, `--icon-button-color`,
+  // `--icon-button-background`, `--icon-button-border` (`--icon-button-border-start` for its start alone),
+  // `--icon-button-radius` and the hover colours `--icon-button-hover-color` and `--icon-button-hover-background` (a
+  // split button's chevron).
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  color: $color-fg-2;
+  padding: var(--icon-button-padding, 0);
+  color: var(--icon-button-color, #{$color-fg-2});
   cursor: pointer;
-  background: none;
-  border: none;
+  background: var(--icon-button-background, none);
+  border: var(--icon-button-border, none);
+  border-inline-start: var(--icon-button-border-start, var(--icon-button-border, none));
 
   &:hover,
   &[aria-expanded='true'] {
-    color: $color-fg;
-    background: $color-bg-3;
+    color: var(--icon-button-hover-color, #{$color-fg});
+    background: var(--icon-button-hover-background, #{$color-bg-3});
   }
 
   &:disabled,
@@ -98,20 +103,22 @@ const { Button, busy, disabled } = useButton();
     cursor: default;
 
     &:hover {
-      color: $color-fg-2;
-      background: none;
+      color: var(--icon-button-color, #{$color-fg-2});
+      background: var(--icon-button-background, none);
     }
   }
 }
 
+// A caller sizes it with `--icon-button-width` and `--icon-button-height` (`auto`: as tall as what it is joined to).
 .iconButton_sm {
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
+  width: var(--icon-button-width, 22px);
+  height: var(--icon-button-height, 22px);
+  border-radius: var(--icon-button-radius, 5px);
 
+  // A caller sizes the glyph with `--icon-button-glyph-size` (a split button's chevron).
   .iconButton_glyph {
-    width: 15px;
-    height: 15px;
+    width: var(--icon-button-glyph-size, 15px);
+    height: var(--icon-button-glyph-size, 15px);
   }
 }
 

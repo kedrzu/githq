@@ -1,0 +1,8 @@
+line:
+  en: line {line}
+lines:
+  en: lines {start}–{end}
+outdated:
+  en: Outdated
+code:
+  en: Code of {path}

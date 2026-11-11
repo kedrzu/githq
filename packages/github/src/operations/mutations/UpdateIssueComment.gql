@@ -1,0 +1,8 @@
+# Edits a comment's Markdown; answers with the comment as GitHub rendered it.
+mutation UpdateIssueComment($id: ID!, $body: String!) {
+    updateIssueComment(input: { id: $id, body: $body }) {
+        issueComment {
+            ...IssueCommentFields
+        }
+    }
+}

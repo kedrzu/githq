@@ -9,13 +9,13 @@ import { computed } from 'vue';
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
+import DialogFrame from '@/components/DialogFrame.vue';
 import Kbd from '@/components/Kbd.vue';
 import RadioCards from '@/components/RadioCards.vue';
 import TextArea from '@/components/TextArea.vue';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import type { PendingComment } from './getPendingComments.js';
-import ReviewDialogFrame from './ReviewDialogFrame.vue';
 import ReviewPendingList from './ReviewPendingList.vue';
 import * as l from './ReviewSubmitDialog.loc.js';
 import type { ReviewSubmissionChoice } from './ReviewWriting.js';
@@ -84,7 +84,7 @@ function onKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <ReviewDialogFrame
+  <DialogFrame
     v-model:open="open"
     :title="t(l.title, { number: props.number })"
     :width="600"
@@ -151,7 +151,7 @@ function onKeydown(event: KeyboardEvent) {
         {{ sendLabel }}
       </Button>
     </template>
-  </ReviewDialogFrame>
+  </DialogFrame>
 </template>
 
 <style lang="scss" module="css">
@@ -228,8 +228,8 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 .reviewSubmitDialog_kind_REQUEST_CHANGES[data-state='checked'] {
-  background: rgba($color-red, 0.1);
-  border-color: rgba($color-red, 0.5);
+  background: $color-bg-danger;
+  border-color: $color-border-danger-strong;
 }
 
 .reviewSubmitDialog_comments {

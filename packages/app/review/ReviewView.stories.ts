@@ -153,7 +153,7 @@ function renderView(
             container.set(Browser, browser);
             setIndexedDbPersistence(container);
             const files = createFiles(list, states, options);
-            container.set(ReviewFiles, { open: () => files });
+            container.set(ReviewFiles, { open: () => files, openThreads: () => files });
             provideContainer(container);
             return () => h(ReviewView, { reference: REFERENCE });
         },

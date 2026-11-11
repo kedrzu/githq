@@ -17,6 +17,7 @@ import { createTrackingWorld, worldProjectItem } from '@/testing/createTrackingW
 import type { TrackingWorld } from '@/testing/createTrackingWorld.js';
 import { sampleIssueNode, samplePullRequestNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackingChoice } from '@/tracking/TrackingStore.js';
 import type { TrackingProgress } from '@/tracking/TrackingTypes.js';
@@ -852,10 +853,6 @@ function restPolls(requests: readonly TestGraphQLRequest[]) {
             request =>
                 `${request.operation} ${request.variables.ifNoneMatch === null ? 'unconditional' : 'conditional'}`,
         );
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }
 
 /** How many times GitHub was asked through GraphQL whether the project changed. */
