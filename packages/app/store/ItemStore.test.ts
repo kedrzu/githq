@@ -15,6 +15,7 @@ import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName } from './IndexedDbPersistence.js';
 import type { ItemChanges } from './ItemPersistence.js';
@@ -298,10 +299,6 @@ function recordingPersistence() {
 
 function viewerOf(login: string): Viewer {
     return { login, name: null, avatarUrl: `https://avatars.test/${login}` };
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }
 
 async function databaseNames() {

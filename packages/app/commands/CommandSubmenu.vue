@@ -15,15 +15,13 @@ import type { Command, CommandOption } from './CommandTypes.js';
 const props = defineProps<{
   /** An action with `options`. */
   command: Command;
-  /** Open as it is shown: its key opened the menu at it. */
-  startOpen?: boolean;
 }>();
 
 /** From this many options on, a filter field heads the list. */
 const FILTER_FROM = 8;
 
 const t = useTranslate();
-const open = ref(props.startOpen);
+const open = ref(false);
 const query = ref('');
 const filterRef = useTemplateRef<HTMLInputElement>('filter');
 

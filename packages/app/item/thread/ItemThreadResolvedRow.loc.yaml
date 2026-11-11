@@ -1,0 +1,9 @@
+resolved:
+  en: Resolved
+comments:
+  plural: count
+  en:
+    one: 1 comment
+    many: '{count} comments'
+show:
+  en: Show

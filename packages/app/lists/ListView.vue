@@ -512,6 +512,17 @@ watch(
   },
 );
 
+// A step the opened item did not take (an edit there with changes asks first): the selection goes back to it.
+watch(
+  () => navigation.stayRequest,
+  request => {
+    if (request) {
+      opening.splice(0);
+      selectedId.value = request.id;
+    }
+  },
+);
+
 // The rows and the context menu merge through the list: their entry is selected, and once the merge is sent the list
 // moves on to the next row (PM32a) — past a stack's entry merged whole (SP7).
 if (merging) {

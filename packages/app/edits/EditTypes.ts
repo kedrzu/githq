@@ -20,7 +20,20 @@ export type EditRequest =
     | { readonly kind: 'issueType'; readonly name: string | null }
     | { readonly kind: 'close'; readonly reason: CloseReason }
     | { readonly kind: 'reopen' }
-    | { readonly kind: 'comment'; readonly body: string }
+    | {
+          readonly kind: 'comment';
+          readonly body: string;
+          /**
+           * Posted from the item's thread: one GitHub does not take stays there as a "Not sent" card, with no toast.
+           * Otherwise (code review's conversation) it goes back into its empty box, or its toast offers to restore it.
+           */
+          readonly keptInThread?: boolean;
+      }
+    /** A comment's new Markdown; one GitHub does not take opens its editor again with the text (`CommentDrafts`). */
+    | { readonly kind: 'editComment'; readonly commentId: string; readonly body: string }
+    | { readonly kind: 'deleteComment'; readonly commentId: string }
+    /** The description's new Markdown; one GitHub does not take opens its editor again with the text. */
+    | { readonly kind: 'editBody'; readonly body: string }
     | {
           readonly kind: 'projectField';
           /** The project item's id. */
@@ -84,6 +97,12 @@ export type EditSubject =
     | { readonly kind: 'reopened' }
     /** `body`: what the user wrote, put back into the comment box when GitHub does not take it. */
     | { readonly kind: 'comment'; readonly body: string }
+    /**
+     * A comment's (`commentId`) or, with `null`, the description's text edited: `body` is what the user wrote, opened
+     * again in its editor when GitHub does not take it.
+     */
+    | { readonly kind: 'textEdited'; readonly commentId: string | null; readonly body: string }
+    | { readonly kind: 'commentDeleted' }
     | { readonly kind: 'projectField'; readonly project: string; readonly field: string; readonly value: string | null }
     | { readonly kind: 'addedToProject'; readonly project: string }
     | { readonly kind: 'draftAdded'; readonly project: string; readonly title: string }
@@ -212,4 +231,9 @@ export interface Edit {
     readonly send?: (account: Account) => Promise<EditAnswer>;
     /** Why it fails without being sent. */
     readonly failure?: EditFailureReason;
+    /**
+     * Whoever asked for it shows its failure itself (a comment not posted stays in the thread as its card): the
+     * failure is returned, but not listed nor named in its row.
+     */
+    readonly quiet?: boolean;
 }

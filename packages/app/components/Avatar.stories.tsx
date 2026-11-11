@@ -37,6 +37,11 @@ export const Gallery: Story = {
                     size="md"
                 />
                 <Avatar
+                    name="kedrzu"
+                    src={PICTURE}
+                    size="lg"
+                />
+                <Avatar
                     name="olam"
                     src={BROKEN}
                     size="xs"
@@ -45,6 +50,10 @@ export const Gallery: Story = {
                 <Avatar
                     name="skyline-labs"
                     size="md"
+                />
+                <Avatar
+                    name="skyline-labs"
+                    size="lg"
                 />
             </StoryRow>
         </StoryPage>

@@ -87,6 +87,7 @@ function getLogLink(url: string) {
           v-if="check.url"
           v-bind="getLogLink(check.url)"
           variant="link"
+          tone="accent"
           size="sm"
           :aria-label="`${t(l.log)} · ${checkTexts.name(check)}`"
         >
@@ -127,6 +128,7 @@ function getLogLink(url: string) {
             v-if="check.url"
             v-bind="getLogLink(check.url)"
             variant="link"
+            tone="accent"
             size="sm"
             :aria-label="`${t(l.log)} · ${checkTexts.name(check)}`"
           >

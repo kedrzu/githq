@@ -151,64 +151,13 @@ test('the arrangement switch asks for another arrangement', async () => {
     expect(IssueSplit.args.onArrange).toHaveBeenCalledWith('panel');
 });
 
-test('"Show all" reads the comments not read yet, then shows every one', async () => {
-    await IssueInPanel.run();
-
-    await userEvent.click(page.getByRole('button', { name: 'Show all 4' }));
-    expect(IssueInPanel.args.loadAllComments).toHaveBeenCalledTimes(1);
-});
-
-test('#248: the comment the address\'s fragment names shows past "Show all", marked; every comment GitHub has carries its anchor, the one on its way none', async () => {
-    const [olam, kedrzu] = D1_ISSUE_DETAIL.comments.nodes;
-    const url = 'https://github.com/acme/web/issues/12';
-    await IssueInPanel.run({
-        args: {
-            ...IssueInPanel.args,
-            linkedAnchor: 'issuecomment-1',
-            detail: {
-                ...D1_ISSUE_DETAIL,
-                comments: {
-                    totalCount: 4,
-                    olderCursor: null,
-                    nodes: [
-                        { ...olam!, id: 'C_1', url: `${url}#issuecomment-1`, bodyHtml: '<p>The oldest</p>' },
-                        { ...kedrzu!, id: 'C_2', url: `${url}#issuecomment-2` },
-                        { ...olam!, id: 'C_3', url: `${url}#issuecomment-3` },
-                        { ...kedrzu!, id: 'pending:1', url, bodyHtml: '', pendingBody: 'On its way' },
-                    ],
-                },
-            },
-        },
-    });
-
-    const linked = page.getByRole('listitem').filter({ hasText: 'The oldest' });
-    await expect.element(linked).toHaveAttribute('id', 'issuecomment-1');
-    await expect.element(linked).toHaveAttribute('aria-current', 'location');
-    expect(document.querySelectorAll('[aria-current="location"]')).toHaveLength(1);
-    const pending = page.getByRole('listitem').filter({ hasText: 'On its way' });
-    await expect.element(pending).not.toHaveAttribute('id');
-    expect(IssueInPanel.args.loadAllComments).not.toHaveBeenCalled();
-});
-
-test('#248: a fragment naming a comment not read yet reads the older ones from GitHub', async () => {
-    await IssueInPanel.run({ args: { ...IssueInPanel.args, linkedAnchor: 'issuecomment-99' } });
-    await expect.poll(() => IssueInPanel.args.loadAllComments).toHaveBeenCalledTimes(1);
-});
-
-test('#248: a fragment that names no comment reads nothing and marks nothing', async () => {
-    await IssueInPanel.run({ args: { ...IssueInPanel.args, linkedAnchor: 'pullrequestreview-1' } });
-    await expect.element(page.getByRole('button', { name: 'Show all 4' })).toBeInTheDocument();
-    expect(IssueInPanel.args.loadAllComments).not.toHaveBeenCalled();
-    expect(document.querySelector('[aria-current="location"]')).toBeNull();
-});
-
-test('opened before its detail arrives: the row shows at once and the comments say they are loading', async () => {
+test('opened before its detail arrives: the row shows at once and the thread says it is loading', async () => {
     await LoadingComments.run();
 
     await expect
         .element(page.getByRole('heading', { name: 'Calendar shows wrong timezone for recurring bookings' }))
         .toBeInTheDocument();
-    await expect.element(page.getByText('Loading comments…')).toBeInTheDocument();
+    await expect.element(page.getByText('Loading 4 comments and the events from GitHub')).toBeInTheDocument();
     await expect.element(page.getByText('In progress')).toBeInTheDocument();
 });
 
@@ -307,10 +256,20 @@ test("M2: a pull request's menu asks for reviews — never of its author, those 
     expect(onEdit).toHaveBeenCalledWith({ kind: 'draft', draft: true });
 });
 
-test('⇧X opens the item menu at closing it: close as not planned', async () => {
+test("⇧X closes an open issue as completed at once, as the composer's button does: no menu", async () => {
     await IssueInPanel.run();
 
     await userEvent.keyboard('{Shift>}X{/Shift}');
+
+    expect(IssueInPanel.args.onEdit).toHaveBeenCalledExactlyOnceWith({ kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
+test('the item menu still closes an issue as not planned', async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByRole('button', { name: /^Actions of / }));
+    await userEvent.click(page.getByRole('menuitem', { name: /^Close issue/ }));
     await userEvent.click(page.getByRole('menuitem', { name: 'Close as not planned' }));
 
     expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'close', reason: 'NOT_PLANNED' });
@@ -341,8 +300,116 @@ test('⌘↵ posts the comment typed and empties the box', async () => {
     await userEvent.keyboard('r');
     await userEvent.keyboard('Looks good{ControlOrMeta>}{Enter}{/ControlOrMeta}');
 
-    expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good' });
+    expect(IssueInPanel.args.onEdit).toHaveBeenCalledWith({ kind: 'comment', body: 'Looks good', keptInThread: true });
     await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
+});
+
+test('with text typed the close button reads "Close with comment": the comment goes first, then the close, and the box empties', async () => {
+    await IssueInPanel.run();
+    const { onEdit } = IssueInPanel.args;
+
+    await userEvent.fill(page.getByRole('textbox', { name: 'Comment' }), '  Fixed in #12  ');
+    await userEvent.click(page.getByRole('button', { name: 'Close with comment', exact: true }));
+
+    expect(onEdit).toHaveBeenCalledTimes(2);
+    expect(onEdit).toHaveBeenNthCalledWith(1, { kind: 'comment', body: 'Fixed in #12', keptInThread: true });
+    expect(onEdit).toHaveBeenNthCalledWith(2, { kind: 'close', reason: 'COMPLETED' });
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('');
+    await expect.element(page.getByRole('button', { name: 'Close issue', exact: true })).toBeVisible();
+});
+
+test('the composer ends the thread and scrolls with it: nothing is pinned under the content', async () => {
+    await IssueInPanel.run();
+
+    const scroll = getContentScroll();
+    expect(scroll.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
+    expect(document.querySelector('article footer')).toBeNull();
+});
+
+test('R brings the composer into view leaving the space the end of the scroll leaves, not flush against the edge', async () => {
+    await IssueInPanel.run();
+    const scroll = getContentScroll();
+    scroll.scrollTop = 0;
+
+    await userEvent.keyboard('r');
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveFocus();
+    expect(scroll.scrollHeight - scroll.clientHeight).toBeGreaterThan(0);
+    expect(scroll.scrollTop).toBeCloseTo(scroll.scrollHeight - scroll.clientHeight, 0);
+});
+
+test('Quote reply of a long comment leaves its HTML comments out and brings the end of the box, where the cursor is, into view', async () => {
+    const [first, mine] = D1_ISSUE_DETAIL.comments.nodes;
+    const lines = Array.from({ length: 60 }, (_, index) => `Step ${index + 1}.`);
+    const long = {
+        ...mine!,
+        id: 'C_LONG',
+        body: `<!-- Fill in the steps -->\n${lines.join('\n')}`,
+        bodyHtml: '<p>Steps</p>',
+    };
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            detail: { ...D1_ISSUE_DETAIL, comments: { ...D1_ISSUE_DETAIL.comments, nodes: [first!, long] } },
+        },
+    });
+    const scroll = getContentScroll();
+    scroll.scrollTop = 0;
+
+    await rightClickComment('Steps');
+    await userEvent.click(page.getByRole('menuitem', { name: 'Quote reply' }));
+
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await expect.element(box).toHaveFocus();
+    await expect.element(box).toHaveValue(`${lines.map(line => `> ${line}`).join('\n')}\n\n`);
+    await expect
+        .poll(() => isInView(page.getByRole('button', { name: 'Comment', exact: true }).element(), scroll))
+        .toBe(true);
+});
+
+test("Edit of a long comment keeps the editor's head in view, not only the caret at its end", async () => {
+    const [first, mine] = D1_ISSUE_DETAIL.comments.nodes;
+    const body = Array.from({ length: 60 }, (_, index) => `Step ${index + 1}.`).join('\n');
+    const long = { ...mine!, id: 'C_LONG', body, bodyHtml: '<p>Steps</p>' };
+    await IssueInPanel.run({
+        args: {
+            ...IssueInPanel.args,
+            detail: { ...D1_ISSUE_DETAIL, comments: { ...D1_ISSUE_DETAIL.comments, nodes: [first!, long] } },
+        },
+    });
+    const scroll = getContentScroll();
+
+    await rightClickComment('Steps');
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+
+    await expect.element(page.getByRole('textbox', { name: 'Edit comment' })).toHaveFocus();
+    const tabs = page.getByRole('tab', { name: 'Write' }).all();
+    await expect.poll(() => isInView(tabs[0]!.element(), scroll)).toBe(true);
+});
+
+test('K1b: a conversation locked to collaborators, or an archived repository, says so in place of the composer, and R has nothing to focus', async () => {
+    const editing = {
+        ...SAMPLE_MAINTAINER_EDITING,
+        permissions: { ...SAMPLE_MAINTAINER_EDITING.permissions, comment: false },
+    };
+    await IssueInPanel.run({
+        args: { ...IssueInPanel.args, editing, detail: { ...D1_ISSUE_DETAIL, locked: true } },
+    });
+
+    await expect
+        .element(page.getByText('This conversation is locked to collaborators', { exact: false }))
+        .toBeVisible();
+    expect(page.getByRole('textbox', { name: 'Comment' }).query()).toBeNull();
+    await userEvent.keyboard('r');
+    expect(document.activeElement).toBe(document.body);
+    // Quote reply would land in a draft no one sees.
+    await rightClickComment('Same on mobile.');
+    await expect.element(page.getByRole('menuitem', { name: 'Copy link' })).toBeVisible();
+    expect(page.getByRole('menuitem', { name: 'Quote reply' }).query()).toBeNull();
+    await userEvent.keyboard('{Escape}');
+
+    const metadata = SAMPLE_MAINTAINER_EDITING.metadata && { ...SAMPLE_MAINTAINER_EDITING.metadata, isArchived: true };
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, editing: { ...editing, metadata } } });
+    await expect.element(page.getByText('skyline-labs/portal is archived, so it takes no new comments.')).toBeVisible();
 });
 
 test("K1b: edits a contributor can't make are not offered — no keys, no pickers, one line says why", async () => {
@@ -359,6 +426,29 @@ test("K1b: edits a contributor can't make are not offered — no keys, no picker
     await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
     expect(ContributorView.args.onEdit).not.toHaveBeenCalled();
 });
+
+/**
+ * Right-clicks the head of the comment that reads `text`. Not its text: in GitHub's rendering a right click is the
+ * browser's own menu, or a githq link's (`GitHubLinks`).
+ */
+async function rightClickComment(text: string) {
+    await userEvent.click(
+        page
+            .getByRole('listitem')
+            .filter({ hasText: text })
+            .getByText(/^commented /),
+        {
+            button: 'right',
+        },
+    );
+}
+
+/** `element` is wholly inside what `scroll` shows. */
+function isInView(element: Element, scroll: HTMLElement) {
+    const box = element.getBoundingClientRect();
+    const view = scroll.getBoundingClientRect();
+    return box.top >= view.top && box.bottom <= view.bottom;
+}
 
 /** The panel's scrolling content: the column holding the item's heading. */
 function getContentScroll() {

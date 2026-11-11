@@ -146,6 +146,7 @@ import { getReviewFreshness } from './utils/getReviewFreshness.js';
 import { getReviewPlaceFreshness } from './utils/getReviewPlaceFreshness.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
 import { getPendingComments } from './writing/getPendingComments.js';
+import { getReplyTarget } from './writing/getReplyTarget.js';
 import { formatSuggestion, getSuggestionLines } from './writing/getSuggestionLines.js';
 import ReviewCommentRow from './writing/ReviewCommentRow.vue';
 import ReviewDiscardDialog from './writing/ReviewDiscardDialog.vue';
@@ -1438,14 +1439,7 @@ function startReply(row: ReviewThreadRow) {
 
   focusedThread.value = thread.id;
   justResolved.value = null;
-  const line = thread.line ?? thread.originalLine ?? 1;
-  startComment({
-    path: getReviewRowPath(row.key),
-    side: thread.diffSide === 'LEFT' ? 'before' : 'after',
-    line,
-    startLine: thread.startLine === null || thread.startLine === line ? null : thread.startLine,
-    threadId: thread.id,
-  });
+  startComment({ path: getReviewRowPath(row.key), ...getReplyTarget(thread) });
 }
 
 /**

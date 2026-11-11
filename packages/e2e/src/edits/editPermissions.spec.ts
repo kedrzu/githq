@@ -34,3 +34,30 @@ test('in a repository the user may only read, the edits it does not allow are no
     await expect(item.title).toBeVisible();
     expect(sample.world.edits).toEqual([]);
 });
+
+test('a conversation locked to collaborators: someone who may only read it is told so in place of the comment box, and R has nothing to focus', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    sample.world.repository('acme/web', { viewerPermission: 'READ' });
+    sample.world.issue({
+        repository: 'acme/web',
+        number: 31,
+        title: 'Locked talk',
+        author: 'monalisa',
+        foundBy: ['mentioned'],
+        minutesAgo: 1,
+        locked: true,
+    });
+    const { myWork } = await openMyWork(page, github, sample.world);
+    const item = new ItemViewHarness(page);
+
+    await myWork.row('Locked talk').click();
+    await expect(item.readOnlyComposer).toContainText(/This\sconversation\sis\slocked\sto\scollaborators/);
+    await expect(item.commentBox).toHaveCount(0);
+    await page.keyboard.press('r');
+    await item.menuButton.click();
+    await expect(page.getByRole('menuitem', { name: 'Comment' })).toHaveCount(0);
+    expect(sample.world.edits).toEqual([]);
+});

@@ -7,6 +7,7 @@ import { expect, test } from 'bun:test';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { DownloadProgress } from './DownloadProgress.js';
 import { TrackingStore } from './TrackingStore.js';
@@ -106,7 +107,7 @@ test('a download that starts after everything arrived counts its pace afresh', a
 
 /** A tab signed in with its local copy open and the kept choice read. */
 async function open() {
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer: () => undefined });
+    const session = createTestSession({ login: uniqueLogin(), answer: () => undefined });
     setIndexedDbPersistence(session.container);
     session.container.resolve(ItemStore);
     const tracking = session.container.resolve(TrackingStore);

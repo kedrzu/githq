@@ -53,6 +53,19 @@ test('nothing is editable in an archived repository, one GitHub does not say the
     });
 });
 
+test('a conversation locked to collaborators takes comments from WRITE and above only; the rest stays as it was', () => {
+    const issue = sampleIssue('I_1');
+    for (const role of ['READ', 'TRIAGE', 'TRIAGE_PLUS'] as const) {
+        const locked = getEditPermissions({ item: issue, viewerLogin: VIEWER, permission: role, locked: true });
+        expect(locked).toEqual({ ...permissions(issue, role), comment: false });
+    }
+
+    for (const role of ['WRITE', 'MAINTAIN', 'ADMIN'] as const) {
+        const locked = getEditPermissions({ item: issue, viewerLogin: VIEWER, permission: role, locked: true });
+        expect(locked).toEqual(permissions(issue, role));
+    }
+});
+
 test('merging: an open pull request, not merged nor being merged, by WRITE, MAINTAIN or ADMIN; the panel opens while it is being merged', () => {
     const pr = samplePullRequest('PR_1');
     const both = { mergePanel: true, merge: true };

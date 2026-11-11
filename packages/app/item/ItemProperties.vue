@@ -16,6 +16,7 @@ import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
 import type { IssueDetail, LinkedIssue, LinkedIssues } from '@/store/ItemDetailTypes.js';
 import type { Item } from '@/store/ItemTypes.js';
+import { formatRelativeReference } from '@/utils/formatRelativeReference.js';
 import { getGitHubColor } from '@/utils/getGitHubColor.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
@@ -126,12 +127,6 @@ function applyLabels(change: PickerChange) {
 
 function applyAssignees(change: PickerChange) {
   emit('edit', { kind: 'assignees', add: change.added, remove: change.removed });
-}
-
-function referenceText(issue: LinkedIssue) {
-  return issue.repository === props.item.repository.nameWithOwner
-    ? `#${issue.number}`
-    : `${issue.repository}#${issue.number}`;
 }
 
 function open(issue: LinkedIssue) {
@@ -387,7 +382,9 @@ function open(issue: LinkedIssue) {
         variant="link"
         @click="open(detail.parent)"
       >
-        <span :class="css.itemProperties_reference">{{ referenceText(detail.parent) }}</span>
+        <span :class="css.itemProperties_reference">{{
+          formatRelativeReference(detail.parent, item.repository.nameWithOwner)
+        }}</span>
         {{ detail.parent.title }}
       </Button>
     </PropertyRow>
@@ -403,7 +400,9 @@ function open(issue: LinkedIssue) {
           variant="link"
           @click="open(issue)"
         >
-          <span :class="css.itemProperties_reference">{{ referenceText(issue) }}</span>
+          <span :class="css.itemProperties_reference">{{
+            formatRelativeReference(issue, item.repository.nameWithOwner)
+          }}</span>
           {{ issue.title }}
         </Button>
         <span

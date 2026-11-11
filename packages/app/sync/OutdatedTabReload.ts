@@ -12,15 +12,15 @@ import { ReloadHolds } from './ReloadHolds.js';
 
 /**
  * How long nothing has to be at stake before the page goes: an edit GitHub did not take leaves the queue a moment
- * before its failure is listed and its comment is back in the box.
+ * before its failure is listed, or its comment kept as not sent.
  */
 const RELOAD_DELAY_MS = 1000;
 
 /**
  * Brings a tab up to a newer githq: told that another tab opened the local copy in a newer layout, it can neither keep
  * anything nor sync any more (`SyncLeadership`), so it reloads — shown or hidden — as soon as that loses nothing the
- * user did. What only its memory holds stops it: an edit on its way, a failure not dismissed yet (it may offer to
- * restore a comment), text not sent.
+ * user did. What only its memory holds stops it: an edit on its way, a failure not dismissed yet, text not sent
+ * (typed, or a comment GitHub did not take).
  */
 export const OutdatedTabReload = defineService({
     name: 'OutdatedTabReload',

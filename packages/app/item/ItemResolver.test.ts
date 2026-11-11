@@ -10,6 +10,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { ItemResolver } from './ItemResolver.js';
 
@@ -182,7 +183,7 @@ test('what was found for one user is forgotten when they sign out', async () => 
 async function setup() {
     const network = { down: false };
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: request => (network.down ? undefined : answer(request)),
     });
     session.container.set(ItemPersistence, createIndexedDbPersistence());

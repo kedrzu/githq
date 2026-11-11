@@ -4,12 +4,49 @@ fragment PullRequestDetailFields on PullRequest {
     ...PullRequestFields
     body
     bodyHTML
+    lastEditedAt
+    # GitHub says whether the viewer may edit the description (K1b).
+    viewerCanUpdate
+    # Locked to collaborators: only people with write access may comment (`getEditPermissions`).
+    locked
     reactionGroups {
         ...ReactionGroupFields
     }
     # Aliased: the row's `comments` has no arguments. The newest page; older ones through `MoreComments`.
     commentPage: comments(last: 50) {
         ...CommentPageFields
+    }
+    # The first two comments, which a thread shows above its fold (F5) however many come after them.
+    firstComments: comments(first: 2) {
+        nodes {
+            ...IssueCommentFields
+        }
+    }
+    # The thread's events (item-activity F13), comments and reviews apart: the first two and the newest 50, oldest
+    # first; what lies between is read on demand (`ThreadMiddle`). `$pullRequestEventTypes` is `THREAD_EVENT_TYPES`
+    # (`ItemDetailStore`). Counts are `filteredCount`: with `itemTypes`, a pull request's `totalCount` counts its
+    # whole timeline (kedrzu/githq#219: 65, 55 of them commits). Each event's cursor (`edges`): the middle is read from
+    # one older than the last of the first and up to one newer than the first of the newest (`toItemEvents`).
+    firstEvents: timelineItems(first: 2, itemTypes: $pullRequestEventTypes) {
+        edges {
+            cursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
+    lastEvents: timelineItems(last: 50, itemTypes: $pullRequestEventTypes) {
+        filteredCount
+        edges {
+            cursor
+        }
+        nodes {
+            ...ThreadEventFields
+        }
+    }
+    # How many of the events are commits, for the fold's counts (F5); the rest are other events.
+    commitEvents: timelineItems(itemTypes: [PULL_REQUEST_COMMIT]) {
+        filteredCount
     }
     commits {
         totalCount

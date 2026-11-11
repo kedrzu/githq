@@ -224,20 +224,8 @@ const hasFooter = computed(
   border-radius: $radius-sm;
 }
 
-.itemCard_kind_open {
-  color: $color-green;
-}
-
-.itemCard_kind_done {
-  color: $color-purple;
-}
-
-.itemCard_kind_closed {
-  color: $color-red;
-}
-
-.itemCard_kind_draft {
-  color: $color-fg-dim;
+.itemCard_kind {
+  @include item-kind-tones;
 }
 
 .itemCard_reference {

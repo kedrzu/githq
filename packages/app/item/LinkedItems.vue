@@ -4,6 +4,7 @@ import { CircleDot, GitPullRequest, SquareKanban } from 'lucide-vue-next';
 
 import Button from '@/components/Button.vue';
 import type { Item } from '@/store/ItemTypes.js';
+import { formatRelativeReference } from '@/utils/formatRelativeReference.js';
 
 import { getItemReference } from './itemRoutes.js';
 import type { ItemReference } from './itemRoutes.js';
@@ -45,9 +46,7 @@ const emit = defineEmits<{
           {{ linked.title }}
         </Button>
         <span :class="css.linkedItems_reference">{{
-          linked.repository.nameWithOwner === repository
-            ? `#${linked.number}`
-            : `${linked.repository.nameWithOwner}#${linked.number}`
+          formatRelativeReference({ repository: linked.repository.nameWithOwner, number: linked.number }, repository)
         }}</span>
         <span :class="css.linkedItems_spacer" />
         <span

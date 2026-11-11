@@ -41,10 +41,9 @@ test('K3: with the API allowance used up refresh pauses, saying until when and w
     await myWork.row('Sign-in loops after the token expires').click();
     await expect(item.statePill('Open')).toBeVisible();
     await page.keyboard.press('Shift+X');
-    await page.getByRole('menuitem', { name: 'Close as not planned' }).click();
     await expect
         .poll(() => sample.world.stateOf(sample.issue))
-        .toMatchObject({ state: 'CLOSED', stateReason: 'NOT_PLANNED' });
+        .toMatchObject({ state: 'CLOSED', stateReason: 'COMPLETED' });
     // It leaves the list, and the panel goes on to the next row.
     await expect(item.title).not.toHaveText('Sign-in loops after the token expires');
     await expect(shell.failedEdits).toHaveCount(0);

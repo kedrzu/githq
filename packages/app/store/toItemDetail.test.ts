@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { expect, test } from 'bun:test';
 
-import type { ProjectItemDetailFieldsFragment } from '@githq/github/generated.gen.js';
+import type { ProjectItemDetailFieldsFragment, ThreadEventFieldsFragment } from '@githq/github/generated.gen.js';
 
 import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 
@@ -12,7 +12,7 @@ import type {
     ItemReaction,
     ItemReviewSummary,
 } from './ItemDetailTypes.js';
-import { toItemDetail } from './toItemDetail.js';
+import { toItemDetail, toThreadEvent } from './toItemDetail.js';
 
 const MONDAY = '2026-10-26T10:00:00Z';
 const FETCHED_AT = Date.UTC(2026, 9, 30, 13, 0, 0);
@@ -112,6 +112,7 @@ test("a pull request's checks are told passing, failing, pending or skipped from
         name: 'ci/legacy',
         workflow: null,
         state: 'failing',
+        cancelled: false,
         url: 'https://ci.test/1',
         startedAt: MONDAY,
         completedAt: null,
@@ -341,6 +342,193 @@ function comment(id: string) {
         createdAt: MONDAY,
         lastEditedAt: null,
         author: { login: 'octocat', avatarUrl: 'https://avatars.test/octocat' },
+        body: id,
         bodyHTML: `<p>${id}</p>`,
+        viewerCanUpdate: false,
+        viewerCanDelete: false,
+    };
+}
+
+test("a short thread's first and newest events overlap: each is kept once, and nothing is left to read between them", () => {
+    const events = [labeled('E_1', 'bug'), labeled('E_2', 'docs'), labeled('E_3', 'ui')];
+    const detail = toItemDetail(
+        {
+            ...sampleIssueDetailNode('I_1', MONDAY),
+            firstEvents: eventPage(events.slice(0, 2)),
+            lastEvents: { filteredCount: 3, ...eventPage(events) },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toEqual({
+        totalCount: 3,
+        commitCount: 0,
+        oldest: [],
+        newest: events.map(event => expect.objectContaining({ id: event.id, kind: 'labeled' })),
+        middle: null,
+    });
+});
+
+test('a long thread keeps its first events apart from its newest, with the cursors of the middle between them', () => {
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: eventPage([labeled('E_1', 'bug', '09:00'), labeled('E_2', 'docs', '09:05')]),
+            lastEvents: {
+                filteredCount: 60,
+                ...eventPage([labeled('E_51', 'ui', '11:00'), labeled('E_52', 'api', '11:10')]),
+            },
+            commitEvents: { filteredCount: 12 },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toMatchObject({
+        totalCount: 60,
+        commitCount: 12,
+        oldest: [{ id: 'E_1' }, { id: 'E_2' }],
+        newest: [{ id: 'E_51' }, { id: 'E_52' }],
+        // GitHub's `after` and `before` leave out the events at their cursor's time: the middle is read from an event
+        // older than the last held before it, up to one newer than the first held after it.
+        middle: { after: 'cursor-E_1', before: 'cursor-E_52' },
+    });
+});
+
+test("a long thread whose events held around the middle share their time reads the middle from the start, to the end: GitHub's cursors would skip the events at that time", () => {
+    const detail = toItemDetail(
+        {
+            ...sampleIssueDetailNode('I_1', MONDAY),
+            firstEvents: eventPage([labeled('E_1', 'bug', '09:00'), labeled('E_2', 'docs', '09:00')]),
+            lastEvents: {
+                filteredCount: 60,
+                ...eventPage([labeled('E_51', 'ui', '11:00'), labeled('E_52', 'api', '11:00')]),
+            },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events.middle).toEqual({ after: null, before: null });
+});
+
+test("a pull request's thread counts the events of the kinds it reads, not the whole timeline GitHub's totalCount counts", () => {
+    const events = [labeled('E_1', 'bug'), labeled('E_2', 'docs'), labeled('E_3', 'ui')];
+    // With `itemTypes`, GitHub's `totalCount` counts the whole timeline (kedrzu/githq#219); `filteredCount` these.
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: eventPage(events.slice(0, 2)),
+            lastEvents: { filteredCount: 3, ...eventPage(events) },
+            commitEvents: { filteredCount: 1 },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toMatchObject({ totalCount: 3, commitCount: 1, oldest: [], middle: null });
+});
+
+test('a merged pull request keeps the ClosedEvent GitHub gives with the merge: every event held, no middle', () => {
+    const merger = { login: 'mlaine', avatarUrl: '' };
+    const closedByHand: ThreadEventFieldsFragment = {
+        __typename: 'ClosedEvent',
+        id: 'CE_1',
+        createdAt: '2026-10-26T09:00:00Z',
+        actor: merger,
+        stateReason: null,
+        closer: null,
+        duplicateOf: null,
+    };
+    // As GitHub gave them for cli/cli#14998: the merge, then a close at the same second.
+    const merged: ThreadEventFieldsFragment = {
+        __typename: 'MergedEvent',
+        id: 'ME_1',
+        createdAt: MONDAY,
+        actor: merger,
+        mergeRefName: 'main',
+        commit: { abbreviatedOid: 'abc1234', url: 'https://github.com/acme/web/commit/abc1234' },
+    };
+    const closedWithMerge: ThreadEventFieldsFragment = { ...closedByHand, id: 'CE_2', createdAt: MONDAY };
+    const detail = toItemDetail(
+        {
+            ...samplePullRequestDetailNode('PR_1', MONDAY),
+            firstEvents: eventPage([]),
+            lastEvents: { filteredCount: 3, ...eventPage([closedByHand, merged, closedWithMerge]) },
+        },
+        FETCHED_AT,
+    );
+
+    expect(detail?.events).toMatchObject({
+        newest: [
+            { id: 'CE_1', kind: 'closed' },
+            { id: 'ME_1', kind: 'merged' },
+            { id: 'CE_2', kind: 'closed' },
+        ],
+        middle: null,
+    });
+});
+
+test('a pull request linked to an issue is the other side, whichever side GitHub reports the link from', () => {
+    const issue = { __typename: 'Issue' as const, ...ref('I_1', 12) };
+    const pullRequest = { __typename: 'PullRequest' as const, ...ref('PR_1', 15) };
+    const connected = (source: typeof issue | typeof pullRequest, subject: typeof issue | typeof pullRequest) =>
+        toThreadEvent(
+            { __typename: 'ConnectedEvent', id: 'E_1', createdAt: MONDAY, actor: null, source, subject },
+            'I_1',
+        );
+
+    expect(connected(pullRequest, issue)).toMatchObject({
+        kind: 'connected',
+        ref: { kind: 'pullRequest', number: 15 },
+    });
+    expect(connected(issue, pullRequest)).toMatchObject({
+        kind: 'connected',
+        ref: { kind: 'pullRequest', number: 15 },
+    });
+});
+
+test("a Status a project workflow set names no one, though GitHub reports the project's owner", () => {
+    const statusChange = (wasAutomated: boolean) =>
+        toThreadEvent(
+            {
+                __typename: 'ProjectV2ItemStatusChangedEvent',
+                id: 'E_1',
+                createdAt: MONDAY,
+                actor: { login: 'mlaine', avatarUrl: 'https://avatars.example/mlaine' },
+                wasAutomated,
+                status: 'Done',
+                project: { title: 'Roadmap', url: 'https://github.com/orgs/acme/projects/1' },
+            },
+            'I_1',
+        );
+
+    expect(statusChange(true)).toMatchObject({
+        kind: 'projectStatusChanged',
+        actor: null,
+        to: 'Done',
+    });
+    expect(statusChange(false)).toMatchObject({ actor: { login: 'mlaine' } });
+});
+
+/** A label added on Monday, at `time` (`hh:mm`, UTC) or 10:00. */
+function labeled(
+    id: string,
+    label: string,
+    time?: string,
+): Extract<ThreadEventFieldsFragment, { __typename: 'LabeledEvent' }> {
+    const createdAt = time === undefined ? MONDAY : `2026-10-26T${time}:00Z`;
+    return { __typename: 'LabeledEvent', id, createdAt, actor: null, label: { name: label, color: 'ededed' } };
+}
+
+/** The events as a page of `timelineItems`, each with its cursor (`cursor-<id>`). */
+function eventPage<TNode extends { readonly id: string }>(nodes: TNode[]) {
+    return { edges: nodes.map(node => ({ cursor: `cursor-${node.id}` })), nodes };
+}
+
+function ref(id: string, number: number) {
+    return {
+        id,
+        url: `https://github.com/acme/web/issues/${number}`,
+        number,
+        title: `Item ${number}`,
+        repository: { nameWithOwner: 'acme/web' },
     };
 }

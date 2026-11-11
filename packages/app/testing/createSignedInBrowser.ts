@@ -5,6 +5,8 @@ import { TOKEN_KEY } from '@/auth/TokenVault.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
 
+import { uniqueLogin } from './uniqueLogin.js';
+
 /**
  * For a component spec in a browser (`createTestSession()` runs under `bun test`): the browser with a user of their own
  * signed in, keeping nothing between tests, and a GitHub answering with `fetch` — every request a 502 without it.
@@ -12,7 +14,7 @@ import { Browser } from '@/services/Browser.js';
  * @util
  */
 export function createSignedInBrowser(fetch?: BrowserShape['fetch']): BrowserShape {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const stored = new Map([
         [TOKEN_KEY, `gho_${login}`],
         [VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' })],

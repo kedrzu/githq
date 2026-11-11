@@ -21,6 +21,7 @@ import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
 import { sampleIssueNode, samplePullRequestNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { BROWSE_FRESH_MS, BROWSE_POLL_MS, BrowsedRepositories } from './BrowsedRepositories.js';
@@ -990,8 +991,4 @@ function row(node: IssueFieldsFragment) {
     }
 
     return item;
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

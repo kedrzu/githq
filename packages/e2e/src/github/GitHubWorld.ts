@@ -31,6 +31,7 @@ import type {
     PullRequestState,
     RepositoryPermission,
     StatusState,
+    ThreadEventFieldsFragment,
     TrackingProjectFieldsFragment,
     TrackingRepositoryFieldsFragment,
     TrackingRepositoryPageFieldsFragment,
@@ -73,6 +74,8 @@ export type GitHubWorldMutation =
     | 'ClosePullRequest'
     | 'ReopenPullRequest'
     | 'AddComment'
+    | 'UpdateIssueComment'
+    | 'DeleteIssueComment'
     | 'AddToProject'
     | 'AddDraftIssue'
     | 'SetProjectFieldValue'
@@ -125,6 +128,8 @@ export interface GitHubWorldItemParams {
     readonly projects?: readonly GitHubWorldPlacement[];
     /** Its description as GitHub renders it (`bodyHTML`); none by default. */
     readonly bodyHtml?: string;
+    /** Its conversation is locked to collaborators. */
+    readonly locked?: boolean;
 }
 
 /** An item's place in a project of the world. */
@@ -135,6 +140,32 @@ export interface GitHubWorldPlacement {
     readonly status?: GitHubWorldStatus;
     /** Archived in the project: GitHub still lists it there, marked archived. */
     readonly archived?: boolean;
+}
+
+/** An event of an item's thread ({@link GitHubWorld.event}, {@link GitHubWorld.pullRequestEvent}). */
+export interface GitHubWorldEventParams<TEvent> {
+    /** GitHub's answer for it (`ThreadEventFields`), but its node id and its time. */
+    readonly event: TEvent;
+    readonly minutesAgo: number;
+}
+
+/** An event of a pull request's thread as GitHub answers it, but its node id and its time; not a commit. */
+export type GitHubWorldEvent = WithoutIdAndTime<ThreadEventFieldsFragment>;
+
+/** An event an issue's thread can have too, as GitHub answers it, but its node id and its time. */
+export type GitHubWorldIssueEvent = WithoutIdAndTime<IssueThreadEvent>;
+
+type IssueThreadEvent = NonNullable<NonNullable<IssueDetailFieldsFragment['lastEvents']['nodes']>[number]>;
+
+type WithoutIdAndTime<TEvent> = TEvent extends { readonly id: string; readonly createdAt: string }
+    ? Omit<TEvent, 'id' | 'createdAt'>
+    : never;
+
+/** A commit on a pull request's branch before its head ({@link GitHubWorld.commit}). */
+export interface GitHubWorldCommitOnBranchParams {
+    readonly author: string;
+    readonly headline: string;
+    readonly minutesAgo: number;
 }
 
 /** A comment on an item of the world ({@link GitHubWorld.comment}). */
@@ -518,8 +549,15 @@ interface WorldDraft {
 interface WorldComment {
     readonly id: string;
     readonly author: string;
-    readonly body: string;
+    body: string;
     readonly createdAt: string;
+    lastEditedAt: string | null;
+}
+
+/** Who reads an item's comments: the viewer edits and deletes their own, and anyone's where they may write. */
+interface CommentReader {
+    readonly viewer: string;
+    readonly writes: boolean;
 }
 
 interface WorldPullRequest {
@@ -529,7 +567,9 @@ interface WorldPullRequest {
     readonly failedOutsideActions: readonly string[];
     isDraft: boolean;
     reviewDecision: PullRequestReviewDecision | null;
-    readonly failingChecks: number;
+    failingChecks: number;
+    /** The names of its head's failed checks, listed by the opened pull request ({@link GitHubWorld.failChecks}). */
+    failedCheckNames: readonly string[];
     readonly conflicts: boolean;
     reviewRequests: string[];
     readonly reviews: GitHubWorldReviewParams[];
@@ -541,6 +581,8 @@ interface WorldPullRequest {
      * head, its mergeability `UNKNOWN`, until the update lands — after the next read of the merge panel.
      */
     updatingBranch: boolean;
+    /** The events only a pull request has the test gave it ({@link GitHubWorld.pullRequestEvent}), oldest first. */
+    readonly events: ThreadEventFieldsFragment[];
     /** The last commit pushed to its branch since the test began ({@link GitHubWorld.push}); `null` for none. */
     pushed: WorldPushedCommit | null;
     /** Its place in a stack; `null` for a pull request in none. */
@@ -576,6 +618,7 @@ interface WorldAutoMerge {
 /** A commit pushed to a pull request's branch. */
 interface WorldPushedCommit {
     readonly oid: string;
+    readonly committedDate: string;
     readonly headline: string;
     readonly author: string;
 }
@@ -629,11 +672,14 @@ interface WorldItem {
     assignees: string[];
     milestone: string | null;
     comments: WorldComment[];
+    /** The events of its thread the test gave it ({@link GitHubWorld.event}), oldest first. */
+    readonly events: IssueThreadEvent[];
     projectItems: WorldProjectItem[];
     /** Its pull request's own state; `null` for an issue. */
     readonly pullRequest: WorldPullRequest | null;
     readonly issueType: GitHubWorldIssueType | null;
     readonly bodyHtml: string;
+    readonly locked: boolean;
     readonly foundBy: Set<MyWorkSearch>;
     /** Deleted on GitHub, while the search index still lists it. */
     deleted: boolean;
@@ -669,8 +715,14 @@ const HEAD_MOVED = 'Head branch was modified. Review and try the merge again.';
 const LAST_PAGE = { hasNextPage: false, endCursor: null };
 /** The comments an opened item reads at once (`commentPage: comments(last: 50)`), and per older page. */
 const COMMENT_PAGE = 50;
+/** The first comments an opened item reads too (`firstComments`), kept above the thread's fold. */
+const FIRST_COMMENTS = 2;
 const OLDER_COMMENT_PAGE = 100;
 const REVIEW_PAGE = 100;
+/** The events an opened item reads at once (`firstEvents`, `lastEvents`), and per page of the middle (`ThreadMiddle`). */
+const FIRST_EVENTS = 2;
+const LAST_EVENTS = 50;
+const MIDDLE_PAGE = 100;
 
 const DEFAULT_LABELS: readonly GitHubWorldLabel[] = [
     { name: 'bug', color: 'd73a4a' },
@@ -1025,8 +1077,69 @@ export class GitHubWorld {
             author: params.author,
             body: params.body,
             createdAt: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+            lastEditedAt: null,
         });
         return commentId;
+    }
+
+    /**
+     * Adds an event an issue can have too to an item's thread, its newest: call them oldest first. On a pull request,
+     * only one githq reads for both (item-activity F13: "issues too", closed, reopened) — it does not ask GitHub for
+     * the others. A pull request's thread has its head commit too, by its author, with the head's checks.
+     */
+    event(id: string, params: GitHubWorldEventParams<GitHubWorldIssueEvent>): void {
+        const item = this.get(id);
+        item.events.push({ ...params.event, ...toEventStamp(item, params.minutesAgo) });
+    }
+
+    /** Adds an event to a pull request's thread, its newest — one an issue cannot have too, or any. */
+    pullRequestEvent(id: string, params: GitHubWorldEventParams<GitHubWorldEvent>): void {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        item.pullRequest.events.push({ ...params.event, ...toEventStamp(item, params.minutesAgo) });
+    }
+
+    /**
+     * Adds a commit to a pull request's branch before its head, as pushed before it: call them oldest first, older than
+     * the pull request (whose head is committed when it was opened, or pushed later).
+     */
+    commit(id: string, params: GitHubWorldCommitOnBranchParams): void {
+        const item = this.get(id);
+        if (!item.pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        const { events } = item.pullRequest;
+        const oid = `${(events.length + 1).toString(16).padStart(7, 'c')}${item.number.toString(16).padStart(33, 'c')}`;
+        events.push({
+            __typename: 'PullRequestCommit',
+            id: `PRC_${item.id}_${oid}`,
+            url: `${toUrl(item)}/commits/${oid}`,
+            pushedCommit: {
+                abbreviatedOid: oid.slice(0, 7),
+                messageHeadline: params.headline,
+                committedDate: new Date(Date.now() - params.minutesAgo * 60_000).toISOString(),
+                author: { name: params.author, user: createUser(params.author) },
+                statusCheckRollup: { state: 'SUCCESS' },
+            },
+        });
+    }
+
+    /**
+     * The checks named fail on a pull request's head, the rest of its checks pass, all finished: the opened pull
+     * request lists every one of them (by default it lists none).
+     */
+    failChecks(id: string, names: readonly string[]): void {
+        const { pullRequest } = this.get(id);
+        if (!pullRequest) {
+            throw new Error(`${id} is not a pull request`);
+        }
+
+        pullRequest.failingChecks = names.length;
+        pullRequest.failedCheckNames = names;
     }
 
     /** Adds a submitted review to a pull request, its newest: call them oldest first. */
@@ -1180,6 +1293,11 @@ export class GitHubWorld {
     failEdit(id: string, mutation: GitHubWorldMutation, failure: GitHubWorldFailure): void {
         this.get(id);
         this.failures.set(failureKey(id, mutation), failure);
+    }
+
+    /** Makes GitHub take every `mutation` of the item `id` again, as {@link failEdit} said it would not. */
+    stopFailingEdit(id: string, mutation: GitHubWorldMutation): void {
+        this.failures.delete(failureKey(id, mutation));
     }
 
     /**
@@ -1542,13 +1660,20 @@ export class GitHubWorld {
                 ]);
             }
 
-            const found = [...this.items.values()].find(
-                item =>
-                    !item.deleted &&
-                    item.repository.toLowerCase() === nameWithOwner &&
-                    item.number === Number(variables.number),
-            );
+            const found = this.findByNumber(variables);
             return { repository: { issueOrPullRequest: found ? { id: found.id } : null } };
+        });
+        // Read when a pull request opens, for its thread's reviews: the world's have no thread on the code.
+        // `answerReview` gives a test's pull request its own.
+        github.graphql('PullRequestReviewThreads', ({ variables }) => {
+            const pullRequest = this.findByNumber(variables)?.pullRequest;
+            return {
+                repository: {
+                    pullRequest: pullRequest
+                        ? { reviewThreads: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [] } }
+                        : null,
+                },
+            };
         });
         github.graphql('ItemsByIds', ({ variables }) => {
             const ids = readIds(variables);
@@ -1707,7 +1832,35 @@ export class GitHubWorld {
             }
 
             const before = parseCursor(variables.before) ?? item.comments.length;
-            return { node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE) } };
+            return {
+                node: { id, commentPage: toCommentPage(item, before, OLDER_COMMENT_PAGE, this.readerOf(item)) },
+            };
+        });
+        // The middle of a thread: events between two of the cursors `toEventPage` gives, comments before one.
+        github.graphql('ThreadMiddle', ({ variables }) => {
+            const id = String(variables.id);
+            const item = this.readItem(id);
+            if (!item) {
+                return new GitHubPartialAnswer<'ThreadMiddle'>({ node: null }, [notFoundError(id, ['node'])]);
+            }
+
+            const commentPage =
+                variables.readComments === true
+                    ? toCommentPage(
+                          item,
+                          parseCursor(variables.commentsBefore) ?? item.comments.length,
+                          OLDER_COMMENT_PAGE,
+                          this.readerOf(item),
+                      )
+                    : undefined;
+            const events = item.pullRequest ? this.toPullRequestEvents(item, item.pullRequest) : item.events;
+            return {
+                node: {
+                    id,
+                    commentPage,
+                    eventPage: variables.readEvents === true ? toMiddleEvents(events, variables) : undefined,
+                },
+            };
         });
         github.graphql('MoreReviews', ({ variables }) => {
             const id = String(variables.id);
@@ -1921,6 +2074,14 @@ export class GitHubWorld {
     private findRepository(variables: Readonly<Record<string, unknown>>) {
         const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
         return [...this.repositories.values()].find(repository => repository.nameWithOwner.toLowerCase() === name);
+    }
+
+    /** The item the variables name (`owner`, `name`, `number`) in any case, as GitHub finds it; `undefined` with none. */
+    private findByNumber(variables: Readonly<Record<string, unknown>>) {
+        const name = `${String(variables.owner)}/${String(variables.name)}`.toLowerCase();
+        return [...this.items.values()].find(
+            item => !item.deleted && item.repository.toLowerCase() === name && item.number === Number(variables.number),
+        );
     }
 
     /** The repositories of `owner` as the tracking screens list them. */
@@ -2341,17 +2502,59 @@ export class GitHubWorld {
                     author: this.viewer,
                     body: String(variables.body),
                     createdAt: new Date().toISOString(),
+                    lastEditedAt: null,
                 });
             },
             answer: item => {
                 const comment = item.comments.at(-1);
                 return {
                     addComment: {
-                        commentEdge: { node: comment ? toCommentNode(item, comment) : null },
+                        commentEdge: { node: comment ? toCommentNode(item, comment, this.readerOf(item)) : null },
                     },
                 };
             },
             refused: { addComment: null },
+        });
+        const byCommentId = (variables: Readonly<Record<string, unknown>>) =>
+            [...this.items.values()].find(item => item.comments.some(comment => comment.id === variables.id));
+        const commentOf = (item: WorldItem, variables: Readonly<Record<string, unknown>>) =>
+            item.comments.find(comment => comment.id === variables.id);
+        // GitHub lets the viewer change their own comments, and anyone's where they may write.
+        const refuseComment = (item: WorldItem, variables: Readonly<Record<string, unknown>>) => {
+            const comment = commentOf(item, variables);
+            const reader = this.readerOf(item);
+            return comment && (reader.writes || comment.author === reader.viewer)
+                ? null
+                : 'Resource not accessible by integration';
+        };
+        this.mutation(github, 'UpdateIssueComment', {
+            findItem: byCommentId,
+            refuse: refuseComment,
+            apply: (item, variables) => {
+                const comment = commentOf(item, variables);
+                if (comment) {
+                    comment.body = String(variables.body);
+                    comment.lastEditedAt = new Date().toISOString();
+                }
+            },
+            answer: (item, variables) => {
+                const comment = commentOf(item, variables);
+                return {
+                    updateIssueComment: {
+                        issueComment: comment ? toCommentNode(item, comment, this.readerOf(item)) : null,
+                    },
+                };
+            },
+            refused: { updateIssueComment: null },
+        });
+        this.mutation(github, 'DeleteIssueComment', {
+            findItem: byCommentId,
+            refuse: refuseComment,
+            apply: (item, variables) => {
+                item.comments = item.comments.filter(comment => comment.id !== variables.id);
+            },
+            answer: () => ({ deleteIssueComment: { clientMutationId: null } }),
+            refused: { deleteIssueComment: null },
         });
         this.mutation(github, 'AddToProject', {
             findItem: byItemId('contentId'),
@@ -2410,8 +2613,7 @@ export class GitHubWorld {
             }
 
             // Without push access GitHub silently drops labels, assignees and the milestone (D14).
-            const pushes =
-                ['WRITE', 'MAINTAIN', 'ADMIN'].includes(repository.viewerPermission) && failure?.kind !== 'drop';
+            const pushes = canPush(repository.viewerPermission) && failure?.kind !== 'drop';
             const number =
                 Math.max(
                     0,
@@ -2684,9 +2886,11 @@ export class GitHubWorld {
             isDraft: params.isDraft ?? false,
             reviewDecision: params.reviewDecision === undefined ? 'REVIEW_REQUIRED' : params.reviewDecision,
             failingChecks: params.failingChecks ?? 0,
+            failedCheckNames: [],
             conflicts: params.conflicts ?? false,
             reviewRequests: [...(params.reviewRequests ?? [])],
             reviews: [],
+            events: [],
             pendingReview: null,
             closes: params.closes ?? [],
             behindBase: params.behindBase ?? false,
@@ -2734,10 +2938,12 @@ export class GitHubWorld {
             assignees: foundBy.includes('assigned') ? [this.viewer] : [],
             milestone: params.milestone ?? null,
             comments: [],
+            events: [],
             projectItems: [],
             pullRequest,
             issueType: issueType ?? null,
             bodyHtml: params.bodyHtml ?? '',
+            locked: params.locked ?? false,
             foundBy: new Set(foundBy),
             deleted: false,
         };
@@ -2816,6 +3022,11 @@ export class GitHubWorld {
         return project;
     }
 
+    /** The viewer reading the item's comments, and whether they may write to its repository. */
+    private readerOf(item: WorldItem): CommentReader {
+        return { viewer: this.viewer, writes: canPush(this.getRepository(item.repository).viewerPermission) };
+    }
+
     /** A live item; `undefined` for an id GitHub does not know or that was deleted. */
     private readItem(id: string): WorldItem | undefined {
         const item = this.items.get(id);
@@ -2832,6 +3043,26 @@ export class GitHubWorld {
         return item.pullRequest ? this.toPullRequestNode(item, item.pullRequest) : this.toIssueNode(item);
     }
 
+    /** The events of a pull request's thread as GitHub lists them, oldest first: its head commit and the test's. */
+    private toPullRequestEvents(item: WorldItem, pullRequest: WorldPullRequest): ThreadEventFieldsFragment[] {
+        const head = toHeadCommit(item, pullRequest);
+        const commit: ThreadEventFieldsFragment = {
+            __typename: 'PullRequestCommit',
+            id: `PRC_${item.id}_${head.oid}`,
+            url: `${toUrl(item)}/commits/${head.oid}`,
+            pushedCommit: {
+                abbreviatedOid: head.oid.slice(0, 7),
+                messageHeadline: head.messageHeadline,
+                committedDate: pullRequest.pushed?.committedDate ?? item.createdAt,
+                author: { name: head.author.name, user: createUser(head.author.name) },
+                statusCheckRollup: this.toPullRequestNode(item, pullRequest).statusCheckRollup,
+            },
+        };
+        return [commit, ...item.events, ...pullRequest.events].toSorted((a, b) =>
+            getEventTime(a).localeCompare(getEventTime(b)),
+        );
+    }
+
     /** A live item as `ItemDetail` reads it: its row, its rendered description, its comments and projects. */
     private readDetailNode(id: string): IssueDetailFieldsFragment | PullRequestDetailFieldsFragment | undefined {
         const item = this.readItem(id);
@@ -2839,11 +3070,18 @@ export class GitHubWorld {
             return undefined;
         }
 
+        const reader = this.readerOf(item);
         const details = {
             body: '',
             bodyHTML: item.bodyHtml,
+            lastEditedAt: null,
+            viewerCanUpdate: reader.writes || item.author === reader.viewer,
+            locked: item.locked,
             reactionGroups: [],
-            commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE),
+            commentPage: toCommentPage(item, item.comments.length, COMMENT_PAGE, reader),
+            firstComments: {
+                nodes: item.comments.slice(0, FIRST_COMMENTS).map(comment => toCommentNode(item, comment, reader)),
+            },
             projectItems: { nodes: item.projectItems.map(place => toProjectItemDetail(place)) },
         };
         if (!item.pullRequest) {
@@ -2851,6 +3089,8 @@ export class GitHubWorld {
             return {
                 ...this.toIssueNode(item),
                 ...details,
+                // An issue's `totalCount` counts by `itemTypes` (nuxt/nuxt#30000), a pull request's does not.
+                ...toDetailEvents(item.events, 0),
                 parent: null,
                 subIssues: noIssues,
                 blockedBy: noIssues,
@@ -2859,14 +3099,23 @@ export class GitHubWorld {
         }
 
         const node = this.toPullRequestNode(item, item.pullRequest);
+        const events = this.toPullRequestEvents(item, item.pullRequest);
+        const commitCount = events.filter(event => event.__typename === 'PullRequestCommit').length;
+        // The whole timeline, as GitHub's `totalCount` counts it for a pull request whatever the `itemTypes`
+        // (kedrzu/githq#219).
+        const timeline = events.length + item.comments.length + item.pullRequest.reviews.length;
+        // Answered whole, though the detail reads only `filteredCount`.
+        const commitEvents = { totalCount: timeline, filteredCount: commitCount };
         return {
             ...node,
             ...details,
-            commits: { totalCount: 1 },
+            ...toDetailEvents(events, timeline - events.length),
+            commits: { totalCount: commitCount },
+            commitEvents,
             headRepository: { nameWithOwner: item.repository },
             statusCheckRollup: node.statusCheckRollup && {
                 ...node.statusCheckRollup,
-                contextPage: { totalCount: 0, nodes: [] },
+                contextPage: toHeadChecks(item.pullRequest),
             },
             latestReviews: { nodes: [] },
             reviews: toReviewPage(item, item.pullRequest.reviews, item.pullRequest.reviews.length),
@@ -3367,13 +3616,99 @@ function toProjectItemDetail(place: WorldProjectItem): ProjectItemDetailFieldsFr
  * The comments of an item before the `before`-th, `count` at most, as a page GitHub answers: its cursor is the
  * index of its first comment.
  */
-function toCommentPage(item: WorldItem, before: number, count: number) {
+function toCommentPage(item: WorldItem, before: number, count: number, reader: CommentReader) {
     const start = Math.max(0, before - count);
     return {
         totalCount: item.comments.length,
         pageInfo: { hasPreviousPage: start > 0, startCursor: start < before ? `C${start}` : null },
-        nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment)),
+        nodes: item.comments.slice(start, before).map(comment => toCommentNode(item, comment, reader)),
     };
+}
+
+/**
+ * The events an opened item reads at once: the first ones and the newest ones, as GitHub pages them; a cursor is the
+ * index of its event. `filteredCount` counts these events, `totalCount` the `others` of the timeline too: a pull
+ * request's comments and reviews, which GitHub counts in it whatever the `itemTypes`.
+ */
+function toDetailEvents<TEvent extends ThreadEventFieldsFragment>(events: readonly TEvent[], others: number) {
+    return {
+        firstEvents: toEventPage(events, 0, Math.min(FIRST_EVENTS, events.length)),
+        lastEvents: {
+            totalCount: events.length + others,
+            filteredCount: events.length,
+            ...toEventPage(events, Math.max(0, events.length - LAST_EVENTS), events.length),
+        },
+    };
+}
+
+/**
+ * The events between the cursors of `ThreadMiddle`'s variables, a page at most. As GitHub's, `after` and `before`
+ * compare the time only: the events at their cursor's time are left out (kedrzu/githq#219).
+ */
+function toMiddleEvents<TEvent extends ThreadEventFieldsFragment>(
+    events: readonly TEvent[],
+    variables: Readonly<Record<string, unknown>>,
+) {
+    const after = events[parseCursor(variables.eventsAfter) ?? -1];
+    const before = events[parseCursor(variables.eventsBefore) ?? -1];
+    const start = after ? events.findIndex(event => getEventTime(event) > getEventTime(after)) : 0;
+    const bound = before ? events.findIndex(event => getEventTime(event) >= getEventTime(before)) : events.length;
+    const from = start < 0 ? events.length : start;
+    const until = Math.max(from, bound < 0 ? events.length : bound);
+    const end = Math.min(from + MIDDLE_PAGE, until);
+    return {
+        pageInfo: { hasNextPage: end < until, endCursor: end > from ? `C${end - 1}` : null },
+        ...toEventPage(events, from, end),
+    };
+}
+
+/** The events from `start` to before `end` as a page of `timelineItems`, each with its cursor (`edges`). */
+function toEventPage<TEvent>(events: readonly TEvent[], start: number, end: number) {
+    const nodes = events.slice(start, end);
+    return { edges: nodes.map((_, index) => ({ cursor: `C${start + index}` })), nodes };
+}
+
+/** The node id and the time of an event added to an item; ids count the events of both kinds. */
+function toEventStamp(item: WorldItem, minutesAgo: number) {
+    return {
+        id: `EV_${item.id}_${item.events.length + (item.pullRequest?.events.length ?? 0) + 1}`,
+        createdAt: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+    };
+}
+
+/**
+ * The checks of a pull request's head as the opened pull request lists them: none by default, every one of them once
+ * some were named failed ({@link GitHubWorld.failChecks}), finished a minute ago.
+ */
+function toHeadChecks(pullRequest: WorldPullRequest) {
+    const failed = pullRequest.failedCheckNames;
+    if (failed.length === 0) {
+        return { totalCount: 0, nodes: [] };
+    }
+
+    const finishedAt = new Date(Date.now() - 60_000).toISOString();
+    const passed = Array.from({ length: CHECK_COUNT - failed.length }, (_, index) => `check-${index + 1}`);
+    const nodes = [...failed, ...passed].map((name, index) => ({
+        __typename: 'CheckRun' as const,
+        id: `CR_head_${index + 1}`,
+        name,
+        status: 'COMPLETED' as const,
+        conclusion: index < failed.length ? ('FAILURE' as const) : ('SUCCESS' as const),
+        detailsUrl: null,
+        startedAt: finishedAt,
+        completedAt: finishedAt,
+        checkSuite: { workflowRun: null },
+    }));
+    return { totalCount: nodes.length, nodes };
+}
+
+/** When an event happened: a commit's, when it was committed. */
+function getEventTime(event: ThreadEventFieldsFragment): string {
+    if (event.__typename === 'PullRequestCommit') {
+        return event.pushedCommit.committedDate;
+    }
+
+    return 'createdAt' in event ? event.createdAt : '';
 }
 
 function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams[], before: number) {
@@ -3391,15 +3726,24 @@ function toReviewPage(item: WorldItem, reviews: readonly GitHubWorldReviewParams
     };
 }
 
-function toCommentNode(item: WorldItem, comment: WorldComment): IssueCommentFieldsFragment {
+function toCommentNode(item: WorldItem, comment: WorldComment, reader: CommentReader): IssueCommentFieldsFragment {
+    const mayChange = reader.writes || comment.author === reader.viewer;
     return {
         id: comment.id,
         url: `${toUrl(item)}#issuecomment-${comment.id}`,
         createdAt: comment.createdAt,
-        lastEditedAt: null,
+        lastEditedAt: comment.lastEditedAt,
         author: createUser(comment.author),
+        body: comment.body,
         bodyHTML: `<p>${escapeHtml(comment.body)}</p>`,
+        viewerCanUpdate: mayChange,
+        viewerCanDelete: mayChange,
     };
+}
+
+/** Whether the viewer may push to the repository: with write access or more, as GitHub grants it. */
+function canPush(permission: RepositoryPermission): boolean {
+    return permission === 'WRITE' || permission === 'MAINTAIN' || permission === 'ADMIN';
 }
 
 function toAssignable(item: WorldItem) {
@@ -3633,11 +3977,15 @@ function toHeadRefOid(item: WorldItem) {
 }
 
 /** Pushes a commit to the pull request's branch: its head moves to a commit of its own. Returns the new head. */
-function pushCommit(item: WorldItem, pullRequest: WorldPullRequest, commit: Omit<WorldPushedCommit, 'oid'>): string {
+function pushCommit(
+    item: WorldItem,
+    pullRequest: WorldPullRequest,
+    commit: Omit<WorldPushedCommit, 'oid' | 'committedDate'>,
+): string {
     const previous = pullRequest.pushed ? Number.parseInt(pullRequest.pushed.oid.slice(0, 8), 16) : 0;
     const oid = `${(previous + 1).toString(16).padStart(8, '0')}${item.number.toString(16).padStart(32, 'e')}`;
-    pullRequest.pushed = { ...commit, oid };
     item.updatedAt = new Date().toISOString();
+    pullRequest.pushed = { ...commit, oid, committedDate: item.updatedAt };
     return oid;
 }
 

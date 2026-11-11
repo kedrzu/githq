@@ -8,6 +8,8 @@ export interface ItemEditing {
     readonly metadata: RepositoryMetadata | null;
     /** The signed-in user: "assign to me" comes first. */
     readonly viewerLogin: string;
+    /** The signed-in user's picture, beside the comment box. */
+    readonly viewerAvatarUrl: string;
     /** The projects the item can be added to; `null` until read. */
     readonly viewerProjects: readonly ViewerProject[] | null;
 }

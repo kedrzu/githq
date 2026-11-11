@@ -247,6 +247,7 @@ function threadOn(path: string, line: number): ReviewThread {
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
+        resolvedBy: null,
         comments: [],
     };
 }

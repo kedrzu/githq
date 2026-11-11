@@ -172,7 +172,7 @@ test('a label added to three selected items, one of which GitHub refuses, says "
     await expect(myWork.row(ISSUE).getByRole('img', { name: 'Selected', exact: true })).toBeHidden();
 });
 
-test('a comment GitHub refuses goes back into the empty comment box; over something typed since, its toast restores it', async ({
+test('a comment GitHub refuses stays in the thread as not sent, with why, and Retry posts it once GitHub takes it', async ({
     page,
     github,
 }) => {
@@ -184,25 +184,19 @@ test('a comment GitHub refuses goes back into the empty comment box; over someth
 
     await item.comment('Reproduced on Safari 18');
 
-    const toasts = shell.toasts.filter({ hasText: "Your comment on acme/web#12 wasn't posted" });
-    await expect(toasts.first()).toBeVisible();
-    await expect(item.commentBox).toHaveValue('Reproduced on Safari 18');
-    await expect(toasts.first().getByRole('button', { name: 'Restore comment' })).toBeHidden();
-
-    // Typed into the box while the next one is on its way: that one does not overwrite it.
-    const release = sample.world.holdEdits();
-    await item.commentBox.fill('Also on Chrome');
-    await item.commentBox.press('ControlOrMeta+Enter');
+    const failed = item.entry('Reproduced on Safari 18');
+    await expect(failed.getByText('Not sent', { exact: true })).toBeVisible();
+    await expect(failed.getByRole('alert')).toHaveText('Not sent: GitHub refused it: Commenting is disabled.');
+    // The box stays empty for what comes next; the thread says it, not a toast.
     await expect(item.commentBox).toHaveValue('');
-    await item.commentBox.fill('Typed meanwhile');
-    release();
+    await expect(shell.toasts).toHaveCount(0);
 
-    await expect(toasts).toHaveCount(2);
-    await expect(item.commentBox).toHaveValue('Typed meanwhile');
-    const restore = toasts.last().getByRole('button', { name: 'Restore comment' });
-    await restore.click();
-    await expect(item.commentBox).toHaveValue('Typed meanwhile\n\nAlso on Chrome');
-    await expect(restore).toBeHidden();
+    sample.world.stopFailingEdit(sample.issue, 'AddComment');
+    await failed.getByRole('button', { name: 'Retry' }).click();
+
+    await expect(item.entry('Reproduced on Safari 18').getByText('Not sent', { exact: true })).toBeHidden();
+    await expect(item.entry('Reproduced on Safari 18').getByRole('alert')).toHaveCount(0);
+    await expect.poll(() => sample.world.stateOf(sample.issue).comments).toEqual(['Reproduced on Safari 18']);
 });
 
 test("with a failed edit's toast showing, Escape closes the keyboard help over it first, then dismisses the toast", async ({

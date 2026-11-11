@@ -12,6 +12,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { waitUntil } from '@/testing/waitUntil.js';
 
 import { ReviewBlobStore } from '../ReviewBlobStore.js';
@@ -103,6 +104,7 @@ function createGitHub() {
                         data: {
                             node: {
                                 ...samplePullRequestDetailNode(PULL_REQUEST, '2026-01-01T00:00:00Z'),
+                                headRefOid: github.head,
                                 pendingReviews: {
                                     nodes: github.draft
                                         ? [
@@ -210,7 +212,7 @@ function createGitHub() {
 
 type TestGitHub = ReturnType<typeof createGitHub>;
 
-async function open(github: TestGitHub, login = `user-${crypto.randomUUID()}`) {
+async function open(github: TestGitHub, login = uniqueLogin()) {
     const session = createTestSession({
         login,
         answer: request => github.answer(request),
@@ -226,6 +228,25 @@ async function open(github: TestGitHub, login = `user-${crypto.randomUUID()}`) {
     await waitUntil(() => model.id !== null && model.threadsState.kind === 'ready', { timeoutMs: 2000 });
     await details.readAgain(PULL_REQUEST);
     return { session, model, login, writes: () => session.operations().filter(name => WRITES.includes(name)) };
+}
+
+/** Opened as the item's thread opens it: for its threads alone, with no list of files read. */
+async function openThreads(github: TestGitHub) {
+    const session = createTestSession({
+        login: uniqueLogin(),
+        answer: request => github.answer(request),
+    });
+    setIndexedDbPersistence(session.container);
+    const details = session.container.resolve(ItemDetailStore);
+    await session.container.resolve(ItemResolver).resolve(REFERENCE);
+    await details.readAgain(PULL_REQUEST);
+    const model = session.container.resolve(ReviewFiles).openThreads(REFERENCE);
+    if (!model) {
+        throw new Error('Signed in, so it opens');
+    }
+
+    await waitUntil(() => model.threadsState.kind === 'ready', { timeoutMs: 2000 });
+    return { session, model, writes: () => session.operations().filter(name => WRITES.includes(name)) };
 }
 
 function write(model: PullRequestFiles, text: string) {
@@ -673,7 +694,7 @@ test("a draft can be discarded before the first page of the list: its id is the 
     const github = createGitHub();
     github.draft = { id: 'DRAFT', comments: 1 };
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: request => github.answer(request),
     });
     setIndexedDbPersistence(session.container);
@@ -1032,6 +1053,38 @@ test('a reply starting a draft takes two requests; refused, the empty draft goes
     expect(github.draft).toEqual({ id: 'DRAFT', comments: 1 });
 });
 
+test('opened for its threads alone, a reply starts a draft on the head GitHub has now, not the one the item was read with', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { model, session, writes } = await openThreads(github);
+    github.head = 'head-2';
+    const id = reply(model, 'Agreed');
+
+    model.writing.send(id, 'startDraft');
+    await waitUntil(() => model.writing.targets.length === 0, { timeoutMs: 2000 });
+
+    expect(writes()).toEqual(['StartPullRequestReview', 'AddPullRequestReviewThreadReply']);
+    expect(session.github.requests.find(request => request.operation === 'StartPullRequestReview')?.variables).toEqual({
+        pullRequestId: PULL_REQUEST,
+        commitOID: 'head-2',
+    });
+});
+
+test('opened for its threads alone, a review sent with no draft names the head GitHub has now', async () => {
+    const github = createGitHub();
+    const { model, session, writes } = await openThreads(github);
+    github.head = 'head-2';
+
+    model.writing.submit({ event: 'APPROVE', body: '' });
+    await waitUntil(() => writes().length === 1 && model.writing.finish.kind === 'idle', { timeoutMs: 2000 });
+
+    expect(session.github.requests.find(request => request.operation === 'SendPullRequestReview')?.variables).toEqual({
+        pullRequestId: PULL_REQUEST,
+        commitOID: 'head-2',
+        event: 'APPROVE',
+    });
+});
+
 test('a reply box left with text comes back on its thread after a reload', async () => {
     const github = createGitHub();
     const { model, login } = await open(github);
@@ -1068,6 +1121,26 @@ test('resolving shows at once, goes at once beside an open draft, and a refusal 
     expect(model.threads[0]?.isResolved).toBe(true);
     expect(github.draft).toEqual({ id: 'DRAFT', comments: 2 });
     expect(writes()).toEqual(['ResolveReviewThread', 'ResolveReviewThread']);
+});
+
+test('a thread resolved here names the viewer at once; once read again, it names whoever GitHub says resolved it since', async () => {
+    const github = createGitHub();
+    github.threads = [sampleThread()];
+    const { session, model, login, writes } = await open(github);
+    await waitUntil(() => model.threads.length === 1, { timeoutMs: 2000 });
+
+    model.writing.setResolved('T_1', true);
+    expect(model.threads[0]).toMatchObject({ isResolved: true, resolvedBy: { login } });
+    // The threads read after the write: this GitHub names no one.
+    await waitUntil(() => writes().length === 1 && model.threads[0]?.resolvedBy === null, { timeoutMs: 2000 });
+
+    // hubot unresolves it and resolves it again on github.com.
+    const hubot = { login: 'hubot' };
+    github.threads = [{ ...sampleThread(), isResolved: true, resolvedBy: hubot }];
+    session.container.resolve(ReviewFiles).open(REFERENCE);
+    await waitUntil(() => model.threads[0]?.resolvedBy?.login === 'hubot', { timeoutMs: 2000 });
+
+    expect(model.threads[0]).toMatchObject({ isResolved: true, resolvedBy: hubot });
 });
 
 test('after signing out nothing more goes out, a reply or a resolve', async () => {

@@ -96,8 +96,8 @@ export const ReviewWritingFactory = defineFactory({
         const statusesRef = shallowRef<ReadonlyMap<string, ReviewCommentStatus>>(new Map());
         const finishRef = shallowRef<ReviewFinishState>(REVIEW_FINISH_IDLE);
         const submissionRef = shallowRef(NO_REVIEW_SUBMISSION);
-        /** By thread: the state it shows until the threads read again say so themselves. */
-        const resolvedRef = shallowRef<ReadonlyMap<string, boolean>>(new Map());
+        /** By thread: the state it shows, and who resolved it, until the threads read again say so themselves. */
+        const resolvedRef = shallowRef<ReadonlyMap<string, ThreadResolution>>(new Map());
         const resolveFailuresRef = shallowRef<ReadonlyMap<string, ReviewWriteFailure>>(new Map());
         /** A draft was discarded here and none is open since: a read right after can still list its comments. */
         const draftDiscardedRef = shallowRef(false);
@@ -106,8 +106,8 @@ export const ReviewWritingFactory = defineFactory({
             return resolvedRef.value.size === 0
                 ? read
                 : read.map(thread => {
-                      const isResolved = resolvedRef.value.get(thread.id);
-                      return isResolved === undefined ? thread : { ...thread, isResolved };
+                      const resolution = resolvedRef.value.get(thread.id);
+                      return resolution ? { ...thread, ...resolution } : thread;
                   });
         });
 
@@ -450,7 +450,7 @@ export const ReviewWritingFactory = defineFactory({
                     return await sendReply(reply, way);
                 }
                 case 'startDraft': {
-                    const commitOID = params.getHeadRefOid();
+                    const commitOID = pullRequestId === null ? null : await readHeadRefOid(pullRequestId);
                     if (pullRequestId === null || commitOID === null) {
                         throw new Error('The pull request has not been read');
                     }
@@ -523,7 +523,7 @@ export const ReviewWritingFactory = defineFactory({
             }
 
             resolvesInFlight.add(threadId);
-            setInMap(resolvedRef, threadId, resolved);
+            setInMap(resolvedRef, threadId, { isResolved: resolved, resolvedBy: resolved ? { login } : null });
             setInMap(resolveFailuresRef, threadId, null);
             enqueue(async () => {
                 const failure = await catchWrite(async () => {
@@ -661,13 +661,28 @@ export const ReviewWritingFactory = defineFactory({
             }
 
             const pullRequestId = params.getPullRequestId();
-            // The head the reader has read, so that an approval names what was read.
-            const commitOID = params.getHeadRefOid();
+            const commitOID = pullRequestId === null ? null : await readHeadRefOid(pullRequestId);
             if (pullRequestId === null || commitOID === null) {
                 throw new Error('The pull request has not been read');
             }
 
             await sdk.SendPullRequestReview({ pullRequestId, commitOID, event, body: text });
+        }
+
+        /**
+         * The commit a review starts on or names: the head the files were read at, so that an approval names what was read.
+         * Opened for its threads alone (the item's thread), the model has read none, and the item's row can be a poll behind
+         * a push: the pull request is read again, for the review not to land on a commit that is no longer its head.
+         */
+        async function readHeadRefOid(pullRequestId: string) {
+            const read = params.getHeadRefOid();
+            if (read !== null) {
+                return read;
+            }
+
+            await details.readAgain(pullRequestId);
+            const item = details.getItem(pullRequestId);
+            return item?.kind === 'pullRequest' ? item.headRefOid : null;
         }
 
         /** What the write's refusal said, `null` when it went through. */
@@ -750,6 +765,12 @@ export const ReviewWritingFactory = defineFactory({
         }
     },
 });
+
+/** A thread's state drawn over the one read: resolved by the viewer, or opened again. */
+interface ThreadResolution {
+    readonly isResolved: boolean;
+    readonly resolvedBy: ReviewThread['resolvedBy'];
+}
 
 class NoDraftError extends Error {}
 

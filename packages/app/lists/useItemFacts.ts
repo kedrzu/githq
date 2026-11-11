@@ -6,8 +6,6 @@ import { reactive } from '@nzyme/vue-utils/reactivity/reactive.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
     CircleCheck,
-    CircleDot,
-    CircleSlash,
     CircleX,
     Eye,
     GitMerge,
@@ -43,7 +41,7 @@ import { formatList } from '@/utils/formatList.js';
 
 import * as l from './useItemFacts.loc.js';
 import { getItemPeople } from './utils/getItemPeople.js';
-import { getPullRequestKind } from './utils/getPullRequestKind.js';
+import { getItemKind } from './utils/getItemKind.js';
 
 /** Which item and how it is listed. */
 export interface UseItemFactsOptions {
@@ -63,6 +61,14 @@ export interface UseItemFactsOptions {
     /** What this session knows of the pull request's last merge that did not end merged, while it speaks for it (D15). */
     readonly mergeRecord?: MaybeRefOrGetter<MergeRecord | null>;
 }
+
+/** An issue's state read out, by the tone of its icon: closed as not planned is drawn as a draft is. */
+const ISSUE_LABELS = {
+    open: l.openIssue,
+    done: l.closedIssue,
+    draft: l.notPlannedIssue,
+    closed: l.notPlannedIssue,
+} as const;
 
 /** The kind and state of an item, as its icon. */
 export interface ItemKindFact {
@@ -203,20 +209,14 @@ export function useItemFacts(options: UseItemFactsOptions): ItemFactsViewModel {
     return reactive<ItemFactsViewModel>({ kind, reference, people, age, status, checks, size, projectField });
 
     function getKind(listed: Item): ItemKindFact {
+        const look = getItemKind(listed);
         if (listed.kind === 'issue') {
-            if (listed.state === 'OPEN') {
-                return { icon: CircleDot, label: t(l.openIssue), tone: 'open' };
-            }
-
-            return listed.stateReason === 'COMPLETED' || listed.stateReason === null
-                ? { icon: CircleCheck, label: t(l.closedIssue), tone: 'done' }
-                : { icon: CircleSlash, label: t(l.notPlannedIssue), tone: 'draft' };
+            return { ...look, label: t(ISSUE_LABELS[look.tone]) };
         }
 
-        const pullRequestKind = getPullRequestKind(listed);
         // Its kind and state read out, by the tone of its icon.
-        const key: `${ItemKindFact['tone']}PullRequest` = `${pullRequestKind.tone}PullRequest`;
-        return { ...pullRequestKind, label: t(l[key]) };
+        const key: `${ItemKindFact['tone']}PullRequest` = `${look.tone}PullRequest`;
+        return { ...look, label: t(l[key]) };
     }
 
     /** PM37: "Merged · 2m"; without GitHub's time of the merge, merged alone. */

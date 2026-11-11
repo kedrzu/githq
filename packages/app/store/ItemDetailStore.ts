@@ -1,4 +1,9 @@
 import type { GitHubGraphQLErrorEntry } from '@githq/github/GitHubApiError.js';
+import type {
+    CommentPageFieldsFragment,
+    IssueTimelineItemsItemType,
+    PullRequestTimelineItemsItemType,
+} from '@githq/github/generated.gen.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -19,7 +24,7 @@ import type { ItemDetailVersion } from './ItemDetailPersistence.js';
 import type { ItemDetail } from './ItemDetailTypes.js';
 import { ItemStore } from './ItemStore.js';
 import type { Item } from './ItemTypes.js';
-import { toItemComments, toItemDetail, toItemReviewPage } from './toItemDetail.js';
+import { getCursorAfter, toItemComments, toItemDetail, toItemReviewPage, toThreadEvents } from './toItemDetail.js';
 
 /**
  * How long an opened item's detail is trusted without asking GitHub again. What changes without moving the
@@ -28,6 +33,70 @@ import { toItemComments, toItemDetail, toItemReviewPage } from './toItemDetail.j
 const RECHECK_AFTER_MS = 60_000;
 /** How long a kept detail survives without being read again: the copy must not grow without end. */
 const KEEP_DETAIL_MS = 30 * 24 * 60 * 60_000;
+
+/** The events both an issue's and a pull request's thread show (item-activity F13, "issues too", closed, reopened). */
+const SHARED_EVENT_TYPES: IssueTimelineItemsItemType[] = [
+    'ASSIGNED_EVENT',
+    'CLOSED_EVENT',
+    'CROSS_REFERENCED_EVENT',
+    'DEMILESTONED_EVENT',
+    'LABELED_EVENT',
+    'MILESTONED_EVENT',
+    'RENAMED_TITLE_EVENT',
+    'REOPENED_EVENT',
+    'UNASSIGNED_EVENT',
+    'UNLABELED_EVENT',
+];
+
+/** The events of an issue's thread githq reads (F13, right): comments and the events it never shows left out. */
+const ISSUE_EVENT_TYPES: IssueTimelineItemsItemType[] = [
+    ...SHARED_EVENT_TYPES,
+    'ADDED_TO_PROJECT_V2_EVENT',
+    'CONNECTED_EVENT',
+    'DISCONNECTED_EVENT',
+    'ISSUE_TYPE_ADDED_EVENT',
+    'ISSUE_TYPE_CHANGED_EVENT',
+    'ISSUE_TYPE_REMOVED_EVENT',
+    'LOCKED_EVENT',
+    'PARENT_ISSUE_ADDED_EVENT',
+    'PARENT_ISSUE_REMOVED_EVENT',
+    'PINNED_EVENT',
+    'PROJECT_V2_ITEM_STATUS_CHANGED_EVENT',
+    'REFERENCED_EVENT',
+    'REMOVED_FROM_PROJECT_V2_EVENT',
+    'SUB_ISSUE_ADDED_EVENT',
+    'SUB_ISSUE_REMOVED_EVENT',
+    'TRANSFERRED_EVENT',
+    'UNLOCKED_EVENT',
+    'UNPINNED_EVENT',
+];
+
+/**
+ * The events of a pull request's thread githq reads (F13, left): the shared ones, its commits and its own events — no
+ * issue-only ones. Reviews and code threads are not read yet.
+ */
+const PULL_REQUEST_EVENT_TYPES: PullRequestTimelineItemsItemType[] = [
+    ...SHARED_EVENT_TYPES,
+    'BASE_REF_CHANGED_EVENT',
+    'CONVERT_TO_DRAFT_EVENT',
+    'HEAD_REF_DELETED_EVENT',
+    'HEAD_REF_FORCE_PUSHED_EVENT',
+    'MERGED_EVENT',
+    'PULL_REQUEST_COMMIT',
+    'READY_FOR_REVIEW_EVENT',
+    'REVIEW_DISMISSED_EVENT',
+    'REVIEW_REQUEST_REMOVED_EVENT',
+    'REVIEW_REQUESTED_EVENT',
+];
+
+/**
+ * The variables `ItemDetail`, `ItemDetails` and `ThreadMiddle` read the thread's events with: GitHub filters a
+ * timeline by item types, and the issue's and the pull request's are two enums.
+ */
+const THREAD_EVENT_TYPES = {
+    issueEventTypes: ISSUE_EVENT_TYPES,
+    pullRequestEventTypes: PULL_REQUEST_EVENT_TYPES,
+};
 
 /** The signed-in user the details are read for, captured when they signed in. */
 interface Session {
@@ -86,6 +155,7 @@ export const ItemDetailStore = defineService({
             ensure,
             readAgain,
             loadOlderComments,
+            loadThreadMiddle,
             loadOlderReviews,
             needsFetch,
             fetchDetails,
@@ -121,11 +191,7 @@ export const ItemDetailStore = defineService({
                 return;
             }
 
-            const updated = change(detail);
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            store(current, change(detail));
         }
 
         /**
@@ -235,7 +301,7 @@ export const ItemDetailStore = defineService({
 
             const errors: GitHubGraphQLErrorEntry[] = [];
             const answer = current.account.sdk.ItemDetails(
-                { ids: wanted },
+                { ids: wanted, ...THREAD_EVENT_TYPES },
                 { onPartialErrors: found => errors.push(...found) },
             );
             const settled = answer.then(
@@ -305,19 +371,82 @@ export const ItemDetailStore = defineService({
                 return;
             }
 
-            const older = toItemComments(node.commentPage);
-            const updated: ItemDetail = {
-                ...detail,
-                comments: {
-                    totalCount: older.totalCount,
-                    nodes: [...older.nodes, ...detail.comments.nodes],
-                    olderCursor: older.olderCursor,
-                },
-            };
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            store(current, withCommentPage(detail, node.commentPage));
+        }
+
+        /**
+         * Reads a page of the thread's middle (`ThreadMiddle`: 100 events from the oldest held on, and 100 comments before
+         * the oldest held, each only while some are not held) and puts it in place: the events after the oldest ones, the
+         * comments before the newest ones. Rejects when GitHub does not answer.
+         */
+        async function loadThreadMiddle(id: string) {
+            const current = session;
+            const known = detailsRef.value.get(id);
+            if (!current || !known) {
+                return;
+            }
+
+            const { middle } = known.events;
+            const commentsBefore = known.comments.olderCursor;
+            if (!middle && !commentsBefore) {
+                return;
+            }
+
+            const { node } = await current.account.sdk.ThreadMiddle({
+                id,
+                readEvents: middle !== null,
+                eventsAfter: middle?.after,
+                eventsBefore: middle?.before,
+                readComments: commentsBefore !== null,
+                commentsBefore,
+                ...THREAD_EVENT_TYPES,
+            });
+            const detail = detailsRef.value.get(id);
+            // Read again meanwhile: the cursors these were read from may not be the detail's any more. Compared as
+            // values — a read again that found the same middle holds it in a new object.
+            if (
+                !isCurrent(current) ||
+                !detail ||
+                detail.events.middle?.after !== middle?.after ||
+                detail.events.middle?.before !== middle?.before ||
+                detail.comments.olderCursor !== commentsBefore
+            ) {
+                return;
+            }
+
+            if (!node || !('id' in node)) {
+                logger.warn('The middle of a thread could not be read', { id });
+                return;
+            }
+
+            let updated: ItemDetail = detail;
+            if (middle && node.eventPage) {
+                const { events } = updated;
+                const newest = new Set(events.newest.map(event => event.id));
+                const held = new Set([...newest, ...events.oldest.map(event => event.id)]);
+                // Read with an overlap (`getCursorAfter`): those held already are left out.
+                const page = toThreadEvents(node.eventPage.nodes, id);
+                const read = page.filter(event => !held.has(event.id));
+                // Read up to the newest held, or past them when the end is not bound: nothing is left between.
+                const meets = page.some(event => newest.has(event.id));
+                const { hasNextPage, endCursor } = node.eventPage.pageInfo;
+                // A page of one time has no older event to go on from: the next one may skip some at that time.
+                const after = getCursorAfter(node.eventPage) ?? endCursor;
+                updated = {
+                    ...updated,
+                    events: {
+                        ...events,
+                        oldest: [...events.oldest, ...read],
+                        middle: hasNextPage && !meets && after !== null ? { after, before: middle.before } : null,
+                    },
+                };
+            }
+
+            if (commentsBefore && node.commentPage) {
+                updated = withCommentPage(updated, node.commentPage);
+            }
+
+            store(current, updated);
         }
 
         /**
@@ -345,15 +474,11 @@ export const ItemDetailStore = defineService({
             }
 
             const older = toItemReviewPage(node.reviews);
-            const updated: ItemDetail = {
+            store(current, {
                 ...detail,
                 reviewSummaries: [...older.reviewSummaries, ...detail.reviewSummaries],
                 olderReviewCursor: older.olderReviewCursor,
-            };
-            detailsRef.value.set(id, updated);
-            triggerRef(detailsRef);
-            write(current, [updated]);
-            tabs.publish({ kind: 'details', details: [updated] });
+            });
         }
 
         /**
@@ -480,7 +605,7 @@ export const ItemDetailStore = defineService({
             try {
                 const errors: GitHubGraphQLErrorEntry[] = [];
                 const { node } = await current.account.sdk.ItemDetail(
-                    { id },
+                    { id, ...THREAD_EVENT_TYPES },
                     { onPartialErrors: found => errors.push(...found) },
                 );
                 if (!isCurrent(current)) {
@@ -547,6 +672,14 @@ export const ItemDetailStore = defineService({
             tabs.publish({ kind: 'details', details: kept });
         }
 
+        /** Puts one detail changed in memory, on disk and in the user's other tabs. */
+        function store(current: Session, detail: ItemDetail) {
+            detailsRef.value.set(detail.id, detail);
+            triggerRef(detailsRef);
+            write(current, [detail]);
+            tabs.publish({ kind: 'details', details: [detail] });
+        }
+
         function write(current: Session, details: readonly ItemDetail[]) {
             persistence.saveDetails(current.account.login, details).catch((error: unknown) => {
                 logger.warn('Could not keep item details; they are read again from GitHub next time', { error });
@@ -584,7 +717,36 @@ export const ItemDetailStore = defineService({
  * "show older" is not undone by a read in the background.
  */
 function withOlderRead(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
-    return withOlderReviews(previous, withOlderComments(previous, fresh));
+    return withOlderReviews(previous, withOlderEvents(previous, withOlderComments(previous, fresh)));
+}
+
+/**
+ * The thread's middle read before (`loadThreadMiddle`) stays, after the oldest events of the detail read again: what
+ * is still not held lies after it, before the newest events read now — or nothing, where the two meet.
+ */
+function withOlderEvents(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
+    const held = previous?.events;
+    const { events } = fresh;
+    if (!held || !events.middle || held.oldest.length <= events.oldest.length) {
+        return fresh;
+    }
+
+    const newest = new Set(events.newest.map(event => event.id));
+    const read = held.middle ? held.oldest : [...held.oldest, ...held.newest];
+    const meets = read.some(event => newest.has(event.id));
+    // Read whole before, and more than a page newer since: where the middle starts is not known.
+    if (!meets && !held.middle) {
+        return fresh;
+    }
+
+    return {
+        ...fresh,
+        events: {
+            ...events,
+            oldest: read.filter(event => !newest.has(event.id)),
+            middle: meets || !held.middle ? null : { after: held.middle.after, before: events.middle.before },
+        },
+    };
 }
 
 function withOlderReviews(previous: ItemDetail | undefined, fresh: ItemDetail): ItemDetail {
@@ -627,6 +789,20 @@ function withOlderComments(previous: ItemDetail | undefined, fresh: ItemDetail):
             ...fresh.comments,
             nodes: [...previous.comments.nodes.slice(0, joinAt), ...fresh.comments.nodes],
             olderCursor: previous.comments.olderCursor,
+        },
+    };
+}
+
+/** The detail with a page of older comments (`MoreComments`, `ThreadMiddle`) put before those it holds. */
+function withCommentPage(detail: ItemDetail, page: CommentPageFieldsFragment): ItemDetail {
+    const older = toItemComments(page);
+    return {
+        ...detail,
+        comments: {
+            ...detail.comments,
+            totalCount: older.totalCount,
+            nodes: [...older.nodes, ...detail.comments.nodes],
+            olderCursor: older.olderCursor,
         },
     };
 }

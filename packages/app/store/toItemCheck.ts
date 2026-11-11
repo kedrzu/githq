@@ -24,6 +24,7 @@ export function toItemCheck(context: PullRequestCheckFieldsFragment): ItemCheck 
                     context.status !== 'COMPLETED' || context.conclusion === null
                         ? 'pending'
                         : classifyCheckRun(context.conclusion),
+                cancelled: context.conclusion === 'CANCELLED',
                 url: context.detailsUrl,
                 startedAt: context.startedAt,
                 completedAt: context.completedAt,
@@ -35,6 +36,7 @@ export function toItemCheck(context: PullRequestCheckFieldsFragment): ItemCheck 
                 name: context.context,
                 workflow: null,
                 state: classifyStatus(context.state),
+                cancelled: false,
                 url: context.targetUrl,
                 startedAt: context.createdAt,
                 completedAt: null,

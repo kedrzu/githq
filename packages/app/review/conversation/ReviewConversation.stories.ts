@@ -205,7 +205,7 @@ function quietDetail(): PullRequestDetail {
         bodyHtml: '',
         reviewSummaries: [],
         olderReviewCursor: null,
-        comments: { totalCount: 0, nodes: [], olderCursor: null },
+        comments: { totalCount: 0, first: [], nodes: [], olderCursor: null },
     };
 }
 
@@ -214,11 +214,14 @@ function commentsOf(count: number, olderCursor: string | null, totalCount = coun
         id: `C_${index + 1}`,
         url: 'https://github.com/fitloop/webapp/pull/1202#issuecomment-1',
         author: { login: 'sofiab', avatarUrl: '' },
+        body: `Comment ${index + 1}`,
         bodyHtml: `<p>Comment ${index + 1}</p>`,
+        viewerCanUpdate: false,
+        viewerCanDelete: false,
         createdAt: new Date(Date.UTC(2026, 9, 30, 10, index)).toISOString(),
         lastEditedAt: null,
     }));
-    return { totalCount, nodes, olderCursor };
+    return { totalCount, first: [], nodes, olderCursor };
 }
 
 function summary(id: string, state: ItemReviewSummary['state'], bodyHtml: string): ItemReviewSummary {

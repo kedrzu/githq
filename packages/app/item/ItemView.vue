@@ -1,5 +1,6 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. `R` puts the cursor in the comment box (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` opens the item menu at closing or reopening it — an issue as completed or not planned. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
+import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -9,9 +10,7 @@ import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserve
 import type { LucideIcon } from 'lucide-vue-next';
 import {
   AppWindow,
-  CircleCheck,
   CircleCheckBig,
-  CircleDot,
   CircleSlash,
   GitPullRequestClosed,
   ChevronDown,
@@ -36,6 +35,7 @@ import type { Command, CommandOption } from '@/commands/CommandTypes.js';
 import { useCommands } from '@/commands/useCommands.js';
 import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { StateOption } from '@/commands/useEditCommands.js';
+import { applyMarkdownTool } from '@/components/applyMarkdownTool.js';
 import Avatar from '@/components/Avatar.vue';
 import IconButton from '@/components/IconButton.vue';
 import LabelPill from '@/components/LabelPill.vue';
@@ -49,13 +49,16 @@ import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
+import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
-import { getPullRequestKind } from '@/lists/utils/getPullRequestKind.js';
+import { getItemKind } from '@/lists/utils/getItemKind.js';
 import { countMergeChecks } from '@/merge/countMergeChecks.js';
 import { isAutoMergeAllowed } from '@/merge/isAutoMergeAllowed.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import type { MergeCheck } from '@/merge/MergeTypes.js';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import type { ReviewWriting } from '@/review/writing/ReviewWriting.js';
 import { Browser } from '@/services/Browser.js';
 import { WINDOW_DRAG_REGION } from '@/shell/windowControls.js';
 import type { ItemDetail } from '@/store/ItemDetailTypes.js';
@@ -69,9 +72,6 @@ import { isScreenKey } from '@/utils/isScreenKey.js';
 import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
-import GitHubHtml from './GitHubHtml.vue';
-import ItemActivity from './ItemActivity.vue';
-import ItemComposer from './ItemComposer.vue';
 import type { ItemEditing } from './ItemEditing.js';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
@@ -86,6 +86,8 @@ import PullRequestReviews from './PullRequestReviews.vue';
 import StackBar from './StackBar.vue';
 import StackMap from './StackMap.vue';
 import type { StackNeighbours } from './StackMap.vue';
+import ItemThread from './thread/ItemThread.vue';
+import ItemThreadComposer from './thread/ItemThreadComposer.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -100,9 +102,13 @@ const props = withDefaults(
     closes?: readonly Item[];
     /** Epoch ms the ages are counted to. */
     now: number;
-    /** Reads the comments not read yet. */
-    loadAllComments: () => Promise<void>;
-    /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked. */
+    /** Reads the middle of the thread not read yet, its events and comments (the fold, F5). */
+    loadThreadMiddle: () => Promise<void>;
+    /** None of its detail is on this device and GitHub did not give it (F16). */
+    detailFailed?: boolean;
+    /** Reads its detail again after {@link detailFailed}. */
+    readDetailAgain?: () => Promise<void>;
+    /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked in the thread. */
     linkedAnchor?: string;
     /** What the user may change and the pickers offer; without it the view only shows. */
     editing?: ItemEditing | null;
@@ -117,6 +123,22 @@ const props = withDefaults(
     mergeChecks?: readonly MergeCheck[] | null;
     /** The viewer may turn auto-merge on, as its merge options said; `null` until they are read. */
     viewerCanEnableAutoMerge?: boolean | null;
+    /** The user's comments GitHub did not take, in the order they were written. */
+    failedComments?: readonly FailedComment[];
+    /** The user's edits of its comments and description GitHub did not take. */
+    failedEdits?: readonly FailedTextEdit[];
+    /** A pull request's review threads, as code review reads them: its thread's reviews hold them. */
+    reviewThreads?: readonly ReviewThread[];
+    /** They are being read, none read before: the thread is busy. */
+    reviewThreadsLoading?: boolean;
+    /** Code review's writing of the pull request: the viewer's draft review, replies and resolving go through it. */
+    reviewWriting?: ReviewWriting | null;
+    /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
+    reviewDraftFirst?: boolean;
+    /** When the user last looked at the item before opening it (`ItemLookedStore`): its thread marks what is new since. */
+    lookedAt?: number | null;
+    /** When the user opened the item: what they post after it does not move the thread's line. */
+    openedAt?: number | null;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -135,6 +157,12 @@ const emit = defineEmits<{
   review: [];
   /** The user changed something. */
   edit: [request: EditRequest];
+  /** A comment GitHub did not take is to be sent again. */
+  retryComment: [id: number];
+  /** A comment GitHub did not take is to be dropped. */
+  discardComment: [id: number];
+  /** An edit GitHub did not take, of a comment or (`null`) the description, was cancelled. */
+  discardEdit: [commentId: string | null];
   /** "Add to project" opened: the projects to offer are wanted. */
   needProjects: [];
   /** "Merge…" (`⇧M`): the merge panel is wanted for the pull request. */
@@ -155,7 +183,8 @@ const browser = useService(Browser);
 const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
 const editCommands = useEditCommands();
-const composerRef = useTemplateRef<InstanceType<typeof ItemComposer>>('composer');
+const composerRef = useTemplateRef<InstanceType<typeof ItemThreadComposer>>('composer');
+const threadRef = useTemplateRef<InstanceType<typeof ItemThread>>('thread');
 const propertiesRef = useTemplateRef<InstanceType<typeof ItemProperties>>('properties');
 const projectsRef = useTemplateRef<InstanceType<typeof ItemProjects>>('projects');
 const reviewsRef = useTemplateRef<InstanceType<typeof PullRequestReviews>>('reviews');
@@ -168,8 +197,6 @@ const itemMenuOpen = ref(false);
 const stackRowsInView = ref(true);
 /** In a panel, a copy of the stack's rows dropped from the bar over the content (D27, SP84). */
 const stackDropped = ref(false);
-/** The action whose submenu the item menu opens at (`⇧X`: close or reopen). */
-const itemMenuStart = ref<string | null>(null);
 
 // D25: every pull request of a stack opens with its rows in view, and the router opens it at the top
 // (`shell/routeScroll.ts`). Opening one takes the dropped rows away (D27).
@@ -194,12 +221,6 @@ useIntersectionObserver({
   onHidden: () => {
     stackRowsInView.value = false;
   },
-});
-
-watch(itemMenuOpen, isOpen => {
-  if (!isOpen) {
-    itemMenuStart.value = null;
-  }
 });
 
 const split = computed(() => props.arrangement !== 'panel');
@@ -239,28 +260,50 @@ const issueType = computed(() => (props.item.kind === 'issue' ? props.item.issue
 
 const state = computed((): { icon: LucideIcon; tone: StatePillTone; text: string } => {
   const { item } = props;
-  if (item.kind === 'issue') {
-    if (item.state === 'OPEN') {
-      return { icon: CircleDot, tone: 'open', text: t(l.open) };
-    }
-
-    switch (item.stateReason) {
-      case 'NOT_PLANNED':
-        return { icon: CircleSlash, tone: 'draft', text: t(l.closedNotPlanned) };
-      case 'DUPLICATE':
-        return { icon: CircleSlash, tone: 'draft', text: t(l.closedDuplicate) };
-      default:
-        return { icon: CircleCheck, tone: 'done', text: t(l.closedCompleted) };
-    }
+  const kind = getItemKind(item);
+  if (item.kind === 'pullRequest') {
+    // Its state in words, by the tone of its icon.
+    const key: `${StatePillTone}PullRequest` = `${kind.tone}PullRequest`;
+    return { ...kind, text: t(l[key]) };
   }
 
-  const kind = getPullRequestKind(item);
-  // Its state in words, by the tone of its icon.
-  const key: `${StatePillTone}PullRequest` = `${kind.tone}PullRequest`;
-  return { ...kind, text: t(l[key]) };
+  if (item.state === 'OPEN') {
+    return { ...kind, text: t(l.open) };
+  }
+
+  switch (item.stateReason) {
+    case 'NOT_PLANNED':
+      return { ...kind, text: t(l.closedNotPlanned) };
+    case 'DUPLICATE':
+      return { ...kind, text: t(l.closedDuplicate) };
+    default:
+      return { ...kind, text: t(l.closedCompleted) };
+  }
 });
 
 const permissions = computed(() => props.editing?.permissions ?? null);
+/** Without `editing` nothing is known to stop a comment, as before the repository is read. */
+const canComment = computed(() => props.editing == null || permissions.value?.comment === true);
+/** Why the user can't comment, when the composer can say it: an archived repository, a locked conversation. */
+const readOnly = computed(() => {
+  const { editing } = props;
+  if (!editing || canComment.value) {
+    return null;
+  }
+
+  if (editing.metadata?.isArchived) {
+    return 'archived';
+  }
+
+  return props.detail?.locked ? 'locked' : null;
+});
+const viewer = computed(() =>
+  props.editing ? { login: props.editing.viewerLogin, avatarUrl: props.editing.viewerAvatarUrl } : null,
+);
+/** Who opened the item and who commented on it, in the thread's order: whom `@` suggests first. */
+const threadPeople = computed(() =>
+  filterNotNull([props.item.author, ...(props.detail?.comments.nodes ?? []).map(comment => comment.author)]),
+);
 const reviewerOptions = computed(() =>
   permissions.value?.reviewers && props.editing?.metadata
     ? pickerOptions.assignees([props.editing.metadata], props.editing.viewerLogin)
@@ -328,6 +371,11 @@ const itemMenuSections = computed(() =>
 defineExpose({
   /** Puts the cursor in the comment box. */
   focusComposer: () => composerRef.value?.focus(),
+  /**
+   * Before the item is left: an edit with changes in its thread asks first (`true`), and the item stays; its Discard
+   * calls `go`, to leave as the user was.
+   */
+  askToLeave: (go: () => void) => threadRef.value?.askToLeave(go) ?? false,
 });
 
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
@@ -418,7 +466,7 @@ function getEditCommands(): Command[] {
     now: props.now,
     stateOptions: stateActions.value,
     stateTitle: getStateTitle(),
-    edit: request => emit('edit', request),
+    edit,
     merge: () => emit('merge'),
     mergeChecks: checkCounts.value,
     viewerCanEnableAutoMerge: props.viewerCanEnableAutoMerge,
@@ -432,9 +480,9 @@ function getEditCommands(): Command[] {
       milestone: () => propertiesRef.value?.openPicker('milestone') ?? false,
       issueType: () => propertiesRef.value?.openPicker('issueType') ?? false,
       reviewers: () => reviewsRef.value?.openPicker() ?? false,
+      // Only an open issue has two ways to close: `⇧X` takes the usual one, as the composer's button does.
       state: () => {
-        itemMenuStart.value = 'item.state';
-        itemMenuOpen.value = true;
+        edit({ kind: 'close', reason: 'COMPLETED' });
         return true;
       },
       status: () => projectsRef.value?.openByRole('status') ?? false,
@@ -442,6 +490,41 @@ function getEditCommands(): Command[] {
       iteration: () => projectsRef.value?.openByRole('iteration') ?? false,
     },
   });
+}
+
+/**
+ * A close of the item — by the composer's button, `⇧X` or a menu — takes what is typed in the comment box along: the
+ * comment goes first, then the close, and the box empties. A reopen leaves it.
+ */
+function edit(request: EditRequest) {
+  const body = commentDraft.value.trim();
+  if (request.kind === 'close' && body) {
+    emit('edit', { kind: 'comment', body, keptInThread: true });
+    commentDraft.value = '';
+  }
+
+  emit('edit', request);
+}
+
+/**
+ * Quote reply: the text quoted (`> ` on every line, then a blank line), without its HTML comments, after what is typed
+ * in the comment box, which takes the cursor with its end in view.
+ */
+function quoteReply(body: string) {
+  // Where the composer takes no comment, the quote would sit in a draft no one sees.
+  if (!canComment.value) {
+    return;
+  }
+
+  // HTML comments (an issue template's hints) render as nothing: quoted, they would show.
+  const text = body
+    .replace(/<!--[\s\S]*?-->/gu, '')
+    .replace(/\n{3,}/gu, '\n\n')
+    .trim();
+  const quote = `${applyMarkdownTool(text, { start: 0, end: text.length }, 'quote').insert}\n\n`;
+  const typed = commentDraft.value;
+  commentDraft.value = typed.trim() ? `${typed.trimEnd()}\n\n${quote}` : quote;
+  void composerRef.value?.focus();
 }
 
 function getItemCommands(): Command[] {
@@ -453,8 +536,8 @@ function getItemCommands(): Command[] {
       section: 'item',
       key: EDIT_KEYS.comment,
       icon: MessageSquare,
-      when: () => editing == null || permissions.value?.comment === true,
-      run: () => composerRef.value?.focus(),
+      when: () => canComment.value,
+      run: () => void composerRef.value?.focus(),
     },
   ];
   if (permissions.value?.addToProject) {
@@ -615,10 +698,7 @@ function getProjectOptions(): CommandOption[] {
             />
           </button>
         </template>
-        <CommandMenuSections
-          :sections="itemMenuSections"
-          :open-id="itemMenuStart"
-        />
+        <CommandMenuSections :sections="itemMenuSections" />
         <MenuSeparator />
         <MenuLabel>
           <span :class="css.itemView_menuFooter">
@@ -707,6 +787,7 @@ function getProjectOptions(): CommandOption[] {
               ref="scroll"
               :class="css.itemView_scroll"
               :data-route-scroll="`item-main:${item.id}`"
+              data-suggestions-boundary
               @scroll.passive="onContentScroll"
             >
               <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
@@ -821,35 +902,50 @@ function getProjectOptions(): CommandOption[] {
                 />
               </template>
 
-              <template v-if="detail">
-                <GitHubHtml
-                  v-if="detail.bodyHtml"
-                  :html="detail.bodyHtml"
-                />
-                <p
-                  v-else
-                  :class="css.itemView_note"
-                >
-                  {{ t(l.noDescription) }}
-                </p>
-              </template>
-
-              <ItemActivity
-                :comments="detail?.comments ?? null"
+              <ItemThread
+                ref="thread"
+                :item="item"
+                :detail="detail"
                 :now="now"
-                :load-all="loadAllComments"
+                :load-middle="loadThreadMiddle"
+                :failed="detailFailed"
+                :read-again="readDetailAgain"
                 :linked-anchor="linkedAnchor"
-              />
+                :failed-comments="failedComments"
+                :viewer="viewer"
+                :can-retry="editing != null && canComment"
+                :can-quote="canComment"
+                :failed-edits="failedEdits"
+                :people="threadPeople"
+                :review-threads="reviewThreads"
+                :review-threads-loading="reviewThreadsLoading"
+                :review-writing="reviewWriting"
+                :review-draft-first="reviewDraftFirst"
+                :looked-at="lookedAt"
+                :opened-at="openedAt"
+                @retry="emit('retryComment', $event)"
+                @discard="emit('discardComment', $event)"
+                @edit="emit('edit', $event)"
+                @discard-edit="emit('discardEdit', $event)"
+                @quote-reply="quoteReply"
+                @open="emit('open', $event)"
+              >
+                <template #composer>
+                  <ItemThreadComposer
+                    ref="composer"
+                    v-model:text="commentDraft"
+                    :item="item"
+                    :viewer="viewer"
+                    :can-comment="canComment"
+                    :can-close="permissions?.state === true"
+                    :read-only="readOnly"
+                    :people="threadPeople"
+                    @edit="edit"
+                  />
+                </template>
+              </ItemThread>
             </div>
           </div>
-          <footer :class="css.itemView_composer">
-            <ItemComposer
-              ref="composer"
-              v-model:text="commentDraft"
-              :disabled="editing != null && !permissions?.comment"
-              @submit="emit('edit', { kind: 'comment', body: $event })"
-            />
-          </footer>
         </SplitterPanel>
 
         <template v-if="split">
@@ -916,13 +1012,18 @@ function getProjectOptions(): CommandOption[] {
 </template>
 
 <style lang="scss" module="css">
+// A page's and a modal's main column keep their content to the reading width, centred: 40px from the edges, more once
+// it is wider.
+$item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
+$item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
+
 .itemView {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   color: $color-fg;
-  background: $color-bg-2;
+  background: $color-bg-item;
 }
 
 .itemView_toolbar {
@@ -971,22 +1072,8 @@ function getProjectOptions(): CommandOption[] {
   flex: none;
   width: 14px;
   height: 14px;
-}
 
-.itemView_kind_open {
-  color: $color-green;
-}
-
-.itemView_kind_done {
-  color: $color-purple;
-}
-
-.itemView_kind_closed {
-  color: $color-red;
-}
-
-.itemView_kind_draft {
-  color: $color-fg-dim;
+  @include item-kind-tones;
 }
 
 .itemView_repository {
@@ -1072,10 +1159,18 @@ function getProjectOptions(): CommandOption[] {
   min-height: 0;
   padding: 20px $spacing-24;
   overflow-y: auto;
+  // What is brought into view at the end (the composer, by `R`) keeps the space the end of the scroll leaves.
+  scroll-padding-bottom: 20px;
 
-  .itemView_modal &,
+  // At most the reading width, centred.
+  .itemView_modal & {
+    padding: 32px $item-modal-inset;
+    scroll-padding-bottom: 32px;
+  }
+
   .itemView_page & {
-    padding: 32px 40px;
+    padding: 32px $item-page-inset;
+    scroll-padding-bottom: 32px;
   }
 
   // Sections keep their height; the column scrolls instead.
@@ -1106,23 +1201,6 @@ function getProjectOptions(): CommandOption[] {
 .itemView_opened {
   font-size: $font-size-xs;
   color: $color-fg-dim;
-}
-
-.itemView_note {
-  font-size: $font-size-md;
-  color: $color-fg-dim;
-}
-
-.itemView_composer {
-  flex: none;
-  padding: $spacing-12 $spacing-16;
-  border-top: 1px solid $color-border;
-
-  .itemView_modal &,
-  .itemView_page & {
-    padding: 0 40px 24px;
-    border-top: none;
-  }
 }
 
 .itemView_side {

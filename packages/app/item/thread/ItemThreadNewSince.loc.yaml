@@ -1,0 +1,5 @@
+newSince:
+  plural: count
+  en:
+    one: 1 new since you looked
+    many: '{count} new since you looked'

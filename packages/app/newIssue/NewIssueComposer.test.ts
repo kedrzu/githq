@@ -16,6 +16,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { createTestSession } from '@/testing/createTestSession.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import type { IssueTemplate } from './IssueTemplateStore.js';
 import type { NewIssueContext, NewIssueWaitingReason } from './NewIssueComposer.js';
@@ -293,7 +294,7 @@ interface SetupOptions {
 }
 
 async function setup(options: SetupOptions = {}) {
-    const login = options.login ?? `user-${crypto.randomUUID()}`;
+    const login = options.login ?? uniqueLogin();
     const github: FakeGitHub = { refuse: null };
     const session = createTestSession({ login, answer });
     setIndexedDbPersistence(session.container);

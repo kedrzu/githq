@@ -9,6 +9,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { PendingUntracks } from './PendingUntracks.js';
 import { TrackingStore } from './TrackingStore.js';
@@ -186,7 +187,7 @@ test('another account signing in forgets what is pending: no commit writes into 
     const { pending, tracking, session } = await open();
 
     pending.untrack(WEB_TARGET, WEB.nameWithOwner);
-    session.signInFromAnotherTab(`user-${crypto.randomUUID()}`);
+    session.signInFromAnotherTab(uniqueLogin());
     expect(pending.entries).toEqual([]);
 
     await tracking.ready();
@@ -219,7 +220,7 @@ interface OpenOptions {
 
 /** A tab signed in tracking `acme/web`, `acme/api` and the project Roadmap. */
 async function open(options: OpenOptions = {}) {
-    const login = options.login ?? `user-${crypto.randomUUID()}`;
+    const login = options.login ?? uniqueLogin();
     const session = createTestSession({
         login,
         answer: () => undefined,

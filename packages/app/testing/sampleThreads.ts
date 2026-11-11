@@ -19,6 +19,7 @@ export function sampleThread(overrides: Partial<ReviewThread> = {}): ReviewThrea
         viewerCanReply: true,
         viewerCanResolve: true,
         viewerCanUnresolve: true,
+        resolvedBy: null,
         comments: [
             {
                 id: 'C_1',
