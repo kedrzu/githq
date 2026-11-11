@@ -219,7 +219,7 @@ export function buildSplitPlaceholder(params: PlaceholderParams): PlaceholderSpl
  * A file's placeholder in its patch's real layout (D45): per hunk its lines in order, numbered from the hunk header,
  * split pairing a run of deleted lines with the added ones that follow as the diff does; a gap before the first hunk when
  * it doesn't start at line 1, one between hunks with the older side's count, and one after the last when it ends with
- * a full context, no count said. Bars are drawn from the path (D38).
+ * a full context, no count said. A single line left out shows as the diff shows it, its numbers known. Bars are drawn from the path (D38).
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -241,7 +241,9 @@ export function buildPatchPlaceholder({
         let older = hunk.lines.includes(' ') || hunk.lines.includes('-') ? hunk.beforeStart : hunk.beforeStart + 1;
         let newer = hunk.lines.includes(' ') || hunk.lines.includes('+') ? hunk.afterStart : hunk.afterStart + 1;
         const hidden = older - (olderEnd ?? 1);
-        if (hidden > 0) {
+        if (hidden === 1) {
+            pushContext(older - 1, newer - 1);
+        } else if (hidden > 0) {
             rows.push({ kind: 'placeholderGap', hidden, way: olderEnd === null ? 'up' : null });
         }
 
@@ -256,17 +258,9 @@ export function buildPatchPlaceholder({
                 case '+':
                     added.push({ line: newer++, bar: nextBar(), tint: tinted ? 'added' : null });
                     break;
-                default: {
+                default:
                     flush();
-                    const cell = { line: older, bar: nextBar(), tint: null };
-                    rows.push(
-                        layout === 'split'
-                            ? { kind: 'split', left: cell, right: { ...cell, line: newer } }
-                            : { kind: 'unified', oldLine: older, newLine: newer, bar: cell.bar, tint: null },
-                    );
-                    older++;
-                    newer++;
-                }
+                    pushContext(older++, newer++);
             }
         }
 
@@ -281,6 +275,15 @@ export function buildPatchPlaceholder({
     }
 
     return { rows, largest };
+
+    function pushContext(oldLine: number, newLine: number) {
+        const bar = nextBar();
+        rows.push(
+            layout === 'split'
+                ? { kind: 'split', left: { line: oldLine, bar, tint: null }, right: { line: newLine, bar, tint: null } }
+                : { kind: 'unified', oldLine, newLine, bar, tint: null },
+        );
+    }
 
     function flush() {
         switch (layout) {

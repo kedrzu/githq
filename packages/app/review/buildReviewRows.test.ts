@@ -284,11 +284,14 @@ test('a placeholder is about as tall as the file, within limits', () => {
 
 /**
  * Each a file before and after: hunks merged across 6 unchanged lines and kept apart across 7, a change at the first line
- * and at the last, runs of deleted and added lines of different lengths, an added and a deleted file.
+ * and at the last, a single line before the first hunk, runs of deleted and added lines of different lengths, an added and a deleted file.
  */
 const PATCH_SAMPLES: readonly (readonly [string, string | null, string | null])[] = [
     ['two hunks and one merged', lines(60), edit(lines(60), { 10: ['ten'], 17: ['seventeen', 'more'], 40: [] })],
     ['kept apart by one line', lines(30), edit(lines(30), { 5: ['five'], 13: ['thirteen'] })],
+    ['7 lines apart, one line above', lines(20), edit(lines(20), { 5: ['five'], 13: ['thirteen'] })],
+    ['a change at line 2', lines(20), edit(lines(20), { 2: ['two'] })],
+    ['a hunk from line 2', lines(20), edit(lines(20), { 5: ['five'] })],
     ['the first and the last line', lines(20), edit(lines(20), { 1: ['one', 'one b', 'one c'], 20: ['twenty'] })],
     ['near the end', lines(20), edit(lines(20), { 18: [] })],
     ['runs of different lengths', lines(40), edit(lines(40), { 10: [], 11: [], 12: ['x'], 25: ['a', 'b', 'c', 'd'] })],

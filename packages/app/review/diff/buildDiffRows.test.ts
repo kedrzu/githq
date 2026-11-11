@@ -157,15 +157,44 @@ test('no gap where nothing is hidden: unchanged lines that fit the context of th
     expect(rows).toHaveLength(8);
 });
 
-test('a gap as soon as one line more than the context of two changes lies between them', () => {
-    const lines = numbered(9);
-    const changed = lines.map(line => (line === 'line 1' || line === 'line 9' ? `${line}!` : line));
+test('a gap as soon as two lines more than the context of two changes lie between them', () => {
+    const lines = numbered(10);
+    const changed = lines.map(line => (line === 'line 1' || line === 'line 10' ? `${line}!` : line));
     const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
         layout: 'split',
         context: 3,
     });
 
     expect(rows.filter(row => row.kind === 'gap').map(row => row.key)).toEqual(['gap:5:5']);
+});
+
+test.each(layouts)(
+    '%s: a single line out of reach of any context shows: between changes, at the top and at the end',
+    layout => {
+        // Lines 5 and 13 change: 7 unchanged between them, line 1 above the first's context, line 17 below the last's.
+        const lines = numbered(17);
+        const changed = lines.map(line => (line === 'line 5' || line === 'line 13' ? `${line}!` : line));
+        const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
+            layout,
+            context: 3,
+        });
+
+        expect(rows.some(row => row.kind === 'gap')).toBe(false);
+        expect(rows.map(row => row.key)).toEqual(expect.arrayContaining(['1:1', '9:9', '17:17']));
+    },
+);
+
+test.each(layouts)("%s: a single line shown in place of a gap keeps each version's own numbers", layout => {
+    // Two lines added at the top and line 13 changed: line 17 is left alone below the context, line 19 of the newer version.
+    const lines = numbered(17);
+    const changed = ['new 1', 'new 2', ...lines.map(line => (line === 'line 13' ? `${line}!` : line))];
+    const rows = buildDiffRows(computeFileDiff({ before: file(lines), after: file(changed), ...exact }), {
+        layout,
+        context: 3,
+    });
+
+    expect(rows.filter(row => row.kind === 'gap').map(row => row.key)).toEqual(['gap:4:6']);
+    expect(rows.at(-1)?.key).toBe('17:19');
 });
 
 test('context is a parameter', () => {
@@ -304,6 +333,20 @@ describe('expanded lines (D6)', () => {
         ]);
         expect(new Set(rows.map(row => row.key)).size).toBe(rows.length);
         expect(rows.filter(row => row.kind === 'line')).toHaveLength((layout === 'split' ? 2 : 4) + 6 + 5);
+    });
+
+    test('that leave a single line between them show it too', () => {
+        const rows = buildDiffRows(diff, {
+            layout: 'split',
+            context: 3,
+            expanded: [
+                { start: 4, end: 40 },
+                { start: 41, end: 96 },
+            ],
+        });
+
+        expect(rows.some(row => row.kind === 'gap')).toBe(false);
+        expect(rows.map(row => row.key)).toContain('41:41');
     });
 
     test('that fill the gap leave none', () => {
