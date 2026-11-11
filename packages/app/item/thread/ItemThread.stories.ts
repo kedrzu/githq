@@ -7,7 +7,15 @@ import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { CHANGES_REQUESTED_REVIEW, DB_THREAD, REVIEW_VIEWER, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
-import { F5_PULL_REQUEST, F5_PULL_REQUEST_DETAIL, I1_ISSUE, I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
+import {
+    F5_PULL_REQUEST,
+    F5_PULL_REQUEST_DETAIL,
+    I1_ISSUE,
+    I1_ISSUE_DETAIL,
+    I2_ISSUE,
+    I2_ISSUE_DETAIL,
+    THREAD_VIEWER,
+} from '@/testing/sampleThreadEvents.js';
 import { SAMPLE_VIEWER } from '@/testing/sampleViewer.js';
 
 import ItemThread from './ItemThread.vue';
@@ -18,6 +26,7 @@ const IN_PANEL = 512;
 /** The reading width a page keeps its main column to. */
 const ON_PAGE = { width: 760 };
 const HOUR = 60 * 60_000;
+const MINUTE = 60_000;
 
 /** The user's comments GitHub did not take: one while offline, one refused. */
 const FAILED_COMMENTS: FailedComment[] = [
@@ -46,10 +55,14 @@ const meta = {
         loadMiddle: fn(() => Promise.resolve()),
         canQuote: true,
     },
-    // On an item view's background, as wide as its main column (`parameters.width`), ending in the composer.
+    // On an item view's background, as wide as its main column (`parameters.width`), ending in the composer — the
+    // thread's viewer's, else the sample viewer's.
     render: (args, { parameters }) => ({
         components: { ItemThread, ItemThreadComposer },
-        setup: () => ({ args, viewer: { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl } }),
+        setup: () => ({
+            args,
+            viewer: args.viewer ?? { login: SAMPLE_VIEWER.login, avatarUrl: SAMPLE_VIEWER.avatarUrl },
+        }),
         template: `
           <div style="width: ${parameters.width ?? IN_PANEL}px; padding: 20px 0; background: #11161c">
             <ItemThread v-bind="args">
@@ -78,20 +91,27 @@ export const PullRequestInPanel: Story = { args: { item: F1_PULL_REQUEST, detail
 export const PullRequestOnPage: Story = { args: PullRequestInPanel.args, parameters: ON_PAGE };
 
 /**
- * I1 on a page: the issue's events and comments in one time order, one person's events in a burst on one line; last
- * looked at four hours ago, "3 new since you looked" before dkim's comment.
+ * I1 on a page: the issue's events and comments in one time order, one person's events in a burst on one line; mlaine
+ * last looked at it four hours ago and pinned it since, so "1 new since you looked" stands after their pin, before
+ * dkim's comment.
  */
 export const IssueThread: Story = {
-    args: { item: I1_ISSUE, detail: I1_ISSUE_DETAIL, lookedAt: SAMPLE_NOW - 4 * HOUR },
+    args: { item: I1_ISSUE, detail: I1_ISSUE_DETAIL, viewer: THREAD_VIEWER, lookedAt: SAMPLE_NOW - 4 * HOUR },
     parameters: ON_PAGE,
 };
 
 /**
- * F5 on a page: pushes with their commits, a burst, the comments and the CI's failed checks by time; last looked at
- * three hours ago, "1 new since you looked" before the review asked for again.
+ * F5 on a page: pushes with their commits, a burst, the comments and the CI's failed checks by time; mlaine last looked
+ * at it three hours ago and asked for a review and commented since, so "1 new since you looked" stands before dkim's
+ * comment.
  */
 export const PullRequestThread: Story = {
-    args: { item: F5_PULL_REQUEST, detail: F5_PULL_REQUEST_DETAIL, lookedAt: SAMPLE_NOW - 3 * HOUR },
+    args: {
+        item: F5_PULL_REQUEST,
+        detail: F5_PULL_REQUEST_DETAIL,
+        viewer: THREAD_VIEWER,
+        lookedAt: SAMPLE_NOW - 3 * HOUR,
+    },
     parameters: ON_PAGE,
 };
 
@@ -218,8 +238,16 @@ export const EditAsksToDiscard: Story = {
  */
 export const LongThread: Story = { args: { item: I1_ISSUE, detail: longThread() }, parameters: ON_PAGE };
 
-/** I2: the same in the side panel, the band on two lines. */
+/** The same in the side panel, the band on two lines. */
 export const LongThreadInPanel: Story = { args: LongThread.args };
+
+/**
+ * I2 in the side panel: I1's issue closed by #15, the middle folded; mlaine last looked after dkim's comment, so "4 new
+ * since you looked" stands before sofiab's close.
+ */
+export const ClosedIssueThread: Story = {
+    args: { item: I2_ISSUE, detail: I2_ISSUE_DETAIL, viewer: THREAD_VIEWER, lookedAt: SAMPLE_NOW - 30 * MINUTE },
+};
 
 /** F16, left: opened the first time, before its thread is on this device — no description card, the rail's skeleton. */
 export const Loading: Story = { args: { detail: null } };

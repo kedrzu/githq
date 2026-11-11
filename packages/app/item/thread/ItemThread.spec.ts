@@ -114,7 +114,7 @@ test('a long thread read whole folds its middle by the counts of each group, and
     // The first two, the fold, the newest five.
     expect(entries.elements()).toHaveLength(8);
     await expect.element(entries.nth(1)).toHaveTextContent(/added this to parent/);
-    await expect.element(entries.nth(3)).toHaveTextContent('Fixed by #15 once it lands');
+    await expect.element(entries.nth(7)).toHaveTextContent('Fixed by #15 once it lands');
 
     await userEvent.click(fold);
 
@@ -560,9 +560,9 @@ test("events and comments read show in one time order; the user's comment on its
         'added bug and set the type to Bug',
         'Same here: the link to #9 is gone',
         'linked a pull request #15',
-        'Fixed by #15 once it lands',
         'Status set to Done in',
         'pinned this issue',
+        'Fixed by #15 once it lands',
         'Pinned it until #15 lands.',
         'Thanks both.',
     ].map(text => texts.findIndex(entry => entry.includes(text)));
@@ -805,18 +805,17 @@ test('a thread opened, unresolved and resolved again folds to its row, in a revi
 });
 
 test('"N new since you looked" stands before the first item others made since, and stays there when the viewer comments', async () => {
-    const viewer = { login: 'kedrzu', avatarUrl: '' };
-    const args = shallowReactive({ ...IssueThread.args, viewer });
+    const args = shallowReactive({ ...IssueThread.args });
     await IssueThread.run({ args });
 
-    const line = page.getByRole('listitem').filter({ hasText: /^3 new since you looked$/u });
+    const line = page.getByRole('listitem').filter({ hasText: /^1\snew since you looked$/u });
     await expect.element(line).toBeVisible();
     expect(line.element().nextElementSibling?.textContent).toContain('Fixed by #15 once it lands');
 
     const own: ItemComment = {
         ...I1_ISSUE_DETAIL.comments.nodes[1]!,
         id: 'C_OWN',
-        author: viewer,
+        author: args.viewer!,
         body: 'On it.',
         bodyHtml: '<p>On it.</p>',
         createdAt: new Date(SAMPLE_NOW).toISOString(),

@@ -16,7 +16,9 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-const MLAINE = sampleUser('mlaine', '#c9a26b');
+/** The viewer on the F and I screens: mlaine, whose own items count as having looked (F5). */
+export const THREAD_VIEWER: ItemUser = sampleUser('mlaine', '#c9a26b');
+const MLAINE = THREAD_VIEWER;
 const DKIM = sampleUser('dkim', '#7fb3d5');
 const SOFIAB = sampleUser('sofiab', '#81c995');
 
@@ -28,12 +30,38 @@ const ROADMAP = { title: 'tasklet Roadmap', url: 'https://github.com/users/mlain
 export const F5_PULL_REQUEST: PullRequestItem = { ...F1_PULL_REQUEST, headRefOid: 'e81f0a3d5c1b9f7a' };
 
 /**
- * F5's thread on {@link F5_PULL_REQUEST}: six commits pushed, a label added and two reviews asked for in one go, the
- * comments, three more commits, the newest failing two of its nine checks, a review asked for again.
+ * F5's thread on {@link F5_PULL_REQUEST}: six commits pushed, a label added and two reviews asked for in one go, a
+ * comment, three more commits, the newest failing two of its nine checks, a review asked for again, mlaine's comment
+ * and dkim's an hour later.
  */
 export const F5_PULL_REQUEST_DETAIL: PullRequestDetail = {
     ...F1_PULL_REQUEST_DETAIL,
     item: F5_PULL_REQUEST,
+    comments: {
+        totalCount: 3,
+        first: [],
+        nodes: [
+            comment(
+                'C_3',
+                SOFIAB,
+                2 * DAY,
+                "The migration drops sub-issue links when the parent lives in another repo. That's the failing e2e.",
+            ),
+            comment(
+                'C_5',
+                MLAINE,
+                2 * HOUR,
+                "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green.",
+            ),
+            comment(
+                'C_6',
+                DKIM,
+                HOUR,
+                "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back.",
+            ),
+        ],
+        olderCursor: null,
+    },
     events: {
         totalCount: 13,
         commitCount: 9,
@@ -60,7 +88,7 @@ export const F5_PULL_REQUEST_DETAIL: PullRequestDetail = {
             commit('b72d1c4', 'Retry the upgrade when another tab blocks it', DAY + MINUTE, 'SUCCESS'),
             commit('e81f0a3', 'Migrate pull requests instead of clearing the store', DAY, 'FAILURE'),
             {
-                ...event('E_4', MLAINE, 2 * HOUR),
+                ...event('E_4', MLAINE, 3 * HOUR),
                 kind: 'reviewRequested',
                 reviewer: { kind: 'user', user: SOFIAB },
             },
@@ -91,7 +119,7 @@ export const I1_ISSUE_DETAIL: IssueDetail = {
         first: [],
         nodes: [
             comment('C_1', SOFIAB, 4 * DAY + HOUR, 'Same here: the link to #9 is gone after a sync.'),
-            comment('C_2', DKIM, 3 * HOUR, 'Fixed by #15 once it lands; the e2e covers both repositories now.'),
+            comment('C_2', DKIM, HOUR, 'Fixed by #15 once it lands; the e2e covers both repositories now.'),
         ],
         olderCursor: null,
     },
@@ -157,6 +185,53 @@ export const I1_ISSUE_DETAIL: IssueDetail = {
             { ...event('IE_13', MLAINE, 2 * HOUR), kind: 'pinned' },
         ],
         middle: null,
+    },
+};
+
+/** The issue of I2: {@link I1_ISSUE} closed by #15. */
+export const I2_ISSUE: IssueItem = { ...I1_ISSUE, state: 'CLOSED', stateReason: 'COMPLETED' };
+
+/**
+ * I2's thread on {@link I2_ISSUE}: I1's, then sofiab closing it through #15, a project workflow setting its Status to
+ * Done, sofiab unpinning it and commenting.
+ */
+export const I2_ISSUE_DETAIL: IssueDetail = {
+    ...I1_ISSUE_DETAIL,
+    item: I2_ISSUE,
+    comments: {
+        ...I1_ISSUE_DETAIL.comments,
+        totalCount: 3,
+        nodes: [
+            ...I1_ISSUE_DETAIL.comments.nodes,
+            comment(
+                'C_7',
+                SOFIAB,
+                5 * MINUTE,
+                "Checked on today's Development build: the parent is still there after the upgrade. Thanks!",
+            ),
+        ],
+    },
+    events: {
+        ...I1_ISSUE_DETAIL.events,
+        totalCount: 15,
+        newest: [
+            ...I1_ISSUE_DETAIL.events.newest.filter(entry => entry.id !== 'IE_12'),
+            {
+                ...event('IE_14', SOFIAB, 20 * MINUTE),
+                kind: 'closed',
+                stateReason: 'COMPLETED',
+                closer: { kind: 'pullRequest', pullRequest: { ...ref(15, 'IndexedDB store'), kind: 'pullRequest' } },
+                duplicateOf: null,
+            },
+            {
+                ...event('IE_15', null, 20 * MINUTE - 1000),
+                kind: 'projectStatusChanged',
+                project: ROADMAP,
+                to: 'Done',
+                wasAutomated: true,
+            },
+            { ...event('IE_16', SOFIAB, 18 * MINUTE), kind: 'unpinned' },
+        ],
     },
 };
 
