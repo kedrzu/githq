@@ -112324,6 +112324,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -112750,6 +112760,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -120798,6 +120818,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -121224,6 +121254,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -296920,18 +296960,20 @@
                           "id": "f0FF6s",
                           "name": "Gutter",
                           "width": 48,
+                          "height": 24,
                           "stroke": "$border",
                           "strokeWidth": {
                             "right": 1
                           },
-                          "layout": "vertical",
+                          "justifyContent": "center",
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
                               "id": "EFIc9",
                               "name": "Expand down",
-                              "width": "fill_container",
-                              "height": 18,
+                              "width": 24,
+                              "height": 24,
                               "justifyContent": "center",
                               "alignItems": "center",
                               "children": [
@@ -296951,8 +296993,8 @@
                               "type": "frame",
                               "id": "roUZs",
                               "name": "Expand up",
-                              "width": "fill_container",
-                              "height": 18,
+                              "width": 24,
+                              "height": 24,
                               "justifyContent": "center",
                               "alignItems": "center",
                               "children": [
@@ -297020,8 +297062,16 @@
                       "name": "Diff / Gap · hover",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
+                        "EFIc9": {
+                          "width": 24
+                        },
                         "roUZs": {
-                          "fill": "#7B87F733"
+                          "fill": "#7B87F733",
+                          "width": 24
                         },
                         "r03MW6": {
                           "fill": "$fg"
@@ -297040,13 +297090,21 @@
                       "name": "Diff / Gap · focused",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
                         "EFIc9": {
                           "stroke": "$accent",
                           "strokeWidth": 1,
-                          "fill": "#7B87F733"
+                          "fill": "#7B87F733",
+                          "width": 24
                         },
                         "t0jZS": {
                           "fill": "$fg"
+                        },
+                        "roUZs": {
+                          "width": 24
                         },
                         "F6fibT": {
                           "content": "↵ shows 20 below line 47",
@@ -297062,8 +297120,16 @@
                       "name": "Diff / Gap · top of file",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
                         "EFIc9": {
-                          "enabled": false
+                          "enabled": false,
+                          "width": 24
+                        },
+                        "roUZs": {
+                          "width": 24
                         },
                         "h3RAg": {
                           "content": "@@ −1,47 +1,47 @@"
@@ -297084,8 +297150,16 @@
                       "name": "Diff / Gap · end of file",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
+                        "EFIc9": {
+                          "width": 24
+                        },
                         "roUZs": {
-                          "enabled": false
+                          "enabled": false,
+                          "width": 24
                         },
                         "h3RAg": {
                           "content": ""
@@ -297106,8 +297180,16 @@
                       "name": "Diff / Gap · short",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
                         "EFIc9": {
-                          "enabled": false
+                          "enabled": false,
+                          "width": 24
+                        },
+                        "roUZs": {
+                          "width": 24
                         },
                         "r03MW6": {
                           "icon": "chevrons-up-down"
@@ -297125,9 +297207,43 @@
                       "name": "Diff / Gap · reset by a push",
                       "width": "fill_container",
                       "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
+                        "EFIc9": {
+                          "width": 24
+                        },
+                        "roUZs": {
+                          "width": 24
+                        },
                         "F6fibT": {
                           "content": "Context you expanded here was reset by the push · 134 lines",
                           "fill": "$fg-2"
+                        }
+                      }
+                    },
+                    {
+                      "id": "HfGlp",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "PujfA",
+                      "name": "Diff / Gap · reset, nothing hidden",
+                      "descendants": {
+                        "f0FF6s": {
+                          "height": 24,
+                          "layout": "horizontal"
+                        },
+                        "EFIc9": {
+                          "enabled": false,
+                          "width": 24
+                        },
+                        "roUZs": {
+                          "enabled": false,
+                          "width": 24
+                        },
+                        "F6fibT": {
+                          "content": "Context you expanded here was reset by the push"
                         }
                       }
                     }
@@ -301238,6 +301354,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -301688,6 +301814,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -302349,6 +302485,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -302775,6 +302921,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -303288,6 +303444,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -303738,6 +303904,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -304400,6 +304576,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -304826,6 +305012,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -305338,6 +305534,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -305788,6 +305994,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -306541,6 +306757,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -306718,6 +306944,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -308277,6 +308513,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -308490,6 +308736,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -309538,6 +309794,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -309989,6 +310255,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -312800,6 +313076,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -314171,6 +314457,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -314621,6 +314917,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -316542,6 +316848,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -316992,6 +317308,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -318735,6 +319061,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -319185,6 +319521,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -320642,6 +320988,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -321092,6 +321448,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -322500,6 +322866,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -322950,6 +323326,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -323728,6 +324114,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -324178,6 +324574,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -324976,6 +325382,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -325426,6 +325842,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -329524,7 +329950,19 @@
                                           "type": "ref",
                                           "ref": "PujfA",
                                           "name": "Gap",
-                                          "width": "fill_container"
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            }
+                                          }
                                         }
                                       ]
                                     }
@@ -334648,6 +335086,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -335145,6 +335593,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -335668,6 +336126,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -337140,6 +337608,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -337593,6 +338071,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -338810,6 +339298,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -339263,6 +339761,16 @@
                                               "name": "Gap",
                                               "width": "fill_container",
                                               "descendants": {
+                                                "f0FF6s": {
+                                                  "height": 24,
+                                                  "layout": "horizontal"
+                                                },
+                                                "EFIc9": {
+                                                  "width": 24
+                                                },
+                                                "roUZs": {
+                                                  "width": 24
+                                                },
                                                 "h3RAg": {
                                                   "enabled": false
                                                 },
@@ -341463,6 +341971,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -341889,6 +342407,16 @@
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
+                                            "f0FF6s": {
+                                              "height": 24,
+                                              "layout": "horizontal"
+                                            },
+                                            "EFIc9": {
+                                              "width": 24
+                                            },
+                                            "roUZs": {
+                                              "width": 24
+                                            },
                                             "h3RAg": {
                                               "enabled": false
                                             },
@@ -346084,7 +346612,19 @@
                               "type": "ref",
                               "ref": "hKfCl",
                               "name": "Gap",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                }
+                              }
                             },
                             {
                               "id": "d3igF",
@@ -346167,7 +346707,19 @@
                               "type": "ref",
                               "ref": "tshOK",
                               "name": "Gap",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                }
+                              }
                             },
                             {
                               "id": "vjoaZ",
@@ -346250,7 +346802,19 @@
                               "type": "ref",
                               "ref": "e6QSL",
                               "name": "Gap",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                }
+                              }
                             },
                             {
                               "id": "fsWQe",
@@ -346356,6 +346920,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "F6fibT": {
                                   "content": "114 lines"
                                 }
@@ -346442,7 +347016,19 @@
                               "type": "ref",
                               "ref": "YaZfl",
                               "name": "Gap",
-                              "width": "fill_container"
+                              "width": "fill_container",
+                              "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                }
+                              }
                             }
                           ]
                         }
@@ -349216,6 +349802,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "h3RAg": {
                                   "enabled": false
                                 },
@@ -349391,6 +349987,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "h3RAg": {
                                   "enabled": false
                                 },
@@ -349712,6 +350318,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "h3RAg": {
                                   "enabled": false
                                 },
@@ -349860,6 +350476,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "h3RAg": {
                                   "enabled": false
                                 },
@@ -352560,6 +353186,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "F6fibT": {
                                   "content": "8,112 lines above"
                                 }
@@ -352750,6 +353386,16 @@
                               "name": "Gap",
                               "width": "fill_container",
                               "descendants": {
+                                "f0FF6s": {
+                                  "height": 24,
+                                  "layout": "horizontal"
+                                },
+                                "EFIc9": {
+                                  "width": 24
+                                },
+                                "roUZs": {
+                                  "width": 24
+                                },
                                 "h3RAg": {
                                   "enabled": false
                                 },

@@ -121,3 +121,17 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   review keeps. E shows 20 more each time it is pressed; the command menu's "Show all hidden lines" opens the whole gap
   nearest the reading line (D42). CR29's row (`DaMeF`) lost its ⇧E key (`VZFSa`, deleted) and reads "Show 20 more
   hidden lines"; the captions of CR29 (`V0GWA`) and CR103 (`dj9sp`) say so.
+
+## While building M1 (2026-11-11)
+
+Decisions amended: D42, D43.
+
+- [ ] Diff / Gap (`tshOK`): the gutter (`f0FF6s`) lays its arrows side by side, each 24 × 24 (`EFIc9`, `roUZs`), the
+  gutter 24 tall; the row is 26 px. Before: stacked, 18 px each (38 px row). Every gap state and all 56 gaps in the
+  screens follow (D42, WCAG 2.5.8).
+- [ ] Diff / Gap · reset, nothing hidden (`HfGlp`, new): no arrows, "Context you expanded here was reset by the push"
+  with no count, for a gap the threads' code shows whole after a push reset its context.
+- [ ] Diff / Gap · focused (`ioejG`): its "↵ shows 20 below line 47" is now built, not only drawn.
+- [ ] The enclosing declaration: signatures broken over lines (`async load(`) count; of calls only `describe`, `it`,
+  `test` (D42).
+- [ ] The number column widens with the file's longest number so the comment marker always fits (D43).

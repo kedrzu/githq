@@ -721,10 +721,22 @@ in accent. A push that changes the file resets what was expanded in it (D14), an
 (2026-11-10, owner's pick of the agent's second variant; row click, E and no hunk header by the owner the same
 day; CR103; replaces D29's "Show 20 · Show all")
 
+The arrows sit side by side in the 48 px gutter, 24 × 24 each, so the row is 26 px: two stacked 18 px arrows fail
+WCAG 2.5.8's 24 px target size, which the story tests hold, and stacking two 24 px ones made the row 50 px. With
+the arrows on its keyboard focus, the count reads what ↵ does ("↵ shows 20 below line 47"). A gap whose lines are all
+shown for threads (nothing hidden) but whose expanded context a push reset says only "Context you expanded here was
+reset by the push", with no count and no arrow (`Diff / Gap · reset, nothing hidden`). "A real one" means a
+declaration: a class, interface, type, function or method signature, including one broken over several lines whose
+first line opens its parameters (`async load(`); of calls only a test's `describe`, `it` and `test`, whose names say
+what the code is in, while other calls (`watch(x, () => {`, `useEffect(() => {`) and branches (`elif`, `when`) are not.
+(owner, 2026-11-11, building M1)
+
 **Rejected.**
 
 - One full-width row, a click showing 20 and ⌥click all (CR102, agent's recommendation).
 - One click showing every hidden line (CR104) — a long gap floods the screen.
+- The arrows stacked, 18 px each (CR103 as first drawn) — below WCAG 2.5.8's target size; 24 px stacked made the row
+  50 px. (owner, 2026-11-11)
 
 ## D43
 
@@ -732,6 +744,10 @@ day; CR103; replaces D29's "Show 20 · Show all")
 number to comment, drag along the numbers or ⇧click for a range (D32). No tint, and the code stays selectable as text.
 The same on context, added and deleted lines, in split and unified; during a drag the range is tinted and the number
 under the pointer marked.** (2026-11-10, owner's pick of the agent's second variant; CR106)
+
+The number column is as wide as the file's longest number needs with the icon before it, so a number of four digits
+or more keeps the icon inside its cell rather than over the block's edge or the other number. (owner, 2026-11-11,
+building M1)
 
 **Rejected.**
 
