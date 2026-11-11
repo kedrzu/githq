@@ -22,10 +22,10 @@ Linear-grade ergonomics with GitHub as the only backend. Positioning: `docs/desi
 - Exception to the SPA: `/` is prerendered signed out into `_landing.html` (`index.html` stays the shell). The Worker
   serves the shell when the cookie `githq_signed_in=1` is set (written only by `AuthStore`), the landing otherwise.
   `nuxt dev` never server-renders. See `docs/decisions/prerendered-landing-and-signed-in-hint.md`.
-- Designs live in `docs/design/<slug>/`; the main one is `githq/` (start at `README.md`). Before changing `githq.pen`,
-  follow `DESIGN.md`; for a design changelog, follow its "Implementing from a changelog".
-- A prompt for the design agent goes inline in the reply as one copyable block, never a file. Point it at `ui/` and
-  `DESIGN.md` instead of repeating them.
+- Designs live in `docs/design/<slug>/`; the main one is `githq/` (start at `README.md`). Design changes go through
+  the `design` skill, on your own branch.
+- An implementation that has to differ from the design brings `githq.pen` along on the same branch: small changes on
+  its own, big ones asked first (the line between them: the `design` skill).
 
 ## Commands
 

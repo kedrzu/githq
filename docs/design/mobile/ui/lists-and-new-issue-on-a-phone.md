@@ -3,8 +3,7 @@
 The brief for the last screens of githq's first phone version. The product, its data and Direction D are in
 [the app's brief](../../githq/ui/README.md). The same things on the computer are in
 [working inside a project or a repository](../../githq/ui/project.md) and [creating an issue](../../githq/ui/new-issue.md)
-— read both; this file only says what is different on a phone. The rules for the design file are in `DESIGN.md` at the
-repository's root.
+— read both; this file only says what is different on a phone. The rules for the design file are in the `design` skill.
 
 ## Purpose
 
@@ -78,7 +77,7 @@ before I forget it, in the right repository, and get back."
 
 ## Questions this design should settle
 
-Draw each as variants side by side, Variant A the one you recommend, as `DESIGN.md` says, and propose others where you
+Draw each as variants side by side, Variant A the one you recommend, as the `design` skill says, and propose others where you
 see them.
 
 - **What the options button opens**: a sheet rising from below like the command menu, with filter, sort and group

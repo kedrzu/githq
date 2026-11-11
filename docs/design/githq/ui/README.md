@@ -1,7 +1,8 @@
 # githq — brief for UI exploration
 
-Hand this whole `ui/` folder to the design agent. This file is the shared context, and each other file is
-one thing a user does in the app. Nothing outside this folder is needed.
+The shared context for designing githq's screens: this file says what the product is, and each other file is one
+thing a user does in the app. How `githq.pen` is laid out, its components, screen codes, the brand and how a design
+round runs: the `design` skill.
 
 ## Where the design stands
 
@@ -14,32 +15,7 @@ It is one app with three independent switches:
 - an item opens in a panel, a modal or a full page, and all three show the same item view.
 
 Work from here builds on Direction D. Keep its components and its feel. Within it you are still free to
-explore. Where a new screen has more than one reasonable shape, show two or three variants side by side,
-and the owner will pick.
-
-`githq.pen` is laid out top to bottom, one top-level frame per aspect, so a new screen goes into the frame of
-its aspect, and a new aspect gets a new frame:
-
-- **`App · …`**: overview, components, toolbar; My work, project, repository, pull request, merging, stacks; the menus; first
-  sign-in, creating an issue, states, freshness.
-- **`Desktop · …`**: screens only the desktop app has.
-- **`Landing — …`**: the landing page, desktop and mobile, and its motion storyboard.
-- **Brand**: `Logo — git/hq`, app icons, OpenGraph images.
-
-Repeated UI is built from components, so change the component, not a copy. The shared ones are in
-**"App · Components"**: atoms (keys, avatar, labels, status, buttons, hints, chips, tabs), the sidebar, item
-sections, list rows (`List row / …`, `Table row / …`), list and group
-headers, project parts, and whole panes (`List pane / …`, `Project pane / …`). Components that belong to one
-aspect sit in a **`Components · …`** frame at the top of that aspect's frame (merging, stacks, workflows,
-settings, first sign-in). A new screen uses instances of them and overrides only what differs; a copied
-screen stays light that way.
-
-The rejected Directions A–C and the logo exploration were removed from the file; they are in git history.
-
-The logo is settled. The brandbook is the frame **"Logo — git/hq"** in `githq.pen` (frame `S5J7kt`): the
-wordmark `git/hq` and the sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the
-slash alone. Use one of them in a given place, never both side by side. Place them through the components
-`Brand / Wordmark` and `Brand / Sygnet`.
+explore: where a new screen has more than one reasonable shape, draw variants, and the owner will pick.
 
 Nothing in these files prescribes layout or visual style. Where a file lists what a screen must show, that
 is content and priority, not placement.
