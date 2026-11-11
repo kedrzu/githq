@@ -79,6 +79,7 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'red-quiet': "Primer's #B62324 reads 2.93 on bg",
     'border-danger': "red at 35%, a little weaker than Primer's borderColor-danger-muted (40%)",
     'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
+    'current-edge': "accent at 60% over the window, opaque so the block's overlapping corners don't show stronger",
 };
 
 const tokens = readTokens();
