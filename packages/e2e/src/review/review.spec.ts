@@ -367,9 +367,8 @@ test("before any blob is known, a binary file says so and a file's placeholder h
 
     await page.keyboard.press('d');
     await review.fileRow('engine.ts').click();
-    const placeholderGaps = review.diff.getByTestId('review-placeholder-gap');
     // The hunk starts 3 lines above the change at line 61, its numbers from its header.
-    await expect(placeholderGaps.filter({ hasText: '57 lines above' })).toBeVisible();
+    await expect(review.placeholderGaps.filter({ hasText: '57 lines above' })).toBeVisible();
     await expect(review.diff.getByText('58', { exact: true }).first()).toBeVisible();
     await review.fileRow('logo.png').click();
     await expect(review.diff.getByText('Binary file, nothing to diff', { exact: true })).toBeVisible();
@@ -378,8 +377,8 @@ test("before any blob is known, a binary file says so and a file's placeholder h
     await expect(review.diff.getByText(/^Binary file, nothing.to.diff.·.\d/u)).toBeVisible();
     await review.fileRow('engine.ts').click();
     await expect(review.code('const MAX_BATCH = 50;')).toBeVisible();
-    await expect(placeholderGaps).toHaveCount(0);
-    await expect(review.diff.getByTestId('review-gap').filter({ hasText: '57 lines above' })).toBeVisible();
+    await expect(review.placeholderGaps).toHaveCount(0);
+    await expect(review.gaps.filter({ hasText: '57 lines above' })).toBeVisible();
 });
 
 test('the allowance running out pauses the missing files, saying when, while a viewed mark goes through; they come by themselves at the reset, without a reload', async ({
