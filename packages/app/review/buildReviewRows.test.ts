@@ -661,7 +661,7 @@ test('each kind of gap has its arrows: up at the top of a file, down at its end,
         [8, 'all'],
         [32, 'down'],
     ]);
-    expect(gaps.map(estimateReviewRowHeight)).toEqual([20, 50, 20, 19]);
+    expect(gaps.map(estimateReviewRowHeight)).toEqual([26, 26, 26, 25]);
 });
 
 test('an arrow shows 20 lines from its side of the gap: down below the hunk above, up above the hunk below', () => {

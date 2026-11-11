@@ -10,6 +10,9 @@ const {
     CodeKinds,
     Collapsed,
     ExpansionReset,
+    ExpansionResetNothingHidden,
+    FourDigitsSplit,
+    FourDigitsUnified,
     Gaps,
     Split,
     SplitColoured,
@@ -47,6 +50,48 @@ test("a gap is drawn as tall as estimated: two arrows between hunks, one at a fi
     await ExpansionReset.run();
     // Between hunks, saying the push reset it.
     expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 })));
+
+    await ExpansionResetNothingHidden.run();
+    // No arrow at all.
+    expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 })));
+});
+
+test('with the keyboard on an arrow, the count says what ↵ does; a click leaves it the count', async () => {
+    await Gaps.run();
+
+    await tabTo('Show 20 above line 27');
+    await expect.element(page.getByText('↵ shows 20 above line 27', { exact: true })).toBeVisible();
+    await userEvent.tab();
+    await expect.element(page.getByText('↵ shows 20 below line 33', { exact: true })).toBeVisible();
+    await expect.element(page.getByText('26 lines above', { exact: true })).toBeVisible();
+    await tabTo('Show 8 lines');
+    await expect.element(page.getByText('↵ shows 8 lines', { exact: true })).toBeVisible();
+    await userEvent.tab({ shift: true });
+    await expect.element(page.getByText('8 lines', { exact: true })).toBeVisible();
+
+    const below = page.getByRole('button', { name: 'Show 20 below line 88' });
+    await userEvent.click(below);
+    await userEvent.unhover(below);
+    await expect.element(page.getByText('32 lines below', { exact: true })).toBeVisible();
+});
+
+/** Tabs on until the button so named has the focus, past what comes before it in the story. */
+async function tabTo(name: string) {
+    for (let step = 0; step < 30 && document.activeElement?.getAttribute('aria-label') !== name; step++) {
+        await userEvent.tab();
+    }
+
+    expect(document.activeElement?.getAttribute('aria-label')).toBe(name);
+}
+
+test('a gap a push reset with nothing hidden says only that: no arrow, no click', async () => {
+    await ExpansionResetNothingHidden.run();
+    const gap = page.getByText('Context you expanded here was reset by the push', { exact: true }).element();
+    const row = gap.closest('[tid="review-gap"]')!;
+
+    expect(row.querySelectorAll('button')).toHaveLength(0);
+    await userEvent.click(gap);
+    expect(ExpansionResetNothingHidden.args.onExpand).not.toHaveBeenCalled();
 });
 
 test('an arrow says what it shows on hover; on the rest of the row the arrow a click takes lights and says it', async () => {
@@ -206,4 +251,21 @@ test.each([
 
     // The story comments on lines 3–5 of the newer side.
     expect(accent).toEqual(['3', '4', '5']);
+});
+
+test.each([
+    ['split', FourDigitsSplit],
+    ['unified', FourDigitsUnified],
+])("a four-digit number's comment icon stays inside its cell, %s", async (_layout, Story) => {
+    await Story.run();
+    const numbers = page.getByRole('button', { name: 'Comment on line 1100' }).elements();
+    expect(numbers).toHaveLength(2);
+
+    for (const number of numbers) {
+        await userEvent.hover(number);
+        const marker = number.querySelector('svg')!.getBoundingClientRect();
+        const cell = number.parentElement!.getBoundingClientRect();
+        expect(marker.left).toBeGreaterThanOrEqual(cell.left);
+        expect(marker.right).toBeLessThanOrEqual(number.querySelector('span')!.getBoundingClientRect().left);
+    }
 });

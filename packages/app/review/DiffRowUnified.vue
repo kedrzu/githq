@@ -25,6 +25,8 @@ const emit = defineEmits<{
 
 /** The line's 0-based place in the version it's drawn from, the older only for a deleted line. */
 const lineIndex = computed(() => (props.line.newLine ?? props.line.oldLine ?? 1) - 1);
+/** Every row of the file sizes its number columns by the same number, which keeps them aligned. */
+const largest = computed(() => Math.max(props.diff.before.length, props.diff.after.length));
 const onAfter = computed(() => props.line.newLine !== null);
 const isCommented = computed(() => {
   const { oldLine, newLine } = props.line;
@@ -47,12 +49,14 @@ const isCommented = computed(() => {
     <DiffLineNumber
       :class="css.diffRowUnified_number"
       :line="line.oldLine"
+      :largest="largest"
       :commented="line.oldLine !== null && isLineCommented(commented, 'before', line.oldLine)"
       @gutter="emit('gutter', $event, 'before', line.oldLine ?? 0)"
     />
     <DiffLineNumber
       :class="css.diffRowUnified_number"
       :line="line.newLine"
+      :largest="largest"
       :commented="line.newLine !== null && isLineCommented(commented, 'after', line.newLine)"
       @gutter="emit('gutter', $event, 'after', line.newLine ?? 0)"
     />
@@ -100,7 +104,6 @@ const isCommented = computed(() => {
 
 .diffRowUnified_number {
   flex: none;
-  width: 36px;
   margin-right: $spacing-4;
   color: $color-fg-dim;
 }

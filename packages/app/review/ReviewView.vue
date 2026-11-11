@@ -1328,7 +1328,10 @@ function getGapToward(gap: ReviewGapRow): ReviewGapDirection {
   return (shown.top + shown.bottom) / 2 > getReadingLine(viewport) ? 'down' : 'up';
 }
 
-/** The gap on screen nearest the reading line, under the pinned header, which E and "Show all hidden lines" open. */
+/**
+ * The gap on screen nearest the reading line, under the pinned header, which E and "Show all hidden lines" open; not one
+ * with nothing hidden, there only to say a push reset it (D42).
+ */
 function findNearestGap(): ReviewGapRow | null {
   const viewport = list.value?.getViewport();
   if (!viewport) {
@@ -1340,7 +1343,7 @@ function findNearestGap(): ReviewGapRow | null {
   let nearestDistance = Infinity;
   for (const { row, top, bottom } of list.value?.getShownRows() ?? []) {
     const distance = Math.max(top - line, line - bottom, 0);
-    if (row.kind === 'gap' && bottom > viewport.covered && distance < nearestDistance) {
+    if (row.kind === 'gap' && row.hidden > 0 && bottom > viewport.covered && distance < nearestDistance) {
       nearest = row;
       nearestDistance = distance;
     }
@@ -1651,11 +1654,6 @@ function isPinned(row: ReviewRow) {
   return row.kind === 'header';
 }
 
-/** A header pushing the pinned one up keeps the gap between files over it (D41). */
-function getPushRoom() {
-  return FILE_GAP;
-}
-
 function back() {
   goBack(router, getItemPagePath(props.reference, 'pullRequest'));
 }
@@ -1750,7 +1748,7 @@ function readAgain() {
               :rows="rows"
               :estimate-height="estimateReviewRowHeight"
               :is-pinned="isPinned"
-              :push-room="getPushRoom"
+              :push-room="FILE_GAP"
               :label="t(l.diff)"
               @user-scroll="stopLanding"
               @row-focus-lost="onRowFocusLost"

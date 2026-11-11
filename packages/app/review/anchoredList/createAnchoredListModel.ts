@@ -39,7 +39,7 @@ export interface AnchoredListModelOptions<T> {
     estimateHeight(row: T): number;
     isPinned(row: T): boolean;
     /** How far below the one it pushes up a pinned row stays: the push starts that much before it arrives. */
-    pushRoom?(row: T): number;
+    readonly pushRoom?: number;
 }
 
 /** The arithmetic of a list that holds a row in place. It knows no DOM: the component feeds it what the browser says. */
@@ -208,8 +208,7 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         }
 
         const next = pinnedIndices[position + 1];
-        const room =
-            next === undefined ? Infinity : heights.top(next) - (options.pushRoom?.(rowAt(next)) ?? 0) - scrollTop;
+        const room = next === undefined ? Infinity : heights.top(next) - (options.pushRoom ?? 0) - scrollTop;
         return { row: rowAt(index), index, pushUp: Math.max(heights.height(index) - room, 0) };
     }
 

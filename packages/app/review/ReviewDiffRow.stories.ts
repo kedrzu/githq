@@ -52,6 +52,14 @@ const GAPS_DIFF = computeFileDiff({
     ignoreWhitespace: false,
 });
 const GAPS_FILE = file('src/sync/outbox.ts', 3, 3);
+/** 1,200 lines, changed at 1,100: numbers of four digits. */
+const LONG_BEFORE = Array.from({ length: 1200 }, (_, index) => `const kept${index + 1} = ${index + 1};`).join('\n');
+const LONG_DIFF = computeFileDiff({
+    before: LONG_BEFORE,
+    after: LONG_BEFORE.replace('kept1100 = 1100;', 'kept1100 = 0;'),
+    ignoreWhitespace: false,
+});
+const LONG_FILE = file('src/sync/long.ts', 1, 1);
 const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
 /** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
 const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
@@ -193,6 +201,54 @@ export const ExpansionReset: Story = {
             canvas.getAllByText(/^Context you expanded here was reset by the push · \d+ lines$/u),
         ).toHaveLength(1);
     },
+};
+
+/** D42, `Diff / Gap · reset, nothing hidden`: a gap a push reset whose lines are all shown for threads says only that, with no count, no arrow and no click. */
+export const ExpansionResetNothingHidden: Story = {
+    args: { onExpand: fn() },
+    render: args => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: fileRows(FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }).map(
+                    row => (row.kind === 'gap' && row.expansionReset ? { ...row, hidden: 0 } : row),
+                ),
+            }),
+            githubUrl: FILES_URL,
+            onExpand: args.onExpand,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" layout="split" @expand="onExpand" /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getByText('Context you expanded here was reset by the push', { exact: true }),
+        ).toBeVisible();
+    },
+};
+
+/** D43: a file of four-digit line numbers, split: the number column widens for the comment icon to stay inside it. */
+export const FourDigitsSplit: Story = {
+    render: () =>
+        renderRows(
+            fileRows(LONG_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'split' }),
+            }),
+            { layout: 'split' },
+        ),
+};
+
+/** D43: the same, unified: both number columns widen. */
+export const FourDigitsUnified: Story = {
+    render: () =>
+        renderRows(
+            fileRows(LONG_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'unified' }),
+            }),
+            { layout: 'unified' },
+        ),
 };
 
 /** CR62: GitHub took its viewed mark off since the last visit. */

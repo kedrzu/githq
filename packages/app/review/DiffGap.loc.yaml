@@ -15,6 +15,8 @@ linesBelow:
     many: '{formatted} lines below'
 expansionReset:
   en: Context you expanded here was reset by the push · {lines}
+expansionResetOnly:
+  en: Context you expanded here was reset by the push
 showBelow:
   en: Show {count} below line {line}
 showAbove:
@@ -24,3 +26,12 @@ showAll:
   en:
     one: Show 1 line
     many: Show {formatted} lines
+enterShowsBelow:
+  en: ↵ shows {count} below line {line}
+enterShowsAbove:
+  en: ↵ shows {count} above line {line}
+enterShowsAll:
+  plural: count
+  en:
+    one: ↵ shows 1 line
+    many: ↵ shows {formatted} lines

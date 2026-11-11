@@ -26,10 +26,8 @@ export const LINE_HEIGHT = 20;
 export const FILE_GAP = 8;
 /** How many lines an arrow of a gap shows (D42); a gap with no more hidden has one arrow for all of it. */
 export const GAP_STEP = 20;
-/** How tall a gap's one arrow is drawn. */
-const GAP_ARROW_HEIGHT = 18;
-/** How tall each of a gap's two arrows is: stacked, they need WCAG's 24 px a target (2.5.8), which spacing can't give them. */
-const GAP_ARROW_PAIR_HEIGHT = 24;
+/** How tall a gap's arrows are, side by side or one: WCAG's 24 px a target (2.5.8). */
+const GAP_ARROW_HEIGHT = 24;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
 /** A comment of two lines, and what stands between comments. */
@@ -782,10 +780,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'line':
             return LINE_HEIGHT;
         case 'gap':
-            // The arrows, stacked, and the edges: none under a file's last gap, the block's own following it.
-            return (
-                (getGapArrows(row) === 'both' ? 2 * GAP_ARROW_PAIR_HEIGHT : GAP_ARROW_HEIGHT) + (row.atFileEnd ? 1 : 2)
-            );
+            // The arrows and the edges: none under a file's last gap, the block's own following it.
+            return GAP_ARROW_HEIGHT + (row.atFileEnd ? 1 : 2);
         case 'distance':
         case 'fileEnd':
             return 26;

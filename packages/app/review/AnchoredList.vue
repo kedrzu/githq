@@ -86,11 +86,11 @@ const props = withDefaults(
     estimateHeight: (row: T) => number;
     isPinned?: (row: T) => boolean;
     /** How far below the one it pushes up a pinned row stays, the background showing between them. */
-    pushRoom?: (row: T) => number;
+    pushRoom?: number;
     /** What the list is, for screen readers. */
     label: string;
   }>(),
-  { isPinned: () => false, pushRoom: () => 0 },
+  { isPinned: () => false },
 );
 
 const emit = defineEmits<{
@@ -109,7 +109,9 @@ const spacer = useTemplateRef<HTMLElement>('spacer');
 const model = createAnchoredListModel<T>({
   estimateHeight: row => props.estimateHeight(row),
   isPinned: row => props.isPinned(row),
-  pushRoom: row => props.pushRoom(row),
+  get pushRoom() {
+    return props.pushRoom;
+  },
 });
 model.setRows(props.rows);
 

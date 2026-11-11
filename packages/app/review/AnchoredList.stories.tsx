@@ -62,7 +62,7 @@ const Demo = defineComponent({
                         rows={rows.value}
                         estimateHeight={() => ESTIMATE}
                         isPinned={row => row.pinned}
-                        pushRoom={() => props.pushRoom}
+                        pushRoom={props.pushRoom}
                         label="Rows"
                     >
                         {{
