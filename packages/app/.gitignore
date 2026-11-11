@@ -1,0 +1,15 @@
+# Nuxt's build and output, one pair per target (`GITHQ_TARGET`): production, local, desktop
+.nuxt/
+.output/
+.nuxt-local/
+.output-local/
+.nuxt-desktop/
+.output-desktop/
+# `nuxt generate`'s symlink to `.output/public`; the root's `dist/` matches only a directory
+/dist
+
+# `build-storybook`
+storybook-static/
+
+# Written by hand: it extends `.nuxt/tsconfig.json`
+!tsconfig.json

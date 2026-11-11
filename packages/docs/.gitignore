@@ -1,0 +1,5 @@
+# VitePress's dev cache
+.vitepress/cache/
+
+# Written by hand: VitePress builds the package, its tsconfig only type-checks the config
+!tsconfig.json

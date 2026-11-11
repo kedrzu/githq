@@ -94,6 +94,7 @@
     "disableArtifact": true,
     "agentPushNotifEnabled": false,
     "autoMemoryEnabled": false,
+    "autoDreamEnabled": false,
     "extraKnownMarketplaces": {
         "kedrzu-skills": {
             "source": {
