@@ -271,7 +271,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   “1 new since you looked” (was “2 new” before mlaine's own request and comment); I1 (`M83Hr`) reads “1 new” (mlaine's
   pin is their own); on I2 sofiab closed the issue through #15 (`lDKUQ`, was mlaine), so the line reads “3 new”. F5's
   caption (`s4L7N6`) adds that a line with no person counts as someone else's, and who the viewer is.
-- [ ] “New since you looked”, the screens corrected again to the rule as written (the viewer's own items count as having
+- [x] “New since you looked”, the screens corrected again to the rule as written (the viewer's own items count as having
   looked, so nothing before them is new; the previous entry only stopped counting them): on F5 (`pbvBV`), F9, F10 and
   F11 dkim's comment moves after mlaine's comment, at 1h, with a reply fitting there (“The retry and the migration both
   pass for me locally now…”), and the line “1 new since you looked” stands before it; on I1 mlaine's pin moves before the
