@@ -211,6 +211,26 @@ test('the list keeps the current file in view as ] walks past what fits', async 
     await expect(review.currentFileRow).toBeInViewport();
 });
 
+test('scrolling makes the file at the reading line current, the last one at the end and the first at the top (D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, { repository: 'acme/web', number: 15, files: manyFiles() });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.currentFileRow).toContainText('file00.ts');
+
+    // Rows measured on the way change the height to scroll: again until the end stays the end.
+    await expect(async () => {
+        await review.diff.evaluate(diff => diff.scrollTo(0, diff.scrollHeight));
+        await expect(review.currentFileRow).toContainText('file39.ts', { timeout: 500 });
+    }).toPass();
+
+    await review.diff.evaluate(diff => diff.scrollTo(0, 0));
+    await expect(review.currentFileRow).toContainText('file00.ts');
+});
+
 test('a line being read stays where it is through a layout switch', async ({ page, github }) => {
     await openPullRequest(page, github);
     const numbers = Array.from({ length: 300 }, (_, index) => index);
@@ -403,7 +423,7 @@ test('a push since the last visit names the files that lost their viewed mark, t
     await expect(review.fileRow('README.md')).toContainText('changed since');
 });
 
-test('V collapses the file in place with viewed files shown, nothing moving; a second V opens it, and Space opens a viewed one and collapses it back (D13)', async ({
+test('V collapses the file in place with viewed files shown, nothing moving, and moves on to the next file; V back on it opens it, and Space opens a viewed one and collapses it back (D13, D44)', async ({
     page,
     github,
 }) => {
@@ -423,8 +443,9 @@ test('V collapses the file in place with viewed files shown, nothing moving; a s
     await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'true');
     await expect(review.code('export const client = 2;')).toHaveCount(0);
     await expect(review.fileHeader(CLIENT)).toBeInViewport();
-    await expect(review.currentFileRow).toContainText('client.ts');
+    await expect(review.currentFileRow).toContainText('schema.json');
 
+    await review.fileRow('client.ts').click();
     await page.keyboard.press('v');
     await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'false');
     await expect(review.code('export const client = 2;')).toBeVisible();

@@ -16,6 +16,10 @@ export interface AnchoredListViewport {
   readonly height: number;
   /** How far down from its top the pinned row's overlay reaches. */
   readonly covered: number;
+  /** How far the list is scrolled from its top. */
+  readonly scrolled: number;
+  /** How much further down the list can scroll. */
+  readonly remaining: number;
 }
 
 /** A row on screen, its edges measured from the viewport's top. */
@@ -38,8 +42,12 @@ export interface AnchoredListExposed<T = AnchoredListRow> {
   scrollBy(distance: number): void;
   /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
   getRowOffset(key: string): number | null;
+  /** Reactive: it changes with the scroll and the layout, at most once a frame. */
   getViewport(): AnchoredListViewport;
-  /** The rows touching the viewport, those under the pinned row's overlay included, top to bottom. */
+  /**
+   * The rows touching the viewport, those under the pinned row's overlay included, top to bottom. Reactive as
+   * `getViewport` is.
+   */
   getShownRows(): AnchoredListShownRow<T>[];
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
@@ -94,8 +102,11 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
-  userScroll: [];
+  /**
+   * The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. The
+   * distance is how far, down if positive.
+   */
+  userScroll: [distance: number];
   /** A row with the focus inside it left the window, or the list: the list took the focus, for whoever wants it back. */
   rowFocusLost: [key: string];
 }>();
@@ -120,6 +131,8 @@ const firstVisibleKey = shallowRef<string | null>(null);
 const focusedQuietly = shallowRef(false);
 const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
 const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
+/** What the viewport showed when the window was last placed: what makes `getViewport` and `getShownRows` reactive. */
+const viewport = shallowRef<AnchoredListViewport>({ height: 0, covered: 0, scrolled: 0, remaining: 0 });
 
 const observer = new ResizeObserver(onResize);
 const measuredKeys = new WeakMap<Element, string>();
@@ -191,16 +204,17 @@ function getRowOffset(key: string) {
 }
 
 function getViewport(): AnchoredListViewport {
-  return { height: viewportHeight, covered: model.coveredAt(knownScrollTop) };
+  return viewport.value;
 }
 
 function getShownRows() {
+  const { scrolled, height } = viewport.value;
   const placed = placedRows.value;
   const shown: AnchoredListShownRow<T>[] = [];
   for (const [index, { row, top }] of placed.entries()) {
-    const bottom = (placed[index + 1]?.top ?? model.total) - knownScrollTop;
-    if (bottom > 0 && top - knownScrollTop < viewportHeight) {
-      shown.push({ row, top: top - knownScrollTop, bottom });
+    const bottom = (placed[index + 1]?.top ?? model.total) - scrolled;
+    if (bottom > 0 && top - scrolled < height) {
+      shown.push({ row, top: top - scrolled, bottom });
     }
   }
 
@@ -220,11 +234,12 @@ function onScroll() {
     return;
   }
 
+  const distance = scrollTop - knownScrollTop;
   knownScrollTop = scrollTop;
   model.captureAnchor(scrollTop);
   anchor.value = model.anchor;
   showWindow(false);
-  emit('userScroll');
+  emit('userScroll', distance);
 }
 
 /** One observer call is the whole frame's observations of these elements, so it is one layout. */
@@ -305,6 +320,12 @@ function showWindow(layoutChanged: boolean) {
   }
 
   firstVisibleKey.value = model.firstVisibleRow(knownScrollTop)?.key ?? null;
+  viewport.value = {
+    height: viewportHeight,
+    covered: model.coveredAt(knownScrollTop),
+    scrolled: knownScrollTop,
+    remaining: Math.max(model.total - viewportHeight - knownScrollTop, 0),
+  };
 }
 </script>
 
