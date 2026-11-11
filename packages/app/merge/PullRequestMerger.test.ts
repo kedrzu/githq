@@ -15,6 +15,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { samplePullRequestNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import type { MergeAnswer, MergeLateEnd } from './MergeTypes.js';
 import { PullRequestMerger } from './PullRequestMerger.js';
@@ -681,7 +682,7 @@ test('SP53: a stack on a queue branch sends the sha alone to its top — whose o
 });
 
 async function setup() {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const answers: MergeAnswers = { put: undefined, read: STILL_PENDING };
     const rest = {
         answers,

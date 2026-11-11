@@ -13,6 +13,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { TrackingStore } from './TrackingStore.js';
 import type { TrackedProject, TrackedRepository, TrackedTarget } from './TrackingTypes.js';
@@ -87,7 +88,7 @@ test('untracking drops the sync state and the copy, also when the document is re
 });
 
 test('the choice survives a new cache database, in its order', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const first = await open({ login });
     first.tracking.choose({ repositories: [API, WEB], projects: [ROADMAP] });
 
@@ -99,7 +100,7 @@ test('the choice survives a new cache database, in its order', async () => {
 });
 
 test('a sync state left by an untrack the closing page cut off goes when the settings are read, so tracking it again downloads it', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const target = { kind: 'repository', nameWithOwner: 'acme/web' } as const;
     const stillTracked = { kind: 'repository', nameWithOwner: 'acme/api' } as const;
     const first = await open({ login });
@@ -135,7 +136,7 @@ test('a sync state left by an untrack the closing page cut off goes when the set
 });
 
 test('a slot this build does not understand is left as it is until the user changes something here', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const key = `githq.settings.${login}`;
     const newer = JSON.stringify({ chosen: true, document: { version: 2, repositories: [], projects: [] } });
     const localStorage = new Map([[key, newer]]);
@@ -151,7 +152,7 @@ test('a slot this build does not understand is left as it is until the user chan
 });
 
 test('a tab that has not heard of another tab’s change yet writes on top of it: the slot they share is the truth', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const key = `githq.settings.${login}`;
     // One localStorage, no broadcast between them: the second tab never hears what the first one sends.
     const first = await open({ login });
@@ -196,7 +197,7 @@ test('a tab that has not heard of another tab’s change yet writes on top of it
 });
 
 test('a choice made as a change of what is tracked is made of what the shared slot holds, another tab’s change included', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     // One localStorage, no broadcast between them: the second tab never hears what the first one sends.
     const first = await open({ login });
     const second = await open({ login, localStorage: first.localStorage });
@@ -247,7 +248,7 @@ test('signing out deletes the kept choice', async () => {
 });
 
 test('tabs stay in step: another tab takes the change in, and the document it saved when they share localStorage', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const tabs = createTestTabs();
     const first = await open({ login, tabs });
     const second = await open({ login, tabs });
@@ -276,7 +277,7 @@ test('tabs stay in step: another tab takes the change in, and the document it sa
 });
 
 test('a repository’s workflows setting is written only when the user changes it, kept through untracking, told as a local change and taken in by another tab', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const tabs = createTestTabs();
     const first = await open({ login, tabs });
     const second = await open({ login, tabs });
@@ -309,7 +310,7 @@ test('a repository’s workflows setting is written only when the user changes i
 });
 
 test('the user’s settings repository is never offered to track; someone else’s of that name is', async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const { tracking } = await open({
         login,
         answer: request => {
@@ -366,7 +367,7 @@ interface OpenOptions {
 
 /** A tab signed in with its local copy open and the kept choice read. */
 async function open(options: OpenOptions = {}) {
-    const login = options.login ?? `user-${crypto.randomUUID()}`;
+    const login = options.login ?? uniqueLogin();
     const session = createTestSession({
         login,
         answer: options.answer ?? (() => undefined),

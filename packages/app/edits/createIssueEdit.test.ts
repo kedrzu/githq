@@ -14,6 +14,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { createTestSession } from '@/testing/createTestSession.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import type { NewIssueInput } from './createIssueEdit.js';
 import { EditQueue } from './EditQueue.js';
@@ -160,7 +161,7 @@ interface FakeGitHub {
 }
 
 async function setup() {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const github: FakeGitHub = {
         dropValues: false,
         refuse: null,

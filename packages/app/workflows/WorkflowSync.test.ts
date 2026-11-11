@@ -22,6 +22,7 @@ import type { TestTabs } from '@/testing/createTestTabs.js';
 import { createTrackingWorld } from '@/testing/createTrackingWorld.js';
 import type { TrackingWorld } from '@/testing/createTrackingWorld.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import type { TrackingChoice } from '@/tracking/TrackingStore.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -1251,8 +1252,4 @@ function actionsRequests(requests: readonly TestGraphQLRequest[]) {
     }
 
     return read;
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

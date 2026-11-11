@@ -14,6 +14,7 @@ import { ItemStore } from '@/store/ItemStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { waitUntil } from '@/testing/waitUntil.js';
 
 import { ItemNavigation } from './ItemNavigation.js';
@@ -25,7 +26,7 @@ const PULL_REQUEST = 'PR_7';
 
 test("a pull request's review threads are read when it opens, not again when its row is replaced", async () => {
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: ({ operation }) => {
             switch (operation) {
                 case 'ItemByNumber':

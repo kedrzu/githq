@@ -14,6 +14,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import { samplePullRequest } from '@/testing/sampleItems.js';
 import { samplePullRequestNode as sampleRowNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { ItemEditor } from './ItemEditor.js';
 
@@ -272,7 +273,7 @@ describe('its branch and checks (merging D16)', () => {
         refusedRuns: readonly number[] = [],
     ) {
         const session = createTestSession({
-            login: `user-${crypto.randomUUID()}`,
+            login: uniqueLogin(),
             answer: request => answers[request.operation],
             answerRest: request => {
                 if (!request.operation.endsWith('/rerun-failed-jobs')) {
@@ -567,7 +568,7 @@ function requests(session: ReturnType<typeof createTestSession>, operation: stri
 
 /** A pull request with its head as the user saw it; GitHub answers each mutation with `data`, or refuses with `refusal`. */
 async function setupMerge(data: object, refusal: string | null = null, statuses: object | null = null) {
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer });
+    const session = createTestSession({ login: uniqueLogin(), answer });
     setIndexedDbPersistence(session.container);
     const items = session.container.resolve(ItemStore);
     const editor = session.container.resolve(ItemEditor);
@@ -594,7 +595,7 @@ async function setupMerge(data: object, refusal: string | null = null, statuses:
 
 /** A pull request behind its base, as the user saw it; GitHub refuses the update with `refusal` when given. */
 async function setup(refusal: string | null) {
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer });
+    const session = createTestSession({ login: uniqueLogin(), answer });
     setIndexedDbPersistence(session.container);
     const items = session.container.resolve(ItemStore);
     const editor = session.container.resolve(ItemEditor);

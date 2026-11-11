@@ -28,6 +28,7 @@ import type { TestTabs } from '@/testing/createTestTabs.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleIssue } from '@/testing/sampleItems.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { CommentDrafts } from './CommentDrafts.js';
 import { EditQueue } from './EditQueue.js';
@@ -151,7 +152,7 @@ test('the edits of one item go one at a time, in order; a sync answer meanwhile 
 
 test('a sync answer read before an edit and arriving after it, in another tab, undoes it in no tab — row, detail or project item', async () => {
     const tabs = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const editing = await setup({ tabs, login });
     const other = await setup({ tabs, login });
     editing.projects.upsertItems([projectItem()]);
@@ -707,7 +708,7 @@ interface SetupOptions {
 }
 
 async function setup(options: SetupOptions = {}) {
-    const login = options.login ?? `user-${crypto.randomUUID()}`;
+    const login = options.login ?? uniqueLogin();
     const READS = new Set(['Viewer', 'RepositoryMetadata', 'RepositoryLabel', 'ItemDetail']);
     const received = () => session.github.requests.filter(request => !READS.has(request.operation));
     const github: FakeGitHub = {

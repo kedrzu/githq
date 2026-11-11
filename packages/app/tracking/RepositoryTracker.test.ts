@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { RepositoryTracker } from './RepositoryTracker.js';
 import { TrackingStore } from './TrackingStore.js';
@@ -53,7 +54,7 @@ test('GitHub not showing it, or not answering, tracks nothing and says so until 
 });
 
 test("the user's own settings repository is not tracked", async () => {
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const { tracker, tracking } = await open(
         () => ({ data: { repository: repositoryNode(`${login}/githq-settings`) } }),
         login,
@@ -81,10 +82,7 @@ test('signed out while it is looked up, nothing is tracked and no failure is lef
     expect(tracker.failedName).toBeNull();
 });
 
-async function open(
-    answer: (request: TestGraphQLRequest) => TestGraphQLAnswer | undefined,
-    login = `user-${crypto.randomUUID()}`,
-) {
+async function open(answer: (request: TestGraphQLRequest) => TestGraphQLAnswer | undefined, login = uniqueLogin()) {
     const session = createTestSession({ login, answer });
     setIndexedDbPersistence(session.container);
     const tracking = session.container.resolve(TrackingStore);

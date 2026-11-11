@@ -17,6 +17,7 @@ import { fakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
 import type { FakeCommitGitHub } from '@/testing/fakeCommitGitHub.js';
 import { sampleCommit } from '@/testing/sampleCommits.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { CommitGraphStore } from './CommitGraphStore.js';
 import type { CommitChecksRead, CommitGraphPlace, CommitState } from './CommitTypes.js';
@@ -1403,8 +1404,4 @@ function checkRun(name: string): PullRequestCheckFieldsFragment {
         completedAt: null,
         checkSuite: { workflowRun: { workflow: { name: 'ci' } } },
     };
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }

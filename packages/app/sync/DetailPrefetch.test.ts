@@ -17,6 +17,7 @@ import { toItem } from '@/store/toItem.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { sampleIssueDetailNode } from '@/testing/sampleDetailNodes.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { DetailPrefetch } from './DetailPrefetch.js';
 
@@ -104,7 +105,7 @@ async function setup() {
         /** Deleted: GitHub answers `null` with `NOT_FOUND`. */
         gone: new Set<string>(),
     };
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer });
+    const session = createTestSession({ login: uniqueLogin(), answer });
     const persistence = createIndexedDbPersistence();
     session.container.set(ItemPersistence, persistence);
     session.container.set(ItemDetailPersistence, persistence);

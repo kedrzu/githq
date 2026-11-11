@@ -12,6 +12,7 @@ import type { Freshness } from '@/sync/Freshness.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession, TEST_START } from '@/testing/createTestSession.js';
 import { sampleIssueDetailNode, samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence, getLocalDatabaseName } from './IndexedDbPersistence.js';
 import { ItemDetailPersistence } from './ItemDetailPersistence.js';
@@ -445,10 +446,6 @@ function eventIds(from: number, to: number) {
 
 function commentIds(from: number, to: number) {
     return Array.from({ length: to - from + 1 }, (_, index) => `IC_${from + index}`);
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }
 
 async function databaseNames() {

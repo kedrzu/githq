@@ -20,6 +20,7 @@ import {
     sampleWebappHistory,
 } from '@/testing/sampleCommits.js';
 import { trackTabFocus } from '@/testing/trackTabFocus.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { getRouteNameWithOwner, WORKFLOW_RUN_PATH } from '@/tracking/trackingRoutes.js';
 
 import CommitGraphView from './CommitGraphView.vue';
@@ -432,7 +433,7 @@ test('another account signing in opens the graph again for them, the view stayin
 
     // As another tab signs in: the token and the user change under this one, which hears of the token.
     const { localStorage } = view.container.resolve(Browser);
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
     localStorage.setItem(TOKEN_KEY, `gho_${login}`);
     window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));
@@ -1273,7 +1274,7 @@ test("Enter from a ref's details moves on to the cursor's commit; another accoun
     await expect.element(details().getByRole('heading', { name: 'Commit old' })).toBeVisible();
 
     const { localStorage } = view.container.resolve(Browser);
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     localStorage.setItem(VIEWER_KEY, JSON.stringify({ login, name: null, avatarUrl: 'https://avatars.test/user' }));
     localStorage.setItem(TOKEN_KEY, `gho_${login}`);
     window.dispatchEvent(new StorageEvent('storage', { key: TOKEN_KEY, storageArea: window.localStorage }));

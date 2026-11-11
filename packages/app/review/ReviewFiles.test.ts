@@ -12,6 +12,7 @@ import { EDIT_RESERVE } from '@/sync/getAllowancePause.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest, TestRestAnswer } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { waitUntil } from '@/testing/waitUntil.js';
 
 import type { ReviewPosition } from './buildReviewRows.js';
@@ -2438,10 +2439,6 @@ function oidExpressions(session: TestSession) {
 
 function viewedOf(model: PullRequestFiles, path: string) {
     return model.files.find(file => file.path === path)?.viewed;
-}
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
 }
 
 async function databaseNames() {

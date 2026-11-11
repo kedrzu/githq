@@ -5,6 +5,7 @@ import type { AnsweredView } from '@/projects/ProjectViewAnswers.js';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 import type { TestTabs } from '@/testing/createTestTabs.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { TabChannel } from './TabChannel.js';
 
@@ -12,7 +13,7 @@ const VIEW: AnsweredView = { projectId: 'PVT_1', filter: 'reviewers:octocat', te
 
 test('a tab gone without a word — crashed, discarded — is forgotten after two missed heartbeats; a live one never is', async () => {
     const browser = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const hidden = openTab(browser, login);
     const shown = openTab(browser, login);
     hidden.session.setVisible(false);
@@ -42,7 +43,7 @@ test('a tab gone without a word — crashed, discarded — is forgotten after tw
 
 test('the repositories another tab has on screen are heard, and go with it', async () => {
     const browser = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const stays = openTab(browser, login);
     const leaves = openTab(browser, login);
     leaves.channel.setAnyRefRepositories(['acme/web']);
@@ -62,7 +63,7 @@ test('the repositories another tab has on screen are heard, and go with it', asy
 
 test('the repositories another tab holds are heard when nothing else of it changed, and go with it', async () => {
     const browser = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const stays = openTab(browser, login);
     const leaves = openTab(browser, login);
     await advance([stays, leaves], 0);

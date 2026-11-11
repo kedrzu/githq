@@ -6,6 +6,7 @@ import { expect, test } from 'bun:test';
 import { openDB } from 'idb';
 
 import { createIndexedDbPersistence } from '@/store/IndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
 import type { ReviewKeptFileList, ReviewKeptResolution, ReviewKeptState } from './ReviewBlobStore.js';
@@ -159,10 +160,6 @@ test('a write with nothing opened fails rather than creating the database', asyn
 
     expect(await databaseNames()).not.toContain(getReviewBlobDatabaseName(login));
 });
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
-}
 
 async function databaseNames() {
     const databases = await indexedDB.databases();

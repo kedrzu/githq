@@ -25,6 +25,7 @@ import type { TestTabs } from '@/testing/createTestTabs.js';
 import { createTrackingWorld, worldProjectItem } from '@/testing/createTrackingWorld.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
 import { ProjectStore } from './ProjectStore.js';
@@ -206,7 +207,7 @@ test('a project or an item landing after signing out keeps nothing', async () =>
 
 test('a tab opening before another wrote a project item it changed gets it from it', async () => {
     const tabs = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const first = await setup({ login, tabs });
     const stored = assertValue(first.projects.getStoredItem('PVTI_1'));
     first.projects.upsertItems([{ ...stored, itemId: 'PVTI_2' }]);
@@ -312,7 +313,7 @@ async function setup(options: SetupOptions = {}) {
     world.project.fields.push(...(options.extraFields ?? []));
 
     const session = createTestSession({
-        login: options.login ?? `user-${crypto.randomUUID()}`,
+        login: options.login ?? uniqueLogin(),
         answer: request => world.answer(request),
         answerRest: request => world.answerRest(request),
         tabs: options.tabs,

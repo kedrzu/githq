@@ -15,6 +15,7 @@ import { SyncEngine } from '@/sync/SyncEngine.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { getRouteNameWithOwner } from '@/tracking/trackingRoutes.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 
@@ -156,7 +157,7 @@ test('another account signed in where the page stands holds the repository for i
     await expect.element(rowOf('Issue I_open')).toBeVisible();
     const asked = github.issuePages().length;
 
-    const another = `user-${crypto.randomUUID()}`;
+    const another = uniqueLogin();
     github.signsIn = another;
     await auth.signInWithToken('gho_another');
 

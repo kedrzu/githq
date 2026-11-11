@@ -14,6 +14,7 @@ import { ItemPersistence } from '@/store/ItemPersistence.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTestSession.js';
 import { createTestSession } from '@/testing/createTestSession.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingPersistence } from '@/tracking/TrackingPersistence.js';
 
 import { MarkdownSuggestionService } from './MarkdownSuggestionService.js';
@@ -54,7 +55,7 @@ test("#: GitHub's search answers by number first, then the numbers starting with
 });
 
 async function setup() {
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer });
+    const session = createTestSession({ login: uniqueLogin(), answer });
     const persistence = createIndexedDbPersistence();
     session.container.set(ItemPersistence, persistence);
     session.container.set(RepositoryPersistence, persistence);

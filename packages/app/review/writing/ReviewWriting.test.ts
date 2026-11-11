@@ -12,6 +12,7 @@ import type { TestGraphQLAnswer, TestGraphQLRequest } from '@/testing/createTest
 import { samplePullRequestDetailNode } from '@/testing/sampleDetailNodes.js';
 import { sampleThread } from '@/testing/sampleThreads.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { waitUntil } from '@/testing/waitUntil.js';
 
 import { ReviewBlobStore } from '../ReviewBlobStore.js';
@@ -211,7 +212,7 @@ function createGitHub() {
 
 type TestGitHub = ReturnType<typeof createGitHub>;
 
-async function open(github: TestGitHub, login = `user-${crypto.randomUUID()}`) {
+async function open(github: TestGitHub, login = uniqueLogin()) {
     const session = createTestSession({
         login,
         answer: request => github.answer(request),
@@ -232,7 +233,7 @@ async function open(github: TestGitHub, login = `user-${crypto.randomUUID()}`) {
 /** Opened as the item's thread opens it: for its threads alone, with no list of files read. */
 async function openThreads(github: TestGitHub) {
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: request => github.answer(request),
     });
     setIndexedDbPersistence(session.container);
@@ -693,7 +694,7 @@ test("a draft can be discarded before the first page of the list: its id is the 
     const github = createGitHub();
     github.draft = { id: 'DRAFT', comments: 1 };
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: request => github.answer(request),
     });
     setIndexedDbPersistence(session.container);

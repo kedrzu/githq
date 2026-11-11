@@ -7,6 +7,7 @@ import { expect, test } from 'bun:test';
 import { createTestSession } from '@/testing/createTestSession.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
 import { settle } from '@/testing/settle.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 
 import { createIndexedDbPersistence } from './IndexedDbPersistence.js';
 import { KEEP_DETAIL_MS } from './ItemDetailStore.js';
@@ -80,7 +81,3 @@ test('an item not looked at for as long as a detail is kept is forgotten once th
     expect(await again.read('I_old')).toBeNull();
     expect(await again.read('I_recent')).toBe(2000);
 });
-
-function uniqueLogin() {
-    return `user-${crypto.randomUUID()}`;
-}

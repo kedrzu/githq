@@ -15,6 +15,7 @@ import { createTestTabs } from '@/testing/createTestTabs.js';
 import { worldProjectItem } from '@/testing/createTrackingWorld.js';
 import { sampleIssueNode } from '@/testing/sampleRowNodes.js';
 import { setIndexedDbPersistence } from '@/testing/setIndexedDbPersistence.js';
+import { uniqueLogin } from '@/testing/uniqueLogin.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { TrackedProject } from '@/tracking/TrackingTypes.js';
 
@@ -27,7 +28,7 @@ const ROADMAP: TrackedProject = { id: 'PVT_1', owner: 'acme', ownerKind: 'org', 
 test('K6: GitHub is asked with the view’s filter while it is shown, again every interval; its items come in too', async () => {
     const issue = sampleIssueNode('I_1', { repository: 'acme/web', number: 1, updatedAt: '2026-10-26T10:00:00Z' });
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: ({ operation, variables }) =>
             operation === 'ProjectItems' && variables.query === VIEW.filter
                 ? {
@@ -77,7 +78,7 @@ test('K6: GitHub is asked with the view’s filter while it is shown, again ever
 
 test('K6: a tab opening a view the syncing tab has an answer for shows it at once, without asking GitHub again', async () => {
     const tabs = createTestTabs();
-    const login = `user-${crypto.randomUUID()}`;
+    const login = uniqueLogin();
     const issue = sampleIssueNode('I_1', { repository: 'acme/web', number: 1, updatedAt: '2026-10-26T10:00:00Z' });
     const answer = (request: TestGraphQLRequest) =>
         request.operation === 'ProjectItems'
@@ -121,7 +122,7 @@ test('K6: a tab opening a view the syncing tab has an answer for shows it at onc
 test('K3: with the GraphQL allowance down to what is kept for edits, a view is not asked again until the reset', async () => {
     const issue = sampleIssueNode('I_1', { repository: 'acme/web', number: 1, updatedAt: '2026-10-26T10:00:00Z' });
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: () => ({
             data: {
                 node: {
@@ -159,7 +160,7 @@ test('K3: with the GraphQL allowance down to what is kept for edits, a view is n
 });
 
 test('K6: a view GitHub does not answer is said to be failing, and keeps what it answered before', async () => {
-    const session = createTestSession({ login: `user-${crypto.randomUUID()}`, answer: () => undefined });
+    const session = createTestSession({ login: uniqueLogin(), answer: () => undefined });
     setIndexedDbPersistence(session.container);
     await session.container.resolve(ItemStore).ready();
     const answers = session.container.resolve(ProjectViewAnswers);
@@ -175,7 +176,7 @@ test('K6: a project GitHub does not show — midway through the pages or at the 
     /** What GitHub shows of the project: its first page only, both pages, or nothing. */
     let shown: 'firstPage' | 'all' | 'none' = 'firstPage';
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: ({ variables }) => {
             const first = variables.after === null;
             if (shown === 'none' || (shown === 'firstPage' && !first)) {
@@ -219,7 +220,7 @@ test('K6: a project GitHub does not show — midway through the pages or at the 
 test('K6: an answer on its way when the project is untracked brings none of its items into the stores', async () => {
     const issue = sampleIssueNode('I_1', { repository: 'acme/web', number: 1, updatedAt: '2026-10-26T10:00:00Z' });
     const session = createTestSession({
-        login: `user-${crypto.randomUUID()}`,
+        login: uniqueLogin(),
         answer: () => ({
             data: {
                 node: {
