@@ -524,6 +524,75 @@ test('C, V and E act on the short file crossing the reading line, not the one at
     await expect(review.viewedButton('src/a/top.ts')).toHaveAttribute('aria-pressed', 'false');
 });
 
+test('Space twice on the current file collapses it and opens it again, not the next file come up to the reading line (D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            // Above it, for the diff not to be at its top, where the reading line slides up to the top edge.
+            { path: 'src/0/first.ts', before: '', after: `${numbered('first', 60)}\n` },
+            { path: 'src/a/tall.ts', before: '', after: `${numbered('tall', 120)}\n` },
+            { path: 'src/b/next.ts', before: '', after: `${numbered('next', 120)}\n` },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const first0 = 0;')).toBeVisible();
+    // Past the landing's hold, the tall file current by the reading line alone.
+    await review.diff.evaluate(element => element.scrollBy(0, 1600));
+    await expect(review.currentFileRow).toContainText('tall.ts');
+
+    await page.keyboard.press('Space');
+    await expect(review.code('const tall60 = 60;')).toHaveCount(0);
+    await expect(review.code('const next0 = 0;')).toBeInViewport();
+    await expect(review.currentFileRow).toContainText('tall.ts');
+
+    await page.keyboard.press('Space');
+    await expect(review.code('const tall60 = 60;')).toBeAttached();
+    await expect(review.currentFileRow).toContainText('tall.ts');
+});
+
+test("C takes N's thread only in the current file: scrolled up into the file above, the thread still on screen, C opens on that file's line (D44)", async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            { path: 'src/a/above.ts', before: '', after: `${numbered('above', 120)}\n` },
+            { path: 'src/b/threaded.ts', before: '', after: `${numbered('threaded', 120)}\n` },
+        ],
+        threads: [{ id: 'T1', path: 'src/b/threaded.ts', line: 5, comments: ['<p>Look here</p>'] }],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const above0 = 0;')).toBeVisible();
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('Look here');
+
+    // Up by more than half a screen, which ends N's hold: the thread a quarter down is still on screen.
+    await review.diff.evaluate(element => element.scrollBy(0, -(element.clientHeight / 2 + 40)));
+    await expect(review.currentFileRow).toContainText('above.ts');
+    await expect(review.thread('Look here')).toBeInViewport();
+
+    await page.keyboard.press('c');
+
+    const box = review.commentBox();
+    await expect(box).toBeVisible();
+    await expect(review.commentBox('Comment on line 5')).toHaveCount(0);
+    const [opened, header] = await Promise.all([
+        box.boundingBox(),
+        review.fileHeader('src/b/threaded.ts').boundingBox(),
+    ]);
+    expect(opened?.y).toBeLessThan(header?.y ?? 0);
+});
+
 test('a pull request with no changes says so', async ({ page, github }) => {
     await openPullRequest(page, github);
     answerReview(github, { repository: 'acme/web', number: 15, files: [] });
@@ -1024,4 +1093,9 @@ function manyFiles(): SampleReviewFile[] {
             after: `${body}\nif (ready) {\n  const changed${index} = 2;\n}\n`,
         };
     });
+}
+
+/** `count` lines `const <name><n> = <n>;`. */
+function numbered(name: string, count: number) {
+    return Array.from({ length: count }, (_, index) => `const ${name}${index} = ${index};`).join('\n');
 }

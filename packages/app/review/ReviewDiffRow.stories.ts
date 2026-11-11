@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
-import { buildFileLineRows, buildReviewRows, getReviewRowPath } from './buildReviewRows.js';
+import { buildFileLineRows, buildReviewRows, getReviewHeaderKey, getReviewRowPath } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
@@ -187,6 +187,35 @@ export const CurrentPushed: Story = {
             currentPath: FILE.path,
             pushed: true,
         }),
+};
+
+/** A deleted file current: its red count and change on the tint keep AA (D30). */
+export const CurrentDeleted: Story = {
+    render: () => {
+        const deleted = file('src/sync/pending.ts', 0, 18, { changeType: 'DELETED' });
+        return renderRows(fileRows(deleted, { kind: 'collapsed' }), { currentPath: deleted.path });
+    },
+};
+
+/** A file gone from the diff current: its struck name and note on the tint keep AA (D30). */
+export const CurrentGone: Story = {
+    render: () => {
+        const gone = file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notInDiff' }, changeType: 'DELETED' });
+        return renderRows(
+            [
+                {
+                    kind: 'header',
+                    key: getReviewHeaderKey(gone.path),
+                    file: gone,
+                    collapsed: false,
+                    collapseReason: null,
+                    threadsUnder: true,
+                    threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+                },
+            ],
+            { currentPath: gone.path },
+        );
+    },
 };
 
 /** CR88: files on their way in split, a bar for each line where its code will start (D38): a modified file mirrors its context, an added one is on the right alone, a deleted one on the left alone. */

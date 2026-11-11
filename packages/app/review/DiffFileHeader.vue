@@ -183,7 +183,7 @@ function onClick(event: MouseEvent) {
 }
 
 .diffFileHeader_current {
-  background: color-mix(in srgb, #{$color-accent} 12%, #{$color-bg-2});
+  background: $color-current-header;
   border-color: $color-current-edge;
 }
 
