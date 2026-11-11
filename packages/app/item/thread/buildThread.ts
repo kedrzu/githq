@@ -273,7 +273,7 @@ export function buildThread({
         seen.add(comment.id);
         const entry: ThreadItem = { kind: 'comment', id: comment.id, comment };
         // Not on GitHub yet: its time is this device's, after everything GitHub told.
-        if (comment.id.startsWith('pending:')) {
+        if (isPendingComment(comment)) {
             pending.push(entry);
         } else {
             timed.push({ at: Date.parse(comment.createdAt), kind: 'item', item: entry });
@@ -375,7 +375,7 @@ function findNewSince({ items, lookedAt, newSinceId, viewerLogin }: FindNewSince
             }
         }
 
-        first = items.findIndex(entry => isNew(entry, since, viewerLogin));
+        first = items.findIndex(entry => isNew({ entry, since, viewerLogin }));
     }
 
     const firstEntry = items[first];
@@ -383,12 +383,19 @@ function findNewSince({ items, lookedAt, newSinceId, viewerLogin }: FindNewSince
         return null;
     }
 
-    const count = items.slice(first).filter(entry => isNew(entry, lookedAt, viewerLogin)).length;
+    const count = items.slice(first).filter(entry => isNew({ entry, since: lookedAt, viewerLogin })).length;
     return { kind: 'newSince', id: 'newSince', count, firstId: firstEntry.id };
 }
 
+/** The parameters of {@link isNew}. */
+interface IsNewParams {
+    readonly entry: ThreadItem;
+    readonly since: number;
+    readonly viewerLogin: string | null;
+}
+
 /** Someone else's item after `since`: a comment, a line of events, a push, the CI line, a review, a code comment. */
-function isNew(entry: ThreadItem, since: number, viewerLogin: string | null) {
+function isNew({ entry, since, viewerLogin }: IsNewParams) {
     switch (entry.kind) {
         case 'comment':
         case 'events':
@@ -411,7 +418,7 @@ function isNew(entry: ThreadItem, since: number, viewerLogin: string | null) {
 function isViewers(entry: ThreadItem, viewerLogin: string | null): boolean {
     switch (entry.kind) {
         case 'comment':
-            return entry.id.startsWith('pending:') || isViewer(entry.comment.author, viewerLogin);
+            return isPendingComment(entry.comment) || isViewer(entry.comment.author, viewerLogin);
         case 'events':
         case 'push':
             return isViewer(entry.actor, viewerLogin);
@@ -433,6 +440,11 @@ function isViewers(entry: ThreadItem, viewerLogin: string | null): boolean {
 
 function isViewer(user: ItemUser | null, viewerLogin: string | null) {
     return viewerLogin !== null && user?.login === viewerLogin;
+}
+
+/** A comment not on GitHub yet: the user's, on its way. */
+function isPendingComment(comment: ItemComment) {
+    return comment.id.startsWith('pending:');
 }
 
 /** The parameters of {@link placeReviews}. */
@@ -462,7 +474,7 @@ function placeReviews({ summaries, reviewThreads, viewerLogin, dismissals }: Pla
     const draft: ReviewThread[] = [];
     for (const read of reviewThreads) {
         const comments = read.comments.filter(
-            comment => comment.state !== 'PENDING' || (viewerLogin !== null && comment.author?.login === viewerLogin),
+            comment => comment.state !== 'PENDING' || isViewer(comment.author, viewerLogin),
         );
         const [first] = comments;
         if (!first) {
@@ -675,7 +687,7 @@ function hasOpenThread(entry: ThreadItem) {
 function getEndedAt(entry: ThreadItem) {
     switch (entry.kind) {
         case 'comment':
-            return entry.id.startsWith('pending:') ? Infinity : Date.parse(entry.comment.createdAt);
+            return isPendingComment(entry.comment) ? Infinity : Date.parse(entry.comment.createdAt);
         case 'events':
         case 'push':
         case 'checksFailed':
