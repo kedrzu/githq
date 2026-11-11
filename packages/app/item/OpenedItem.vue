@@ -1,12 +1,14 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item is handed to the view too, for its thread's "N new since you looked"; leaving the item — another opened, closing it, the tab hidden or left — keeps the newest of its thread they saw (`useItemLooked`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item is handed to the view too, for its thread's "N new since you looked"; leaving the item — another opened, closing it, the tab hidden or left — keeps the newest of its thread they saw (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
+import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
+import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
 import { SearchX } from 'lucide-vue-next';
-import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onScopeDispose, useTemplateRef, watch } from 'vue';
 import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -23,6 +25,7 @@ import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { AuthStore } from '@/auth/AuthStore.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
+import { ItemLookedStore } from '@/store/ItemLookedStore.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
 import { isEditableTarget } from '@/utils/isEditableTarget.js';
@@ -43,7 +46,8 @@ import ItemView from './ItemView.vue';
 import * as l from './OpenedItem.loc.js';
 import { useItemStack } from './useItemStack.js';
 import { useItemWalk } from './useItemWalk.js';
-import { useItemLooked } from './useItemLooked.js';
+import { getThreadNewestAt } from './thread/buildThread.js';
+import type { BuildThreadParams } from './thread/buildThread.js';
 import { useOpenedItem } from './useOpenedItem.js';
 
 const props = defineProps<{
@@ -63,6 +67,7 @@ const auth = useService(AuthStore);
 const drafts = useService(CommentDrafts);
 const mergePanel = useService(MergePanelStore);
 const tracking = useService(TrackingStore);
+const itemLooked = useService(ItemLookedStore);
 const route = useRoute();
 const router = useRouter();
 
@@ -78,11 +83,25 @@ const walk = useItemWalk({
   followsCursor: listed => props.arrangement === 'panel' || (props.arrangement === 'modal' && !listed),
 });
 const stack = useItemStack(() => opened.item);
-// When the user last looked at it, for its thread's "N new since you looked"; leaving it keeps what they saw.
-const lookedAt = useItemLooked({
-  id: () => opened.id,
-  thread: () => (opened.detail ? { detail: opened.detail, reviewThreads: opened.reviewThreads } : null),
+// When the user last looked at it before now (F5), read afresh from this device as it opens — another tab's look counts —
+// and kept while it stays open, so the line stays until they leave. A read that comes back for an item already left
+// keeps what is there: only the opened item's own time shows.
+const looked = useDataSource({
+  params: () => opened.id,
+  load: async (id): Promise<LookedRead | null> => {
+    if (id === null) {
+      return null;
+    }
+
+    const at = await itemLooked.read(id);
+    return id === opened.id ? { id, at } : looked.value;
+  },
+  default: null,
+  behavior: 'eager',
 });
+const lookedAt = computed(() => (looked.value?.id === opened.id ? looked.value.at : null));
+/** The item shown and what its thread was built from, as long as it is. */
+let shown: Shown | null = null;
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
 // The modal's width, resized by dragging its left or right edge.
 const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
@@ -149,6 +168,28 @@ const editing = computed((): ItemEditing | null => {
     viewerProjects: repositories.viewerProjects,
   };
 });
+
+// Leaving the item — another opened, closing it — keeps the newest of its thread they saw as the next time's; so does
+// the tab hidden once its time is read, or left.
+watch(
+  () => [opened.id, opened.detail ? { detail: opened.detail, reviewThreads: opened.reviewThreads } : null] as const,
+  ([id, thread], before) => {
+    if (id !== before?.[0]) {
+      leave();
+      looked.clear();
+    }
+
+    shown = id !== null && thread ? { id, thread } : shown?.id === id ? shown : null;
+  },
+  { immediate: true },
+);
+onWindowEvent('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && looked.value?.id === opened.id) {
+    markShown();
+  }
+});
+onWindowEvent('pagehide', markShown);
+onScopeDispose(leave);
 
 // What the pickers offer, and what the user may do there, read as the item opens (and every 10 minutes).
 watch(
@@ -255,6 +296,22 @@ function goAgain({ to, popped, by }: GoAgainOptions) {
   const listStep = next !== null && !next.onPage && props.arrangement !== 'page' && to.path === route.path;
   const how = by ?? (listStep ? 'replace' : 'push');
   void (how === 'replace' ? router.replace(to.fullPath) : router.push(to.fullPath));
+}
+
+function leave() {
+  markShown();
+  shown = null;
+}
+
+function markShown() {
+  if (!shown) {
+    return;
+  }
+
+  const newest = getThreadNewestAt(shown.thread);
+  if (newest !== null) {
+    itemLooked.mark(shown.id, newest);
+  }
 }
 
 function merge() {
@@ -411,6 +468,19 @@ interface GoAgainOptions {
 }
 
 type HistoryMove = 'push' | 'replace';
+
+/** When the user last looked at an item, read as it opened. */
+interface LookedRead {
+  readonly id: string;
+  /** Epoch ms; `null` when they never looked at it on this device. */
+  readonly at: number | null;
+}
+
+/** An item whose thread shows, and what it is built from. */
+interface Shown {
+  readonly id: string;
+  readonly thread: BuildThreadParams;
+}
 </script>
 
 <template>

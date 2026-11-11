@@ -75,7 +75,7 @@ const props = defineProps<{
   /** The address's fragment without `#` (`''` for none): the comment it names is shown and marked. */
   linkedAnchor?: string;
   /**
-   * When the viewer last looked at the item before opening it (epoch ms, `useItemLooked`): a line marks where what
+   * When the viewer last looked at the item before opening it (epoch ms, `ItemLookedStore`): a line marks where what
    * others did since starts. `null` when never on this device.
    */
   lookedAt?: number | null;

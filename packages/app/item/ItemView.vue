@@ -135,7 +135,7 @@ const props = withDefaults(
     reviewWriting?: ReviewWriting | null;
     /** With no draft open, a reply starts one rather than goes at once: code review's setting (D17). */
     reviewDraftFirst?: boolean;
-    /** When the user last looked at the item before opening it (`useItemLooked`): its thread marks what is new since. */
+    /** When the user last looked at the item before opening it (`ItemLookedStore`): its thread marks what is new since. */
     lookedAt?: number | null;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
