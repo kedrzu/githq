@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
-import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
+import { buildFileLineRows, buildReviewRows, getReviewRowPath } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
@@ -152,6 +152,41 @@ export const ViewedOpened: Story = {
         renderRows(
             fileRows(file('docs/sync.md', 96, 0, { viewed: 'VIEWED' }), { kind: 'lines', rows: lines('split') }),
         ),
+};
+
+/** CR108, D44: the current file, its header tinted with an accent chevron and its block edged in accent, between two others. */
+export const Current: Story = {
+    render: () =>
+        renderRows(
+            [
+                ...fileRows(file('src/sync/queue.ts', 4, 0), { kind: 'collapsed' }),
+                ...fileRows(FILE, { kind: 'lines', rows: lines('split') }),
+                ...fileRows(file('src/sync/outbox.ts', 2, 1), { kind: 'collapsed' }),
+            ],
+            { currentPath: FILE.path },
+        ),
+};
+
+/** Collapsed to its header, the header carries it alone. */
+export const CurrentCollapsed: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'collapsed' }), { currentPath: FILE.path }),
+};
+
+/** Viewed, dimmed name and ticked mark under the tint. */
+export const CurrentViewed: Story = {
+    render: () => {
+        const viewed = file('docs/sync.md', 96, 0, { viewed: 'VIEWED' });
+        return renderRows(fileRows(viewed, { kind: 'collapsed' }), { currentPath: viewed.path });
+    },
+};
+
+/** The pinned header pushed up by the next file's (D41): the same tint, its block ending at its rounded bottom. */
+export const CurrentPushed: Story = {
+    render: () =>
+        renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }).slice(0, 1), {
+            currentPath: FILE.path,
+            pushed: true,
+        }),
 };
 
 /** CR88: files on their way in split, a bar for each line where its code will start (D38): a modified file mirrors its context, an added one is on the right alone, a deleted one on the left alone. */
@@ -453,14 +488,29 @@ function placeholderRows() {
 interface RenderRowsOptions {
     readonly commented?: CommentedLines;
     readonly layout?: DiffLayout;
+    /** The file whose rows are drawn as the current one (D44). */
+    readonly currentPath?: string;
+    /** Every row drawn as a pinned header being pushed up. */
+    readonly pushed?: boolean;
 }
 
-function renderRows(rows: readonly ReviewRow[], { commented, layout }: RenderRowsOptions = {}) {
+function renderRows(rows: readonly ReviewRow[], { commented, layout, currentPath, pushed }: RenderRowsOptions = {}) {
     return {
         components: { ReviewDiffRow },
-        setup: () => ({ rows, githubUrl: FILES_URL, commented, layout }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" /></div>`,
+        setup: () => ({
+            rows,
+            githubUrl: FILES_URL,
+            commented,
+            layout,
+            pushed,
+            isCurrent,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" /></div>`,
     };
+
+    function isCurrent(row: ReviewRow) {
+        return getReviewRowPath(row.key) === currentPath;
+    }
 }
 
 function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {

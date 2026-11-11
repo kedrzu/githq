@@ -66,6 +66,8 @@ const props = withDefaults(
     layout?: DiffLayout;
     /** The row is the pinned header, being pushed up by the next file's. */
     pushed?: boolean;
+    /** The row is of the file V, Space and C act on, whose block is edged in accent (D44). */
+    current?: boolean;
     /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
     towardGap?: (gap: ReviewGapRow) => ReviewGapDirection;
   }>(),
@@ -160,16 +162,20 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       :threads-under="row.threadsUnder"
       :threads="row.threads"
       :pushed="pushed"
+      :current="current"
       @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
       @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
     <div
       v-else-if="row.kind === 'end'"
-      :class="row.collapsed ? css.reviewDiffRow_endCollapsed : css.reviewDiffRow_end"
+      :class="[
+        row.collapsed ? css.reviewDiffRow_endCollapsed : css.reviewDiffRow_end,
+        current && css.reviewDiffRow_end_current,
+      ]"
     />
     <div
       v-else
-      :class="css.reviewDiffRow_block"
+      :class="[css.reviewDiffRow_block, current && css.reviewDiffRow_block_current]"
     >
       <template v-if="row.kind === 'line'">
         <DiffRowSplit
@@ -380,6 +386,11 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
     box-shadow: 0 0 0 $radius-md $color-bg;
     clip-path: inset(0 #{-$radius-md} #{-$radius-md});
   }
+}
+
+.reviewDiffRow_block_current,
+.reviewDiffRow_end_current::before {
+  border-color: $color-current-edge;
 }
 
 // Under a header alone, which has its own bottom edge: only the room.

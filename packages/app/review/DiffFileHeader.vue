@@ -30,6 +30,8 @@ const props = defineProps<{
   threads?: ThreadCounts | null;
   /** Pinned and pushed up by the next file's header: it is where its block ends, the top cut off by the screen's edge. */
   pushed?: boolean;
+  /** The file V, Space and C act on (D44): tinted, its chevron and edge in accent. */
+  current?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -71,6 +73,7 @@ function onClick(event: MouseEvent) {
       collapsed && !threadsUnder && css.diffFileHeader_collapsed,
       pushed && css.diffFileHeader_pushed,
       file.gone && css.diffFileHeader_gone,
+      current && css.diffFileHeader_current,
     ]"
     @click="onClick"
   >
@@ -81,6 +84,7 @@ function onClick(event: MouseEvent) {
     />
     <IconButton
       v-if="!file.gone"
+      :class="css.diffFileHeader_chevron"
       :icon="collapsed ? ChevronRight : ChevronDown"
       :label="collapsed ? t(l.expand) : t(l.collapse)"
       :kbd="REVIEW_KEYS.collapse"
@@ -176,6 +180,17 @@ function onClick(event: MouseEvent) {
 
 .diffFileHeader_pushed {
   border-radius: 0 0 $radius-md $radius-md;
+}
+
+.diffFileHeader_current {
+  background: color-mix(in srgb, #{$color-accent} 12%, #{$color-bg-2});
+  border-color: $color-current-edge;
+}
+
+// Over the button's own colour, hovered too.
+.diffFileHeader_current .diffFileHeader_chevron,
+.diffFileHeader_current .diffFileHeader_chevron:hover {
+  color: $color-accent;
 }
 
 .diffFileHeader_gone {

@@ -1864,6 +1864,7 @@ function readAgain() {
                   :commented="row.kind === 'line' ? commentedLines.get(getReviewRowPath(row.key)) : undefined"
                   :layout="layout"
                   :pushed="pushed"
+                  :current="getReviewRowPath(row.key) === currentPath"
                   :toward-gap="getGapToward"
                   @expand="expandGap"
                   @expand-to-thread="expandToThread"

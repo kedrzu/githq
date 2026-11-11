@@ -68,6 +68,9 @@ $color-on-light: #0d1117;
 
 // The brand, not Primer's.
 $color-accent: #7b87f7;
+// The edge of the review's current file (D44): the accent at 60% over the window, made opaque because the edges of a
+// block overlap at its bottom corners and a translucent one would show stronger there.
+$color-current-edge: #4f589d;
 // Primer's fgColor-success.
 $color-green: #3fb950;
 // The lines a pull request adds and removes (`PullRequestSize`): paler than the status green and red, because a size
