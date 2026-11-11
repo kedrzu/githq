@@ -1,4 +1,4 @@
-Document: /Users/kedrzu/.paseo/worktrees/3kktpz0d/bawdy-armadillo/githq.pen
+Document: /Users/kedrzu/.paseo/worktrees/3kktpz0d/aloof-dingo/githq.pen
 
 Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISIONS.md`. Screens in App · Code review
 (`CEDLB`), group "Writing and the diff, refined".
@@ -72,31 +72,31 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   toward its hunk (⇧E was planned for all of it, but it is Re-run failed checks; see below). Before: the line cursor stopped on the row, ↓/↑ picked the arrow, ↵ expanded.
 - [ ] Diff / Gap · focused (`ioejG`): stays, as Tab focus on an arrow; its hint "↓ ↵ shows 20 below line 47" →
   "↵ shows 20 below line 47".
-- [ ] Diff / Gap · reset by a push (`PujfA`, new): "Context you expanded here was reset by the push · 134 lines" in
-  `$fg-2`. CR62's gap (`o7b9N`) is now this state; before it was a plain Diff / Gap with the text overridden.
+- [ ] Diff / Gap · reset by a push (`cpAO2`, new): "Context you expanded here was reset by the push · 134 lines" in
+  `$fg-2`. CR62's gap (`EIeGW`) is now this state; before it was a plain Diff / Gap with the text overridden.
 - [ ] CR103 (`DE6MF`): the third excerpt is "Hover: the row shows 20 toward the nearest hunk" (`rNiAV`); the fourth,
   before "Keyboard: the line cursor stops on the row", is "E: 20 toward the nearest hunk" (`DPR1z`): lines 66–67
   shown under the hunk, then the gap with 114 lines left. Caption rewritten.
 - [ ] CR29 key sheet (`upmZG`): "Line by line" ↓ ↑ → "Scroll by a line"; new row in Files, after Collapse: E
-  "Show 20 more hidden lines" (`DaMeF`). Caption: C takes the current file's line at the reading line.
+  "Show 20 more hidden lines" (`E0Jd8z`). Caption: C takes the current file's line at the reading line.
 - [ ] C acts on the current file's line at the reading line, or on its line nearest to it while the file is held off
   the line (D44, D32), so C, V and Space always hit the same file. Captions of CR70 and CR108 say so.
 - [ ] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
   takes the question away and goes back to writing.
-- [ ] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`q8CWm`); before, it showed Esc, which leaves
-  the review. The toast sits above the pending review's toolbar (`OxcCo`, new, as in CR35) at the foot of the diff
-  (`i7s5y`). Restore ⌘Z works only while no text field has focus. The Toast component itself is unchanged.
-- [ ] Placeholders before the patch (D45, CR115 `kqrKY`, new screen, a copy of CR60): the patch is a separate,
+- [ ] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`GlONd`); before, it showed Esc, which leaves
+  the review. The toast sits above the pending review's toolbar (`H3uqds`, new, as in CR35) at the foot of the diff
+  (`UghpC`). Restore ⌘Z works only while no text field has focus. The Toast component itself is unchanged.
+- [ ] Placeholders before the patch (D45, CR115 `mZUZV`, new screen, a copy of CR60): the patch is a separate,
   paginated request, so until a file's page arrives it is its header and D38's grey bars, as many as its additions and
   deletions, no tint, no gap rows; every row of the file list spins; a 0/0 file is only its header and its list row
   carries no "binary" tag or size yet. Status bar: "Fetching patches · the list is complete, 42 files · their patches
   on their way".
 - [ ] Once the patch is in (D45): no patch, 0/0 and MODIFIED, ADDED or DELETED → the binary note; RENAMED with 0/0 →
-  Diff / File note · renamed (`s6lIi`, new: icon `file-symlink`, "Renamed, no changes"), the header showing R and
+  Diff / File note · renamed (`NGjwk`, new: icon `file-symlink`, "Renamed, no changes"), the header showing R and
   "from …"; a patch → tinted hunk-shaped bars; no patch but lines → the grey bars stay, sized from the counts.
 - [ ] CR111 (`v86U6s`): the too-large file (recorded.json) is replaced by a pure rename, outbox.ts from
   src/sync/pending.ts, with the renamed note. Caption: the patch arrives by its own request; "too large" isn't in it.
-- [ ] Too large (D35, bytes) shows once the blob says so: CR116 (`Cx7An`, new): schema.json +3 −1 drawn with tinted
+- [ ] Too large (D35, bytes) shows once the blob says so: CR116 (`BSq0n`, new): schema.json +3 −1 drawn with tinted
   bars between "30,112 lines above" and "31,276 lines below", then the same file as header and the too-large note.
   Before: CR111 showed the too-large note from the first frame.
 - [ ] CR113 (`UYzC8`), renamed "… reserved with grey bars": with whitespace hidden the bars keep the patch's layout
@@ -112,14 +112,14 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   patch; once the patch is in they take its hunk layout and tint (CR111).
 - [ ] Diff / Row · unified, loading (`UMKkg`) and · split, loading (`JfZR9`): the bars are no longer pushed in by
   padding (unified 108, split 48 per side) but stand after the same number columns as the code rows: unified Old
-  (`yGlPs`, 36, right), New (`YC4yJ`, 44, right) and a 28 px sign spacer (`yzUKV`); split No per side (`KMIkg`,
-  `X3YpT`, 36, right, gap 12). `$fg-dim`, mono 11, empty by default, so a file before its patch looks as before. Once
+  (`DNCQ9`, 36, right), New (`X3NDj`, 44, right) and a 28 px sign spacer (`TE4Cj`); split No per side (`Qpaq0`,
+  `yHREz`, 36, right, gap 12). `$fg-dim`, mono 11, empty by default, so a file before its patch looks as before. Once
   the patch is in its numbers come from the hunk headers and are filled in: CR60, CR111, CR113, CR116 (whose gaps now
   read "8,112 lines above" and "53,276 lines below", so the numbers keep four digits). The bars still start where the
   code will.
 - [ ] No ⇧E for a whole gap: ⇧E is a pull request's Re-run failed checks (`PULL_REQUEST_COMMAND_KEYS`), which the
   review keeps. E shows 20 more each time it is pressed; the command menu's "Show all hidden lines" opens the whole gap
-  nearest the reading line (D42). CR29's row (`DaMeF`) lost its ⇧E key (`VZFSa`, deleted) and reads "Show 20 more
+  nearest the reading line (D42). CR29's row (`E0Jd8z`) lost its ⇧E key (`VZFSa`, deleted) and reads "Show 20 more
   hidden lines"; the captions of CR29 (`V0GWA`) and CR103 (`dj9sp`) say so.
 
 ## While building M1 (2026-11-11)
@@ -129,7 +129,7 @@ Decisions amended: D42, D43.
 - [ ] Diff / Gap (`tshOK`): the gutter (`f0FF6s`) lays its arrows side by side, each 24 × 24 (`EFIc9`, `roUZs`), the
   gutter 24 tall; the row is 26 px. Before: stacked, 18 px each (38 px row). Every gap state and all 56 gaps in the
   screens follow (D42, WCAG 2.5.8).
-- [ ] Diff / Gap · reset, nothing hidden (`HfGlp`, new): no arrows, "Context you expanded here was reset by the push"
+- [ ] Diff / Gap · reset, nothing hidden (`by8z8`, new): no arrows, "Context you expanded here was reset by the push"
   with no count, for a gap the threads' code shows whole after a push reset its context.
 - [ ] Diff / Gap · focused (`ioejG`): its "↵ shows 20 below line 47" is now built, not only drawn.
 - [ ] The enclosing declaration: signatures broken over lines (`async load(`) count; of calls only `describe`, `it`,

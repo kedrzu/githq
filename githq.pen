@@ -40029,7 +40029,7 @@
                       "content": "pending comment"
                     },
                     "TFpRb/w6fa5w": {
-                      "content": "Only you can see them."
+                      "content": "Others can't see them until you submit."
                     }
                   }
                 },
@@ -42025,7 +42025,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The thread under an issue or a pull request, GitHub's timeline made calmer: one rail runs down it, everything that happened sits on it as a one-line event, and what people wrote sits beside it in a card with its own header, so two comments never run together. A push lists its commits under it (three, then “Show N more”). A review is one card: the verdict, the summary, and each code thread with the lines it is about; resolved threads fold to one line. A long middle folds to “N earlier events”, and the line marks where the new ones start. Scrolled down: the merge box and checks above the thread are unchanged and hidden here.\n\nThe fold: a thread folds once it has more than 20 items (events, pushes, comments, reviews; the description and the composer don't count). The first 2 items stay above the fold, and everything stays in time order: what GitHub hasn't given yet, of the comments or of the events, folds with the middle, so nothing older stands below the fold or newer above it. Expanding reads the middle and puts it in place. Below it stays everything from the earliest of: the 5th item from the end, the first item new since you looked, and the oldest review or code comment with a thread still unresolved. If that would leave fewer than 6 items to fold, nothing folds. Here: 2 above, 18 folded, 7 below, starting at sofiab's review, whose thread is unresolved.\n\nNew since you looked: counted from the last time you had this item open, in any container, kept per item on this device (a rebuildable cache: on a new device nothing is marked). Your own comments, reviews and events count as looking, so they are never new. The line sits before the first item by someone else after that moment and says how many there are; it stays until you leave the item.\n\nR: when a code thread is focused (moved to with J/K, or clicked), R opens that thread's reply box; otherwise R scrolls to the composer at the end and focuses it, as “Comment” in the command menu does. Esc leaves the editor (in a reply box, Esc is Cancel).",
+                      "content": "The thread under an issue or a pull request, GitHub's timeline made calmer: one rail runs down it, everything that happened sits on it as a one-line event, and what people wrote sits beside it in a card with its own header, so two comments never run together. A push lists its commits under it (three, then “Show N more”). A review is one card: the verdict, the summary, and each code thread with the lines it is about; resolved threads fold to one line. A long middle folds to “N earlier events”, and the line marks where the new ones start. Scrolled down: the merge box and checks above the thread are unchanged and hidden here.\n\nThe fold: a thread folds once it has more than 20 items (events, pushes, comments, reviews; the description and the composer don't count). The first 2 items stay above the fold, and everything stays in time order: what GitHub hasn't given yet, of the comments or of the events, folds with the middle, so nothing older stands below the fold or newer above it. Expanding reads the middle and puts it in place. Below it stays everything from the earliest of: the 5th item from the end, the first item new since you looked, and the oldest review or code comment with a thread still unresolved. If that would leave fewer than 6 items to fold, nothing folds. Here: 2 above, 18 folded, 7 below, starting at sofiab's review, whose thread is unresolved.\n\nNew since you looked: counted from the last time you had this item open, in any container, kept per item on this device (a rebuildable cache: on a new device nothing is marked). Your own comments, reviews and events count as looking, so they are never new. The line sits before the first item by someone else after that moment and says how many there are; it stays until you leave the item. A line with no person (CI, a Status change made by a project workflow) counts as someone else's. Here the viewer is mlaine: their request and comment count as having looked, so only dkim's comment after them is new.\n\nR: when a code thread is focused (moved to with J/K, or clicked), R opens that thread's reply box; otherwise R scrolls to the composer at the end and focuses it, as “Comment” in the command menu does. Esc leaves the editor (in a reply box, Esc is Cancel).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -42424,39 +42424,6 @@
                                           }
                                         },
                                         {
-                                          "id": "qXjGl",
-                                          "type": "ref",
-                                          "ref": "WHy4W",
-                                          "name": "Comment · dkim",
-                                          "width": "fill_container"
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "pckEL",
-                                          "name": "Indent",
-                                          "width": "fill_container",
-                                          "padding": [
-                                            0,
-                                            0,
-                                            0,
-                                            40
-                                          ],
-                                          "children": [
-                                            {
-                                              "id": "m85LBy",
-                                              "type": "ref",
-                                              "ref": "t2x5CU",
-                                              "name": "Divider",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "cMld2": {
-                                                  "content": "2 new since you looked"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
                                           "id": "LNNSV",
                                           "type": "ref",
                                           "ref": "umLcQ",
@@ -42506,6 +42473,47 @@
                                             },
                                             "BujgM": {
                                               "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "pckEL",
+                                          "name": "Indent",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            40
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "m85LBy",
+                                              "type": "ref",
+                                              "ref": "t2x5CU",
+                                              "name": "Divider",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "cMld2": {
+                                                  "content": "1 new since you looked"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "qXjGl",
+                                          "type": "ref",
+                                          "ref": "WHy4W",
+                                          "name": "Comment · dkim",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "bCJbH": {
+                                              "content": "1h"
+                                            },
+                                            "BujgM": {
+                                              "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
                                             }
                                           }
                                         },
@@ -43007,39 +43015,6 @@
                                       }
                                     },
                                     {
-                                      "id": "HPkPt",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · dkim",
-                                      "width": "fill_container"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "rHhyl",
-                                      "name": "Indent",
-                                      "width": "fill_container",
-                                      "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        40
-                                      ],
-                                      "children": [
-                                        {
-                                          "id": "VN8VB",
-                                          "type": "ref",
-                                          "ref": "t2x5CU",
-                                          "name": "Divider",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "cMld2": {
-                                              "content": "2 new since you looked"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
                                       "id": "hGBUd",
                                       "type": "ref",
                                       "ref": "umLcQ",
@@ -43089,6 +43064,47 @@
                                         },
                                         "BujgM": {
                                           "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "rHhyl",
+                                      "name": "Indent",
+                                      "width": "fill_container",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        40
+                                      ],
+                                      "children": [
+                                        {
+                                          "id": "VN8VB",
+                                          "type": "ref",
+                                          "ref": "t2x5CU",
+                                          "name": "Divider",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "cMld2": {
+                                              "content": "1 new since you looked"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "HPkPt",
+                                      "type": "ref",
+                                      "ref": "WHy4W",
+                                      "name": "Comment · dkim",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "bCJbH": {
+                                          "content": "1h"
+                                        },
+                                        "BujgM": {
+                                          "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
                                         }
                                       }
                                     },
@@ -43166,7 +43182,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A code thread is one card, as on GitHub: the code and the comments, then a band with your avatar and “Reply…”, then a band with Resolve. Clicking “Reply…” opens the same editor as the comment at the end of the thread (Write / Preview, the Markdown tools, Cancel with Esc and Reply with ⌘↵) in that band, inside the card. It grows downwards and nothing above it moves. Below, the resolved thread opened from its folded line: Resolved, the code and the comments, the reply field, and Unresolve next to who resolved it.",
+                      "content": "A code thread is one card, as on GitHub: the code and the comments, then a band with your avatar and “Reply…”, then a band with Resolve. Clicking “Reply…” opens the same editor as the comment at the end of the thread (Write / Preview, the Markdown tools, Cancel with Esc and Reply with ⌘↵) in that band, inside the card; it is code review's own reply box, so ⌘↵ says what it does there: Reply, Add to draft while your review draft is open, or Start a review when your setting puts replies into a review first. Changed and left (Esc, J / K, another item), it asks before discarding, as an edit does. It grows downwards and nothing above it moves. Below, the resolved thread opened from its folded line: Resolved, the code and the comments, the reply field, and Unresolve next to who resolved it. If GitHub refuses a resolve, the band says why, next to the button. A thread can be focused (click it, or J / K once one is): J / K move between code threads and R opens the focused one's reply box.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -43574,39 +43590,6 @@
                                           }
                                         },
                                         {
-                                          "id": "gIer6",
-                                          "type": "ref",
-                                          "ref": "WHy4W",
-                                          "name": "Comment · dkim",
-                                          "width": "fill_container"
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "fgM5o",
-                                          "name": "Indent",
-                                          "width": "fill_container",
-                                          "padding": [
-                                            0,
-                                            0,
-                                            0,
-                                            40
-                                          ],
-                                          "children": [
-                                            {
-                                              "id": "Mj4rO",
-                                              "type": "ref",
-                                              "ref": "t2x5CU",
-                                              "name": "Divider",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "cMld2": {
-                                                  "content": "2 new since you looked"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
                                           "id": "TmjpJ",
                                           "type": "ref",
                                           "ref": "umLcQ",
@@ -43656,6 +43639,47 @@
                                             },
                                             "BujgM": {
                                               "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "fgM5o",
+                                          "name": "Indent",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            40
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "Mj4rO",
+                                              "type": "ref",
+                                              "ref": "t2x5CU",
+                                              "name": "Divider",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "cMld2": {
+                                                  "content": "1 new since you looked"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "gIer6",
+                                          "type": "ref",
+                                          "ref": "WHy4W",
+                                          "name": "Comment · dkim",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "bCJbH": {
+                                              "content": "1h"
+                                            },
+                                            "BujgM": {
+                                              "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
                                             }
                                           }
                                         },
@@ -44155,39 +44179,6 @@
                                       }
                                     },
                                     {
-                                      "id": "M70nH4",
-                                      "type": "ref",
-                                      "ref": "WHy4W",
-                                      "name": "Comment · dkim",
-                                      "width": "fill_container"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "bTwKG",
-                                      "name": "Indent",
-                                      "width": "fill_container",
-                                      "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        40
-                                      ],
-                                      "children": [
-                                        {
-                                          "id": "C7vCn",
-                                          "type": "ref",
-                                          "ref": "t2x5CU",
-                                          "name": "Divider",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "cMld2": {
-                                              "content": "2 new since you looked"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
                                       "id": "G8cNBz",
                                       "type": "ref",
                                       "ref": "umLcQ",
@@ -44237,6 +44228,47 @@
                                         },
                                         "BujgM": {
                                           "content": "The retry is in. The failing e2e is the cross-repository case from the thread above; fixing it next, so please hold the review until it's green."
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "bTwKG",
+                                      "name": "Indent",
+                                      "width": "fill_container",
+                                      "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        40
+                                      ],
+                                      "children": [
+                                        {
+                                          "id": "C7vCn",
+                                          "type": "ref",
+                                          "ref": "t2x5CU",
+                                          "name": "Divider",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "cMld2": {
+                                              "content": "1 new since you looked"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "id": "M70nH4",
+                                      "type": "ref",
+                                      "ref": "WHy4W",
+                                      "name": "Comment · dkim",
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "bCJbH": {
+                                          "content": "1h"
+                                        },
+                                        "BujgM": {
+                                          "content": "The retry and the migration both pass for me locally now, cross-repository bases included. I'll re-run the e2e once CI is back."
                                         }
                                       }
                                     },
@@ -47609,7 +47641,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "A review is one card: the reviewer's avatar in the gutter, the verdict in its head (approved green, changes requested red, “reviewed” for comments only), the summary, then its code threads. Without a summary the card holds just the threads. A dismissed review folds to its head, “Show review” opens it, and the dismissal follows as an event. Your own pending review sits at the end of the thread, above the composer, with the same band as in code review (“Submit review…” ⇧S); nobody else sees it. A thread whose lines changed since says “Outdated” and keeps the old lines; unresolved it stays open, resolved it folds like any other.",
+                      "content": "A review is one card: the reviewer's avatar in the gutter, the verdict in its head (approved green, changes requested red, “reviewed” for comments only), the summary, then its code threads. Without a summary the card holds just the threads; with no summary and a single thread GitHub can't tell it from a comment posted on its own, so it reads as a code comment. A dismissed review folds to its head, “Show review” opens it, and the dismissal follows as an event. Your own pending review sits at the end of the thread, above the composer, with the same band as in code review (“Submit review…” ⇧S, “Others can't see them until you submit.”) and its dialogs; nobody else sees it. A thread whose lines changed since says “Outdated” and keeps the old lines; unresolved it stays open, resolved it folds like any other.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -47898,7 +47930,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "⋯ in a comment's head (or right-clicking the card) opens its menu: Edit, Quote reply, Copy link, Delete…. Edit turns the card into the editor where it stands, with its text: Cancel (Esc) puts the card back unchanged, or, once the text was changed, first asks in the footer: Keep editing (Esc) or Discard (↵); J / K, opening another item or closing it ask the same, and Discard then goes where you were going; an unchanged edit closes without a question, Update comment (⌘↵; Update description on the description) saves it, and the head then says “· edited”; if GitHub refuses, a toast says so and the editor opens again with your text. Quote reply puts the text, quoted, into the composer at the end and scrolls there. Copy link copies the comment's github.com link, quietly, as everywhere in githq. Delete… asks once, since GitHub keeps no copy. Edit and Delete are offered on your own comments, and on anyone's where you can write to the repository; otherwise the menu has Quote reply and Copy link. The description card has the same menu, without Delete.",
+                      "content": "⋯ in a comment's head (or right-clicking the card outside its text — on the text itself the browser's menu stays, as everywhere GitHub's rendering shows) opens its menu: Edit, Quote reply, Copy link, Delete…. Edit turns the card into the editor where it stands, with its text: Cancel (Esc) puts the card back unchanged, or, once the text was changed, first asks in the footer: Keep editing (Esc) or Discard (↵); J / K, opening another item or closing it ask the same, and Discard then goes where you were going; an unchanged edit closes without a question, Update comment (⌘↵; Update description on the description) saves it, and the head then says “· edited”; if GitHub refuses, a toast says so and the editor opens again with your text. Quote reply puts the text, quoted, into the composer at the end and scrolls there. Copy link copies the comment's github.com link, quietly, as everywhere in githq. Delete… asks once, since GitHub keeps no copy. Edit and Delete are offered on your own comments, and on anyone's where you can write to the repository; otherwise the menu has Quote reply and Copy link. The description card has the same menu, without Delete.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -296788,7 +296820,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "id": "yGlPs",
+                          "id": "DNCQ9",
                           "name": "Old",
                           "fill": "$fg-dim",
                           "textGrowth": "fixed-width",
@@ -296800,7 +296832,7 @@
                         },
                         {
                           "type": "text",
-                          "id": "YC4yJ",
+                          "id": "X3NDj",
                           "name": "New",
                           "fill": "$fg-dim",
                           "textGrowth": "fixed-width",
@@ -296812,7 +296844,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "yzUKV",
+                          "id": "TE4Cj",
                           "name": "Sign",
                           "width": 28,
                           "height": 1
@@ -296854,7 +296886,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "KMIkg",
+                              "id": "Qpaq0",
                               "name": "No",
                               "fill": "$fg-dim",
                               "textGrowth": "fixed-width",
@@ -296901,7 +296933,7 @@
                           "children": [
                             {
                               "type": "text",
-                              "id": "X3YpT",
+                              "id": "yHREz",
                               "name": "No",
                               "fill": "$fg-dim",
                               "textGrowth": "fixed-width",
@@ -297200,7 +297232,7 @@
                       }
                     },
                     {
-                      "id": "PujfA",
+                      "id": "cpAO2",
                       "type": "ref",
                       "reusable": true,
                       "ref": "tshOK",
@@ -297224,10 +297256,10 @@
                       }
                     },
                     {
-                      "id": "HfGlp",
+                      "id": "by8z8",
                       "type": "ref",
                       "reusable": true,
-                      "ref": "PujfA",
+                      "ref": "cpAO2",
                       "name": "Diff / Gap · reset, nothing hidden",
                       "descendants": {
                         "f0FF6s": {
@@ -297394,7 +297426,7 @@
                       }
                     },
                     {
-                      "id": "s6lIi",
+                      "id": "NGjwk",
                       "type": "ref",
                       "reusable": true,
                       "ref": "aPT6Y",
@@ -318072,7 +318104,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "DaMeF",
+                                  "id": "E0Jd8z",
                                   "name": "Hidden lines nearest the reading line",
                                   "width": "fill_container",
                                   "gap": 10,
@@ -318080,13 +318112,13 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "X2k0R",
+                                      "id": "Gwk8d",
                                       "name": "Keys",
                                       "width": 78,
                                       "gap": 3,
                                       "children": [
                                         {
-                                          "id": "lD1My",
+                                          "id": "efAFS",
                                           "type": "ref",
                                           "ref": "w9kS9",
                                           "name": "Kbd E",
@@ -318100,7 +318132,7 @@
                                     },
                                     {
                                       "type": "text",
-                                      "id": "o4e3tG",
+                                      "id": "P1JwB",
                                       "name": "Label",
                                       "fill": "$fg-2",
                                       "content": "Show 20 more hidden lines",
@@ -327078,7 +327110,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "1"
                                                 },
                                                 "D40s5v": {
@@ -327097,7 +327129,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "2"
                                                 },
                                                 "D40s5v": {
@@ -327116,7 +327148,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "3"
                                                 },
                                                 "D40s5v": {
@@ -327135,7 +327167,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "4"
                                                 },
                                                 "D40s5v": {
@@ -327154,7 +327186,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "5"
                                                 },
                                                 "D40s5v": {
@@ -327173,7 +327205,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "6"
                                                 },
                                                 "D40s5v": {
@@ -327192,7 +327224,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "7"
                                                 },
                                                 "D40s5v": {
@@ -327211,7 +327243,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "8"
                                                 },
                                                 "D40s5v": {
@@ -327230,7 +327262,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "9"
                                                 },
                                                 "D40s5v": {
@@ -327249,7 +327281,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "10"
                                                 },
                                                 "D40s5v": {
@@ -327284,7 +327316,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "11"
                                                 },
                                                 "D40s5v": {
@@ -327319,7 +327351,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "12"
                                                 },
                                                 "D40s5v": {
@@ -327338,7 +327370,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "13"
                                                 },
                                                 "D40s5v": {
@@ -327357,7 +327389,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "14"
                                                 },
                                                 "D40s5v": {
@@ -327376,7 +327408,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "15"
                                                 },
                                                 "D40s5v": {
@@ -327395,7 +327427,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "16"
                                                 },
                                                 "D40s5v": {
@@ -327414,7 +327446,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "17"
                                                 },
                                                 "D40s5v": {
@@ -327449,7 +327481,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "18"
                                                 },
                                                 "D40s5v": {
@@ -327468,7 +327500,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "19"
                                                 },
                                                 "D40s5v": {
@@ -327487,7 +327519,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "20"
                                                 },
                                                 "D40s5v": {
@@ -327506,7 +327538,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "21"
                                                 },
                                                 "D40s5v": {
@@ -327525,7 +327557,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "22"
                                                 },
                                                 "D40s5v": {
@@ -327544,7 +327576,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "23"
                                                 },
                                                 "D40s5v": {
@@ -327563,7 +327595,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "24"
                                                 },
                                                 "D40s5v": {
@@ -327582,7 +327614,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "25"
                                                 },
                                                 "D40s5v": {
@@ -327601,7 +327633,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "26"
                                                 },
                                                 "D40s5v": {
@@ -327620,7 +327652,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "27"
                                                 },
                                                 "D40s5v": {
@@ -327655,7 +327687,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "28"
                                                 },
                                                 "D40s5v": {
@@ -327674,7 +327706,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "29"
                                                 },
                                                 "D40s5v": {
@@ -327693,7 +327725,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "30"
                                                 },
                                                 "D40s5v": {
@@ -327712,7 +327744,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "31"
                                                 },
                                                 "D40s5v": {
@@ -327731,7 +327763,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "32"
                                                 },
                                                 "D40s5v": {
@@ -327750,7 +327782,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "33"
                                                 },
                                                 "D40s5v": {
@@ -327769,7 +327801,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "34"
                                                 },
                                                 "D40s5v": {
@@ -327804,7 +327836,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "35"
                                                 },
                                                 "D40s5v": {
@@ -327823,7 +327855,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "36"
                                                 },
                                                 "D40s5v": {
@@ -327842,7 +327874,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "37"
                                                 },
                                                 "D40s5v": {
@@ -327861,7 +327893,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "38"
                                                 },
                                                 "D40s5v": {
@@ -327880,7 +327912,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "39"
                                                 },
                                                 "D40s5v": {
@@ -327899,7 +327931,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "40"
                                                 },
                                                 "D40s5v": {
@@ -327934,7 +327966,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "41"
                                                 },
                                                 "D40s5v": {
@@ -327953,7 +327985,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "42"
                                                 },
                                                 "D40s5v": {
@@ -327972,7 +328004,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "43"
                                                 },
                                                 "D40s5v": {
@@ -327991,7 +328023,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "44"
                                                 },
                                                 "D40s5v": {
@@ -328010,7 +328042,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "45"
                                                 },
                                                 "D40s5v": {
@@ -328029,7 +328061,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "46"
                                                 },
                                                 "D40s5v": {
@@ -328048,7 +328080,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "47"
                                                 },
                                                 "D40s5v": {
@@ -328067,7 +328099,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "48"
                                                 },
                                                 "D40s5v": {
@@ -328086,7 +328118,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "49"
                                                 },
                                                 "D40s5v": {
@@ -328105,7 +328137,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "50"
                                                 },
                                                 "D40s5v": {
@@ -328124,7 +328156,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "51"
                                                 },
                                                 "D40s5v": {
@@ -328143,7 +328175,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "52"
                                                 },
                                                 "D40s5v": {
@@ -328209,7 +328241,7 @@
                                                 "t4LOJ": {
                                                   "enabled": false
                                                 },
-                                                "X3YpT": {
+                                                "yHREz": {
                                                   "content": "1"
                                                 },
                                                 "D40s5v": {
@@ -329946,9 +329978,9 @@
                                           }
                                         },
                                         {
-                                          "id": "o7b9N",
+                                          "id": "EIeGW",
                                           "type": "ref",
-                                          "ref": "PujfA",
+                                          "ref": "cpAO2",
                                           "name": "Gap",
                                           "width": "fill_container",
                                           "descendants": {
@@ -331654,7 +331686,7 @@
                                           }
                                         },
                                         {
-                                          "id": "nVasA",
+                                          "id": "dQMRY",
                                           "type": "ref",
                                           "ref": "aPT6Y",
                                           "name": "Binary note",
@@ -331704,7 +331736,7 @@
                                           }
                                         },
                                         {
-                                          "id": "LnJXV",
+                                          "id": "u0QK5",
                                           "type": "ref",
                                           "ref": "aPT6Y",
                                           "name": "Binary note",
@@ -331754,7 +331786,7 @@
                                           }
                                         },
                                         {
-                                          "id": "RUXzz",
+                                          "id": "OUExl",
                                           "type": "ref",
                                           "ref": "aPT6Y",
                                           "name": "Binary note",
@@ -332506,7 +332538,7 @@
                                           }
                                         },
                                         {
-                                          "id": "nixCZ",
+                                          "id": "EFMOa",
                                           "type": "ref",
                                           "ref": "PslUs",
                                           "name": "Too large note",
@@ -345880,7 +345912,7 @@
                     },
                     {
                       "type": "frame",
-                      "id": "i7s5y",
+                      "id": "UghpC",
                       "name": "Foot of the diff",
                       "width": "fill_container",
                       "layout": "vertical",
@@ -345915,7 +345947,7 @@
                                   "content": "⌘Z"
                                 },
                                 "ehllm": {
-                                  "id": "q8CWm",
+                                  "id": "GlONd",
                                   "type": "ref",
                                   "ref": "Dhiuj",
                                   "name": "Dismiss",
@@ -345930,7 +345962,7 @@
                           ]
                         },
                         {
-                          "id": "OxcCo",
+                          "id": "H3uqds",
                           "type": "ref",
                           "ref": "OCfqo",
                           "name": "Pending toolbar",
@@ -346872,7 +346904,7 @@
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "jAS3R",
+                              "id": "bDLsM",
                               "type": "ref",
                               "ref": "qKwyX",
                               "name": "Line 66",
@@ -346914,7 +346946,7 @@
                               }
                             },
                             {
-                              "id": "vmRzs",
+                              "id": "KzVds",
                               "type": "ref",
                               "ref": "tshOK",
                               "name": "Gap",
@@ -349622,14 +349654,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "1"
                                 },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "1"
                                 },
                                 "D40s5v": {
@@ -349645,14 +349677,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "2"
                                 },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "2"
                                 },
                                 "D40s5v": {
@@ -349668,14 +349700,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "3"
                                 },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "3"
                                 },
                                 "D40s5v": {
@@ -349691,14 +349723,14 @@
                               "name": "Loading chg",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "4"
                                 },
                                 "t4LOJ": {
                                   "width": 216,
                                   "fill": "#F851494D"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "4"
                                 },
                                 "D40s5v": {
@@ -349717,7 +349749,7 @@
                                 "t4LOJ": {
                                   "enabled": false
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "5"
                                 },
                                 "D40s5v": {
@@ -349733,14 +349765,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "5"
                                 },
                                 "t4LOJ": {
                                   "width": 108,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "6"
                                 },
                                 "D40s5v": {
@@ -349756,14 +349788,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "6"
                                 },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "7"
                                 },
                                 "D40s5v": {
@@ -349779,14 +349811,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "7"
                                 },
                                 "t4LOJ": {
                                   "width": 144,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8"
                                 },
                                 "D40s5v": {
@@ -349830,14 +349862,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "142"
                                 },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "143"
                                 },
                                 "D40s5v": {
@@ -349853,14 +349885,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "143"
                                 },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "144"
                                 },
                                 "D40s5v": {
@@ -349876,14 +349908,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "144"
                                 },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "145"
                                 },
                                 "D40s5v": {
@@ -349902,7 +349934,7 @@
                                 "t4LOJ": {
                                   "enabled": false
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "146"
                                 },
                                 "D40s5v": {
@@ -349918,14 +349950,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "145"
                                 },
                                 "t4LOJ": {
                                   "width": 156,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "147"
                                 },
                                 "D40s5v": {
@@ -349941,14 +349973,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "146"
                                 },
                                 "t4LOJ": {
                                   "width": 108,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "148"
                                 },
                                 "D40s5v": {
@@ -349964,14 +349996,14 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "147"
                                 },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "149"
                                 },
                                 "D40s5v": {
@@ -350047,9 +350079,9 @@
                               }
                             },
                             {
-                              "id": "R2pRd",
+                              "id": "z1gXY",
                               "type": "ref",
-                              "ref": "s6lIi",
+                              "ref": "NGjwk",
                               "name": "Renamed note",
                               "width": "fill_container"
                             }
@@ -350156,10 +350188,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "1"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "1"
                                 },
                                 "BMgGl": {
@@ -350175,10 +350207,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "2"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "2"
                                 },
                                 "BMgGl": {
@@ -350194,10 +350226,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "3"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "3"
                                 },
                                 "BMgGl": {
@@ -350213,7 +350245,7 @@
                               "name": "Loading del",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "4"
                                 },
                                 "BMgGl": {
@@ -350229,7 +350261,7 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "4"
                                 },
                                 "BMgGl": {
@@ -350245,7 +350277,7 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "5"
                                 },
                                 "BMgGl": {
@@ -350261,10 +350293,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "5"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "6"
                                 },
                                 "BMgGl": {
@@ -350280,10 +350312,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "6"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "7"
                                 },
                                 "BMgGl": {
@@ -350299,10 +350331,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "7"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "8"
                                 },
                                 "BMgGl": {
@@ -350346,10 +350378,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "142"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "143"
                                 },
                                 "BMgGl": {
@@ -350365,10 +350397,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "143"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "144"
                                 },
                                 "BMgGl": {
@@ -350384,10 +350416,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "144"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "145"
                                 },
                                 "BMgGl": {
@@ -350403,7 +350435,7 @@
                               "name": "Loading add",
                               "width": "fill_container",
                               "descendants": {
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "146"
                                 },
                                 "BMgGl": {
@@ -350419,10 +350451,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "145"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "147"
                                 },
                                 "BMgGl": {
@@ -350438,10 +350470,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "146"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "148"
                                 },
                                 "BMgGl": {
@@ -350457,10 +350489,10 @@
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "yGlPs": {
+                                "DNCQ9": {
                                   "content": "147"
                                 },
-                                "YC4yJ": {
+                                "X3NDj": {
                                   "content": "149"
                                 },
                                 "BMgGl": {
@@ -350536,9 +350568,9 @@
                               }
                             },
                             {
-                              "id": "cnVf6",
+                              "id": "w5bRo8",
                               "type": "ref",
-                              "ref": "s6lIi",
+                              "ref": "NGjwk",
                               "name": "Renamed note",
                               "width": "fill_container"
                             }
@@ -350807,10 +350839,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "31"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "31"
                             },
                             "BMgGl": {
@@ -350826,10 +350858,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "32"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "32"
                             },
                             "BMgGl": {
@@ -350845,10 +350877,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "33"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "33"
                             },
                             "BMgGl": {
@@ -350864,10 +350896,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "34"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "34"
                             },
                             "BMgGl": {
@@ -350883,10 +350915,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "35"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "35"
                             },
                             "BMgGl": {
@@ -350902,10 +350934,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "36"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "36"
                             },
                             "BMgGl": {
@@ -350955,10 +350987,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "12"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "12"
                             },
                             "BMgGl": {
@@ -350974,10 +351006,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "13"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "13"
                             },
                             "BMgGl": {
@@ -350993,10 +351025,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "14"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "14"
                             },
                             "BMgGl": {
@@ -351012,10 +351044,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "15"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "15"
                             },
                             "BMgGl": {
@@ -351031,10 +351063,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "16"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "16"
                             },
                             "BMgGl": {
@@ -351050,10 +351082,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "17"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "17"
                             },
                             "BMgGl": {
@@ -351069,10 +351101,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "18"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "18"
                             },
                             "BMgGl": {
@@ -351088,10 +351120,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "19"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "19"
                             },
                             "BMgGl": {
@@ -351107,10 +351139,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "20"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "20"
                             },
                             "BMgGl": {
@@ -351126,10 +351158,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "21"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "21"
                             },
                             "BMgGl": {
@@ -351145,10 +351177,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "22"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "22"
                             },
                             "BMgGl": {
@@ -351164,10 +351196,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "23"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "23"
                             },
                             "BMgGl": {
@@ -351217,10 +351249,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "4"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "4"
                             },
                             "BMgGl": {
@@ -351236,10 +351268,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "5"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "5"
                             },
                             "BMgGl": {
@@ -351255,10 +351287,10 @@
                           "name": "Loading line",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "6"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "6"
                             },
                             "BMgGl": {
@@ -351274,10 +351306,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "7"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "7"
                             },
                             "BMgGl": {
@@ -351293,10 +351325,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "8"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "8"
                             },
                             "BMgGl": {
@@ -351346,10 +351378,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "18"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "20"
                             },
                             "BMgGl": {
@@ -351365,10 +351397,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "19"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "21"
                             },
                             "BMgGl": {
@@ -351384,10 +351416,10 @@
                           "name": "Loading ctx",
                           "width": "fill_container",
                           "descendants": {
-                            "yGlPs": {
+                            "DNCQ9": {
                               "content": "20"
                             },
-                            "YC4yJ": {
+                            "X3NDj": {
                               "content": "22"
                             },
                             "BMgGl": {
@@ -351404,7 +351436,7 @@
             },
             {
               "type": "frame",
-              "id": "kqrKY",
+              "id": "mZUZV",
               "name": "Slot · CR115 · First open, before the patches arrive",
               "width": 1440,
               "layout": "vertical",
@@ -351412,7 +351444,7 @@
               "children": [
                 {
                   "type": "frame",
-                  "id": "YVKRN",
+                  "id": "z2qtxH",
                   "name": "Caption",
                   "width": "fill_container",
                   "layout": "vertical",
@@ -351420,7 +351452,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "yhOlo",
+                      "id": "duXaH",
                       "name": "Caption title",
                       "fill": "$fg",
                       "content": "CR115 · First open, before the patches arrive",
@@ -351430,7 +351462,7 @@
                     },
                     {
                       "type": "text",
-                      "id": "xzrLD",
+                      "id": "yfc6q",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
@@ -351445,7 +351477,7 @@
                 },
                 {
                   "type": "frame",
-                  "id": "svxSf",
+                  "id": "mwOm1",
                   "name": "CR115 · First open, before the patches arrive",
                   "clip": true,
                   "width": 1440,
@@ -351458,13 +351490,13 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "sqXbL",
+                      "id": "mCeRE",
                       "name": "Main",
                       "width": "fill_container",
                       "height": "fill_container",
                       "children": [
                         {
-                          "id": "W9tbiX",
+                          "id": "DW6H2",
                           "type": "ref",
                           "ref": "aMT4O",
                           "name": "Sidebar",
@@ -351472,14 +351504,14 @@
                         },
                         {
                           "type": "frame",
-                          "id": "Cb7pv",
+                          "id": "BLzLT",
                           "name": "Review",
                           "width": "fill_container",
                           "height": "fill_container",
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "uPI2e",
+                              "id": "YS64J",
                               "type": "ref",
                               "ref": "Tt0Pa",
                               "name": "Toolbar",
@@ -351498,14 +351530,14 @@
                             },
                             {
                               "type": "frame",
-                              "id": "Z02Ly",
+                              "id": "o0JFZf",
                               "name": "Body",
                               "width": "fill_container",
                               "height": "fill_container",
                               "children": [
                                 {
                                   "type": "frame",
-                                  "id": "q98se8",
+                                  "id": "r8qxLk",
                                   "name": "Left column",
                                   "clip": true,
                                   "width": 300,
@@ -351518,14 +351550,14 @@
                                   "layout": "vertical",
                                   "children": [
                                     {
-                                      "id": "MyoDd",
+                                      "id": "wuQR0",
                                       "type": "ref",
                                       "ref": "d1GzBA",
                                       "name": "Stack",
                                       "width": "fill_container"
                                     },
                                     {
-                                      "id": "geblD",
+                                      "id": "plP10",
                                       "type": "ref",
                                       "ref": "SgpvP",
                                       "name": "File list",
@@ -351770,7 +351802,7 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "Wdz5f",
+                                  "id": "p87BQ",
                                   "name": "Diff",
                                   "clip": true,
                                   "width": "fill_container",
@@ -351784,7 +351816,7 @@
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "f8sD5r",
+                                      "id": "s5ONj",
                                       "name": "File sync.md",
                                       "clip": true,
                                       "width": "fill_container",
@@ -351794,7 +351826,7 @@
                                       "layout": "vertical",
                                       "children": [
                                         {
-                                          "id": "dvqUN",
+                                          "id": "T6cSe",
                                           "type": "ref",
                                           "ref": "pAbDY",
                                           "name": "Header",
@@ -351819,7 +351851,7 @@
                                           }
                                         },
                                         {
-                                          "id": "Wiyg8",
+                                          "id": "Sgxb7",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 1",
@@ -351834,7 +351866,7 @@
                                           }
                                         },
                                         {
-                                          "id": "W6Lu35",
+                                          "id": "U2EZ0n",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 2",
@@ -351849,7 +351881,7 @@
                                           }
                                         },
                                         {
-                                          "id": "GVKwO",
+                                          "id": "C5MYYJ",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 3",
@@ -351864,7 +351896,7 @@
                                           }
                                         },
                                         {
-                                          "id": "RIVyO",
+                                          "id": "GWoHa",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 4",
@@ -351879,7 +351911,7 @@
                                           }
                                         },
                                         {
-                                          "id": "oanmE",
+                                          "id": "ADXHk",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 5",
@@ -351894,7 +351926,7 @@
                                           }
                                         },
                                         {
-                                          "id": "wi9tH",
+                                          "id": "TX5Gd",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 6",
@@ -351912,7 +351944,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "VxmOs",
+                                      "id": "CXROE",
                                       "name": "File offline.spec.ts",
                                       "clip": true,
                                       "width": "fill_container",
@@ -351922,7 +351954,7 @@
                                       "layout": "vertical",
                                       "children": [
                                         {
-                                          "id": "uAUoe",
+                                          "id": "opDib",
                                           "type": "ref",
                                           "ref": "pAbDY",
                                           "name": "Header",
@@ -351947,7 +351979,7 @@
                                           }
                                         },
                                         {
-                                          "id": "ryAtL",
+                                          "id": "AAESP",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 1",
@@ -351962,7 +351994,7 @@
                                           }
                                         },
                                         {
-                                          "id": "L35JAn",
+                                          "id": "flbhC",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 2",
@@ -351977,7 +352009,7 @@
                                           }
                                         },
                                         {
-                                          "id": "Ls6yn",
+                                          "id": "E0XJv0",
                                           "type": "ref",
                                           "ref": "JfZR9",
                                           "name": "Line 3",
@@ -351995,7 +352027,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "FF1kr",
+                                      "id": "ubvRH",
                                       "name": "File workouts.json",
                                       "clip": true,
                                       "width": "fill_container",
@@ -352005,7 +352037,7 @@
                                       "layout": "vertical",
                                       "children": [
                                         {
-                                          "id": "Yz4e0",
+                                          "id": "B5sZL",
                                           "type": "ref",
                                           "ref": "pAbDY",
                                           "name": "Header",
@@ -352031,13 +352063,13 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "w1zMA2",
+                                          "id": "SPHZx",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
                                           "children": [
                                             {
-                                              "id": "zauDi",
+                                              "id": "KNy7Q",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 1",
@@ -352053,7 +352085,7 @@
                                               }
                                             },
                                             {
-                                              "id": "qtPbC",
+                                              "id": "J4kMp",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 2",
@@ -352069,7 +352101,7 @@
                                               }
                                             },
                                             {
-                                              "id": "elsMN",
+                                              "id": "InTB4",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 3",
@@ -352085,7 +352117,7 @@
                                               }
                                             },
                                             {
-                                              "id": "n8RxY",
+                                              "id": "dLZFP",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 4",
@@ -352101,7 +352133,7 @@
                                               }
                                             },
                                             {
-                                              "id": "xDdDH",
+                                              "id": "EPTB0",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 5",
@@ -352117,7 +352149,7 @@
                                               }
                                             },
                                             {
-                                              "id": "dIXY0",
+                                              "id": "fNogX",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 6",
@@ -352133,7 +352165,7 @@
                                               }
                                             },
                                             {
-                                              "id": "kdTnF",
+                                              "id": "sex2Q",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 7",
@@ -352149,7 +352181,7 @@
                                               }
                                             },
                                             {
-                                              "id": "PSqLf",
+                                              "id": "pxIdV",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 8",
@@ -352165,7 +352197,7 @@
                                               }
                                             },
                                             {
-                                              "id": "y4VVM",
+                                              "id": "U9oIG",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 9",
@@ -352181,7 +352213,7 @@
                                               }
                                             },
                                             {
-                                              "id": "wMcIy",
+                                              "id": "J3Dur",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 10",
@@ -352197,7 +352229,7 @@
                                               }
                                             },
                                             {
-                                              "id": "vxkxl",
+                                              "id": "qTvGp",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 11",
@@ -352213,7 +352245,7 @@
                                               }
                                             },
                                             {
-                                              "id": "nvzFO",
+                                              "id": "I6uOAm",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 12",
@@ -352229,7 +352261,7 @@
                                               }
                                             },
                                             {
-                                              "id": "FUnrv",
+                                              "id": "FCt8o",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 13",
@@ -352245,7 +352277,7 @@
                                               }
                                             },
                                             {
-                                              "id": "gHTZr",
+                                              "id": "ZlQvk",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 14",
@@ -352261,7 +352293,7 @@
                                               }
                                             },
                                             {
-                                              "id": "xvuWV",
+                                              "id": "GV8TH",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 15",
@@ -352277,7 +352309,7 @@
                                               }
                                             },
                                             {
-                                              "id": "xhjs1",
+                                              "id": "XJGXw",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 16",
@@ -352293,7 +352325,7 @@
                                               }
                                             },
                                             {
-                                              "id": "QzkqN",
+                                              "id": "FFbrc",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 17",
@@ -352309,7 +352341,7 @@
                                               }
                                             },
                                             {
-                                              "id": "RmJpv",
+                                              "id": "zvMkL",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 18",
@@ -352325,7 +352357,7 @@
                                               }
                                             },
                                             {
-                                              "id": "VBGIh",
+                                              "id": "N11MNo",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 19",
@@ -352341,7 +352373,7 @@
                                               }
                                             },
                                             {
-                                              "id": "x3Qi3h",
+                                              "id": "pPfTE",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 20",
@@ -352357,7 +352389,7 @@
                                               }
                                             },
                                             {
-                                              "id": "uQvE9",
+                                              "id": "gRzfO",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 21",
@@ -352373,7 +352405,7 @@
                                               }
                                             },
                                             {
-                                              "id": "ylgfK",
+                                              "id": "E8du1",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 22",
@@ -352389,7 +352421,7 @@
                                               }
                                             },
                                             {
-                                              "id": "HVO3D",
+                                              "id": "kyaUI",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 23",
@@ -352405,7 +352437,7 @@
                                               }
                                             },
                                             {
-                                              "id": "Z8tKS",
+                                              "id": "Ehn1p",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 24",
@@ -352421,7 +352453,7 @@
                                               }
                                             },
                                             {
-                                              "id": "c61Wqk",
+                                              "id": "H6N4CW",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 25",
@@ -352437,7 +352469,7 @@
                                               }
                                             },
                                             {
-                                              "id": "h2lh8a",
+                                              "id": "j8Go8D",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 26",
@@ -352453,7 +352485,7 @@
                                               }
                                             },
                                             {
-                                              "id": "pqMSF",
+                                              "id": "fsnNt",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 27",
@@ -352469,7 +352501,7 @@
                                               }
                                             },
                                             {
-                                              "id": "tiU62",
+                                              "id": "KdRxw",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 28",
@@ -352485,7 +352517,7 @@
                                               }
                                             },
                                             {
-                                              "id": "tow5R",
+                                              "id": "MHv6S",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 29",
@@ -352501,7 +352533,7 @@
                                               }
                                             },
                                             {
-                                              "id": "m165C",
+                                              "id": "LkAKc",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 30",
@@ -352517,7 +352549,7 @@
                                               }
                                             },
                                             {
-                                              "id": "N3EMAX",
+                                              "id": "zbtph",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 31",
@@ -352533,7 +352565,7 @@
                                               }
                                             },
                                             {
-                                              "id": "kTigd",
+                                              "id": "X7XFF",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 32",
@@ -352549,7 +352581,7 @@
                                               }
                                             },
                                             {
-                                              "id": "dH1ao",
+                                              "id": "kVXZx",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 33",
@@ -352565,7 +352597,7 @@
                                               }
                                             },
                                             {
-                                              "id": "QAfHm",
+                                              "id": "bCo42",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 34",
@@ -352581,7 +352613,7 @@
                                               }
                                             },
                                             {
-                                              "id": "oF7Yx",
+                                              "id": "xpPZQ",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 35",
@@ -352597,7 +352629,7 @@
                                               }
                                             },
                                             {
-                                              "id": "Yww98",
+                                              "id": "S5LsgC",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 36",
@@ -352613,7 +352645,7 @@
                                               }
                                             },
                                             {
-                                              "id": "M2vXm1",
+                                              "id": "T9kCgj",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 37",
@@ -352629,7 +352661,7 @@
                                               }
                                             },
                                             {
-                                              "id": "NGtF3",
+                                              "id": "J2QviX",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 38",
@@ -352645,7 +352677,7 @@
                                               }
                                             },
                                             {
-                                              "id": "fAGK0",
+                                              "id": "vONtc",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 39",
@@ -352661,7 +352693,7 @@
                                               }
                                             },
                                             {
-                                              "id": "FxLQw",
+                                              "id": "w1tBp",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 40",
@@ -352677,7 +352709,7 @@
                                               }
                                             },
                                             {
-                                              "id": "kCQWB",
+                                              "id": "SlUNw",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 41",
@@ -352693,7 +352725,7 @@
                                               }
                                             },
                                             {
-                                              "id": "FOOqx",
+                                              "id": "F1BHS",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 42",
@@ -352709,7 +352741,7 @@
                                               }
                                             },
                                             {
-                                              "id": "W3ox91",
+                                              "id": "i6rNgj",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 43",
@@ -352725,7 +352757,7 @@
                                               }
                                             },
                                             {
-                                              "id": "wyaKf",
+                                              "id": "G1MRkr",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 44",
@@ -352741,7 +352773,7 @@
                                               }
                                             },
                                             {
-                                              "id": "NJRJR",
+                                              "id": "G1Zyx",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 45",
@@ -352757,7 +352789,7 @@
                                               }
                                             },
                                             {
-                                              "id": "R1ARBN",
+                                              "id": "u3zi5",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 46",
@@ -352773,7 +352805,7 @@
                                               }
                                             },
                                             {
-                                              "id": "YYRwd",
+                                              "id": "H3SPlm",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 47",
@@ -352789,7 +352821,7 @@
                                               }
                                             },
                                             {
-                                              "id": "WsnOn",
+                                              "id": "qpx5a",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 48",
@@ -352805,7 +352837,7 @@
                                               }
                                             },
                                             {
-                                              "id": "r3QDO",
+                                              "id": "qq8f9",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 49",
@@ -352821,7 +352853,7 @@
                                               }
                                             },
                                             {
-                                              "id": "UsMDl",
+                                              "id": "R6ZUUs",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 50",
@@ -352837,7 +352869,7 @@
                                               }
                                             },
                                             {
-                                              "id": "zA3EG",
+                                              "id": "C6pzp",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 51",
@@ -352853,7 +352885,7 @@
                                               }
                                             },
                                             {
-                                              "id": "kiEFe",
+                                              "id": "NNQ3X",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 52",
@@ -352869,7 +352901,7 @@
                                               }
                                             },
                                             {
-                                              "id": "V7D22",
+                                              "id": "trMsP",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 53",
@@ -352885,7 +352917,7 @@
                                               }
                                             },
                                             {
-                                              "id": "wtcxx",
+                                              "id": "F5Slg",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 54",
@@ -352901,7 +352933,7 @@
                                               }
                                             },
                                             {
-                                              "id": "qcst2",
+                                              "id": "I2DPUz",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 55",
@@ -352917,7 +352949,7 @@
                                               }
                                             },
                                             {
-                                              "id": "EUIyv",
+                                              "id": "LPRgb",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 56",
@@ -352933,7 +352965,7 @@
                                               }
                                             },
                                             {
-                                              "id": "wqfGA",
+                                              "id": "pmi7o",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 57",
@@ -352949,7 +352981,7 @@
                                               }
                                             },
                                             {
-                                              "id": "JsgHz",
+                                              "id": "YSr10",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 58",
@@ -352970,7 +353002,7 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Rxg9U",
+                                      "id": "s1Ab6",
                                       "name": "File sync-error.svg",
                                       "clip": true,
                                       "width": "fill_container",
@@ -352980,7 +353012,7 @@
                                       "layout": "vertical",
                                       "children": [
                                         {
-                                          "id": "Ln7H3",
+                                          "id": "KHLmL",
                                           "type": "ref",
                                           "ref": "pAbDY",
                                           "name": "Header",
@@ -353006,13 +353038,13 @@
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "J77QZ",
+                                          "id": "wnCzO",
                                           "name": "Arriving",
                                           "width": "fill_container",
                                           "layout": "vertical",
                                           "children": [
                                             {
-                                              "id": "K0wZ2",
+                                              "id": "D893UH",
                                               "type": "ref",
                                               "ref": "JfZR9",
                                               "name": "Line 1",
@@ -353034,7 +353066,7 @@
                                   ]
                                 },
                                 {
-                                  "id": "b7M7a",
+                                  "id": "t51Rk",
                                   "type": "ref",
                                   "ref": "sf3K6",
                                   "name": "Conversation",
@@ -353048,7 +353080,7 @@
                       ]
                     },
                     {
-                      "id": "K9fpn",
+                      "id": "kDZ7q",
                       "type": "ref",
                       "ref": "BFhwj",
                       "name": "Status bar",
@@ -353070,7 +353102,7 @@
             },
             {
               "type": "frame",
-              "id": "Cx7An",
+              "id": "BSq0n",
               "name": "Slot · CR116 · Too large: the patch's bars, then the note",
               "width": 1100,
               "layout": "vertical",
@@ -353078,7 +353110,7 @@
               "children": [
                 {
                   "type": "frame",
-                  "id": "r8c4Tj",
+                  "id": "xVsJ2",
                   "name": "Caption",
                   "width": "fill_container",
                   "layout": "vertical",
@@ -353086,7 +353118,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "FuaEt",
+                      "id": "T0EGF6",
                       "name": "Caption title",
                       "fill": "$fg",
                       "content": "CR116 · Too large: the patch's bars, then the note",
@@ -353096,7 +353128,7 @@
                     },
                     {
                       "type": "text",
-                      "id": "GqaK0",
+                      "id": "UQs2p",
                       "name": "Caption note",
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
@@ -353111,7 +353143,7 @@
                 },
                 {
                   "type": "frame",
-                  "id": "Zz7m6",
+                  "id": "YAYWp",
                   "name": "CR116 · Too large: the patch's bars, then the note",
                   "clip": true,
                   "width": "fill_container",
@@ -353127,7 +353159,7 @@
                   "children": [
                     {
                       "type": "frame",
-                      "id": "bKfSB",
+                      "id": "UfJiA",
                       "name": "While the blob is on its way",
                       "width": "fill_container",
                       "layout": "vertical",
@@ -353135,7 +353167,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "id": "PCsgF",
+                          "id": "X3GLW",
                           "name": "Note",
                           "fill": "$fg-dim",
                           "content": "While the blob is on its way",
@@ -353146,7 +353178,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "sKqhc",
+                          "id": "a8bYoc",
                           "name": "File schema.json",
                           "clip": true,
                           "width": "fill_container",
@@ -353156,7 +353188,7 @@
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "emVcv",
+                              "id": "F5XpV",
                               "type": "ref",
                               "ref": "pAbDY",
                               "name": "Header",
@@ -353180,7 +353212,7 @@
                               }
                             },
                             {
-                              "id": "TwsYK",
+                              "id": "R1nXe",
                               "type": "ref",
                               "ref": "hKfCl",
                               "name": "Gap",
@@ -353202,20 +353234,20 @@
                               }
                             },
                             {
-                              "id": "dVhIG",
+                              "id": "cO2g6",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8113"
                                 },
                                 "t4LOJ": {
                                   "width": 132,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8113"
                                 },
                                 "D40s5v": {
@@ -353225,20 +353257,20 @@
                               }
                             },
                             {
-                              "id": "GVbaN",
+                              "id": "yKVA9",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8114"
                                 },
                                 "t4LOJ": {
                                   "width": 180,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8114"
                                 },
                                 "D40s5v": {
@@ -353248,20 +353280,20 @@
                               }
                             },
                             {
-                              "id": "GLM5x",
+                              "id": "rc0aW",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8115"
                                 },
                                 "t4LOJ": {
                                   "width": 84,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8115"
                                 },
                                 "D40s5v": {
@@ -353271,20 +353303,20 @@
                               }
                             },
                             {
-                              "id": "mOLjv",
+                              "id": "NCcTj",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading chg",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8116"
                                 },
                                 "t4LOJ": {
                                   "width": 216,
                                   "fill": "#F851494D"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8116"
                                 },
                                 "D40s5v": {
@@ -353294,7 +353326,7 @@
                               }
                             },
                             {
-                              "id": "Ggo5d",
+                              "id": "pQMYs",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading add",
@@ -353303,7 +353335,7 @@
                                 "t4LOJ": {
                                   "enabled": false
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8117"
                                 },
                                 "D40s5v": {
@@ -353313,7 +353345,7 @@
                               }
                             },
                             {
-                              "id": "Yrrko",
+                              "id": "m23mz",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading add",
@@ -353324,7 +353356,7 @@
                                   "fill": "$bg-3",
                                   "enabled": false
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8118"
                                 },
                                 "D40s5v": {
@@ -353334,20 +353366,20 @@
                               }
                             },
                             {
-                              "id": "i1T0JD",
+                              "id": "uNos8",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8117"
                                 },
                                 "t4LOJ": {
                                   "width": 240,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8119"
                                 },
                                 "D40s5v": {
@@ -353357,20 +353389,20 @@
                               }
                             },
                             {
-                              "id": "v8WBN",
+                              "id": "Tgqre",
                               "type": "ref",
                               "ref": "JfZR9",
                               "name": "Loading ctx",
                               "width": "fill_container",
                               "descendants": {
-                                "KMIkg": {
+                                "Qpaq0": {
                                   "content": "8118"
                                 },
                                 "t4LOJ": {
                                   "width": 144,
                                   "fill": "$bg-3"
                                 },
-                                "X3YpT": {
+                                "yHREz": {
                                   "content": "8120"
                                 },
                                 "D40s5v": {
@@ -353380,7 +353412,7 @@
                               }
                             },
                             {
-                              "id": "O8TVm",
+                              "id": "Uo79O",
                               "type": "ref",
                               "ref": "YaZfl",
                               "name": "Gap",
@@ -353410,7 +353442,7 @@
                     },
                     {
                       "type": "frame",
-                      "id": "Z8Z1b",
+                      "id": "GfmrT",
                       "name": "Once the blob says 4.2 MB",
                       "width": "fill_container",
                       "layout": "vertical",
@@ -353418,7 +353450,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "id": "DKpCA",
+                          "id": "C6saCi",
                           "name": "Note",
                           "fill": "$fg-dim",
                           "content": "Once the blob says 4.2 MB",
@@ -353429,7 +353461,7 @@
                         },
                         {
                           "type": "frame",
-                          "id": "wqynJ",
+                          "id": "etxbD",
                           "name": "File schema.json",
                           "clip": true,
                           "width": "fill_container",
@@ -353439,7 +353471,7 @@
                           "layout": "vertical",
                           "children": [
                             {
-                              "id": "w00fs",
+                              "id": "O55rPM",
                               "type": "ref",
                               "ref": "pAbDY",
                               "name": "Header",
@@ -353469,7 +353501,7 @@
                               }
                             },
                             {
-                              "id": "f4xJyo",
+                              "id": "IUvL8",
                               "type": "ref",
                               "ref": "PslUs",
                               "name": "Too large note",
@@ -418400,56 +418432,6 @@
                                           }
                                         },
                                         {
-                                          "type": "frame",
-                                          "id": "kUGOU",
-                                          "name": "Indent",
-                                          "width": "fill_container",
-                                          "padding": [
-                                            0,
-                                            0,
-                                            0,
-                                            40
-                                          ],
-                                          "children": [
-                                            {
-                                              "id": "M83Hr",
-                                              "type": "ref",
-                                              "ref": "t2x5CU",
-                                              "name": "Divider",
-                                              "width": "fill_container",
-                                              "descendants": {
-                                                "cMld2": {
-                                                  "content": "2 new since you looked"
-                                                }
-                                              }
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "id": "IGmIt",
-                                          "type": "ref",
-                                          "ref": "WHy4W",
-                                          "name": "Comment · dkim",
-                                          "width": "fill_container",
-                                          "descendants": {
-                                            "N5FNN": {
-                                              "fill": "#8FBF9F"
-                                            },
-                                            "N5FNN/zeZzP": {
-                                              "content": "DK"
-                                            },
-                                            "my8kv": {
-                                              "content": "dkim"
-                                            },
-                                            "bCJbH": {
-                                              "content": "3h"
-                                            },
-                                            "BujgM": {
-                                              "content": "Tried #15's branch: the parent survives the upgrade now, and a resync keeps it."
-                                            }
-                                          }
-                                        },
-                                        {
                                           "id": "VgIzg",
                                           "type": "ref",
                                           "ref": "umLcQ",
@@ -418475,6 +418457,56 @@
                                             },
                                             "K9lUQx": {
                                               "content": "2h"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "kUGOU",
+                                          "name": "Indent",
+                                          "width": "fill_container",
+                                          "padding": [
+                                            0,
+                                            0,
+                                            0,
+                                            40
+                                          ],
+                                          "children": [
+                                            {
+                                              "id": "M83Hr",
+                                              "type": "ref",
+                                              "ref": "t2x5CU",
+                                              "name": "Divider",
+                                              "width": "fill_container",
+                                              "descendants": {
+                                                "cMld2": {
+                                                  "content": "1 new since you looked"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "id": "IGmIt",
+                                          "type": "ref",
+                                          "ref": "WHy4W",
+                                          "name": "Comment · dkim",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "N5FNN": {
+                                              "fill": "#8FBF9F"
+                                            },
+                                            "N5FNN/zeZzP": {
+                                              "content": "DK"
+                                            },
+                                            "my8kv": {
+                                              "content": "dkim"
+                                            },
+                                            "bCJbH": {
+                                              "content": "1h"
+                                            },
+                                            "BujgM": {
+                                              "content": "Tried #15's branch: the parent survives the upgrade now, and a resync keeps it."
                                             }
                                           }
                                         },
@@ -418960,8 +418992,14 @@
                                       "icon": "circle-check",
                                       "fill": "$purple"
                                     },
+                                    "smi7i": {
+                                      "fill": "#7FB3D5"
+                                    },
+                                    "smi7i/zeZzP": {
+                                      "content": "SB"
+                                    },
                                     "Yl9EU": {
-                                      "content": "mlaine"
+                                      "content": "sofiab"
                                     },
                                     "xlFny": {
                                       "content": "closed this as completed in"
@@ -419025,8 +419063,14 @@
                                       "icon": "pin-off",
                                       "fill": "$fg-2"
                                     },
+                                    "smi7i": {
+                                      "fill": "#7FB3D5"
+                                    },
+                                    "smi7i/zeZzP": {
+                                      "content": "SB"
+                                    },
                                     "Yl9EU": {
-                                      "content": "mlaine"
+                                      "content": "sofiab"
                                     },
                                     "xlFny": {
                                       "content": "unpinned this issue"
