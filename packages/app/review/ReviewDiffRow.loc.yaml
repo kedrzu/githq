@@ -6,6 +6,8 @@ binaryNew:
   en: Binary file, nothing to diff · {size}, new
 binaryDeleted:
   en: Binary file, nothing to diff · {size}, deleted
+renamedUnchanged:
+  en: Renamed, no changes
 tooLarge:
   en: Too large to diff here
 tooLargeDetail:

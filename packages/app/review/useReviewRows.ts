@@ -5,7 +5,7 @@ import type { MaybeRefOrGetter, ShallowRef } from 'vue';
 
 import { Clock } from '@/services/Clock.js';
 
-import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
+import { buildFileLineRows, buildPlaceholderRows, buildReviewRows } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout, DiffLineRange } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
@@ -76,6 +76,9 @@ const REBUILD_EVERY_MS = 32;
 
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
 const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
+/** What the patch says (D45) of a file whose blob hasn't said more: no sizes yet. */
+const BINARY: ReviewFileContent = { kind: 'binary', before: null, after: null };
+const RENAMED_UNCHANGED: ReviewFileContent = { kind: 'renamedUnchanged' };
 const COLLAPSED: ReviewFileContent = { kind: 'collapsed' };
 const GONE: ReviewFileContent = { kind: 'gone' };
 const COLLAPSED_VIEW: ThreadFileView = { kind: 'collapsed', notLoaded: false };
@@ -85,7 +88,7 @@ const GONE_VIEW: ThreadFileView = { kind: 'gone' };
 /**
  * The review's flat rows, as a new plain array whenever what they show changes. Diffs are computed on the main thread a
  * turn at a time, the files nearest the one in view first, so 225 files don't hold the first paint back; a file not yet
- * computed is a placeholder, like one not yet read. Each diff is kept by the file's content and the whitespace setting
+ * computed is a placeholder, like one not yet read, in its patch's layout once that is in (D45). Each diff is kept by the file's content and the whitespace setting
  * and each file's rows by its diff, the layout and the lines expanded, so that a setting's second visit and a file's arrival compute only
  * what they must. Tokens are computed in a worker, in the same order: they change no row, only what a drawn one looks like.
  * Threads are placed with each rebuild, like the rows it builds, and only of files that have threads, each kept by what it
@@ -103,6 +106,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     const threadPlacements = shallowRef<ReviewThreadPlacements>({ byFile: new Map(), goneEntries: [] });
     const placedInDiffs = new WeakMap<FileDiff, PlacedInDiff>();
     const placedElsewhere = new WeakMap<readonly ReviewThread[], Map<ThreadFileView, readonly ThreadPlacement[]>>();
+    // By the file, which its patch's arrival replaces, then by what it is drawn as.
+    const placeholders = new WeakMap<ReviewFile, Map<string, ReviewFileContent>>();
 
     let builtFrom: readonly ReviewFileContent[] = [];
     let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
@@ -199,10 +204,16 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             return GONE;
         }
 
+        const verdict = file.patch?.verdict ?? null;
+        // What the patch settles is final, whatever its blob is up to (D45).
+        if (verdict === 'renamedUnchanged' && !isCollapsed(file)) {
+            return RENAMED_UNCHANGED;
+        }
+
         const state = getState(file);
         // Only ever a file that may yet turn out generated, or an open one: it says why it isn't here, which flips nothing.
         if (state?.kind === 'paused') {
-            return state;
+            return verdict === 'binary' && !isCollapsed(file) ? BINARY : state;
         }
 
         if (isCollapsed(file)) {
@@ -210,20 +221,51 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         }
 
         if (!state) {
-            return PLACEHOLDER;
+            return verdict === 'binary' ? BINARY : getPlaceholder(file, false);
         }
 
         switch (state.kind) {
             case 'waiting':
             case 'loading':
-                return toValue(options.files)?.fetchingFirst === file.path ? PLACEHOLDER_FIRST : PLACEHOLDER;
+                return verdict === 'binary'
+                    ? BINARY
+                    : getPlaceholder(file, toValue(options.files)?.fetchingFirst === file.path);
             case 'ready': {
                 const diff = getDiffs().get(state);
-                return diff ? getLinesContent(file, state, diff) : PLACEHOLDER;
+                if (diff) {
+                    return getLinesContent(file, state, diff);
+                }
+
+                // Its blob said otherwise (an empty file, a mode change), which shows once it is diffed.
+                return verdict === 'binary' ? BINARY : getPlaceholder(file, false);
             }
             default:
                 return state;
         }
+    }
+
+    /** The same object for as long as the file, the layout and the whitespace setting stay: rows are kept by that. */
+    function getPlaceholder(file: ReviewFile, first: boolean): ReviewFileContent {
+        if (!file.patch?.layout) {
+            return first ? PLACEHOLDER_FIRST : PLACEHOLDER;
+        }
+
+        const layout = toValue(options.layout);
+        const hideWhitespace = toValue(options.hideWhitespace);
+        let byView = placeholders.get(file);
+        if (!byView) {
+            byView = new Map();
+            placeholders.set(file, byView);
+        }
+
+        const key = `${layout}:${hideWhitespace}:${first}`;
+        let content = byView.get(key);
+        if (!content) {
+            content = { kind: 'placeholder', first, rows: buildPlaceholderRows({ file, layout, hideWhitespace }) };
+            byView.set(key, content);
+        }
+
+        return content;
     }
 
     function getState(file: ReviewFile) {

@@ -1,4 +1,5 @@
 import type { PatchStatus } from '@githq/github/generated.gen.js';
+import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { DiffLayout } from '../diff/buildDiffRows.js';
@@ -28,6 +29,64 @@ export interface PlaceholderParams {
 /** A placeholder in a layout. */
 export interface PlaceholderMaskParams extends PlaceholderParams {
     readonly layout: DiffLayout;
+}
+
+/** What a line of a patch is drawn in (D45): the tint of an added or a deleted line, `null` for a grey bar. */
+export type PlaceholderTint = 'deleted' | 'added' | null;
+
+/** One side of a split row of a patch's placeholder. */
+export interface PlaceholderCell {
+    /** 1-based, from the hunk header. */
+    readonly line: number;
+    readonly bar: PlaceholderBar | null;
+    readonly tint: PlaceholderTint;
+}
+
+/** A split row of a patch's placeholder, `null` on the side with nothing, as the diff pairs a changed run. */
+export interface PlaceholderSplitLine {
+    readonly kind: 'split';
+    readonly left: PlaceholderCell | null;
+    readonly right: PlaceholderCell | null;
+}
+
+/** A unified row of a patch's placeholder. */
+export interface PlaceholderUnifiedLine {
+    readonly kind: 'unified';
+    readonly oldLine: number | null;
+    readonly newLine: number | null;
+    readonly bar: PlaceholderBar | null;
+    readonly tint: PlaceholderTint;
+}
+
+/** The lines a patch leaves out, where the diff will have a gap. */
+export interface PlaceholderGap {
+    readonly kind: 'placeholderGap';
+    /** `null` after the last hunk: the patch can't tell how many lines follow. */
+    readonly hidden: number | null;
+    /** `up` at the file's top, `down` at its end, `null` between hunks. */
+    readonly way: 'up' | 'down' | null;
+}
+
+/** A row of a patch's placeholder. */
+export type PatchPlaceholderRow = PlaceholderSplitLine | PlaceholderUnifiedLine | PlaceholderGap;
+
+/** A file's patch, drawn in a layout. */
+export interface PatchPlaceholderParams {
+    /** Seeds the bars, as for a guessed placeholder. */
+    readonly path: string;
+    readonly patch: PatchLayout;
+    readonly layout: DiffLayout;
+    /** Added and deleted lines take their tint; with whitespace hidden which stay changed isn't known, so none does. */
+    readonly tinted: boolean;
+    /** The unchanged lines around a change: a last hunk ending with fewer has the file's end in it. */
+    readonly context: number;
+}
+
+/** A patch's placeholder. */
+export interface PatchPlaceholder {
+    readonly rows: PatchPlaceholderRow[];
+    /** The largest line number it shows, which its number columns are as wide as. */
+    readonly largest: number;
 }
 
 type LineKind = 'context' | 'deleted' | 'added';
@@ -156,12 +215,101 @@ export function buildSplitPlaceholder(params: PlaceholderParams): PlaceholderSpl
     }
 }
 
+/**
+ * A file's placeholder in its patch's real layout (D45): per hunk its lines in order, numbered from the hunk header,
+ * split pairing a run of deleted lines with the added ones that follow as the diff does; a gap before the first hunk when
+ * it doesn't start at line 1, one between hunks with the older side's count, and one after the last when it ends with
+ * a full context, no count said. Bars are drawn from the path (D38).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function buildPatchPlaceholder({
+    path,
+    patch,
+    layout,
+    tinted,
+    context,
+}: PatchPlaceholderParams): PatchPlaceholder {
+    const nextBar = createBarSource(createRandom(hashPath(path)));
+    const rows: PatchPlaceholderRow[] = [];
+    let largest = 0;
+    let olderEnd: number | null = null;
+    let deleted: PlaceholderCell[] = [];
+    let added: PlaceholderCell[] = [];
+    for (const hunk of patch.hunks) {
+        // A side with no lines in the hunk has its start one line before where they'd be.
+        let older = hunk.lines.includes(' ') || hunk.lines.includes('-') ? hunk.beforeStart : hunk.beforeStart + 1;
+        let newer = hunk.lines.includes(' ') || hunk.lines.includes('+') ? hunk.afterStart : hunk.afterStart + 1;
+        const hidden = older - (olderEnd ?? 1);
+        if (hidden > 0) {
+            rows.push({ kind: 'placeholderGap', hidden, way: olderEnd === null ? 'up' : null });
+        }
+
+        for (const kind of hunk.lines) {
+            switch (kind) {
+                case '-':
+                    if (added.length > 0) {
+                        flush();
+                    }
+                    deleted.push({ line: older++, bar: nextBar(), tint: tinted ? 'deleted' : null });
+                    break;
+                case '+':
+                    added.push({ line: newer++, bar: nextBar(), tint: tinted ? 'added' : null });
+                    break;
+                default: {
+                    flush();
+                    const cell = { line: older, bar: nextBar(), tint: null };
+                    rows.push(
+                        layout === 'split'
+                            ? { kind: 'split', left: cell, right: { ...cell, line: newer } }
+                            : { kind: 'unified', oldLine: older, newLine: newer, bar: cell.bar, tint: null },
+                    );
+                    older++;
+                    newer++;
+                }
+            }
+        }
+
+        flush();
+        olderEnd = older;
+        largest = Math.max(largest, older - 1, newer - 1);
+    }
+
+    const last = patch.hunks.at(-1);
+    if (last && last.lines.length - last.lines.trimEnd().length >= context) {
+        rows.push({ kind: 'placeholderGap', hidden: null, way: 'down' });
+    }
+
+    return { rows, largest };
+
+    function flush() {
+        switch (layout) {
+            case 'split':
+                for (let i = 0; i < Math.max(deleted.length, added.length); i++) {
+                    rows.push({ kind: 'split', left: deleted[i] ?? null, right: added[i] ?? null });
+                }
+                break;
+            case 'unified':
+                for (const cell of deleted) {
+                    rows.push({ kind: 'unified', oldLine: cell.line, newLine: null, bar: cell.bar, tint: cell.tint });
+                }
+                for (const cell of added) {
+                    rows.push({ kind: 'unified', oldLine: null, newLine: cell.line, bar: cell.bar, tint: cell.tint });
+                }
+                break;
+            default:
+                assertNever(layout);
+        }
+
+        deleted = [];
+        added = [];
+    }
+}
+
 /** The file's lines in the order a unified diff lists them, endless: callers take as many as they draw. */
 function* createLines({ path, changeType }: PlaceholderParams): Generator<PlaceholderLine> {
     const random = createRandom(hashPath(path));
-    let indent = 0;
-    let blankBefore = false;
-
+    const nextBar = createBarSource(random);
     const sides = getSides(changeType);
     while (true) {
         if (sides !== 'both') {
@@ -190,6 +338,13 @@ function* createLines({ path, changeType }: PlaceholderParams): Generator<Placeh
             yield { kind: 'added', bar: nextBar() };
         }
     }
+}
+
+/** The bars of a file's lines one after another (D38): `null` for a blank line. */
+function createBarSource(random: () => number) {
+    let indent = 0;
+    let blankBefore = false;
+    return nextBar;
 
     function nextBar(): PlaceholderBar | null {
         if (!blankBefore && random() < BLANK_CHANCE) {

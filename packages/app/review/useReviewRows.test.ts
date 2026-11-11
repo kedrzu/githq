@@ -114,6 +114,26 @@ test('rows follow the placements: threads under a collapsed header, on their lin
     view.stop();
 });
 
+test('a file its patch says was renamed with no changes says so from the first frame, and still once its blobs are read (D45)', async () => {
+    const renamed: ReviewFile = {
+        ...fileRow('b.ts'),
+        changeType: 'RENAMED',
+        previousPath: 'a.ts',
+        additions: 0,
+        deletions: 0,
+        patch: { layout: null, verdict: 'renamedUnchanged' },
+    };
+    const view = open([renamed], []);
+    const notices = () => view.rows.value.flatMap(row => (row.kind === 'notice' ? [row.notice] : []));
+
+    expect(notices()).toEqual(['renamedUnchanged']);
+
+    view.setState('b.ts', { kind: 'ready', before: BEFORE, after: BEFORE });
+    await view.settle();
+    expect(notices()).toEqual(['renamedUnchanged']);
+    view.stop();
+});
+
 interface OpenOptions {
     readonly listEnd?: ReviewFileListEnd;
     readonly ordered?: readonly ReviewFile[];

@@ -62,6 +62,11 @@ export interface AnsweredReview {
     heal(path: string): void;
     /** This file's content waits until the returned function is called. */
     hold(path: string): () => void;
+    /**
+     * What these files' blobs are waits until the returned function is called, with every other file asked in the same
+     * request: of them, nothing but the list and the patches is known until then.
+     */
+    holdBlobs(paths: readonly string[]): () => void;
     /** The review threads' read waits until the returned function is called. */
     holdThreads(): () => void;
     /** GitHub refuses marks until {@link allowMarks}. */
@@ -94,6 +99,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     const failures = new Map<string, string>();
     const held = new Map<string, Promise<void>>();
     let threadsHeld: Promise<void> | null = null;
+    let blobsHeld: { paths: readonly string[]; until: Promise<void> } | null = null;
     const marked: string[] = [];
     let markRequests = 0;
     const asked: string[] = [];
@@ -162,7 +168,16 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             ...(file.binary ? { additions: 0, deletions: 0 } : toPatch(file.before, file.after)),
         })),
     }));
-    github.graphqlDocument('ReviewBlobOids', ({ variables }) => {
+    github.graphqlDocument('ReviewBlobOids', async ({ variables }) => {
+        const holding = blobsHeld;
+        const asksHeld = Object.values(variables).some(
+            expression =>
+                typeof expression === 'string' && holding?.paths.some(path => expression.endsWith(`:${path}`)) === true,
+        );
+        if (holding && asksHeld) {
+            await holding.until;
+        }
+
         const repository: Record<string, unknown> = {};
         for (const [name, expression] of Object.entries(variables)) {
             if (/^e\d+$/u.test(name) && typeof expression === 'string') {
@@ -247,6 +262,14 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         },
         fail: (path, message) => failures.set(path, message),
         heal: path => failures.delete(path),
+        holdBlobs(paths) {
+            const { promise, resolve } = Promise.withResolvers<void>();
+            blobsHeld = { paths, until: promise };
+            return () => {
+                blobsHeld = null;
+                resolve();
+            };
+        },
         holdThreads() {
             const { promise, resolve } = Promise.withResolvers<void>();
             threadsHeld = promise;

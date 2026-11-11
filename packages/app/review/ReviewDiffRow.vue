@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -10,7 +10,7 @@ const NO_LINES: CommentedLines = [];
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, FileDiff, LoaderCircle, Pause, Pilcrow } from 'lucide-vue-next';
+import { CircleAlert, FileDiff, FileSymlink, LoaderCircle, Pause, Pilcrow } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
@@ -33,6 +33,7 @@ import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
 import type { DiffLayout, DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffGap from './DiffGap.vue';
+import DiffRowPlaceholder from './DiffRowPlaceholder.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
@@ -62,7 +63,7 @@ const props = withDefaults(
     threadFailure?: ReviewWriteFailure | null;
     /** The lines of the file a comment is being written on. */
     commented?: CommentedLines;
-    /** The layout being read, which a file still on its way is drawn in. */
+    /** The layout being read, which a file still on its way with no patch is drawn in. */
     layout?: DiffLayout;
     /** The row is the pinned header, being pushed up by the next file's. */
     pushed?: boolean;
@@ -246,7 +247,7 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       />
       <template v-else-if="row.kind === 'placeholder'">
         <div
-          v-if="row.first"
+          v-if="row.part.kind === 'fetchingFirst'"
           :class="css.reviewDiffRow_first"
         >
           <LoaderCircle
@@ -256,15 +257,27 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           {{ t(l.fetchingFirst, { path: row.file.path }) }}
         </div>
         <div
+          v-else-if="row.part.kind === 'guess'"
           :class="[css.reviewDiffRow_placeholder, layout === 'split' && css.reviewDiffRow_placeholder_split]"
           :style="getPlaceholderStyle(row.file)"
+        />
+        <DiffRowPlaceholder
+          v-else-if="row.part.kind === 'line'"
+          :line="row.part.line"
+          :largest="row.part.largest"
+        />
+        <DiffGap
+          v-else
+          :row="row.part.gap"
+          :toward="towardGap"
         />
       </template>
       <div
         v-else-if="row.kind === 'notice'"
         :class="css.reviewDiffRow_notice"
       >
-        <FileDiff
+        <component
+          :is="row.notice === 'renamedUnchanged' ? FileSymlink : FileDiff"
           :class="css.reviewDiffRow_noticeIcon"
           aria-hidden="true"
         />

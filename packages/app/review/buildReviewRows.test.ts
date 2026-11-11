@@ -1,8 +1,12 @@
 import { expect, test } from 'bun:test';
 
+import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+
 import {
     buildFileLineRows,
+    buildPlaceholderRows,
     buildReviewRows,
+    CONTEXT_LINES,
     clampCommentRange,
     estimateReviewRowHeight,
     findReplacementRow,
@@ -21,6 +25,7 @@ import {
 } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReviewRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
+import type { FileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import { placeThreads } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
@@ -275,6 +280,57 @@ test('a placeholder is about as tall as the file, within limits', () => {
 
     const heights = rows.filter(row => row.kind === 'placeholder').map(estimateReviewRowHeight);
     expect(heights).toEqual([60, 800, 40_000]);
+});
+
+/**
+ * Each a file before and after: hunks merged across 6 unchanged lines and kept apart across 7, a change at the first line
+ * and at the last, runs of deleted and added lines of different lengths, an added and a deleted file.
+ */
+const PATCH_SAMPLES: readonly (readonly [string, string | null, string | null])[] = [
+    ['two hunks and one merged', lines(60), edit(lines(60), { 10: ['ten'], 17: ['seventeen', 'more'], 40: [] })],
+    ['kept apart by one line', lines(30), edit(lines(30), { 5: ['five'], 13: ['thirteen'] })],
+    ['the first and the last line', lines(20), edit(lines(20), { 1: ['one', 'one b', 'one c'], 20: ['twenty'] })],
+    ['near the end', lines(20), edit(lines(20), { 18: [] })],
+    ['runs of different lengths', lines(40), edit(lines(40), { 10: [], 11: [], 12: ['x'], 25: ['a', 'b', 'c', 'd'] })],
+    ['added', null, lines(12)],
+    ['deleted', lines(12), null],
+];
+
+test.each(PATCH_SAMPLES)(
+    'a placeholder from the patch draws the rows its diff will, numbered the same, as tall: %s',
+    (_, before, after) => {
+        const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+        const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+        for (const layout of ['split', 'unified'] as const) {
+            const placeholder = buildPlaceholderRows({ file, layout, hideWhitespace: false });
+            const real = buildFileLineRows({ path: A.path, diff, layout });
+
+            expect(placeholder.map(describeRow)).toEqual(real.map(describeRow));
+            expect(sumHeights(placeholder)).toBe(sumHeights(real));
+        }
+    },
+);
+
+test('a placeholder from the patch tints its changed lines, but not with whitespace hidden', () => {
+    const diff = computeFileDiff({ before: lines(20), after: edit(lines(20), { 10: ['ten'] }), ...NO_IGNORE });
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+
+    const tints = (hideWhitespace: boolean) =>
+        buildPlaceholderRows({ file, layout: 'unified', hideWhitespace }).flatMap(row =>
+            row.part.kind === 'line' && row.part.line.kind === 'unified' ? [row.part.line.tint] : [],
+        );
+
+    expect(tints(false)).toEqual([null, null, null, 'deleted', 'added', null, null, null]);
+    expect(tints(true).every(tint => tint === null)).toBe(true);
+});
+
+test('a file with no patch, or no hunks in it, keeps the guess from its line counts', () => {
+    const guessed = (patch: ReviewFile['patch']) =>
+        buildPlaceholderRows({ file: { ...A, patch }, layout: 'split', hideWhitespace: false }).map(row => row.part);
+
+    expect(guessed(undefined)).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: null, verdict: null })).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: { hunks: [] }, verdict: null })).toEqual([{ kind: 'guess' }]);
 });
 
 test('a line held through a layout switch stays on the same line of the newer version', () => {
@@ -612,6 +668,100 @@ function lineWithAfter(rows: readonly ReviewRow[], line: number): ReviewRow {
     }
 
     return found;
+}
+
+/** The lines replaced, by their 1-based number in the older version; an empty array deletes the line. */
+function edit(text: string, replaced: Readonly<Record<number, readonly string[]>>) {
+    return text
+        .split('\n')
+        .slice(0, -1)
+        .flatMap((line, index) => replaced[index + 1] ?? [line])
+        .map(line => `${line}\n`)
+        .join('');
+}
+
+/**
+ * The patch git would write of our own diff, with as much context as we show: hunks whose changes are at most two
+ * contexts apart merged, a side with no lines in a hunk starting at the line before. GitHub's own patch is git's diff,
+ * which can pair or place a change differently from ours (D6): the rows then differ a little, and D7 absorbs it.
+ */
+function toPatchLayout(diff: FileDiff): PatchLayout {
+    const hunks: { start: number; newStart: number; lines: string; end: number }[] = [];
+    for (const block of diff.blocks) {
+        const last = hunks.at(-1);
+        const changed = '-'.repeat(block.beforeEnd - block.beforeStart) + '+'.repeat(block.afterEnd - block.afterStart);
+        if (last && block.beforeStart - last.end <= 2 * CONTEXT_LINES) {
+            last.lines += ' '.repeat(block.beforeStart - last.end) + changed;
+            last.end = block.beforeEnd;
+            continue;
+        }
+
+        if (last) {
+            closeHunk(last);
+        }
+
+        const lead = Math.min(CONTEXT_LINES, block.beforeStart);
+        hunks.push({
+            start: block.beforeStart - lead,
+            newStart: block.afterStart - lead,
+            lines: ' '.repeat(lead) + changed,
+            end: block.beforeEnd,
+        });
+    }
+
+    const last = hunks.at(-1);
+    if (last) {
+        closeHunk(last);
+    }
+
+    return {
+        hunks: hunks.map(hunk => ({
+            beforeStart: /[ -]/.test(hunk.lines) ? hunk.start + 1 : hunk.start,
+            afterStart: /[ +]/.test(hunk.lines) ? hunk.newStart + 1 : hunk.newStart,
+            lines: hunk.lines,
+        })),
+    };
+
+    function closeHunk(hunk: { lines: string; end: number }) {
+        hunk.lines += ' '.repeat(Math.min(CONTEXT_LINES, diff.before.length - hunk.end));
+    }
+}
+
+/** A row by what it shows: a line's numbers on each side, or a gap's count, which the patch can't say at the file's end. */
+function describeRow(row: ReviewRow): string {
+    switch (row.kind) {
+        case 'line':
+            return row.line.layout === 'split'
+                ? `${row.line.left?.line ?? '-'}|${row.line.right?.line ?? '-'}`
+                : `${row.line.oldLine ?? '-'}|${row.line.newLine ?? '-'}`;
+        case 'gap':
+            return row.atFileEnd ? 'gap:end' : `gap:${row.hidden}`;
+        case 'placeholder': {
+            const { part } = row;
+            if (part.kind === 'gap') {
+                return part.gap.way === 'down' ? 'gap:end' : `gap:${part.gap.hidden}`;
+            }
+
+            if (part.kind !== 'line') {
+                return part.kind;
+            }
+
+            return part.line.kind === 'split'
+                ? `${part.line.left?.line ?? '-'}|${part.line.right?.line ?? '-'}`
+                : `${part.line.oldLine ?? '-'}|${part.line.newLine ?? '-'}`;
+        }
+        default:
+            return row.kind;
+    }
+}
+
+function sumHeights(rows: readonly ReviewRow[]) {
+    let total = 0;
+    for (const row of rows) {
+        total += estimateReviewRowHeight(row);
+    }
+
+    return total;
 }
 
 function lines(count: number) {
