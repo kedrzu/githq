@@ -4,6 +4,7 @@ import type { FileViewedState, PatchStatus } from '@githq/github/generated.gen.j
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { GitHubMock } from '../github/GitHubMock.js';
+import { escapeRegExp } from '../utils/escapeRegExp.js';
 
 /** A file of a pull request as {@link answerReview} answers it. */
 export interface SampleReviewFile {
@@ -156,7 +157,7 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     });
     answerCompare(HEAD_OID);
     // Of any pull request of the repository, as the list is.
-    const filesPath = new RegExp(`^${repositoryPath.replaceAll('.', '\\.')}/pulls/\\d+/files$`, 'u');
+    const filesPath = new RegExp(`^${escapeRegExp(repositoryPath)}/pulls/\\d+/files$`, 'u');
     github.restMatching('GET', filesPath, () => ({
         status: 200,
         json: params.files.map(file => ({
