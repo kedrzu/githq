@@ -53,7 +53,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
   `Excerpt` (the comment's first line) replaces the file where the file is already known. It opens to
   `Activity / Code thread · resolved`. Activity / Review uses it.
 - [ ] `Activity / Code comment` (`cwCtr`): a code thread posted on its own, without a review. Avatar in the gutter,
-  then a 36 px head line, “dkim commented on src/store/schema.ts · 2d” (author 13 / 600 `$fg`, the file in `$mono`
+  then a 36 px head line, “dkim commented on src/store/schema.ts 2d” (author 13 / 600 `$fg`, the file in `$mono`
   12), and the thread under it (gap 6), open and resolved. `Activity / Code comment · resolved` (`NXXMN`): the same
   with the thread folded into `Activity / Resolved threads`, showing the first line of the comment.
 - [ ] `Activity / Fold` (`lshuQ`): a break in the rail with one clickable band. Padding 4 0 4 42, gap 12.
@@ -254,6 +254,29 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     toast, its card says it; @ lists the thread's people first, # the repository's items from this device when tracked,
     else GitHub's search once typing pauses, never the item itself; the suggestion list stays inside the item; in a
     modal the first Esc leaves the box, the next closes the item.
+- [ ] F15's caption (`o9BXr`): a right click opens the card's menu outside its text; on the text GitHub rendered the
+  browser's menu stays, as everywhere GitHub's rendering shows (GitHub links, #247).
+- [ ] Code threads brought in line with what was built:
+  - F10's caption (`WEgWr`): the reply box is code review's own, so its ⌘↵ button says what it does there — Reply, Add to
+    draft while your review draft is open, or Start a review when your setting puts replies into a review first; a
+    changed reply asks before it is discarded, as an edit does; a refused resolve says why in the band; a code thread
+    can be focused, J / K move between code threads and R opens the focused one's reply box.
+  - `Activity / Review · pending` (`PwdqU`): the pending toolbar's note is code review's, “Others can't see them until
+    you submit.” (was “Only you can see them.”); F14's caption (`klRij`) says the toolbar and its dialogs are code
+    review's.
+  - F14's caption (`klRij`): a review with no summary and a single thread reads as a code comment (`Activity / Code
+    comment`): GitHub can't tell it from a comment posted on its own; `· commented, no summary` is for two or more.
+- [ ] “New since you looked” brought in line with the rule (your own items are never new; the viewer on these screens is
+  mlaine): F5 (`pckEL`), F9 (`rHhyl`), F10 (`fgM5o`) and F11 (`bTwKG`) move the line to before dkim's comment and read
+  “1 new since you looked” (was “2 new” before mlaine's own request and comment); I1 (`M83Hr`) reads “1 new” (mlaine's
+  pin is their own); on I2 sofiab closed the issue through #15 (`lDKUQ`, was mlaine), so the line reads “3 new”. F5's
+  caption (`s4L7N6`) adds that a line with no person counts as someone else's, and who the viewer is.
+- [ ] “New since you looked”, the screens corrected again to the rule as written (the viewer's own items count as having
+  looked, so nothing before them is new; the previous entry only stopped counting them): on F5 (`pbvBV`), F9, F10 and
+  F11 dkim's comment moves after mlaine's comment, at 1h, with a reply fitting there (“The retry and the migration both
+  pass for me locally now…”), and the line “1 new since you looked” stands before it; on I1 mlaine's pin moves before the
+  line and dkim's comment is at 1h; on I2 sofiab also unpinned the issue (`U9OGP`, was mlaine), so the line before the
+  close reads “4 new since you looked”. F5's caption: the viewer's request and comment count as having looked.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
