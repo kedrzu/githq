@@ -135,3 +135,13 @@ Decisions amended: D42, D43.
 - [ ] The enclosing declaration: signatures broken over lines (`async load(`) count; of calls only `describe`, `it`,
   `test` (D42).
 - [ ] The number column widens with the file's longest number so the comment marker always fits (D43).
+
+## While building M2 (2026-11-11)
+
+Decision amended: D44.
+
+- [ ] Diff / File header · current (`GwweZ`), · collapsed, current (`zUTmp`), · viewed, current (`ruHZc`): fill
+  `#7B87F71F` → `#7B87F70F` (accent 12% → 6%), so a deleted file's red "D" keeps AA on it (D30). CR108 follows.
+- [ ] D44's behaviour: the reading line slides at both ends; the gap between files belongs to the file below; Space, N
+  and landing hold a file; V moves on whether viewed files show or not; C takes N's thread only in the current file; a
+  file leaving the diff goes when it leaves the top of the screen.

@@ -297316,7 +297316,7 @@
                       "ref": "pAbDY",
                       "name": "Diff / File header · current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"
@@ -297330,7 +297330,7 @@
                       "ref": "CcHDa",
                       "name": "Diff / File header · collapsed, current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"
@@ -297344,7 +297344,7 @@
                       "ref": "cfQJk",
                       "name": "Diff / File header · viewed, current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"

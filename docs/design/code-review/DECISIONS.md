@@ -764,6 +764,15 @@ distance. The reading line is never drawn. C comments on the current file's line
 nearest to it while the file is held off the line, so C, V and Space always act on the same file (D32).**
 (2026-11-10, owner's pick of the agent's first variant; C by the owner the same day; CR108)
 
+How it behaves, settled while building M2 (owner, 2026-11-11): the reading line slides at both ends of the diff, up to
+the top edge while the diff is scrolled less than the line's own depth and down to the bottom edge over the last screen,
+so the first and the last files can be current too; the 8 px between two files belongs to the file below. Space, N and
+⇧N, and the review's landing hold a file as a click does. V moves on to the next file whether viewed files are hidden or
+shown. C takes N's thread only when that thread is in the current file. A file that leaves the diff (viewed and hidden,
+or a resolved thread's file) goes when it leaves the top of the screen, not when the reading line passes it (D7). The
+current header's tint is accent at 6% (`#7B87F70F`), so every text on it keeps AA (D30); its edge, opaque, is accent at
+60% over the window.
+
 **Rejected.**
 
 - A 2 px marker in the diff's left margin (CR109).
