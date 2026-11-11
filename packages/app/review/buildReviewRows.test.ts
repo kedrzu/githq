@@ -1,12 +1,15 @@
 import { expect, test } from 'bun:test';
 
+import { parsePatchLayout } from '@githq/github/utils/parsePatchLayout.js';
 import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import { assert } from '@nzyme/utils/assert.js';
+
+import { writeSamplePatch } from '@/testing/writeSamplePatch.js';
 
 import {
     buildFileLineRows,
     buildPlaceholderRows,
     buildReviewRows,
-    CONTEXT_LINES,
     clampCommentRange,
     estimateReviewRowHeight,
     findReplacementRow,
@@ -683,51 +686,11 @@ function edit(text: string, replaced: Readonly<Record<number, readonly string[]>
         .join('');
 }
 
-/**
- * The patch git would write of our own diff, with as much context as we show: hunks whose changes are at most two
- * contexts apart merged, a side with no lines in a hunk starting at the line before. GitHub's own patch is git's diff,
- * which can pair or place a change differently from ours (D6): the rows then differ a little, and D7 absorbs it.
- */
+/** The layout of the patch git would write of our own diff: GitHub's own may pair or place a change differently (D6), and D7 absorbs it. */
 function toPatchLayout(diff: FileDiff): PatchLayout {
-    const hunks: { start: number; newStart: number; lines: string; end: number }[] = [];
-    for (const block of diff.blocks) {
-        const last = hunks.at(-1);
-        const changed = '-'.repeat(block.beforeEnd - block.beforeStart) + '+'.repeat(block.afterEnd - block.afterStart);
-        if (last && block.beforeStart - last.end <= 2 * CONTEXT_LINES) {
-            last.lines += ' '.repeat(block.beforeStart - last.end) + changed;
-            last.end = block.beforeEnd;
-            continue;
-        }
-
-        if (last) {
-            closeHunk(last);
-        }
-
-        const lead = Math.min(CONTEXT_LINES, block.beforeStart);
-        hunks.push({
-            start: block.beforeStart - lead,
-            newStart: block.afterStart - lead,
-            lines: ' '.repeat(lead) + changed,
-            end: block.beforeEnd,
-        });
-    }
-
-    const last = hunks.at(-1);
-    if (last) {
-        closeHunk(last);
-    }
-
-    return {
-        hunks: hunks.map(hunk => ({
-            beforeStart: /[ -]/.test(hunk.lines) ? hunk.start + 1 : hunk.start,
-            afterStart: /[ +]/.test(hunk.lines) ? hunk.newStart + 1 : hunk.newStart,
-            lines: hunk.lines,
-        })),
-    };
-
-    function closeHunk(hunk: { lines: string; end: number }) {
-        hunk.lines += ' '.repeat(Math.min(CONTEXT_LINES, diff.before.length - hunk.end));
-    }
+    const layout = parsePatchLayout(writeSamplePatch(diff).patch ?? '');
+    assert(layout);
+    return layout;
 }
 
 /** A row by what it shows: a line's numbers on each side, or a gap's count, which the patch can't say at the file's end. */
