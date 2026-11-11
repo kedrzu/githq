@@ -224,10 +224,10 @@ export interface BuildThreadParams {
      */
     readonly lookedAt?: number | null;
     /**
-     * The item the line stood before when it was first drawn: it stays there while the item is open, whatever the
-     * viewer posts meanwhile. Its id, as {@link ThreadNewSince.firstId} gave it.
+     * When the viewer opened the item (epoch ms, `ItemLookedStore`): only their own items made before it count as
+     * looking, so the line stays where it was while the item is open, whatever they post meanwhile. `null`: all do.
      */
-    readonly newSinceId?: string | null;
+    readonly openedAt?: number | null;
 }
 
 type MergingKind = Exclude<ThreadEventPart['kind'], 'single'>;
@@ -260,7 +260,7 @@ export function buildThread({
     pendingReview = null,
     viewerLogin = null,
     lookedAt = null,
-    newSinceId = null,
+    openedAt = null,
 }: BuildThreadParams): ThreadItem[] {
     const timed: Timed[] = [];
     const pending: ThreadItem[] = [];
@@ -328,7 +328,7 @@ export function buildThread({
         ...(draft ? [draft] : []),
     ];
     const startedAt = new Map(ordered.map(entry => [getTimedId(entry), entry.at]));
-    const newSince = lookedAt === null ? null : findNewSince({ items, lookedAt, newSinceId, viewerLogin });
+    const newSince = lookedAt === null ? null : findNewSince({ items, lookedAt, openedAt, viewerLogin });
     const folded = foldThread(items, { detail, unfolded, keepShown, startedAt, newSinceId: newSince?.firstId ?? null });
     const before = newSince ? folded.findIndex(entry => entry.id === newSince.firstId) : -1;
     return newSince && before >= 0 ? folded.toSpliced(before, 0, newSince) : folded;
@@ -356,28 +356,26 @@ export function getThreadNewestAt(params: BuildThreadParams): number | null {
 interface FindNewSinceParams {
     readonly items: readonly ThreadItem[];
     readonly lookedAt: number;
-    readonly newSinceId: string | null;
+    readonly openedAt: number | null;
     readonly viewerLogin: string | null;
 }
 
 /**
- * The line before the first item someone else made after the viewer looked — and after the viewer's own newest item,
- * for what they did counts as looking — or before the item it stood before already; `null` when nothing is new.
+ * The line before the first item someone else made after the viewer looked — and after the viewer's own newest item
+ * made before they opened the item, for what they did counts as looking; `null` when nothing is new. What they post
+ * while it is open does not move it: it stays put until they leave. The cut-off compares GitHub's times with this
+ * device's clock, so a skewed clock may count an item posted just around the opening on the wrong side of it.
  */
-function findNewSince({ items, lookedAt, newSinceId, viewerLogin }: FindNewSinceParams): ThreadNewSince | null {
-    let first = newSinceId === null ? -1 : items.findIndex(entry => entry.id === newSinceId);
-    if (first < 0) {
-        let since = lookedAt;
-        for (const entry of items) {
-            const ended = getEndedAt(entry);
-            if (isViewers(entry, viewerLogin) && Number.isFinite(ended)) {
-                since = Math.max(since, ended);
-            }
+function findNewSince({ items, lookedAt, openedAt, viewerLogin }: FindNewSinceParams): ThreadNewSince | null {
+    let since = lookedAt;
+    for (const entry of items) {
+        const ended = getEndedAt(entry);
+        if (isViewers(entry, viewerLogin) && Number.isFinite(ended) && (openedAt === null || ended < openedAt)) {
+            since = Math.max(since, ended);
         }
-
-        first = items.findIndex(entry => isNew({ entry, since, viewerLogin }));
     }
 
+    const first = items.findIndex(entry => isNew({ entry, since, viewerLogin }));
     const firstEntry = items[first];
     if (!firstEntry) {
         return null;

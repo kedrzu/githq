@@ -805,7 +805,8 @@ test('a thread opened, unresolved and resolved again folds to its row, in a revi
 });
 
 test('"N new since you looked" stands before the first item others made since, and stays there when the viewer comments', async () => {
-    const args = shallowReactive({ ...IssueThread.args });
+    // Opened a minute ago: what the viewer posts now does not count as looking.
+    const args = shallowReactive({ ...IssueThread.args, openedAt: SAMPLE_NOW - 60_000 });
     await IssueThread.run({ args });
 
     const line = page.getByRole('listitem').filter({ hasText: /^1\snew since you looked$/u });

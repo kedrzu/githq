@@ -79,6 +79,8 @@ const props = defineProps<{
    * others did since starts. `null` when never on this device.
    */
   lookedAt?: number | null;
+  /** When the viewer opened the item (epoch ms): what they post after it does not move the line. */
+  openedAt?: number | null;
 }>();
 
 const emit = defineEmits<{
@@ -140,8 +142,6 @@ const askingReply = ref<string | null>(null);
 const focusedReply = ref<string | null>(null);
 /** The anchors the middle was read for: each is looked for there once, found or not. */
 const readFor = new Set<string>();
-/** The item "N new since you looked" first stood before: it stays there while the item is open. */
-const newSinceId = ref<string | null>(null);
 
 /** The viewer's draft review's comments, as its dialogs list them. */
 const pendingComments = computed(() => getPendingComments(props.reviewThreads ?? []));
@@ -211,7 +211,7 @@ const entries = computed(() =>
         pendingReview: props.item.kind === 'pullRequest' ? props.item.pendingReview : null,
         viewerLogin: props.viewer?.login ?? null,
         lookedAt: props.lookedAt ?? null,
-        newSinceId: newSinceId.value,
+        openedAt: props.openedAt ?? null,
       })
     : [],
 );
@@ -232,25 +232,12 @@ watch(
       foldFailed.value = false;
       askingReply.value = null;
       focusedReply.value = null;
-      newSinceId.value = null;
     }
 
     for (const edit of failed ?? []) {
       if (!editorsRef.value.has(edit.commentId)) {
         openEditor(edit.commentId, edit.body);
       }
-    }
-  },
-  { immediate: true },
-);
-
-// Drawn once, the line stays before the item it stood before, whatever the viewer posts after.
-watch(
-  entries,
-  list => {
-    const line = list.find(entry => entry.kind === 'newSince');
-    if (line?.kind === 'newSince') {
-      newSinceId.value = line.firstId;
     }
   },
   { immediate: true },

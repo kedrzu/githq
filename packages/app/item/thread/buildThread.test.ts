@@ -683,19 +683,37 @@ test('never looked on this device, or nothing new: no line', () => {
     ]);
 });
 
-test('the line stays before the item it first stood before, while the viewer comments and others go on', () => {
-    const before = issueDetail([], [comment('C1', DKIM, 1), comment('C2', DKIM, 11)]);
-    const lookedAt = Date.parse(at(10));
-    const first = newSinceOf(buildThread({ detail: before, viewerLogin: MLAINE.login, lookedAt }));
-
-    const after = issueDetail(
+test('what the viewer posts after opening the item does not move the line: it stays while others go on', () => {
+    const detail = issueDetail(
         [],
         [comment('C1', DKIM, 1), comment('C2', DKIM, 11), comment('C3', MLAINE, 12), comment('C4', SOFIAB, 13)],
     );
-    const built = buildThread({ detail: after, viewerLogin: MLAINE.login, lookedAt, newSinceId: first.firstId });
+
+    const built = buildThread({
+        detail,
+        viewerLogin: MLAINE.login,
+        lookedAt: Date.parse(at(10)),
+        openedAt: Date.parse(at(11.5)),
+    });
 
     expect(idsOf(built)).toEqual(['C1', 'newSince', 'C2', 'C3', 'C4']);
     expect(newSinceOf(built).count).toBe(2);
+});
+
+test('the item the line stood before gone, it stands before the next one new, not past what the viewer posted since', () => {
+    const detail = issueDetail(
+        [],
+        [comment('C1', DKIM, 1), comment('C2b', DKIM, 11.5), comment('C3', MLAINE, 12), comment('C4', SOFIAB, 13)],
+    );
+
+    const built = buildThread({
+        detail,
+        viewerLogin: MLAINE.login,
+        lookedAt: Date.parse(at(10)),
+        openedAt: Date.parse(at(11.7)),
+    });
+
+    expect(idsOf(built)).toEqual(['C1', 'newSince', 'C2b', 'C3', 'C4']);
 });
 
 test('the first item new since the viewer looked stays below the fold', () => {

@@ -137,6 +137,8 @@ const props = withDefaults(
     reviewDraftFirst?: boolean;
     /** When the user last looked at the item before opening it (`ItemLookedStore`): its thread marks what is new since. */
     lookedAt?: number | null;
+    /** When the user opened the item: what they post after it does not move the thread's line. */
+    openedAt?: number | null;
   }>(),
   // Vue reads a boolean prop not given as `false`: not given is not known.
   { viewerCanEnableAutoMerge: null },
@@ -920,6 +922,7 @@ function getProjectOptions(): CommandOption[] {
                 :review-writing="reviewWriting"
                 :review-draft-first="reviewDraftFirst"
                 :looked-at="lookedAt"
+                :opened-at="openedAt"
                 @retry="emit('retryComment', $event)"
                 @discard="emit('discardComment', $event)"
                 @edit="emit('edit', $event)"
