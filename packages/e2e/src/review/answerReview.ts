@@ -1,4 +1,7 @@
+import { computeFileDiff } from '@githq/app/review/diff/computeFileDiff.js';
 import type { FileViewedState, PatchStatus } from '@githq/github/generated.gen.js';
+import { assert } from '@nzyme/utils/assert.js';
+import { assertNever } from '@nzyme/utils/assertNever.js';
 
 import type { GitHubMock } from '../github/GitHubMock.js';
 
@@ -76,6 +79,8 @@ export interface AnsweredReview {
     push(oid: string): void;
 }
 
+/** Unchanged lines a patch shows around a change, as git does by default. */
+const PATCH_CONTEXT = 3;
 const HEAD_OID = 'head0000';
 const BASE_OID = 'base0000';
 const MERGE_BASE_OID = 'fork0000';
@@ -146,21 +151,16 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
         };
     });
     answerCompare(HEAD_OID);
-    github.rest('GET', `${repositoryPath}/pulls/${params.number}/files`, () => ({
+    // Of any pull request of the repository, as the list is.
+    const filesPath = new RegExp(`^${repositoryPath.replaceAll('.', '\\.')}/pulls/\\d+/files$`, 'u');
+    github.restMatching('GET', filesPath, () => ({
         status: 200,
-        json: params.files.flatMap(file =>
-            file.previousPath
-                ? [
-                      {
-                          filename: file.path,
-                          previous_filename: file.previousPath,
-                          status: file.changeType === 'COPIED' ? 'copied' : 'renamed',
-                          additions: 0,
-                          deletions: 0,
-                      },
-                  ]
-                : [],
-        ),
+        json: params.files.map(file => ({
+            filename: file.path,
+            previous_filename: file.previousPath,
+            status: toRestStatus(file.changeType ?? 'MODIFIED'),
+            ...(file.binary ? { additions: 0, deletions: 0 } : toPatch(file.before, file.after)),
+        })),
     }));
     github.graphqlDocument('ReviewBlobOids', ({ variables }) => {
         const repository: Record<string, unknown> = {};
@@ -312,6 +312,87 @@ function toThreadNode(thread: SampleReviewThread) {
             })),
         },
     };
+}
+
+/** How `…/pulls/{n}/files` names a change type. */
+function toRestStatus(changeType: PatchStatus) {
+    switch (changeType) {
+        case 'ADDED':
+            return 'added';
+        case 'DELETED':
+            return 'removed';
+        case 'MODIFIED':
+            return 'modified';
+        case 'RENAMED':
+            return 'renamed';
+        case 'COPIED':
+            return 'copied';
+        case 'CHANGED':
+            return 'changed';
+        default:
+            return assertNever(changeType);
+    }
+}
+
+/**
+ * A file's patch as GitHub gives it, a unified diff with its changes' context, and its line counts; no patch where
+ * nothing changed, as for a pure rename.
+ */
+function toPatch(before: string | null, after: string | null) {
+    const diff = computeFileDiff({ before, after, ignoreWhitespace: false });
+    const hunks: string[] = [];
+    let additions = 0;
+    let deletions = 0;
+    let index = 0;
+    while (index < diff.blocks.length) {
+        // Blocks closer than twice the context share a hunk.
+        let last = index;
+        while (
+            last + 1 < diff.blocks.length &&
+            (diff.blocks[last + 1]?.beforeStart ?? 0) - (diff.blocks[last]?.beforeEnd ?? 0) <= 2 * PATCH_CONTEXT
+        ) {
+            last++;
+        }
+
+        const first = diff.blocks[index];
+        const end = diff.blocks[last];
+        assert(first && end);
+        const beforeStart = Math.max(0, first.beforeStart - PATCH_CONTEXT);
+        const afterStart = Math.max(0, first.afterStart - PATCH_CONTEXT);
+        const beforeEnd = Math.min(diff.before.length, end.beforeEnd + PATCH_CONTEXT);
+        const afterEnd = Math.min(diff.after.length, end.afterEnd + PATCH_CONTEXT);
+        const lines: string[] = [];
+        let beforeLine = beforeStart;
+        let afterLine = afterStart;
+        for (const block of diff.blocks.slice(index, last + 1)) {
+            for (; beforeLine < block.beforeStart; beforeLine++, afterLine++) {
+                lines.push(` ${diff.before[beforeLine]}`);
+            }
+
+            for (; beforeLine < block.beforeEnd; beforeLine++) {
+                lines.push(`-${diff.before[beforeLine]}`);
+                deletions++;
+            }
+
+            for (; afterLine < block.afterEnd; afterLine++) {
+                lines.push(`+${diff.after[afterLine]}`);
+                additions++;
+            }
+        }
+
+        for (; beforeLine < beforeEnd && afterLine < afterEnd; beforeLine++, afterLine++) {
+            lines.push(` ${diff.before[beforeLine]}`);
+        }
+
+        const beforeCount = beforeEnd - beforeStart;
+        const afterCount = afterEnd - afterStart;
+        // An empty side starts at the line before it, 0 at the top.
+        const header = `@@ -${beforeCount === 0 ? beforeStart : beforeStart + 1},${beforeCount} +${afterCount === 0 ? afterStart : afterStart + 1},${afterCount} @@`;
+        hunks.push([header, ...lines].join('\n'));
+        index = last + 1;
+    }
+
+    return hunks.length === 0 ? { additions, deletions } : { additions, deletions, patch: hunks.join('\n') };
 }
 
 function oidOf(commit: string, path: string) {

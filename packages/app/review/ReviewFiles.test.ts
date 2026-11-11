@@ -19,7 +19,7 @@ import type { ReviewPosition } from './buildReviewRows.js';
 import { getReviewBlobDatabaseName, ReviewBlobStore } from './ReviewBlobStore.js';
 import { ReviewFiles } from './ReviewFiles.js';
 import { ReviewViewedFailures } from './ReviewViewedFailures.js';
-import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
+import type { PullRequestFiles, ReviewFile, ReviewFilePatch, ReviewFileState } from './ReviewFiles.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
@@ -39,11 +39,12 @@ test('the list comes through all its pages, and a file reads as it is at the mer
 
     await settled(model);
 
+    // The renamed file waits for the patches, so they are all in.
     const expected: ReviewFile[] = [
-        fileRow('changed.ts', 'MODIFIED'),
-        fileRow('added.ts', 'ADDED'),
-        fileRow('deleted.ts', 'DELETED'),
-        { ...fileRow('moved.ts', 'RENAMED'), previousPath: 'old.ts' },
+        { ...fileRow('changed.ts', 'MODIFIED'), patch: USUAL_PATCH },
+        { ...fileRow('added.ts', 'ADDED'), patch: USUAL_PATCH },
+        { ...fileRow('deleted.ts', 'DELETED'), patch: USUAL_PATCH },
+        { ...fileRow('moved.ts', 'RENAMED'), previousPath: 'old.ts', patch: USUAL_PATCH },
     ];
     expect(model.list).toEqual({ kind: 'ready' });
     expect(model.files).toEqual(expected);
@@ -59,14 +60,133 @@ test('the list comes through all its pages, and a file reads as it is at the mer
     });
 });
 
-test('the heavy REST file list is read only for a pull request with a rename or a copy', async () => {
-    const github = createGitHub();
+test("every file gets its patch's layout and what the patch settles: binary, renamed with no changes, or nothing without a patch", async () => {
+    const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.file({ path: 'image.png', changeType: 'MODIFIED', before: 'png once', after: 'png', binary: true });
+    github.file({ path: 'empty.ts', changeType: 'ADDED', after: '', patch: { additions: 0, deletions: 0 } });
+    github.file({
+        path: 'moved.ts',
+        changeType: 'RENAMED',
+        previousPath: 'old.ts',
+        before: 'same',
+        after: 'same',
+        patch: { additions: 0, deletions: 0 },
+    });
+    github.file({
+        path: 'copied.ts',
+        changeType: 'COPIED',
+        previousPath: 'source.ts',
+        before: 'same',
+        after: 'same',
+        patch: { additions: 0, deletions: 0 },
+    });
+    github.file({
+        path: 'huge.ts',
+        changeType: 'MODIFIED',
+        before: 'a',
+        after: 'b',
+        patch: { additions: 5000, deletions: 9 },
+    });
+    github.file({ path: 'unlisted.ts', changeType: 'MODIFIED', before: 'a', after: 'b', patch: null });
     const { model, session } = open(uniqueLogin(), github);
 
     await settled(model);
+    await waitUntil(() => model.files.some(file => file.patch !== undefined), { timeoutMs: 2000 });
 
-    expect(session.operations()).not.toContain('GET /repos/acme/web/pulls/7/files');
+    expect(Object.fromEntries(model.files.map(file => [file.path, file.patch]))).toEqual({
+        'changed.ts': USUAL_PATCH,
+        'image.png': { layout: null, verdict: 'binary' },
+        'empty.ts': { layout: null, verdict: 'binary' },
+        'moved.ts': { layout: null, verdict: 'renamedUnchanged' },
+        'copied.ts': { layout: null, verdict: null },
+        'huge.ts': { layout: null, verdict: null },
+        'unlisted.ts': undefined,
+    });
+    expect(session.operations().filter(operation => operation === 'GET /repos/acme/web/pulls/7/files')).toHaveLength(1);
+    // The blob has the last word: the empty file is no binary, and the binary one has its sizes.
+    expect(model.getState('empty.ts')).toEqual({ kind: 'ready', before: null, after: '' });
+    expect(model.getState('image.png')).toEqual({ kind: 'binary', before: 8, after: 3 });
+    expect(textsAsked(session)).not.toContain(oidOf('png'));
+});
+
+test('nothing waits on the patches: the files arrive while they are on their way, and they come after', async () => {
+    const github = createGitHub();
+    github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    const patches = createSilentHold(request => request.operation === 'GET /repos/acme/web/pulls/7/files');
+    const { model } = open(uniqueLogin(), github, patches.hold);
+
+    await settled(model);
+    expect(model.getState('changed.ts')).toEqual({ kind: 'ready', before: 'a', after: 'b' });
+    expect(model.files[0]?.patch).toBeUndefined();
+
+    patches.release();
+
+    await waitUntil(() => model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+    expect(model.files[0]?.patch).toEqual(USUAL_PATCH);
+});
+
+test('patches show page by page, and a renamed file named on a page goes on without waiting for the rest', async () => {
+    const github = createGitHub();
+    github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.file({ path: 'moved.ts', changeType: 'RENAMED', previousPath: 'old.ts', before: 'was', after: 'is' });
+    github.file({ path: 'later.ts', changeType: 'MODIFIED', before: 'c', after: 'd' });
+    const secondPage = createSilentHold(
+        request => request.operation === 'GET /repos/acme/web/pulls/7/files' && request.variables.page === '2',
+    );
+    const { model } = open(uniqueLogin(), github, secondPage.hold);
+
+    await settled(model);
+
+    expect(model.getState('moved.ts')).toEqual({ kind: 'ready', before: 'was', after: 'is' });
+    expect(Object.fromEntries(model.files.map(file => [file.path, file.patch]))).toEqual({
+        'changed.ts': USUAL_PATCH,
+        'moved.ts': USUAL_PATCH,
+        'later.ts': undefined,
+    });
+    expect(model.listEnd).toBe('certain');
+
+    secondPage.release();
+
+    await waitUntil(() => model.files[2]?.patch !== undefined, { timeoutMs: 2000 });
+    expect(model.files[2]?.patch).toEqual(USUAL_PATCH);
+});
+
+test('patches GitHub fails on leave the files without them, fetched as ever; opening the pull request again reads them', async () => {
+    const github = createGitHub();
+    github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    github.failNext('GET /repos/acme/web/pulls/7/files');
+    const { model, files, session } = open(uniqueLogin(), github);
+
+    await settled(model);
+    await waitUntil(() => session.operations().includes('GET /repos/acme/web/pulls/7/files'), { timeoutMs: 2000 });
+
+    expect(model.getState('changed.ts')).toEqual({ kind: 'ready', before: 'a', after: 'b' });
+    expect(model.files[0]?.patch).toBeUndefined();
+
+    expect(files.open(REFERENCE)).toBe(model);
+
+    await waitUntil(() => model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+    expect(model.files[0]?.patch).toEqual(USUAL_PATCH);
+});
+
+test('a pull request read before draws its patches from the disk, and does not ask for them again', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntil(() => first.model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+    const store = ReviewBlobStore.create();
+    await waitUntil(async () => (await store.readFileList(login, LIST_KEY))?.files[0]?.patch !== undefined, {
+        timeoutMs: 2000,
+    });
+
+    const second = open(login, github);
+    await settled(second.model);
+
+    expect(second.model.files[0]?.patch).toEqual(USUAL_PATCH);
+    expect(second.session.operations()).not.toContain('GET /repos/acme/web/pulls/7/files');
 });
 
 test('a truncated blob is read whole over REST, never diffed from its cut text', async () => {
@@ -1993,6 +2113,18 @@ interface TestFile {
     readonly submodule?: boolean;
     /** How many lines it adds, when more than the list's usual 1. */
     readonly additions?: number;
+    /**
+     * What `…/pulls/{n}/files` says of it, when not its usual: a patch of its line counts, none for a binary file.
+     * `null` leaves it out of that answer.
+     */
+    readonly patch?: TestPatch | null;
+}
+
+interface TestPatch {
+    /** Missing where GitHub leaves the patch out. */
+    readonly text?: string;
+    readonly additions: number;
+    readonly deletions: number;
 }
 
 /** The key the list of {@link REFERENCE} is kept under. */
@@ -2225,16 +2357,29 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
         }
 
         if (request.operation === 'GET /repos/acme/web/pulls/7/files') {
-            const renamed = files.filter(({ previousPath }) => previousPath !== undefined);
+            // Paged as the list is.
+            const page = Number(request.variables.page ?? 1);
+            const last = page * pageSize >= files.length;
             return {
                 status: 200,
-                body: renamed.map(({ path, previousPath }) => ({
-                    filename: path,
-                    previous_filename: previousPath,
-                    status: 'renamed',
-                    additions: 0,
-                    deletions: 0,
-                })),
+                ...(last
+                    ? {}
+                    : { link: `<https://api.github.com/repos/acme/web/pulls/7/files?page=${page + 1}>; rel="next"` }),
+                body: files.slice((page - 1) * pageSize, page * pageSize).flatMap(testFile => {
+                    const patch = testFile.patch === undefined ? getUsualPatch(testFile) : testFile.patch;
+                    return patch
+                        ? [
+                              {
+                                  filename: testFile.path,
+                                  previous_filename: testFile.previousPath,
+                                  status: testFile.changeType.toLowerCase(),
+                                  additions: patch.additions,
+                                  deletions: patch.deletions,
+                                  patch: patch.text,
+                              },
+                          ]
+                        : [];
+                }),
             };
         }
 
@@ -2325,6 +2470,22 @@ function threadOn(path: string, id: string, bodies: readonly string[] = ['<p>Why
 
 function fileRow(path: string, changeType: ReviewFile['changeType']): ReviewFile {
     return { path, previousPath: null, changeType, additions: 1, deletions: 2, viewed: 'UNVIEWED' };
+}
+
+/** What the usual patch, of the list's line counts, reads as. */
+const USUAL_PATCH: ReviewFilePatch = {
+    layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '--+' }] },
+    verdict: null,
+};
+
+/** A file's patch as GitHub gives it unless told: one hunk of the list's line counts, none for a binary file. */
+function getUsualPatch({ binary, additions = 1 }: TestFile): TestPatch {
+    if (binary) {
+        return { additions: 0, deletions: 0 };
+    }
+
+    const text = `@@ -1,2 +1,${additions} @@\n-was\n-was too${'\n+is'.repeat(additions)}`;
+    return { text, additions, deletions: 2 };
 }
 
 function expectStates(model: PullRequestFiles, expected: Record<string, ReviewFileState>) {

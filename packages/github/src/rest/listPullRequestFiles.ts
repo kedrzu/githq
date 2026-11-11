@@ -29,6 +29,11 @@ export interface ListPullRequestFilesParams {
     /** `owner/name`. */
     nameWithOwner: string;
     number: number;
+    /**
+     * Told of each page's files as it arrives, before the next is asked for: a pull request of 3,000 files is 30 pages.
+     * Throwing stops the read, which then throws that.
+     */
+    onPage?: (files: readonly PullRequestFile[]) => void;
 }
 
 /**
@@ -50,6 +55,7 @@ export async function listPullRequestFiles(
             throw malformed(page.status);
         }
 
+        const pageFiles: PullRequestFile[] = [];
         for (const entry of page.payload) {
             if (
                 !isPlainObject(entry) ||
@@ -63,7 +69,7 @@ export async function listPullRequestFiles(
                 throw malformed(page.status);
             }
 
-            files.push({
+            pageFiles.push({
                 path: entry.filename,
                 previousPath: entry.previous_filename ?? null,
                 status: readStatus(entry.status),
@@ -73,6 +79,8 @@ export async function listPullRequestFiles(
             });
         }
 
+        files.push(...pageFiles);
+        params.onPage?.(pageFiles);
         // The URL GitHub hands out already says everything.
         next = readNextPageUrl(page.headers);
         query = undefined;

@@ -58,6 +58,43 @@ test('reads every page: where renamed and copied files came from, their status, 
     ]);
 });
 
+test('tells of each page as it arrives, before asking for the next; throwing there stops the read', async () => {
+    const requests: Parameters<Fetch>[] = [];
+    const pages = () => [
+        Response.json([{ filename: 'a.ts', status: 'added', additions: 1, deletions: 0, patch: '@@ -0,0 +1 @@\n+a' }], {
+            headers: { link: `<${NEXT_URL}>; rel="next"` },
+        }),
+        Response.json([
+            { filename: 'b.ts', status: 'removed', additions: 0, deletions: 1, patch: '@@ -1 +0,0 @@\n-b' },
+        ]),
+    ];
+    const told: { readonly paths: string[]; readonly asked: number }[] = [];
+
+    const files = await listPullRequestFiles(createRest(requests, pages()), {
+        nameWithOwner: 'kedrzu/githq',
+        number: 7,
+        onPage: page => told.push({ paths: page.map(file => file.path), asked: requests.length }),
+    });
+
+    expect(told).toEqual([
+        { paths: ['a.ts'], asked: 1 },
+        { paths: ['b.ts'], asked: 2 },
+    ]);
+    expect(files.map(file => file.path)).toEqual(['a.ts', 'b.ts']);
+
+    const stopped: Parameters<Fetch>[] = [];
+    await expect(
+        listPullRequestFiles(createRest(stopped, pages()), {
+            nameWithOwner: 'kedrzu/githq',
+            number: 7,
+            onPage: () => {
+                throw new Error('Nobody waits');
+            },
+        }),
+    ).rejects.toThrow('Nobody waits');
+    expect(stopped).toHaveLength(1);
+});
+
 test('a page that is not a list of files is malformed', async () => {
     const answers = [
         Response.json({ message: 'not a list' }),
