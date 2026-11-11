@@ -1070,25 +1070,14 @@ export interface ReviewCommentLine extends RowLine {
 }
 
 /**
- * The line `C` comments on when no thread is focused (D32): the first of the rows from `key` on, on its newer side unless it
- * only has an older one. `null` with no line after it.
+ * The line `C` comments on in a row with no thread focused (D32): a code row's, on its newer side unless it only has an
+ * older one. `null` for a row that is not code.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function findCommentLine(rows: readonly ReviewRow[], key: string | null): ReviewCommentLine | null {
-    const start = Math.max(
-        rows.findIndex(row => row.key === key),
-        0,
-    );
-    for (let index = start; index < rows.length; index++) {
-        const row = rows[index];
-        const line = row?.kind === 'line' ? getRowLine(row) : null;
-        if (row && line) {
-            return { ...line, path: getReviewRowPath(row.key), key: row.key };
-        }
-    }
-
-    return null;
+export function getCommentLine(row: ReviewRow): ReviewCommentLine | null {
+    const line = row.kind === 'line' ? getRowLine(row) : null;
+    return line ? { ...line, path: getReviewRowPath(row.key), key: row.key } : null;
 }
 
 export interface ClampCommentRangeParams extends RowLine {

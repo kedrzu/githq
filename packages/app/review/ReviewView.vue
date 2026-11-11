@@ -94,9 +94,9 @@ import {
   COMMENT_BOX_HEIGHT,
   estimateReviewRowHeight,
   FILE_GAP,
-  findCommentLine,
   findReplacementRow,
   GAP_STEP,
+  getCommentLine,
   getDistanceLinesToShow,
   getGapLinesToShow,
   getGapSize,
@@ -149,6 +149,7 @@ import { createFileFilter } from './utils/createFileFilter.js';
 import type { FileFilter, FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getLandingFreshness } from './utils/getLandingFreshness.js';
+import { findNearestShown } from './utils/findNearestShown.js';
 import { findReadingFile } from './utils/findReadingFile.js';
 import { getReadingLine } from './utils/getReadingLine.js';
 import { getReviewFreshness } from './utils/getReviewFreshness.js';
@@ -1406,27 +1407,26 @@ function getGapToward(gap: ReviewGapRow): ReviewGapDirection {
 }
 
 /**
- * The gap on screen nearest the reading line, under the pinned header, which E and "Show all hidden lines" open; not one
- * with nothing hidden, there only to say a push reset it (D42).
+ * The gap of the current file nearest the reading line, which E and "Show all hidden lines" open; not one with nothing
+ * hidden, there only to say a push reset it (D42).
  */
 function findNearestGap(): ReviewGapRow | null {
+  return findNearestInCurrentFile(row => (row.kind === 'gap' && row.hidden > 0 ? row : null));
+}
+
+/** What the current file's row nearest the reading line gives, so C and E act on the file V and Space do (D44). */
+function findNearestInCurrentFile<R>(pick: (row: ReviewRow) => R | null): R | null {
   const viewport = list.value?.getViewport();
-  if (!viewport) {
+  const path = currentPath.value;
+  if (!viewport || path === null) {
     return null;
   }
 
-  const line = getReadingLine(viewport);
-  let nearest: ReviewGapRow | null = null;
-  let nearestDistance = Infinity;
-  for (const { row, top, bottom } of list.value?.getShownRows() ?? []) {
-    const distance = Math.max(top - line, line - bottom, 0);
-    if (row.kind === 'gap' && row.hidden > 0 && bottom > viewport.covered && distance < nearestDistance) {
-      nearest = row;
-      nearestDistance = distance;
-    }
-  }
-
-  return nearest;
+  return findNearestShown({
+    rows: list.value?.getShownRows() ?? [],
+    viewport,
+    pick: row => (getReviewRowPath(row.key) === path ? pick(row) : null),
+  });
 }
 
 /** E: 20 lines of the gap nearest the reading line toward its hunk, each time it is pressed; or all of it (D42). */
@@ -1511,7 +1511,10 @@ function canEdit(id: string) {
   return kind === 'editing' || kind === 'failed';
 }
 
-/** The line of the focused thread while it is on screen, or else the first line on screen (D32). */
+/**
+ * The line of the focused thread while it is on screen, or else the current file's line at the reading line, or nearest
+ * it while the file is held off the line (D32, D44); none with no code of that file on screen.
+ */
 function findCursorLine(): ReviewCommentLine | null {
   const row = findFocusedThread();
   if (row && isOnScreen(row.key)) {
@@ -1521,8 +1524,7 @@ function findCursorLine(): ReviewCommentLine | null {
     }
   }
 
-  const line = findCommentLine(rows.value, list.value?.firstVisibleKey ?? null);
-  return line && isOnScreen(line.key) ? line : null;
+  return findNearestInCurrentFile(getCommentLine);
 }
 
 function isOnScreen(key: string) {

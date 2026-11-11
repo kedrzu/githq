@@ -457,6 +457,73 @@ test('V collapses the file in place with viewed files shown, nothing moving, and
     await expect(review.code('The web app.')).toHaveCount(0);
 });
 
+test('C, V and E act on the short file crossing the reading line, not the one at the top: C opens on its line, nothing moving, E finds no gap in it and V marks it (D32, D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const changed = Array.from({ length: 40 }, (_, index) => `const top${index} = ${index};`);
+    const kept = Array.from({ length: 30 }, (_, index) => `const kept${index} = ${index};`);
+    const below = Array.from({ length: 80 }, (_, index) => `const below${index} = ${index};`);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            // A gap near its end, on screen above the short file.
+            {
+                path: 'src/a/top.ts',
+                before: `${kept.join('\n')}\nconst end = 1;\n`,
+                after: `${changed.join('\n')}\n${kept.join('\n')}\nconst end = 2;\n`,
+            },
+            { path: 'src/b/short.ts', before: 'export const short = 1;\n', after: 'export const short = 2;\n' },
+            { path: 'src/c/below.ts', before: '', after: `${below.join('\n')}\n` },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    const short = review.code('export const short = 2;');
+    await expect(short).toBeAttached();
+    const gap = review.gap('24 lines');
+    await expect(gap).toBeAttached();
+
+    // The short file's line a third down under the pinned header, where the reading line is.
+    await expect(async () => {
+        const [line, diff] = await Promise.all([short.boundingBox(), review.diff.boundingBox()]);
+        if (!line || !diff) {
+            throw new Error('The short file is not on screen');
+        }
+
+        const reading = 38 + (diff.height - 38) / 3;
+        await review.diff.evaluate((element, by) => element.scrollBy(0, by), line.y + 10 - diff.y - reading);
+        await expect(review.currentFileRow).toContainText('short.ts', { timeout: 500 });
+    }).toPass();
+    // The top of the screen is still the top file, its gap on screen.
+    await expect(gap).toBeInViewport();
+    const before = await short.boundingBox();
+
+    await page.keyboard.press('e');
+    await page.keyboard.press('c');
+
+    const box = review.commentBox('Comment on line 1');
+    await expect(box).toBeVisible();
+    expect(await short.boundingBox()).toEqual(before);
+    const [line, opened, next] = await Promise.all([
+        short.boundingBox(),
+        box.boundingBox(),
+        review.fileHeader('src/c/below.ts').boundingBox(),
+    ]);
+    expect(opened?.y).toBeGreaterThan(line?.y ?? Infinity);
+    expect(opened?.y).toBeLessThan(next?.y ?? 0);
+    // E had no gap of the short file to open; the top file's stayed as it was.
+    await expect(gap).toBeAttached();
+
+    await page.keyboard.press('Escape');
+    await expect(box).toBeHidden();
+    await page.keyboard.press('v');
+    await expect(review.viewedButton('src/b/short.ts')).toHaveAttribute('aria-pressed', 'true');
+    await expect(review.viewedButton('src/a/top.ts')).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('a pull request with no changes says so', async ({ page, github }) => {
     await openPullRequest(page, github);
     answerReview(github, { repository: 'acme/web', number: 15, files: [] });

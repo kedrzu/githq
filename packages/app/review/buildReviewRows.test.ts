@@ -5,7 +5,6 @@ import {
     buildReviewRows,
     clampCommentRange,
     estimateReviewRowHeight,
-    findCommentLine,
     findReplacementRow,
     findReviewPositionRow,
     getDistanceLinesToShow,
@@ -13,6 +12,7 @@ import {
     getGapLinesToShow,
     getGapSize,
     getGapStep,
+    getCommentLine,
     getReviewCommentKey,
     getReviewHeaderKey,
     getReviewPosition,
@@ -804,14 +804,15 @@ test('a box gone from the rows it was held at gives way to its line, not to the 
     expect(replacement?.row).toMatchObject({ kind: 'line', line: { right: { line: 21 } } });
 });
 
-test('C takes the first line from the row at the top: past what is not a line, on its newer side unless it has none', () => {
+test("C takes a code row's line on its newer side unless it has none, and nothing from a row that is not code", () => {
     const rows = buildReviewRows({
         files: [A],
-        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) }),
+        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'unified' }) }),
     });
+    const older = rows.map(getCommentLine).filter(line => line?.side === 'before');
 
-    expect(findCommentLine(rows, getReviewHeaderKey(A.path))).toMatchObject({ path: A.path, side: 'after', line: 17 });
-    expect(findCommentLine([], null)).toBeNull();
+    expect(getCommentLine(rows[0]!)).toBeNull();
+    expect(older).toEqual([expect.objectContaining({ path: A.path, line: 20 })]);
 });
 
 test('a range reaches as far as the lines go on together, and stops at what hides lines', () => {
