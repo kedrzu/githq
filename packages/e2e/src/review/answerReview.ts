@@ -149,7 +149,17 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
     github.rest('GET', `${repositoryPath}/pulls/${params.number}/files`, () => ({
         status: 200,
         json: params.files.flatMap(file =>
-            file.previousPath ? [{ filename: file.path, previous_filename: file.previousPath }] : [],
+            file.previousPath
+                ? [
+                      {
+                          filename: file.path,
+                          previous_filename: file.previousPath,
+                          status: file.changeType === 'COPIED' ? 'copied' : 'renamed',
+                          additions: 0,
+                          deletions: 0,
+                      },
+                  ]
+                : [],
         ),
     }));
     github.graphqlDocument('ReviewBlobOids', ({ variables }) => {

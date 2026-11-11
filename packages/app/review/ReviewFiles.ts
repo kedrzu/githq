@@ -12,7 +12,7 @@ import type { ReviewBlobOidAnswer } from '@githq/github/readReviewBlobs.js';
 import { getGitBlobText } from '@githq/github/rest/getGitBlobText.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { getMergeBase } from '@githq/github/rest/getMergeBase.js';
-import { listPullRequestRenames } from '@githq/github/rest/listPullRequestRenames.js';
+import { listPullRequestFiles } from '@githq/github/rest/listPullRequestFiles.js';
 import { markFilesViewed } from '@githq/github/markFilesViewed.js';
 import type { FileViewedMark } from '@githq/github/markFilesViewed.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
@@ -1723,12 +1723,19 @@ export const ReviewFiles = defineService({
             async function readRenames(run: FileRun) {
                 try {
                     assertMayAsk();
-                    const renames = await listPullRequestRenames(current.rest, {
+                    const files = await listPullRequestFiles(current.rest, {
                         nameWithOwner,
                         number: reference.number,
                     });
                     if (!isLive(run)) {
                         return;
+                    }
+
+                    const renames = new Map<string, string>();
+                    for (const file of files) {
+                        if (file.previousPath !== null) {
+                            renames.set(file.path, file.previousPath);
+                        }
                     }
 
                     run.renames = renames;

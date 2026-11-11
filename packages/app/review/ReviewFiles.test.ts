@@ -2231,7 +2231,9 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                 body: renamed.map(({ path, previousPath }) => ({
                     filename: path,
                     previous_filename: previousPath,
-                    patch: '@@',
+                    status: 'renamed',
+                    additions: 0,
+                    deletions: 0,
                 })),
             };
         }
