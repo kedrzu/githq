@@ -46,7 +46,8 @@ Every screen reads the local store, and the sync engine refreshes it in the back
 - **Checks:** `.github/workflows/checks.yml` holds them, as parallel jobs: the static checks (typecheck, lint, format, the production build), tests, component tests, e2e in three Playwright shards and the desktop app's Rust checks. They run on a pull request that is ready for review (`pr.yml`, nothing on a draft, only lint and format when no code changed) and on each push to `main` before it deploys (`deploy.yml`). The `verify` skill is the protocol.
 - **Build cache:** `scripts/nxInputs.test.ts` fails when a cached task stops being invalidated by its own sources or by the nzyme packages it uses.
 - **Git:** one task, one worktree, one branch, one squash-merged pull request with a Conventional Commits title (`git-workflow` skill). A commit moving the gitlink moves the nzyme pin.
-- **Agents:** `AGENTS.md`, the skills under `.claude/skills/`, and the shared settings in `.claude/settings.json`.
+- **Agents:** `AGENTS.md`, the skills under `.claude/skills/`, and the shared settings in `.claude/settings.json`. One skill per area (`code-conventions`, `ioc`, `logging`, `testing`, `app` for UI, `composables`, `forms`, `translations`, `integrations` for API clients, `secrets`) holds what is true here and inlines nzyme's practice document for it from `nzyme/docs/practice/`.
+- **Ignores:** each `.gitignore` lists only what the repo produces. The root one holds what any directory can produce (contributors' OS and editor files, dependencies, `dist`, caches, nzyme's generated files, env files, logs, agent scratch); output owned by one directory is ignored in that directory's own `.gitignore` (`packages/app`, `packages/e2e`, `packages/worker`, `packages/desktop/src-tauri`, `packages/docs`, `.claude`), as is a hand-written `tsconfig.json` (`!tsconfig.json`). `.oxfmtrc.json` and `eslint.config.mjs` ignore the same build output.
 
 ## Decisions
 

@@ -7,8 +7,6 @@ description: >-
 
 # Integrations
 
-Read `nzyme/plugins/nzyme/skills/api-clients/SKILL.md` before adding a client; it holds the practice.
-
 ## Paths
 
 - Operations: `packages/github/src/operations/*.gql`. Schema: `packages/github/src/schema.graphql`.
@@ -21,3 +19,7 @@ Read `nzyme/plugins/nzyme/skills/api-clients/SKILL.md` before adding a client; i
 ## Decisions
 
 - GraphQL when it can do the job, REST where it can't, conditional requests for change detection: `AGENTS.md`, "Product principles".
+
+Links in the document below are relative to `nzyme/docs/practice/`; package READMEs are `nzyme/packages/<pkg>/README.md`.
+
+!`cat nzyme/docs/practice/api-clients.md`
