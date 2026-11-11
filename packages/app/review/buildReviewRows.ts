@@ -727,12 +727,13 @@ export interface ReviewGapStep {
 
 /**
  * The arrows a gap has (D42): at a file's top only up, there being no hunk above it, at its end only down, and one for
- * all of it with no more than {@link GAP_STEP} lines hidden.
+ * all of it with no more than {@link GAP_STEP} lines hidden. A gap of a file still on its way gets the arrows its file's
+ * gap will have (D45).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapArrows(gap: ReviewGapRow): ReviewGapArrows {
-    if (gap.hidden <= GAP_STEP) {
+export function getGapArrows(gap: ReviewGapRow | PlaceholderGap): ReviewGapArrows {
+    if (gap.hidden !== null && gap.hidden <= GAP_STEP) {
         return 'all';
     }
 
@@ -768,7 +769,11 @@ export function getGapSize({ range }: ReviewGapRow) {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapWay(gap: ReviewGapRow): ReviewGapDirection | null {
+export function getGapWay(gap: ReviewGapRow | PlaceholderGap): ReviewGapDirection | null {
+    if (gap.kind === 'placeholderGap') {
+        return gap.way;
+    }
+
     if (gap.atFileEnd) {
         return 'down';
     }

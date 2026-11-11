@@ -11,7 +11,7 @@ import { ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-vue-next';
 import { computed, shallowRef } from 'vue';
 
 import { GAP_STEP, getGapArrows, getGapStep, getGapWay } from './buildReviewRows.js';
-import type { ReviewGapArrows, ReviewGapDirection, ReviewGapRow, ReviewGapStep } from './buildReviewRows.js';
+import type { ReviewGapDirection, ReviewGapRow, ReviewGapStep } from './buildReviewRows.js';
 import * as l from './DiffGap.loc.js';
 import type { PlaceholderGap } from './utils/getPlaceholderMask.js';
 
@@ -47,7 +47,7 @@ const arrows = computed((): Arrow[] => {
     return [];
   }
 
-  const kind = props.row.kind === 'gap' ? getGapArrows(props.row) : getStillArrows(props.row);
+  const kind = getGapArrows(props.row);
   return kind === 'both' ? ['down', 'up'] : [kind];
 });
 const count = computed(() => {
@@ -61,7 +61,7 @@ const count = computed(() => {
   }
 
   const params = { count: row.hidden, formatted: numbers.format(row.hidden) };
-  const way = row.kind === 'gap' ? getGapWay(row) : row.way;
+  const way = getGapWay(row);
   const lines = t(way === 'down' ? l.linesBelow : way === 'up' ? l.linesAbove : l.lines, params);
 
   return row.kind === 'gap' && row.expansionReset ? t(l.expansionReset, { lines }) : lines;
@@ -73,15 +73,6 @@ const text = computed(() => {
 
   return focused.value === null ? count.value : getActionText(focused.value, true);
 });
-
-/** The arrows a file's gap will have where the patch has one, as {@link getGapArrows} gives them. */
-function getStillArrows({ hidden, way }: PlaceholderGap): ReviewGapArrows {
-  if (hidden !== null && hidden <= GAP_STEP) {
-    return 'all';
-  }
-
-  return way ?? 'both';
-}
 
 function getStep(gap: ReviewGapRow, arrow: Arrow): ReviewGapStep {
   return arrow === 'all' ? getGapStep(gap, props.toward(gap)) : { direction: arrow, count: GAP_STEP };
