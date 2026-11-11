@@ -266,6 +266,11 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
     review's.
   - F14's caption (`klRij`): a review with no summary and a single thread reads as a code comment (`Activity / Code
     comment`): GitHub can't tell it from a comment posted on its own; `· commented, no summary` is for two or more.
+- [x] “New since you looked” brought in line with the rule (your own items are never new; the viewer on these screens is
+  mlaine): F5 (`pckEL`), F9 (`rHhyl`), F10 (`fgM5o`) and F11 (`bTwKG`) move the line to before dkim's comment and read
+  “1 new since you looked” (was “2 new” before mlaine's own request and comment); I1 (`M83Hr`) reads “1 new” (mlaine's
+  pin is their own); on I2 sofiab closed the issue through #15 (`lDKUQ`, was mlaine), so the line reads “3 new”. F5's
+  caption (`s4L7N6`) adds that a line with no person counts as someone else's, and who the viewer is.
 
 ## Issue screens (new frame App · Issue, `xO0zP`, codes I)
 
