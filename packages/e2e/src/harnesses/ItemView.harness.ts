@@ -146,6 +146,16 @@ export class ItemViewHarness {
         return this.root.getByRole('listitem').filter({ hasText: text });
     }
 
+    /** The line "N new since you looked" standing before what others did since the item was last open here. */
+    get newSince(): Locator {
+        return this.root.getByRole('listitem').filter({ hasText: /new since you looked/u });
+    }
+
+    /** The thread's entry right after `entry`. */
+    entryAfter(entry: Locator): Locator {
+        return entry.locator('xpath=following-sibling::li[1]');
+    }
+
     /** Picks `action` ("Edit", "Delete…") from the ⋯ menu of the comment holding `text`. */
     async commentAction(text: string, action: string): Promise<void> {
         await this.entry(text).getByRole('button', { name: 'Comment actions' }).click();
