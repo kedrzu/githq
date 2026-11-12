@@ -644,9 +644,12 @@ interface InsertCommentRowsParams extends Pick<BuildFileLineRowsParams, 'path' |
 
 /** A file with no text here has only threads and boxes under its header: a reply in its thread, the others last. */
 function insertBoxesUnderThreads(rows: readonly ReviewRow[], path: string, comments: readonly ReviewRowComment[]) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        if (!addReply(result, path, target)) {
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
+        } else {
             result.push(createCommentRow(path, target, null));
         }
     }
@@ -654,17 +657,20 @@ function insertBoxesUnderThreads(rows: readonly ReviewRow[], path: string, comme
     return result;
 }
 
-/** Puts a reply into its thread's row, in place; `false` for a comment that isn't a reply, or one whose thread isn't there. */
-function addReply(rows: ReviewRow[], path: string, target: ReviewRowComment) {
+/**
+ * The rows with a reply put into its thread's row; `null` for a comment that isn't a reply, or one whose thread isn't
+ * there.
+ * @__NO_SIDE_EFFECTS__
+ */
+function addReply(rows: readonly ReviewRow[], path: string, target: ReviewRowComment): ReviewRow[] | null {
     const { threadId } = target;
     const index = threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
     const row = rows[index];
     if (row?.kind !== 'thread') {
-        return false;
+        return null;
     }
 
-    rows[index] = { ...row, replies: [...row.replies, target] };
-    return true;
+    return rows.with(index, { ...row, replies: [...row.replies, target] });
 }
 
 /**
@@ -672,9 +678,11 @@ function addReply(rows: ReviewRow[], path: string, target: ReviewRowComment) {
  * first, for its text to stay in sight.
  */
 function insertCommentRows(rows: readonly ReviewRow[], { path, layout, comments }: InsertCommentRowsParams) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        if (addReply(result, path, target)) {
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
             continue;
         }
 
