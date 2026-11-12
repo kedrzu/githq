@@ -190,6 +190,53 @@ test('a link to a comment of a pull request keeps it in view while the review th
     expect(await getScrollTop(item.content)).toBe(scrolled);
 });
 
+test('a link to a comment on the code opens its resolved thread once the threads are in, in view and marked; one to a review its card', async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleEditableWork();
+    const { world } = sample;
+    world.review(sample.pullRequest, {
+        id: 'R_hubot',
+        author: 'hubot',
+        state: 'CHANGES_REQUESTED',
+        bodyHtml: '<p>A few things before it goes in.</p>',
+        minutesAgo: 60,
+    });
+    world.comment(sample.pullRequest, { author: 'hubot', body: 'A remark after the review', minutesAgo: 5 });
+    await openMyWork(page, github, world);
+    const review = answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [],
+        // Tall enough, together, to put the last one out of view.
+        threads: Array.from({ length: 8 }, (_, index) => ({
+            id: `T_${index}`,
+            path: `src/auth/file${index}.ts`,
+            line: 2,
+            diffHunk: '@@ -1,2 +1,2 @@\n const back = read()\n-go(back)\n+go(back ?? home)',
+            comments: [`<p>Thread ${index}: what if there is no return address?</p>`, '<p>Fixed.</p>'],
+            reviewId: 'R_hubot',
+            isResolved: index === 7,
+        })),
+    });
+    const release = review.holdThreads();
+    const item = new ItemViewHarness(page);
+    const linked = item.root.locator('[aria-current="location"]');
+
+    await page.goto('/acme/web/pull/15#discussion_T_7_1');
+    await expect(item.root.getByText('A remark after the review')).toBeVisible();
+    release();
+    await expect(linked).toHaveId('discussion_T_7_1');
+    await expect(linked).toBeInViewport();
+
+    // From another page: an address differing only in its fragment would be a navigation within the page.
+    await page.goto('/');
+    await page.goto('/acme/web/pull/15#pullrequestreview-R_hubot');
+    await expect(linked).toHaveId('pullrequestreview-R_hubot');
+    await expect(linked).toBeInViewport();
+});
+
 test('Back to an address naming a comment returns to where the item was scrolled, not to the comment', async ({
     page,
     github,

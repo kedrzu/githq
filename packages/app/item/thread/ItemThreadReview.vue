@@ -1,15 +1,18 @@
-<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. -->
+<!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
 
 import Button from '@/components/Button.vue';
+import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import GitHubHtml from '../GitHubHtml.vue';
 import type { ThreadReview } from './buildThread.js';
 import type { CodeThreadReplies } from './CodeThreadReplies.js';
+import { getUrlAnchor } from './getUrlAnchor.js';
+import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadReview.loc.js';
 import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
@@ -23,6 +26,8 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** The viewer's replies in its threads; a resolved one being replied to shows opened. */
   replies?: CodeThreadReplies | null;
+  /** The anchor the address's fragment names: the review itself, or a comment of one of its threads. */
+  linkedAnchor?: string;
 }>();
 
 const emit = defineEmits<{
@@ -44,6 +49,9 @@ const opened = ref<ReadonlyMap<string, boolean>>(new Map());
 const shown = ref(false);
 
 const dismissed = computed(() => props.entry.review.state === 'DISMISSED');
+const linked = computed(
+  () => props.linkedAnchor !== undefined && getUrlAnchor(props.entry.review.url) === props.linkedAnchor,
+);
 const verdict = computed(() => {
   const { review, dismissedFrom } = props.entry;
   switch (review.state) {
@@ -81,7 +89,7 @@ const sharedPaths = computed(() => {
 });
 /**
  * Nothing written and no threads, there is no body: the head alone. A dismissed review shows once opened, or while a
- * reply is written in one of its threads.
+ * reply is written in one of its threads or the address names a comment of one.
  */
 const bodyShown = computed(() => {
   const { review, threads, resolved } = props.entry;
@@ -89,7 +97,13 @@ const bodyShown = computed(() => {
     return false;
   }
 
-  return !dismissed.value || shown.value || [...threads, ...resolved].some(thread => props.replies?.get(thread.id));
+  return (
+    !dismissed.value ||
+    shown.value ||
+    [...threads, ...resolved].some(
+      thread => props.replies?.get(thread.id) != null || holdsAnchor(thread, props.linkedAnchor),
+    )
+  );
 });
 
 function getDismissedText(before: ThreadReview['dismissedFrom']) {
@@ -103,8 +117,10 @@ function getDismissedText(before: ThreadReview['dismissedFrom']) {
   }
 }
 
-function isOpened(threadId: string) {
-  return opened.value.get(threadId) ?? props.replies?.get(threadId) != null;
+function isOpened(thread: ReviewThread) {
+  return (
+    opened.value.get(thread.id) ?? (props.replies?.get(thread.id) != null || holdsAnchor(thread, props.linkedAnchor))
+  );
 }
 
 /** Resolve always folds the thread to its row, however it was opened before. */
@@ -129,6 +145,7 @@ function toggle(threadId: string, open: boolean) {
     :author="entry.review.author"
     :created-at="entry.review.submittedAt"
     :now="now"
+    :linked="linked"
   >
     <template #verdict>
       <span :class="[css.itemThreadReview_verdict, verdict.tone && css[`itemThreadReview_verdict_${verdict.tone}`]]">{{
@@ -168,6 +185,7 @@ function toggle(threadId: string, open: boolean) {
           :thread="thread"
           :viewer="viewer"
           :replies="replies"
+          :linked-anchor="linkedAnchor"
           @reply="emit('reply', thread.id)"
           @set-resolved="setResolved(thread.id, $event)"
         />
@@ -176,10 +194,11 @@ function toggle(threadId: string, open: boolean) {
           :key="thread.id"
         >
           <ItemThreadCodeThread
-            v-if="isOpened(thread.id)"
+            v-if="isOpened(thread)"
             :thread="thread"
             :viewer="viewer"
             :replies="replies"
+            :linked-anchor="linkedAnchor"
             @hide="toggle(thread.id, false)"
             @reply="emit('reply', thread.id)"
             @set-resolved="setResolved(thread.id, $event)"

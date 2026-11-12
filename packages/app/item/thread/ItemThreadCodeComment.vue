@@ -1,4 +1,4 @@
-<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it, and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, Hide folding it again. -->
+<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it, and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
@@ -9,6 +9,7 @@ import { formatAge } from '@/utils/formatAge.js';
 
 import type { ThreadCodeComment } from './buildThread.js';
 import type { CodeThreadReplies } from './CodeThreadReplies.js';
+import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadCodeComment.loc.js';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 import ItemThreadResolvedRow from './ItemThreadResolvedRow.vue';
@@ -21,6 +22,8 @@ const props = defineProps<{
   viewer?: ItemUser | null;
   /** The viewer's replies in the thread; resolved, being replied to, it shows opened. */
   replies?: CodeThreadReplies | null;
+  /** The anchor the address's fragment names: resolved, the thread shows opened while it holds that comment. */
+  linkedAnchor?: string;
 }>();
 
 const emit = defineEmits<{
@@ -34,7 +37,8 @@ const emit = defineEmits<{
 
 const t = useTranslate();
 /**
- * The user opened it, resolved (`true`), or hid it (`false`); `null`, it shows opened while a reply is written in it.
+ * The user opened it, resolved (`true`), or hid it (`false`); `null`, it shows opened while a reply is written in it
+ * or the address names one of its comments.
  * Hidden, it stays folded with its reply on its way, kept in the writing until opened again.
  */
 const opened = ref<boolean | null>(null);
@@ -42,7 +46,12 @@ const opened = ref<boolean | null>(null);
 const first = computed(() => props.entry.thread.comments[0] ?? null);
 const login = computed(() => first.value?.author?.login ?? t(l.ghost));
 const folded = computed(
-  () => props.entry.thread.isResolved && !(opened.value ?? props.replies?.get(props.entry.thread.id) != null),
+  () =>
+    props.entry.thread.isResolved &&
+    !(
+      opened.value ??
+      (props.replies?.get(props.entry.thread.id) != null || holdsAnchor(props.entry.thread, props.linkedAnchor))
+    ),
 );
 const age = computed(() => (first.value ? formatAge(Date.parse(first.value.createdAt), props.now) : ''));
 
@@ -93,6 +102,7 @@ function toggle(open: boolean) {
         :thread="entry.thread"
         :viewer="viewer"
         :replies="replies"
+        :linked-anchor="linkedAnchor"
         @hide="toggle(false)"
         @reply="emit('reply')"
         @set-resolved="setResolved"

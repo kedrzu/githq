@@ -54,7 +54,7 @@ takes that place and passes each link on to the app you choose. This page sets o
                match: (url, { opener }) => isGithubItem(url) && opener?.bundleId !== GITHQ,
                url: (url) => {
                    const [, owner, repo, kind, number] = GITHUB_ITEM.exec(url.pathname) ?? [];
-                   return `githq://${owner}/${repo}/${kind}/${number}`;
+                   return `githq://${owner}/${repo}/${kind}/${number}${url.hash}`;
                },
            },
        ],
@@ -93,9 +93,10 @@ The rewrite skips links that githq itself opened (`opener?.bundleId !== GITHQ`).
 GitHub link in githq go through Finicky too, since it is your default browser, and without this check they would come
 straight back to githq.
 
-The rewrite keeps the owner, the repository, the kind and the number, and drops the rest of the address. A link to a
-pull request's files, `…/pull/1187/files`, or to a comment, `…/issues/42#issuecomment-…`, opens the pull request or
-the issue itself.
+The rewrite keeps the owner, the repository, the kind, the number and the part after `#`, and drops the rest of the
+path. A link to a comment (`…/issues/42#issuecomment-…`), a review (`…/pull/1187#pullrequestreview-…`) or a comment on
+the code (`…/pull/1187#discussion_r…`) opens the issue or the pull request scrolled to it. A link to a pull request's
+files, `…/pull/1187/files`, opens the pull request itself.
 
 ## If you use githq in the browser
 
@@ -103,7 +104,7 @@ Without the desktop app, send the links to githq's website instead. Leave out `h
 the same path on githq.dev:
 
 ```js
-return `https://githq.dev/${owner}/${repo}/${kind}/${number}`;
+return `https://githq.dev/${owner}/${repo}/${kind}/${number}${url.hash}`;
 ```
 
 The link then opens githq in a new tab of your default browser. A link you click inside the browser doesn't go through
