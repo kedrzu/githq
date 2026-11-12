@@ -8,8 +8,6 @@ arrangement:
   en: Arrangement
 panel:
   en: Panel
-modal:
-  en: Modal
 page:
   en: Full page
 openOnGitHub:
@@ -68,8 +66,6 @@ copyLink:
   en: Copy link
 openAsPanel:
   en: Open in the side panel
-openAsModal:
-  en: Open as a modal
 openAsPage:
   en: Open as full page
 closeIssueCommand:

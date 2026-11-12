@@ -254,6 +254,11 @@ watch(() => [props.linkedAnchor, props.detail, props.reviewThreads] as const, re
 
 defineExpose({
   /**
+   * An edit is open in the thread — a card edited in place or a code thread's reply box — whether changed or not: what
+   * moving the item elsewhere would close.
+   */
+  hasOpenEditor: computed(() => editorsRef.value.size > 0 || replyBoxes.value.size > 0),
+  /**
    * Before the user leaves the item: the first editor, in the thread's order, whose text was changed asks whether to
    * discard it, in view and with the cursor in it; its Discard then calls `go`, the way the user was leaving. `false`
    * when none was changed: nothing stands in the way.

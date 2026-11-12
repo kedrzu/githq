@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the list, a modal over it or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a modal and a page give the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; at the top of the side column in a modal; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a page gives the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
@@ -9,7 +9,6 @@ import { onWindowEvent } from '@nzyme/vue-utils/onWindowEvent.js';
 import { useIntersectionObserver } from '@nzyme/vue-utils/useIntersectionObserver.js';
 import type { LucideIcon } from 'lucide-vue-next';
 import {
-  AppWindow,
   CircleCheckBig,
   CircleSlash,
   GitPullRequestClosed,
@@ -171,7 +170,6 @@ const emit = defineEmits<{
 
 const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
   panel: PanelRight,
-  modal: AppWindow,
   page: Maximize2,
 };
 
@@ -224,23 +222,18 @@ useIntersectionObserver({
 });
 
 const split = computed(() => props.arrangement !== 'panel');
-// The side column's width, resized by dragging its edge: one for the modal, one for the page.
-const sideWidths = {
-  modal: usePanelWidth({ key: 'itemSide.modal', default: 320, min: 260, max: 560 }),
-  page: usePanelWidth({ key: 'itemSide.page', default: 360, min: 260, max: 560 }),
-};
-const sideWidth = computed(() => (props.arrangement === 'page' ? sideWidths.page : sideWidths.modal));
+// The page's side column's width, resized by dragging its edge.
+const sideWidth = usePanelWidth({ key: 'itemSide.page', default: 360, min: 260, max: 560 });
 
 // `[main, side?]`: the main column's in percent, the side's in pixels.
 function onColumnsLayout(sizes: number[]) {
   const side = sizes[1];
   if (side !== undefined) {
-    sideWidth.value.current = side;
+    sideWidth.current = side;
   }
 }
 const arrangementOptions = computed((): SegmentedTabsOption<ItemArrangement>[] => [
   { value: 'panel', label: t(l.panel), icon: ARRANGEMENT_ICONS.panel, iconOnly: true },
-  { value: 'modal', label: t(l.modal), icon: ARRANGEMENT_ICONS.modal, iconOnly: true },
   { value: 'page', label: t(l.page), icon: ARRANGEMENT_ICONS.page, iconOnly: true },
 ]);
 const arrangementModel = computed({
@@ -376,6 +369,8 @@ defineExpose({
    * calls `go`, to leave as the user was.
    */
   askToLeave: (go: () => void) => threadRef.value?.askToLeave(go) ?? false,
+  /** An edit is open in the thread, changed or not (`ItemThread`); reactive. */
+  hasOpenEditor: computed(() => threadRef.value?.hasOpenEditor ?? false),
 });
 
 // The item's actions: its edits (the inline pickers by their keys, their values in the command menu's submenus) and
@@ -634,8 +629,6 @@ function getArrangementTitle(arrangement: ItemArrangement) {
   switch (arrangement) {
     case 'panel':
       return t(l.openAsPanel);
-    case 'modal':
-      return t(l.openAsModal);
     case 'page':
       return t(l.openAsPage);
     default:
@@ -955,7 +948,6 @@ function getProjectOptions(): CommandOption[] {
           />
           <SplitterPanel
             id="item-side"
-            :key="arrangement"
             as="aside"
             :order="1"
             size-unit="px"
@@ -968,14 +960,6 @@ function getProjectOptions(): CommandOption[] {
               :class="css.itemView_side"
               :data-route-scroll="`item-side:${item.id}`"
             >
-              <StackMap
-                v-if="stack && arrangement === 'modal'"
-                :stack="stack"
-                :current-id="item.id"
-                :neighbours="neighbours"
-                arrangement="modal"
-                @open="emit('openInPlace', $event)"
-              />
               <PullRequestReviews
                 v-if="prDetail"
                 ref="reviews"
@@ -1012,10 +996,8 @@ function getProjectOptions(): CommandOption[] {
 </template>
 
 <style lang="scss" module="css">
-// A page's and a modal's main column keep their content to the reading width, centred: 40px from the edges, more once
-// it is wider.
+// A page's main column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
 $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
-$item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
 
 .itemView {
   display: flex;
@@ -1164,11 +1146,6 @@ $item-modal-inset: max(40px, calc((100% - #{$item-modal-reading-width}) / 2));
   scroll-padding-block: 20px;
 
   // At most the reading width, centred.
-  .itemView_modal & {
-    padding: 32px $item-modal-inset;
-    scroll-padding-block: 32px;
-  }
-
   .itemView_page & {
     padding: 32px $item-page-inset;
     scroll-padding-block: 32px;

@@ -59,7 +59,7 @@ type Story = StoryObj<typeof meta>;
 /** D1: an issue in the panel — properties with their keys, two projects with every field, the body, the latest comments. */
 export const IssueInPanel: Story = {};
 
-/** D2/D3: the same issue with a column at the side, as a modal and a page show it. */
+/** D3: the same issue with a column at the side, as a page shows it. */
 export const IssueSplit: Story = { args: { arrangement: 'page' } };
 
 /** F1: a pull request that can't merge yet — two checks failing, changes requested; the issue it closes. */
@@ -407,12 +407,6 @@ export const StackOfTwoInPanel: Story = {
 export const StackOfTenInPanel: Story = {
     args: { ...openedInStack(SYNC_ENGINE_STACK, 5), position: { index: 13, count: 31 } },
 };
-
-/** SP33: the stack of two at the top of the modal's side column. */
-export const StackOfTwoInModal: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'modal' } };
-
-/** SP34: the stack of ten in the modal, whole. */
-export const StackOfTenInModal: Story = { args: { ...StackOfTenInPanel.args, arrangement: 'modal' } };
 
 /** SP35: the stack of two on a page — a column of its own on the left. */
 export const StackOfTwoOnPage: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'page' } };

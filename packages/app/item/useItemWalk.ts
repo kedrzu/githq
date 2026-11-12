@@ -14,10 +14,10 @@ export interface UseItemWalkOptions {
     /** Which of the list's items the walk stops at; left out, every one. */
     stopsAt?: (id: string) => boolean;
     /**
-     * Whether the keys reach what the list's cursor is next to rather than the item's own steps, told whether the item has
-     * a step in the list; left out, never: a list's cursor means nothing where the list isn't beside the item.
+     * Whether the keys reach what the list's cursor is next to rather than the item's own steps; left out, never: a
+     * list's cursor means nothing where the list isn't beside the item.
      */
-    followsCursor?: (listed: boolean) => boolean;
+    followsCursor?: () => boolean;
 }
 
 /** Where an item is in the list it was opened from: "3 / 13". */
@@ -61,9 +61,7 @@ export function useItemWalk(options: UseItemWalkOptions): ItemWalkViewModel {
 
     return reactive<ItemWalkViewModel>({
         position: computed(() => (index.value === -1 ? null : { index: index.value + 1, count: steps.value.length })),
-        neighbours: computed(
-            () => (options.followsCursor?.(index.value !== -1) && navigation.list?.around) || stepNeighbours.value,
-        ),
+        neighbours: computed(() => (options.followsCursor?.() && navigation.list?.around) || stepNeighbours.value),
         stepNeighbours,
     });
 }

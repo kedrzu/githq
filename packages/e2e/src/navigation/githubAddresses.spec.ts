@@ -22,9 +22,6 @@ const ISSUE = 'Sign-in loops after the token expires';
 const PULL_REQUEST = 'Redirect once after sign-in';
 const OTHER_PULL_REQUEST = 'Add rate limit headers to the API';
 
-/** Where the app remembers the arrangement items open in (`LocalPreferences`). */
-const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
-
 test("GitHub's dashboard lists open my work narrowed to their group", async ({ page, github }) => {
     await openMyWork(page, github, createSampleMyWork().world);
     const myWork = new MyWorkScreenHarness(page);
@@ -164,33 +161,23 @@ test("a tracked repository and its lists, a project and its saved view, the acco
     await expect(page).toHaveURL('/');
 });
 
-test("an item in GitHub's project-pane format opens over the list in the arrangement remembered, and opening one from a list writes that format", async ({
+test("an item in GitHub's project-pane format opens in the panel beside the list, and opening one from a list writes that format", async ({
     page,
     github,
 }) => {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
 
-    // In the panel by default.
     await page.goto('/?pane=issue&issue=acme%7Cweb%7C12');
     await expect(item.title).toHaveText(ISSUE);
-    await expect(item.modal).toBeHidden();
     await expect(myWork.selectedRow).toContainText(ISSUE);
     await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
 
-    // In the modal when that is the arrangement this browser remembers.
-    await page.evaluate(([key, value]) => localStorage.setItem(key, value), [ITEM_ARRANGEMENT_KEY, 'modal'] as const);
-    await page.goto('/pulls?pane=issue&issue=acme%7Capi%7C48');
-    await expect(item.modal).toHaveAccessibleName('Cache search results');
-    await expect(page).toHaveURL('/pulls?pane=issue&issue=acme%7Capi%7C48');
-
     // Opened from a repository's list, the address says so in the same format, the list's own query kept.
-    await page.evaluate(([key, value]) => localStorage.setItem(key, value), [ITEM_ARRANGEMENT_KEY, 'panel'] as const);
     const repository = new RepositoryScreenHarness(page);
     await page.goto('/acme/web/pulls?x=1');
     await repository.row(PULL_REQUEST).click();
     await expect(item.title).toHaveText(PULL_REQUEST);
-    await expect(item.modal).toBeHidden();
     await expect(page).toHaveURL('/acme/web/pulls?x=1&pane=issue&issue=acme%7Cweb%7C15');
 });
 

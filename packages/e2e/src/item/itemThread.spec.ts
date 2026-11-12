@@ -681,7 +681,7 @@ test('what arrives while the tab is hidden is not counted as looked at: it shows
     await expect(item.entryAfter(item.newSince)).toContainText('Arrived while away.');
 });
 
-test('the line stays while the item moves between the panel and the modal: it goes once the user leaves the item', async ({
+test('the line stays while the item moves between the panel and its page: it goes once the user leaves the item', async ({
     page,
     github,
 }) => {
@@ -702,12 +702,12 @@ test('the line stays while the item moves between the panel and the modal: it go
     await myWork.row(ISSUE).click();
     await expect(item.newSince).toHaveText('1 new since you looked');
 
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
+    await item.arrangement('Full page').click();
+    await expect(page).toHaveURL(/\/issues\/\d+$/u);
     await expect(item.newSince).toHaveText('1 new since you looked');
     await expect(item.entryAfter(item.newSince)).toContainText('Still happens on mobile.');
     await item.arrangement('Panel').click();
-    await expect(item.modal).toHaveCount(0);
+    await expect(page).toHaveURL(/pane=issue/u);
     await expect(item.newSince).toHaveText('1 new since you looked');
 
     // Left for another item and back: seen.

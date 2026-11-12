@@ -42,6 +42,28 @@ test('a comment edited in place shows at once, then as GitHub has it, "· edited
     await expect.poll(() => sample.world.stateOf(sample.issue).comments).toEqual(['Reproduced on Safari and Firefox.']);
 });
 
+test('narrowed while an edit is open, the item stays in the panel; it moves to its page once the edit closes', async ({
+    page,
+    github,
+}) => {
+    const { item } = await openWithComment(page, github);
+    await item.commentAction(TEXT, 'Edit');
+    const editor = item.root.getByRole('textbox', { name: 'Edit comment' });
+    await editor.fill('Reproduced on Safari and Firefox.');
+
+    // The sidebar's 236 px, the list's 400 and the panel's 400 need 1,036.
+    await page.setViewportSize({ width: 1000, height: 800 });
+    // Two frames: the shell has measured the window, and the item has had its chance to move.
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await expect(editor).toHaveValue('Reproduced on Safari and Firefox.');
+    await expect(page).toHaveURL(/pane=issue/u);
+
+    await editor.press('ControlOrMeta+Enter');
+    await expect(page).toHaveURL('/acme/web/issues/12');
+    await expect(item.entry('Reproduced on Safari and Firefox.')).toBeVisible();
+});
+
 test('an edit GitHub refuses is undone with its toast and opens the editor again with the text and why', async ({
     page,
     github,

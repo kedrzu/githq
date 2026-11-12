@@ -38,7 +38,7 @@ const meta = {
         arrangement: 'panel',
         onOpen: fn(),
     },
-    // As wide as the place it takes: the panel's 560px, the modal's side column, the page's left column.
+    // As wide as the place it takes: the panel's 560px, the page's left column.
     render: args => ({
         components: { StackMap },
         setup: () => ({ args }),
@@ -62,12 +62,6 @@ export const PanelTen: Story = {
     },
 };
 
-/** SP33: a stack of two at the top of a modal's side column — the icons carry each state. */
-export const ModalTwo: Story = { args: { arrangement: 'modal' } };
-
-/** SP34: a stack of ten in a modal — whole. */
-export const ModalTen: Story = { args: { ...PanelTen.args, arrangement: 'modal' } };
-
 /** SP35: a stack of two in a page's left column, as tall as the page. */
 export const PageTwo: Story = { args: { arrangement: 'page' } };
 
@@ -84,12 +78,12 @@ export const PanelLastOpen: Story = {
 };
 
 /** While the copy is incomplete, a merged row keeps its own icon; the pips stay pale (D7). */
-export const ModalPartlyRead: Story = {
+export const PagePartlyRead: Story = {
     args: {
         stack: sampleStackDescription(PARTLY_READ),
         currentId: PARTLY_READ[1]?.id ?? '',
         neighbours: null,
-        arrangement: 'modal',
+        arrangement: 'page',
     },
 };
 

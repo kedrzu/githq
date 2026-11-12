@@ -76,7 +76,7 @@ const props = withDefaults(
     cantBeRead?: CantBeReadCause | null;
     /** The tracked repositories (`owner/name`) in the sidebar's order: the groups by repository, and the empty "my work" (K4). */
     trackedRepositories?: readonly string[];
-    /** The item opened over the list (panel or modal): moving the selection opens the next one in its place. */
+    /** The item opened over the list, in the panel: moving the selection opens the next one in its place. */
     openedId?: string | null;
     /** The user has an edit of the item on its way (`ListView`). */
     isEdited?: (id: string) => boolean;

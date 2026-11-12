@@ -25,7 +25,7 @@ export interface ItemListViewModel {
     selectedId: string | null;
     /** The items edited together (`x`). */
     checkedIds: readonly string[];
-    /** The item opened over the list (panel or modal), once the address's reference is resolved. */
+    /** The item opened over the list, in the panel, once the address's reference is resolved. */
     readonly openedId: string | null;
     /** What was just undone of an item's edits, by its id ("“regression” label undone"). */
     readonly undone: ReadonlyMap<string, string>;

@@ -36,8 +36,8 @@ const {
     PullRequestRerunOutsideActions,
     PullRequestQueueReady,
     PullRequestReady,
-    StackOfTenInModal,
     StackOfTenInPanel,
+    StackOfTenOnPage,
     StackOfTwoOnPage,
 } = composeStories(stories);
 
@@ -588,8 +588,8 @@ test('D25: another pull request of the stack opens with its rows in view and non
 });
 
 test('a row of the stack map opens its pull request in place of this one', async () => {
-    await StackOfTenInModal.run();
-    const { onOpenInPlace } = StackOfTenInModal.args;
+    await StackOfTenOnPage.run();
+    const { onOpenInPlace } = StackOfTenOnPage.args;
 
     await page.getByRole('button', { name: /#62/u }).click();
     expect(onOpenInPlace).toHaveBeenCalledExactlyOnceWith(SYNC_ENGINE_STACK[2]!.id);

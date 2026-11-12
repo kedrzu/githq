@@ -51,41 +51,52 @@ test('an item that leaves my work while it is open stays open, and is read once 
     await expect(item.title).toHaveText('Dark mode everywhere');
 });
 
-test('switched to a modal and back, the address stays the same; a reload reopens the item in the arrangement remembered, Back returns to the list, and the next item opens in a modal too', async ({
+test('in a window with no room for the panel beside the list an item opens on its page; with room again, the next opens in the panel', async ({
+    page,
+    github,
+}) => {
+    // The sidebar's 236 px, the list's 400 and the panel's 400 need 1,036.
+    await page.setViewportSize({ width: 1000, height: 800 });
+    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
+    const item = new ItemViewHarness(page);
+
+    await myWork.row(ISSUE).click();
+    await expect(page).toHaveURL('/acme/web/issues/12');
+    await expect(item.title).toHaveText(ISSUE);
+
+    await page.goBack();
+    await expect(page).toHaveURL('/');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    // Two frames: the shell has measured the window.
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    await page.keyboard.press('j');
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C15');
+    await expect(item.title).toHaveText('Redirect once after sign-in');
+});
+
+test('narrowed until the panel no longer fits, the item in it moves to its page in place of the address; widened, it stays there', async ({
     page,
     github,
 }) => {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
-
     await myWork.row(ISSUE).click();
     await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toHaveAccessibleName(ISSUE);
-    // The address does not say panel or modal: this browser remembers which.
-    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
-    await item.arrangement('Panel').click();
-    await expect(item.modal).toBeHidden();
-    await expect(item.title).toHaveText(ISSUE);
-    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toHaveAccessibleName(ISSUE);
-    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
 
-    await page.reload();
-    await expect(item.modal).toHaveAccessibleName(ISSUE);
+    await page.setViewportSize({ width: 1000, height: 800 });
+    await expect(page).toHaveURL('/acme/web/issues/12');
     await expect(item.title).toHaveText(ISSUE);
 
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(myWork.groups).toHaveCount(0);
+    await expect(page).toHaveURL('/acme/web/issues/12');
+
+    // The panel's address was replaced: Back is the list.
     await page.goBack();
     await expect(page).toHaveURL('/');
-    await expect(item.root).toBeHidden();
     await expect(myWork.selectedRow).toContainText(ISSUE);
-
-    // The arrangement used last is the one items open in.
-    await page.keyboard.press('j');
-    await page.keyboard.press('Enter');
-    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C15');
-    await expect(item.modal).toHaveAccessibleName('Redirect once after sign-in');
 });
 
 test("switched to a page of its own, the item is at GitHub's address of it: a reload opens it again, Back returns to the list with it selected", async ({

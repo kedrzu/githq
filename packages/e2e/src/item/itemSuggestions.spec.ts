@@ -8,7 +8,7 @@ import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 const ISSUE = 'Sign-in loops after the token expires';
 
-for (const arrangement of ['Panel', 'Modal'] as const) {
+for (const arrangement of ['Panel', 'Full page'] as const) {
     for (const trigger of ['@', '#'] as const) {
         test(`in the ${arrangement.toLowerCase()} the ${trigger} menu opens under the caret, within the item's content`, async ({
             page,

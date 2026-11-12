@@ -3,9 +3,6 @@ import { defineService } from '@nzyme/ioc/Service.js';
 import { shallowRef } from 'vue';
 
 import type { ListedItems } from '@/lists/ListTypes.js';
-import { LocalPreferences } from '@/services/LocalPreferences.js';
-
-import type { ItemArrangement } from './itemRoutes.js';
 
 /** The list items are opened from: where it is, and what `K`/`J` step through. */
 export interface ItemList extends Omit<ListedItems, 'all'> {
@@ -48,19 +45,18 @@ export interface ItemReturnRequest {
 }
 
 /**
- * What opening items carries from one moment to the next, shared by the lists and the item view: the
- * arrangement items open in — the one used last, remembered in this browser (D9: one of the app's three
- * independent switches) — the list they are opened from, the item opened last, which the list selects
+ * What opening items carries from one moment to the next, shared by the lists and the item view: whether the
+ * window has room for the panel beside the screen — an item opens there when it has, on its page when it hasn't —
+ * the list they are opened from, the item opened last, which the list selects
  * when it comes back, the items a toast asks the list to select, a merge sent from the panel asking it to move on, an Undo of a close asking the cursor back, the opened item staying where a step would have left it, the item whose comment box takes the cursor
  * once it opens ("Comment" in a list's context menu), the step a review is being walked by, for the next to say, and a review asked to open at its submit dialog.
  */
 export type ItemNavigation = Resolved<typeof ItemNavigation>;
 export const ItemNavigation = defineService({
     name: 'ItemNavigation',
-    deps: {
-        preferences: LocalPreferences,
-    },
-    setup({ preferences }) {
+    setup() {
+        // Until the shell has measured the window, there is room: most windows have it.
+        const panelFitsRef = shallowRef(true);
         const listRef = shallowRef<ItemList | null>(null);
         const lastOpenedRef = shallowRef<string | null>(null);
         const selectionRequestRef = shallowRef<ItemSelectionRequest | null>(null);
@@ -72,16 +68,12 @@ export const ItemNavigation = defineService({
         let reviewToSubmit: string | null = null;
 
         return {
-            /** The arrangement an item opens in; reactive. */
-            get arrangement() {
-                return preferences.itemArrangement.value;
-            },
             /**
-             * How an item opened over a list shows: in the modal when that is the arrangement remembered, else in
-             * the panel — a remembered `page` too, for the address opens it over the list. Reactive.
+             * Whether the window holds the panel beside the screen and the sidebar, each at its minimum width
+             * (`AppShell`); `true` until the shell says. Reactive.
              */
-            get listArrangement(): Exclude<ItemArrangement, 'page'> {
-                return preferences.itemArrangement.value === 'modal' ? 'modal' : 'panel';
+            get panelFits() {
+                return panelFitsRef.value;
             },
             /** The list shown last; `null` before any (an item's page opened by its address). Reactive. */
             get list() {
@@ -111,7 +103,7 @@ export const ItemNavigation = defineService({
             get commentRequest() {
                 return commentRequestRef.value;
             },
-            setArrangement,
+            setPanelFits,
             setList,
             setLastOpened,
             requestSelection,
@@ -125,8 +117,8 @@ export const ItemNavigation = defineService({
             takeReviewSubmit,
         };
 
-        function setArrangement(arrangement: ItemArrangement) {
-            preferences.itemArrangement.value = arrangement;
+        function setPanelFits(fits: boolean) {
+            panelFitsRef.value = fits;
         }
 
         function setList(list: ItemList) {

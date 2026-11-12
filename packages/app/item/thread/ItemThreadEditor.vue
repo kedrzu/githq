@@ -101,7 +101,7 @@ function leave() {
   }
 }
 
-// Taken here: the screen does not close the item, nor the modal blur the text.
+// Taken here: the screen does not close the item.
 function onEscape(event: KeyboardEvent) {
   event.preventDefault();
   leave();

@@ -24,10 +24,10 @@ test("an item opened over a list lives in the query beside the list's own, as Gi
 
     // Another item takes its place; GitHub's `itemId` and the old `open`/`as` are not written.
     const next = getOpenedItemQuery(
-        { ...query, itemId: '123', open: 'acme/web/1', as: 'modal' },
+        { ...query, itemId: '123', open: 'acme/web/1', as: 'page' },
         { owner: 'acme', name: 'web', number: 3 },
     );
-    expect(next).toEqual({ filter: 'needs', open: 'acme/web/1', as: 'modal', pane: 'issue', issue: 'acme|web|3' });
+    expect(next).toEqual({ filter: 'needs', open: 'acme/web/1', as: 'page', pane: 'issue', issue: 'acme|web|3' });
 
     // Closing it keeps the list's query.
     expect(getOpenedItemQuery(query, null)).toEqual({ filter: 'needs' });

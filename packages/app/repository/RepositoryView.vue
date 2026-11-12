@@ -105,7 +105,7 @@ const props = withDefaults(
     viewerLogin: string;
     /** Epoch ms the rows' ages are counted to. */
     now: number;
-    /** The item opened over the list (panel or modal). */
+    /** The item opened over the list, in the panel. */
     openedId?: string | null;
     /** The user has an edit of the item on its way (`ListView`). */
     isEdited?: (id: string) => boolean;

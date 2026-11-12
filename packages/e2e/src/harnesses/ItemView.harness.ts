@@ -1,14 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
 
 /** An arrangement of the item view's switch, by its label. */
-export type ItemArrangementName = 'Panel' | 'Modal' | 'Full page';
+export type ItemArrangementName = 'Panel' | 'Full page';
 
 /** An item's own property with a picker, by its label. */
 export type ItemPropertyName = 'Assignees' | 'Labels' | 'Milestone';
 
 /**
- * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel, the modal or on its
- * own page): its header with the item menu, the way through the list and the arrangement switch; the map of
+ * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel or on its own page): its header with the item menu, the way through the list and the arrangement switch; the map of
  * the stack a pull request is in; its properties, projects and reviewers; its comments and the comment box.
  */
 export class ItemViewHarness {
@@ -43,16 +42,6 @@ export class ItemViewHarness {
     /** "Next item" (`J`). */
     get nextButton(): Locator {
         return this.root.getByRole('button', { name: 'Next item' });
-    }
-
-    /** The modal the item is opened in, named after it. */
-    get modal(): Locator {
-        return this.page.getByRole('dialog').filter({ has: this.root });
-    }
-
-    /** The handles on the modal's left and right edges, dragged to resize it. */
-    get modalHandles(): Locator {
-        return this.modal.getByRole('separator', { name: 'Resize window' });
     }
 
     /** The item's reference in its header, opening the item menu (M1–M2, `⌘.`). */

@@ -6,13 +6,13 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 import type { RepositoryName } from '@/utils/parseRepositoryName.js';
 
 /**
- * How an opened item is shown (D9): beside the list it was opened from, over it, or on a page of its own. The
- * same item view in all three.
+ * How an opened item is shown (D9): in the panel beside the screen it was opened over, or on a page of its own. The
+ * same item view in both.
  */
-export type ItemArrangement = 'modal' | 'page' | 'panel';
+export type ItemArrangement = 'page' | 'panel';
 
 /** The arrangements, in the order the item view's switch shows them. */
-export const ITEM_ARRANGEMENTS: readonly ItemArrangement[] = ['panel', 'modal', 'page'];
+export const ITEM_ARRANGEMENTS: readonly ItemArrangement[] = ['panel', 'page'];
 
 /** An issue or pull request as an address names it: its repository and number. */
 export interface ItemReference extends RepositoryName {
@@ -23,8 +23,7 @@ export interface ItemReference extends RepositoryName {
 export interface OpenedItemRoute {
     readonly reference: ItemReference;
     /**
-     * The item's own page (`/owner/name/issues/12`); else it is opened over a list, in the panel or the modal the
-     * browser remembers (`ItemNavigation.listArrangement`), which the address does not say.
+     * The item's own page (`/owner/name/issues/12`); else it is opened over a screen, in the panel beside it.
      */
     readonly onPage: boolean;
 }

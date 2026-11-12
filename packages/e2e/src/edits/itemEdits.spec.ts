@@ -273,28 +273,6 @@ test('the item menu (⌘.) marks a draft pull request ready for review', async (
     await expect(myWork.row('Cache response headers').getByRole('img', { name: 'Open pull request' })).toBeVisible();
 });
 
-test('the item menu works in the modal: its reference opens it over the dialog and its entries can be picked', async ({
-    page,
-    github,
-}) => {
-    const sample = createSampleEditableWork();
-    const { myWork, shell } = await openMyWork(page, github, sample.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row('Cache response headers').click();
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
-
-    await item.menuButton.click();
-    await page.getByRole('menuitem', { name: 'Ready for review' }).click();
-
-    await expect.poll(() => sample.world.stateOf(sample.draft).isDraft).toBe(false);
-    await expect(item.statePill('Open')).toBeVisible();
-    // The status bar is under the modal, out of reach until it closes.
-    await page.keyboard.press('Escape');
-    await expect(item.modal).toBeHidden();
-    await expectConfirmed(shell);
-});
-
 /** GitHub took the close: nothing is on its way, nothing failed, and the only toast is the one offering Undo. */
 async function expectClosedWithUndo(shell: AppShellHarness) {
     await expect(shell.statusBar).not.toContainText('Sending');
