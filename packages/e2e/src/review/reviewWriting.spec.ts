@@ -893,7 +893,7 @@ test('a reply GitHub refuses comes back in its box, and after a reload it is sti
     await review.commentField('Reply to sofiab').click();
     await page.keyboard.press(FIRST_KEY);
     await expect(review.thread('First thread here')).toContainText('Keep me too');
-    expect(writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
+    await expect.poll(() => writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
 });
 
 test('Resolve folds the thread where it is, moving nothing above it, and N goes on to the open one', async ({
