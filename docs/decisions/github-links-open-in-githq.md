@@ -49,6 +49,7 @@ from the routes and `isTrackedOnlyRoute`, never from a second list of paths.
 - A long press on touch opens the menu only on a link.
 - Inside an opened item, a link to another item opens in the item's arrangement: on its page it goes to the other
   item's page, over a list it opens the other item over the same list. The fragment the link names
-  (`#issuecomment-…`) stays in the address, and githq shows the comment it names in the item's thread (the fold
-  unfolded, its middle read from GitHub when the comment is not among those read), scrolls to it and draws its card's
-  border in the accent while the address names it (#248).
+  (`#issuecomment-…`, a review's `#pullrequestreview-…`, a comment on the code's `#discussion_r…`) stays in the
+  address, and githq shows what it names in the item's thread (the fold unfolded, its middle read from GitHub when the
+  comment is not among those read, a resolved code thread or a dismissed review opened), scrolls to it and draws its
+  card's border in the accent while the address names it (#248).

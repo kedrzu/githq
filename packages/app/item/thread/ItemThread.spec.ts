@@ -8,7 +8,7 @@ import type { ItemComment, ItemDetail } from '@/store/ItemDetailTypes.js';
 import { FakeReviewWriting } from '@/testing/FakeReviewWriting.js';
 import type { FakeReviewWritingOptions } from '@/testing/FakeReviewWriting.js';
 import { D1_ISSUE, D1_ISSUE_DETAIL, F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDetails.js';
-import { DB_THREAD } from '@/testing/sampleReviews.js';
+import { DB_THREAD, SCHEMA_THREAD } from '@/testing/sampleReviews.js';
 import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { I1_ISSUE_DETAIL } from '@/testing/sampleThreadEvents.js';
 
@@ -802,6 +802,36 @@ test('a thread opened, unresolved and resolved again folds to its row, in a revi
     await userEvent.click(schema.getByRole('button', { name: 'Unresolve' }));
     await userEvent.click(schema.getByRole('button', { name: 'Resolve thread' }));
     await expect.element(schemaRow).toHaveFocus();
+});
+
+test('a link to a review marks its card; one to a comment on the code marks that comment and its thread', async () => {
+    await CodeThreads.run({ args: { ...CodeThreads.args, linkedAnchor: 'pullrequestreview-R_sofiab' } });
+    const review = page.getByRole('listitem').filter({ has: dbThread() });
+    await expect.element(review).toHaveAttribute('id', 'pullrequestreview-R_sofiab');
+    await expect.element(review).toHaveAttribute('aria-current', 'location');
+
+    await CodeThreads.run({ args: { ...CodeThreads.args, linkedAnchor: 'discussion_T_db_1' } });
+    const reply = dbThread().getByText('Right, migrating now', { exact: false });
+    await expect.element(review).not.toHaveAttribute('aria-current');
+    expect(reply.element().closest('[id]')?.id).toBe('discussion_T_db_1');
+    expect(document.querySelector('[aria-current="location"]')?.id).toBe('discussion_T_db_1');
+});
+
+test('a link to a comment on the code in a resolved thread opens it, in a review and on its own; Hide still folds it', async () => {
+    const reviewThreads = [{ ...DB_THREAD, isResolved: true }, SCHEMA_THREAD];
+    await CodeThreads.run({ args: { ...CodeThreads.args, reviewThreads, linkedAnchor: 'discussion_T_db_0' } });
+    await expect.element(dbThread()).toBeVisible();
+    await expect
+        .element(page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' }))
+        .not.toBeInTheDocument();
+
+    await CodeThreads.run({ args: { ...CodeThreads.args, linkedAnchor: 'discussion_T_schema_1' } });
+    const schema = page.getByRole('group', { name: 'Thread by dkim on src/store/schema.ts' });
+    await expect.element(schema).toBeVisible();
+    expect(document.querySelector('[aria-current="location"]')?.id).toBe('discussion_T_schema_1');
+
+    await userEvent.click(schema.getByRole('button', { name: 'Hide' }));
+    await expect.element(schema).not.toBeInTheDocument();
 });
 
 test('"N new since you looked" stands before the first item others made since, and stays there when the viewer comments', async () => {

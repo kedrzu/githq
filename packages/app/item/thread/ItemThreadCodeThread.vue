@@ -1,4 +1,4 @@
-<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again: an empty reply box closes with it, one with text or refused asks first as its Cancel does, a reply on its way goes on. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. -->
+<!-- A thread on the code in an item's thread (`Activity / Code thread`, F5, F12): one card with the code it was written on (`ItemThreadExcerpt`) and its comments, then a band with the viewer's avatar and "Reply…", then one with Resolve thread — or, resolved, Unresolve and who resolved it. Reply and Resolve / Unresolve are offered only where GitHub says the viewer may (`viewerCanReply`, `viewerCanResolve`, `viewerCanUnresolve`). A resolved one, opened from its folded row (`ItemThreadResolvedRow`), has a head with Hide, which folds it again: an empty reply box closes with it, one with text or refused asks first as its Cancel does, a reply on its way goes on. A thread of the viewer's draft review (`draft`) has neither band: its comments reach nobody yet. "Reply…" opens the reply editor in its band (`Activity / Code thread · replying`, F10), growing downwards: Cancel (`Escape`) and Reply (`Mod+Enter`), the question before a reply with text is let go; a reply sent shows at once among the comments, "Sending…" or "Pending" as code review says, and one GitHub refused comes back in the editor with why, its text kept (`CodeThreadReplies`). A change of state GitHub didn't take says so in the resolve band. Each comment carries GitHub's anchor (`discussion_r<id>`) as its `id`; while the address names one of them, it is the location and the card's border is in the accent, as the thread's linked comment. The card takes the focus (`data-code-thread`) when clicked or moved to with J/K (`ItemThread`); while the focus is in it, "Reply…" shows its key, `R`, as code review's focused thread does. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
@@ -6,7 +6,7 @@ import { computed, ref } from 'vue';
 
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
-import type { ReviewThread } from '@/review/threads/ReviewThread.js';
+import type { ReviewThread, ReviewThreadComment as ReviewThreadCommentData } from '@/review/threads/ReviewThread.js';
 import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import ReviewThreadComment from '@/review/threads/ReviewThreadComment.vue';
 import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
@@ -16,6 +16,8 @@ import { useResolveFailureText } from '@/review/writing/useResolveFailureText.js
 import type { ItemUser } from '@/store/ItemTypes.js';
 
 import type { CodeThreadReplies } from './CodeThreadReplies.js';
+import { getUrlAnchor } from './getUrlAnchor.js';
+import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadCodeThread.loc.js';
 import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadExcerpt from './ItemThreadExcerpt.vue';
@@ -28,6 +30,8 @@ const props = defineProps<{
   draft?: boolean;
   /** The viewer's replies and what writes them; none, "Reply…" only says it was clicked. */
   replies?: CodeThreadReplies | null;
+  /** The anchor the address's fragment names (`discussion_r…`): the comment with it is marked. */
+  linkedAnchor?: string;
 }>();
 
 const emit = defineEmits<{
@@ -43,6 +47,8 @@ const t = useTranslate();
 const getCommentFailureText = useCommentFailureText();
 const getResolveFailureText = useResolveFailureText();
 
+/** One of its comments is the one the address names. */
+const linked = computed(() => holdsAnchor(props.thread, props.linkedAnchor));
 const who = computed(() => props.thread.comments[0]?.author?.login ?? t(l.ghost));
 const canReply = computed(() => !props.draft && props.thread.viewerCanReply);
 const canToggle = computed(
@@ -95,6 +101,10 @@ function cancelReply() {
   }
 }
 
+function isLinked(comment: ReviewThreadCommentData) {
+  return props.linkedAnchor !== undefined && getUrlAnchor(comment.url) === props.linkedAnchor;
+}
+
 function onFocusOut(event: FocusEvent) {
   const { currentTarget, relatedTarget } = event;
   focused.value =
@@ -106,7 +116,7 @@ function onFocusOut(event: FocusEvent) {
   <div
     role="group"
     :aria-label="t(l.label, { who, path: thread.path })"
-    :class="css.itemThreadCodeThread"
+    :class="[css.itemThreadCodeThread, linked && css.itemThreadCodeThread_linked]"
     :data-code-thread="thread.id"
     tabindex="-1"
     @focusin="focused = true"
@@ -140,8 +150,10 @@ function onFocusOut(event: FocusEvent) {
       <ItemThreadExcerpt :thread="thread" />
       <ReviewThreadComment
         v-for="comment in thread.comments"
+        :id="getUrlAnchor(comment.url)"
         :key="comment.id"
         :comment="comment"
+        :aria-current="isLinked(comment) ? 'location' : undefined"
       />
       <ReviewSentComment
         v-for="sent in reply?.sent ?? []"
@@ -231,6 +243,10 @@ function onFocusOut(event: FocusEvent) {
   background: $color-bg;
   border: 1px solid $color-border-2;
   border-radius: $radius-lg;
+}
+
+.itemThreadCodeThread_linked {
+  border-color: $color-accent;
 }
 
 .itemThreadCodeThread_resolvedHead {
