@@ -1,0 +1,19 @@
+# The pull requests that carry a commit: the merged one that brought it to the default branch, or the open ones while
+# it is not there yet. For a review's submodule pointer change, read in the submodule's repository.
+query CommitPullRequests($owner: String!, $name: String!, $oid: GitObjectID!) {
+    repository(owner: $owner, name: $name) {
+        object(oid: $oid) {
+            ... on Commit {
+                associatedPullRequests(first: 10) {
+                    nodes {
+                        number
+                        state
+                        title
+                        url
+                        isDraft
+                    }
+                }
+            }
+        }
+    }
+}

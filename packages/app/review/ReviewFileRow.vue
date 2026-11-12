@@ -1,7 +1,14 @@
-<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner until it is here, a red mark when it failed, an amber pause while it waits for GitHub's allowance, a tag for what has no diff, with a binary file's sizes in place of its lines. Its open threads in amber (D27), a click on them jumping to the first. A file gone from the diff has a struck name, says so and has only its threads and file-x (D30). A file GitHub took the viewed mark off since the last visit is tagged (D35). While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
+<!-- A file in the review's list (CR46): how it changed, its name, an eye once viewed (the name dimmed), a tag for why it starts collapsed (the name dimmed too), its size, and how its content is getting on: a spinner until it is here, a red mark when it failed, an amber pause while it waits for GitHub's allowance, a tag for what has no diff, with a binary file's sizes in place of its lines, and a submodule's commits counted once its block has read them. Its open threads in amber (D27), a click on them jumping to the first. A file gone from the diff has a struck name, says so and has only its threads and file-x (D30). A file GitHub took the viewed mark off since the last visit is tagged (D35). While a filter is on its folder follows its name (D27). Selected together with others it is tinted (D10). A click jumps to it, or with a modifier selects; only the current row is a Tab stop, as 3000 others would make Tab useless and `[` `]` walk them. -->
+<script lang="ts">
+import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
+
+const numbers = new Intl.NumberFormat(APP_LANGUAGE);
+</script>
+
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleAlert, Eye, FileX, LoaderCircle, MessageSquare, Pause } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import PullRequestSize from '@/lists/PullRequestSize.vue';
 
@@ -10,11 +17,14 @@ import { getFileName } from './utils/getFileName.js';
 import ReviewChange from './ReviewChange.vue';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
 import * as l from './ReviewFileRow.loc.js';
+import type { ReviewSubmoduleState } from './submodules/ReviewSubmodules.js';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 
-defineProps<{
+const props = defineProps<{
   file: ReviewFile;
   state: ReviewFileState;
+  /** What is known of its history when it is a submodule. */
+  submodule?: ReviewSubmoduleState | null;
   /** The diff shows only its header. */
   collapsed: boolean;
   /** Why it starts collapsed. */
@@ -42,6 +52,13 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
+
+/** How many commits a submodule's change brings in or drops, once read; `null` before, or with none. */
+const submoduleCommits = computed(() => {
+  const { submodule } = props;
+  const count = submodule?.kind === 'ready' ? submodule.commits.length + submodule.moreCommits : 0;
+  return count > 0 ? count : null;
+});
 
 // A span, not a button of its own: a button holds no other. The keys have N.
 function onClick(event: MouseEvent) {
@@ -116,6 +133,11 @@ function onClick(event: MouseEvent) {
       :class="css.reviewFileRow_tag"
       >{{ t(l.tooLarge) }}</span
     >
+    <span
+      v-else-if="state.kind === 'submodule'"
+      :class="css.reviewFileRow_tag"
+      >{{ t(l.submodule) }}</span
+    >
     <span :class="css.reviewFileRow_spacer" />
     <span
       v-if="openThreads"
@@ -153,6 +175,13 @@ function onClick(event: MouseEvent) {
       :class="css.reviewFileRow_size"
       >{{ formatFileSizes(state) }}</span
     >
+    <template v-else-if="state.kind === 'submodule'">
+      <span
+        v-if="submoduleCommits !== null"
+        :class="css.reviewFileRow_size"
+        >{{ t(l.commits, { count: submoduleCommits, formatted: numbers.format(submoduleCommits) }) }}</span
+      >
+    </template>
     <PullRequestSize
       v-else
       :class="css.reviewFileRow_size"

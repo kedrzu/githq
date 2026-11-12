@@ -1,0 +1,15 @@
+# The submodules a commit declares in its .gitmodules, to find the repository behind a submodule pointer change in a review.
+query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
+    repository(owner: $owner, name: $name) {
+        object(oid: $oid) {
+            ... on Commit {
+                submodules(first: 100) {
+                    nodes {
+                        path
+                        gitUrl
+                    }
+                }
+            }
+        }
+    }
+}

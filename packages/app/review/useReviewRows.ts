@@ -1,3 +1,4 @@
+import type { SubmodulePointers } from '@githq/github/utils/parseSubmodulePatch.js';
 import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { onScopeDispose, shallowRef, toValue, watch } from 'vue';
@@ -55,6 +56,7 @@ export interface ReviewRows {
 
 type ReadyState = Extract<ReviewFileState, { kind: 'ready' }>;
 type LinesContent = Extract<ReviewFileContent, { kind: 'lines' }>;
+type SubmoduleContent = Extract<ReviewFileContent, { kind: 'submodule' }>;
 
 /** A file's rows in a layout, for as long as the same lines are expanded. */
 interface BuiltLines {
@@ -116,6 +118,7 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     const placedElsewhere = new WeakMap<readonly ReviewThread[], Map<ThreadFileView, readonly ThreadPlacement[]>>();
     // By the file, which its patch's arrival replaces, then by what it is drawn as.
     const placeholders = new WeakMap<ReviewFile, Map<string, ReviewFileContent>>();
+    const submodules = new WeakMap<ReviewFile, SubmoduleContent>();
 
     let builtFrom: readonly ReviewFileContent[] = [];
     let builtReasons: readonly (ReviewFileCollapseReason | null)[] = [];
@@ -213,27 +216,26 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
         }
 
         // The patch's verdict stays whatever its blob is up to, unless the blob says otherwise (D45).
-        const verdict = file.patch?.verdict ?? null;
+        const settled = getSettled(file);
         const state = getState(file);
         // Only ever a file that may yet turn out generated, or an open one: it says why it isn't here, which flips nothing.
         if (state?.kind === 'paused') {
-            return verdict === 'binary' && !isCollapsed(file) ? BINARY : state;
+            return settled && !isCollapsed(file) ? settled : state;
         }
 
+        // Its block never mounts, so nothing of a collapsed submodule's history is read.
         if (isCollapsed(file)) {
             return COLLAPSED;
         }
 
         if (!state) {
-            return verdict === 'binary' ? BINARY : getPlaceholder(file, false);
+            return settled ?? getPlaceholder(file, false);
         }
 
         switch (state.kind) {
             case 'waiting':
             case 'loading':
-                return verdict === 'binary'
-                    ? BINARY
-                    : getPlaceholder(file, toValue(options.files)?.fetchingFirst === file.path);
+                return settled ?? getPlaceholder(file, toValue(options.files)?.fetchingFirst === file.path);
             case 'ready': {
                 const diff = getDiffs().get(state);
                 if (diff) {
@@ -241,15 +243,42 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
                 }
 
                 // Its blob said otherwise (an empty file, a mode change), which shows once it is diffed.
-                return verdict === 'binary' ? BINARY : getPlaceholder(file, false);
+                return settled ?? getPlaceholder(file, false);
             }
             case 'unchanged':
                 return file.changeType === 'RENAMED' ? RENAMED_UNCHANGED : NO_LINES;
             case 'failed':
-                return verdict === 'binary' ? BINARY : state;
+                return settled ?? state;
+            case 'submodule':
+                return getSubmoduleContent(file, state);
             default:
                 return state;
         }
+    }
+
+    /** What the patch's verdict shows until the blob says otherwise (D45); `null` when it settles nothing. */
+    function getSettled(file: ReviewFile): ReviewFileContent | null {
+        const patch = file.patch;
+        switch (patch?.verdict) {
+            case 'binary':
+                return BINARY;
+            case 'submodule':
+                return patch.submodule && getSubmoduleContent(file, patch.submodule);
+            default:
+                return null;
+        }
+    }
+
+    /** The same object for as long as the file and its pointers stay: rows are kept by that. */
+    function getSubmoduleContent(file: ReviewFile, { before, after }: SubmodulePointers): SubmoduleContent {
+        const held = submodules.get(file);
+        if (held?.before === before && held.after === after) {
+            return held;
+        }
+
+        const content: SubmoduleContent = { kind: 'submodule', before, after };
+        submodules.set(file, content);
+        return content;
     }
 
     /** The same object for as long as the file, the layout and the whitespace setting stay: rows are kept by that. */

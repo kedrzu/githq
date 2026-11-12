@@ -17,6 +17,7 @@ import type { PullRequestFile } from '@githq/github/rest/listPullRequestFiles.js
 import { markFilesViewed } from '@githq/github/markFilesViewed.js';
 import type { FileViewedMark } from '@githq/github/markFilesViewed.js';
 import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import type { SubmodulePointers } from '@githq/github/utils/parseSubmodulePatch.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -59,6 +60,7 @@ import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
+import { toError } from './utils/toError.js';
 import { ReviewWritingFactory } from './writing/ReviewWritingFactory.js';
 import type { ReviewWriting } from './writing/ReviewWriting.js';
 
@@ -87,15 +89,17 @@ export interface ReviewFilePatch {
     readonly layout: PatchLayout | null;
     /** What the patch settles of the file ahead of its blobs; `null` when it settles nothing. */
     readonly verdict: ReviewFileVerdict | null;
+    /** The commits it points at when it is a submodule (a gitlink); `null` for any other file. Kept on disk with the list. */
+    readonly submodule: SubmodulePointers | null;
 }
 
 /**
  * What a file's patch settles ahead of its blobs (D45). `binary`: no patch and no lines, modified, added or deleted. Its
  * blob still has the last word, and gives its sizes: an empty file or a mode change reads as binary only until the blob
  * says otherwise. A renamed file with no lines changed is settled by its blobs alone: a renamed binary whose content
- * changed reports no lines too.
+ * changed reports no lines too. `submodule`: a pointer to another repository's commit, which has no blobs to read.
  */
-export type ReviewFileVerdict = 'binary';
+export type ReviewFileVerdict = 'binary' | 'submodule';
 
 /** How sure it is that a file with threads is not on the list (D30). */
 export type ReviewFileGone =
@@ -127,6 +131,8 @@ export type ReviewFileState =
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
     /** Above {@link MAX_FILE_BYTES} on either side: not fetched. */
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
+    /** Its patch says it is a submodule: the commits it points at, and no blobs read. Nothing read later changes it. */
+    | ({ readonly kind: 'submodule' } & SubmodulePointers)
     | { readonly kind: 'failed'; readonly error: Error }
     /** GitHub's allowance ran out: it comes by itself at `until`, epoch ms (D35). */
     | { readonly kind: 'paused'; readonly until: number };
@@ -1573,7 +1579,10 @@ export const ReviewFiles = defineService({
                         collapseReason: getCollapseReason(file, run.isGenerated),
                     };
                     run.entries.set(file.path, added);
-                    if (isFetchable(run, added)) {
+                    const submodule = added.file.patch?.submodule ?? null;
+                    if (submodule) {
+                        setState(run, file.path, { kind: 'submodule', ...submodule });
+                    } else if (isFetchable(run, added)) {
                         run.queue.push(added);
                     }
                 }
@@ -1825,6 +1834,10 @@ export const ReviewFiles = defineService({
                     const entry = run.entries.get(file.path);
                     if (entry) {
                         entry.file = withPatch(entry.file, file);
+                        // Whatever its blobs said or are on their way to say: a submodule has none to read.
+                        if (file.submodule) {
+                            endEntry(run, entry, { kind: 'submodule', ...file.submodule });
+                        }
                     }
                 }
 
@@ -2362,7 +2375,12 @@ export const ReviewFiles = defineService({
                 });
             }
 
+            /** A submodule's state is its patch's: an answer, failure or pause for its blobs arriving later is dropped. */
             function setState(run: FileRun, path: string, state: ReviewFileState) {
+                if (run.states.get(path)?.kind === 'submodule') {
+                    return;
+                }
+
                 run.states.set(path, state);
                 scheduleUpdate();
             }
@@ -2397,15 +2415,26 @@ function withPatch(file: ReviewFile, listed: PullRequestFile): ReviewFile {
     return {
         ...file,
         previousPath: file.previousPath ?? listed.previousPath,
-        patch: { layout: listed.layout, verdict: readVerdict(file.changeType, listed) },
+        patch: {
+            layout: listed.layout,
+            verdict: readVerdict(file.changeType, listed),
+            submodule: listed.submodule,
+        },
     };
 }
 
-/** What the patch settles early (D45): a file with no patch and no lines changed is binary, by GraphQL's change type. */
+/**
+ * What the patch settles early (D45): a submodule by its pointer lines; a file with no patch and no lines changed is
+ * binary, by GraphQL's change type.
+ */
 function readVerdict(
     changeType: PatchStatus,
-    { layout, additions, deletions }: PullRequestFile,
+    { layout, additions, deletions, submodule }: PullRequestFile,
 ): ReviewFileVerdict | null {
+    if (submodule) {
+        return 'submodule';
+    }
+
     if (additions !== 0 || deletions !== 0) {
         return null;
     }
@@ -2519,8 +2548,4 @@ function readOutcome(
 function readBlobSide(expression: string | null, answers: ReadonlyMap<string, ReviewBlobOidAnswer>): BlobSide | null {
     const answer = expression === null ? null : answers.get(expression);
     return answer?.kind === 'blob' ? { oid: answer.oid, byteSize: answer.byteSize } : null;
-}
-
-function toError(error: unknown) {
-    return error instanceof Error ? error : new Error(String(error));
 }

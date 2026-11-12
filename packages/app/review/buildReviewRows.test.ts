@@ -306,7 +306,7 @@ test.each(PATCH_SAMPLES)(
     'a placeholder from the patch draws the rows its diff will, numbered the same, as tall: %s',
     (_, before, after) => {
         const diff = computeFileDiff({ before, after, ...NO_IGNORE });
-        const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+        const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null, submodule: null } };
         for (const layout of ['split', 'unified'] as const) {
             const placeholder = buildPlaceholderRows({ file, layout, hideWhitespace: false });
             const real = buildFileLineRows({ path: A.path, diff, layout });
@@ -319,7 +319,7 @@ test.each(PATCH_SAMPLES)(
 
 test('a placeholder from the patch tints its changed lines, but not with whitespace hidden', () => {
     const diff = computeFileDiff({ before: lines(20), after: edit(lines(20), { 10: ['ten'] }), ...NO_IGNORE });
-    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null, submodule: null } };
 
     const tints = (hideWhitespace: boolean) =>
         buildPlaceholderRows({ file, layout: 'unified', hideWhitespace }).flatMap(row =>
@@ -335,8 +335,8 @@ test('a file with no patch, or no hunks in it, keeps the guess from its line cou
         buildPlaceholderRows({ file: { ...A, patch }, layout: 'split', hideWhitespace: false }).map(row => row.part);
 
     expect(guessed(undefined)).toEqual([{ kind: 'guess' }]);
-    expect(guessed({ layout: null, verdict: null })).toEqual([{ kind: 'guess' }]);
-    expect(guessed({ layout: { hunks: [] }, verdict: null })).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: null, verdict: null, submodule: null })).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: { hunks: [] }, verdict: null, submodule: null })).toEqual([{ kind: 'guess' }]);
 });
 
 test('a line held through a layout switch stays on the same line of the newer version', () => {
@@ -622,7 +622,7 @@ test('a position inside guessed bars is kept as its file, for how far says nothi
 });
 
 test("a placeholder's line holds the position as the line it stands for, when the file arrives and across layouts", () => {
-    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(DIFF), verdict: null } };
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(DIFF), verdict: null, submodule: null } };
     const waiting = (layout: 'split' | 'unified') =>
         buildReviewRows({
             files: [file, B],

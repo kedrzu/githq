@@ -923,6 +923,31 @@ export type CommitHistoriesQuery = {
     >;
 };
 
+export type CommitPullRequestsQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    oid: string;
+}>;
+
+export type CommitPullRequestsQuery = {
+    repository: {
+        object:
+            | {
+                  associatedPullRequests: {
+                      nodes: Array<{
+                          number: number;
+                          state: PullRequestState;
+                          title: string;
+                          url: string;
+                          isDraft: boolean;
+                      } | null> | null;
+                  } | null;
+              }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
 export type CommitStatesQueryVariables = Exact<{
     ids: Array<string> | string;
 }>;
@@ -963,6 +988,21 @@ export type CommitSubjectsQuery = {
                       nodes: Array<{ oid: string; message: string } | null> | null;
                   };
               }
+            | Record<PropertyKey, never>
+            | null;
+    } | null;
+};
+
+export type CommitSubmodulesQueryVariables = Exact<{
+    owner: string;
+    name: string;
+    oid: string;
+}>;
+
+export type CommitSubmodulesQuery = {
+    repository: {
+        object:
+            | { submodules: { nodes: Array<{ path: string; gitUrl: string } | null> | null } }
             | Record<PropertyKey, never>
             | null;
     } | null;
@@ -21676,6 +21716,25 @@ export const CommitHistoriesDocument = new TypedDocumentString(`
     }
   }
 }`);
+export const CommitPullRequestsDocument = new TypedDocumentString(`
+    query CommitPullRequests($owner: String!, $name: String!, $oid: GitObjectID!) {
+  repository(owner: $owner, name: $name) {
+    object(oid: $oid) {
+      ... on Commit {
+        associatedPullRequests(first: 10) {
+          nodes {
+            number
+            state
+            title
+            url
+            isDraft
+          }
+        }
+      }
+    }
+  }
+}
+    `);
 export const CommitStatesDocument = new TypedDocumentString(`
     query CommitStates($ids: [ID!]!) {
   nodes(ids: $ids) {
@@ -21710,6 +21769,22 @@ export const CommitSubjectsDocument = new TypedDocumentString(`
           nodes {
             oid
             message
+          }
+        }
+      }
+    }
+  }
+}
+    `);
+export const CommitSubmodulesDocument = new TypedDocumentString(`
+    query CommitSubmodules($owner: String!, $name: String!, $oid: GitObjectID!) {
+  repository(owner: $owner, name: $name) {
+    object(oid: $oid) {
+      ... on Commit {
+        submodules(first: 100) {
+          nodes {
+            path
+            gitUrl
           }
         }
       }
@@ -28597,6 +28672,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 options,
             ) as Promise<CommitHistoriesQuery>;
         },
+        CommitPullRequests(variables: CommitPullRequestsQueryVariables, options?: C): Promise<CommitPullRequestsQuery> {
+            return requester<CommitPullRequestsQuery, CommitPullRequestsQueryVariables>(
+                CommitPullRequestsDocument,
+                variables,
+                options,
+            ) as Promise<CommitPullRequestsQuery>;
+        },
         CommitStates(variables: CommitStatesQueryVariables, options?: C): Promise<CommitStatesQuery> {
             return requester<CommitStatesQuery, CommitStatesQueryVariables>(
                 CommitStatesDocument,
@@ -28610,6 +28692,13 @@ export function getSdk<C>(requester: Requester<C>) {
                 variables,
                 options,
             ) as Promise<CommitSubjectsQuery>;
+        },
+        CommitSubmodules(variables: CommitSubmodulesQueryVariables, options?: C): Promise<CommitSubmodulesQuery> {
+            return requester<CommitSubmodulesQuery, CommitSubmodulesQueryVariables>(
+                CommitSubmodulesDocument,
+                variables,
+                options,
+            ) as Promise<CommitSubmodulesQuery>;
         },
         ItemByNumber(variables: ItemByNumberQueryVariables, options?: C): Promise<ItemByNumberQuery> {
             return requester<ItemByNumberQuery, ItemByNumberQueryVariables>(

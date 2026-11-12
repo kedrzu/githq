@@ -4,6 +4,13 @@ binary:
   en: binary
 tooLarge:
   en: too large
+submodule:
+  en: submodule
+commits:
+  plural: count
+  en:
+    one: 1 commit
+    many: '{formatted} commits'
 loading:
   en: Loading
 failed:
