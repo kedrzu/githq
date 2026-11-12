@@ -353091,7 +353091,7 @@
                           "fill": "$fg-3"
                         },
                         "YBQPD/unZbw": {
-                          "content": "Fetching patches · the list is complete, 42 files · their patches on their way",
+                          "content": "Reading the changes",
                           "fill": "$fg-dim"
                         }
                       }

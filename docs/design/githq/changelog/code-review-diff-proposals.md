@@ -145,3 +145,13 @@ Decision amended: D44.
 - [ ] D44's behaviour: the reading line slides at both ends; the gap between files belongs to the file below; Space, N
   and landing hold a file; V moves on whether viewed files show or not; C takes N's thread only in the current file; a
   file leaving the diff goes when it leaves the top of the screen.
+
+## While building M3 (2026-11-12)
+
+Decisions amended: D42, D45.
+
+- [ ] CR115 (`mZUZV`): the status bar's line (`kDZ7q/YBQPD/unZbw`) reads "Reading the changes" (was "Fetching patches ·
+  the list is complete, 42 files · their patches on their way"); with more than one page, "· 3 of 30 pages".
+- [ ] A gap never hides a single line; the CR62 notice goes on the first gap that still hides lines (D42).
+- [ ] D45: placeholder rows hold the position as lines; 0/0 files only a header before the patch; a binary verdict's
+  note survives a failed blob; a renamed 0/0 file is "Renamed, no changes" only with the same blobs.

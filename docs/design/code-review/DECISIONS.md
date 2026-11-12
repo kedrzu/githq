@@ -731,6 +731,11 @@ first line opens its parameters (`async load(`); of calls only a test's `describ
 what the code is in, while other calls (`watch(x, () => {`, `useEffect(() => {`) and branches (`elif`, `when`) are not.
 (owner, 2026-11-11, building M1)
 
+A gap never hides a single line: the row (26 px) would be taller than the line it hides, so that line shows as context,
+between hunks, at a file's ends and between expanded ranges. git's patches do hide one, so a patch placeholder (D45)
+shows such a line too. The push-reset notice (CR62) goes on the file's first gap that still hides lines. (owner,
+2026-11-12, building M3)
+
 **Rejected.**
 
 - One full-width row, a click showing 20 and ⌥click all (CR102, agent's recommendation).
@@ -797,6 +802,13 @@ few rows; D7's anchor absorbs what differs. With whitespace hidden the bars keep
 (CR113): which lines stay changed is not known until the file is diffed.** (2026-11-10, owner: the tint "if we know
 where the added and deleted lines are", and the agent's second variant for a guess; corrected the same day for what
 the patch does not give; CR111, CR113, CR115, CR116; amends D38's count and its "no colour")
+
+Settled while building M3 (owner, 2026-11-12): a placeholder's rows hold the reading position as the lines they
+stand for (the file, the side, the line), so a file arriving under the reader, or a layout switch, moves nothing; a
+file with 0/0 lines is only its header until its patch says what it is; a binary verdict's note stays when the blob
+read fails or pauses; a RENAMED file with 0/0 lines says "Renamed, no changes" only once its blobs are the same on
+both sides — a renamed binary whose content changed reports 0/0 too, and gets the binary note; while the patches are
+read the status bar says "Reading the changes", with "· 3 of 30 pages" when there is more than one (CR115).
 
 When GitHub omits `patch` is not documented (D6: third-party reports of binary files and very large diffs). Files past
 GitHub's 3,000-file listing are not in the diff at all (D35), so they need no placeholder.
