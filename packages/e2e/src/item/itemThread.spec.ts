@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import type { FileViewedState } from '@githq/github/generated.gen.js';
 
 import { expect, test } from '../fixtures.js';
 import { createSampleEditableWork } from '../edits/sampleEditableWork.js';
@@ -304,7 +305,7 @@ const QUESTION = 'What if there is no return address?';
  * The sample pull request with hubot's review holding one open thread on `src/auth/redirect.ts`, opened from my work, on
  * a GitHub that takes replies and resolves as the real one does, or refuses them with `refused`'s words.
  */
-async function openReviewThread(page: Page, github: GitHubMock) {
+async function openReviewThread(page: Page, github: GitHubMock, viewed: FileViewedState = 'UNVIEWED') {
     const sample = createSampleEditableWork();
     const { world } = sample;
     world.review(sample.pullRequest, {
@@ -334,6 +335,7 @@ async function openReviewThread(page: Page, github: GitHubMock) {
                 path: 'src/auth/redirect.ts',
                 before: 'const back = read()\ngo(back)\n',
                 after: 'const back = read()\ngo(back ?? home)\n',
+                viewed,
             },
         ],
         threads,
@@ -386,6 +388,23 @@ async function openReviewThread(page: Page, github: GitHubMock) {
     await expect(thread).toContainText(QUESTION);
     return { item, thread, writes, refused, sample };
 }
+
+test("a code thread's file links to the thread in code review: its file, viewed and collapsed there, opens on it", async ({
+    page,
+    github,
+}) => {
+    const { thread } = await openReviewThread(page, github, 'VIEWED');
+
+    await thread.getByRole('link', { name: 'src/auth/redirect.ts' }).click();
+
+    const review = new ReviewScreenHarness(page);
+    await expect(review.focusedThread).toContainText(QUESTION);
+    // On its line in the diff, not on the code as it was under a collapsed header.
+    await expect(review.diff.getByRole('button', { name: 'Collapse file' }).first()).toBeVisible();
+    await expect(review.diff.getByRole('button', { name: 'Expand file' })).toHaveCount(0);
+    // Landed, the fragment leaves the address: Back and a reload come back to where the review was left.
+    await expect(page).toHaveURL(/\/acme\/web\/pull\/15\/files$/u);
+});
 
 test('R on a code thread clicked opens its reply editor; the reply goes as code review sends it, shows at once, and code review shows it', async ({
     page,

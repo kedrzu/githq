@@ -206,6 +206,21 @@ test('it says why it opened where it did: the first file not viewed, the place l
     gone.stop();
 });
 
+test('held by a link landing it, it waits; let go with the landing still on, it lands as if just opened', async () => {
+    const view = open({ position: LINE });
+    view.held.value = true;
+    view.setRows({ 'b.ts': lines() });
+    await nextTick();
+    expect(view.jumps).toEqual([]);
+    expect(view.landing.value).toBe(true);
+
+    view.held.value = false;
+    await nextTick();
+    expect(view.jumps.at(-1)?.[1]).toBe(-5);
+    expect(view.landing.value).toBe(false);
+    view.stop();
+});
+
 interface OpenOptions {
     position: ReviewPosition | null;
     files?: readonly ReviewFile[];
@@ -216,6 +231,7 @@ interface OpenOptions {
 function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain' }: OpenOptions) {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const landing = shallowRef(true);
+    const held = shallowRef(false);
     const arrival = shallowRef<ReviewArrival | null>(null);
     const rows = shallowRef<readonly ReviewRow[]>([]);
     const ordered = shallowRef(files);
@@ -262,6 +278,7 @@ function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain'
                 order: () => ordered.value.map(file => file.path),
                 list,
                 landing,
+                held,
                 arrival,
             }),
         ),
@@ -269,6 +286,7 @@ function open({ position, files = [A, B, C], collapses = {}, listEnd = 'certain'
 
     return {
         landing,
+        held,
         arrival,
         rows,
         jumps,
