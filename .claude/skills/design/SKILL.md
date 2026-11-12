@@ -21,6 +21,12 @@ brief: `docs/design/githq/ui/README.md`.
   - `Landing — …` and `Landing · …`: the landing page, desktop and mobile, its motion storyboard, the download page;
   - `Docs · …`: the documentation site;
   - the brand: `Logo — git/hq`, app icons, OpenGraph images.
+- **The frames sit in rows**, top to bottom, each row left to right, top edges aligned, 400 px apart within a row
+  and 1200 px between rows: foundations (overview, components, toolbar); lists and items (My work, project,
+  repository, issue, pull request); pull request depth (code review, merging, stacks, commits, workflows); menus;
+  flows and states (first sign-in, new issue, settings, states, freshness, empty states, toasts); platforms
+  (`Desktop · …`, then `App · Mobile`); web and brand (landing, docs, logo, icons, OpenGraph). A new aspect frame
+  goes at the end of its row; move the rest of the row, never let frames overlap.
 - **`App · Overview — Direction D`** (`I7akNj`): the chosen direction at a glance.
 - **Shared components:** `App · Components` (`pUvet`): atoms (keys, avatar, labels, status, buttons, hints, chips,
   tabs), the sidebar, item sections, list rows (`List row / …`, `Table row / …`), list and group headers, project

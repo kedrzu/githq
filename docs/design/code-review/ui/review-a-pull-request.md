@@ -204,7 +204,7 @@ files arriving CR60, jumping ahead of them CR61, pushed since CR62, everything v
 binary CR65, the 3,000-file cut-off CR66, a file not fetched or too large CR67, the API allowance CR68, a file still arriving in split CR88 and unified CR89 (D38). Writing: a
 range with a suggestion CR73, reply and resolve CR74, submitting CR75, submitting failed CR76, the setting CR77 (in App · Settings).
 
-Refined 2026-11-10 (D39–D45): the comment box on the shared editor CR90, a range with a draft open CR91, a reply CR92, unified after a push and refused CR93; Esc asking CR97 and a toast giving a discarded comment back CR98; 8 px between files CR99; hidden lines with gutter arrows CR103; the number as the hover affordance CR106; the current file lit CR108; placeholders from the patch CR111 and a guessed height reserved CR113.
+Refined 2026-11-10 (D39–D45): the comment box on the shared editor CR90, a range with a draft open CR91, a reply CR92, unified after a push and refused CR93; Esc asking CR97 and a toast giving a discarded comment back CR98; 8 px between files CR99; hidden lines with gutter arrows CR103; the number as the hover affordance CR106; the current file lit CR108; placeholders from the patch CR111, a guessed height reserved with grey bars CR113, a first open before the patches arrive CR115, and a too-large file's bars turning into its note CR116.
 
 Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.
 
