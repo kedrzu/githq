@@ -1018,6 +1018,9 @@ test('a gap\'s arrows show 20 lines from their hunk and hold the row on that sid
     await expect(review.gap('14 lines')).toBeAttached();
     await expect(review.gapArrow('all')).toHaveAccessibleName('Show 14 lines');
 
+    // The command acts on a gap on screen: bring this one into view, wherever the window's height left it.
+    await review.gap('14 lines').evaluate(gap => gap.scrollIntoView({ block: 'center' }));
+    await expect(review.gap('14 lines')).toBeInViewport();
     await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
     await expect(review.gaps).toHaveCount(0);
