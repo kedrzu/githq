@@ -65,7 +65,7 @@ to its users.
    when opened, so a correction reaches everyone.
 
 6. **Publish** the draft, once the run is green. Published and not a prerelease, it becomes GitHub's "latest". Installed apps
-   read `releases/latest/download/latest.json` at launch and every 4 hours, so they pick it up within hours. The download
+   read `releases/latest/download/latest.json` at launch and every hour, so they pick it up within the hour. The download
    links on githq.dev follow within 5 minutes, the time the Worker caches which release is the latest.
 
 ### If a build fails

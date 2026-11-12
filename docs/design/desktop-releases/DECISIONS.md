@@ -249,7 +249,7 @@ needs something in `packages/app/landing/` or `packages/worker/`, `cloud` someth
 
 **Why.** Nightly would run the same builds and differ only in offering a restart less often, and a restart is never forced:
 on macOS and Linux the update installs in the background and runs at the next launch, and checks stop once one is ready
-(`packages/desktop/src-tauri/src/updater.rs:5`, `:84`). Its only user today would be the owner, who wants fresh builds.
+(`packages/desktop/src-tauri/src/updater.rs:5`, `:84`). Since [D19](#d19) checks go on behind a ready update, quietly. Its only user today would be the owner, who wants fresh builds.
 
 **Rejected.**
 
@@ -282,7 +282,7 @@ opened, and a failure offers a link to GitHub. After going back to an older stab
 ## D11
 
 **Development checks for updates every 15 minutes and Stable every 4 hours, and a "check now" action exists in Settings
-and the command palette.** (2026-11-04, owner)
+and the command palette.** (2026-11-04, owner) The intervals are now 5 minutes and 1 hour ([D19](#d19)).
 
 **Why.** Four hours (`packages/desktop/src-tauri/src/updater.rs:21`) can't deliver "what I just merged". Fifteen minutes is a
 proposal, not a measurement. Whether GitHub limits such downloads of a release asset: not checked.
@@ -381,3 +381,25 @@ Later. After a refused or failed install: Try again and Later. While the toast s
 restart is the design agent's reading of the owner's "and so on".
 
 **Why.** githq is keyboard-first, and these actions otherwise live only in a status bar segment or a section of Settings.
+
+## D19
+
+**The timed checks go on while an update is ready, quietly, and Restart runs into the newest one ready. Development checks
+every 5 minutes and Stable every hour.** (2026-11-12, owner) This amends [D9](#d9) and [D11](#d11).
+
+**Why.** Checks used to stop once an update was ready, so several builds merged one after another meant one restart each
+(owner). A check behind a ready update leaves the toast and status bar as they are until a newer update is ready, which
+then takes its place. A Restart pressed while a job is under way that has to finish first (macOS replacing the app on
+disk; any job on Linux and Windows, where one task downloads and installs) shows as installing and runs into whatever is
+ready when it ends. Only a version above the ready one replaces it. Each check reads a manifest of about 1 KB from a
+release download, not the API.
+
+A macOS update whose install at download failed, likely at a refused administrator prompt, still stops the timed checks, so
+nothing asks for a password unprompted (`installs_on_download` in `packages/desktop/src-tauri/src/updater.rs`). Accepted:
+where the app needs an administrator to be replaced and the user agreed once, each new build asks again; the code can't
+tell an agreed prompt from no prompt, and the usual install in `/Applications` needs none.
+
+**Rejected.**
+
+- Restarting at once during any job: on macOS during the install of a newer build it would restart into a half-replaced
+  app, and on Linux and Windows it would install the older build while a newer one downloads.

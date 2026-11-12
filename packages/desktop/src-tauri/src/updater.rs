@@ -3,6 +3,10 @@
 //! its signature always verified by the plugin. The update is then offered to the user, who restarts when they choose.
 //! Nothing restarts on its own.
 //!
+//! The timed checks go on while an update is on offer, so that several builds landing one after another cost one restart,
+//! into the newest. Such a check is quiet: the offer stays as it is until a newer update is ready and takes its place.
+//! Restart takes whatever is ready when it runs; asked for while a job is under way, it waits for that job.
+//!
 //! On macOS the download is installed at once: the plugin replaces the app on disk and the running one goes on, so the
 //! new version starts at the next launch, whether the user restarts now or quits later. If that fails, because the app is
 //! somewhere only an administrator may replace it and they refused the prompt, say, the package is kept and the update is
@@ -26,10 +30,10 @@ use tauri_plugin_updater::{Error, Update, UpdaterExt};
 use tokio::sync::Notify;
 
 /// How long between two timed checks on Stable.
-const STABLE_INTERVAL: Duration = Duration::from_secs(4 * 60 * 60);
+const STABLE_INTERVAL: Duration = Duration::from_secs(60 * 60);
 
 /// How long between two timed checks on Development, which delivers what was just merged.
-const DEVELOPMENT_INTERVAL: Duration = Duration::from_secs(15 * 60);
+const DEVELOPMENT_INTERVAL: Duration = Duration::from_secs(5 * 60);
 
 /// How long a connection may take to open, and then to send anything. Without a limit, a stalled connection would hold
 /// the one task that checks forever. Not a limit on the whole request, which a slow download may well exceed.
@@ -132,6 +136,8 @@ enum Job {
         version: String,
         package: Arc<Package>,
     },
+    /// Restart into an update installed already.
+    Restart,
 }
 
 /// What happens to the state, free of the app so that it can be tested.
@@ -142,8 +148,16 @@ struct Inner {
     ready: Option<Ready>,
     /// The user asked for a check that hasn't started.
     check_requested: bool,
-    /// The user asked to restart into this update, and it hasn't started installing.
-    install_requested: Option<(String, Arc<Package>)>,
+    /// The user asked to restart, and the job under way has to end first; it then runs into whatever is ready.
+    restart_requested: bool,
+    /// The check under way is a timed one behind an update on offer: it leaves the offer as it is, unless it readies a
+    /// newer update.
+    quiet: bool,
+    /// The app on disk is being replaced (macOS), so restarting has to wait.
+    replacing: bool,
+    /// Downloads are installed at once (macOS): a package still waiting means installing failed, likely at a refused
+    /// administrator prompt.
+    installs_on_download: bool,
 }
 
 impl Inner {
@@ -161,42 +175,77 @@ impl Inner {
             },
             ready: None,
             check_requested: false,
-            install_requested: None,
+            restart_requested: false,
+            quiet: false,
+            replacing: false,
+            installs_on_download: cfg!(target_os = "macos"),
         }
     }
 
     /// The user asked for a check. It runs after the job under way, and that job shows as asked for from here on too, so
-    /// whoever pressed the button sees it through.
+    /// whoever pressed the button sees it through; a quiet one shows as checking, unless a restart waits for it.
     fn request_check(&mut self) {
         self.check_requested = true;
         self.state.manual = true;
+        if self.quiet && !self.restart_requested {
+            self.quiet = false;
+            self.state.activity = Activity::Checking;
+        }
     }
 
-    /// The next piece of work, if there is any; `due` says the timer ran out. A check in progress shows from here on,
-    /// in one step with taking it, so that a restart can't slip in between.
+    /// The next piece of work, if there is any; `due` says the timer ran out. A waiting restart goes first. A check in
+    /// progress shows from here on, in one step with taking it, so that a restart can't slip in between; a quiet one
+    /// leaves the offer on show, and Restart then waits for it.
     fn next_job(&mut self, due: bool) -> Option<Job> {
-        if let Some((version, package)) = self.install_requested.take() {
-            return Some(Job::Install { version, package });
+        if std::mem::take(&mut self.restart_requested) {
+            if let Some(ready) = &self.ready {
+                let version = ready.version.clone();
+                self.state.activity = Activity::Installing {
+                    version: version.clone(),
+                };
+                return Some(match &ready.package {
+                    Some(package) => Job::Install {
+                        version,
+                        package: Arc::clone(package),
+                    },
+                    None => Job::Restart,
+                });
+            }
         }
         if !self.check_requested && !due {
             return None;
         }
 
         self.state.manual = self.check_requested;
+        self.quiet = !self.check_requested && self.ready.is_some();
         self.check_requested = false;
-        self.state.activity = Activity::Checking;
+        if !self.quiet {
+            self.state.activity = Activity::Checking;
+        }
         Some(Job::Check)
     }
 
     /// How a check or a download ended, unless an update is ready: that one stays on offer, unless the stream the user is
-    /// on now wouldn't take it.
+    /// on now wouldn't take it. A restart waiting for the job goes on showing; a failed install of the update still on
+    /// offer too, since nothing has tried it again.
     fn settle(&mut self, activity: Activity) {
         self.drop_unwanted_update();
-        self.state.activity = match &self.ready {
-            Some(ready) => Activity::Ready {
-                version: ready.version.clone(),
-            },
-            None => activity,
+        self.quiet = false;
+        self.replacing = false;
+        let Some(ready) = &self.ready else {
+            self.restart_requested = false;
+            self.state.activity = activity;
+            return;
+        };
+
+        let version = ready.version.clone();
+        self.state.activity = if self.restart_requested {
+            Activity::Installing { version }
+        } else if matches!(&self.state.activity, Activity::InstallFailed { version: failed } if *failed == version)
+        {
+            Activity::InstallFailed { version }
+        } else {
+            Activity::Ready { version }
         };
     }
 
@@ -213,12 +262,16 @@ impl Inner {
         }
     }
 
-    /// How long until the next timed check. Once an update is ready the timed checks stop: the next launch runs it, and
-    /// checks again from there.
+    /// How long until the next timed check. They go on behind an update on offer, since a newer one may follow; only
+    /// one that failed to install at download stops them, so that nothing asks for an administrator again unprompted.
     fn timed_check_interval(&self) -> Option<Duration> {
-        self.ready
-            .is_none()
-            .then(|| check_interval(self.state.stream))
+        let install_failed = self.installs_on_download
+            && self
+                .ready
+                .as_ref()
+                .is_some_and(|ready| ready.package.is_some());
+
+        (!install_failed).then(|| check_interval(self.state.stream))
     }
 
     /// A check found nothing to download, or failed.
@@ -227,23 +280,35 @@ impl Inner {
         self.settle(activity);
     }
 
-    /// A check found this version. Answers whether to download it: not if it's the one already ready.
+    /// A check found this version. Answers whether to download it: only if it's an update over the one already ready,
+    /// so that an older build never takes a newer one's place.
     fn found_update(&mut self, version: &str, at: u64) -> bool {
-        if self
-            .ready
-            .as_ref()
-            .is_some_and(|ready| ready.version == version)
-        {
+        let stream = self.state.stream;
+        let wanted = self.ready.as_ref().is_none_or(|ready| {
+            ready.version != version
+                && match (Version::parse(&ready.version), Version::parse(version)) {
+                    (Ok(ready), Ok(found)) => is_update(stream, &ready, &found),
+                    _ => true,
+                }
+        });
+        if !wanted {
             self.finish_check(Activity::UpToDate, at);
             return false;
         }
 
         self.state.checked_at = Some(at);
-        self.state.activity = Activity::Downloading {
-            version: version.to_owned(),
-            percent: None,
-        };
+        self.show_download(version, None);
         true
+    }
+
+    /// How far a download got, unless the check is quiet.
+    fn show_download(&mut self, version: &str, percent: Option<u8>) {
+        if !self.quiet {
+            self.state.activity = Activity::Downloading {
+                version: version.to_owned(),
+                percent,
+            };
+        }
     }
 
     fn set_ready(&mut self, ready: Ready) {
@@ -263,8 +328,9 @@ impl Inner {
     }
 
     /// The user asked to restart into the ready update. Answers whether the app is to restart right away, which it is
-    /// when the update is installed already; otherwise installing is queued. Nothing happens unless the update is on
-    /// offer: not while installing, so a second call changes nothing, and not while a check may be replacing it.
+    /// when the update is installed already and nothing is replacing it on disk; otherwise the restart is queued, to run
+    /// into whatever is ready once the job under way ends. Nothing happens unless the update is on offer: not while
+    /// installing, so a second call changes nothing, and not while a check the user sees may be replacing it.
     fn request_restart(&mut self) -> bool {
         if !matches!(
             self.state.activity,
@@ -275,11 +341,11 @@ impl Inner {
         let Some(ready) = &self.ready else {
             return false;
         };
-        let Some(package) = &ready.package else {
+        if ready.package.is_none() && !self.replacing {
             return true;
-        };
+        }
 
-        self.install_requested = Some((ready.version.clone(), Arc::clone(package)));
+        self.restart_requested = true;
         self.state.activity = Activity::Installing {
             version: ready.version.clone(),
         };
@@ -463,6 +529,7 @@ pub fn start(app: &AppHandle) {
                 Some(Job::Install { version, package }) => {
                     install(&app, updates, version, package).await;
                 }
+                Some(Job::Restart) => app.request_restart(),
                 None => {}
             }
             due = wait(updates).await;
@@ -590,12 +657,7 @@ async fn prepare(
                 let percent = percent_of(downloaded, total);
                 if percent != shown {
                     shown = percent;
-                    updates.change(app, |inner| {
-                        inner.state.activity = Activity::Downloading {
-                            version: version.clone(),
-                            percent,
-                        };
-                    });
+                    updates.change(app, |inner| inner.show_download(&version, percent));
                 }
             },
             || {},
@@ -612,6 +674,7 @@ async fn prepare(
         install: Box::new(move || update.install(&bytes)),
     });
     let package = if cfg!(target_os = "macos") {
+        updates.lock().replacing = true;
         install_now(package).await
     } else {
         Some(package)
@@ -1293,6 +1356,7 @@ mod tests {
         assert!(kept.is_some());
 
         let mut inner = waiting_inner("0.3.0-dev.216", kept);
+        inner.installs_on_download = true;
         assert_eq!(
             inner.state.activity,
             Activity::Ready {
@@ -1348,7 +1412,7 @@ mod tests {
             assert!(!inner.request_restart());
 
             assert_eq!(inner.state.activity, activity);
-            assert!(inner.install_requested.is_none());
+            assert!(!inner.restart_requested);
         }
     }
 
@@ -1360,5 +1424,191 @@ mod tests {
         };
 
         assert!(inner.request_restart());
+    }
+
+    /// A timed check behind the ready 0.3.0, taken.
+    fn quiet_inner(package: Option<Arc<Package>>) -> Inner {
+        let mut inner = inner();
+        inner.set_ready(Ready {
+            version: "0.3.0".to_owned(),
+            package,
+        });
+        assert!(matches!(inner.next_job(true), Some(Job::Check)));
+        assert!(inner.quiet);
+        inner
+    }
+
+    fn installing(version: &str) -> Activity {
+        Activity::Installing {
+            version: version.to_owned(),
+        }
+    }
+
+    #[test]
+    fn timed_checks_go_on_behind_an_update_on_offer() {
+        for installs_on_download in [false, true] {
+            let mut installed = ready_inner();
+            installed.installs_on_download = installs_on_download;
+            assert_eq!(
+                installed.timed_check_interval(),
+                Some(check_interval(Stream::Stable))
+            );
+        }
+
+        let mut waiting = waiting_inner("0.3.0-dev.216", package());
+        waiting.installs_on_download = false;
+        assert_eq!(
+            waiting.timed_check_interval(),
+            Some(check_interval(Stream::Development))
+        );
+    }
+
+    #[test]
+    fn a_quiet_check_leaves_the_offer_as_it_is_whatever_it_ends_in() {
+        for outcome in [
+            Activity::UpToDate,
+            Activity::NoRelease,
+            Activity::Failed {
+                reason: FailReason::Offline,
+            },
+        ] {
+            let mut inner = quiet_inner(None);
+            assert_eq!(inner.state.activity, ready_activity());
+
+            assert!(inner.found_update("0.4.0", 1700));
+            inner.show_download("0.4.0", Some(50));
+            assert_eq!(inner.state.activity, ready_activity());
+
+            inner.settle(outcome);
+            assert_eq!(inner.state.activity, ready_activity());
+            assert!(!inner.quiet);
+        }
+    }
+
+    #[test]
+    fn a_quiet_check_offers_the_newer_update_once_it_is_ready() {
+        let mut inner = quiet_inner(None);
+        assert!(inner.found_update("0.4.0", 1700));
+
+        inner.set_ready(Ready {
+            version: "0.4.0".to_owned(),
+            package: None,
+        });
+
+        assert_eq!(
+            inner.state.activity,
+            Activity::Ready {
+                version: "0.4.0".to_owned()
+            }
+        );
+    }
+
+    #[test]
+    fn a_quiet_check_keeps_a_failed_install_on_offer() {
+        let mut inner = inner();
+        inner.set_ready(Ready {
+            version: "0.3.0".to_owned(),
+            package: package(),
+        });
+        let failed = Activity::InstallFailed {
+            version: "0.3.0".to_owned(),
+        };
+        inner.state.activity = failed.clone();
+        assert!(matches!(inner.next_job(true), Some(Job::Check)));
+        assert_eq!(inner.state.activity, failed);
+
+        inner.finish_check(Activity::UpToDate, 1700);
+
+        assert_eq!(inner.state.activity, failed);
+    }
+
+    #[test]
+    fn an_older_build_never_takes_the_place_of_the_ready_one() {
+        let mut inner = quiet_inner(None);
+
+        assert!(!inner.found_update("0.2.5", 1700));
+
+        assert_eq!(inner.state.activity, ready_activity());
+        assert!(inner.found_update("0.3.1", 1800));
+    }
+
+    #[test]
+    fn a_manual_check_during_a_quiet_one_shows_at_once() {
+        let mut inner = quiet_inner(None);
+
+        inner.request_check();
+
+        assert!(!inner.quiet);
+        assert!(inner.state.manual);
+        assert_eq!(inner.state.activity, Activity::Checking);
+    }
+
+    #[test]
+    fn restarting_during_a_quiet_download_of_an_installed_update_is_immediate() {
+        let mut inner = quiet_inner(None);
+        assert!(inner.found_update("0.4.0", 1700));
+
+        assert!(inner.request_restart());
+    }
+
+    #[test]
+    fn restarting_while_the_app_on_disk_is_replaced_waits_and_takes_the_newer_update() {
+        let mut inner = quiet_inner(None);
+        assert!(inner.found_update("0.4.0", 1700));
+        inner.replacing = true;
+
+        assert!(!inner.request_restart());
+        assert_eq!(inner.state.activity, installing("0.3.0"));
+        // A second press changes nothing.
+        assert!(!inner.request_restart());
+
+        inner.set_ready(Ready {
+            version: "0.4.0".to_owned(),
+            package: None,
+        });
+        assert_eq!(inner.state.activity, installing("0.4.0"));
+
+        assert!(matches!(inner.next_job(true), Some(Job::Restart)));
+        assert_eq!(inner.state.activity, installing("0.4.0"));
+    }
+
+    #[test]
+    fn restarting_during_a_quiet_job_installs_the_newest_package_once_it_ends() {
+        let mut inner = quiet_inner(package());
+        assert!(inner.found_update("0.4.0", 1700));
+
+        assert!(!inner.request_restart());
+        // A check asked for meanwhile doesn't hide the waiting restart.
+        inner.request_check();
+        assert_eq!(inner.state.activity, installing("0.3.0"));
+
+        inner.set_ready(Ready {
+            version: "0.4.0".to_owned(),
+            package: package(),
+        });
+        assert_eq!(inner.state.activity, installing("0.4.0"));
+
+        match inner.next_job(false) {
+            Some(Job::Install { version, .. }) => assert_eq!(version, "0.4.0"),
+            _ => panic!("expected the install of 0.4.0"),
+        }
+    }
+
+    #[test]
+    fn a_waiting_restart_ends_when_its_update_is_dropped() {
+        let mut inner = Inner::new(&version("0.3.0-dev.214"), None, Stream::Stable, true);
+        inner.set_ready(Ready {
+            version: "0.2.0".to_owned(),
+            package: package(),
+        });
+        assert!(!inner.request_restart());
+        inner.state.stream = Stream::Development;
+
+        inner.finish_check(Activity::UpToDate, 1700);
+
+        assert!(inner.ready.is_none());
+        assert!(!inner.restart_requested);
+        assert_eq!(inner.state.activity, Activity::UpToDate);
+        assert!(inner.next_job(false).is_none());
     }
 }
