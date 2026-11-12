@@ -19,7 +19,7 @@ import { ReviewBlobStore } from '../ReviewBlobStore.js';
 import { ReviewFiles } from '../ReviewFiles.js';
 import type { PullRequestFiles } from '../ReviewFiles.js';
 import type { ReviewThread, ReviewThreadComment } from '../threads/ReviewThread.js';
-import type { ReviewCommentStatus } from './ReviewWriting.js';
+import type { ReviewCommentStatus, ReviewDiscardedComment } from './ReviewWriting.js';
 
 const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
 const PULL_REQUEST = 'PR_7';
@@ -321,6 +321,57 @@ test('what is typed is back after a reload, and what was sent is not', async () 
     await waitUntil(() => reloaded.model.writing.targets.length > 0, { timeoutMs: 2000 });
     expect(reloaded.model.writing.targets).toEqual([{ ...LINE, id: kept, headRefOid: HEAD }]);
     expect(reloaded.model.writing.getText(kept)).toBe('Not sent yet');
+});
+
+test('a discarded box leaves the disk; restored, it is back where it was with its text, and kept again', async () => {
+    const github = createGitHub();
+    const first = await open(github);
+    const kept = write(first.model, 'Kept');
+    const discarded = first.model.writing.open({ ...LINE, line: 9 });
+    first.model.writing.setText(discarded.id, 'Not wanted, or was it');
+
+    first.model.writing.discardBox(discarded.id);
+
+    expect(first.model.writing.targets.map(({ id }) => id)).toEqual([kept]);
+    const expected: ReviewDiscardedComment = { target: discarded, text: 'Not wanted, or was it' };
+    expect(first.model.writing.discarded).toEqual(expected);
+    const reloaded = await open(github, first.login);
+    await waitUntil(() => reloaded.model.writing.targets.length > 0, { timeoutMs: 2000 });
+    expect(reloaded.model.writing.targets.map(({ id }) => id)).toEqual([kept]);
+
+    expect(first.model.writing.restoreDiscarded()).toEqual(discarded);
+
+    expect(first.model.writing.discarded).toBeNull();
+    expect(first.model.writing.getText(discarded.id)).toBe('Not wanted, or was it');
+    const again = await open(github, first.login);
+    await waitUntil(() => again.model.writing.targets.length === 2, { timeoutMs: 2000 });
+    expect(again.model.writing.getText(discarded.id)).toBe('Not wanted, or was it');
+    expect(first.model.writing.restoreDiscarded()).toBeNull();
+});
+
+test('restored where a box was opened since, the text goes into that box, after a blank line, and no second one opens', async () => {
+    const github = createGitHub();
+    const { model } = await open(github);
+    const { writing } = model;
+    const first = write(model, 'Not wanted, or was it');
+    writing.discardBox(first);
+    const again = writing.open(LINE);
+    writing.setText(again.id, 'Started over');
+
+    expect(writing.restoreDiscarded()).toEqual(again);
+
+    expect(writing.targets).toEqual([again]);
+    expect(writing.getText(again.id)).toBe('Started over\n\nNot wanted, or was it');
+
+    const replyBox = writing.open(REPLY);
+    writing.setText(replyBox.id, 'Agreed');
+    writing.discardBox(replyBox.id);
+    const empty = writing.open(REPLY);
+
+    expect(writing.restoreDiscarded()).toEqual(empty);
+
+    expect(writing.targets).toEqual([again, empty]);
+    expect(writing.getText(empty.id)).toBe('Agreed');
 });
 
 test('a stale "no draft": GitHub refuses the single comment, the text stays, the draft is read, and it goes once, into the draft', async () => {

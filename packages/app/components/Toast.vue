@@ -1,4 +1,4 @@
-<!-- A message about something that happened in the background (reka-ui's `Toast`, inside a `Toaster`) — went wrong, went through in part, or a merge GitHub confirmed (`done`) — or a neutral one about what the user just did (T20): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc). A `brief` or `long` one closes by itself (not while hovered or focused), counting down in a ring around its ×; a `pinned` one stays until dismissed. Only the newest toast of the `Toaster` takes keys: its `commands` run and its key hints show, and Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
+<!-- A message about something that happened in the background (reka-ui's `Toast`, inside a `Toaster`) — went wrong, went through in part, or a merge GitHub confirmed (`done`) — or a neutral one about what the user just did (T20): an icon in its tone (or the one it is given), the title, what happened below it, and its actions — always "Dismiss" (Esc), or with `dismissOnEscape` off a Dismiss with no key, where Escape is the screen's (code review's discarded comment: Esc there leaves the review). A `brief` or `long` one closes by itself (not while hovered or focused), counting down in a ring around its ×; a `pinned` one stays until dismissed. Only the newest toast of the `Toaster` takes keys: its `commands` run and its key hints show, and Escape dismisses it unless something else has the key — a field being typed in, an open picker or menu. -->
 <script lang="ts">
 /**
  * How long a toast stays, in ms, by what it says:
@@ -57,8 +57,13 @@ const props = withDefaults(
      * them only then (`#actions`' `active`); an older toast keeps just those offered in the command menu, keyless.
      */
     commands?: readonly Command[];
+    /**
+     * Whether the newest toast takes Escape, shown on its Dismiss. Off where the screen's Escape must still work with
+     * the toast up: Dismiss then has no key, and Escape never closes it.
+     */
+    dismissOnEscape?: boolean;
   }>(),
-  { tone: 'danger', lasts: 'long', icon: undefined, commands: () => [] },
+  { tone: 'danger', lasts: 'long', icon: undefined, commands: () => [], dismissOnEscape: true },
 );
 
 const emit = defineEmits<{
@@ -87,6 +92,8 @@ const icons = {
 /** Its place in the order the `Toaster`'s toasts opened, while it is open. */
 const arrival = ref<number | null>(null);
 const active = computed(() => arrival.value != null && stack.isNewest(arrival.value));
+/** Escape is its own: it is the newest, and takes the key. */
+const takesEscape = computed(() => active.value && props.dismissOnEscape);
 const lifetime = computed(() => TOAST_LASTS[props.lasts]);
 const timed = computed(() => Number.isFinite(lifetime.value));
 /** When it opened, and whether reka's countdown has resumed since: see `getElapsed`. */
@@ -125,7 +132,7 @@ onWindowEvent(
     if (
       event.key !== 'Escape' ||
       event.defaultPrevented ||
-      !active.value ||
+      !takesEscape.value ||
       isEditableTarget(event.target) ||
       isLayerOpen()
     ) {
@@ -216,8 +223,8 @@ function getElapsed(remaining: number, total: number) {
         <Button
           variant="secondary"
           size="sm"
-          :kbd="active ? 'Escape' : undefined"
-          :keyshortcuts="active ? 'Escape' : undefined"
+          :kbd="takesEscape ? 'Escape' : undefined"
+          :keyshortcuts="takesEscape ? 'Escape' : undefined"
           @click="dismiss"
         >
           {{ t(l.dismiss) }}

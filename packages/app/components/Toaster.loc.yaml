@@ -1,2 +1,4 @@
 notifications:
   en: Notifications
+screenNotifications:
+  en: Messages of this screen ({hotkey})

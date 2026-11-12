@@ -943,14 +943,16 @@ test('a comment box sits under its line and what is under that, on its own half 
     expect(commentRow(unified, 'box19').above).toMatchObject({ kind: 'line', line: { newLine: 19 } });
 });
 
-test('a reply sits right under its thread, on its half; with its thread not shown, first, for its text to stay in sight', () => {
+test("a reply is inside its thread's row, the rows' keys staying as they were; with its thread not shown, first, for its text to stay in sight", () => {
     const thread = threadOnLine(19);
     const threads = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [thread]);
     const reply = { ...commentOn(19), id: 'reply', threadId: thread.id };
 
+    const without = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads });
     const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads, comments: [reply] });
-    expect(commentRow(rows, 'reply').row).toMatchObject({ inline: 'right' });
-    expect(commentRow(rows, 'reply').above?.kind).toBe('thread');
+    expect(commentRow(rows, 'reply').index).toBe(-1);
+    expect(rows.map(row => row.key)).toEqual(without.map(row => row.key));
+    expect(rows.find(row => row.kind === 'thread')).toMatchObject({ inline: 'right', replies: [reply] });
 
     const alone = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [reply] });
     expect(alone[0]).toMatchObject({ kind: 'comment', inline: null });

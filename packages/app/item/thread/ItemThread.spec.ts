@@ -400,6 +400,26 @@ test('a changed edit asks before it is let go: Esc asks, Esc again keeps editing
     expect(onEdit).not.toHaveBeenCalled();
 });
 
+test('while a changed edit asks, Enter on Keep editing keeps editing: only Enter in the text discards', async () => {
+    const onEdit = vi.fn();
+    await IssueInPanel.run({ args: { ...IssueInPanel.args, onEdit } });
+
+    await openMenu(MINE);
+    await userEvent.click(page.getByRole('menuitem', { name: 'Edit' }));
+    const editor = page.getByRole('textbox', { name: 'Edit comment' });
+    await userEvent.type(editor, ' Typed away.');
+    await userEvent.keyboard('{Escape}');
+    await userEvent.tab();
+    await expect.element(page.getByRole('button', { name: /^Keep editing/ })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(page.getByRole('status')).not.toBeInTheDocument();
+    await expect.element(editor).toHaveFocus();
+    await expect
+        .element(editor)
+        .toHaveValue('Opened #1205 — converting at creation and migrating existing series. Typed away.');
+});
+
 test("Cancel on the description's changed edit asks too: Keep editing goes back to the text, Discard puts the card back", async () => {
     await IssueInPanel.run();
 

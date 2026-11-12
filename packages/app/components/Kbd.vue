@@ -22,8 +22,12 @@ const props = withDefaults(
   defineProps<{
     /** The key in the app's notation (`Mod+Enter`, `Shift+O`, `Escape`); keys apart by spaces share the chip. */
     keys: string;
-    /** `onFill`: on a filled button (primary, light) — dark text on a translucent chip. `onDanger`: on a red fill (destructive) — white text in an outline. */
-    tone?: 'default' | 'onFill' | 'onDanger';
+    /**
+     * `onFill`: on a primary button — dark text on a translucent chip drawn in the accent's own colours (D39). `onLight`:
+     * the same on a light button, fainter, so a light button recoloured red still reads AA. `onDanger`: on a red fill
+     * (destructive) — white text in an outline.
+     */
+    tone?: 'default' | 'onFill' | 'onLight' | 'onDanger';
     /** `sm`: inside a row's meta line ("Open on GitHub O"). */
     size?: 'sm' | 'md';
   }>(),
@@ -137,6 +141,12 @@ const parts = computed(() => {
 }
 
 .kbd_onFill {
+  color: $color-on-light;
+  background: rgba($color-on-light, 0.16);
+  border-color: rgba($color-on-light, 0.2);
+}
+
+.kbd_onLight {
   color: $color-on-light;
   background: rgba($color-on-light, 0.1);
   border-color: rgba($color-on-light, 0.2);

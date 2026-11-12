@@ -2,10 +2,21 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent } from 'storybook/test';
 
 import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
+import ReviewWrittenComment from '../writing/ReviewWrittenComment.vue';
+import type { ReviewCommentStatus, ReviewCommentTarget } from '../writing/ReviewWriting.js';
 import ReviewThreadRow from './ReviewThreadRow.vue';
 
 const HUNK = '@@ -212,3 +212,3 @@ export interface WorkoutPatch {\n title?: string\n-notes?: string\n+note?: string';
 const COMMIT = { oid: 'a91d03b0', abbreviatedOid: 'a91d03b' };
+const VIEWER = { login: 'mlaine', avatarUrl: '' };
+const REPLY: ReviewCommentTarget = {
+    id: 'reply',
+    path: 'src/sync/engine.ts',
+    side: 'after',
+    line: 47,
+    startLine: null,
+    threadId: 'T_1',
+};
 
 const meta = {
     component: ReviewThreadRow,
@@ -23,6 +34,40 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+/** The thread with its reply slot drawn as the review draws it: the box while written, the comment once sent. */
+const renderWithReply: NonNullable<Story['render']> = args => {
+    return {
+        components: { ReviewThreadRow, ReviewWrittenComment },
+        setup: () => ({ args, viewer: VIEWER, getStatus }),
+        template: `<div style="width: 1000px">
+          <ReviewThreadRow v-bind="args">
+            <template #reply="{ target }">
+              <ReviewWrittenComment
+                :target="target"
+                in-thread
+                repository="fitloop/webapp"
+                :item-number="1202"
+                text=""
+                :status="getStatus(target)"
+                :draft-open="false"
+                :draft-count="0"
+                :draft-first="false"
+                :focused="false"
+                reply-to="sofiab"
+                :author="viewer"
+              />
+            </template>
+          </ReviewThreadRow>
+        </div>`,
+    };
+
+    function getStatus(target: ReviewCommentTarget): ReviewCommentStatus {
+        return args.replies?.box?.id === target.id
+            ? { kind: 'editing' }
+            : { kind: 'sending', way: 'single', body: 'Agreed, migrating it.' };
+    }
+};
 
 /** CR2: under its line, on the right half in split, the comments' HTML as GitHub gave it, its links opening outside. */
 export const OnRightHalf: Story = {
@@ -183,12 +228,27 @@ export const FocusedWithKey: Story = {
     },
 };
 
-/** CR74: its box open under it, the field gives way and Resolve stays. */
+/** `Review / Thread · replying` (D39): the box inside the thread, in a band with the viewer's avatar; Resolve thread under it. */
 export const Replying: Story = {
-    args: { replying: true },
-    play: async ({ canvas }) => {
+    args: { replies: { sent: [], box: REPLY }, viewer: VIEWER, onSetResolved: fn() },
+    render: renderWithReply,
+    play: async ({ args, canvas }) => {
+        const thread = canvas.getByRole('group', { name: /^Thread by/u });
+        const box = await canvas.findByRole('group', { name: /^Reply.to.sofiab$/u });
         await expect(canvas.queryByRole('button', { name: 'Reply…' })).toBeNull();
-        await expect(canvas.getByRole('button', { name: 'Resolve' })).toBeVisible();
+        await expect(thread).toContainElement(box);
+        await userEvent.click(canvas.getByRole('button', { name: /^Resolve.thread$/u }));
+        await expect(args.onSetResolved).toHaveBeenCalledWith(true);
+    },
+};
+
+/** A reply on its way: the last of the thread's comments, and Reply… is back. */
+export const ReplySent: Story = {
+    args: { replies: { sent: [REPLY], box: null }, viewer: VIEWER },
+    render: renderWithReply,
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Agreed, migrating it.')).toBeVisible();
+        await expect(canvas.getByRole('button', { name: 'Reply…' })).toBeVisible();
     },
 };
 

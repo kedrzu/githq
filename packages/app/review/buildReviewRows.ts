@@ -42,7 +42,7 @@ const THREAD_LINE_HEIGHT = 48;
 const THREAD_CODE_HEIGHT = 110;
 /** What says all files are viewed, and the room around it. */
 const ALL_VIEWED_HEIGHT = 170;
-/** A comment box with one line of text. */
+/** A comment box with one line of text; a reply in a thread is estimated as one too. */
 export const COMMENT_BOX_HEIGHT = 144;
 
 /** The pinned head of a file's block (D24). */
@@ -148,9 +148,14 @@ export interface ReviewThreadRow {
     readonly placement: ThreadPlacement;
     /** Under a line of the diff: on which half in split, or in unified (D24). `null` when it has the file's width. */
     readonly inline: 'left' | 'right' | 'unified' | null;
+    /** The viewer's replies in it, being written or on their way: inside the thread, which keeps its key (D7, D39). */
+    readonly replies: readonly ReviewCommentTarget[];
 }
 
-/** A comment being written, placed like a thread, or under its file's header when its line isn't shown. Same key wherever it goes (D7). */
+/**
+ * A comment being written, placed like a thread, or under its file's header when its line isn't shown; a reply only when
+ * its thread isn't shown, being inside it otherwise. Same key wherever it goes (D7).
+ */
 export interface ReviewCommentRow {
     readonly kind: 'comment';
     readonly key: string;
@@ -624,36 +629,47 @@ interface InsertCommentRowsParams extends Pick<BuildFileLineRowsParams, 'path' |
     readonly comments: readonly ReviewCommentTarget[];
 }
 
-/** A file with no text here has only threads and boxes under its header: a reply after its thread, the others last. */
+/** A file with no text here has only threads and boxes under its header: a reply in its thread, the others last. */
 function insertBoxesUnderThreads(rows: readonly ReviewRow[], path: string, comments: readonly ReviewCommentTarget[]) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        const thread = findReplyThread(result, path, target);
-        if (thread === -1) {
-            result.push(createCommentRow(path, target, null));
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
         } else {
-            result.splice(thread + 1, 0, createCommentRow(path, target, null));
+            result.push(createCommentRow(path, target, null));
         }
     }
 
     return result;
 }
 
-function findReplyThread(rows: readonly ReviewRow[], path: string, { threadId }: ReviewCommentTarget) {
-    return threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
+/**
+ * The rows with a reply put into its thread's row; `null` for a comment that isn't a reply, or one whose thread isn't
+ * there.
+ * @__NO_SIDE_EFFECTS__
+ */
+function addReply(rows: readonly ReviewRow[], path: string, target: ReviewCommentTarget): ReviewRow[] | null {
+    const { threadId } = target;
+    const index = threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
+    const row = rows[index];
+    if (row?.kind !== 'thread') {
+        return null;
+    }
+
+    return rows.with(index, { ...row, replies: [...row.replies, target] });
 }
 
 /**
- * Each after its line and what already sits under it, a reply right after its thread; with its line or its thread not shown,
+ * Each after its line and what already sits under it, a reply inside its thread; with its line or its thread not shown,
  * first, for its text to stay in sight.
  */
 function insertCommentRows(rows: readonly ReviewRow[], { path, layout, comments }: InsertCommentRowsParams) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        const thread = findReplyThread(result, path, target);
-        const threadRow = result[thread];
-        if (threadRow?.kind === 'thread') {
-            result.splice(thread + 1, 0, createCommentRow(path, target, threadRow.inline));
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
             continue;
         }
 
@@ -695,7 +711,7 @@ function countShownLines(placements: readonly ThreadOnHiddenLine[]) {
 }
 
 function createThreadRow(path: string, placement: ThreadPlacement, inline: ReviewThreadRow['inline']): ReviewThreadRow {
-    return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline };
+    return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline, replies: [] };
 }
 
 function createCommentRow(
@@ -921,14 +937,23 @@ function estimatePlaceholderHeight({ file, part }: ReviewPlaceholderRow) {
     }
 }
 
-function estimateThreadHeight({ placement }: ReviewThreadRow) {
+/**
+ * About as drawn, for the scrollbar only: a resolved thread with no reply is one line, and each reply, its box or one on its
+ * way, adds a band. What is drawn is measured and kept (D7).
+ */
+function estimateThreadHeight({ placement, replies }: ReviewThreadRow) {
     const { thread } = placement;
-    if (thread.isResolved) {
+    if (thread.isResolved && replies.length === 0) {
         return THREAD_LINE_HEIGHT;
     }
 
     const hasCode = 'diffHunk' in placement && placement.diffHunk !== '';
-    return THREAD_FRAME_HEIGHT + thread.comments.length * COMMENT_HEIGHT + (hasCode ? THREAD_CODE_HEIGHT : 0);
+    return (
+        THREAD_FRAME_HEIGHT +
+        thread.comments.length * COMMENT_HEIGHT +
+        (hasCode ? THREAD_CODE_HEIGHT : 0) +
+        replies.length * COMMENT_BOX_HEIGHT
+    );
 }
 
 /**

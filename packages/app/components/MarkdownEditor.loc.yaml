@@ -26,11 +26,13 @@ mention:
   en: Mention someone
 reference:
   en: Reference an issue or pull request
-markdown:
-  en: Markdown
 previewEmpty:
   en: Nothing to preview.
 previewLoading:
   en: Loading the preview…
 previewFailed:
   en: The preview couldn't be loaded. What you wrote is kept.
+discard:
+  en: Discard
+more:
+  en: More formatting

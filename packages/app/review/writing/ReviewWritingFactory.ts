@@ -22,6 +22,7 @@ import type { ReviewThread } from '../threads/ReviewThread.js';
 import { NO_REVIEW_SUBMISSION, REVIEW_FINISH_IDLE } from './ReviewWriting.js';
 import type {
     ReviewCommentFailure,
+    ReviewDiscardedComment,
     ReviewCommentStatus,
     ReviewCommentTarget,
     ReviewCommentWay,
@@ -95,6 +96,7 @@ export const ReviewWritingFactory = defineFactory({
         const textsRef = shallowRef<ReadonlyMap<string, string>>(new Map());
         const statusesRef = shallowRef<ReadonlyMap<string, ReviewCommentStatus>>(new Map());
         const finishRef = shallowRef<ReviewFinishState>(REVIEW_FINISH_IDLE);
+        const discardedRef = shallowRef<ReviewDiscardedComment | null>(null);
         const submissionRef = shallowRef(NO_REVIEW_SUBMISSION);
         /** By thread: the state it shows, and who resolved it, until the threads read again say so themselves. */
         const resolvedRef = shallowRef<ReadonlyMap<string, ThreadResolution>>(new Map());
@@ -147,6 +149,14 @@ export const ReviewWritingFactory = defineFactory({
                 setRange,
                 hasCodeChanged,
                 close,
+                get discarded() {
+                    return discardedRef.value;
+                },
+                discardBox,
+                restoreDiscarded,
+                forgetDiscarded() {
+                    discardedRef.value = null;
+                },
                 getText: id => textsRef.value.get(id) ?? '',
                 setText,
                 getStatus: id => statusesRef.value.get(id) ?? EDITING,
@@ -211,12 +221,7 @@ export const ReviewWritingFactory = defineFactory({
         }
 
         function open(wanted: Omit<ReviewCommentTarget, 'id'>) {
-            const held = targetsRef.value.find(
-                ({ id, path, side, line, threadId }) =>
-                    threadId === wanted.threadId &&
-                    (threadId !== null || (path === wanted.path && side === wanted.side && line === wanted.line)) &&
-                    !isOnItsWay(id),
-            );
+            const held = findHeld(wanted);
             if (held) {
                 return held;
             }
@@ -225,6 +230,16 @@ export const ReviewWritingFactory = defineFactory({
             const target = { ...wanted, id: crypto.randomUUID(), headRefOid };
             targetsRef.value = [...targetsRef.value, target];
             return target;
+        }
+
+        /** The box being written in the same place: the same thread's reply, or a comment of its own on the same line. */
+        function findHeld(wanted: Omit<ReviewCommentTarget, 'id'>) {
+            return targetsRef.value.find(
+                ({ id, path, side, line, threadId }) =>
+                    threadId === wanted.threadId &&
+                    (threadId !== null || (path === wanted.path && side === wanted.side && line === wanted.line)) &&
+                    !isOnItsWay(id),
+            );
         }
 
         function isOnItsWay(id: string) {
@@ -252,6 +267,35 @@ export const ReviewWritingFactory = defineFactory({
             setInMap(textsRef, id, null);
             setInMap(statusesRef, id, null);
             forgetBox(id);
+        }
+
+        function discardBox(id: string) {
+            const target = targetsRef.value.find(other => other.id === id);
+            if (target) {
+                discardedRef.value = { target, text: textsRef.value.get(id) ?? '' };
+                close(id);
+            }
+        }
+
+        function restoreDiscarded() {
+            const restored = discardedRef.value;
+            if (!restored || dropped) {
+                return null;
+            }
+
+            discardedRef.value = null;
+            const { target, text } = restored;
+            // A box opened in its place since: the text goes into that one, after what it holds, rather than a second box.
+            const held = findHeld(target);
+            if (held) {
+                const written = textsRef.value.get(held.id) ?? '';
+                setText(held.id, written.trim() === '' ? text : `${written.trimEnd()}\n\n${text}`);
+                return held;
+            }
+
+            targetsRef.value = [...targetsRef.value, target];
+            setText(target.id, text);
+            return target;
         }
 
         function setText(id: string, text: string) {
@@ -758,6 +802,7 @@ export const ReviewWritingFactory = defineFactory({
             textsRef.value = new Map();
             statusesRef.value = new Map();
             finishRef.value = REVIEW_FINISH_IDLE;
+            discardedRef.value = null;
             submissionRef.value = NO_REVIEW_SUBMISSION;
             resolvedRef.value = new Map();
             resolveFailuresRef.value = new Map();

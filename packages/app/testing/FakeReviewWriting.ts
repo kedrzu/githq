@@ -34,6 +34,8 @@ export class FakeReviewWriting implements ReviewWriting {
     readonly canRetry = false;
     readonly canDismiss = false;
     readonly submission = NO_REVIEW_SUBMISSION;
+    /** An item thread discards no box: its reply editor asks, and nothing restores. */
+    readonly discarded = null;
 
     private readonly state = shallowReactive<FakeState>({
         targets: [],
@@ -96,6 +98,16 @@ export class FakeReviewWriting implements ReviewWriting {
         this.state.texts = withValue(this.state.texts, id, null);
         this.state.statuses = withValue(this.state.statuses, id, null);
     }
+
+    discardBox(id: string): void {
+        this.close(id);
+    }
+
+    restoreDiscarded(): null {
+        return null;
+    }
+
+    forgetDiscarded(): void {}
 
     getText(id: string): string {
         return this.state.texts.get(id) ?? '';

@@ -8,26 +8,26 @@ Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISI
 - [x] Activity / Editor (`OXAXr`): the footer's Markdown hint (icon `G7epo`, text `x0YOX`) is hidden. Before: file
   icon + "Markdown" at the left of the footer. After: nothing there, the buttons stay right. Every composer,
   reply box and editing box changes.
-- [ ] Button / medium · primary (`t0PlX5`): its key (`ZBaFq`) is drawn in the accent's own colours: fill
+- [x] Button / medium · primary (`t0PlX5`): its key (`ZBaFq`) is drawn in the accent's own colours: fill
   `#0D111729`, stroke `#0D111733`, glyph `#0D1117`. Before: the plain grey Kbd (`$bg-3`, `$border-2`,
   `$fg-2`) on the accent button. Every primary medium button changes.
-- [ ] Diff / File header (`pAbDY`): the Viewed toggle (`KQcKb`) padding 3 × 8 → 5 × 8 (4 px taller). Every file
+- [x] Diff / File header (`pAbDY`): the Viewed toggle (`KQcKb`) padding 3 × 8 → 5 × 8 (4 px taller). Every file
   header changes (collapsed and viewed too).
 
 ## The comment box (D39, D40)
 
-- [ ] Review / New comment (`SAmev`), in Thread parts › Writing · on the editor (`AeXsY`): replaces Review /
+- [x] Review / New comment (`SAmev`), in Thread parts › Writing · on the editor (`AeXsY`): replaces Review /
   Comment box (`T0DNU`, deleted) and `· code changed` (`Q7LSPI`, deleted). Built on Activity / Editor. Head:
   where it goes. Format toolbar: Suggest a change (icon `file-diff`, ⌘G) first, then a rule, then the editor's
   own buttons. Footer: Cancel Esc, the second key's button, the first key's primary button. States:
   `· draft open` (`c0AL2N`), `· code changed` (`QNL7n`), `· not sent` (`p3KpyQ`, red "Not sent: {reason}."
   line, text kept), `· asks to discard` (`y4kGY9`, footer: "Discard what you wrote?", Keep writing Esc,
   Discard ↵).
-- [ ] Review / Thread · replying (`eS728`): Activity / Code thread · replying with the review box, headed
+- [x] Review / Thread · replying (`eS728`): Activity / Code thread · replying with the review box, headed
   "Reply to …", no excerpt.
-- [ ] Inset under its line on its side, as a thread: CR90 (single line), CR91 (range, draft open, suggestion as
+- [x] Inset under its line on its side, as a thread: CR90 (single line), CR91 (range, draft open, suggestion as
   markdown), CR92 (reply), CR93 (unified: code changed, not sent).
-- [ ] Esc with text asks in place (CR97); after Discard, a toast "Comment on line 51 discarded" with Restore ⌘Z for
+- [x] Esc with text asks in place (CR97); after Discard, a toast "Comment on line 51 discarded" with Restore ⌘Z for
   ten seconds reopens the box with its text (CR98).
 - [x] Existing screens now use the new box: CR70, CR71, CR72, CR73, CR74, CR83, CR87 (labels as before).
 
@@ -81,9 +81,9 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   "Show 20 more hidden lines" (`E0Jd8z`). Caption: C takes the current file's line at the reading line.
 - [x] C acts on the current file's line at the reading line, or on its line nearest to it while the file is held off
   the line (D44, D32), so C, V and Space always hit the same file. Captions of CR70 and CR108 say so.
-- [ ] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
+- [x] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
   takes the question away and goes back to writing.
-- [ ] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`GlONd`); before, it showed Esc, which leaves
+- [x] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`GlONd`); before, it showed Esc, which leaves
   the review. The toast sits above the pending review's toolbar (`H3uqds`, new, as in CR35) at the foot of the diff
   (`UghpC`). Restore ⌘Z works only while no text field has focus. The Toast component itself is unchanged.
 - [x] Placeholders before the patch (D45, CR115 `mZUZV`, new screen, a copy of CR60): the patch is a separate,
@@ -155,3 +155,45 @@ Decisions amended: D42, D45.
 - [x] A gap never hides a single line; the CR62 notice goes on the first gap that still hides lines (D42).
 - [x] D45: placeholder rows hold the position as lines; 0/0 files only a header before the patch; a binary verdict's
   note survives a failed blob; a renamed 0/0 file is "Renamed, no changes" only with the same blobs.
+
+## While building M4 (2026-11-12)
+
+Decision followed: D39 ("a reply is the same box inside the thread").
+
+- [x] Review / Thread · replying (`eS728`), CR92: the reply is no longer a row of its own under the thread but inside
+  the thread's row, which keeps its key, so opening or closing it moves nothing above it (D7). While replying, the card
+  takes `$bg`, the band (`$bg-2`, avatar, the box) follows the comments, and Resolve thread has its own band under it.
+  Built with Review / Thread's (`ce2EO`) body, padding 12 × 14 and 12 between comments, not Activity / Code thread's
+  12 and 10 that the drawing inherits, so the comments stay exactly where they were when R opens the box (D7). The
+  drawing is unchanged: matching it would override the layout of an instance.
+- [x] A reply on its way shows as the thread's last comment ("Sending…" or Pending), not drawn in the file: as the item
+  thread's code thread does (F10); Reply… is back under it. A resolved thread folded stays one line until opened.
+- [x] Button / medium · primary's key: the code's `onFill` key is shared by the light button, which takes the same
+  16% fill.
+- [x] Diff / File header's Viewed toggle: 4 px taller inside the header's fixed 38 px, so the header and the pinned
+  header's push keep their heights.
+
+## Round · implementation, M4 decisions (2026-11-12)
+
+Forced by: the discard question became one mode of the shared Markdown editor (`MarkdownEditor`), used by the
+review's box and the item thread's edits alike, so it shows one icon.
+
+- [x] Review / New comment · asks to discard (`y4kGY9`): the question's icon (`Lu92c/bVk4m`) `circle-help` →
+  `circle-alert`, as `Activity / Comment · editing, discard?` (`BVHXx`) has it.
+
+## Round · agent brief, the editor's toolbar at narrow widths (2026-11-12)
+
+Asked (brief `.context/editor-toolbar-brief.md`): the shared Markdown editor's tools run past its edge in a narrow
+place (a reply in a split diff's right column, ~430 px); draw variants. Variant A folded whole tool groups into "⋯";
+Variant B put the tools on a second row. The owner picked A, with no keys in the menu (a settle round, same day).
+
+- [x] Activity / Editor · more tools (`pcGit`) and · open (`KYOL3`), new, in `Components · Activity › Writing`
+  (`WT7lw`) after `Activity / Editor` (`OXAXr`): the "⋯" button at the head's right, closed and pressed.
+- [x] Activity / Editor tools menu · two groups folded (`ujkXe`), new, in `Editor, composer and menus` (`QgFYf`): the
+  folded tools by icon and name, no keys, separators between groups.
+- [x] Activity / Editor tools · review, folded (`niV8c`), Review / New comment · tools folded (`N9dDSZ`), Review /
+  Thread · replying, tools folded (`r4Ect`), new, in `Components · Code review › Thread parts` (`SSotp`), column
+  `Writing · tools folded` (`E3gaOM`).
+- [x] App · Code review (`CEDLB`): new CR117 (a reply in a narrow column, groups folded into ⋯), CR118 (⋯ open), CR119
+  (full width, nothing folds), in a row after CR93/CR97/CR98; the frame grew 727 px and the 25 top-level nodes below
+  it (`BnN7r` with `epLfx`) moved down by the same.

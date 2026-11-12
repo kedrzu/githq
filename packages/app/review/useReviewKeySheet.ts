@@ -31,6 +31,7 @@ export const REVIEW_KEYS = {
     sendFirst: 'Mod+Enter',
     sendSecond: 'Mod+Shift+Enter',
     suggest: 'Mod+G',
+    restoreComment: 'Mod+Z',
     submit: 'Shift+S',
     fileList: 'Mod+B',
     conversation: 'Alt+Mod+B',

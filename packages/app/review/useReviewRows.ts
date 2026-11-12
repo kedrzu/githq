@@ -29,7 +29,10 @@ export interface UseReviewRowsOptions {
     currentPath: MaybeRefOrGetter<string | null>;
     /** Whether a collapsed file shows its threads under its header (D13). */
     threadsInCollapsed: MaybeRefOrGetter<boolean>;
-    /** The comment boxes open: rows are built of where they sit, never of what is typed in them. */
+    /**
+     * The comment boxes open and the replies on their way: rows are built of where they sit, never of what is typed in
+     * them.
+     */
     commentTargets: MaybeRefOrGetter<readonly ReviewCommentTarget[]>;
 }
 
