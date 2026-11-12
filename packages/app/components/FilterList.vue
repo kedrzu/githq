@@ -427,7 +427,7 @@ function onKeydown(event: KeyboardEvent) {
     border-radius: 7px;
 
     &[data-highlighted] {
-      background: $color-sel;
+      @include row-selected-surface;
     }
   }
 

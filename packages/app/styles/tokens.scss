@@ -454,9 +454,14 @@ $row-surface-inset: $spacing-2 $spacing-8;
 @mixin row-selected {
     &::after,
     &:hover::after {
-        background: $color-sel;
-        box-shadow: inset 0 0 0 1px rgba($color-accent, 0.3);
+        @include row-selected-surface;
     }
+}
+
+// What a selected row's surface looks like, for a row that is its own surface (the command menu's).
+@mixin row-selected-surface {
+    background: $color-sel;
+    box-shadow: inset 0 0 0 1px rgba($color-accent, 0.3);
 }
 
 // A line of an unfolded workflow that is its own button: the whole line is the hit area, its surface lights up, and
