@@ -171,7 +171,7 @@ test('a jump lands the file exactly at the top and it stays there as files arriv
     await expect(review.fileRow('file35.ts')).toHaveAttribute('aria-current', 'true');
 });
 
-test('a file arriving under a reader deep in its placeholder shows from its start, and stays the file the list is at', async ({
+test("a file arriving under a reader inside its patch's placeholder keeps the line read where it was, and stays the file the list is at (D45)", async ({
     page,
     github,
 }) => {
@@ -187,12 +187,17 @@ test('a file arriving under a reader deep in its placeholder shows from its star
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('rewritten.ts')).toBeVisible();
     await review.diff.hover();
-    await page.mouse.wheel(0, 3000);
-    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(3000);
+    await page.mouse.wheel(0, 1000);
+    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(1000);
+    // Line 60 of both sides, its numbers from the patch.
+    const placeholderLine = review.diff.getByText('60', { exact: true }).first();
+    await expect(placeholderLine).toBeInViewport();
+    const before = await placeholderLine.boundingBox();
 
     release();
-    await expect(review.code('const new0 = 1;')).toHaveCount(1);
-    await expect.poll(() => review.headerOffset('src/rewritten.ts')).toBe(0);
+    const arrived = review.code('const new59 = 1;');
+    await expect(arrived).toHaveCount(1);
+    await expect.poll(async () => (await arrived.boundingBox())?.y).toBe(before?.y);
     await expect(review.fileRow('rewritten.ts')).toHaveAttribute('aria-current', 'true');
 });
 
@@ -353,6 +358,32 @@ test("a file that fails says GitHub's words in place and marks its row, the othe
     await review.diff.getByRole('button', { name: 'Try again' }).click();
     await expect(review.code('export const client = 2;')).toBeVisible();
     await expect(review.diff.getByText("Couldn't fetch this file")).toHaveCount(0);
+});
+
+test("before any blob is known, a binary file says so and a file's placeholder has its patch's numbers and gaps; its blobs only add the sizes and the code (D45)", async ({
+    page,
+    github,
+}) => {
+    const review = new ReviewScreenHarness(page);
+    let release = () => {};
+    await openPullRequest(page, github, answered => {
+        release = answered.holdBlobs([ENGINE, LOGO]);
+    });
+
+    await page.keyboard.press('d');
+    await review.fileRow('engine.ts').click();
+    // The hunk starts 3 lines above the change at line 61, its numbers from its header.
+    await expect(review.placeholderGaps.filter({ hasText: '57 lines above' })).toBeVisible();
+    await expect(review.diff.getByText('58', { exact: true }).first()).toBeVisible();
+    await review.fileRow('logo.png').click();
+    await expect(review.diff.getByText('Binary file, nothing to diff', { exact: true })).toBeVisible();
+
+    release();
+    await expect(review.diff.getByText(/^Binary file, nothing.to.diff.·.\d/u)).toBeVisible();
+    await review.fileRow('engine.ts').click();
+    await expect(review.code('const MAX_BATCH = 50;')).toBeVisible();
+    await expect(review.placeholderGaps).toHaveCount(0);
+    await expect(review.gaps.filter({ hasText: '57 lines above' })).toBeVisible();
 });
 
 test('the allowance running out pauses the missing files, saying when, while a viewed mark goes through; they come by themselves at the reset, without a reload', async ({
@@ -987,6 +1018,9 @@ test('a gap\'s arrows show 20 lines from their hunk and hold the row on that sid
     await expect(review.gap('14 lines')).toBeAttached();
     await expect(review.gapArrow('all')).toHaveAccessibleName('Show 14 lines');
 
+    // The command acts on a gap on screen: bring this one into view, wherever the window's height left it.
+    await review.gap('14 lines').evaluate(gap => gap.scrollIntoView({ block: 'center' }));
+    await expect(review.gap('14 lines')).toBeInViewport();
     await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
     await expect(review.gaps).toHaveCount(0);

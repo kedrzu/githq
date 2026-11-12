@@ -1,7 +1,14 @@
 import { expect, test } from 'bun:test';
 
+import { parsePatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import { assert } from '@nzyme/utils/assert.js';
+
+import { writeSamplePatch } from '@/testing/writeSamplePatch.js';
+
 import {
     buildFileLineRows,
+    buildPlaceholderRows,
     buildReviewRows,
     clampCommentRange,
     estimateReviewRowHeight,
@@ -21,6 +28,7 @@ import {
 } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReviewRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
+import type { FileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import { placeThreads } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
@@ -277,6 +285,60 @@ test('a placeholder is about as tall as the file, within limits', () => {
     expect(heights).toEqual([60, 800, 40_000]);
 });
 
+/**
+ * Each a file before and after: hunks merged across 6 unchanged lines and kept apart across 7, a change at the first line
+ * and at the last, a single line before the first hunk, runs of deleted and added lines of different lengths, an added and a deleted file.
+ */
+const PATCH_SAMPLES: readonly (readonly [string, string | null, string | null])[] = [
+    ['two hunks and one merged', lines(60), edit(lines(60), { 10: ['ten'], 17: ['seventeen', 'more'], 40: [] })],
+    ['kept apart by one line', lines(30), edit(lines(30), { 5: ['five'], 13: ['thirteen'] })],
+    ['7 lines apart, one line above', lines(20), edit(lines(20), { 5: ['five'], 13: ['thirteen'] })],
+    ['a change at line 2', lines(20), edit(lines(20), { 2: ['two'] })],
+    ['a hunk from line 2', lines(20), edit(lines(20), { 5: ['five'] })],
+    ['the first and the last line', lines(20), edit(lines(20), { 1: ['one', 'one b', 'one c'], 20: ['twenty'] })],
+    ['near the end', lines(20), edit(lines(20), { 18: [] })],
+    ['runs of different lengths', lines(40), edit(lines(40), { 10: [], 11: [], 12: ['x'], 25: ['a', 'b', 'c', 'd'] })],
+    ['added', null, lines(12)],
+    ['deleted', lines(12), null],
+];
+
+test.each(PATCH_SAMPLES)(
+    'a placeholder from the patch draws the rows its diff will, numbered the same, as tall: %s',
+    (_, before, after) => {
+        const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+        const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+        for (const layout of ['split', 'unified'] as const) {
+            const placeholder = buildPlaceholderRows({ file, layout, hideWhitespace: false });
+            const real = buildFileLineRows({ path: A.path, diff, layout });
+
+            expect(placeholder.map(describeRow)).toEqual(real.map(describeRow));
+            expect(sumHeights(placeholder)).toBe(sumHeights(real));
+        }
+    },
+);
+
+test('a placeholder from the patch tints its changed lines, but not with whitespace hidden', () => {
+    const diff = computeFileDiff({ before: lines(20), after: edit(lines(20), { 10: ['ten'] }), ...NO_IGNORE });
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+
+    const tints = (hideWhitespace: boolean) =>
+        buildPlaceholderRows({ file, layout: 'unified', hideWhitespace }).flatMap(row =>
+            row.part.kind === 'line' && row.part.line.kind === 'unified' ? [row.part.line.tint] : [],
+        );
+
+    expect(tints(false)).toEqual([null, null, null, 'deleted', 'added', null, null, null]);
+    expect(tints(true).every(tint => tint === null)).toBe(true);
+});
+
+test('a file with no patch, or no hunks in it, keeps the guess from its line counts', () => {
+    const guessed = (patch: ReviewFile['patch']) =>
+        buildPlaceholderRows({ file: { ...A, patch }, layout: 'split', hideWhitespace: false }).map(row => row.part);
+
+    expect(guessed(undefined)).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: null, verdict: null })).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: { hunks: [] }, verdict: null })).toEqual([{ kind: 'guess' }]);
+});
+
 test('a line held through a layout switch stays on the same line of the newer version', () => {
     const split = buildAll([A], 'split');
     const unified = buildAll([A], 'unified');
@@ -356,7 +418,7 @@ test('a line past what a file now holds lands on the nearest row above it, not a
     });
 });
 
-test('a placeholder held gives way to the top of its file, whatever it arrived as: how far into it the reader was means nothing there', () => {
+test('guessed bars held give way to the top of their file, whatever it arrived as: how far into them the reader was means nothing there', () => {
     const waiting = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'placeholder' }) });
     const held = waiting.find(row => row.kind === 'placeholder');
     if (!held) {
@@ -549,13 +611,62 @@ test('a file not arrived holds its header at the top; a thread is found by its k
     ).toMatchObject({ row: { key }, offset: 90, landing: 'arrived' });
 });
 
-test('a position inside a placeholder is kept as its file, for how far says nothing of what comes', () => {
+test('a position inside guessed bars is kept as its file, for how far says nothing of what comes', () => {
     const rows = buildReviewRows({ files: [A], getContent: () => ({ kind: 'placeholder' }) });
     const placeholder = rows.find(row => row.kind === 'placeholder');
 
     expect(getReviewPosition(placeholder!, -300)).toEqual({
         place: { kind: 'row', key: getReviewHeaderKey(A.path) },
         offset: 0,
+    });
+});
+
+test("a placeholder's line holds the position as the line it stands for, when the file arrives and across layouts", () => {
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(DIFF), verdict: null } };
+    const waiting = (layout: 'split' | 'unified') =>
+        buildReviewRows({
+            files: [file, B],
+            getContent: () => ({
+                kind: 'placeholder',
+                rows: buildPlaceholderRows({ file, layout, hideWhitespace: false }),
+            }),
+        });
+    const split = waiting('split');
+    const held = split.find(
+        row =>
+            row.kind === 'placeholder' &&
+            row.part.kind === 'line' &&
+            row.part.line.kind === 'split' &&
+            row.part.line.right?.line === 19,
+    );
+    assert(held);
+
+    expect(getReviewPosition(held, -40)).toEqual({
+        place: { kind: 'line', path: A.path, side: 'after', line: 19 },
+        offset: -40,
+    });
+
+    const arrived = buildAll([A, B], 'split');
+    expect(findReplacementRow({ key: held.key, offset: -40, previous: split, next: arrived })).toEqual({
+        row: lineWithAfter(arrived, 19),
+        offset: -40,
+    });
+
+    const unified = waiting('unified');
+    const switched = findReplacementRow({ key: held.key, offset: -40, previous: split, next: unified });
+    expect(switched?.offset).toBe(-40);
+    expect(
+        switched?.row.kind === 'placeholder' && switched.row.part.kind === 'line' && switched.row.part.line,
+    ).toMatchObject({
+        kind: 'unified',
+        newLine: 19,
+    });
+
+    const position = getReviewPosition(held, -40);
+    expect(findReviewPositionRow({ position, rows: unified, order: [A.path, B.path] })).toMatchObject({
+        row: { key: switched?.row.key },
+        offset: -40,
+        landing: 'fileWaiting',
     });
 });
 
@@ -614,6 +725,60 @@ function lineWithAfter(rows: readonly ReviewRow[], line: number): ReviewRow {
     return found;
 }
 
+/** The lines replaced, by their 1-based number in the older version; an empty array deletes the line. */
+function edit(text: string, replaced: Readonly<Record<number, readonly string[]>>) {
+    return text
+        .split('\n')
+        .slice(0, -1)
+        .flatMap((line, index) => replaced[index + 1] ?? [line])
+        .map(line => `${line}\n`)
+        .join('');
+}
+
+/** The layout of the patch git would write of our own diff: GitHub's own may pair or place a change differently (D6), and D7 absorbs it. */
+function toPatchLayout(diff: FileDiff): PatchLayout {
+    const layout = parsePatchLayout(writeSamplePatch(diff).patch ?? '');
+    assert(layout);
+    return layout;
+}
+
+/** A row by what it shows: a line's numbers on each side, or a gap's count, which the patch can't say at the file's end. */
+function describeRow(row: ReviewRow): string {
+    switch (row.kind) {
+        case 'line':
+            return row.line.layout === 'split'
+                ? `${row.line.left?.line ?? '-'}|${row.line.right?.line ?? '-'}`
+                : `${row.line.oldLine ?? '-'}|${row.line.newLine ?? '-'}`;
+        case 'gap':
+            return row.atFileEnd ? 'gap:end' : `gap:${row.hidden}`;
+        case 'placeholder': {
+            const { part } = row;
+            if (part.kind === 'gap') {
+                return part.gap.way === 'down' ? 'gap:end' : `gap:${part.gap.hidden}`;
+            }
+
+            if (part.kind !== 'line') {
+                return part.kind;
+            }
+
+            return part.line.kind === 'split'
+                ? `${part.line.left?.line ?? '-'}|${part.line.right?.line ?? '-'}`
+                : `${part.line.oldLine ?? '-'}|${part.line.newLine ?? '-'}`;
+        }
+        default:
+            return row.kind;
+    }
+}
+
+function sumHeights(rows: readonly ReviewRow[]) {
+    let total = 0;
+    for (const row of rows) {
+        total += estimateReviewRowHeight(row);
+    }
+
+    return total;
+}
+
 function lines(count: number) {
     return Array.from({ length: count }, (_, index) => `line ${index + 1}\n`).join('');
 }
@@ -650,6 +815,21 @@ test('a push having reset what was expanded, only the first gap says so', () => 
             .map(() => false),
     ]);
     expect(rows.filter(row => row.kind === 'gap').length).toBeGreaterThan(1);
+});
+
+test("a push's reset is said by the first gap still hiding lines, past one whose lines all show for a thread; by the first alone when none does (CR62)", () => {
+    const build = (text: string) => {
+        const after = text.replace('line 1\n', 'line one\n').replace('line 10\n', 'line ten\n');
+        const diff = computeFileDiff({ before: text, after, ...NO_IGNORE });
+        const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(6, { id: 'gapEnd' })]);
+        return buildFileLineRows({ path: A.path, diff, layout: 'split', expansionReset: true, threads }).flatMap(row =>
+            row.kind === 'gap' ? [[row.firstLine, row.hidden, row.expansionReset]] : [],
+        );
+    };
+
+    // Lines 5 and 6 all show for the thread on 6; 14 to 30 stay hidden.
+    expect(build(lines(30))).toEqual([[14, 17, true]]);
+    expect(build(lines(10))).toEqual([[5, 0, true]]);
 });
 
 test('each kind of gap has its arrows: up at the top of a file, down at its end, both between hunks, one for a short gap', () => {

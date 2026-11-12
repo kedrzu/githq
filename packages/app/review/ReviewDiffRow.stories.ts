@@ -3,7 +3,13 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
-import { buildFileLineRows, buildReviewRows, getReviewHeaderKey, getReviewRowPath } from './buildReviewRows.js';
+import {
+    buildFileLineRows,
+    buildPlaceholderRows,
+    buildReviewRows,
+    getReviewHeaderKey,
+    getReviewRowPath,
+} from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
@@ -52,6 +58,22 @@ const GAPS_DIFF = computeFileDiff({
     ignoreWhitespace: false,
 });
 const GAPS_FILE = file('src/sync/outbox.ts', 3, 3);
+/**
+ * The same class's patch, its first change two deleted lines for one added: a gap at its top, a long and a short one
+ * between hunks, and one after the last, whose count the patch doesn't know.
+ */
+const PATCH_FILE = file('src/sync/outbox.ts', 3, 4, {
+    patch: {
+        layout: {
+            hunks: [
+                { beforeStart: 27, afterStart: 27, lines: '   --+   ' },
+                { beforeStart: 67, afterStart: 66, lines: '   -+   ' },
+                { beforeStart: 82, afterStart: 81, lines: '   -+   ' },
+            ],
+        },
+        verdict: null,
+    },
+});
 /** 1,200 lines, changed at 1,100: numbers of four digits. */
 const LONG_BEFORE = Array.from({ length: 1200 }, (_, index) => `const kept${index + 1} = ${index + 1};`).join('\n');
 const LONG_DIFF = computeFileDiff({
@@ -224,6 +246,26 @@ export const PlaceholderSplit: Story = { render: () => renderRows(placeholderRow
 /** CR89: the same files unified, the same lines in one column. */
 export const PlaceholderUnified: Story = { render: () => renderRows(placeholderRows(), { layout: 'unified' }) };
 
+/** CR111: a file on its way drawn from its patch, split (D45): its lines' numbers, its changed runs paired as the diff pairs them, tinted, and its gaps, still. */
+export const PatchPlaceholderSplit: Story = {
+    render: () => renderRows(patchPlaceholderRows('split', false), { layout: 'split' }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('26 lines above')).toBeVisible();
+        await expect(canvas.getByText('32 lines')).toBeVisible();
+        await expect(canvas.getByText('8 lines')).toBeVisible();
+    },
+};
+
+/** CR111: the same, unified. */
+export const PatchPlaceholderUnified: Story = {
+    render: () => renderRows(patchPlaceholderRows('unified', false), { layout: 'unified' }),
+};
+
+/** CR113: with whitespace hidden the same layout, every bar grey: which lines stay changed isn't known yet. */
+export const PatchPlaceholderWhitespaceHidden: Story = {
+    render: () => renderRows(patchPlaceholderRows('split', true), { layout: 'split' }),
+};
+
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
 
@@ -377,7 +419,21 @@ export const BinaryNew: Story = {
         ),
 };
 
-/** CR65: a submodule, which has no size. */
+/** D45: renamed with no lines changed, as its patch says, from the first frame. */
+export const RenamedUnchanged: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('src/sync/queue.ts', 0, 0, { changeType: 'RENAMED', previousPath: 'src/sync/replay.ts' }), {
+                kind: 'renamedUnchanged',
+            }),
+        ),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Renamed, no changes')).toBeVisible();
+        await expect(canvas.getByText('Open on GitHub')).toBeVisible();
+    },
+};
+
+/** CR65: a submodule, which has no size; also a binary file its patch says is one, before its blob gives the sizes (D45). */
 export const BinaryNoSize: Story = {
     render: () => renderRows(fileRows(FILE, { kind: 'binary', before: null, after: null })),
 };
@@ -512,6 +568,14 @@ function placeholderRows() {
         file('src/sync/outbox.ts', 22, 0, { changeType: 'ADDED' }),
         file('src/sync/pending.ts', 0, 18, { changeType: 'DELETED' }),
     ].flatMap(shown => fileRows(shown, { kind: 'placeholder' }));
+}
+
+/** {@link PATCH_FILE} on its way, its header first. */
+function patchPlaceholderRows(layout: DiffLayout, hideWhitespace: boolean) {
+    return fileRows(PATCH_FILE, {
+        kind: 'placeholder',
+        rows: buildPlaceholderRows({ file: PATCH_FILE, layout, hideWhitespace }),
+    });
 }
 
 interface RenderRowsOptions {

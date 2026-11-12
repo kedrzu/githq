@@ -1,4 +1,4 @@
-<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag or ⇧click for a range (CR73), all told by the event to whoever decides. Under the pointer it turns accent and underlined, a comment icon in the margin before it (D43); a line a comment is being written on has it in accent. The column is as wide as the file's largest number needs with the icon before it, so the icon never sticks out of its cell. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. -->
+<!-- A line's number in a diff, which starts a comment there (D32, CR70): a click on one line, a press and a drag or ⇧click for a range (CR73), all told by the event to whoever decides. Under the pointer it turns accent and underlined, a comment icon in the margin before it (D43); a line a comment is being written on has it in accent. The column is as wide as the file's largest number needs with the icon before it, so the icon never sticks out of its cell. Out of the Tab order: a file would be hundreds of stops, and `C` does the same from the keyboard. A row with no line on this side has an empty cell. A still one, of a file on its way (D45), is the number alone, as wide. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { MessageSquarePlus } from 'lucide-vue-next';
@@ -11,6 +11,8 @@ defineProps<{
   largest: number;
   /** A comment is being written on the line: in accent. */
   commented?: boolean;
+  /** Only the number, which nothing can be done to: the file isn't here yet. */
+  still?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -25,8 +27,9 @@ const t = useTranslate();
     :class="css.diffLineNumber"
     :style="{ '--diff-line-number-digits': String(largest).length }"
   >
+    <template v-if="line !== null && still">{{ line }}</template>
     <button
-      v-if="line !== null"
+      v-else-if="line !== null"
       type="button"
       :class="[css.diffLineNumber_button, commented && css.diffLineNumber_button_commented]"
       tabindex="-1"

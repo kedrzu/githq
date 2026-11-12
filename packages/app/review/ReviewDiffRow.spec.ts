@@ -2,7 +2,7 @@ import { composeStories } from '@storybook/vue3-vite';
 import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
-import { estimateReviewRowHeight } from './buildReviewRows.js';
+import { estimateReviewRowHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type { ReviewGapRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
 
@@ -14,6 +14,8 @@ const {
     FourDigitsSplit,
     FourDigitsUnified,
     Gaps,
+    PatchPlaceholderSplit,
+    PatchPlaceholderUnified,
     Split,
     SplitColoured,
     SplitCommented,
@@ -54,6 +56,24 @@ test("a gap is drawn as tall as estimated: two arrows between hunks, one at a fi
     await ExpansionResetNothingHidden.run();
     // No arrow at all.
     expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 })));
+});
+
+test("a placeholder from the patch is drawn as tall as estimated, which is the diff's: its lines a line each, its gaps a gap's height", async () => {
+    const gap = estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40 }));
+    const lastGap = estimateReviewRowHeight(gapRow({ hidden: 30, afterStart: 10, afterEnd: 40, atFileEnd: true }));
+    for (const story of [PatchPlaceholderSplit, PatchPlaceholderUnified]) {
+        await story.run();
+        const rows = [...document.querySelectorAll('[class*="reviewDiffRow_block"]')];
+        const isGap = (row: Element) => row.querySelector('[tid="review-placeholder-gap"]') !== null;
+        const height = (row: Element) => row.getBoundingClientRect().height;
+
+        // A gap at the top, two between hunks, one after the last, which the block's own edge follows.
+        expect(rows.filter(isGap).map(height)).toEqual([gap, gap, gap, lastGap]);
+        const lines = rows.filter(row => !isGap(row));
+        expect(lines.length).toBeGreaterThan(20);
+        expect(lines.every(row => height(row) === LINE_HEIGHT)).toBe(true);
+        expect(rows.filter(isGap).every(row => row.querySelector('button, [tabindex]') === null)).toBe(true);
+    }
 });
 
 test('with the keyboard on an arrow, the count says what ↵ does; a click leaves it the count', async () => {

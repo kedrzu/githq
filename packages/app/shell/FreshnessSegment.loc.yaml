@@ -89,6 +89,10 @@ fetching:
   en: Fetching file contents · {here} of {total} here, the rest as they come
 fetchingListed:
   en: Fetching file contents · {here} of {total} here, the rest as they come · the list is complete
+readingChanges:
+  en: Reading the changes
+readingChangesPages:
+  en: Reading the changes · {read} of {pages} pages
 fetchingFirst:
   en: Fetching {name} first, then the other {others}
 fetchingOnly:

@@ -11,13 +11,15 @@ import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { countThreads } from './threads/countThreads.js';
 import type { ThreadCounts } from './threads/countThreads.js';
 import type { ThreadOnHiddenLine, ThreadOnLine, ThreadPlacement } from './threads/placeThreads.js';
+import { buildPatchPlaceholder } from './utils/getPlaceholderMask.js';
+import type { PlaceholderGap, PlaceholderSplitLine, PlaceholderUnifiedLine } from './utils/getPlaceholderMask.js';
 import type { ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 /** How many unchanged lines show around a change. */
 export const CONTEXT_LINES = 3;
 /** Nothing a path can hold, so a key's first part is always its file. */
 const KEY_SEPARATOR = '\0';
-/** A placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
+/** A guessed placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
 const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
 /** A line of code's height, which is also what ↓ and ↑ scroll by. */
@@ -87,22 +89,36 @@ export interface ReviewGapRow {
     readonly expansionReset: boolean;
 }
 
-/** A file not read or not computed yet: quiet bars about as tall as its diff (D35). */
+/**
+ * A file not read or not computed yet, in rows as tall as its diff's (D35, D45): quiet bars guessed from its line counts
+ * (D38), or a line or a gap of its patch, and the line saying a jump is fetching it ahead of the rest (CR61).
+ */
 export interface ReviewPlaceholderRow {
     readonly kind: 'placeholder';
     readonly key: string;
     readonly file: ReviewFile;
-    /** A jump is fetching it ahead of the rest, and it says so (CR61). */
-    readonly first: boolean;
+    readonly part: ReviewPlaceholderPart;
 }
+
+/** What a placeholder's row draws. */
+export type ReviewPlaceholderPart =
+    | { readonly kind: 'fetchingFirst' }
+    | { readonly kind: 'guess' }
+    | {
+          readonly kind: 'line';
+          readonly line: PlaceholderSplitLine | PlaceholderUnifiedLine;
+          /** The patch's largest line number, which the number columns are as wide as. */
+          readonly largest: number;
+      }
+    | { readonly kind: 'gap'; readonly gap: PlaceholderGap };
 
 /** A file with nothing to show as a diff, saying why. */
 export interface ReviewNoticeRow {
     readonly kind: 'notice';
     readonly key: string;
     readonly file: ReviewFile;
-    readonly notice: 'binary' | 'empty' | 'tooLarge';
-    /** Nothing of either side for `empty`. */
+    readonly notice: 'binary' | 'empty' | 'renamedUnchanged' | 'tooLarge';
+    /** Nothing of either side for `empty` and `renamedUnchanged`. */
     readonly sizes: ReviewFileSizes;
 }
 
@@ -198,11 +214,18 @@ export type ReviewRow =
 
 /** What shows under a file's header. */
 export type ReviewFileContent =
-    | { readonly kind: 'placeholder'; readonly first?: boolean }
+    /** `rows` from {@link buildPlaceholderRows}, guessed bars if not given. */
+    | {
+          readonly kind: 'placeholder';
+          readonly first?: boolean;
+          readonly rows?: readonly ReviewPlaceholderRow[];
+      }
     | { readonly kind: 'collapsed' }
     /** Gone from the diff (D12): nothing but its threads. */
     | { readonly kind: 'gone' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
+    /** Renamed, its blobs the same on both sides (D45). */
+    | { readonly kind: 'renamedUnchanged' }
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
     | { readonly kind: 'failed'; readonly error: Error }
     | { readonly kind: 'paused'; readonly until: number }
@@ -266,11 +289,24 @@ export function buildReviewRows({
             case 'gone':
                 break;
             case 'placeholder':
+                if (content.first === true) {
+                    rows.push({
+                        kind: 'placeholder',
+                        key: path + KEY_SEPARATOR + 'placeholderFirst',
+                        file,
+                        part: { kind: 'fetchingFirst' },
+                    });
+                }
+
+                rows.push(...(content.rows ?? [createGuessRow(file)]));
+                break;
+            case 'renamedUnchanged':
                 rows.push({
-                    kind: 'placeholder',
-                    key: path + KEY_SEPARATOR + 'placeholder',
+                    kind: 'notice',
+                    key: path + KEY_SEPARATOR + 'notice',
                     file,
-                    first: content.first === true,
+                    notice: content.kind,
+                    sizes: { before: null, after: null },
                 });
                 break;
             case 'binary':
@@ -328,6 +364,51 @@ export function buildReviewRows({
     return rows;
 }
 
+export interface BuildPlaceholderRowsParams {
+    readonly file: ReviewFile;
+    readonly layout: DiffLayout;
+    readonly hideWhitespace: boolean;
+}
+
+/**
+ * The rows of a file still on its way (D45): in its patch's layout when it has one with hunks, as many as the diff that
+ * replaces it has with whitespace shown and nothing expanded, so that it moves nothing as it arrives; guessed bars from
+ * its line counts otherwise (D38). The keys are unique per layout, like a diff's.
+ *
+ * A patch's layout is close, not exact: GitHub's diff is git's, ours another algorithm (D6), which may pair or place a
+ * change differently, and a last hunk ending with a full context may or may not have lines after it. D7 absorbs that.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function buildPlaceholderRows({
+    file,
+    layout,
+    hideWhitespace,
+}: BuildPlaceholderRowsParams): ReviewPlaceholderRow[] {
+    const patch = file.patch?.layout;
+    if (!patch || patch.hunks.length === 0) {
+        return [createGuessRow(file)];
+    }
+
+    const { rows, largest } = buildPatchPlaceholder({
+        path: file.path,
+        patch,
+        layout,
+        tinted: !hideWhitespace,
+        context: CONTEXT_LINES,
+    });
+    return rows.map((row, index): ReviewPlaceholderRow => ({
+        kind: 'placeholder',
+        key: file.path + KEY_SEPARATOR + 'placeholder' + KEY_SEPARATOR + index + KEY_SEPARATOR + layout,
+        file,
+        part: row.kind === 'placeholderGap' ? { kind: 'gap', gap: row } : { kind: 'line', line: row, largest },
+    }));
+}
+
+function createGuessRow(file: ReviewFile): ReviewPlaceholderRow {
+    return { kind: 'placeholder', key: file.path + KEY_SEPARATOR + 'placeholder', file, part: { kind: 'guess' } };
+}
+
 export interface BuildFileLineRowsParams {
     readonly path: string;
     readonly diff: FileDiff;
@@ -335,7 +416,7 @@ export interface BuildFileLineRowsParams {
     readonly layout: DiffLayout;
     /** The lines shown beyond the context. */
     readonly expanded?: readonly DiffLineRange[];
-    /** A push reset the context expanded in the file: its first gap says so. */
+    /** A push reset the context expanded in the file: its first gap that still hides lines says so (CR62). */
     readonly expansionReset?: boolean;
     /** The file's threads as placed on this diff: their rows go in where they belong. */
     readonly threads?: readonly ThreadPlacement[];
@@ -359,7 +440,7 @@ export function buildFileLineRows({
     threads = [],
     comments = [],
 }: BuildFileLineRowsParams): ReviewRow[] {
-    let resetToSay = expansionReset;
+    let resetToSay = expansionReset && threads.length === 0;
     const rows = buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
@@ -384,7 +465,7 @@ export function buildFileLineRows({
     });
 
     const withThreads = insertCommentRows(
-        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows,
+        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }) : rows,
         { path, layout, comments },
     );
     if (!isOnlyWhitespaceChanged(diff)) {
@@ -409,7 +490,10 @@ function isWholeFile({ atFileEnd, range }: ReviewGapRow) {
     return atFileEnd && range.afterStart === 0;
 }
 
-interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'diff' | 'syntax' | 'layout'> {
+interface InsertThreadRowsParams extends Pick<
+    BuildFileLineRowsParams,
+    'path' | 'diff' | 'syntax' | 'layout' | 'expansionReset'
+> {
     readonly rows: readonly ReviewRow[];
     readonly threads: readonly ThreadPlacement[];
 }
@@ -417,9 +501,10 @@ interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 
 /**
  * The rows with the threads in: those that found no line first (D30), those on a line right after it, and those on hidden
  * lines with their code by their gap, the nearer a change above it before the gap and the nearer one below it after, which
- * keeps them in the order of the lines.
+ * keeps them in the order of the lines. A push's reset is said by the first gap still hiding lines once the threads' code
+ * shows, or by the first gap alone when none does (CR62).
  */
-function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertThreadRowsParams) {
+function insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }: InsertThreadRowsParams) {
     const result: ReviewRow[] = [];
     const underRows = groupByToMap(
         threads.filter(placement => placement.kind === 'onLine'),
@@ -435,20 +520,25 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
         }
     }
 
+    const gaps = rows.filter(row => row.kind === 'gap');
+    const resetKey = expansionReset
+        ? (gaps.find(gap => gap.hidden > countShownLines(inGaps.get(gap.range.afterStart) ?? [])) ?? gaps[0])?.key
+        : undefined;
     for (const row of rows) {
         if (row.kind === 'gap') {
             const inGap = (inGaps.get(row.range.afterStart) ?? []).toSorted(
                 (a, b) => getGapOffset(a, a.line) - getGapOffset(b, b.line),
             );
+            const saysReset = row.key === resetKey;
             pushPieces(inGap.filter(placement => placement.direction === 'down'));
             const last = inGap.at(-1);
-            if (last && row.atFileEnd && !isWholeFile(row) && !row.expansionReset) {
+            if (last && row.atFileEnd && !isWholeFile(row) && !saysReset) {
                 pushFileEnd(row, getGapOffset(last, last.line) + 1);
             } else {
                 const hidden = row.hidden - countShownLines(inGap);
                 // Nothing left of it but a push to say, which only it can.
-                if (hidden > 0 || row.expansionReset) {
-                    result.push({ ...row, hidden });
+                if (hidden > 0 || saysReset) {
+                    result.push({ ...row, hidden, expansionReset: saysReset });
                 }
             }
 
@@ -646,12 +736,13 @@ export interface ReviewGapStep {
 
 /**
  * The arrows a gap has (D42): at a file's top only up, there being no hunk above it, at its end only down, and one for
- * all of it with no more than {@link GAP_STEP} lines hidden.
+ * all of it with no more than {@link GAP_STEP} lines hidden. A gap of a file still on its way gets the arrows its file's
+ * gap will have (D45).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapArrows(gap: ReviewGapRow): ReviewGapArrows {
-    if (gap.hidden <= GAP_STEP) {
+export function getGapArrows(gap: ReviewGapRow | PlaceholderGap): ReviewGapArrows {
+    if (gap.hidden !== null && gap.hidden <= GAP_STEP) {
         return 'all';
     }
 
@@ -687,7 +778,11 @@ export function getGapSize({ range }: ReviewGapRow) {
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapWay(gap: ReviewGapRow): ReviewGapDirection | null {
+export function getGapWay(gap: ReviewGapRow | PlaceholderGap): ReviewGapDirection | null {
+    if (gap.kind === 'placeholderGap') {
+        return gap.way;
+    }
+
     if (gap.atFileEnd) {
         return 'down';
     }
@@ -780,8 +875,7 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'line':
             return LINE_HEIGHT;
         case 'gap':
-            // The arrows and the edges: none under a file's last gap, the block's own following it.
-            return GAP_ARROW_HEIGHT + (row.atFileEnd ? 1 : 2);
+            return getGapHeight(row.atFileEnd);
         case 'distance':
         case 'fileEnd':
             return 26;
@@ -792,7 +886,7 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'comment':
             return COMMENT_BOX_HEIGHT;
         case 'placeholder':
-            return getPlaceholderHeight(row.file) + (row.first ? FETCHING_FIRST_HEIGHT : 0);
+            return estimatePlaceholderHeight(row);
         case 'notice':
         case 'failed':
         case 'paused':
@@ -807,6 +901,26 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
     }
 }
 
+/** The arrows and the edges: none under a file's last gap, the block's own following it. */
+function getGapHeight(atFileEnd: boolean) {
+    return GAP_ARROW_HEIGHT + (atFileEnd ? 1 : 2);
+}
+
+function estimatePlaceholderHeight({ file, part }: ReviewPlaceholderRow) {
+    switch (part.kind) {
+        case 'fetchingFirst':
+            return FETCHING_FIRST_HEIGHT;
+        case 'guess':
+            return getPlaceholderHeight(file);
+        case 'line':
+            return LINE_HEIGHT;
+        case 'gap':
+            return getGapHeight(part.gap.way === 'down');
+        default:
+            return assertNever(part);
+    }
+}
+
 function estimateThreadHeight({ placement }: ReviewThreadRow) {
     const { thread } = placement;
     if (thread.isResolved) {
@@ -818,7 +932,7 @@ function estimateThreadHeight({ placement }: ReviewThreadRow) {
 }
 
 /**
- * How tall a file's placeholder is, its real height too: about what its diff will take.
+ * How tall a file's guessed placeholder is, its real height too: about what its diff will take.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -842,18 +956,18 @@ export interface ReviewPosition {
 }
 
 /**
- * Where a row at that distance from the top is. Inside a file not here, how far says nothing of what will replace it: its
- * header, at the top.
+ * Where a row at that distance from the top is. A placeholder's line is the line it stands for (D45). Anywhere else
+ * inside a file not here, how far says nothing of what will replace it: its header, at the top.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function getReviewPosition(row: ReviewRow, offset: number): ReviewPosition {
     const path = getReviewRowPath(row.key);
-    if (row.kind === 'placeholder' || row.kind === 'paused') {
+    const line = getRowLine(row);
+    if (!line && (row.kind === 'placeholder' || row.kind === 'paused')) {
         return { place: { kind: 'row', key: getReviewHeaderKey(path) }, offset: 0 };
     }
 
-    const line = getRowLine(row);
     return { place: line ? { kind: 'line', path, ...line } : { kind: 'row', key: row.key }, offset };
 }
 
@@ -876,7 +990,8 @@ export interface FindReviewPositionRowParams {
 /** The row a position lands on now, and how far that is from what it asked for. */
 export interface ReviewPositionRow extends ReviewRowReplacement {
     /**
-     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its header, until they are.
+     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its placeholder's line or its header,
+     * until they are.
      * `fileMissing`: the file isn't among the rows, the next one standing in.
      */
     readonly landing: 'arrived' | 'fileWaiting' | 'fileMissing';
@@ -919,12 +1034,9 @@ export function findReviewPositionRow({
         return next && { ...next, landing: 'fileMissing' };
     }
 
-    if (isFileWaiting(rows, start)) {
-        return { row: header, offset: 0, landing: 'fileWaiting' };
-    }
-
     const nearest = place.kind === 'line' ? findNearestLineRow(rows, start, place) : null;
-    return nearest ? { row: nearest, offset, landing: 'arrived' } : { row: header, offset: 0, landing: 'arrived' };
+    const landing = isFileWaiting(rows, start) ? 'fileWaiting' : 'arrived';
+    return nearest ? { row: nearest, offset, landing } : { row: header, offset: 0, landing };
 }
 
 function isFileWaiting(rows: readonly ReviewRow[], header: number) {
@@ -963,9 +1075,10 @@ export interface ReviewRowReplacement {
  * What to hold in place when the row held is gone from the new rows, because the layout or the whitespace setting
  * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
- * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
- * for a placeholder or a file waiting for the allowance: how far into it the reader was says nothing about what replaced
- * it, often much shorter, so its file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
+ * the last file, what now follows that file, which is at the same place; a placeholder's line counting as the line it
+ * stands for (D45). All at the same distance from the top, but for a placeholder's gap or guessed bars or a file waiting
+ * for the allowance: how far into it the reader was says nothing about what replaced it, often much shorter, so its file
+ * shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
  *
  * A file gone from the rows, marked viewed with those hidden or filtered away, gives way to the next file still there, or
  * the last before it when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the
@@ -992,8 +1105,9 @@ export function findReplacementRow({
         return findNextFileHeader({ key, offset, previous, next, order });
     }
 
+    const place = held ? getRowLine(held) : null;
     if (
-        held?.kind === 'placeholder' ||
+        (held?.kind === 'placeholder' && !place) ||
         held?.kind === 'paused' ||
         held?.kind === 'end' ||
         held?.kind === 'allViewed' ||
@@ -1003,7 +1117,6 @@ export function findReplacementRow({
         return { row: header, offset: 0 };
     }
 
-    const place = held ? getRowLine(held) : null;
     const first = next[start + 1] ?? header;
     if (!place) {
         return { row: first, offset };
@@ -1143,6 +1256,16 @@ function getRowLine(row: ReviewRow): RowLine | null {
             return { side: 'after', line: row.lines.start + 1 };
         case 'comment':
             return { side: row.target.side, line: row.target.line };
+        case 'placeholder': {
+            if (row.part.kind !== 'line') {
+                return null;
+            }
+
+            const after = getPlaceholderLineNumber(row.part.line, 'after');
+            return after === null
+                ? { side: 'before', line: getPlaceholderLineNumber(row.part.line, 'before') ?? 1 }
+                : { side: 'after', line: after };
+        }
         default:
             return null;
     }
@@ -1155,6 +1278,8 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
             return getLineNumber(row.line, side);
         case 'gap':
             return side === 'after' ? row.firstLine : row.firstOlderLine;
+        case 'placeholder':
+            return row.part.kind === 'line' ? getPlaceholderLineNumber(row.part.line, side) : null;
         default:
             return null;
     }
@@ -1162,6 +1287,17 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
 
 function getLineNumber(line: DiffSplitRow | DiffUnifiedRow, side: RowLine['side']): number | null {
     if (line.layout === 'split') {
+        return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
+    }
+
+    return side === 'after' ? line.newLine : line.oldLine;
+}
+
+function getPlaceholderLineNumber(
+    line: PlaceholderSplitLine | PlaceholderUnifiedLine,
+    side: RowLine['side'],
+): number | null {
+    if (line.kind === 'split') {
         return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
     }
 

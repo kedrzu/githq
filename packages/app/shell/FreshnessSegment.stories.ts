@@ -124,6 +124,9 @@ export const LandedLeft: Story = {
     args: { freshness: { kind: 'landing', at: 'left', number: 1202, file: 'engine.ts', line: 47 } },
 };
 
+/** CR115: a review's patches being read, more than one page of them. */
+export const ReadingChanges: Story = { args: { freshness: { kind: 'readingChanges', read: 3, pages: 30 } } };
+
 /** GitHub didn't give a review's threads: the files stay usable, and it says so. */
 export const ThreadsUnread: Story = { args: { freshness: { kind: 'threadsUnread' } } };
 

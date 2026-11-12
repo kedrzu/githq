@@ -269,6 +269,11 @@ export class ReviewScreenHarness {
         return this.diff.locator('[tid="review-gap"]');
     }
 
+    /** Every gap of a file still on its way (D45): its patch's gap rows, which nothing acts on. */
+    get placeholderGaps(): Locator {
+        return this.diff.locator('[tid="review-placeholder-gap"]');
+    }
+
     /** A gap in the diff by what its count says, "94 lines", which it says while the pointer is not on it. */
     gap(count: string): Locator {
         return this.gaps.filter({ has: this.page.getByText(count, { exact: true }) });
