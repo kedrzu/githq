@@ -14,6 +14,7 @@ import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
 import { useCommentFailureText } from '@/review/writing/useCommentFailureText.js';
 import { useResolveFailureText } from '@/review/writing/useResolveFailureText.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
+import { isFocusStayingInside } from '@/utils/isFocusStayingInside.js';
 
 import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import { getUrlAnchor } from './getUrlAnchor.js';
@@ -106,9 +107,7 @@ function isLinked(comment: ReviewThreadCommentData) {
 }
 
 function onFocusOut(event: FocusEvent) {
-  const { currentTarget, relatedTarget } = event;
-  focused.value =
-    currentTarget instanceof Element && relatedTarget instanceof Node && currentTarget.contains(relatedTarget);
+  focused.value = isFocusStayingInside(event);
 }
 </script>
 

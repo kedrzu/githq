@@ -9,6 +9,7 @@ import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
 import MarkdownEditor from '@/components/MarkdownEditor.vue';
+import { isFocusStayingInside } from '@/utils/isFocusStayingInside.js';
 
 import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import { getCommentWays } from './getCommentWays.js';
@@ -174,19 +175,15 @@ function onInput() {
 
 // Moving between its text, tools and buttons, the focus stays in the box.
 function onFocusIn(event: FocusEvent) {
-  if (!isInside(event)) {
+  if (!isFocusStayingInside(event)) {
     emit('focus');
   }
 }
 
 function onFocusOut(event: FocusEvent) {
-  if (!isInside(event)) {
+  if (!isFocusStayingInside(event)) {
     emit('blur');
   }
-}
-
-function isInside({ currentTarget, relatedTarget }: FocusEvent) {
-  return currentTarget instanceof Node && relatedTarget instanceof Node && currentTarget.contains(relatedTarget);
 }
 
 // After the editor's: `⌘↵` it reports as `submit`, and a key its suggestions took is theirs.
