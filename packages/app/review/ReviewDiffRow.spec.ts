@@ -59,7 +59,7 @@ test("a gap is drawn as tall as estimated: two arrows between hunks, one at a fi
     expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 })));
 });
 
-test('a thread is drawn as tall as estimated, relative to it bare: its reply box open, a reply on its way, resolved with one', async () => {
+test('a resolved thread is drawn as the one line estimated, a reply on its way leaving it one; a reply is only estimated', async () => {
     await ThreadReplying.run();
     await expect.element(page.getByRole('group', { name: 'Reply to sofiab' })).toBeVisible();
     const rows: ReviewRow[] = ThreadReplying.parameters.rows;
@@ -67,13 +67,11 @@ test('a thread is drawn as tall as estimated, relative to it bare: its reply box
         thread => thread.closest('[class*="reviewDiffRow"]')!.getBoundingClientRect().height,
     );
     const estimated = rows.map(estimateReviewRowHeight);
-    const relative = (heights: number[]) => heights.map(height => height - heights[0]!);
 
     expect(drawn).toHaveLength(5);
-    // The bare one's comments are estimated, not measured; what each state adds to them is exact.
-    expect(relative(drawn.slice(0, 3))).toEqual(relative(estimated.slice(0, 3)));
-    // Resolved, a reply on its way or not, it is one line.
-    expect(drawn.slice(3)).toEqual(estimated.slice(3));
+    // Resolved: one line, as estimated, and still one with a reply on its way, though that is estimated open.
+    expect(drawn[3]).toBe(estimated[3]);
+    expect(drawn[4]).toBe(drawn[3]);
 });
 
 test("a placeholder from the patch is drawn as tall as estimated, which is the diff's: its lines a line each, its gaps a gap's height", async () => {

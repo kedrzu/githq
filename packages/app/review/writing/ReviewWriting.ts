@@ -120,7 +120,10 @@ export interface ReviewWriting {
     readonly discarded: ReviewDiscardedComment | null;
     /** Closes a box, remembering it with its text as {@link discarded} in place of the one before (D40). */
     discardBox(id: string): void;
-    /** Opens the box last discarded again where it was, with its text and lines; `null` with none. */
+    /**
+     * Opens the box last discarded again where it was, with its text and lines; `null` with none. With a box opened in its
+     * place since, its text goes into that one, after a blank line if it holds any, and that box is returned.
+     */
     restoreDiscarded(): ReviewCommentTarget | null;
     /** Its toast went: it can no longer be restored. */
     forgetDiscarded(): void;

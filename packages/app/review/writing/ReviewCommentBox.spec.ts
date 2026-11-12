@@ -93,6 +93,23 @@ test('Escape on a box with text asks in its footer; Enter in the text discards, 
     await expect.element(field).toHaveValue(SingleFirst.args.text ?? '');
 });
 
+test('while it asks, Enter on Keep writing keeps writing: only Enter in the text discards', async () => {
+    const onDiscard = vi.fn();
+    await SingleFirst.run({ args: { ...SingleFirst.args, onDiscard } });
+    const field = page.getByRole('textbox');
+    const question = page.getByText('Discard what you wrote?');
+
+    await userEvent.click(field);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.tab();
+    await expect.element(page.getByRole('button', { name: /^Keep writing/ })).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(question).not.toBeInTheDocument();
+    await expect.element(field).toHaveFocus();
+    expect(onDiscard).not.toHaveBeenCalled();
+});
+
 test('typing takes the question away, Escape on it keeps writing, and Cancel asks as Escape does', async () => {
     const onDiscard = vi.fn();
     const onSend = vi.fn();

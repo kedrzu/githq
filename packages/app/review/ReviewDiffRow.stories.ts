@@ -12,7 +12,7 @@ import {
     getReviewHeaderKey,
     getReviewRowPath,
 } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow, ReviewRowComment, ReviewThreadRow } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
@@ -22,7 +22,7 @@ import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
 import ReviewWrittenComment from './writing/ReviewWrittenComment.vue';
-import type { ReviewCommentStatus } from './writing/ReviewWriting.js';
+import type { ReviewCommentStatus, ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -661,7 +661,7 @@ function threadReplyRows(): ReviewThreadRow[] {
         inline: 'right',
         thread: sampleThread({ isResolved: true }),
     });
-    const reply: ReviewRowComment = {
+    const reply: ReviewCommentTarget = {
         id: 'reply',
         path: FILE.path,
         side: 'after',
@@ -669,7 +669,7 @@ function threadReplyRows(): ReviewThreadRow[] {
         startLine: null,
         threadId: open.placement.thread.id,
     };
-    const sent: ReviewRowComment = { ...reply, id: 'sent', onItsWay: true };
+    const sent: ReviewCommentTarget = { ...reply, id: 'sent' };
     return [
         { ...open, key: 'bare' },
         { ...open, key: 'replying', replies: [reply] },
@@ -686,13 +686,13 @@ function getReplies(row: ReviewRow) {
     }
 
     return {
-        sent: row.replies.filter(reply => reply.onItsWay),
-        box: row.replies.find(reply => !reply.onItsWay) ?? null,
+        sent: row.replies.filter(reply => reply.id === 'sent'),
+        box: row.replies.find(reply => reply.id !== 'sent') ?? null,
     };
 }
 
-function getStatus(target: ReviewRowComment): ReviewCommentStatus {
-    return target.onItsWay
+function getStatus(target: ReviewCommentTarget): ReviewCommentStatus {
+    return target.id === 'sent'
         ? { kind: 'sending', way: 'single', body: 'Agreed, migrating it now instead of clearing the store.' }
         : { kind: 'editing' };
 }

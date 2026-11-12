@@ -136,6 +136,11 @@ export const Empty: Story = {};
 /** `Activity / Composer · writing`: text typed. */
 export const Typed: Story = { args: { modelValue: TYPED } };
 
+/** `· asks to discard` (D40): the caller's question and Keep in place of its buttons, Discard beside it. */
+export const AsksToDiscard: Story = {
+    args: { modelValue: TYPED, asking: true, question: 'Discard what you wrote?', keepLabel: 'Keep writing' },
+};
+
 /** `Activity / Editor · preview`: GitHub's rendering of the text, the tools hidden. */
 export const Preview: Story = {
     args: { modelValue: TYPED },

@@ -298910,7 +298910,7 @@
                       "width": "fill_container",
                       "descendants": {
                         "bVk4m": {
-                          "icon": "circle-help",
+                          "icon": "circle-alert",
                           "fill": "$amber",
                           "enabled": true
                         },

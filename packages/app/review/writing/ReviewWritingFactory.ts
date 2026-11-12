@@ -221,12 +221,7 @@ export const ReviewWritingFactory = defineFactory({
         }
 
         function open(wanted: Omit<ReviewCommentTarget, 'id'>) {
-            const held = targetsRef.value.find(
-                ({ id, path, side, line, threadId }) =>
-                    threadId === wanted.threadId &&
-                    (threadId !== null || (path === wanted.path && side === wanted.side && line === wanted.line)) &&
-                    !isOnItsWay(id),
-            );
+            const held = findHeld(wanted);
             if (held) {
                 return held;
             }
@@ -235,6 +230,16 @@ export const ReviewWritingFactory = defineFactory({
             const target = { ...wanted, id: crypto.randomUUID(), headRefOid };
             targetsRef.value = [...targetsRef.value, target];
             return target;
+        }
+
+        /** The box being written in the same place: the same thread's reply, or a comment of its own on the same line. */
+        function findHeld(wanted: Omit<ReviewCommentTarget, 'id'>) {
+            return targetsRef.value.find(
+                ({ id, path, side, line, threadId }) =>
+                    threadId === wanted.threadId &&
+                    (threadId !== null || (path === wanted.path && side === wanted.side && line === wanted.line)) &&
+                    !isOnItsWay(id),
+            );
         }
 
         function isOnItsWay(id: string) {
@@ -280,6 +285,14 @@ export const ReviewWritingFactory = defineFactory({
 
             discardedRef.value = null;
             const { target, text } = restored;
+            // A box opened in its place since: the text goes into that one, after what it holds, rather than a second box.
+            const held = findHeld(target);
+            if (held) {
+                const written = textsRef.value.get(held.id) ?? '';
+                setText(held.id, written.trim() === '' ? text : `${written.trimEnd()}\n\n${text}`);
+                return held;
+            }
+
             targetsRef.value = [...targetsRef.value, target];
             setText(target.id, text);
             return target;

@@ -119,7 +119,6 @@ import type {
   ReviewGapRow,
   ReviewGapStep,
   ReviewRow,
-  ReviewRowComment,
   ReviewThreadRow,
 } from './buildReviewRows.js';
 import type { DiffLineSide } from './diff/buildDiffRows.js';
@@ -268,9 +267,6 @@ const hideViewed = computed({
 const allFiles = computed(() => files.value?.files ?? []);
 const writing = computed(() => files.value?.writing ?? null);
 const commentTargets = computed(() => writing.value?.targets ?? NO_TARGETS);
-/** The same object for a reply on its way while it is, so the rows of its file rebuild only when that changes. */
-const onItsWay = new WeakMap<ReviewCommentTarget, ReviewRowComment>();
-const rowComments = computed(() => commentTargets.value.map(getRowComment));
 const commentPaths = computed(() => new Set(commentTargets.value.map(target => target.path)));
 /** By file: what is being written on, for its lines to be tinted. */
 const commentedLines = computed(() => {
@@ -410,7 +406,7 @@ const { rows: fileRows, threadPlacements } = useReviewRows({
   hideWhitespace,
   currentPath,
   threadsInCollapsed,
-  commentTargets: rowComments,
+  commentTargets,
 });
 watch(threadPlacements, next => (placements.value = next), { flush: 'sync', immediate: true });
 /** CR63: with every file viewed and those hidden, what is left stays under a block saying so. */
@@ -1675,19 +1671,9 @@ function findThread(id: string) {
   return files.value?.threads.find(thread => thread.id === id);
 }
 
-/** Its box, the one reply still being written or refused, and the replies on their way, as its row placed them. */
+/** Its box, the one reply still being written or refused, and the replies on their way. */
 function getThreadReplies({ replies }: ReviewThreadRow): ReviewThreadReplies {
-  return { sent: replies.filter(reply => reply.onItsWay), box: replies.find(reply => !reply.onItsWay) ?? null };
-}
-
-function getRowComment(target: ReviewCommentTarget): ReviewRowComment {
-  if (target.threadId === null || canEdit(target.id)) {
-    return target;
-  }
-
-  const held = onItsWay.get(target) ?? { ...target, onItsWay: true };
-  onItsWay.set(target, held);
-  return held;
+  return { sent: replies.filter(reply => !canEdit(reply.id)), box: replies.find(reply => canEdit(reply.id)) ?? null };
 }
 
 /** Who a reply answers: who wrote in the thread, the viewer aside (CR74). */

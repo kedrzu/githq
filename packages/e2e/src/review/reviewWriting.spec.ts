@@ -336,6 +336,27 @@ test('a discarded comment comes back from its toast, with Restore or ⌘Z outsid
     await expect(toast).toBeHidden();
 });
 
+test('restored where a box was opened since, the comment goes into that box after its text, one box on the line', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Second go');
+
+    await review.discardedToast.getByRole('button', { name: /^Restore/ }).click();
+
+    await expect(review.commentBox('Comment on line 20')).toHaveCount(1);
+    const field = review.commentField('Comment on line 20');
+    await expect(field).toHaveValue('Second go\n\nNot sure yet');
+    await expect(field).toBeFocused();
+});
+
 test('⌘Z in a text field is the field’s: the discarded comment stays in its toast', async ({ page, github }) => {
     const { review } = await openWriting(page, github);
     await review.lineNumber(20).click();
@@ -783,6 +804,32 @@ test('a reply box opens inside its thread and closes again, the thread and what 
     await page.keyboard.press('Escape');
     await expect(review.commentBox('Reply to sofiab')).toBeHidden();
     await expect(review.thread('First thread here').getByRole('button', { name: 'Reply…' })).toBeVisible();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+});
+
+test('restored where its thread was replied to again, the reply goes into that box, the thread staying put (D7)', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { threads: OPEN_THREADS });
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    const at = await review.threadOffset('First thread here');
+    await page.keyboard.press('r');
+    await page.keyboard.type('Agreed');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    await expect(review.commentBox('Reply to sofiab')).toBeHidden();
+    await page.keyboard.press('r');
+    await expect(review.commentField('Reply to sofiab')).toBeFocused();
+
+    await review.discardedToast.getByRole('button', { name: /^Restore/ }).click();
+
+    await expect(review.commentBox('Reply to sofiab')).toHaveCount(1);
+    const field = review.commentField('Reply to sofiab');
+    await expect(field).toHaveValue('Agreed');
+    await expect(field).toBeFocused();
     expect(await review.threadOffset('First thread here')).toBe(at);
 });
 

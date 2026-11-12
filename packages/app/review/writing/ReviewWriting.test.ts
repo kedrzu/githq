@@ -349,6 +349,31 @@ test('a discarded box leaves the disk; restored, it is back where it was with it
     expect(first.model.writing.restoreDiscarded()).toBeNull();
 });
 
+test('restored where a box was opened since, the text goes into that box, after a blank line, and no second one opens', async () => {
+    const github = createGitHub();
+    const { model } = await open(github);
+    const { writing } = model;
+    const first = write(model, 'Not wanted, or was it');
+    writing.discardBox(first);
+    const again = writing.open(LINE);
+    writing.setText(again.id, 'Started over');
+
+    expect(writing.restoreDiscarded()).toEqual(again);
+
+    expect(writing.targets).toEqual([again]);
+    expect(writing.getText(again.id)).toBe('Started over\n\nNot wanted, or was it');
+
+    const replyBox = writing.open(REPLY);
+    writing.setText(replyBox.id, 'Agreed');
+    writing.discardBox(replyBox.id);
+    const empty = writing.open(REPLY);
+
+    expect(writing.restoreDiscarded()).toEqual(empty);
+
+    expect(writing.targets).toEqual([again, empty]);
+    expect(writing.getText(empty.id)).toBe('Agreed');
+});
+
 test('a stale "no draft": GitHub refuses the single comment, the text stays, the draft is read, and it goes once, into the draft', async () => {
     const github = createGitHub();
     const { model, writes } = await open(github);

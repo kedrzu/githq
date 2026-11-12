@@ -1,4 +1,4 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The footer's left is empty unless the caller puts something there (a question). The keys a caller acts on in the text (`keyshortcuts`) are announced on it. -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The keys a caller acts on in the text (`keyshortcuts`) are announced on it. While the caller has it ask (`asking`, D40), its footer asks whether to discard what is written: the caller's question with an amber circle-alert, and Keep (`Escape`, the caller's label) and Discard (`Enter`) in place of the caller's buttons. The cursor goes to the text, where Enter discards rather than starting a line; Enter on a button, a tab or a tool does what that one does; Escape keeps writing, and typing anything takes the question away. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -21,6 +21,7 @@ import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
 import {
   AtSign,
   Bold,
+  CircleAlert,
   Code,
   Hash,
   Heading,
@@ -32,7 +33,7 @@ import {
   TextQuote,
 } from 'lucide-vue-next';
 import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoot, ToolbarSeparator } from 'reka-ui';
-import { computed, nextTick, ref, useTemplateRef } from 'vue';
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue';
 import type { PropType } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -41,6 +42,7 @@ import GitHubHtml from '@/item/GitHubHtml.vue';
 import { RenderMarkdownCommand } from '@/services/RenderMarkdownCommand.js';
 
 import { applyMarkdownTool } from './applyMarkdownTool.js';
+import Button from './Button.vue';
 import type { MarkdownTool } from './applyMarkdownTool.js';
 import * as l from './MarkdownEditor.loc.js';
 import MarkdownSuggestions from './MarkdownSuggestions.vue';
@@ -53,7 +55,8 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
 // (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
 // suggest; the caller's tool, first in the head; the keys the caller acts on in the text area, in `aria-keyshortcuts`'
-// notation, announced on it.
+// notation, announced on it; whether its footer asks to discard what is written (the caller turns it on, Keep or typing
+// turns it off), the question and the label of the button keeping what is written.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
@@ -61,6 +64,9 @@ const props = defineProps({
   itemNumber: { type: Number, default: undefined },
   tool: { type: Object as PropType<MarkdownEditorTool | null>, default: null },
   keyshortcuts: { type: String, default: undefined },
+  asking: { type: Boolean, default: false },
+  question: { type: String, default: '' },
+  keepLabel: { type: String, default: '' },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -70,12 +76,13 @@ const emit = defineEmits({
   cancel: (_event: KeyboardEvent) => true,
   /** The caller's tool was clicked. */
   tool: () => true,
+  /** Discard, answering the question: what follows is the caller's. */
+  discard: () => true,
+  'update:asking': (_asking: boolean) => true,
 });
 defineSlots<{
-  /** The footer's buttons, at its right. */
+  /** The footer's buttons, at its right, while it does not ask. */
   footer?(): unknown;
-  /** What the footer says at its left (a question); nothing when not given. */
-  status?(): unknown;
 }>();
 
 /** The tool groups of the head, a rule between each. */
@@ -142,6 +149,8 @@ const preview = useDataSource({
 });
 /** The rendering of the text as it is now, in the repository it is written in; `null` while there is none. */
 const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ? preview.value : null));
+/** While it asks, Enter and Escape answer from the text. */
+const textKeys = computed(() => (props.asking ? 'Enter Escape' : props.keyshortcuts));
 
 defineExpose({
   /**
@@ -155,6 +164,16 @@ defineExpose({
   /** Types `text` over the selection, as `applyTool` does, and puts the caret `caret` characters into it. */
   insert,
 });
+
+// The question is answered from the text: the cursor goes there, and the footer asking it into view.
+watch(
+  () => props.asking,
+  async value => {
+    if (value) {
+      await focus('end');
+    }
+  },
+);
 
 async function focus(reveal?: 'head' | 'end') {
   tab.value = 'write';
@@ -188,6 +207,10 @@ function insert(text: string, caret: number) {
  * buttons follow it into view.
  */
 async function onInput() {
+  // Typing anything takes the question away: the user went back to writing.
+  if (props.asking) {
+    emit('update:asking', false);
+  }
   suggestions.update();
   const element = input.value;
   if (element && element.selectionEnd === element.value.length) {
@@ -210,12 +233,26 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, 'Mod+Enter')) {
+  if (props.asking && event.key === 'Escape') {
+    // Taken here: neither the caller nor the screen leaves on it.
+    event.preventDefault();
+    keepWriting();
+  } else if (props.asking && matchesCommandKey(event, 'Enter') && event.target === input.value) {
+    // In the text, Enter answers the question rather than starting a line; on a button, a tab or a tool it is theirs.
+    event.preventDefault();
+    emit('discard');
+  } else if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
     emit('submit');
   } else if (event.key === 'Escape') {
     emit('cancel', event);
   }
+}
+
+// Not awaited: a click listener's promise would show the button busy.
+function keepWriting() {
+  emit('update:asking', false);
+  void focus('end');
 }
 
 function onTab(value: string | number) {
@@ -339,7 +376,7 @@ interface RenderedPreview {
       <TextArea
         :class="css.markdownEditor_text"
         v-bind="suggestions.attrs"
-        :aria-keyshortcuts="keyshortcuts"
+        :aria-keyshortcuts="textKeys"
         @input="onInput"
         @keyup="suggestions.update()"
         @click="suggestions.update()"
@@ -388,9 +425,41 @@ interface RenderedPreview {
       ref="footer"
       :class="css.markdownEditor_footer"
     >
-      <slot name="status" />
+      <template v-if="asking">
+        <CircleAlert
+          :class="css.markdownEditor_questionIcon"
+          aria-hidden="true"
+        />
+        <span
+          :class="css.markdownEditor_question"
+          role="status"
+          >{{ question }}</span
+        >
+      </template>
       <div :class="css.markdownEditor_actions">
-        <slot name="footer" />
+        <template v-if="asking">
+          <Button
+            size="compact"
+            kbd="Escape"
+            keyshortcuts="Escape"
+            @click="keepWriting"
+          >
+            {{ keepLabel }}
+          </Button>
+          <Button
+            size="compact"
+            variant="destructive"
+            kbd="Enter"
+            keyshortcuts="Enter"
+            @click="emit('discard')"
+          >
+            {{ t(l.discard) }}
+          </Button>
+        </template>
+        <slot
+          v-else
+          name="footer"
+        />
       </div>
     </div>
   </TabsRoot>
@@ -559,6 +628,18 @@ interface RenderedPreview {
   align-items: center;
   padding: $spacing-8 $spacing-10 $spacing-8 $spacing-12;
   border-top: 1px solid $color-border;
+}
+
+.markdownEditor_question {
+  font-size: $font-size-xs;
+  color: $color-fg;
+}
+
+.markdownEditor_questionIcon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: $color-amber;
 }
 
 .markdownEditor_actions {

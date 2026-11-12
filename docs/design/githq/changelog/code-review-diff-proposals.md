@@ -172,3 +172,11 @@ Decision followed: D39 ("a reply is the same box inside the thread").
   16% fill.
 - [x] Diff / File header's Viewed toggle: 4 px taller inside the header's fixed 38 px, so the header and the pinned
   header's push keep their heights.
+
+## Round · implementation, M4 decisions (2026-11-12)
+
+Forced by: the discard question became one mode of the shared Markdown editor (`MarkdownEditor`), used by the
+review's box and the item thread's edits alike, so it shows one icon.
+
+- [x] Review / New comment · asks to discard (`y4kGY9`): the question's icon (`Lu92c/bVk4m`) `circle-help` →
+  `circle-alert`, as `Activity / Comment · editing, discard?` (`BVHXx`) has it.
