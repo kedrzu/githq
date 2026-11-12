@@ -11,6 +11,7 @@ import {
     getItemPagePath,
     getOpenedItemQuery,
     getOpenedItemRoute,
+    getReviewCommentPath,
     parseItemUrl,
 } from './itemRoutes.js';
 
@@ -73,6 +74,19 @@ test("a github.com address names its item, in the address's repository", () => {
         'https://example.com/acme/web/pull/12',
     ]) {
         expect(parseItemUrl(url)).toBeNull();
+    }
+});
+
+test("a comment on the code is addressed in its pull request's review, by GitHub's anchor", () => {
+    expect(getReviewCommentPath('https://github.com/acme/web/pull/15#discussion_r7')).toBe(
+        '/acme/web/pull/15/files#discussion_r7',
+    );
+    for (const url of [
+        'https://github.com/acme/web/pull/15',
+        'https://github.com/acme/web/pull/15#issuecomment-7',
+        'https://example.com/acme/web/pull/15#discussion_r7',
+    ]) {
+        expect(getReviewCommentPath(url)).toBeNull();
     }
 });
 

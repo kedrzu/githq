@@ -1064,7 +1064,13 @@ export function findReviewPositionRow({
     return nearest ? { row: nearest, offset, landing } : { row: header, offset: 0, landing };
 }
 
-function isFileWaiting(rows: readonly ReviewRow[], header: number) {
+/**
+ * Whether the file whose header is at `header` in the rows is still on its way: a placeholder or a pause stands in for
+ * some of its lines.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function isFileWaiting(rows: readonly ReviewRow[], header: number) {
     for (let index = header + 1; index < rows.length; index++) {
         const row = rows[index];
         if (!row || row.kind === 'header') {

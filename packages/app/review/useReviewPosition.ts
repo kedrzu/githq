@@ -33,6 +33,8 @@ export interface UseReviewPositionOptions {
      * overwritten. Anything that moves the view, a scroll first of all, sets this to `false`.
      */
     landing: ShallowRef<boolean>;
+    /** Something else is landing it, a link to a thread: the place kept and the first file wait until it is done. */
+    held: MaybeRefOrGetter<boolean>;
     /** What it is landing on, for the status bar to say; `null` when that's only the top, or a file standing in. */
     arrival: ShallowRef<ReviewArrival | null>;
 }
@@ -52,9 +54,17 @@ export function useReviewPosition(options: UseReviewPositionOptions): void {
     let cancelSave: (() => void) | null = null;
 
     // The list's end too: its last page may bring no rows, and it is what a first open is waiting for.
-    watch([() => toValue(options.list), () => toValue(options.rows), () => toValue(options.files)?.listEnd], land, {
-        flush: 'post',
-    });
+    // Let go by a link, it lands as if just opened.
+    watch(
+        [
+            () => toValue(options.list),
+            () => toValue(options.rows),
+            () => toValue(options.files)?.listEnd,
+            () => toValue(options.held),
+        ],
+        land,
+        { flush: 'post' },
+    );
     // A frame of a scroll costs this and no more: finding the row and writing wait for the timer.
     watch(
         () => toValue(options.list)?.anchor,
@@ -68,7 +78,7 @@ export function useReviewPosition(options: UseReviewPositionOptions): void {
     function land() {
         const list = toValue(options.list);
         const files = toValue(options.files);
-        if (!landing.value || !list || !files || toValue(options.rows).length === 0) {
+        if (!landing.value || toValue(options.held) || !list || !files || toValue(options.rows).length === 0) {
             return;
         }
 

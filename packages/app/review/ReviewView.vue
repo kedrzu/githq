@@ -1,4 +1,4 @@
-<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The current file, the one `V`, Space and `C` act on, is the one crossing the reading line a third down under the pinned header, which slides toward the edges near either end of the diff so that scrolling through passes every file; or the one a click in it, `[` `]`, the list, `V` moving on or a jump chose, until none of it is on screen or the reader has scrolled half a screen (D44). Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row, or E for the gap nearest the reading line, goes toward the hunk on the reading line's side, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ scroll by a line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen in the current file, or else the current file's line at the reading line, or its nearest while the file is held off it (D44). Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
+<!-- A pull request's review (D24): the toolbar, the list of files on the left — its width dragged by its edge and kept on this device (`ColumnSplit`), the diff staying mounted as it hides — and the diff filling the rest, every file one after another under its pinned header. Files arrive and diffs are computed while it shows, none of it moving what is being read (D7): a jump (a click in the list, `[` `]`) lands its file's header exactly at the top and holds it there through files arriving above, the layout and the whitespace setting; a line being read stays on screen through them too. A file that fails, is too large or binary says so in place and the others go on (D35). Lock files, generated and very large files start as a header, nothing of them fetched until opened; Space or a click on the header opens the file or collapses it (D8). `V` or the header's button sets the file's viewed mark, GitHub's own (D9), which collapses the file to its header in place, or with viewed files hidden the next file takes its place, and with all of them viewed the diff says so. The current file, the one `V`, Space and `C` act on, is the one crossing the reading line a third down under the pinned header, which slides toward the edges near either end of the diff so that scrolling through passes every file; or the one a click in it, `[` `]`, the list, `V` moving on or a jump chose, until none of it is on screen or the reader has scrolled half a screen (D44). Files selected in the list (x, { }, ⇧click, ⌘click, D10) take `V` together, in one request. `/` filters (D11): files filtered away leave the diff too, the reader moving on to the next one left. A gap's arrows show 20 lines below the hunk above it or above the hunk below, holding the row on that side where it is (D6, D7, D42); a click on the rest of the row, or E for the gap nearest the reading line, goes toward the hunk on the reading line's side, and "Show all hidden lines" in the command menu opens all of that gap. Every thread shows where it belongs (D12, D13, D30), a file with an unresolved one is never hidden as viewed (D15), one gone from the diff has an entry of its own, and N ⇧N walk them, the open ones first, each landing held in place and opened (D7, D32). A pull request of a stack has the stack above the files, in a left column that scrolls as one: the rows go by and a bar stays pinned, the files' head under it (D25). `J` `K` walk the list it was opened from as in an opened pull request (D16), `[` `]` being the files; a row or a square of the stack and the command menu go to any of its pull requests, always replacing the address, so Back returns to where the review was entered (D2). The view options are commands of the command menu too, each flipping what its control does and its title saying what picking it does: the layout, whitespace changes, comments in collapsed files and, once the files are known, viewed files. ⌘B hides the left column and ⌥⌘B shows the pull request's conversation at the right (D5, D26), and a review's "2 threads in files" there lands on the first of them as N does. GitHub's allowance running out pauses the missing files, which carry on by themselves at its reset, and the status bar says so; files GitHub took the viewed mark off since the last visit are named in a line that goes once the first of them has been read (D35). What the user did here is kept for this pull request, and it opens where they left it, by the line, or the first time on its first file not viewed nor collapsed (D7, D14, D16), the status bar saying so until the first move (CR20, CR25, CR26). An address naming a comment on the code (`#discussion_r…`, GitHub's `#r…`), as a file's link on the pull request's page gives, lands instead on its thread as N does, its file let past the filter and hidden viewed files and opened if collapsed; the fragment then leaves the address. Every file viewed and those hidden, what is left of them shows under a block saying so, with the ways on (CR63). While the viewer has a draft review on it, a toolbar at the foot of the diff says how many comments wait and leads to submitting or discarding it (D28, D33); ⇧S opens the same dialog with no draft, for a review with no comments. ↓ ↑ scroll by a line, O to the pull request on GitHub and Esc, once there's no box, selection or filter to leave, back to the pull request; `?` shows all a review's keys (CR29). A line's number or `C` opens a comment box under it (D32), a drag or ⇧click on the numbers making it a range (CR73): `C` takes the line of the thread N and ⇧N are at while that is on screen in the current file, or else the current file's line at the reading line, or its nearest while the file is held off it (D44). Nothing moves for it unless the box wouldn't fit on screen, by as little as it takes (D7). A box scrolled out of the list's window takes the keys back when it comes back into it. Esc closes an empty box and asks before discarding one with text; a discarded one is offered back by a toast of the review's own at the foot of the diff, above the pending toolbar, Restore (⌘Z outside a text field) reopening it with its text (D40). `⇧↓` makes the box the keys left, or an empty one they are in, reach a line further. `R` or Reply… opens a reply box inside the thread, in a band after its comments, Resolve thread under it (CR74, D39), moving nothing unless the box wouldn't fit on screen, `⌘G` a suggestion where GitHub would take one (D18). Resolve folds the thread where it is, what is above it staying put and a viewed or gone file staying until it leaves the top of the screen (D7), and N and ⇧N go on through the open ones from there (CR15). The conversation's foot comments on the pull request itself, at once whatever draft is open (D17). The pull request reviewed is the command menu's subject, its actions there and on their keys as in an opened one — Merge… (`⇧M`), its branch, its checks, assignees, labels, closing — but while an item is opened over the review, whose own they then are. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -109,6 +109,7 @@ import {
   getReviewPosition,
   getReviewRowPath,
   getReviewThreadKey,
+  isFileWaiting,
   LINE_HEIGHT,
 } from './buildReviewRows.js';
 import type {
@@ -139,6 +140,7 @@ import ReviewStackStrip from './ReviewStackStrip.vue';
 import type { PullRequestFiles, ReviewFile, ReviewFileState } from './ReviewFiles.js';
 import { countThreads } from './threads/countThreads.js';
 import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
+import { findLinkedThread, parseThreadAnchor } from './threads/findLinkedThread.js';
 import { findOpenThreadFrom, findThreadFromRow, listWalkedThreads } from './threads/walkThreads.js';
 import ReviewToolbar from './ReviewToolbar.vue';
 import * as l from './ReviewView.loc.js';
@@ -424,7 +426,28 @@ const rows = computed((): readonly ReviewRow[] => {
     ? [{ kind: 'allViewed', key: getReviewAllViewedKey(first.path) }, ...fileRows.value]
     : fileRows.value;
 });
-useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, arrival });
+/**
+ * The comment on the code the address's fragment names (`#discussion_r…`, or GitHub's `#r…`): the review lands on its
+ * thread instead of where it was left, and drops the fragment once landed or given up.
+ */
+const linkAnchor = shallowRef<string | null>(null);
+/** The link already opened its file, or let it past the filter and hidden viewed files: once only. */
+let linkOpenedFile = false;
+const linkPending = computed(() => landing.value && linkAnchor.value !== null);
+const linkedThread = computed(() => {
+  const anchor = linkAnchor.value;
+  const current = files.value;
+  return anchor === null || !current
+    ? null
+    : findLinkedThread({
+        anchor,
+        threads: current.threads,
+        threadsState: current.threadsState,
+        placements: placements.value.byFile,
+        listEnd: current.listEnd,
+      });
+});
+useReviewPosition({ files, rows, ordered, order: allPaths, list, landing, held: linkPending, arrival });
 const githubUrl = computed(() => {
   const { owner, name, number } = props.reference;
   return getGitHubUrl(`${owner}/${name}/pull/${number}/files`);
@@ -537,6 +560,29 @@ const stopFocusing = watch(
   },
   { flush: 'post' },
 );
+
+// A link to a comment on the code, on opening or while here (from an item opened over the review): it lands anew. Only
+// the review's own address: leaving for the pull request's page, its fragment is that page's.
+watch(
+  () => (route.name === 'review' ? route.hash : ''),
+  hash => {
+    const anchor = parseThreadAnchor(hash);
+    if (anchor !== null) {
+      linkAnchor.value = anchor;
+      linkOpenedFile = false;
+      landing.value = true;
+      arrival.value = null;
+    }
+  },
+  { immediate: true },
+);
+watch([list, rows, linkedThread], landOnLink, { flush: 'post' });
+// Landed on the thread, or moved by the reader first: the link is done.
+watch(landing, now => {
+  if (!now) {
+    endLink();
+  }
+});
 
 // Signed in again as someone else, this is their read of the pull request.
 watch(
@@ -1245,6 +1291,77 @@ function stepThread(delta: 1 | -1) {
       : walked[at + delta]);
   if (target) {
     jumpToThread(target);
+  }
+}
+
+/**
+ * The thread the address names, once it is known where: its row as N lands on it; its file let past the filter and hidden
+ * viewed files and opened first if need be, its header held while its lines are on their way. A thread no file will show
+ * gives way to the usual landing, one with no row in its file to the file's header.
+ */
+function landOnLink() {
+  const linked = linkedThread.value;
+  if (!linkPending.value || !linked || !list.value || linked.kind === 'waiting') {
+    return;
+  }
+
+  if (linked.kind === 'missing') {
+    endLink();
+    return;
+  }
+
+  // Opened first: a collapsed file's thread may show under its header, on the code as it was, not on its line.
+  const { path, threadId } = linked;
+  if (!linkOpenedFile) {
+    linkOpenedFile = true;
+    if (openLinkedFile(path)) {
+      return;
+    }
+  }
+
+  const row = rows.value.find(other => other.key === getReviewThreadKey(path, threadId));
+  if (row?.kind === 'thread') {
+    jumpToThread(row);
+    return;
+  }
+
+  const header = rows.value.findIndex(other => other.key === getReviewHeaderKey(path));
+  if (header === -1) {
+    endLink();
+  } else if (isFileWaiting(rows.value, header)) {
+    files.value?.prioritize(path);
+    list.value.jumpTo(getReviewHeaderKey(path), 0);
+  } else {
+    jumpToFile(path);
+  }
+}
+
+/** Whether anything had to change for the file to show the thread: the rows it changes bring the landing back. */
+function openLinkedFile(path: string) {
+  let changed = false;
+  if (isHeldBack(path)) {
+    filterPattern.value = '';
+    hideViewed.value = false;
+    changed = true;
+  }
+
+  if (getCollapse(path) !== null) {
+    files.value?.setCollapsed(path, false);
+    changed = true;
+  }
+
+  return changed;
+}
+
+/** Off the address too: Back, Forward and a reload come back to where the review was left, as without it. */
+function endLink() {
+  if (linkAnchor.value === null) {
+    return;
+  }
+
+  linkAnchor.value = null;
+  if (route.name === 'review' && parseThreadAnchor(route.hash) !== null) {
+    void router.replace({ path: route.path, query: route.query, hash: '' });
   }
 }
 
