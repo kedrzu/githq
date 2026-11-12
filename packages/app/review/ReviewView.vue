@@ -1568,7 +1568,7 @@ function startComment(target: Omit<ReviewCommentTarget, 'id'>) {
 async function revealComment({ path, id, threadId }: ReviewCommentTarget) {
   await nextTick();
   const threadKey = threadId === null ? null : getReviewThreadKey(path, threadId);
-  if (threadKey !== null && rows.value.some(row => row.key === threadKey)) {
+  if (threadKey !== null && isRowShown(threadKey)) {
     revealReply(threadKey, id);
     return;
   }
@@ -1739,13 +1739,17 @@ function onGutter(row: ReviewRow, event: MouseEvent, side: DiffLineSide, line: n
 
 function onRowFocusLost(key: string) {
   const box = commentTargets.value.find(({ id, path, threadId }) =>
-    threadId === null || !rows.value.some(row => row.key === getReviewThreadKey(path, threadId))
+    threadId === null || !isRowShown(getReviewThreadKey(path, threadId))
       ? getReviewCommentKey(path, id) === key
       : canEdit(id) && getReviewThreadKey(path, threadId) === key,
   );
   if (box) {
     focusedBox.value = box.id;
   }
+}
+
+function isRowShown(key: string) {
+  return rows.value.some(row => row.key === key);
 }
 
 function sendComment(id: string, way: ReviewCommentWay) {
