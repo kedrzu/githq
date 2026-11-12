@@ -66,15 +66,16 @@ something you set.
 Move through the list with <kbd>J</kbd> and <kbd>K</kbd>, or <kbd>↓</kbd> and <kbd>↑</kbd>. Press <kbd>Enter</kbd> or
 click a row to open it. Press <kbd>O</kbd> to open the selected item on GitHub instead.
 
-An opened item shows in one of three arrangements, and githq opens the next item in the one you used last:
+An opened item shows in a panel beside the list, which stays in view. Press <kbd>Enter</kbd> again, or
+<kbd>Shift</kbd> <kbd>Enter</kbd>, to open it full screen, on its own page at the same address as on GitHub;
+<kbd>Shift</kbd> <kbd>Enter</kbd> or <kbd>Esc</kbd> brings it back to the panel. In a window too narrow for the list
+and the panel side by side, an item opens full screen straight away. The button beside **Open on GitHub** does the
+same.
 
-- **Panel**: beside the list, which stays in view.
-- **Modal**: over the list.
-- **Full page**: on its own page, at the same address as on GitHub.
-
-The switch in the item's header changes the arrangement. While an item is open, <kbd>J</kbd> and <kbd>K</kbd> step to
-the next and previous item of the list, and <kbd>Esc</kbd> closes it and takes you back to the list, with the item still
-selected. [Pull requests and reviews](./pull-requests-and-reviews.md) describes what a pull request's page shows.
+While an item is open, <kbd>J</kbd> and <kbd>K</kbd> step to the next and previous item of the list, and <kbd>Esc</kbd>
+in the panel closes it and takes you back to the list, with the item still selected. Wide enough, the item shows in two
+columns: where it stands, its reviews, checks and properties on the left, staying in place, and its history on the
+right. [Pull requests and reviews](./pull-requests-and-reviews.md) describes what a pull request's page shows.
 
 ## Act from the list
 
@@ -90,7 +91,7 @@ Keys act on the selected row, without opening it:
 |<kbd>Shift</kbd> <kbd>M</kbd>|Merge a pull request you may merge|
 
 githq offers only what your role in the repository allows. Right-click a row for its menu: every action, each with its
-key, plus **Copy link**, **Add to project…** and **Open as full page**.
+key, plus **Copy link**, **Add to project…** and **Open full screen**.
 
 ### Several items at once
 

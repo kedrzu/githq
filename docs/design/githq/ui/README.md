@@ -12,7 +12,7 @@ It is one app with three independent switches:
 
 - the sidebar is expanded, or collapsed to a rail;
 - every list (my work, a project, a repository) can be shown as List or Board, with the same toolbar;
-- an item opens in a panel, a modal or a full page, and all three show the same item view.
+- an item opens in a panel or a full page, and both show the same item view.
 
 Work from here builds on Direction D. Keep its components and its feel. Within it you are still free to
 explore: where a new screen has more than one reasonable shape, draw variants, and the owner will pick.

@@ -133,10 +133,18 @@ in basically any way". Revisit if real use shows lost edits.
 
 UI direction: Direction D in `githq.pen` (overview frame `I7akNj`, screens in the `App · …` frames), chosen by user 2026-10-12. One app
 with three independent switches: sidebar expanded or collapsed to a rail; every list (my work, a project, a
-repository) shown as List or Board with the same toolbar; an item opened in a panel, modal or full page, all
+repository) shown as List or Board with the same toolbar; an item opened in a panel or full page, both
 rendering the same item view. As drawn, it settles two questions left to the visuals, pending the user's
 objection: a PR that closes an assigned issue is shown nested under that issue in "my work" (closes
 [Q5](#q5)), and projects get a Board in the first version ([Q6](#q6)).
+
+Revised 2026-11-12 by the owner (`docs/design/githq/changelog/item-panel-and-full-screen.md`, F18–F23): the modal is
+gone and the arrangement is no longer remembered. An item opens in the panel beside the screen; when the window can't
+hold the screen's 400 px and the panel's 400 px beside the sidebar, on its full page, and an item in the panel whose
+window narrows that far moves to its page once no edit is open. `↵` on the open row or `⇧↵` expands it to full screen;
+`⇧↵` or `Esc` brings a page expanded from the panel back to it. The item view picks its layout by its own width: from
+1000 px a pinned 440 px summary column (title, standing, reviews, checks, what it closes, properties, projects, the
+stack map) beside the timeline, capped at 920 px; below, one column, the summary first.
 
 > **Checked 2026-10-12 (live GraphQL introspection):** GitHub's saved project views are readable —
 > `ProjectV2View` has `name`, `layout`, `filter: String`, `groupByFields`, `verticalGroupByFields`,
