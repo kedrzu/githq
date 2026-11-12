@@ -4,7 +4,7 @@ import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
-import { readStoredToken, signIn } from '../session.js';
+import { readStoredToken, signIn, skipTokenRechecks } from '../session.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
@@ -49,8 +49,10 @@ test('a token GitHub rejects while the app is still starting on a slow device si
     // Slowed down, GitHub's answer arrives while the route guard of the first navigation is still waiting.
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 8 });
+    await page.clock.install();
     github.graphql('Viewer', new GitHubHttpError(401, 'Bad credentials'));
     await page.reload();
+    await skipTokenRechecks(page);
 
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?failed=tokenRejected');
@@ -64,8 +66,10 @@ test('a token GitHub stops accepting while "my work" is open signs out to the la
     await signIn(page, github);
 
     // With the user known, "my work" opens at once and GitHub is asked who they are behind it.
+    await page.clock.install();
     github.graphql('Viewer', new GitHubHttpError(401, 'Bad credentials'));
     await page.reload();
+    await skipTokenRechecks(page);
 
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?failed=tokenRejected');
@@ -88,8 +92,10 @@ test('a token GitHub no longer accepts at app start lands on the landing page, s
 
     // The user not known yet, the app waits for GitHub before opening anything.
     await page.evaluate(key => localStorage.removeItem(key), VIEWER_KEY);
+    await page.clock.install();
     github.graphql('Viewer', new GitHubHttpError(401, 'Bad credentials'));
     await page.goto('/pulls');
+    await skipTokenRechecks(page);
 
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?next=/pulls&failed=tokenRejected');

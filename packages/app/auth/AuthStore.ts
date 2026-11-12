@@ -12,10 +12,12 @@ import { parseJson } from '@githq/github/utils/parseJson.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
+import { assert } from '@nzyme/utils/assert.js';
 import { isPlainObject } from '@nzyme/utils/isPlainObject.js';
 import { shallowRef, watch } from 'vue';
 
 import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
 
 import { safeNextPath } from './routeAccess.js';
@@ -62,6 +64,12 @@ export const PENDING_SIGN_IN_KEY = 'githq.signIn';
 export const TOKEN_REJECTIONS_KEY = 'githq.tokenRejections';
 /** How many {@link TOKEN_REJECTIONS_KEY} keeps. */
 const MAX_TOKEN_REJECTIONS = 10;
+/**
+ * How long to wait before each further check of a token GitHub answered 401 for. GitHub has answered `Bad credentials`
+ * for a token it never revoked, right after the Mac woke from sleep, so one 401 is not proof enough to forget a token
+ * the user would have to sign in again for: the session ends only when every check is refused.
+ */
+const REJECTION_RECHECK_DELAYS_MS = [3_000, 15_000];
 
 /** One sign-out on a token GitHub rejected. */
 export interface TokenRejection {
@@ -73,7 +81,7 @@ export interface TokenRejection {
      */
     readonly tokenHash: string;
     readonly status: number;
-    /** GitHub's own words for the refusal (`Bad credentials`), when it gave any. */
+    /** GitHub's own words for the last refusal (`Bad credentials`), when it gave any. */
     readonly githubMessage: string | null;
 }
 
@@ -87,8 +95,8 @@ interface PendingSignIn {
  * signing out.
  *
  * The token is kept in the {@link TokenVault} and the user in `localStorage`, so a reload opens the shell straight
- * away; the user is then read again from GitHub in the background, and a token GitHub rejects (401) signs the user
- * out with `failure: 'tokenRejected'`. The token is never logged.
+ * away; the user is then read again from GitHub in the background, and a token GitHub keeps rejecting (401) signs the
+ * user out with `failure: 'tokenRejected'`. The token is never logged.
  *
  * While a token is stored, the `githq_signed_in` cookie ({@link SIGNED_IN_HINT_COOKIE}) is set, so the Worker serves
  * the app rather than the landing page at `/`; it is cleared with the token. It carries no token and no identity.
@@ -105,14 +113,20 @@ export const AuthStore = defineService({
     name: 'AuthStore',
     deps: {
         browser: Browser,
+        clock: Clock,
         createSdk: GitHubSdkFactory,
         logger: Logger,
         vault: TokenVault,
     },
-    setup({ browser, createSdk, logger, vault }) {
+    setup({ browser, clock, createSdk, logger, vault }) {
         const tokenRef = shallowRef<string | null>(vault.read());
         const viewerRef = shallowRef<Viewer | null>(tokenRef.value === null ? null : readStoredViewer());
         const failureRef = shallowRef<SignInFailure | null>(null);
+        /**
+         * The check of a token under way, which every other refresh of the same token joins: each sync loop asks for
+         * one when it gets a 401.
+         */
+        let refreshing: { token: string; done: Promise<void> } | null = null;
 
         // With a known user the shell opens at once and the check runs behind it; without one, the route guard
         // waits for it.
@@ -233,8 +247,9 @@ export const AuthStore = defineService({
         }
 
         /**
-         * Reads the signed-in user again from GitHub. A 401 signs out (`tokenRejected`); any other failure
-         * (offline, GitHub down) keeps the session as it is.
+         * Reads the signed-in user again from GitHub. A 401 is checked again a few times
+         * ({@link REJECTION_RECHECK_DELAYS_MS}), and only a token refused every time signs out (`tokenRejected`); any
+         * other answer (offline, GitHub down) keeps the session as it is.
          */
         async function refreshViewer() {
             const token = tokenRef.value;
@@ -242,34 +257,76 @@ export const AuthStore = defineService({
                 return;
             }
 
-            try {
-                const viewer = await fetchViewer(token);
-                storeViewer(token, viewer);
-            } catch (error) {
-                // Signed out or in again meanwhile, here or in another tab: this answer is about a session that
-                // is gone, and signing it out would sign out the one that replaced it.
+            if (refreshing?.token !== token) {
+                const check = { token, done: checkToken(token) };
+                refreshing = check;
+                void check.done.finally(() => {
+                    if (refreshing === check) {
+                        refreshing = null;
+                    }
+                });
+            }
+
+            await refreshing.done;
+        }
+
+        async function checkToken(token: string) {
+            let rejection: GitHubApiError | null = null;
+            for (const delayMs of [0, ...REJECTION_RECHECK_DELAYS_MS]) {
+                if (delayMs > 0) {
+                    await new Promise<void>(resolve => {
+                        clock.schedule(resolve, delayMs);
+                    });
+                }
+
+                // Signed out or in again meanwhile, here or in another tab: this answer is about a session that is
+                // gone, and signing it out would sign out the one that replaced it.
                 if (!isCurrentToken(token)) {
                     return;
                 }
 
-                if (isTokenRejected(error)) {
-                    logger.warn('GitHub rejected the stored token; signing out', {
-                        githubMessage: error.githubMessage,
-                    });
-                    void recordRejection(token, error);
-                    signOut('tokenRejected');
-                } else {
-                    logger.warn('Could not refresh the signed-in user', { error });
+                try {
+                    const viewer = await fetchViewer(token);
+                    storeViewer(token, viewer);
+                    return;
+                } catch (error) {
+                    if (!isCurrentToken(token)) {
+                        return;
+                    }
+
+                    if (!isTokenRejected(error)) {
+                        logger.warn('Could not refresh the signed-in user', { error });
+                        return;
+                    }
+
+                    logger.warn('GitHub rejected the stored token', { githubMessage: error.githubMessage });
+                    rejection = error;
                 }
+            }
+
+            assert(rejection);
+            // Kept before the session ends, so nothing that follows the sign-out can lose it.
+            await recordRejection(token, rejection);
+            if (isCurrentToken(token)) {
+                logger.warn('GitHub kept rejecting the stored token; signing out');
+                signOut('tokenRejected');
             }
         }
 
         /** Keeps the evidence of a rejection under {@link TOKEN_REJECTIONS_KEY}, dropping the oldest past the limit. */
         async function recordRejection(token: string, error: GitHubApiError) {
-            const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+            let tokenHash: string;
+            try {
+                const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+                tokenHash = btoa(String.fromCodePoint(...new Uint8Array(digest)));
+            } catch (hashError) {
+                logger.warn('Could not hash the rejected token', { error: hashError });
+                tokenHash = '';
+            }
+
             const rejection: TokenRejection = {
-                at: new Date().toISOString(),
-                tokenHash: btoa(String.fromCodePoint(...new Uint8Array(digest))),
+                at: new Date(clock.now()).toISOString(),
+                tokenHash,
                 status: error.status,
                 githubMessage: error.githubMessage ?? null,
             };

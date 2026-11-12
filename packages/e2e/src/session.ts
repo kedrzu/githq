@@ -11,6 +11,18 @@ import { answerTrackingCandidates } from './tracking/answerTracking.js';
 /** Where the app keeps the token (`TOKEN_KEY` in `packages/app/auth/TokenVault.ts`). */
 const TOKEN_KEY = 'githq.token';
 
+/**
+ * Lets the app finish checking a token GitHub answered 401 for: it signs out only after checking again a few seconds
+ * later (`REJECTION_RECHECK_DELAYS_MS` in `packages/app/auth/AuthStore.ts`), waits the page's clock skips. The clock
+ * must be installed (`page.clock.install()`) before the page loads.
+ */
+export async function skipTokenRechecks(page: Page) {
+    await expect(async () => {
+        await page.clock.fastForward('00:20');
+        expect(page.url()).toContain('failed=tokenRejected');
+    }).toPass();
+}
+
 /** The token the app keeps in this browser, or `null` signed out. */
 export async function readStoredToken(page: Page): Promise<string | null> {
     return await page.evaluate(key => localStorage.getItem(key), TOKEN_KEY);

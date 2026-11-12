@@ -8,7 +8,7 @@ import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
 import { LandingHarness } from '../harnesses/Landing.harness.js';
 import { MyWorkScreenHarness } from '../harnesses/MyWorkScreen.harness.js';
 import { E2E_BASE_URL } from '../localApp.js';
-import { signIn } from '../session.js';
+import { signIn, skipTokenRechecks } from '../session.js';
 import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 // `/` answers two pages by the signed-in hint cookie (`packages/worker/src/home.ts`): the prerendered landing page
@@ -252,8 +252,10 @@ test('a token GitHub rejects clears the hint, and the next visit is served the l
     await signIn(page, github);
     expect(await readHint(context)).toBeDefined();
 
+    await page.clock.install();
     github.graphql('Viewer', new GitHubHttpError(401, 'Bad credentials'));
     await page.reload();
+    await skipTokenRechecks(page);
 
     const landing = new LandingHarness(page);
     await expect(page).toHaveURL('/?failed=tokenRejected');
