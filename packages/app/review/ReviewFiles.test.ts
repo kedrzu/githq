@@ -26,6 +26,8 @@ const REFERENCE = { owner: 'acme', name: 'web', number: 7 };
 const BASE_TIP = 'base-tip';
 const MERGE_BASE = 'merge-base';
 const HEAD = 'head-1';
+/** The commits the submodule of a test file moves between. */
+const SUBMODULE = { before: 'a'.repeat(40), after: 'b'.repeat(40) } as const;
 
 test('the list comes through all its pages, and a file reads as it is at the merge base and at the head — not at the base branch, which moved on', async () => {
     const github = createGitHub();
@@ -114,13 +116,13 @@ test("every file gets its patch's layout and what the patch settles: binary, or 
 
     expect(Object.fromEntries(model.files.map(file => [file.path, file.patch]))).toEqual({
         'changed.ts': USUAL_PATCH,
-        'image.png': { layout: null, verdict: 'binary' },
-        'empty.ts': { layout: null, verdict: 'binary' },
-        'moved.ts': { layout: null, verdict: null },
-        'icon.png': { layout: null, verdict: null },
-        'logo.png': { layout: null, verdict: null },
-        'copied.ts': { layout: null, verdict: null },
-        'huge.ts': { layout: null, verdict: null },
+        'image.png': { layout: null, verdict: 'binary', submodule: null },
+        'empty.ts': { layout: null, verdict: 'binary', submodule: null },
+        'moved.ts': { layout: null, verdict: null, submodule: null },
+        'icon.png': { layout: null, verdict: null, submodule: null },
+        'logo.png': { layout: null, verdict: null, submodule: null },
+        'copied.ts': { layout: null, verdict: null, submodule: null },
+        'huge.ts': { layout: null, verdict: null, submodule: null },
         'unlisted.ts': undefined,
     });
     expect(session.operations().filter(operation => operation === 'GET /repos/acme/web/pulls/7/files')).toHaveLength(1);
@@ -238,14 +240,94 @@ test('a binary, a too large and a submodule file are no errors, and neither of t
     const { model, session } = open(uniqueLogin(), github);
 
     await settled(model);
+    await waitUntil(() => model.files.every(file => file.patch !== undefined), { timeoutMs: 2000 });
 
     expectStates(model, {
         'image.png': { kind: 'binary', before: 9, after: 3 },
         'huge.ts': { kind: 'tooLarge', before: 5, after: 1_000_001 },
-        nzyme: { kind: 'binary', before: null, after: null },
+        nzyme: { kind: 'submodule', ...SUBMODULE },
         'plain.ts': { kind: 'ready', before: null, after: 'plain' },
     });
     expect(textsAsked(session)).toEqual([oidOf('plain')]);
+});
+
+test('a submodule read as binary before its patch came is a submodule once it does', async () => {
+    const github = createGitHub();
+    github.file({ path: 'nzyme', changeType: 'MODIFIED', submodule: true });
+    const patches = createSilentHold(request => request.operation === 'GET /repos/acme/web/pulls/7/files');
+    const { model } = open(uniqueLogin(), github, patches.hold);
+
+    await settled(model);
+    expect(model.getState('nzyme')).toEqual({ kind: 'binary', before: null, after: null });
+
+    patches.release();
+
+    await waitUntil(() => model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+    expect(model.getState('nzyme')).toEqual({ kind: 'submodule', ...SUBMODULE });
+    expect(model.files[0]?.patch?.verdict).toBe('submodule');
+});
+
+test.each([
+    ['answered', 'ready', () => {}],
+    ['failed', 'failed', (github: TestGitHub) => github.failNext('ReviewBlobOids')],
+    ['paused', 'paused', (github: TestGitHub) => github.rateLimit('ReviewBlobOids')],
+] as const)(
+    'a submodule stays one when the query for its blobs is %s after its patch came',
+    async (_, plain, answerLate) => {
+        const github = createGitHub();
+        github.file({ path: 'nzyme', changeType: 'MODIFIED', submodule: true });
+        github.file({ path: 'plain.ts', changeType: 'ADDED', after: 'plain' });
+        // The patch comes only once the query for its blobs is on its way, and that is answered only after.
+        const patches = createSilentHold(request => request.operation === 'GET /repos/acme/web/pulls/7/files');
+        const oids = createSilentHold(isOidQuery);
+        const { model, session } = open(uniqueLogin(), github, request => patches.hold(request) ?? oids.hold(request));
+        await waitUntil(() => session.github.requests.some(isOidQuery), { timeoutMs: 2000 });
+        patches.release();
+        await waitUntil(() => model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+        expect(model.getState('nzyme')).toEqual({ kind: 'submodule', ...SUBMODULE });
+
+        answerLate(github);
+        oids.release();
+        // The file asked for beside it tells the answer is in.
+        await waitUntil(() => model.getState('plain.ts').kind === plain, { timeoutMs: 2000 });
+
+        expect(model.getState('nzyme')).toEqual({ kind: 'submodule', ...SUBMODULE });
+        expect(oidExpressions(session)).toContain(`${HEAD}:nzyme`);
+    },
+);
+
+test('a submodule reopened from the disk is one at once, and none of its blobs is asked for', async () => {
+    const login = uniqueLogin();
+    const github = createGitHub();
+    github.file({ path: 'nzyme', changeType: 'MODIFIED', submodule: true });
+    const first = open(login, github);
+    await settled(first.model);
+    await waitUntil(() => first.model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+    const store = ReviewBlobStore.create();
+    await waitUntil(async () => (await store.readFileList(login, LIST_KEY))?.files[0]?.patch !== undefined, {
+        timeoutMs: 2000,
+    });
+
+    const second = open(login, github);
+    await settled(second.model);
+
+    expect(second.model.getState('nzyme')).toEqual({ kind: 'submodule', ...SUBMODULE });
+    expect(oidExpressions(second.session).filter(expression => expression.endsWith(':nzyme'))).toEqual([]);
+});
+
+test('a collapsed submodule asks for nothing, nor when it is opened', async () => {
+    const github = createGitHub();
+    github.file({ path: 'nzyme', changeType: 'MODIFIED', submodule: true });
+    github.setViewed('nzyme', 'VIEWED');
+    const { model, session } = open(uniqueLogin(), github);
+    await settled(model);
+    await waitUntil(() => model.files[0]?.patch !== undefined, { timeoutMs: 2000 });
+
+    model.setCollapsed('nzyme', false);
+    await settled(model);
+
+    expect(model.getState('nzyme')).toEqual({ kind: 'submodule', ...SUBMODULE });
+    expect(oidExpressions(session).filter(expression => expression.endsWith(':nzyme'))).toEqual([]);
 });
 
 test('a file GitHub fails to answer for fails alone, and comes when retried', async () => {
@@ -2137,7 +2219,10 @@ interface TestFile {
     readonly binary?: boolean;
     /** The head side's size, when it should not be its text's. */
     readonly byteSize?: number;
-    /** A commit at both sides, as a submodule has: GitHub answers it like nothing at that path. */
+    /**
+     * A commit at both sides, as a submodule has: GitHub answers it like nothing at that path, and its patch moves the
+     * pointer from {@link SUBMODULE}'s `before` to its `after`.
+     */
     readonly submodule?: boolean;
     /** How many lines it adds, when more than the list's usual 1. */
     readonly additions?: number;
@@ -2464,6 +2549,7 @@ function open(login: string, github: ReturnType<typeof createGitHub>, holdIf?: T
     return { session, files, model };
 }
 
+type TestGitHub = ReturnType<typeof createGitHub>;
 type TestHold = (request: TestGraphQLRequest) => Promise<void> | null;
 type TestSession = ReturnType<typeof createTestSession>;
 
@@ -2509,10 +2595,16 @@ function fileRow(path: string, changeType: ReviewFile['changeType']): ReviewFile
 const USUAL_PATCH: ReviewFilePatch = {
     layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '--+' }] },
     verdict: null,
+    submodule: null,
 };
 
 /** A file's patch as GitHub gives it unless told: one hunk of the list's line counts, none for a binary file. */
-function getUsualPatch({ binary, additions = 1 }: TestFile): TestPatch {
+function getUsualPatch({ binary, submodule, additions = 1 }: TestFile): TestPatch {
+    if (submodule) {
+        const text = `@@ -1 +1 @@\n-Subproject commit ${SUBMODULE.before}\n+Subproject commit ${SUBMODULE.after}`;
+        return { text, additions: 1, deletions: 1 };
+    }
+
     if (binary) {
         return { additions: 0, deletions: 0 };
     }

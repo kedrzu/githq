@@ -121,7 +121,7 @@ test('a renamed file with no lines changed is its header alone until its blobs s
         previousPath: 'a.ts',
         additions: 0,
         deletions: 0,
-        patch: { layout: null, verdict: null },
+        patch: { layout: null, verdict: null, submodule: null },
     };
     const view = open([renamed], []);
     const under = () => view.rows.value.slice(1, -1).map(row => (row.kind === 'notice' ? row.notice : row.kind));
@@ -154,7 +154,7 @@ test("a binary verdict's note stays when the blob read fails, as when it pauses 
         ...fileRow('logo.png'),
         additions: 0,
         deletions: 0,
-        patch: { layout: null, verdict: 'binary' },
+        patch: { layout: null, verdict: 'binary', submodule: null },
     };
     const view = open([binary, fileRow('a.ts')], []);
     const under = () => view.rows.value.map(row => (row.kind === 'notice' ? row.notice : row.kind));

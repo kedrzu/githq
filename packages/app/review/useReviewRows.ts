@@ -247,6 +247,9 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
                 return file.changeType === 'RENAMED' ? RENAMED_UNCHANGED : NO_LINES;
             case 'failed':
                 return verdict === 'binary' ? BINARY : state;
+            // Shows as it did until it has rows of its own.
+            case 'submodule':
+                return BINARY;
             default:
                 return state;
         }

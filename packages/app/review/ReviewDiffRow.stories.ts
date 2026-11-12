@@ -76,6 +76,7 @@ const PATCH_FILE = file('src/sync/outbox.ts', 3, 4, {
             ],
         },
         verdict: null,
+        submodule: null,
     },
 });
 /** 1,200 lines, changed at 1,100: numbers of four digits. */
