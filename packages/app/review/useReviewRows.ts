@@ -76,6 +76,11 @@ const REBUILD_EVERY_MS = 32;
 
 const PLACEHOLDER: ReviewFileContent = { kind: 'placeholder' };
 const PLACEHOLDER_FIRST: ReviewFileContent = { kind: 'placeholder', first: true };
+/** A file with no lines changed and no hunks to draw: its header alone until it is known what it is (D45). */
+const HEADER_ONLY: ReviewFileContent = { kind: 'placeholder', rows: [] };
+const HEADER_ONLY_FIRST: ReviewFileContent = { kind: 'placeholder', first: true, rows: [] };
+/** Its two sides the same, but not a rename: what a diff of the two would show. */
+const NO_LINES: ReviewFileContent = { kind: 'lines', rows: [] };
 /** What the patch says (D45) of a file whose blob hasn't said more: no sizes yet. */
 const BINARY: ReviewFileContent = { kind: 'binary', before: null, after: null };
 const RENAMED_UNCHANGED: ReviewFileContent = { kind: 'renamedUnchanged' };
@@ -204,12 +209,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
             return GONE;
         }
 
+        // The patch's verdict stays whatever its blob is up to, unless the blob says otherwise (D45).
         const verdict = file.patch?.verdict ?? null;
-        // What the patch settles is final, whatever its blob is up to (D45).
-        if (verdict === 'renamedUnchanged' && !isCollapsed(file)) {
-            return RENAMED_UNCHANGED;
-        }
-
         const state = getState(file);
         // Only ever a file that may yet turn out generated, or an open one: it says why it isn't here, which flips nothing.
         if (state?.kind === 'paused') {
@@ -239,6 +240,10 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
                 // Its blob said otherwise (an empty file, a mode change), which shows once it is diffed.
                 return verdict === 'binary' ? BINARY : getPlaceholder(file, false);
             }
+            case 'unchanged':
+                return file.changeType === 'RENAMED' ? RENAMED_UNCHANGED : NO_LINES;
+            case 'failed':
+                return verdict === 'binary' ? BINARY : state;
             default:
                 return state;
         }
@@ -247,6 +252,10 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     /** The same object for as long as the file, the layout and the whitespace setting stay: rows are kept by that. */
     function getPlaceholder(file: ReviewFile, first: boolean): ReviewFileContent {
         if (!file.patch?.layout) {
+            if (file.additions === 0 && file.deletions === 0) {
+                return first ? HEADER_ONLY_FIRST : HEADER_ONLY;
+            }
+
             return first ? PLACEHOLDER_FIRST : PLACEHOLDER;
         }
 

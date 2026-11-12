@@ -31,6 +31,8 @@ import type { DownloadCount, RepositoryDownloadPhase } from '@/tracking/Tracking
  *   slowly; `term` is what githq can't evaluate, `checkedAt` `null` until GitHub first answered;
  * - `fetchingFiles`: a review's file contents arriving, `here` of `total`, `first` the name of the one a jump asked for
  *   ahead of the rest (code review D35);
+ * - `readingChanges`: a review's patches being read (code review D45), `read` of its `pages` of 100 files, `pages` `null`
+ *   until GitHub says;
  * - `filesPaused`: `waiting` of a review's files wait for the API allowance, until `until`;
  * - `filesCapped`: GitHub lists only the first `listed` of a pull request's `total` changed files;
  * - `filesUnread`: GitHub didn't give a pull request's list of files;
@@ -82,6 +84,7 @@ export type Freshness =
           readonly first: string | null;
           readonly listComplete: boolean;
       }
+    | { readonly kind: 'readingChanges'; readonly read: number; readonly pages: number | null }
     | { readonly kind: 'filesPaused'; readonly waiting: number; readonly until: number }
     | { readonly kind: 'filesCapped'; readonly listed: number; readonly total: number }
     | { readonly kind: 'filesUnread' }

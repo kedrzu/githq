@@ -293,14 +293,15 @@ export class GitHubMock {
 
     /**
      * Answers the REST calls `method <any path matching pattern>` with `handler`, as {@link rest} does; a path it has an
-     * exact answer for takes that. For paths with an id in them, whose every id must be answered, known or not.
+     * exact answer for takes that, and of patterns matching the same path the latest does, as a second {@link rest} for a
+     * path replaces the first. For paths with an id in them, whose every id must be answered, known or not.
      */
     restMatching(
         method: string,
         pattern: RegExp,
         handler: (request: GitHubRestRequest, match: RegExpExecArray) => GitHubRestAnswer,
     ): void {
-        this.restPatterns.push({ method, pattern, handler });
+        this.restPatterns.unshift({ method, pattern, handler });
     }
 
     /** The GraphQL operations answered so far, oldest first — to check what the app asked GitHub, and what not. */

@@ -90,13 +90,12 @@ export interface ReviewFilePatch {
 }
 
 /**
- * What a file's patch settles ahead of its blobs (D45).
- *
- * - `binary`: no patch and no lines, modified, added or deleted. Its blob still has the last word, and gives its sizes:
- *   an empty file or a mode change reads as binary only until the blob says otherwise.
- * - `renamedUnchanged`: renamed with no lines changed, "Renamed, no changes".
+ * What a file's patch settles ahead of its blobs (D45). `binary`: no patch and no lines, modified, added or deleted. Its
+ * blob still has the last word, and gives its sizes: an empty file or a mode change reads as binary only until the blob
+ * says otherwise. A renamed file with no lines changed is settled by its blobs alone: a renamed binary whose content
+ * changed reports no lines too.
  */
-export type ReviewFileVerdict = 'binary' | 'renamedUnchanged';
+export type ReviewFileVerdict = 'binary';
 
 /** How sure it is that a file with threads is not on the list (D30). */
 export type ReviewFileGone =
@@ -123,6 +122,8 @@ export type ReviewFileState =
     | { readonly kind: 'loading' }
     /** The merge base's text and the head's; `null` for the side the file doesn't exist on. */
     | { readonly kind: 'ready'; readonly before: string | null; readonly after: string | null }
+    /** Its two sides are the same blob, as for a rename that kept the content: nothing to read or diff. */
+    | { readonly kind: 'unchanged' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
     /** Above {@link MAX_FILE_BYTES} on either side: not fetched. */
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
@@ -189,6 +190,8 @@ export interface PullRequestFiles {
     readonly progress: ReviewFilesProgress;
     /** The file a jump is fetching ahead of the rest, until it arrives (D35). */
     readonly fetchingFirst: string | null;
+    /** How far the read of the patches (D45) is while it runs; `null` once it is done or failed, or before it starts. */
+    readonly patchesProgress: ReviewPatchesProgress | null;
     /** Until when nothing is read from GitHub (D35), epoch ms: viewed marks still go through. Carries on by itself. */
     readonly pausedUntil: number | null;
     /** When GitHub last answered the whole list, epoch ms; `null` for what has only been read from disk so far. */
@@ -259,6 +262,14 @@ export interface ReviewFilesProgress {
     readonly total: number;
 }
 
+/** How far the read of the patches is: see {@link PullRequestFiles.patchesProgress}. */
+export interface ReviewPatchesProgress {
+    /** Pages read so far, 100 files each. */
+    readonly read: number;
+    /** How many pages there are; `null` until GitHub says. */
+    readonly pages: number | null;
+}
+
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
 const MAX_FILE_BYTES = 1_000_000;
 /** From here on a file starts collapsed (D8), near where GitHub's own patches give up. */
@@ -294,6 +305,12 @@ const MAX_QUERIES_AT_ONCE = 3;
 const UPDATE_EVERY_MS = 16;
 
 type PausedState = Extract<ReviewFileState, { kind: 'paused' }>;
+
+/** A read of the patches under way, and the run it is for. */
+interface PatchesRead {
+    readonly run: FileRun;
+    readonly progress: ReviewPatchesProgress;
+}
 
 const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
@@ -535,6 +552,8 @@ export const ReviewFiles = defineService({
             const threadsStateRef = shallowRef<ReviewThreadsState>(LOADING);
             /** The last read of where renamed files came from failed: those files stay without it. */
             const renamesFailedRef = shallowRef(false);
+            /** The read of the patches under way, of the run it is for. */
+            const patchesProgressRef = shallowRef<PatchesRead | null>(null);
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
@@ -617,6 +636,10 @@ export const ReviewFiles = defineService({
                     },
                     get fetchingFirst() {
                         return readFetchingFirst();
+                    },
+                    get patchesProgress() {
+                        const reading = patchesProgressRef.value;
+                        return reading?.run === runRef.value ? reading.progress : null;
                     },
                     get pausedUntil() {
                         return pausedRef.value?.until ?? null;
@@ -1756,10 +1779,14 @@ export const ReviewFiles = defineService({
             async function readPatches(run: FileRun) {
                 try {
                     assertMayAsk();
+                    patchesProgressRef.value = { run, progress: { read: 0, pages: null } };
                     await listPullRequestFiles(current.rest, {
                         nameWithOwner,
                         number: reference.number,
-                        onPage: files => takePatches(run, files),
+                        onPage: page => {
+                            takePatches(run, page.files);
+                            patchesProgressRef.value = { run, progress: { read: page.number, pages: page.pages } };
+                        },
                     });
                     if (!isLive(run)) {
                         return;
@@ -1779,6 +1806,10 @@ export const ReviewFiles = defineService({
                             run.queue.filter(entry => isHeldForRenames(run, entry)),
                             toError(error),
                         );
+                    }
+                } finally {
+                    if (patchesProgressRef.value?.run === run) {
+                        patchesProgressRef.value = null;
                     }
                 }
             }
@@ -2370,7 +2401,7 @@ function withPatch(file: ReviewFile, listed: PullRequestFile): ReviewFile {
     };
 }
 
-/** What the patch settles (D45), by GraphQL's change type: REST's status may be one it does not know. */
+/** What the patch settles early (D45): a file with no patch and no lines changed is binary, by GraphQL's change type. */
 function readVerdict(
     changeType: PatchStatus,
     { layout, additions, deletions }: PullRequestFile,
@@ -2385,7 +2416,6 @@ function readVerdict(
         case 'DELETED':
             return layout === null ? 'binary' : null;
         case 'RENAMED':
-            return 'renamedUnchanged';
         case 'CHANGED':
         case 'COPIED':
             return null;
@@ -2460,13 +2490,15 @@ function readOutcome(
     answers: ReadonlyMap<string, ReviewBlobOidAnswer>,
 ): FileSides | ReviewFileState {
     const found = [before, after].filter(expression => expression !== null).map(expression => answers.get(expression));
+    const beforeBlob = readBlobSide(before, answers);
+    const afterBlob = readBlobSide(after, answers);
+    if (beforeBlob && afterBlob && beforeBlob.oid === afterBlob.oid) {
+        return { kind: 'unchanged' };
+    }
 
     // A side that can't be shown settles it, whatever the other says. GitHub listed the file at these commits, so a side
     // answering nothing is a submodule, which is how GitHub answers a gitlink: a pointer with no text, like a directory.
-    const sizes = {
-        before: readBlobSide(before, answers)?.byteSize ?? null,
-        after: readBlobSide(after, answers)?.byteSize ?? null,
-    };
+    const sizes = { before: beforeBlob?.byteSize ?? null, after: afterBlob?.byteSize ?? null };
     if (found.some(answer => answer?.kind === 'noBlob' || (answer?.kind === 'blob' && answer.isBinary))) {
         return { kind: 'binary', ...sizes };
     }
@@ -2481,7 +2513,7 @@ function readOutcome(
         }
     }
 
-    return { before: readBlobSide(before, answers), after: readBlobSide(after, answers) };
+    return { before: beforeBlob, after: afterBlob };
 }
 
 function readBlobSide(expression: string | null, answers: ReadonlyMap<string, ReviewBlobOidAnswer>): BlobSide | null {

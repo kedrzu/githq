@@ -171,7 +171,7 @@ test('a jump lands the file exactly at the top and it stays there as files arriv
     await expect(review.fileRow('file35.ts')).toHaveAttribute('aria-current', 'true');
 });
 
-test('a file arriving under a reader deep in its placeholder shows from its start, and stays the file the list is at', async ({
+test("a file arriving under a reader inside its patch's placeholder keeps the line read where it was, and stays the file the list is at (D45)", async ({
     page,
     github,
 }) => {
@@ -187,12 +187,17 @@ test('a file arriving under a reader deep in its placeholder shows from its star
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('rewritten.ts')).toBeVisible();
     await review.diff.hover();
-    await page.mouse.wheel(0, 3000);
-    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(3000);
+    await page.mouse.wheel(0, 1000);
+    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(1000);
+    // Line 60 of both sides, its numbers from the patch.
+    const placeholderLine = review.diff.getByText('60', { exact: true }).first();
+    await expect(placeholderLine).toBeInViewport();
+    const before = await placeholderLine.boundingBox();
 
     release();
-    await expect(review.code('const new0 = 1;')).toHaveCount(1);
-    await expect.poll(() => review.headerOffset('src/rewritten.ts')).toBe(0);
+    const arrived = review.code('const new59 = 1;');
+    await expect(arrived).toHaveCount(1);
+    await expect.poll(async () => (await arrived.boundingBox())?.y).toBe(before?.y);
     await expect(review.fileRow('rewritten.ts')).toHaveAttribute('aria-current', 'true');
 });
 

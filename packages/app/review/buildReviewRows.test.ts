@@ -418,7 +418,7 @@ test('a line past what a file now holds lands on the nearest row above it, not a
     });
 });
 
-test('a placeholder held gives way to the top of its file, whatever it arrived as: how far into it the reader was means nothing there', () => {
+test('guessed bars held give way to the top of their file, whatever it arrived as: how far into them the reader was means nothing there', () => {
     const waiting = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'placeholder' }) });
     const held = waiting.find(row => row.kind === 'placeholder');
     if (!held) {
@@ -611,13 +611,62 @@ test('a file not arrived holds its header at the top; a thread is found by its k
     ).toMatchObject({ row: { key }, offset: 90, landing: 'arrived' });
 });
 
-test('a position inside a placeholder is kept as its file, for how far says nothing of what comes', () => {
+test('a position inside guessed bars is kept as its file, for how far says nothing of what comes', () => {
     const rows = buildReviewRows({ files: [A], getContent: () => ({ kind: 'placeholder' }) });
     const placeholder = rows.find(row => row.kind === 'placeholder');
 
     expect(getReviewPosition(placeholder!, -300)).toEqual({
         place: { kind: 'row', key: getReviewHeaderKey(A.path) },
         offset: 0,
+    });
+});
+
+test("a placeholder's line holds the position as the line it stands for, when the file arrives and across layouts", () => {
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(DIFF), verdict: null } };
+    const waiting = (layout: 'split' | 'unified') =>
+        buildReviewRows({
+            files: [file, B],
+            getContent: () => ({
+                kind: 'placeholder',
+                rows: buildPlaceholderRows({ file, layout, hideWhitespace: false }),
+            }),
+        });
+    const split = waiting('split');
+    const held = split.find(
+        row =>
+            row.kind === 'placeholder' &&
+            row.part.kind === 'line' &&
+            row.part.line.kind === 'split' &&
+            row.part.line.right?.line === 19,
+    );
+    assert(held);
+
+    expect(getReviewPosition(held, -40)).toEqual({
+        place: { kind: 'line', path: A.path, side: 'after', line: 19 },
+        offset: -40,
+    });
+
+    const arrived = buildAll([A, B], 'split');
+    expect(findReplacementRow({ key: held.key, offset: -40, previous: split, next: arrived })).toEqual({
+        row: lineWithAfter(arrived, 19),
+        offset: -40,
+    });
+
+    const unified = waiting('unified');
+    const switched = findReplacementRow({ key: held.key, offset: -40, previous: split, next: unified });
+    expect(switched?.offset).toBe(-40);
+    expect(
+        switched?.row.kind === 'placeholder' && switched.row.part.kind === 'line' && switched.row.part.line,
+    ).toMatchObject({
+        kind: 'unified',
+        newLine: 19,
+    });
+
+    const position = getReviewPosition(held, -40);
+    expect(findReviewPositionRow({ position, rows: unified, order: [A.path, B.path] })).toMatchObject({
+        row: { key: switched?.row.key },
+        offset: -40,
+        landing: 'fileWaiting',
     });
 });
 
@@ -766,6 +815,21 @@ test('a push having reset what was expanded, only the first gap says so', () => 
             .map(() => false),
     ]);
     expect(rows.filter(row => row.kind === 'gap').length).toBeGreaterThan(1);
+});
+
+test("a push's reset is said by the first gap still hiding lines, past one whose lines all show for a thread; by the first alone when none does (CR62)", () => {
+    const build = (text: string) => {
+        const after = text.replace('line 1\n', 'line one\n').replace('line 10\n', 'line ten\n');
+        const diff = computeFileDiff({ before: text, after, ...NO_IGNORE });
+        const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(6, { id: 'gapEnd' })]);
+        return buildFileLineRows({ path: A.path, diff, layout: 'split', expansionReset: true, threads }).flatMap(row =>
+            row.kind === 'gap' ? [[row.firstLine, row.hidden, row.expansionReset]] : [],
+        );
+    };
+
+    // Lines 5 and 6 all show for the thread on 6; 14 to 30 stay hidden.
+    expect(build(lines(30))).toEqual([[14, 17, true]]);
+    expect(build(lines(10))).toEqual([[5, 0, true]]);
 });
 
 test('each kind of gap has its arrows: up at the top of a file, down at its end, both between hunks, one for a short gap', () => {

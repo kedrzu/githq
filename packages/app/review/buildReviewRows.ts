@@ -224,7 +224,7 @@ export type ReviewFileContent =
     /** Gone from the diff (D12): nothing but its threads. */
     | { readonly kind: 'gone' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
-    /** Renamed with no lines changed, as its patch says (D45). */
+    /** Renamed, its blobs the same on both sides (D45). */
     | { readonly kind: 'renamedUnchanged' }
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
     | { readonly kind: 'failed'; readonly error: Error }
@@ -416,7 +416,7 @@ export interface BuildFileLineRowsParams {
     readonly layout: DiffLayout;
     /** The lines shown beyond the context. */
     readonly expanded?: readonly DiffLineRange[];
-    /** A push reset the context expanded in the file: its first gap says so. */
+    /** A push reset the context expanded in the file: its first gap that still hides lines says so (CR62). */
     readonly expansionReset?: boolean;
     /** The file's threads as placed on this diff: their rows go in where they belong. */
     readonly threads?: readonly ThreadPlacement[];
@@ -440,7 +440,7 @@ export function buildFileLineRows({
     threads = [],
     comments = [],
 }: BuildFileLineRowsParams): ReviewRow[] {
-    let resetToSay = expansionReset;
+    let resetToSay = expansionReset && threads.length === 0;
     const rows = buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
@@ -465,7 +465,7 @@ export function buildFileLineRows({
     });
 
     const withThreads = insertCommentRows(
-        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows,
+        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }) : rows,
         { path, layout, comments },
     );
     if (!isOnlyWhitespaceChanged(diff)) {
@@ -490,7 +490,10 @@ function isWholeFile({ atFileEnd, range }: ReviewGapRow) {
     return atFileEnd && range.afterStart === 0;
 }
 
-interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'diff' | 'syntax' | 'layout'> {
+interface InsertThreadRowsParams extends Pick<
+    BuildFileLineRowsParams,
+    'path' | 'diff' | 'syntax' | 'layout' | 'expansionReset'
+> {
     readonly rows: readonly ReviewRow[];
     readonly threads: readonly ThreadPlacement[];
 }
@@ -498,9 +501,10 @@ interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 
 /**
  * The rows with the threads in: those that found no line first (D30), those on a line right after it, and those on hidden
  * lines with their code by their gap, the nearer a change above it before the gap and the nearer one below it after, which
- * keeps them in the order of the lines.
+ * keeps them in the order of the lines. A push's reset is said by the first gap still hiding lines once the threads' code
+ * shows, or by the first gap alone when none does (CR62).
  */
-function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertThreadRowsParams) {
+function insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }: InsertThreadRowsParams) {
     const result: ReviewRow[] = [];
     const underRows = groupByToMap(
         threads.filter(placement => placement.kind === 'onLine'),
@@ -516,20 +520,25 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
         }
     }
 
+    const gaps = rows.filter(row => row.kind === 'gap');
+    const resetKey = expansionReset
+        ? (gaps.find(gap => gap.hidden > countShownLines(inGaps.get(gap.range.afterStart) ?? [])) ?? gaps[0])?.key
+        : undefined;
     for (const row of rows) {
         if (row.kind === 'gap') {
             const inGap = (inGaps.get(row.range.afterStart) ?? []).toSorted(
                 (a, b) => getGapOffset(a, a.line) - getGapOffset(b, b.line),
             );
+            const saysReset = row.key === resetKey;
             pushPieces(inGap.filter(placement => placement.direction === 'down'));
             const last = inGap.at(-1);
-            if (last && row.atFileEnd && !isWholeFile(row) && !row.expansionReset) {
+            if (last && row.atFileEnd && !isWholeFile(row) && !saysReset) {
                 pushFileEnd(row, getGapOffset(last, last.line) + 1);
             } else {
                 const hidden = row.hidden - countShownLines(inGap);
                 // Nothing left of it but a push to say, which only it can.
-                if (hidden > 0 || row.expansionReset) {
-                    result.push({ ...row, hidden });
+                if (hidden > 0 || saysReset) {
+                    result.push({ ...row, hidden, expansionReset: saysReset });
                 }
             }
 
@@ -947,18 +956,18 @@ export interface ReviewPosition {
 }
 
 /**
- * Where a row at that distance from the top is. Inside a file not here, how far says nothing of what will replace it: its
- * header, at the top.
+ * Where a row at that distance from the top is. A placeholder's line is the line it stands for (D45). Anywhere else
+ * inside a file not here, how far says nothing of what will replace it: its header, at the top.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function getReviewPosition(row: ReviewRow, offset: number): ReviewPosition {
     const path = getReviewRowPath(row.key);
-    if (row.kind === 'placeholder' || row.kind === 'paused') {
+    const line = getRowLine(row);
+    if (!line && (row.kind === 'placeholder' || row.kind === 'paused')) {
         return { place: { kind: 'row', key: getReviewHeaderKey(path) }, offset: 0 };
     }
 
-    const line = getRowLine(row);
     return { place: line ? { kind: 'line', path, ...line } : { kind: 'row', key: row.key }, offset };
 }
 
@@ -981,7 +990,8 @@ export interface FindReviewPositionRowParams {
 /** The row a position lands on now, and how far that is from what it asked for. */
 export interface ReviewPositionRow extends ReviewRowReplacement {
     /**
-     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its header, until they are.
+     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its placeholder's line or its header,
+     * until they are.
      * `fileMissing`: the file isn't among the rows, the next one standing in.
      */
     readonly landing: 'arrived' | 'fileWaiting' | 'fileMissing';
@@ -1024,12 +1034,9 @@ export function findReviewPositionRow({
         return next && { ...next, landing: 'fileMissing' };
     }
 
-    if (isFileWaiting(rows, start)) {
-        return { row: header, offset: 0, landing: 'fileWaiting' };
-    }
-
     const nearest = place.kind === 'line' ? findNearestLineRow(rows, start, place) : null;
-    return nearest ? { row: nearest, offset, landing: 'arrived' } : { row: header, offset: 0, landing: 'arrived' };
+    const landing = isFileWaiting(rows, start) ? 'fileWaiting' : 'arrived';
+    return nearest ? { row: nearest, offset, landing } : { row: header, offset: 0, landing };
 }
 
 function isFileWaiting(rows: readonly ReviewRow[], header: number) {
@@ -1068,9 +1075,10 @@ export interface ReviewRowReplacement {
  * What to hold in place when the row held is gone from the new rows, because the layout or the whitespace setting
  * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
- * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
- * for a placeholder or a file waiting for the allowance: how far into it the reader was says nothing about what replaced
- * it, often much shorter, so its file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
+ * the last file, what now follows that file, which is at the same place; a placeholder's line counting as the line it
+ * stands for (D45). All at the same distance from the top, but for a placeholder's gap or guessed bars or a file waiting
+ * for the allowance: how far into it the reader was says nothing about what replaced it, often much shorter, so its file
+ * shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
  *
  * A file gone from the rows, marked viewed with those hidden or filtered away, gives way to the next file still there, or
  * the last before it when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the
@@ -1097,8 +1105,9 @@ export function findReplacementRow({
         return findNextFileHeader({ key, offset, previous, next, order });
     }
 
+    const place = held ? getRowLine(held) : null;
     if (
-        held?.kind === 'placeholder' ||
+        (held?.kind === 'placeholder' && !place) ||
         held?.kind === 'paused' ||
         held?.kind === 'end' ||
         held?.kind === 'allViewed' ||
@@ -1108,7 +1117,6 @@ export function findReplacementRow({
         return { row: header, offset: 0 };
     }
 
-    const place = held ? getRowLine(held) : null;
     const first = next[start + 1] ?? header;
     if (!place) {
         return { row: first, offset };
@@ -1248,6 +1256,16 @@ function getRowLine(row: ReviewRow): RowLine | null {
             return { side: 'after', line: row.lines.start + 1 };
         case 'comment':
             return { side: row.target.side, line: row.target.line };
+        case 'placeholder': {
+            if (row.part.kind !== 'line') {
+                return null;
+            }
+
+            const after = getPlaceholderLineNumber(row.part.line, 'after');
+            return after === null
+                ? { side: 'before', line: getPlaceholderLineNumber(row.part.line, 'before') ?? 1 }
+                : { side: 'after', line: after };
+        }
         default:
             return null;
     }
@@ -1260,6 +1278,8 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
             return getLineNumber(row.line, side);
         case 'gap':
             return side === 'after' ? row.firstLine : row.firstOlderLine;
+        case 'placeholder':
+            return row.part.kind === 'line' ? getPlaceholderLineNumber(row.part.line, side) : null;
         default:
             return null;
     }
@@ -1267,6 +1287,17 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
 
 function getLineNumber(line: DiffSplitRow | DiffUnifiedRow, side: RowLine['side']): number | null {
     if (line.layout === 'split') {
+        return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
+    }
+
+    return side === 'after' ? line.newLine : line.oldLine;
+}
+
+function getPlaceholderLineNumber(
+    line: PlaceholderSplitLine | PlaceholderUnifiedLine,
+    side: RowLine['side'],
+): number | null {
+    if (line.kind === 'split') {
         return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
     }
 

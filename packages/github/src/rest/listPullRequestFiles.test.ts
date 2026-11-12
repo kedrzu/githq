@@ -4,10 +4,12 @@ import { expect, test } from 'bun:test';
 import { GitHubApiError } from '../GitHubApiError.js';
 import { createGitHubRestRequester } from './createGitHubRestRequester.js';
 import { listPullRequestFiles } from './listPullRequestFiles.js';
+import type { PullRequestFilesPage } from './listPullRequestFiles.js';
 
 const NEXT_URL = 'https://api.github.com/repositories/1/pulls/7/files?per_page=100&page=2';
+const LAST_URL = 'https://api.github.com/repositories/1/pulls/7/files?per_page=100&page=2';
 
-test('reads every page: where renamed and copied files came from, their status, size and patch layout', async () => {
+test('reads every page: where renamed and copied files came from, their size and patch layout', async () => {
     const requests: Parameters<Fetch>[] = [];
     const rest = createRest(requests, [
         Response.json(
@@ -22,36 +24,48 @@ test('reads every page: where renamed and copied files came from, their status, 
                 },
                 { filename: 'image.png', status: 'added', additions: 0, deletions: 0 },
             ],
-            { headers: { link: `<${NEXT_URL}>; rel="next"` } },
+            { headers: { link: `<${NEXT_URL}>; rel="next", <${LAST_URL}>; rel="last"` } },
         ),
         Response.json([
             { filename: 'copy.ts', previous_filename: 'source.ts', status: 'copied', additions: 0, deletions: 0 },
             { filename: 'gone.ts', status: 'removed', additions: 0, deletions: 2, patch: '@@ -1,2 +0,0 @@\n-a\n-b' },
         ]),
     ]);
+    const pages: PullRequestFilesPage[] = [];
 
-    const files = await listPullRequestFiles(rest, { nameWithOwner: 'kedrzu/githq', number: 7 });
+    await listPullRequestFiles(rest, { nameWithOwner: 'kedrzu/githq', number: 7, onPage: page => pages.push(page) });
 
-    expect(files).toEqual([
+    const expected: PullRequestFilesPage[] = [
         {
-            path: 'new.ts',
-            previousPath: 'old.ts',
-            status: 'RENAMED',
-            additions: 1,
-            deletions: 1,
-            layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '-+' }] },
+            files: [
+                {
+                    path: 'new.ts',
+                    previousPath: 'old.ts',
+                    additions: 1,
+                    deletions: 1,
+                    layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '-+' }] },
+                },
+                { path: 'image.png', previousPath: null, additions: 0, deletions: 0, layout: null },
+            ],
+            number: 1,
+            pages: 2,
         },
-        { path: 'image.png', previousPath: null, status: 'ADDED', additions: 0, deletions: 0, layout: null },
-        { path: 'copy.ts', previousPath: 'source.ts', status: 'COPIED', additions: 0, deletions: 0, layout: null },
         {
-            path: 'gone.ts',
-            previousPath: null,
-            status: 'DELETED',
-            additions: 0,
-            deletions: 2,
-            layout: { hunks: [{ beforeStart: 1, afterStart: 0, lines: '--' }] },
+            files: [
+                { path: 'copy.ts', previousPath: 'source.ts', additions: 0, deletions: 0, layout: null },
+                {
+                    path: 'gone.ts',
+                    previousPath: null,
+                    additions: 0,
+                    deletions: 2,
+                    layout: { hunks: [{ beforeStart: 1, afterStart: 0, lines: '--' }] },
+                },
+            ],
+            number: 2,
+            pages: 2,
         },
-    ]);
+    ];
+    expect(pages).toEqual(expected);
     expect(requests.map(([url]) => url)).toEqual([
         'https://api.github.com/repos/kedrzu/githq/pulls/7/files?per_page=100',
         NEXT_URL,
@@ -68,19 +82,20 @@ test('tells of each page as it arrives, before asking for the next; throwing the
             { filename: 'b.ts', status: 'removed', additions: 0, deletions: 1, patch: '@@ -1 +0,0 @@\n-b' },
         ]),
     ];
-    const told: { readonly paths: string[]; readonly asked: number }[] = [];
+    const told: { readonly paths: string[]; readonly asked: number; readonly pages: number | null }[] = [];
 
-    const files = await listPullRequestFiles(createRest(requests, pages()), {
+    await listPullRequestFiles(createRest(requests, pages()), {
         nameWithOwner: 'kedrzu/githq',
         number: 7,
-        onPage: page => told.push({ paths: page.map(file => file.path), asked: requests.length }),
+        onPage: page =>
+            told.push({ paths: page.files.map(file => file.path), asked: requests.length, pages: page.pages }),
     });
 
+    // No last page named: not known until the last one.
     expect(told).toEqual([
-        { paths: ['a.ts'], asked: 1 },
-        { paths: ['b.ts'], asked: 2 },
+        { paths: ['a.ts'], asked: 1, pages: null },
+        { paths: ['b.ts'], asked: 2, pages: 2 },
     ]);
-    expect(files.map(file => file.path)).toEqual(['a.ts', 'b.ts']);
 
     const stopped: Parameters<Fetch>[] = [];
     await expect(
@@ -104,41 +119,10 @@ test('a page that is not a list of files is malformed', async () => {
     for (const answer of answers) {
         const rest = createRest([], [answer]);
 
-        await expect(listPullRequestFiles(rest, { nameWithOwner: 'kedrzu/githq', number: 7 })).rejects.toBeInstanceOf(
-            GitHubApiError,
-        );
+        await expect(
+            listPullRequestFiles(rest, { nameWithOwner: 'kedrzu/githq', number: 7, onPage: () => {} }),
+        ).rejects.toBeInstanceOf(GitHubApiError);
     }
-});
-
-test('a status GitHub added since is null, and the file is still read', async () => {
-    const rest = createRest(
-        [],
-        [
-            Response.json([
-                {
-                    filename: 'a.ts',
-                    previous_filename: 'b.ts',
-                    status: 'teleported',
-                    additions: 1,
-                    deletions: 0,
-                    patch: '@@ -0,0 +1 @@\n+a',
-                },
-            ]),
-        ],
-    );
-
-    const files = await listPullRequestFiles(rest, { nameWithOwner: 'kedrzu/githq', number: 7 });
-
-    expect(files).toEqual([
-        {
-            path: 'a.ts',
-            previousPath: 'b.ts',
-            status: null,
-            additions: 1,
-            deletions: 0,
-            layout: { hunks: [{ beforeStart: 0, afterStart: 1, lines: '+' }] },
-        },
-    ]);
 });
 
 function createRest(requests: Parameters<Fetch>[], answers: Response[]) {

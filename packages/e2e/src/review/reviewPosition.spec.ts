@@ -171,18 +171,26 @@ test('the status bar says why a review opens where it does, until the first move
     await expect(statusBar).toContainText(/Back\sin\s#202\swhere\syou\sleft\sit:\sengine\.ts,\sline\s50/);
 });
 
-test('a remembered line whose file is not here holds its header and takes over when it comes; a scroll meanwhile is left alone', async ({
+test("a remembered line whose file is not here holds its place in the patch's placeholder and takes over when it comes; a scroll meanwhile is left alone (D45)", async ({
     page,
     github,
 }) => {
     const { review, answered } = await openReview(page, github);
     await readLine(review, READ, READ_TOP);
     await forgetKeptTexts(page);
+    // `engine47` is line 48: its number in the placeholder, from the patch.
+    const placeholderLine = review.diff.getByText('48', { exact: true }).first();
 
     let release = answered.hold(ENGINE);
     await page.reload();
     await expect(review.fileRow('engine.ts')).toBeVisible();
-    await expect.poll(() => review.headerOffset(ENGINE)).toBe(0);
+    await expect.poll(() => review.code(READ).count()).toBe(0);
+    await expect
+        .poll(async () => {
+            const [line, diff] = await Promise.all([placeholderLine.boundingBox(), review.diff.boundingBox()]);
+            return line && diff ? line.y - diff.y : null;
+        })
+        .toBeCloseTo(READ_TOP, 0);
     release();
     await expect.poll(() => lineOffset(review, READ)).toBeCloseTo(READ_TOP, 0);
 
@@ -190,9 +198,9 @@ test('a remembered line whose file is not here holds its header and takes over w
     release = answered.hold(ENGINE);
     await page.reload();
     await expect(review.fileRow('engine.ts')).toBeVisible();
-    await expect.poll(() => review.headerOffset(ENGINE)).toBe(0);
+    await expect(placeholderLine).toBeInViewport();
     await review.diff.hover();
-    await page.mouse.wheel(0, -500);
+    await page.mouse.wheel(0, -5000);
     await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(0);
 
     release();

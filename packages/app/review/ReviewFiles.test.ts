@@ -60,7 +60,7 @@ test('the list comes through all its pages, and a file reads as it is at the mer
     });
 });
 
-test("every file gets its patch's layout and what the patch settles: binary, renamed with no changes, or nothing without a patch", async () => {
+test("every file gets its patch's layout and what the patch settles: binary, or nothing without a patch; a renamed one with no lines changed is settled by its blobs", async () => {
     const github = createGitHub({ pageSize: 10 });
     github.file({ path: 'changed.ts', changeType: 'MODIFIED', before: 'a', after: 'b' });
     github.file({ path: 'image.png', changeType: 'MODIFIED', before: 'png once', after: 'png', binary: true });
@@ -71,6 +71,24 @@ test("every file gets its patch's layout and what the patch settles: binary, ren
         previousPath: 'old.ts',
         before: 'same',
         after: 'same',
+        patch: { additions: 0, deletions: 0 },
+    });
+    github.file({
+        path: 'icon.png',
+        changeType: 'RENAMED',
+        previousPath: 'old-icon.png',
+        before: 'icon',
+        after: 'icon',
+        binary: true,
+        patch: { additions: 0, deletions: 0 },
+    });
+    github.file({
+        path: 'logo.png',
+        changeType: 'RENAMED',
+        previousPath: 'old-logo.png',
+        before: 'logo once',
+        after: 'logo',
+        binary: true,
         patch: { additions: 0, deletions: 0 },
     });
     github.file({
@@ -98,7 +116,9 @@ test("every file gets its patch's layout and what the patch settles: binary, ren
         'changed.ts': USUAL_PATCH,
         'image.png': { layout: null, verdict: 'binary' },
         'empty.ts': { layout: null, verdict: 'binary' },
-        'moved.ts': { layout: null, verdict: 'renamedUnchanged' },
+        'moved.ts': { layout: null, verdict: null },
+        'icon.png': { layout: null, verdict: null },
+        'logo.png': { layout: null, verdict: null },
         'copied.ts': { layout: null, verdict: null },
         'huge.ts': { layout: null, verdict: null },
         'unlisted.ts': undefined,
@@ -107,6 +127,11 @@ test("every file gets its patch's layout and what the patch settles: binary, ren
     // The blob has the last word: the empty file is no binary, and the binary one has its sizes.
     expect(model.getState('empty.ts')).toEqual({ kind: 'ready', before: null, after: '' });
     expect(model.getState('image.png')).toEqual({ kind: 'binary', before: 8, after: 3 });
+    // The same blob on both sides, text or binary, is unchanged without reading it; a renamed binary changed is binary.
+    expect(model.getState('moved.ts')).toEqual({ kind: 'unchanged' });
+    expect(model.getState('icon.png')).toEqual({ kind: 'unchanged' });
+    expect(model.getState('logo.png')).toEqual({ kind: 'binary', before: 9, after: 4 });
+    expect(textsAsked(session)).not.toContain(oidOf('same'));
     expect(textsAsked(session)).not.toContain(oidOf('png'));
 });
 
@@ -145,11 +170,13 @@ test('patches show page by page, and a renamed file named on a page goes on with
         'later.ts': undefined,
     });
     expect(model.listEnd).toBe('certain');
+    expect(model.patchesProgress).toEqual({ read: 1, pages: 2 });
 
     secondPage.release();
 
     await waitUntil(() => model.files[2]?.patch !== undefined, { timeoutMs: 2000 });
     expect(model.files[2]?.patch).toEqual(USUAL_PATCH);
+    await waitUntil(() => model.patchesProgress === null, { timeoutMs: 2000 });
 });
 
 test('patches GitHub fails on leave the files without them, fetched as ever; opening the pull request again reads them', async () => {
@@ -163,6 +190,7 @@ test('patches GitHub fails on leave the files without them, fetched as ever; ope
 
     expect(model.getState('changed.ts')).toEqual({ kind: 'ready', before: 'a', after: 'b' });
     expect(model.files[0]?.patch).toBeUndefined();
+    expect(model.patchesProgress).toBeNull();
 
     expect(files.open(REFERENCE)).toBe(model);
 
@@ -2364,7 +2392,12 @@ function createGitHub({ pageSize = 2 }: { pageSize?: number } = {}) {
                 status: 200,
                 ...(last
                     ? {}
-                    : { link: `<https://api.github.com/repos/acme/web/pulls/7/files?page=${page + 1}>; rel="next"` }),
+                    : {
+                          link: [
+                              `<https://api.github.com/repos/acme/web/pulls/7/files?page=${page + 1}>; rel="next"`,
+                              `<https://api.github.com/repos/acme/web/pulls/7/files?page=${Math.ceil(files.length / pageSize)}>; rel="last"`,
+                          ].join(', '),
+                      }),
                 body: files.slice((page - 1) * pageSize, page * pageSize).flatMap(testFile => {
                     const patch = testFile.patch === undefined ? getUsualPatch(testFile) : testFile.patch;
                     return patch
