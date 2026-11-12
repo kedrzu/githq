@@ -51184,6 +51184,8 @@
                           "name": "Result vitejs/vite",
                           "width": "fill_container",
                           "fill": "$sel",
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "descendants": {
                             "z7iSD": {
                               "icon": "book-marked"
@@ -51764,6 +51766,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -53240,6 +53244,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -53988,6 +53994,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -56359,6 +56367,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -57257,6 +57267,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -80097,6 +80109,8 @@
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "gap": 10,
                               "padding": [
                                 7,
@@ -84791,6 +84805,8 @@
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "gap": 10,
                               "padding": [
                                 7,
@@ -85909,6 +85925,8 @@
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "gap": 10,
                               "padding": [
                                 8,
@@ -107978,6 +107996,8 @@
                               "name": "Result Check for updates",
                               "width": "fill_container",
                               "fill": "$sel",
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "descendants": {
                                 "z7iSD": {
                                   "icon": "refresh-cw"
@@ -116911,6 +116931,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -125707,6 +125729,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -160968,6 +160992,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -187490,6 +187516,8 @@
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "gap": 10,
                               "padding": [
                                 7,
@@ -209179,6 +209207,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 6,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -254418,6 +254448,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -255055,6 +255087,8 @@
                           "width": "fill_container",
                           "fill": "$sel",
                           "cornerRadius": 7,
+                          "stroke": "#7B87F74D",
+                          "strokeWidth": 1,
                           "gap": 10,
                           "padding": [
                             7,
@@ -258256,6 +258290,8 @@
                               "width": "fill_container",
                               "fill": "$sel",
                               "cornerRadius": 7,
+                              "stroke": "#7B87F74D",
+                              "strokeWidth": 1,
                               "gap": 10,
                               "padding": [
                                 7,
