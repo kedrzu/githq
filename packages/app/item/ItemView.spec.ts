@@ -376,10 +376,11 @@ test.each([
         await story().run();
         const summary = getScrollContainer('item-summary');
         const timeline = getScrollContainer('item-timeline');
-        const [left, right] = [summary.getBoundingClientRect(), timeline.getBoundingClientRect()];
+        const [left, right] = [getSummaryColumn().getBoundingClientRect(), timeline.getBoundingClientRect()];
         expect(left.width).toBe(440);
         expect(right.left).toBe(left.right);
         expect(right.top).toBe(left.top);
+        expect(getComputedStyle(getSummaryColumn()).borderRightWidth).toBe('1px');
         // The heading and the merge block in the summary, the thread in the timeline.
         expect(summary.contains(page.getByRole('heading', { level: 1 }).element())).toBe(true);
         expect(timeline.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
@@ -402,9 +403,36 @@ test('F19: in two columns the timeline stays at the reading width, 40px from the
     }
 
     expect(thread.getBoundingClientRect().width).toBe(920);
-    expect(thread.getBoundingClientRect().left - getScrollContainer('item-summary').getBoundingClientRect().right).toBe(
-        40,
-    );
+    expect(thread.getBoundingClientRect().left - getSummaryColumn().getBoundingClientRect().right).toBe(40);
+});
+
+test("the summary's column is resized by dragging its edge or by the arrow keys on it, from 360 to 560 px, the width kept on this device and the timeline following it", async () => {
+    window.localStorage.removeItem(SUMMARY_WIDTH_KEY);
+    onTestFinished(() => window.localStorage.removeItem(SUMMARY_WIDTH_KEY));
+    await PullRequestFailingPage.run();
+    const edge = page.getByRole('separator', { name: 'Resize the summary' });
+    const threadLeft = () => getScrollContainer('item-timeline').firstElementChild?.getBoundingClientRect().left;
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(440);
+
+    const drag = press(edge.element());
+    drag.moveBy(60);
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(500);
+    drag.release();
+    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('500');
+    expect(threadLeft()).toBe(500 + 40);
+
+    // A tenth of the 1440 px a press, within the range.
+    edge.element().focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(560);
+    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('560');
+    await userEvent.keyboard('{ArrowLeft}{ArrowLeft}');
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(360);
+    await expect.poll(() => window.localStorage.getItem(SUMMARY_WIDTH_KEY)).toBe('360');
+
+    // Opened again, the item has the width kept.
+    await PullRequestFailingPage.run();
+    await expect.poll(() => getSummaryColumn().getBoundingClientRect().width).toBe(360);
 });
 
 test.each([
@@ -555,6 +583,37 @@ function isInView(element: Element, scroll: HTMLElement) {
 async function useShortWideWindow() {
     await page.viewport(1920, 500);
     onTestFinished(() => page.viewport(414, 896));
+}
+
+/** Where `LocalPreferences` keeps the summary's width. */
+const SUMMARY_WIDTH_KEY = 'githq.panelWidth.itemSummary';
+
+/** In two columns, the summary's column: the panel of the split holding the summary, its line included. */
+function getSummaryColumn() {
+    const column = getScrollContainer('item-summary').parentElement?.parentElement;
+    if (!column) {
+        throw new Error('The summary is in no column.');
+    }
+
+    return column;
+}
+
+/** Presses the mouse on `handle`, as Reka hears it: it listens on the body and takes no width to be clicked by a tool. */
+function press(handle: Element) {
+    const { left: x, top, height } = handle.getBoundingClientRect();
+    const y = top + height / 2;
+    document.body.dispatchEvent(new MouseEvent('mousemove', { clientX: x, clientY: y, bubbles: true }));
+    handle.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));
+
+    return {
+        /** Moves the mouse `by` pixels from where it was pressed. */
+        moveBy(by: number) {
+            document.body.dispatchEvent(new MouseEvent('mousemove', { clientX: x + by, clientY: y, bubbles: true }));
+        },
+        release() {
+            handle.dispatchEvent(new MouseEvent('mouseup', { clientX: x, clientY: y, bubbles: true }));
+        },
+    };
 }
 
 /** The content in one column, scrolling as one: summary, then timeline. */

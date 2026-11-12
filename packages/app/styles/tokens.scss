@@ -207,10 +207,6 @@ $list-header-height: 48px;
 $item-panel-width: 560px;
 // The most an opened item's thread holds: its timeline column in two columns, the one column of a page (centred there).
 $item-reading-width: 920px;
-// From this width of an opened item, panel or page, its summary and timeline sit side by side (`ItemView`).
-$item-two-columns-width: 1000px;
-// The summary column of an opened item in two columns: the stack, the heading, where it stands and its properties.
-$item-summary-width: 440px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;
