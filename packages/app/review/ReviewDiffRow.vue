@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, a submodule's pointer change with what lies between the two commits (`ReviewSubmoduleBlock`), failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -45,6 +45,8 @@ import ReviewThreadRow from './threads/ReviewThreadRow.vue';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getGitHubFileUrl } from './utils/getGitHubFileUrl.js';
+import ReviewSubmoduleBlock from './submodules/ReviewSubmoduleBlock.vue';
+import type { ReviewSubmoduleChange } from './submodules/ReviewSubmodules.js';
 import { getPlaceholderMask } from './utils/getPlaceholderMask.js';
 
 const props = withDefaults(
@@ -53,6 +55,8 @@ const props = withDefaults(
     row: Exclude<ReviewRow, ReviewAllViewedRow>;
     /** Where the pull request's files are on github.com. */
     githubUrl: string;
+    /** A submodule's row's change, by which its history is read; `null` while the head isn't known. */
+    submodule?: ReviewSubmoduleChange | null;
     /** GitHub took the file's viewed mark off since the last visit (D35). */
     changedSince?: boolean;
     /** A resolved thread on this row shows whole. */
@@ -76,7 +80,12 @@ const props = withDefaults(
     /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
     towardGap?: (gap: ReviewGapRow) => ReviewGapDirection;
   }>(),
-  { commented: () => NO_LINES, layout: 'unified', towardGap: (): ReviewGapDirection => 'up' },
+  {
+    submodule: null,
+    commented: () => NO_LINES,
+    layout: 'unified',
+    towardGap: (): ReviewGapDirection => 'up',
+  },
 );
 
 defineSlots<{
@@ -321,6 +330,12 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           {{ t(l.openOnGitHub) }}
         </Button>
       </div>
+      <template v-else-if="row.kind === 'submodule'">
+        <ReviewSubmoduleBlock
+          v-if="submodule"
+          :change="submodule"
+        />
+      </template>
       <div
         v-else-if="row.kind === 'paused'"
         :class="css.reviewDiffRow_notice"

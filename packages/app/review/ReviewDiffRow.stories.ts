@@ -4,6 +4,7 @@ import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
 import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
+import { withSubmoduleHistory } from '@/testing/withSubmoduleHistory.js';
 
 import {
     buildFileLineRows,
@@ -18,6 +19,7 @@ import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
 import ReviewDiffRow from './ReviewDiffRow.vue';
 import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
+import type { ReviewSubmoduleChange } from './submodules/ReviewSubmodules.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
@@ -88,6 +90,12 @@ const LONG_DIFF = computeFileDiff({
 });
 const LONG_FILE = file('src/sync/long.ts', 1, 1);
 const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
+/** A submodule's pointers before and after. */
+const SUBMODULE = {
+    path: 'nzyme',
+    before: 'a1c9e2f0b7d84c3e9a5f1b2c3d4e5f6a7b8c9d0e',
+    after: 'd4f7b21c0e9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c',
+};
 /** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
 const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
 
@@ -477,9 +485,50 @@ export const RenamedUnchanged: Story = {
     },
 };
 
-/** CR65: a submodule, which has no size; also a binary file its patch says is one, before its blob gives the sizes (D45). */
+/** CR65: a binary file its patch says is one, before its blob gives the sizes (D45). */
 export const BinaryNoSize: Story = {
     render: () => renderRows(fileRows(FILE, { kind: 'binary', before: null, after: null })),
+};
+
+/** A submodule's pointer moved: what lies between its two commits in place of a diff, its history read once it is drawn. */
+export const Submodule: Story = {
+    decorators: [
+        withSubmoduleHistory({
+            kind: 'ready',
+            repository: 'kedrzu/nzyme',
+            relation: { kind: 'ahead', count: 1 },
+            commits: [
+                { oid: SUBMODULE.after, subject: 'feat(ioc): resolve child containers lazily', author: 'kedrzu' },
+            ],
+            moreCommits: 0,
+            files: [
+                {
+                    path: 'packages/ioc/src/Container.ts',
+                    previousPath: null,
+                    status: 'modified',
+                    additions: 24,
+                    deletions: 9,
+                },
+            ],
+            moreFiles: false,
+            pullRequests: [
+                {
+                    number: 412,
+                    state: 'OPEN',
+                    title: 'Resolve child containers lazily',
+                    url: 'https://github.com/kedrzu/nzyme/pull/412',
+                    isDraft: false,
+                },
+            ],
+        }),
+    ],
+    render: () =>
+        renderRows(fileRows(file(SUBMODULE.path, 1, 1), { kind: 'submodule', ...SUBMODULE }), {
+            submodule: { nameWithOwner: 'fitloop/webapp', headOid: 'f00dfeed', ...SUBMODULE },
+        }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('1 commit ahead')).toBeVisible();
+    },
 };
 
 /** CR68: waiting for the allowance: the first of them says when and how many; the others only that they wait. */
@@ -629,9 +678,14 @@ interface RenderRowsOptions {
     readonly currentPath?: string;
     /** Every row drawn as a pinned header being pushed up. */
     readonly pushed?: boolean;
+    /** The change a submodule's row shows. */
+    readonly submodule?: ReviewSubmoduleChange;
 }
 
-function renderRows(rows: readonly ReviewRow[], { commented, layout, currentPath, pushed }: RenderRowsOptions = {}) {
+function renderRows(
+    rows: readonly ReviewRow[],
+    { commented, layout, currentPath, pushed, submodule }: RenderRowsOptions = {},
+) {
     return {
         components: { ReviewDiffRow },
         setup: () => ({
@@ -640,9 +694,10 @@ function renderRows(rows: readonly ReviewRow[], { commented, layout, currentPath
             commented,
             layout,
             pushed,
+            submodule,
             isCurrent,
         }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" /></div>`,
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" :submodule="row.kind === 'submodule' ? submodule : null" /></div>`,
     };
 
     function isCurrent(row: ReviewRow) {

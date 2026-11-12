@@ -4,6 +4,7 @@ import { expect, fireEvent, fn, userEvent } from 'storybook/test';
 import { groupReviewFiles } from './groupReviewFiles.js';
 import ReviewFileList from './ReviewFileList.vue';
 import type { ReviewFile, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewSubmoduleState } from './submodules/ReviewSubmodules.js';
 
 const FILES: readonly ReviewFile[] = [
     file('README.md', 6, 0, { viewed: 'VIEWED' }),
@@ -24,6 +25,24 @@ const STATES: Readonly<Record<string, ReviewFileState>> = {
     'src/api/generated/schema.json': { kind: 'tooLarge', before: 80, after: 4_200_000 },
     'src/api/client.ts': { kind: 'failed', error: new Error('GitHub answered 502') },
     'docs/sync.md': { kind: 'loading' },
+};
+
+const SUBMODULE_FILES: readonly ReviewFile[] = [
+    file('nzyme', 1, 1),
+    file('vendor/tokens', 1, 1),
+    file('src/api/client.ts', 9, 3),
+];
+const SUBMODULE_STATE: ReviewFileState = { kind: 'submodule', before: 'a1c9e2f', after: 'd4f7b21' };
+/** `nzyme`'s history, read: three commits ahead. */
+const SUBMODULE_HISTORY: ReviewSubmoduleState = {
+    kind: 'ready',
+    repository: 'kedrzu/nzyme',
+    relation: { kind: 'ahead', count: 3 },
+    commits: ['b1e2c3d', 'c2f3d4e', 'd4f7b21'].map(oid => ({ oid, subject: `Commit ${oid}`, author: 'kedrzu' })),
+    moreCommits: 0,
+    files: [],
+    moreFiles: false,
+    pullRequests: [],
 };
 
 const COLLAPSES: Readonly<Record<string, ReviewFileCollapseReason>> = {
@@ -66,6 +85,24 @@ type Story = StoryObj<typeof meta>;
 
 /** CR46: the files in tree order, viewed ones with an eye; loading, failed, binary and too large marked. */
 export const Files: Story = {};
+
+/** A submodule is tagged so, its commits counted once its block has read them; before that no size at all, not its +1 −1. */
+export const Submodules: Story = {
+    args: {
+        groups: groupReviewFiles(SUBMODULE_FILES),
+        files: SUBMODULE_FILES,
+        currentPath: 'nzyme',
+        changedFiles: SUBMODULE_FILES.length,
+        getState: (path: string) => (path === 'src/api/client.ts' ? READY : SUBMODULE_STATE),
+        getSubmodule: (path: string): ReviewSubmoduleState | null =>
+            path === 'nzyme' ? SUBMODULE_HISTORY : path === 'vendor/tokens' ? { kind: 'loading' } : null,
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getAllByText('submodule')).toHaveLength(2);
+        await expect(canvas.getByTitle('nzyme')).toHaveTextContent('3 commits');
+        await expect(canvas.getByTitle('vendor/tokens')).not.toHaveTextContent(/\+1|commit/u);
+    },
+};
 
 /** Nothing arrived yet. */
 export const Empty: Story = { args: { groups: [], files: [], currentPath: null, changedFiles: null } };

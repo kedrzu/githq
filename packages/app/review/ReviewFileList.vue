@@ -20,6 +20,7 @@ import type { ReviewFileGroup } from './groupReviewFiles.js';
 import * as l from './ReviewFileList.loc.js';
 import ReviewFileRow from './ReviewFileRow.vue';
 import type { ReviewFile, ReviewFileCollapse, ReviewFileCollapseReason, ReviewFileState } from './ReviewFiles.js';
+import type { ReviewSubmoduleState } from './submodules/ReviewSubmodules.js';
 import ReviewToggle from './ReviewToggle.vue';
 import { REVIEW_KEYS } from './useReviewKeySheet.js';
 
@@ -31,6 +32,8 @@ const props = defineProps<{
   getState: (path: string) => ReviewFileState;
   getCollapse: (path: string) => ReviewFileCollapse | null;
   getCollapseReason: (path: string) => ReviewFileCollapseReason | null;
+  /** What is known of a submodule's history, never asked for by the list; `null` for any other file. */
+  getSubmodule?: (path: string) => ReviewSubmoduleState | null;
   /** The file the diff is at. */
   currentPath: string | null;
   /** How many files the pull request really has, once known: GitHub lists at most 3000. */
@@ -238,6 +241,7 @@ function onFilterKeydown(event: KeyboardEvent) {
               <ReviewFileRow
                 :file="file"
                 :state="getState(file.path)"
+                :submodule="getSubmodule?.(file.path) ?? null"
                 :collapsed="isCollapsed(file.path)"
                 :collapse-reason="getCollapseReason(file.path)"
                 :current="file.path === currentPath"

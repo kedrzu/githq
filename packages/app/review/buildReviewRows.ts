@@ -1,3 +1,4 @@
+import type { SubmodulePointers } from '@githq/github/utils/parseSubmodulePatch.js';
 import { groupByToMap } from '@nzyme/utils/array/groupByToMap.js';
 import { assertNever } from '@nzyme/utils/assertNever.js';
 
@@ -42,6 +43,8 @@ const THREAD_LINE_HEIGHT = 48;
 const THREAD_CODE_HEIGHT = 110;
 /** What says all files are viewed, and the room around it. */
 const ALL_VIEWED_HEIGHT = 170;
+/** A submodule's block while its history is on its way: its line and a few quiet bars, which it is drawn as. */
+export const SUBMODULE_SKELETON_HEIGHT = 96;
 /** A comment box with one line of text; a reply in a thread is estimated as one too. */
 export const COMMENT_BOX_HEIGHT = 144;
 
@@ -120,6 +123,16 @@ export interface ReviewNoticeRow {
     readonly notice: 'binary' | 'empty' | 'renamedUnchanged' | 'tooLarge';
     /** Nothing of either side for `empty` and `renamedUnchanged`. */
     readonly sizes: ReviewFileSizes;
+}
+
+/**
+ * A submodule's pointer change in place of a diff: what lies between the two commits, read only once it is drawn. One
+ * row whose height grows as that arrives, which the list measures without moving what is being read (D7).
+ */
+export interface ReviewSubmoduleRow extends SubmodulePointers {
+    readonly kind: 'submodule';
+    readonly key: string;
+    readonly file: ReviewFile;
 }
 
 /** A file that could not be read, in place (D35): GitHub's words, and it can be tried again. */
@@ -215,6 +228,7 @@ export type ReviewRow =
     | ReviewOnlyWhitespaceRow
     | ReviewPausedRow
     | ReviewPlaceholderRow
+    | ReviewSubmoduleRow
     | ReviewThreadRow;
 
 /** What shows under a file's header. */
@@ -232,6 +246,8 @@ export type ReviewFileContent =
     /** Renamed, its blobs the same on both sides (D45). */
     | { readonly kind: 'renamedUnchanged' }
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
+    /** A submodule (a gitlink): the commits it points at before and after. */
+    | ({ readonly kind: 'submodule' } & SubmodulePointers)
     | { readonly kind: 'failed'; readonly error: Error }
     | { readonly kind: 'paused'; readonly until: number }
     | { readonly kind: 'lines'; readonly rows: readonly ReviewRow[] };
@@ -322,6 +338,15 @@ export function buildReviewRows({
                     file,
                     notice: content.kind,
                     sizes: { before: content.before, after: content.after },
+                });
+                break;
+            case 'submodule':
+                rows.push({
+                    kind: 'submodule',
+                    key: path + KEY_SEPARATOR + 'submodule',
+                    file,
+                    before: content.before,
+                    after: content.after,
                 });
                 break;
             case 'paused':
@@ -907,6 +932,8 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'failed':
         case 'paused':
             return 58;
+        case 'submodule':
+            return SUBMODULE_SKELETON_HEIGHT;
         case 'end':
             // The block's bottom edge, unless the header alone has its own, then the gap.
             return (row.collapsed ? 0 : 1) + FILE_GAP;

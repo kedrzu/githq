@@ -1,0 +1,46 @@
+pointers:
+  en: '{before} → {after}'
+added:
+  en: added at {oid}
+removed:
+  en: removed (was at {oid})
+ahead:
+  plural: count
+  en:
+    zero: no new commits
+    one: 1 commit ahead
+    many: '{formatted} commits ahead'
+behind:
+  plural: count
+  en:
+    one: rolled back 1 commit
+    many: rolled back {formatted} commits
+diverged:
+  en: '{ahead} ahead, {behind} behind'
+pullRequests:
+  en: Pull requests with the new commit
+commits:
+  en: Commits
+files:
+  en: Files
+moreCommits:
+  plural: count
+  en:
+    one: 1 more commit
+    many: '{formatted} more commits'
+moreFiles:
+  en: More files may have changed
+openComparison:
+  en: Open comparison on GitHub
+loading:
+  en: Reading the submodule's history…
+unreadable:
+  en: This submodule's history can't be read
+failed:
+  en: Couldn't read this submodule's history
+tryAgain:
+  en: Try again
+paused:
+  en: Waiting for GitHub's API allowance
+pausedDetail:
+  en: It resets at {time}. This submodule's history will load then, without you doing anything.

@@ -170,6 +170,40 @@ test("a binary verdict's note stays when the blob read fails, as when it pauses 
     view.stop();
 });
 
+test('a submodule is its block from its patch on, whatever its blobs do, and the same content while its pointers stay; collapsed, its header alone', async () => {
+    const pointers = { before: 'abc1234', after: 'def5678' };
+    const submodule: ReviewFile = {
+        ...fileRow('nzyme'),
+        patch: { layout: null, verdict: 'submodule', submodule: pointers },
+    };
+    const view = open([submodule], []);
+    const under = () => view.rows.value.slice(1, -1);
+
+    expect(under()).toEqual([expect.objectContaining({ kind: 'submodule', ...pointers })]);
+    const first = view.rows.value;
+
+    view.setState('nzyme', { kind: 'loading' });
+    await view.settle();
+    expect(view.rows.value).toBe(first);
+
+    view.setState('nzyme', { kind: 'submodule', ...pointers });
+    await view.settle();
+    expect(view.rows.value).toBe(first);
+
+    view.setState('nzyme', { kind: 'paused', until: 0 });
+    await view.settle();
+    expect(under()).toEqual([expect.objectContaining({ kind: 'submodule', ...pointers })]);
+
+    view.setState('nzyme', { kind: 'submodule', before: 'abc1234', after: '0ff1ce5' });
+    await view.settle();
+    expect(under()).toEqual([expect.objectContaining({ kind: 'submodule', after: '0ff1ce5' })]);
+
+    view.setCollapse('nzyme', 'viewed');
+    await view.settle();
+    expect(view.rows.value.map(row => row.kind)).toEqual(['header', 'end']);
+    view.stop();
+});
+
 interface OpenOptions {
     readonly listEnd?: ReviewFileListEnd;
     readonly ordered?: readonly ReviewFile[];
