@@ -46,6 +46,24 @@ test('Enter on the open row expands the item to its page; Escape goes back to th
     await expect(item.root).toBeHidden();
 });
 
+test('the open row\'s context menu "Open full screen" expands it as the header does: Escape comes back to the panel', async ({
+    page,
+    github,
+}) => {
+    const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
+    const item = new ItemViewHarness(page);
+
+    await myWork.row(ISSUE).click();
+    await expect(page).toHaveURL(PANEL);
+    await myWork.row(ISSUE).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Open full screen' }).click();
+    await expect(page).toHaveURL(PAGE);
+
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL(PANEL);
+    await expect(item.title).toHaveText(ISSUE);
+});
+
 test('Shift+Enter toggles the panel and the page', async ({ page, github }) => {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
