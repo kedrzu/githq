@@ -1,14 +1,15 @@
-<!-- `Review / Comment box`: where it goes, the text, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. What GitHub refused shows between the text and the buttons, the text staying; so does an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus. A reply says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape leaves the box with its text in it, or closes an empty one; every other key typed stays in the field. -->
+<!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape or Cancel closes an empty box; on one with text the editor's footer asks instead (D40, `· asks to discard`, CR97): "Discard what you wrote?", Keep writing (Escape) and Discard (Enter), as `MarkdownEditor` asks. Every other key typed stays in the field, and the keys it acts on there are announced on it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { FilePenLine, TriangleAlert } from 'lucide-vue-next';
-import { computed, nextTick, onMounted, useTemplateRef, watch } from 'vue';
+import { FileDiff, TriangleAlert } from 'lucide-vue-next';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import Button from '@/components/Button.vue';
-import TextArea from '@/components/TextArea.vue';
+import MarkdownEditor from '@/components/MarkdownEditor.vue';
+import { isFocusStayingInside } from '@/utils/isFocusStayingInside.js';
 
 import { REVIEW_KEYS } from '../useReviewKeySheet.js';
 import { getCommentWays } from './getCommentWays.js';
@@ -19,6 +20,10 @@ import { useCommentFailureText } from './useCommentFailureText.js';
 
 const props = defineProps<{
   target: ReviewCommentTarget;
+  /** `owner/name` of the pull request, which the preview and `@` `#` suggestions are of. */
+  repository: string;
+  /** The pull request's number, which `#` does not suggest. */
+  itemNumber: number;
   /** A comment can only join a draft. */
   draftOpen: boolean;
   /** How many the draft has without this one. */
@@ -40,9 +45,13 @@ const emit = defineEmits<{
   send: [way: ReviewCommentWay];
   /** `⇧↓` in an empty box. */
   extend: [];
-  /** Escape. */
+  /** Escape or Cancel on an empty box. */
   leave: [];
+  /** Discard, asked on a box with text. */
+  discard: [];
+  /** The focus came into the box, from outside it. */
   focus: [];
+  /** The focus left the box. */
   blur: [];
 }>();
 
@@ -51,7 +60,9 @@ const text = defineModel<string>('text', { default: '' });
 
 const t = useTranslate();
 const getFailureText = useCommentFailureText();
-const field = useTemplateRef<InstanceType<typeof TextArea>>('field');
+const editor = useTemplateRef<InstanceType<typeof MarkdownEditor>>('editor');
+/** Its footer asks whether to discard what is written. */
+const asking = ref(false);
 
 const isReply = computed(() => props.target.threadId !== null);
 const where = computed(() => {
@@ -67,14 +78,19 @@ const ways = computed(() => getCommentWays(props.draftOpen, props.draftFirst));
 const first = computed(() => ({ way: ways.value.first, label: getLabel(ways.value.first) }));
 const second = computed(() => ({ way: ways.value.second, label: getLabel(ways.value.second) }));
 const failureText = computed(() => (props.failure ? getFailureText(props.failure) : null));
+/** The two ways to send go from the text. */
+const fieldKeys = `${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`;
+const suggestTool = computed(() =>
+  props.suggestion ? { label: t(l.suggest), icon: FileDiff, keys: REVIEW_KEYS.suggest } : null,
+);
 
 onMounted(takeFocus);
 watch(() => props.focused, takeFocus);
 
 /** Moving nothing: a box only comes back into the window near the screen, and what is being read stays (D7). */
-function takeFocus() {
+async function takeFocus() {
   if (props.focused) {
-    field.value?.focus({ preventScroll: true });
+    await editor.value?.focus();
   }
 }
 
@@ -98,15 +114,15 @@ function getLabel(way: ReviewCommentWay) {
 }
 
 function send(way: ReviewCommentWay) {
-  if (hasText.value) {
+  if (hasText.value && !asking.value) {
     emit('send', way);
   }
 }
 
 /** On a line of its own at the cursor, with the cursor at the end of the code, to change it. */
-async function insertSuggestion() {
+function insertSuggestion() {
   const block = props.suggestion;
-  const cursor = field.value?.getSelection();
+  const cursor = editor.value?.getSelection();
   if (!block || !cursor) {
     return;
   }
@@ -115,29 +131,52 @@ async function insertSuggestion() {
   const after = text.value.slice(cursor.end);
   const lead = before === '' || before.endsWith('\n') ? '' : '\n';
   const trail = after === '' || after.startsWith('\n') ? '' : '\n';
-  text.value = `${before}${lead}${block}${trail}${after}`;
-  const end = before.length + lead.length + block.lastIndexOf('\n');
-  await nextTick();
-  field.value?.focus({ preventScroll: true });
-  field.value?.setSelection(end, end);
+  editor.value?.insert(`${lead}${block}${trail}`, lead.length + block.lastIndexOf('\n'));
 }
 
+/** Escape and Cancel: an empty box closes, one with text asks. */
+function leave() {
+  if (hasText.value) {
+    asking.value = true;
+  } else {
+    emit('leave');
+  }
+}
+
+// Taken here: the screen does not take Escape as leaving the review.
+function onEscape(event: KeyboardEvent) {
+  event.preventDefault();
+  leave();
+}
+
+// Moving between its text, tools and buttons, the focus stays in the box.
+function onFocusIn(event: FocusEvent) {
+  if (!isFocusStayingInside(event)) {
+    emit('focus');
+  }
+}
+
+function onFocusOut(event: FocusEvent) {
+  if (!isFocusStayingInside(event)) {
+    emit('blur');
+  }
+}
+
+// After the editor's: `⌘↵` it reports as `submit`, and a key its suggestions took is theirs.
 function onKeydown(event: KeyboardEvent) {
-  if (matchesCommandKey(event, REVIEW_KEYS.sendFirst)) {
-    event.preventDefault();
-    send(first.value.way);
-  } else if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
+  if (event.defaultPrevented) {
+    return;
+  }
+
+  if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
     event.preventDefault();
     send(second.value.way);
   } else if (matchesCommandKey(event, REVIEW_KEYS.suggest)) {
     event.preventDefault();
-    void insertSuggestion();
+    insertSuggestion();
   } else if (matchesCommandKey(event, REVIEW_KEYS.extendComment) && !isReply.value && text.value === '') {
     event.preventDefault();
     emit('extend');
-  } else if (event.key === 'Escape') {
-    event.preventDefault();
-    emit('leave');
   }
 }
 </script>
@@ -147,34 +186,11 @@ function onKeydown(event: KeyboardEvent) {
     :class="css.reviewCommentBox"
     role="group"
     :aria-label="where"
+    @keydown="onKeydown"
+    @focusin="onFocusIn"
+    @focusout="onFocusOut"
   >
-    <div :class="css.reviewCommentBox_head">
-      <p :class="css.reviewCommentBox_where">{{ where }}</p>
-      <Button
-        v-if="suggestion"
-        :class="css.reviewCommentBox_suggest"
-        variant="framed"
-        size="sm"
-        :icon="FilePenLine"
-        :kbd="REVIEW_KEYS.suggest"
-        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.suggest)"
-        @click="insertSuggestion"
-      >
-        {{ t(l.suggest) }}
-      </Button>
-    </div>
-    <TextArea
-      ref="field"
-      v-model="text"
-      :label="where"
-      label-hidden
-      :placeholder="t(l.placeholder)"
-      compact
-      :keyshortcuts="`${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`"
-      @keydown="onKeydown"
-      @focus="emit('focus')"
-      @blur="emit('blur')"
-    />
+    <p :class="css.reviewCommentBox_where">{{ where }}</p>
     <!-- There before its line, or a screen reader may not announce it; taking no room, it adds no gap until then. -->
     <div
       :class="css.reviewCommentBox_status"
@@ -195,27 +211,54 @@ function onKeydown(event: KeyboardEvent) {
       v-if="failureText !== null"
       :text="failureText"
     />
-    <div :class="css.reviewCommentBox_footer">
-      <Button
-        size="sm"
-        :disabled="!hasText"
-        :kbd="REVIEW_KEYS.sendSecond"
-        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
-        @click="send(second.way)"
-      >
-        {{ second.label }}
-      </Button>
-      <Button
-        size="sm"
-        variant="light"
-        :disabled="!hasText"
-        :kbd="REVIEW_KEYS.sendFirst"
-        :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
-        @click="send(first.way)"
-      >
-        {{ first.label }}
-      </Button>
-    </div>
+    <MarkdownEditor
+      ref="editor"
+      v-model="text"
+      v-model:asking="asking"
+      :class="css.reviewCommentBox_editor"
+      :repository="repository"
+      :item-number="itemNumber"
+      :label="where"
+      :placeholder="t(l.placeholder)"
+      :tool="suggestTool"
+      :keyshortcuts="fieldKeys"
+      :question="t(l.discardQuestion)"
+      :keep-label="t(l.keepWriting)"
+      @tool="insertSuggestion"
+      @submit="send(first.way)"
+      @cancel="onEscape"
+      @discard="emit('discard')"
+    >
+      <template #footer>
+        <Button
+          size="compact"
+          kbd="Escape"
+          keyshortcuts="Escape"
+          @click="leave"
+        >
+          {{ t(l.cancel) }}
+        </Button>
+        <Button
+          size="compact"
+          :disabled="!hasText"
+          :kbd="REVIEW_KEYS.sendSecond"
+          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)"
+          @click="send(second.way)"
+        >
+          {{ second.label }}
+        </Button>
+        <Button
+          size="compact"
+          variant="primary"
+          :disabled="!hasText"
+          :kbd="REVIEW_KEYS.sendFirst"
+          :keyshortcuts="formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)"
+          @click="send(first.way)"
+        >
+          {{ first.label }}
+        </Button>
+      </template>
+    </MarkdownEditor>
   </div>
 </template>
 
@@ -223,27 +266,7 @@ function onKeydown(event: KeyboardEvent) {
 .reviewCommentBox {
   display: flex;
   flex-direction: column;
-  gap: $spacing-10;
-  padding: $spacing-12;
-  background: $color-bg-2;
-  border: 1px solid $color-border-2;
-  border-radius: $radius-lg;
-}
-
-.reviewCommentBox_head {
-  display: flex;
   gap: $spacing-8;
-  align-items: center;
-  justify-content: space-between;
-}
-
-// Three classes: the button's own framed size has two, and comes from a stylesheet that may load after this one.
-.reviewCommentBox_head .reviewCommentBox_suggest.reviewCommentBox_suggest {
-  flex: none;
-  gap: $spacing-6;
-  padding: 3px 7px;
-  font-size: $font-size-2xs;
-  font-weight: $font-weight-normal;
 }
 
 .reviewCommentBox_where {
@@ -273,10 +296,9 @@ function onKeydown(event: KeyboardEvent) {
   height: 13px;
 }
 
-.reviewCommentBox_footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-8;
-  justify-content: flex-end;
+// Twice the class: the editor's own border comes from a stylesheet that may load after this one. In the accent while
+// open, focused or not: it is what is being written.
+.reviewCommentBox_editor.reviewCommentBox_editor {
+  border-color: $color-accent;
 }
 </style>

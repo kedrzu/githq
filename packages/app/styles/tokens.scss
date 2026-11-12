@@ -68,6 +68,12 @@ $color-on-light: #0d1117;
 
 // The brand, not Primer's.
 $color-accent: #7b87f7;
+// The edge of the review's current file (D44): the accent at 60% over the window, made opaque because the edges of a
+// block overlap at its bottom corners and a translucent one would show stronger there.
+$color-current-edge: #4f589d;
+// The header of the review's current file (D44): the accent at 6% over the header's own bg-2, as faint as lets every
+// text on it keep AA (D30). Exception: an accent tint of ours.
+$color-current-header: #1b2130;
 // Primer's fgColor-success.
 $color-green: #3fb950;
 // The lines a pull request adds and removes (`PullRequestSize`): paler than the status green and red, because a size
@@ -220,6 +226,9 @@ $color-skeleton-strong: #222831;
 $color-skeleton-strong-highlight: #323841;
 $color-skeleton-weak: $color-bg-3;
 $color-skeleton-weak-highlight: #292e36;
+// A deleted and an added line of a file on its way, drawn from its patch (D45): GitHub's diff colours at 30%.
+$color-skeleton-deleted: rgba($color-red, 0.3);
+$color-skeleton-added: rgba(#2ea043, 0.3);
 // The same tones on a ghost card, which is a surface of its own: the base the design gives, the band lifted as much
 // as the tones above lift theirs.
 $color-skeleton-card: rgba($color-bg-3, 0.6);

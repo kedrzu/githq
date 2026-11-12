@@ -84,6 +84,12 @@ export const EditRejected: Story = {
         }),
 };
 
+/** Code review's discarded comment (CR98): Escape stays the screen's, so Dismiss has no key and Escape leaves it up. */
+export const LeavesEscape: Story = {
+    ...EditRejected,
+    args: { ...EditRejected.args, dismissOnEscape: false },
+};
+
 /** K2: one of three items failed; the others went through. */
 export const PartlyFailed: Story = {
     args: { title: '“q4-release” added to 2 of 3 items', tone: 'warning' },

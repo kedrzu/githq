@@ -38648,6 +38648,42 @@
                   ]
                 },
                 {
+                  "type": "frame",
+                  "id": "pcGit",
+                  "name": "Activity / Editor · more tools",
+                  "reusable": true,
+                  "width": 22,
+                  "height": 22,
+                  "cornerRadius": 5,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "knMem",
+                      "name": "Icon",
+                      "width": 14,
+                      "height": 14,
+                      "icon": "ellipsis",
+                      "library": "lucide",
+                      "fill": "$fg-3"
+                    }
+                  ]
+                },
+                {
+                  "id": "KYOL3",
+                  "type": "ref",
+                  "reusable": true,
+                  "ref": "pcGit",
+                  "name": "Activity / Editor · more tools, open",
+                  "fill": "$bg-3",
+                  "descendants": {
+                    "knMem": {
+                      "fill": "$fg"
+                    }
+                  }
+                },
+                {
                   "id": "phPkk",
                   "type": "ref",
                   "reusable": true,
@@ -39534,6 +39570,136 @@
                         "i5Wdh": {
                           "enabled": true,
                           "content": "Rebuild links on every sync"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ujkXe",
+                  "name": "Activity / Editor tools menu · two groups folded",
+                  "reusable": true,
+                  "clip": true,
+                  "width": 300,
+                  "fill": "$bg-2",
+                  "cornerRadius": 9,
+                  "stroke": "$border-2",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#000000A0",
+                    "offset": {
+                      "x": 0,
+                      "y": 12
+                    },
+                    "blur": 32
+                  },
+                  "layout": "vertical",
+                  "padding": 4,
+                  "children": [
+                    {
+                      "id": "f3HXjr",
+                      "type": "ref",
+                      "ref": "m8UXn",
+                      "name": "Bulleted list",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "list",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Bulleted list"
+                        }
+                      }
+                    },
+                    {
+                      "id": "r9oMIy",
+                      "type": "ref",
+                      "ref": "vC9fN",
+                      "name": "Numbered list",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "list-ordered",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Numbered list"
+                        }
+                      }
+                    },
+                    {
+                      "id": "OiVkK",
+                      "type": "ref",
+                      "ref": "vC9fN",
+                      "name": "Task list",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "list-checks",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Task list"
+                        }
+                      }
+                    },
+                    {
+                      "id": "g2eJqD",
+                      "type": "ref",
+                      "ref": "vC9fN",
+                      "name": "Quote",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "text-quote",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Quote"
+                        }
+                      }
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "pbaUF",
+                      "name": "Separator",
+                      "fill": "$border",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "id": "RHG71",
+                      "type": "ref",
+                      "ref": "vC9fN",
+                      "name": "Mention someone",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "at-sign",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Mention someone"
+                        }
+                      }
+                    },
+                    {
+                      "id": "HYsda",
+                      "type": "ref",
+                      "ref": "vC9fN",
+                      "name": "Reference an issue or pull request",
+                      "width": "fill_container",
+                      "descendants": {
+                        "hslz2": {
+                          "icon": "hash",
+                          "fill": "$fg-2"
+                        },
+                        "pSlRN": {
+                          "content": "Reference an issue or pull request"
                         }
                       }
                     }
@@ -51223,7 +51389,7 @@
       "type": "frame",
       "id": "D27jC",
       "x": 0,
-      "y": 55349,
+      "y": 56076,
       "name": "App · Command menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -59552,7 +59718,7 @@
       "type": "frame",
       "id": "uWch5",
       "x": 8080,
-      "y": 55349,
+      "y": 56076,
       "name": "App · Context menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -64159,7 +64325,7 @@
       "type": "frame",
       "id": "xgYRz",
       "x": 14640,
-      "y": 55349,
+      "y": 56076,
       "name": "App · Item menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -66924,7 +67090,7 @@
       "type": "frame",
       "id": "pgCGV",
       "x": 18160,
-      "y": 55349,
+      "y": 56076,
       "name": "App · Repository and project menu",
       "fill": "#08090B",
       "layout": "vertical",
@@ -71379,7 +71545,7 @@
       "type": "frame",
       "id": "Zk4sa",
       "x": 0,
-      "y": 59265,
+      "y": 59992,
       "name": "App · First sign-in and choosing what to track",
       "fill": "#08090B",
       "layout": "vertical",
@@ -79768,7 +79934,7 @@
       "type": "frame",
       "id": "gvCqI",
       "x": 5040,
-      "y": 59265,
+      "y": 59992,
       "name": "App · Creating an issue",
       "fill": "#08090B",
       "layout": "vertical",
@@ -89357,7 +89523,7 @@
       "type": "frame",
       "id": "epLfx",
       "x": 17152,
-      "y": 59265,
+      "y": 59992,
       "name": "App · States",
       "fill": "#08090B",
       "layout": "vertical",
@@ -98263,7 +98429,7 @@
       "type": "frame",
       "id": "iZkBN",
       "x": 22192,
-      "y": 59265,
+      "y": 59992,
       "name": "App · Freshness",
       "fill": "#08090B",
       "layout": "vertical",
@@ -100838,7 +101004,7 @@
       "type": "frame",
       "id": "rV6qN",
       "x": 0,
-      "y": 72022,
+      "y": 72749,
       "name": "Desktop · Sign in with a device code",
       "fill": "#08090B",
       "layout": "vertical",
@@ -102806,7 +102972,7 @@
       "type": "frame",
       "id": "ohwJa",
       "x": 6560,
-      "y": 72022,
+      "y": 72749,
       "name": "Desktop · Updates",
       "fill": "#08090B",
       "layout": "vertical",
@@ -111907,7 +112073,7 @@
       "type": "frame",
       "id": "JJOFX",
       "x": 0,
-      "y": 108326,
+      "y": 109053,
       "name": "Landing — githq.dev",
       "clip": true,
       "width": 1440,
@@ -120026,7 +120192,7 @@
       "type": "frame",
       "id": "ucqck",
       "x": 1840,
-      "y": 108326,
+      "y": 109053,
       "name": "Landing — githq.dev (mobile)",
       "clip": true,
       "width": 390,
@@ -128383,7 +128549,7 @@
       "type": "frame",
       "id": "XCfAD",
       "x": 2630,
-      "y": 108326,
+      "y": 109053,
       "name": "Landing — motion storyboard",
       "width": 1440,
       "fill": "$bg",
@@ -129016,7 +129182,7 @@
       "type": "frame",
       "id": "S5J7kt",
       "x": 13580,
-      "y": 108326,
+      "y": 109053,
       "name": "Logo — git/hq",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -132301,7 +132467,7 @@
       "type": "frame",
       "id": "nCTdq",
       "x": 15580,
-      "y": 108326,
+      "y": 109053,
       "name": "App icons — generated (review)",
       "width": 1600,
       "fill": "#0B0C0F",
@@ -134151,7 +134317,7 @@
       "type": "frame",
       "id": "PiKGF",
       "x": 17580,
-      "y": 108326,
+      "y": 109053,
       "name": "OpenGraph images",
       "fill": "#0A0B0D",
       "layout": "vertical",
@@ -198265,7 +198431,7 @@
       "type": "frame",
       "id": "i3VkT",
       "x": 10080,
-      "y": 59265,
+      "y": 59992,
       "name": "App · Settings",
       "fill": "#08090B",
       "layout": "vertical",
@@ -289160,7 +289326,7 @@
       "type": "frame",
       "id": "Ri8IR",
       "x": 16160,
-      "y": 72022,
+      "y": 72749,
       "name": "Desktop · Commits",
       "fill": "#08090B",
       "layout": "vertical",
@@ -297356,7 +297522,7 @@
                       "ref": "pAbDY",
                       "name": "Diff / File header · current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"
@@ -297370,7 +297536,7 @@
                       "ref": "CcHDa",
                       "name": "Diff / File header · collapsed, current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"
@@ -297384,7 +297550,7 @@
                       "ref": "cfQJk",
                       "name": "Diff / File header · viewed, current",
                       "width": "fill_container",
-                      "fill": "#7B87F71F",
+                      "fill": "#7B87F70F",
                       "descendants": {
                         "rrEav": {
                           "fill": "$accent"
@@ -298950,7 +299116,7 @@
                       "width": "fill_container",
                       "descendants": {
                         "bVk4m": {
-                          "icon": "circle-help",
+                          "icon": "circle-alert",
                           "fill": "$amber",
                           "enabled": true
                         },
@@ -299026,6 +299192,150 @@
                               }
                             }
                           ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E3gaOM",
+                  "name": "Writing · tools folded",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "niV8c",
+                      "name": "Activity / Editor tools · review, folded",
+                      "reusable": true,
+                      "height": 24,
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "rGxCD",
+                          "name": "Suggest a change",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "file-diff",
+                          "library": "lucide",
+                          "fill": "$fg-2"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "ki7Pf",
+                          "name": "Rule 0",
+                          "fill": "$border-2",
+                          "width": 1,
+                          "height": 14
+                        },
+                        {
+                          "type": "icon",
+                          "id": "SRzri",
+                          "name": "heading",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "heading",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Gw5gF",
+                          "name": "bold",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "bold",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "B3YN6",
+                          "name": "italic",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "italic",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "IpTSY",
+                          "name": "code",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "code",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "i7bUAA",
+                          "name": "link",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "link",
+                          "library": "lucide",
+                          "fill": "$fg-3"
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "pJEeo",
+                          "name": "Rule",
+                          "fill": "$border-2",
+                          "width": 1,
+                          "height": 14
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "wDeAw",
+                          "name": "Rule 3",
+                          "fill": "$border-2",
+                          "width": 1,
+                          "height": 14
+                        },
+                        {
+                          "id": "DLIm0",
+                          "type": "ref",
+                          "ref": "pcGit",
+                          "name": "More tools"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "N9dDSZ",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "SAmev",
+                      "name": "Review / New comment · tools folded",
+                      "width": 430,
+                      "descendants": {
+                        "lsh7O": {
+                          "id": "LRIoq",
+                          "type": "ref",
+                          "ref": "niV8c",
+                          "name": "Format",
+                          "height": "fill_container"
+                        }
+                      }
+                    },
+                    {
+                      "id": "r4Ect",
+                      "type": "ref",
+                      "reusable": true,
+                      "ref": "eS728",
+                      "name": "Review / Thread · replying, tools folded",
+                      "width": 490,
+                      "descendants": {
+                        "PAIjv/Lu92c/lsh7O": {
+                          "id": "ypzdt",
+                          "type": "ref",
+                          "ref": "niV8c",
+                          "name": "Format",
+                          "height": "fill_container"
                         }
                       }
                     }
@@ -346012,6 +346322,964 @@
         },
         {
           "type": "frame",
+          "id": "j7gfBq",
+          "name": "Row of screens",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Hcw02",
+              "name": "Slot · CR117 · A reply in a narrow column: the last groups fold into ⋯",
+              "width": 1060,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "HuYZN",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JZITP",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR117 · A reply in a narrow column: the last groups fold into ⋯",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sReKb",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A reply in a thread in the right column of a split diff, the box about 430 px wide. Write / Preview keep their size; Suggest a change stays first and never folds. Tool groups that don't fit fold whole, from the last backwards, into ⋯ at the head's right: here lists and quote, then mention and reference. One group less fits as the column widens.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 12.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k6De2G",
+                  "name": "CR117 · A reply in a narrow column: the last groups fold into ⋯",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UVsZH",
+                      "name": "File engine.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "xCc2G",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "engine.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+62"
+                            },
+                            "yHDS8": {
+                              "content": "−18"
+                            }
+                          }
+                        },
+                        {
+                          "id": "IY25Q",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 47",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "47"
+                            },
+                            "G99RqR": {
+                              "content": "    try {"
+                            },
+                            "NIdDm": {
+                              "content": "47"
+                            },
+                            "ARXsN": {
+                              "content": "    try {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "lg7C0",
+                          "type": "ref",
+                          "ref": "SZHhU",
+                          "name": "Line 48",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "48"
+                            },
+                            "G99RqR": {
+                              "content": "      await this.client.send(items)"
+                            },
+                            "NIdDm": {
+                              "content": "48"
+                            },
+                            "ARXsN": {
+                              "content": "      await this.client.send(items, { signal: this.abort.signal })"
+                            }
+                          }
+                        },
+                        {
+                          "id": "h8PFW0",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 49",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "49"
+                            },
+                            "G99RqR": {
+                              "content": "      await this.pending.ack(items)"
+                            },
+                            "NIdDm": {
+                              "content": "49"
+                            },
+                            "ARXsN": {
+                              "content": "      await this.pending.ack(items)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "t6EWmp",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 50",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "50"
+                            },
+                            "G99RqR": {
+                              "content": "    } catch (error) {"
+                            },
+                            "NIdDm": {
+                              "content": "50"
+                            },
+                            "ARXsN": {
+                              "content": "    } catch (error) {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "S3GaU",
+                          "type": "ref",
+                          "ref": "SZHhU",
+                          "name": "Line 51",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "51"
+                            },
+                            "G99RqR": {
+                              "content": "      this.scheduleRetry()"
+                            },
+                            "NIdDm": {
+                              "content": "51"
+                            },
+                            "ARXsN": {
+                              "content": "      this.scheduleRetry(error)"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "zayPf",
+                          "name": "Under line",
+                          "width": "fill_container",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "XqQnj",
+                              "name": "Before side",
+                              "width": "fill_container",
+                              "height": 1,
+                              "layout": "vertical"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CeSZY",
+                              "name": "After side",
+                              "width": "fill_container",
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "left": 1
+                              },
+                              "layout": "vertical",
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "id": "ChQ5X",
+                                  "type": "ref",
+                                  "ref": "r4Ect",
+                                  "name": "Thread",
+                                  "width": "fill_container"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "XQYjp",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 52",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "52"
+                            },
+                            "G99RqR": {
+                              "content": "    }"
+                            },
+                            "NIdDm": {
+                              "content": "52"
+                            },
+                            "ARXsN": {
+                              "content": "    }"
+                            }
+                          }
+                        },
+                        {
+                          "id": "jkaWd",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 53",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "53"
+                            },
+                            "G99RqR": {
+                              "content": "  }"
+                            },
+                            "NIdDm": {
+                              "content": "53"
+                            },
+                            "ARXsN": {
+                              "content": "  }"
+                            }
+                          }
+                        },
+                        {
+                          "id": "DGMML",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 54",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "54"
+                            },
+                            "G99RqR": {
+                              "content": ""
+                            },
+                            "NIdDm": {
+                              "content": "54"
+                            },
+                            "ARXsN": {
+                              "content": ""
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "BXUi0",
+              "name": "Slot · CR118 · ⋯ open: the folded tools, by icon and name",
+              "width": 1060,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hes8Z",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "dB867",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR118 · ⋯ open: the folded tools, by icon and name",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "uh9Ur",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "⋯ opens a menu under it, right-aligned to it, listing the folded tools in their groups, each by its icon and name, the first one selected: ↑↓ move, Enter applies the tool at the selection, Esc closes the menu alone and returns to the text. No keys: the editor has no shortcuts for these tools.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 12.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "GvIZN",
+                  "name": "CR118 · ⋯ open: the folded tools, by icon and name",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Y7Ve1",
+                      "name": "File engine.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "I1FoY",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "engine.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+62"
+                            },
+                            "yHDS8": {
+                              "content": "−18"
+                            }
+                          }
+                        },
+                        {
+                          "id": "CRf8F",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 47",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "47"
+                            },
+                            "G99RqR": {
+                              "content": "    try {"
+                            },
+                            "NIdDm": {
+                              "content": "47"
+                            },
+                            "ARXsN": {
+                              "content": "    try {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "ycEYO",
+                          "type": "ref",
+                          "ref": "SZHhU",
+                          "name": "Line 48",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "48"
+                            },
+                            "G99RqR": {
+                              "content": "      await this.client.send(items)"
+                            },
+                            "NIdDm": {
+                              "content": "48"
+                            },
+                            "ARXsN": {
+                              "content": "      await this.client.send(items, { signal: this.abort.signal })"
+                            }
+                          }
+                        },
+                        {
+                          "id": "GCbc7",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 49",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "49"
+                            },
+                            "G99RqR": {
+                              "content": "      await this.pending.ack(items)"
+                            },
+                            "NIdDm": {
+                              "content": "49"
+                            },
+                            "ARXsN": {
+                              "content": "      await this.pending.ack(items)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "iEENz",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 50",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "50"
+                            },
+                            "G99RqR": {
+                              "content": "    } catch (error) {"
+                            },
+                            "NIdDm": {
+                              "content": "50"
+                            },
+                            "ARXsN": {
+                              "content": "    } catch (error) {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "rk65v",
+                          "type": "ref",
+                          "ref": "SZHhU",
+                          "name": "Line 51",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "51"
+                            },
+                            "G99RqR": {
+                              "content": "      this.scheduleRetry()"
+                            },
+                            "NIdDm": {
+                              "content": "51"
+                            },
+                            "ARXsN": {
+                              "content": "      this.scheduleRetry(error)"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uaLJv",
+                          "name": "Under line",
+                          "width": "fill_container",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RkA8y",
+                              "name": "Before side",
+                              "width": "fill_container",
+                              "height": 1,
+                              "layout": "vertical"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "W5pzl",
+                              "name": "After side",
+                              "width": "fill_container",
+                              "stroke": "$border",
+                              "strokeWidth": {
+                                "left": 1
+                              },
+                              "layout": "vertical",
+                              "padding": [
+                                8,
+                                14
+                              ],
+                              "children": [
+                                {
+                                  "id": "UYwrs",
+                                  "type": "ref",
+                                  "ref": "r4Ect",
+                                  "name": "Thread",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "ypzdt/DLIm0": {
+                                      "fill": "$bg-3"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "id": "BsJdU",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 52",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "52"
+                            },
+                            "G99RqR": {
+                              "content": "    }"
+                            },
+                            "NIdDm": {
+                              "content": "52"
+                            },
+                            "ARXsN": {
+                              "content": "    }"
+                            }
+                          }
+                        },
+                        {
+                          "id": "S6wHl",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 53",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "53"
+                            },
+                            "G99RqR": {
+                              "content": "  }"
+                            },
+                            "NIdDm": {
+                              "content": "53"
+                            },
+                            "ARXsN": {
+                              "content": "  }"
+                            }
+                          }
+                        },
+                        {
+                          "id": "FRREa",
+                          "type": "ref",
+                          "ref": "qKwyX",
+                          "name": "Line 54",
+                          "width": "fill_container",
+                          "descendants": {
+                            "r847H": {
+                              "content": "54"
+                            },
+                            "G99RqR": {
+                              "content": ""
+                            },
+                            "NIdDm": {
+                              "content": "54"
+                            },
+                            "ARXsN": {
+                              "content": ""
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "id": "L5xln",
+                      "type": "ref",
+                      "ref": "ujkXe",
+                      "name": "Tools menu",
+                      "layoutPosition": "absolute",
+                      "x": 708,
+                      "y": 359
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "QeNkN",
+              "name": "Slot · CR119 · Full width: nothing folds, no ⋯",
+              "width": 1100,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DJ62A",
+                  "name": "Caption",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lcAYd",
+                      "name": "Caption title",
+                      "fill": "$fg",
+                      "content": "CR119 · Full width: nothing folds, no ⋯",
+                      "fontFamily": "$font",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dMKxt",
+                      "name": "Caption note",
+                      "fill": "$fg-2",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A comment under a line of a unified diff, the box at full width: every group fits, so the head is the editor as it is today and ⋯ isn't drawn.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$font",
+                      "fontSize": 12.5,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XRFUV",
+                  "name": "CR119 · Full width: nothing folds, no ⋯",
+                  "clip": true,
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 10,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "n0BDtH",
+                      "name": "File engine.ts",
+                      "clip": true,
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "children": [
+                        {
+                          "id": "P526jg",
+                          "type": "ref",
+                          "ref": "pAbDY",
+                          "name": "Header",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fUGop": {
+                              "content": "src/sync/"
+                            },
+                            "GyXLB": {
+                              "content": "engine.ts"
+                            },
+                            "x8dPO": {
+                              "content": "+62"
+                            },
+                            "yHDS8": {
+                              "content": "−18"
+                            }
+                          }
+                        },
+                        {
+                          "id": "u0ex0",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 46",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "46"
+                            },
+                            "AIddd": {
+                              "content": "46"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "    if (items.length === 0) return"
+                            }
+                          }
+                        },
+                        {
+                          "id": "W6Y2o",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 47",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "47"
+                            },
+                            "AIddd": {
+                              "content": "47"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "    try {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "A4Pta",
+                          "type": "ref",
+                          "ref": "D8ZJtP",
+                          "name": "Line 48",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "48"
+                            },
+                            "AIddd": {
+                              "content": ""
+                            },
+                            "n249J": {
+                              "content": "−"
+                            },
+                            "txzt7": {
+                              "content": "      await this.client.send(items)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "HgX6m",
+                          "type": "ref",
+                          "ref": "qDLAj",
+                          "name": "Line 48",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": ""
+                            },
+                            "AIddd": {
+                              "content": "48"
+                            },
+                            "n249J": {
+                              "content": "+"
+                            },
+                            "txzt7": {
+                              "content": "      await this.client.send(items, { signal: this.abort.signal })"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N4OdP",
+                          "name": "Under line",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "padding": [
+                            8,
+                            14,
+                            8,
+                            108
+                          ],
+                          "children": [
+                            {
+                              "id": "tl9eY",
+                              "type": "ref",
+                              "ref": "SAmev",
+                              "name": "Comment box",
+                              "width": "fill_container"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "e8dOVJ",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 49",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "49"
+                            },
+                            "AIddd": {
+                              "content": "49"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "      await this.pending.ack(items)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "E4rP5",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 50",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "50"
+                            },
+                            "AIddd": {
+                              "content": "50"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "    } catch (error) {"
+                            }
+                          }
+                        },
+                        {
+                          "id": "SIrz9",
+                          "type": "ref",
+                          "ref": "D8ZJtP",
+                          "name": "Line 51",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "51"
+                            },
+                            "AIddd": {
+                              "content": ""
+                            },
+                            "n249J": {
+                              "content": "−"
+                            },
+                            "txzt7": {
+                              "content": "      this.scheduleRetry()"
+                            }
+                          }
+                        },
+                        {
+                          "id": "nLsXX",
+                          "type": "ref",
+                          "ref": "qDLAj",
+                          "name": "Line 51",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": ""
+                            },
+                            "AIddd": {
+                              "content": "51"
+                            },
+                            "n249J": {
+                              "content": "+"
+                            },
+                            "txzt7": {
+                              "content": "      this.scheduleRetry(error)"
+                            }
+                          }
+                        },
+                        {
+                          "id": "V4NTIh",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 52",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "52"
+                            },
+                            "AIddd": {
+                              "content": "52"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "    }"
+                            }
+                          }
+                        },
+                        {
+                          "id": "HMlFB",
+                          "type": "ref",
+                          "ref": "UtCoP",
+                          "name": "Line 53",
+                          "width": "fill_container",
+                          "descendants": {
+                            "GP2HC": {
+                              "content": "53"
+                            },
+                            "AIddd": {
+                              "content": "53"
+                            },
+                            "n249J": {
+                              "content": " "
+                            },
+                            "txzt7": {
+                              "content": "  }"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "JWX3d",
           "name": "Row of screens",
           "gap": 80,
@@ -353125,7 +354393,7 @@
                           "fill": "$fg-3"
                         },
                         "YBQPD/unZbw": {
-                          "content": "Fetching patches · the list is complete, 42 files · their patches on their way",
+                          "content": "Reading the changes",
                           "fill": "$fg-dim"
                         }
                       }
@@ -353562,7 +354830,7 @@
       "type": "text",
       "id": "BnN7r",
       "x": 17870.178661448972,
-      "y": 61626.65929019575,
+      "y": 62353.65929019575,
       "fill": "#000000",
       "content": "Chciałbym... ",
       "fontFamily": "Inter",
@@ -353573,7 +354841,7 @@
       "type": "frame",
       "id": "jv9Tp",
       "x": 4470,
-      "y": 108326,
+      "y": 109053,
       "name": "Landing · Download page",
       "fill": "#08090B",
       "layout": "vertical",
@@ -356378,7 +357646,7 @@
       "type": "frame",
       "id": "ykYxo",
       "x": 8460,
-      "y": 108326,
+      "y": 109053,
       "name": "Landing · Hero picture as built — My work and broken workflows",
       "clip": true,
       "width": 1200,
@@ -356506,7 +357774,7 @@
       "type": "frame",
       "id": "O6Vuj8",
       "x": 24192,
-      "y": 59265,
+      "y": 59992,
       "name": "App · Loading and empty states",
       "fill": "#08090B",
       "layout": "vertical",
@@ -369241,7 +370509,7 @@
       "type": "frame",
       "id": "Sz7Bf",
       "x": 31444,
-      "y": 59265,
+      "y": 59992,
       "name": "App · Toasts",
       "fill": "#08090B",
       "layout": "vertical",
@@ -373210,7 +374478,7 @@
       "type": "frame",
       "id": "jy6bO",
       "x": 19680,
-      "y": 72022,
+      "y": 72749,
       "name": "App · Mobile",
       "fill": "#08090B",
       "layout": "vertical",
@@ -412784,7 +414052,7 @@
       "type": "frame",
       "id": "I5wWZ",
       "x": 10060,
-      "y": 108326,
+      "y": 109053,
       "name": "Docs · githq.dev/docs — template",
       "fill": "#08090B",
       "layout": "vertical",

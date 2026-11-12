@@ -150,6 +150,18 @@ const look = computed((): SegmentLook => {
             ? t(l.pausedUntil, { time: formatTime(freshness.until) })
             : t(l.notRefreshedSince, { time: formatTime(freshness.since) }),
       };
+    case 'readingChanges':
+      return {
+        icon: LoaderCircle,
+        tone: 'dim',
+        text:
+          freshness.pages !== null && freshness.pages > 1
+            ? t(l.readingChangesPages, {
+                read: numbers.format(freshness.read),
+                pages: numbers.format(freshness.pages),
+              })
+            : t(l.readingChanges),
+      };
     case 'fetchingFiles':
       return { icon: LoaderCircle, tone: 'dim', text: getFetchingText(freshness) };
     case 'filesPaused':

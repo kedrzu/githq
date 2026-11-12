@@ -1,8 +1,3 @@
-hiddenLines:
-  plural: count
-  en:
-    one: 1 line
-    many: '{formatted} lines'
 binary:
   en: Binary file, nothing to diff
 binarySized:
@@ -11,6 +6,8 @@ binaryNew:
   en: Binary file, nothing to diff · {size}, new
 binaryDeleted:
   en: Binary file, nothing to diff · {size}, deleted
+renamedUnchanged:
+  en: Renamed, no changes
 tooLarge:
   en: Too large to diff here
 tooLargeDetail:
@@ -33,13 +30,7 @@ tryAgain:
   en: Try again
 openOnGitHub:
   en: Open on GitHub
-showSome:
-  en: Show {count}
-showAll:
-  en: Show all
 onlyWhitespace:
   en: Only whitespace changed in this file, and whitespace is hidden.
 showWhitespace:
   en: Show it
-expansionReset:
-  en: Context you expanded here was reset by the push

@@ -12,9 +12,11 @@ import type { ReviewBlobOidAnswer } from '@githq/github/readReviewBlobs.js';
 import { getGitBlobText } from '@githq/github/rest/getGitBlobText.js';
 import type { GitHubRestRequester } from '@githq/github/rest/createGitHubRestRequester.js';
 import { getMergeBase } from '@githq/github/rest/getMergeBase.js';
-import { listPullRequestRenames } from '@githq/github/rest/listPullRequestRenames.js';
+import { listPullRequestFiles } from '@githq/github/rest/listPullRequestFiles.js';
+import type { PullRequestFile } from '@githq/github/rest/listPullRequestFiles.js';
 import { markFilesViewed } from '@githq/github/markFilesViewed.js';
 import type { FileViewedMark } from '@githq/github/markFilesViewed.js';
+import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
 import type { Resolved } from '@nzyme/ioc/Injectable.js';
 import { defineService } from '@nzyme/ioc/Service.js';
 import { Logger } from '@nzyme/logging/Logger.js';
@@ -72,7 +74,28 @@ export interface ReviewFile {
     readonly viewed: FileViewedState;
     /** Not in the diff: an entry only for its threads (D12), which GitHub doesn't list and nothing can be done to. */
     readonly gone?: ReviewFileGone;
+    /**
+     * What GitHub's patch says of it (D45), once `…/pulls/{n}/files` has answered. Missing until then, and for good when
+     * that failed or did not list it: its height stays a guess from its line counts (D38).
+     */
+    readonly patch?: ReviewFilePatch;
 }
+
+/** What a file's patch tells before its blobs are read (D45): its shape, none of its text. */
+export interface ReviewFilePatch {
+    /** Its hunks; `null` when GitHub sent no patch (a binary file, a diff too large) or one that could not be read. */
+    readonly layout: PatchLayout | null;
+    /** What the patch settles of the file ahead of its blobs; `null` when it settles nothing. */
+    readonly verdict: ReviewFileVerdict | null;
+}
+
+/**
+ * What a file's patch settles ahead of its blobs (D45). `binary`: no patch and no lines, modified, added or deleted. Its
+ * blob still has the last word, and gives its sizes: an empty file or a mode change reads as binary only until the blob
+ * says otherwise. A renamed file with no lines changed is settled by its blobs alone: a renamed binary whose content
+ * changed reports no lines too.
+ */
+export type ReviewFileVerdict = 'binary';
 
 /** How sure it is that a file with threads is not on the list (D30). */
 export type ReviewFileGone =
@@ -99,6 +122,8 @@ export type ReviewFileState =
     | { readonly kind: 'loading' }
     /** The merge base's text and the head's; `null` for the side the file doesn't exist on. */
     | { readonly kind: 'ready'; readonly before: string | null; readonly after: string | null }
+    /** Its two sides are the same blob, as for a rename that kept the content: nothing to read or diff. */
+    | { readonly kind: 'unchanged' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
     /** Above {@link MAX_FILE_BYTES} on either side: not fetched. */
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
@@ -165,6 +190,8 @@ export interface PullRequestFiles {
     readonly progress: ReviewFilesProgress;
     /** The file a jump is fetching ahead of the rest, until it arrives (D35). */
     readonly fetchingFirst: string | null;
+    /** How far the read of the patches (D45) is while it runs; `null` once it is done or failed, or before it starts. */
+    readonly patchesProgress: ReviewPatchesProgress | null;
     /** Until when nothing is read from GitHub (D35), epoch ms: viewed marks still go through. Carries on by itself. */
     readonly pausedUntil: number | null;
     /** When GitHub last answered the whole list, epoch ms; `null` for what has only been read from disk so far. */
@@ -235,6 +262,14 @@ export interface ReviewFilesProgress {
     readonly total: number;
 }
 
+/** How far the read of the patches is: see {@link PullRequestFiles.patchesProgress}. */
+export interface ReviewPatchesProgress {
+    /** Pages read so far, 100 files each. */
+    readonly read: number;
+    /** How many pages there are; `null` until GitHub says. */
+    readonly pages: number | null;
+}
+
 /** Above this on either side a file is not fetched (D35); the size is a placeholder. */
 const MAX_FILE_BYTES = 1_000_000;
 /** From here on a file starts collapsed (D8), near where GitHub's own patches give up. */
@@ -270,6 +305,12 @@ const MAX_QUERIES_AT_ONCE = 3;
 const UPDATE_EVERY_MS = 16;
 
 type PausedState = Extract<ReviewFileState, { kind: 'paused' }>;
+
+/** A read of the patches under way, and the run it is for. */
+interface PatchesRead {
+    readonly run: FileRun;
+    readonly progress: ReviewPatchesProgress;
+}
 
 const LOADING = { kind: 'loading' } as const;
 const WAITING = { kind: 'waiting' } as const;
@@ -326,9 +367,14 @@ interface FileRun {
     readonly fetching: Set<string>;
     /** Queries on their way. */
     running: number;
-    /** Where renamed and copied files came from, once read: until then those wait, in the queue. */
-    renames: ReadonlyMap<string, string> | null;
-    readonly renamesReader: SingleRunnerState<void>;
+    /**
+     * What `…/pulls/{n}/files` says of each file by path, page by page as it arrives: where renamed and copied files came
+     * from, and each patch's layout.
+     */
+    readonly patches: Map<string, PullRequestFile>;
+    /** Every page of {@link patches} is in: a renamed or copied file not named by then never will be. */
+    patchesRead: boolean;
+    readonly patchesReader: SingleRunnerState<void>;
     /** Whether the merge base was asked for ahead of the first query needing it. */
     mergeBaseAsked: boolean;
     /** What the head's `.gitattributes` says; `null` until it is read, when no file can be fetched yet. */
@@ -506,6 +552,8 @@ export const ReviewFiles = defineService({
             const threadsStateRef = shallowRef<ReviewThreadsState>(LOADING);
             /** The last read of where renamed files came from failed: those files stay without it. */
             const renamesFailedRef = shallowRef(false);
+            /** The read of the patches under way, of the run it is for. */
+            const patchesProgressRef = shallowRef<PatchesRead | null>(null);
             /** The files the user opened (`true`) or collapsed (`false`) themselves. */
             const collapseChoices = new Map<string, boolean>();
             const viewedMarks = new Map<string, ViewedMark>();
@@ -588,6 +636,10 @@ export const ReviewFiles = defineService({
                     },
                     get fetchingFirst() {
                         return readFetchingFirst();
+                    },
+                    get patchesProgress() {
+                        const reading = patchesProgressRef.value;
+                        return reading?.run === runRef.value ? reading.progress : null;
                     },
                     get pausedUntil() {
                         return pausedRef.value?.until ?? null;
@@ -775,7 +827,7 @@ export const ReviewFiles = defineService({
                     setState(run, path, WAITING);
                     run.queue.unshift(entry);
                     if (isHeldForRenames(run, entry)) {
-                        void run.renamesReader.execute();
+                        void run.patchesReader.execute();
                     }
 
                     // Its texts may have arrived since it failed.
@@ -881,7 +933,7 @@ export const ReviewFiles = defineService({
                 if ((kind === 'waiting' || kind === 'loading') && !run.queue.includes(entry)) {
                     run.queue.push(entry);
                     if (isHeldForRenames(run, entry)) {
-                        void run.renamesReader.execute();
+                        void run.patchesReader.execute();
                     }
 
                     takeReady(run);
@@ -901,7 +953,7 @@ export const ReviewFiles = defineService({
                 }
 
                 if (isHeldForRenames(run, entry)) {
-                    void run.renamesReader.execute();
+                    void run.patchesReader.execute();
                 }
 
                 takeReady(run);
@@ -1480,8 +1532,9 @@ export const ReviewFiles = defineService({
                     texts: new Map(),
                     fetching: new Set(),
                     running: 0,
-                    renames: null,
-                    renamesReader: createSingleRunner({ handler: () => readRenames(run) }),
+                    patches: new Map(),
+                    patchesRead: false,
+                    patchesReader: createSingleRunner({ handler: () => readPatches(run) }),
                     mergeBaseAsked: false,
                     isGenerated: null,
                     attributesHeld: false,
@@ -1511,9 +1564,9 @@ export const ReviewFiles = defineService({
                     }
 
                     changed = true;
-                    const previousPath = file.previousPath ?? run.renames?.get(file.path) ?? null;
+                    const listed = run.patches.get(file.path);
                     const added: FileEntry = {
-                        file: { ...file, previousPath },
+                        file: listed ? withPatch(file, listed) : file,
                         sides: null,
                         resolving: false,
                         diskRead: false,
@@ -1533,9 +1586,10 @@ export const ReviewFiles = defineService({
                     moveToFront(run, jumpedTo);
                 }
 
-                // Of every file, collapsed ones too: their headers say where they came from.
-                if ([...run.entries.values()].some(entry => isHeldForRenames(run, entry))) {
-                    void run.renamesReader.execute();
+                // Of every file, collapsed ones too: their headers say where they came from, and once opened their
+                // heights come from their patches. A list kept on disk with its patches needs none.
+                if (isWithoutPatches(run)) {
+                    void run.patchesReader.execute();
                 }
 
                 if (!run.mergeBaseAsked && files.some(file => getExistingSides(file.changeType).before)) {
@@ -1550,12 +1604,12 @@ export const ReviewFiles = defineService({
             }
 
             function updateFile(run: FileRun, entry: FileEntry, file: ReviewFile) {
-                const { viewed, additions, deletions, previousPath } = entry.file;
+                const { viewed, additions, deletions, previousPath, patch } = entry.file;
                 if (viewed === file.viewed && additions === file.additions && deletions === file.deletions) {
                     return false;
                 }
 
-                entry.file = { ...file, previousPath };
+                entry.file = { ...file, previousPath, patch };
                 if (viewed !== file.viewed) {
                     followViewed(run, entry);
                 }
@@ -1717,29 +1771,30 @@ export const ReviewFiles = defineService({
             }
 
             /**
-             * Where renamed and copied files came from. Read when the first of them is listed, as the answer says it of
-             * all; failing fails only those, and retrying one of them reads it again.
+             * Each file's patch (D45) and where renamed and copied files came from, shown page by page as they arrive.
+             * Read as soon as the list is, beside the blobs: nothing waits on it but the renamed and copied files GitHub
+             * has not named yet. Failing leaves the files no page covered their guessed heights and fails only those
+             * renamed ones; retrying one of them reads it again.
              */
-            async function readRenames(run: FileRun) {
+            async function readPatches(run: FileRun) {
                 try {
                     assertMayAsk();
-                    const renames = await listPullRequestRenames(current.rest, {
+                    patchesProgressRef.value = { run, progress: { read: 0, pages: null } };
+                    await listPullRequestFiles(current.rest, {
                         nameWithOwner,
                         number: reference.number,
+                        onPage: page => {
+                            takePatches(run, page.files);
+                            patchesProgressRef.value = { run, progress: { read: page.number, pages: page.pages } };
+                        },
                     });
                     if (!isLive(run)) {
                         return;
                     }
 
-                    run.renames = renames;
+                    run.patchesRead = true;
                     renamesFailedRef.value = false;
-                    for (const entry of run.entries.values()) {
-                        const previousPath = renames.get(entry.file.path);
-                        if (previousPath !== undefined) {
-                            entry.file = { ...entry.file, previousPath };
-                        }
-                    }
-
+                    // Renamed files no page named are held no more: the list's end changes.
                     publishFiles(run);
                     keepList(run);
                     pump(run);
@@ -1752,7 +1807,29 @@ export const ReviewFiles = defineService({
                             toError(error),
                         );
                     }
+                } finally {
+                    if (patchesProgressRef.value?.run === run) {
+                        patchesProgressRef.value = null;
+                    }
                 }
+            }
+
+            /** A page of patches: its files show them, and its renamed ones go on to their blobs. */
+            function takePatches(run: FileRun, files: readonly PullRequestFile[]) {
+                if (!isLive(run)) {
+                    throw new Error('The pull request moved on, or nobody is waiting for it any more');
+                }
+
+                for (const file of files) {
+                    run.patches.set(file.path, file);
+                    const entry = run.entries.get(file.path);
+                    if (entry) {
+                        entry.file = withPatch(entry.file, file);
+                    }
+                }
+
+                publishFiles(run);
+                pump(run);
             }
 
             /** Starts as many queries as may run, each for what is next in the queue. */
@@ -2259,8 +2336,9 @@ export const ReviewFiles = defineService({
                         void readGitAttributes(run);
                     }
 
-                    if ([...run.entries.values()].some(entry => isHeldForRenames(run, entry))) {
-                        void run.renamesReader.execute();
+                    // Renamed files held for their source among them.
+                    if (isWithoutPatches(run)) {
+                        void run.patchesReader.execute();
                     }
 
                     pump(run);
@@ -2314,6 +2392,38 @@ function toReviewFile(node: FileListNode): ReviewFile {
     };
 }
 
+/** The file with what `…/pulls/{n}/files` says of it: its patch, and where it came from if the list did not say. */
+function withPatch(file: ReviewFile, listed: PullRequestFile): ReviewFile {
+    return {
+        ...file,
+        previousPath: file.previousPath ?? listed.previousPath,
+        patch: { layout: listed.layout, verdict: readVerdict(file.changeType, listed) },
+    };
+}
+
+/** What the patch settles early (D45): a file with no patch and no lines changed is binary, by GraphQL's change type. */
+function readVerdict(
+    changeType: PatchStatus,
+    { layout, additions, deletions }: PullRequestFile,
+): ReviewFileVerdict | null {
+    if (additions !== 0 || deletions !== 0) {
+        return null;
+    }
+
+    switch (changeType) {
+        case 'MODIFIED':
+        case 'ADDED':
+        case 'DELETED':
+            return layout === null ? 'binary' : null;
+        case 'RENAMED':
+        case 'CHANGED':
+        case 'COPIED':
+            return null;
+        default:
+            return assertNever(changeType);
+    }
+}
+
 /** Why the file starts collapsed, whoever asks: the lock files by name and the large by size are known at once. */
 function getCollapseReason(
     file: ReviewFile,
@@ -2330,10 +2440,15 @@ function getCollapseReason(
     return file.additions + file.deletions >= LARGE_FILE_CHANGES ? 'large' : null;
 }
 
+/** Whether `…/pulls/{n}/files` has yet to answer for files that need it. */
+function isWithoutPatches(run: FileRun) {
+    return !run.patchesRead && [...run.entries.values()].some(entry => entry.file.patch === undefined);
+}
+
 /** A renamed or copied file whose source isn't known yet: `waiting`, without holding up the others. */
 function isHeldForRenames(run: FileRun, { file }: FileEntry) {
     return (
-        run.renames === null &&
+        !run.patchesRead &&
         file.previousPath === null &&
         (file.changeType === 'RENAMED' || file.changeType === 'COPIED')
     );
@@ -2375,13 +2490,15 @@ function readOutcome(
     answers: ReadonlyMap<string, ReviewBlobOidAnswer>,
 ): FileSides | ReviewFileState {
     const found = [before, after].filter(expression => expression !== null).map(expression => answers.get(expression));
+    const beforeBlob = readBlobSide(before, answers);
+    const afterBlob = readBlobSide(after, answers);
+    if (beforeBlob && afterBlob && beforeBlob.oid === afterBlob.oid) {
+        return { kind: 'unchanged' };
+    }
 
     // A side that can't be shown settles it, whatever the other says. GitHub listed the file at these commits, so a side
     // answering nothing is a submodule, which is how GitHub answers a gitlink: a pointer with no text, like a directory.
-    const sizes = {
-        before: readBlobSide(before, answers)?.byteSize ?? null,
-        after: readBlobSide(after, answers)?.byteSize ?? null,
-    };
+    const sizes = { before: beforeBlob?.byteSize ?? null, after: afterBlob?.byteSize ?? null };
     if (found.some(answer => answer?.kind === 'noBlob' || (answer?.kind === 'blob' && answer.isBinary))) {
         return { kind: 'binary', ...sizes };
     }
@@ -2396,7 +2513,7 @@ function readOutcome(
         }
     }
 
-    return { before: readBlobSide(before, answers), after: readBlobSide(after, answers) };
+    return { before: beforeBlob, after: afterBlob };
 }
 
 function readBlobSide(expression: string | null, answers: ReadonlyMap<string, ReviewBlobOidAnswer>): BlobSide | null {

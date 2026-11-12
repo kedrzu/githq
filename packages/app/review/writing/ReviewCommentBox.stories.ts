@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { fn, userEvent } from 'storybook/test';
 
 import ReviewCommentBox from './ReviewCommentBox.vue';
 
@@ -9,6 +9,8 @@ const meta = {
     component: ReviewCommentBox,
     args: {
         target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null, threadId: null },
+        repository: 'mlaine/tasklet',
+        itemNumber: 14,
         text: TEXT,
         draftOpen: false,
         draftCount: 0,
@@ -17,6 +19,7 @@ const meta = {
         focused: false,
         onSend: fn(),
         onLeave: fn(),
+        onDiscard: fn(),
     },
     render: args => ({
         components: { ReviewCommentBox },
@@ -92,3 +95,12 @@ export const NoDraft: Story = { args: { failure: { kind: 'noDraft' } } };
 
 /** GitHub refused with no words of its own: the reason is the app's, and the text stays. */
 export const RefusedWithoutWords: Story = { args: { failure: { kind: 'refused', message: null } } };
+
+/** CR97: Escape on a box with text asks in its footer, the cursor staying in the text. */
+export const AsksToDiscard: Story = {
+    args: { focused: true },
+    play: async ({ canvas }) => {
+        await userEvent.click(canvas.getByRole('textbox'));
+        await userEvent.keyboard('{Escape}');
+    },
+};

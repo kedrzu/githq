@@ -58,7 +58,7 @@ export interface DiffUnifiedRow {
     readonly sign: ' ' | '-' | '+';
 }
 
-/** Unchanged lines left out of the rows. */
+/** Unchanged lines left out of the rows, never a single one: a gap row is taller than the line it would hide. */
 export interface DiffGapRow {
     readonly kind: 'gap';
     readonly key: string;
@@ -121,8 +121,11 @@ export function buildDiffRows(diff: FileDiff, options: BuildDiffRowsOptions): Di
         pushContext(stop + shift, stop, trailing);
     }
 
+    // A single line shows: a gap row would be taller than the line it hides.
     function pushGap(afterStart: number, afterEnd: number, shift: number) {
-        if (afterStart < afterEnd) {
+        if (afterEnd - afterStart === 1) {
+            pushContext(afterStart + shift, afterStart, 1);
+        } else if (afterStart < afterEnd) {
             rows.push({
                 kind: 'gap',
                 key: `gap:${afterStart + shift + 1}:${afterStart + 1}`,

@@ -13,7 +13,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 import { answerSettingsRepository } from '../settings/answerSettingsRepository.js';
 
 import { answerReview } from './answerReview.js';
-import type { AnsweredReview, SampleReviewThread } from './answerReview.js';
+import type { AnsweredReview, SampleReviewFile, SampleReviewThread } from './answerReview.js';
 
 const ADDRESS = '/acme/web/pull/3/files';
 const ENGINE = 'src/engine.ts';
@@ -31,12 +31,23 @@ const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 const FIRST_KEY = 'ControlOrMeta+Enter';
 const SECOND_KEY = 'ControlOrMeta+Shift+Enter';
 const NEW_HEAD = 'head0001';
+/** After the engine: room to scroll a box out of the list. */
+const OTHER: SampleReviewFile = {
+    path: 'src/other.ts',
+    before: BEFORE,
+    after: LINES.map((line, index) => `${line}${index < 100 ? '' : ' // changed'}\n`).join(''),
+};
 
 /** A review of one pull request on a GitHub that takes and refuses writes as the real one does. */
 async function openWriting(
     page: Page,
     github: GitHubMock,
-    options: { readonly draft?: number; readonly threads?: readonly SampleReviewThread[] } = {},
+    options: {
+        readonly draft?: number;
+        readonly threads?: readonly SampleReviewThread[];
+        /** In place of the engine and the file after it; the engine's changed line is still waited for. */
+        readonly files?: readonly SampleReviewFile[];
+    } = {},
 ) {
     const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
     const id = world.pullRequest({
@@ -55,15 +66,7 @@ async function openWriting(
         repository: 'acme/web',
         number: 3,
         id,
-        files: [
-            { path: ENGINE, before: BEFORE, after: AFTER },
-            // Room to scroll a box out of the list.
-            {
-                path: 'src/other.ts',
-                before: BEFORE,
-                after: LINES.map((line, index) => `${line}${index < 100 ? '' : ' // changed'}\n`).join(''),
-            },
-        ],
+        files: options.files ?? [{ path: ENGINE, before: BEFORE, after: AFTER }, OTHER],
         threads,
     });
 
@@ -247,7 +250,7 @@ test('a single comment is one request, shows at once, and what is read keeps its
     expect(await reading.boundingBox()).toEqual(before);
 });
 
-test('C opens the box on the first line in view; empty, Escape closes it; with text it stays, and the keys are the diff again', async ({
+test('C opens the box on the first line in view; empty, Escape closes it and the keys are the diff again', async ({
     page,
     github,
 }) => {
@@ -258,12 +261,135 @@ test('C opens the box on the first line in view; empty, Escape closes it; with t
     await expect(box).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(box).toBeHidden();
-
-    await page.keyboard.press('c');
-    await page.keyboard.type('Hold on');
-    await page.keyboard.press('Escape');
-    await expect(review.commentField()).toHaveValue('Hold on');
     await expect(review.diff).toBeFocused();
+    await expect(review.discardedToast).toBeHidden();
+});
+
+test('Escape on a box with text asks in place: typing goes back to writing, Escape keeps writing, Enter discards', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    const field = review.commentField('Comment on line 20');
+    await page.keyboard.type('Hold on');
+    const question = review.commentBox().getByText('Discard what you wrote?');
+
+    await page.keyboard.press('Escape');
+    await expect(question).toBeVisible();
+    await expect(field).toBeFocused();
+    await page.keyboard.type('!');
+    await expect(question).toBeHidden();
+    await expect(field).toHaveValue('Hold on!');
+
+    await page.keyboard.press('Escape');
+    await expect(question).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(question).toBeHidden();
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('Hold on!');
+
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.commentBox()).toBeHidden();
+    await expect(review.diff).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
+});
+
+test('a discarded comment comes back from its toast, with Restore or ⌘Z outside a field, under its line with its text', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { draft: 2 });
+    const reading = review.code(CHANGED_LINE);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+
+    const toast = review.discardedToast;
+    await expect(toast).toContainText('Comment on line 20 discarded');
+    await expect(toast).toContainText('“Not sure yet”');
+    await expect(toast.getByRole('button', { name: 'Dismiss', exact: true }).first()).not.toHaveAttribute(
+        'aria-keyshortcuts',
+    );
+    // Above the pending review's toolbar, never over it.
+    const toastBox = await toast.boundingBox();
+    const toolbarBox = await review.pendingToolbar.boundingBox();
+    expect(toastBox && toolbarBox && toastBox.y + toastBox.height <= toolbarBox.y).toBe(true);
+
+    const before = await reading.boundingBox();
+    await toast.getByRole('button', { name: /^Restore/ }).click();
+    const field = review.commentField('Comment on line 20');
+    await expect(field).toHaveValue('Not sure yet');
+    await expect(field).toBeFocused();
+    await expect(toast).toBeHidden();
+    expect(await reading.boundingBox()).toEqual(before);
+
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(toast).toBeVisible();
+    await expect(review.diff).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(field).toHaveValue('Not sure yet');
+    await expect(field).toBeFocused();
+    await expect(toast).toBeHidden();
+});
+
+test('restored where a box was opened since, the comment goes into that box after its text, one box on the line', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Second go');
+
+    await review.discardedToast.getByRole('button', { name: /^Restore/ }).click();
+
+    await expect(review.commentBox('Comment on line 20')).toHaveCount(1);
+    const field = review.commentField('Comment on line 20');
+    await expect(field).toHaveValue('Second go\n\nNot sure yet');
+    await expect(field).toBeFocused();
+});
+
+test('⌘Z in a text field is the field’s: the discarded comment stays in its toast', async ({ page, github }) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+
+    await page.keyboard.press('/');
+    await page.keyboard.type('eng');
+    await page.keyboard.press('ControlOrMeta+z');
+
+    await expect(review.discardedToast).toBeVisible();
+    await expect(review.commentBox()).toBeHidden();
+});
+
+test('Escape with the toast up leaves the review as it would without it, and the toast goes with the review', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    // The pointer rests on the line number: its tooltip would take the Escape, as any open layer does.
+    await page.mouse.move(0, 0);
+
+    await page.keyboard.press('Escape');
+
+    await expect(page).toHaveURL(/\/acme\/web\/pull\/3$/u);
+    await expect(review.discardedToast).toBeHidden();
 });
 
 test('the second key starts a draft: the toolbar comes, and the comment says it is pending', async ({
@@ -578,7 +704,8 @@ async function pushUnderBox(page: Page, review: ReviewScreenHarness, answered: A
     await review.lineNumber(20).click();
     await page.keyboard.type(text);
     await expect(review.commentBox().getByRole('status')).toBeEmpty();
-    await page.keyboard.press('Escape');
+    // Left with its text: Escape in the box would ask to discard it.
+    await review.diff.focus();
     await page.keyboard.press('Escape');
     await expect(review.commentBox()).toBeHidden();
 
@@ -657,6 +784,55 @@ test('R on the thread N is at opens its reply box; with no draft the reply goes 
     await expect(review.pendingToolbar).toBeHidden();
 });
 
+test('a reply box opens inside its thread and closes again, the thread and what is above it staying put (D7, D39)', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { threads: OPEN_THREADS });
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    const at = await review.threadOffset('First thread here');
+    await page.keyboard.press('r');
+
+    const field = review.commentField('Reply to sofiab');
+    await expect(field).toBeFocused();
+    await expect(review.thread('First thread here').getByRole('group', { name: 'Reply to sofiab' })).toBeVisible();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Resolve thread' })).toBeVisible();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+
+    await page.keyboard.press('Escape');
+    await expect(review.commentBox('Reply to sofiab')).toBeHidden();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply…' })).toBeVisible();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+});
+
+test('restored where its thread was replied to again, the reply goes into that box, the thread staying put (D7)', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { threads: OPEN_THREADS });
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    const at = await review.threadOffset('First thread here');
+    await page.keyboard.press('r');
+    await page.keyboard.type('Agreed');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    await expect(review.commentBox('Reply to sofiab')).toBeHidden();
+    await page.keyboard.press('r');
+    await expect(review.commentField('Reply to sofiab')).toBeFocused();
+
+    await review.discardedToast.getByRole('button', { name: /^Restore/ }).click();
+
+    await expect(review.commentBox('Reply to sofiab')).toHaveCount(1);
+    const field = review.commentField('Reply to sofiab');
+    await expect(field).toHaveValue('Agreed');
+    await expect(field).toBeFocused();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+});
+
 test('a reply with a draft open joins it, and its button, its comment and the toolbar all say so', async ({
     page,
     github,
@@ -717,7 +893,7 @@ test('a reply GitHub refuses comes back in its box, and after a reload it is sti
     await review.commentField('Reply to sofiab').click();
     await page.keyboard.press(FIRST_KEY);
     await expect(review.thread('First thread here')).toContainText('Keep me too');
-    expect(writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
+    await expect.poll(() => writes.filter(write => write.name === 'AddPullRequestReviewThreadReply')).toHaveLength(2);
 });
 
 test('Resolve folds the thread where it is, moving nothing above it, and N goes on to the open one', async ({
@@ -739,6 +915,72 @@ test('Resolve folds the thread where it is, moving nothing above it, and N goes 
 
     await page.keyboard.press('n');
     await expect(review.focusedThread).toContainText('Second thread here');
+});
+
+test('a viewed file whose thread was resolved stays while it is at the top of the screen, the reading line past it, and goes when it leaves the top, nothing moving (D7, D44)', async ({
+    page,
+    github,
+}) => {
+    // Tall, for the reading line to pass into the next file well after the hold of N has ended.
+    const tall = `${LINES.map((line, index) => {
+        if (index === 19) {
+            return CHANGED_LINE;
+        }
+
+        return index < 150 ? `${line} // tall` : line;
+    }).join('\n')}\n`;
+    const { review } = await openWriting(page, github, {
+        threads: [OPEN_THREADS[0]!],
+        files: [{ path: ENGINE, before: BEFORE, after: tall }, OTHER],
+    });
+    await review.hideViewedButton.click();
+    // Viewed, it stays for its open thread (D15); opened again to be read.
+    await review.viewedButton(ENGINE).click();
+    await expect(review.viewedButton(ENGINE)).toHaveAttribute('aria-pressed', 'true');
+    await review.topHeader(ENGINE).click();
+    await expect(review.code(CHANGED_LINE)).toBeVisible();
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    await review.thread('First thread here').getByRole('button', { name: 'Resolve' }).click();
+    await expect(review.thread('First thread here').getByRole('button', { name: /Resolved/ })).toBeVisible();
+
+    // Down through the engine, its end just above the reading line: the next file is current, the engine still on top.
+    await expect(async () => {
+        if ((await review.fileHeader(OTHER.path).count()) === 0) {
+            await review.diff.evaluate(element => element.scrollBy(0, 400));
+            throw new Error('The next file is not drawn yet');
+        }
+
+        const [header, diff] = await Promise.all([
+            review.fileHeader(OTHER.path).boundingBox(),
+            review.diff.boundingBox(),
+        ]);
+        if (!header || !diff) {
+            throw new Error('The next file is not on screen');
+        }
+
+        const reading = 38 + (diff.height - 38) / 3;
+        await review.diff.evaluate((element, by) => element.scrollBy(0, by), header.y + 40 - diff.y - reading);
+        await expect(review.currentFileRow).toContainText('other.ts', { timeout: 500 });
+    }).toPass();
+    const next = review.fileHeader(OTHER.path);
+    const before = await next.boundingBox();
+    await expect(review.fileRow('engine.ts')).toBeVisible();
+    await expect(review.code('const unchanged150 = 150; // tall')).toBeInViewport();
+    await page.evaluate(
+        () =>
+            new Promise(resolve => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            }),
+    );
+    expect(await next.boundingBox()).toEqual(before);
+
+    // The engine off the top, it goes, and what is read stays where it is.
+    const reading = review.code('const unchanged110 = 110; // changed');
+    const read = await reading.boundingBox();
+    await review.diff.evaluate(element => element.scrollBy(0, 300));
+    await expect(review.fileRow('engine.ts')).toHaveCount(0);
+    expect(await reading.boundingBox()).toEqual({ ...read!, y: read!.y - 300 });
 });
 
 test('a refused Resolve puts the thread back and says so on it, what is read staying put', async ({ page, github }) => {
@@ -793,7 +1035,7 @@ test('⇧↓ out of a box left with text takes the next line into it, and in a b
     await page.keyboard.press('Shift+ArrowDown');
     await expect(review.commentBox('Comment on line 20')).toBeVisible();
 
-    await page.keyboard.press('Escape');
+    await review.diff.focus();
     await page.keyboard.press('Shift+ArrowDown');
     await expect(review.commentBox('Comment on lines 20–21')).toBeVisible();
     await expect(review.commentField('Comment on lines 20–21')).toHaveValue('Half');
@@ -838,9 +1080,10 @@ test('the keys sheet has every row whatever can run now, and no key of the app i
     await expect(sheet.getByText('New issue')).toBeHidden();
     const moving = sheet.getByRole('region', { name: 'Moving' });
     await expect(moving.getByText('Next and previous file')).toBeVisible();
-    await expect(moving.getByText('Line by line')).toBeVisible();
+    await expect(moving.getByText('Scroll by a line')).toBeVisible();
     await expect(moving.getByText('Back to the pull request')).toBeVisible();
     await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter by path')).toBeVisible();
+    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Show 20 more hidden lines')).toBeVisible();
     await expect(sheet.getByText('Review, from an opened pull request')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();

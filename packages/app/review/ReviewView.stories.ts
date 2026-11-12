@@ -186,6 +186,7 @@ function createFiles(
         changedFiles: files.length,
         progress: { here: files.length, total: files.length },
         fetchingFirst: null,
+        patchesProgress: null,
         pausedUntil: null,
         checkedAt: 0,
         listFailing: false,

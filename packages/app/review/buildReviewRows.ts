@@ -11,17 +11,25 @@ import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { countThreads } from './threads/countThreads.js';
 import type { ThreadCounts } from './threads/countThreads.js';
 import type { ThreadOnHiddenLine, ThreadOnLine, ThreadPlacement } from './threads/placeThreads.js';
+import { buildPatchPlaceholder } from './utils/getPlaceholderMask.js';
+import type { PlaceholderGap, PlaceholderSplitLine, PlaceholderUnifiedLine } from './utils/getPlaceholderMask.js';
 import type { ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 /** How many unchanged lines show around a change. */
 export const CONTEXT_LINES = 3;
 /** Nothing a path can hold, so a key's first part is always its file. */
 const KEY_SEPARATOR = '\0';
-/** A placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
+/** A guessed placeholder as tall as the file will about be, up to this: a huge file's scrollbar isn't worth a huge box. */
 const PLACEHOLDER_MAX_LINES = 2000;
 const PLACEHOLDER_MIN_LINES = 3;
 /** A line of code's height, which is also what ↓ and ↑ scroll by. */
 export const LINE_HEIGHT = 20;
+/** The background between one file's block and the next, which a header pushing the pinned one up keeps (D41). */
+export const FILE_GAP = 8;
+/** How many lines an arrow of a gap shows (D42); a gap with no more hidden has one arrow for all of it. */
+export const GAP_STEP = 20;
+/** How tall a gap's arrows are, side by side or one: WCAG's 24 px a target (2.5.8). */
+const GAP_ARROW_HEIGHT = 24;
 /** The line above the bars of a file fetched ahead of the rest. */
 const FETCHING_FIRST_HEIGHT = 40;
 /** A comment of two lines, and what stands between comments. */
@@ -34,7 +42,7 @@ const THREAD_LINE_HEIGHT = 48;
 const THREAD_CODE_HEIGHT = 110;
 /** What says all files are viewed, and the room around it. */
 const ALL_VIEWED_HEIGHT = 170;
-/** A comment box with one line of text. */
+/** A comment box with one line of text; a reply in a thread is estimated as one too. */
 export const COMMENT_BOX_HEIGHT = 144;
 
 /** The pinned head of a file's block (D24). */
@@ -81,22 +89,36 @@ export interface ReviewGapRow {
     readonly expansionReset: boolean;
 }
 
-/** A file not read or not computed yet: quiet bars about as tall as its diff (D35). */
+/**
+ * A file not read or not computed yet, in rows as tall as its diff's (D35, D45): quiet bars guessed from its line counts
+ * (D38), or a line or a gap of its patch, and the line saying a jump is fetching it ahead of the rest (CR61).
+ */
 export interface ReviewPlaceholderRow {
     readonly kind: 'placeholder';
     readonly key: string;
     readonly file: ReviewFile;
-    /** A jump is fetching it ahead of the rest, and it says so (CR61). */
-    readonly first: boolean;
+    readonly part: ReviewPlaceholderPart;
 }
+
+/** What a placeholder's row draws. */
+export type ReviewPlaceholderPart =
+    | { readonly kind: 'fetchingFirst' }
+    | { readonly kind: 'guess' }
+    | {
+          readonly kind: 'line';
+          readonly line: PlaceholderSplitLine | PlaceholderUnifiedLine;
+          /** The patch's largest line number, which the number columns are as wide as. */
+          readonly largest: number;
+      }
+    | { readonly kind: 'gap'; readonly gap: PlaceholderGap };
 
 /** A file with nothing to show as a diff, saying why. */
 export interface ReviewNoticeRow {
     readonly kind: 'notice';
     readonly key: string;
     readonly file: ReviewFile;
-    readonly notice: 'binary' | 'empty' | 'tooLarge';
-    /** Nothing of either side for `empty`. */
+    readonly notice: 'binary' | 'empty' | 'renamedUnchanged' | 'tooLarge';
+    /** Nothing of either side for `empty` and `renamedUnchanged`. */
     readonly sizes: ReviewFileSizes;
 }
 
@@ -126,9 +148,14 @@ export interface ReviewThreadRow {
     readonly placement: ThreadPlacement;
     /** Under a line of the diff: on which half in split, or in unified (D24). `null` when it has the file's width. */
     readonly inline: 'left' | 'right' | 'unified' | null;
+    /** The viewer's replies in it, being written or on their way: inside the thread, which keeps its key (D7, D39). */
+    readonly replies: readonly ReviewCommentTarget[];
 }
 
-/** A comment being written, placed like a thread, or under its file's header when its line isn't shown. Same key wherever it goes (D7). */
+/**
+ * A comment being written, placed like a thread, or under its file's header when its line isn't shown; a reply only when
+ * its thread isn't shown, being inside it otherwise. Same key wherever it goes (D7).
+ */
 export interface ReviewCommentRow {
     readonly kind: 'comment';
     readonly key: string;
@@ -192,11 +219,18 @@ export type ReviewRow =
 
 /** What shows under a file's header. */
 export type ReviewFileContent =
-    | { readonly kind: 'placeholder'; readonly first?: boolean }
+    /** `rows` from {@link buildPlaceholderRows}, guessed bars if not given. */
+    | {
+          readonly kind: 'placeholder';
+          readonly first?: boolean;
+          readonly rows?: readonly ReviewPlaceholderRow[];
+      }
     | { readonly kind: 'collapsed' }
     /** Gone from the diff (D12): nothing but its threads. */
     | { readonly kind: 'gone' }
     | ({ readonly kind: 'binary' } & ReviewFileSizes)
+    /** Renamed, its blobs the same on both sides (D45). */
+    | { readonly kind: 'renamedUnchanged' }
     | ({ readonly kind: 'tooLarge' } & ReviewFileSizes)
     | { readonly kind: 'failed'; readonly error: Error }
     | { readonly kind: 'paused'; readonly until: number }
@@ -260,11 +294,24 @@ export function buildReviewRows({
             case 'gone':
                 break;
             case 'placeholder':
+                if (content.first === true) {
+                    rows.push({
+                        kind: 'placeholder',
+                        key: path + KEY_SEPARATOR + 'placeholderFirst',
+                        file,
+                        part: { kind: 'fetchingFirst' },
+                    });
+                }
+
+                rows.push(...(content.rows ?? [createGuessRow(file)]));
+                break;
+            case 'renamedUnchanged':
                 rows.push({
-                    kind: 'placeholder',
-                    key: path + KEY_SEPARATOR + 'placeholder',
+                    kind: 'notice',
+                    key: path + KEY_SEPARATOR + 'notice',
                     file,
-                    first: content.first === true,
+                    notice: content.kind,
+                    sizes: { before: null, after: null },
                 });
                 break;
             case 'binary':
@@ -322,6 +369,51 @@ export function buildReviewRows({
     return rows;
 }
 
+export interface BuildPlaceholderRowsParams {
+    readonly file: ReviewFile;
+    readonly layout: DiffLayout;
+    readonly hideWhitespace: boolean;
+}
+
+/**
+ * The rows of a file still on its way (D45): in its patch's layout when it has one with hunks, as many as the diff that
+ * replaces it has with whitespace shown and nothing expanded, so that it moves nothing as it arrives; guessed bars from
+ * its line counts otherwise (D38). The keys are unique per layout, like a diff's.
+ *
+ * A patch's layout is close, not exact: GitHub's diff is git's, ours another algorithm (D6), which may pair or place a
+ * change differently, and a last hunk ending with a full context may or may not have lines after it. D7 absorbs that.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function buildPlaceholderRows({
+    file,
+    layout,
+    hideWhitespace,
+}: BuildPlaceholderRowsParams): ReviewPlaceholderRow[] {
+    const patch = file.patch?.layout;
+    if (!patch || patch.hunks.length === 0) {
+        return [createGuessRow(file)];
+    }
+
+    const { rows, largest } = buildPatchPlaceholder({
+        path: file.path,
+        patch,
+        layout,
+        tinted: !hideWhitespace,
+        context: CONTEXT_LINES,
+    });
+    return rows.map((row, index): ReviewPlaceholderRow => ({
+        kind: 'placeholder',
+        key: file.path + KEY_SEPARATOR + 'placeholder' + KEY_SEPARATOR + index + KEY_SEPARATOR + layout,
+        file,
+        part: row.kind === 'placeholderGap' ? { kind: 'gap', gap: row } : { kind: 'line', line: row, largest },
+    }));
+}
+
+function createGuessRow(file: ReviewFile): ReviewPlaceholderRow {
+    return { kind: 'placeholder', key: file.path + KEY_SEPARATOR + 'placeholder', file, part: { kind: 'guess' } };
+}
+
 export interface BuildFileLineRowsParams {
     readonly path: string;
     readonly diff: FileDiff;
@@ -329,7 +421,7 @@ export interface BuildFileLineRowsParams {
     readonly layout: DiffLayout;
     /** The lines shown beyond the context. */
     readonly expanded?: readonly DiffLineRange[];
-    /** A push reset the context expanded in the file: its first gap says so. */
+    /** A push reset the context expanded in the file: its first gap that still hides lines says so (CR62). */
     readonly expansionReset?: boolean;
     /** The file's threads as placed on this diff: their rows go in where they belong. */
     readonly threads?: readonly ThreadPlacement[];
@@ -353,7 +445,7 @@ export function buildFileLineRows({
     threads = [],
     comments = [],
 }: BuildFileLineRowsParams): ReviewRow[] {
-    let resetToSay = expansionReset;
+    let resetToSay = expansionReset && threads.length === 0;
     const rows = buildDiffRows(diff, { layout, context: CONTEXT_LINES, expanded }).map((row): ReviewRow => {
         const key = path + KEY_SEPARATOR + row.key + KEY_SEPARATOR + layout;
         if (row.kind !== 'gap') {
@@ -378,7 +470,7 @@ export function buildFileLineRows({
     });
 
     const withThreads = insertCommentRows(
-        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads }) : rows,
+        threads.length > 0 ? insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }) : rows,
         { path, layout, comments },
     );
     if (!isOnlyWhitespaceChanged(diff)) {
@@ -403,7 +495,10 @@ function isWholeFile({ atFileEnd, range }: ReviewGapRow) {
     return atFileEnd && range.afterStart === 0;
 }
 
-interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 'diff' | 'syntax' | 'layout'> {
+interface InsertThreadRowsParams extends Pick<
+    BuildFileLineRowsParams,
+    'path' | 'diff' | 'syntax' | 'layout' | 'expansionReset'
+> {
     readonly rows: readonly ReviewRow[];
     readonly threads: readonly ThreadPlacement[];
 }
@@ -411,9 +506,10 @@ interface InsertThreadRowsParams extends Pick<BuildFileLineRowsParams, 'path' | 
 /**
  * The rows with the threads in: those that found no line first (D30), those on a line right after it, and those on hidden
  * lines with their code by their gap, the nearer a change above it before the gap and the nearer one below it after, which
- * keeps them in the order of the lines.
+ * keeps them in the order of the lines. A push's reset is said by the first gap still hiding lines once the threads' code
+ * shows, or by the first gap alone when none does (CR62).
  */
-function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertThreadRowsParams) {
+function insertThreadRows({ path, diff, syntax, layout, rows, threads, expansionReset }: InsertThreadRowsParams) {
     const result: ReviewRow[] = [];
     const underRows = groupByToMap(
         threads.filter(placement => placement.kind === 'onLine'),
@@ -429,20 +525,25 @@ function insertThreadRows({ path, diff, syntax, layout, rows, threads }: InsertT
         }
     }
 
+    const gaps = rows.filter(row => row.kind === 'gap');
+    const resetKey = expansionReset
+        ? (gaps.find(gap => gap.hidden > countShownLines(inGaps.get(gap.range.afterStart) ?? [])) ?? gaps[0])?.key
+        : undefined;
     for (const row of rows) {
         if (row.kind === 'gap') {
             const inGap = (inGaps.get(row.range.afterStart) ?? []).toSorted(
                 (a, b) => getGapOffset(a, a.line) - getGapOffset(b, b.line),
             );
+            const saysReset = row.key === resetKey;
             pushPieces(inGap.filter(placement => placement.direction === 'down'));
             const last = inGap.at(-1);
-            if (last && row.atFileEnd && !isWholeFile(row) && !row.expansionReset) {
+            if (last && row.atFileEnd && !isWholeFile(row) && !saysReset) {
                 pushFileEnd(row, getGapOffset(last, last.line) + 1);
             } else {
                 const hidden = row.hidden - countShownLines(inGap);
                 // Nothing left of it but a push to say, which only it can.
-                if (hidden > 0 || row.expansionReset) {
-                    result.push({ ...row, hidden });
+                if (hidden > 0 || saysReset) {
+                    result.push({ ...row, hidden, expansionReset: saysReset });
                 }
             }
 
@@ -528,36 +629,47 @@ interface InsertCommentRowsParams extends Pick<BuildFileLineRowsParams, 'path' |
     readonly comments: readonly ReviewCommentTarget[];
 }
 
-/** A file with no text here has only threads and boxes under its header: a reply after its thread, the others last. */
+/** A file with no text here has only threads and boxes under its header: a reply in its thread, the others last. */
 function insertBoxesUnderThreads(rows: readonly ReviewRow[], path: string, comments: readonly ReviewCommentTarget[]) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        const thread = findReplyThread(result, path, target);
-        if (thread === -1) {
-            result.push(createCommentRow(path, target, null));
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
         } else {
-            result.splice(thread + 1, 0, createCommentRow(path, target, null));
+            result.push(createCommentRow(path, target, null));
         }
     }
 
     return result;
 }
 
-function findReplyThread(rows: readonly ReviewRow[], path: string, { threadId }: ReviewCommentTarget) {
-    return threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
+/**
+ * The rows with a reply put into its thread's row; `null` for a comment that isn't a reply, or one whose thread isn't
+ * there.
+ * @__NO_SIDE_EFFECTS__
+ */
+function addReply(rows: readonly ReviewRow[], path: string, target: ReviewCommentTarget): ReviewRow[] | null {
+    const { threadId } = target;
+    const index = threadId === null ? -1 : rows.findIndex(row => row.key === getReviewThreadKey(path, threadId));
+    const row = rows[index];
+    if (row?.kind !== 'thread') {
+        return null;
+    }
+
+    return rows.with(index, { ...row, replies: [...row.replies, target] });
 }
 
 /**
- * Each after its line and what already sits under it, a reply right after its thread; with its line or its thread not shown,
+ * Each after its line and what already sits under it, a reply inside its thread; with its line or its thread not shown,
  * first, for its text to stay in sight.
  */
 function insertCommentRows(rows: readonly ReviewRow[], { path, layout, comments }: InsertCommentRowsParams) {
-    const result = [...rows];
+    let result = [...rows];
     for (const target of comments) {
-        const thread = findReplyThread(result, path, target);
-        const threadRow = result[thread];
-        if (threadRow?.kind === 'thread') {
-            result.splice(thread + 1, 0, createCommentRow(path, target, threadRow.inline));
+        const replied = addReply(result, path, target);
+        if (replied) {
+            result = replied;
             continue;
         }
 
@@ -599,7 +711,7 @@ function countShownLines(placements: readonly ThreadOnHiddenLine[]) {
 }
 
 function createThreadRow(path: string, placement: ThreadPlacement, inline: ReviewThreadRow['inline']): ReviewThreadRow {
-    return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline };
+    return { kind: 'thread', key: getReviewThreadKey(path, placement.thread.id), placement, inline, replies: [] };
 }
 
 function createCommentRow(
@@ -624,14 +736,85 @@ function getGapOffset({ gap, side }: ThreadOnHiddenLine, line: number) {
 }
 
 /**
- * The lines "Show 20" and "Show all" bring out of a gap (D6): those right above the change below it, the ones that say
- * what that change is in; at the file's end, with no change below, those right after the last one shown.
+ * Which way lines come out of a gap (D42): `down` those right below the hunk above it, from the gap's top, `up` those
+ * right above the hunk below it, from its bottom.
+ */
+export type ReviewGapDirection = 'down' | 'up';
+
+/** The arrows in a gap's gutter (D42): both ways, the one way a file's top or end has, or one for all of a short gap. */
+export type ReviewGapArrows = 'both' | ReviewGapDirection | 'all';
+
+/** What a press on a gap shows of it: so many lines, the way they come. */
+export interface ReviewGapStep {
+    readonly direction: ReviewGapDirection;
+    readonly count: number;
+}
+
+/**
+ * The arrows a gap has (D42): at a file's top only up, there being no hunk above it, at its end only down, and one for
+ * all of it with no more than {@link GAP_STEP} lines hidden. A gap of a file still on its way gets the arrows its file's
+ * gap will have (D45).
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function getGapLinesToShow(gap: ReviewGapRow, count: number): DiffLineRange {
+export function getGapArrows(gap: ReviewGapRow | PlaceholderGap): ReviewGapArrows {
+    if (gap.hidden !== null && gap.hidden <= GAP_STEP) {
+        return 'all';
+    }
+
+    return getGapWay(gap) ?? 'both';
+}
+
+/**
+ * What a click on the rest of a gap's row and E show of it (D42): {@link GAP_STEP} lines toward the hunk `toward` names,
+ * the one on the reading line's side, or the one way the gap has; all of it when it is that short. Lines shown whole
+ * still come the way the gap has, or toward that hunk, for the row on that side to stay put (D7).
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapStep(gap: ReviewGapRow, toward: ReviewGapDirection): ReviewGapStep {
+    const arrows = getGapArrows(gap);
+    return {
+        direction: getGapWay(gap) ?? toward,
+        count: arrows === 'all' ? getGapSize(gap) : GAP_STEP,
+    };
+}
+
+/**
+ * All the lines of a gap, threads' code among them, which "Show all hidden lines" and a short gap's arrow show.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapSize({ range }: ReviewGapRow) {
+    return range.afterEnd - range.afterStart;
+}
+
+/**
+ * The only way lines can come out of a gap at a file's top (`up`) or end (`down`); `null` for a gap between hunks.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapWay(gap: ReviewGapRow | PlaceholderGap): ReviewGapDirection | null {
+    if (gap.kind === 'placeholderGap') {
+        return gap.way;
+    }
+
+    if (gap.atFileEnd) {
+        return 'down';
+    }
+
+    return gap.range.afterStart === 0 ? 'up' : null;
+}
+
+/**
+ * The lines an arrow brings out of a gap (D6, D42): going `up`, those right above the hunk below it, the ones that say
+ * what that change is in; going `down`, those right below the hunk above it.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getGapLinesToShow(gap: ReviewGapRow, { direction, count }: ReviewGapStep): DiffLineRange {
     const { afterStart, afterEnd } = gap.range;
-    return gap.atFileEnd
+    return direction === 'down'
         ? { start: afterStart, end: Math.min(afterStart + count, afterEnd) }
         : { start: Math.max(afterEnd - count, afterStart), end: afterEnd };
 }
@@ -708,7 +891,7 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'line':
             return LINE_HEIGHT;
         case 'gap':
-            return 28;
+            return getGapHeight(row.atFileEnd);
         case 'distance':
         case 'fileEnd':
             return 26;
@@ -719,13 +902,14 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
         case 'comment':
             return COMMENT_BOX_HEIGHT;
         case 'placeholder':
-            return getPlaceholderHeight(row.file) + (row.first ? FETCHING_FIRST_HEIGHT : 0);
+            return estimatePlaceholderHeight(row);
         case 'notice':
         case 'failed':
         case 'paused':
             return 58;
         case 'end':
-            return row.collapsed ? 12 : 16;
+            // The block's bottom edge, unless the header alone has its own, then the gap.
+            return (row.collapsed ? 0 : 1) + FILE_GAP;
         case 'allViewed':
             return ALL_VIEWED_HEIGHT;
         default:
@@ -733,18 +917,47 @@ export function estimateReviewRowHeight(row: ReviewRow): number {
     }
 }
 
-function estimateThreadHeight({ placement }: ReviewThreadRow) {
+/** The arrows and the edges: none under a file's last gap, the block's own following it. */
+function getGapHeight(atFileEnd: boolean) {
+    return GAP_ARROW_HEIGHT + (atFileEnd ? 1 : 2);
+}
+
+function estimatePlaceholderHeight({ file, part }: ReviewPlaceholderRow) {
+    switch (part.kind) {
+        case 'fetchingFirst':
+            return FETCHING_FIRST_HEIGHT;
+        case 'guess':
+            return getPlaceholderHeight(file);
+        case 'line':
+            return LINE_HEIGHT;
+        case 'gap':
+            return getGapHeight(part.gap.way === 'down');
+        default:
+            return assertNever(part);
+    }
+}
+
+/**
+ * About as drawn, for the scrollbar only: a resolved thread with no reply is one line, and each reply, its box or one on its
+ * way, adds a band. What is drawn is measured and kept (D7).
+ */
+function estimateThreadHeight({ placement, replies }: ReviewThreadRow) {
     const { thread } = placement;
-    if (thread.isResolved) {
+    if (thread.isResolved && replies.length === 0) {
         return THREAD_LINE_HEIGHT;
     }
 
     const hasCode = 'diffHunk' in placement && placement.diffHunk !== '';
-    return THREAD_FRAME_HEIGHT + thread.comments.length * COMMENT_HEIGHT + (hasCode ? THREAD_CODE_HEIGHT : 0);
+    return (
+        THREAD_FRAME_HEIGHT +
+        thread.comments.length * COMMENT_HEIGHT +
+        (hasCode ? THREAD_CODE_HEIGHT : 0) +
+        replies.length * COMMENT_BOX_HEIGHT
+    );
 }
 
 /**
- * How tall a file's placeholder is, its real height too: about what its diff will take.
+ * How tall a file's guessed placeholder is, its real height too: about what its diff will take.
  *
  * @__NO_SIDE_EFFECTS__
  */
@@ -768,18 +981,18 @@ export interface ReviewPosition {
 }
 
 /**
- * Where a row at that distance from the top is. Inside a file not here, how far says nothing of what will replace it: its
- * header, at the top.
+ * Where a row at that distance from the top is. A placeholder's line is the line it stands for (D45). Anywhere else
+ * inside a file not here, how far says nothing of what will replace it: its header, at the top.
  *
  * @__NO_SIDE_EFFECTS__
  */
 export function getReviewPosition(row: ReviewRow, offset: number): ReviewPosition {
     const path = getReviewRowPath(row.key);
-    if (row.kind === 'placeholder' || row.kind === 'paused') {
+    const line = getRowLine(row);
+    if (!line && (row.kind === 'placeholder' || row.kind === 'paused')) {
         return { place: { kind: 'row', key: getReviewHeaderKey(path) }, offset: 0 };
     }
 
-    const line = getRowLine(row);
     return { place: line ? { kind: 'line', path, ...line } : { kind: 'row', key: row.key }, offset };
 }
 
@@ -802,7 +1015,8 @@ export interface FindReviewPositionRowParams {
 /** The row a position lands on now, and how far that is from what it asked for. */
 export interface ReviewPositionRow extends ReviewRowReplacement {
     /**
-     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its header, until they are.
+     * `arrived`: as near as it can get, the file's lines being there. `fileWaiting`: its placeholder's line or its header,
+     * until they are.
      * `fileMissing`: the file isn't among the rows, the next one standing in.
      */
     readonly landing: 'arrived' | 'fileWaiting' | 'fileMissing';
@@ -845,12 +1059,9 @@ export function findReviewPositionRow({
         return next && { ...next, landing: 'fileMissing' };
     }
 
-    if (isFileWaiting(rows, start)) {
-        return { row: header, offset: 0, landing: 'fileWaiting' };
-    }
-
     const nearest = place.kind === 'line' ? findNearestLineRow(rows, start, place) : null;
-    return nearest ? { row: nearest, offset, landing: 'arrived' } : { row: header, offset: 0, landing: 'arrived' };
+    const landing = isFileWaiting(rows, start) ? 'fileWaiting' : 'arrived';
+    return nearest ? { row: nearest, offset, landing } : { row: header, offset: 0, landing };
 }
 
 function isFileWaiting(rows: readonly ReviewRow[], header: number) {
@@ -889,9 +1100,10 @@ export interface ReviewRowReplacement {
  * What to hold in place when the row held is gone from the new rows, because the layout or the whitespace setting
  * changed or the file arrived: the same line of the same file if shown, or else the nearest row above it (D7), a gap
  * counting when it covers that line; for anything else the top of what its file now shows; for the room under what was
- * the last file, what now follows that file, which is at the same place. All at the same distance from the top, but
- * for a placeholder or a file waiting for the allowance: how far into it the reader was says nothing about what replaced
- * it, often much shorter, so its file shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
+ * the last file, what now follows that file, which is at the same place; a placeholder's line counting as the line it
+ * stands for (D45). All at the same distance from the top, but for a placeholder's gap or guessed bars or a file waiting
+ * for the allowance: how far into it the reader was says nothing about what replaced it, often much shorter, so its file
+ * shows from its header. So does a file just collapsed or opened: all it still has in common is its header.
  *
  * A file gone from the rows, marked viewed with those hidden or filtered away, gives way to the next file still there, or
  * the last before it when none follows (D9): at the top of the screen, or lower when its header was (D7). `null` when the
@@ -918,8 +1130,9 @@ export function findReplacementRow({
         return findNextFileHeader({ key, offset, previous, next, order });
     }
 
+    const place = held ? getRowLine(held) : null;
     if (
-        held?.kind === 'placeholder' ||
+        (held?.kind === 'placeholder' && !place) ||
         held?.kind === 'paused' ||
         held?.kind === 'end' ||
         held?.kind === 'allViewed' ||
@@ -929,7 +1142,6 @@ export function findReplacementRow({
         return { row: header, offset: 0 };
     }
 
-    const place = held ? getRowLine(held) : null;
     const first = next[start + 1] ?? header;
     if (!place) {
         return { row: first, offset };
@@ -996,25 +1208,14 @@ export interface ReviewCommentLine extends RowLine {
 }
 
 /**
- * The line `C` comments on when no thread is focused (D32): the first of the rows from `key` on, on its newer side unless it
- * only has an older one. `null` with no line after it.
+ * The line `C` comments on in a row with no thread focused (D32): a code row's, on its newer side unless it only has an
+ * older one. `null` for a row that is not code.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function findCommentLine(rows: readonly ReviewRow[], key: string | null): ReviewCommentLine | null {
-    const start = Math.max(
-        rows.findIndex(row => row.key === key),
-        0,
-    );
-    for (let index = start; index < rows.length; index++) {
-        const row = rows[index];
-        const line = row?.kind === 'line' ? getRowLine(row) : null;
-        if (row && line) {
-            return { ...line, path: getReviewRowPath(row.key), key: row.key };
-        }
-    }
-
-    return null;
+export function getCommentLine(row: ReviewRow): ReviewCommentLine | null {
+    const line = row.kind === 'line' ? getRowLine(row) : null;
+    return line ? { ...line, path: getReviewRowPath(row.key), key: row.key } : null;
 }
 
 export interface ClampCommentRangeParams extends RowLine {
@@ -1080,6 +1281,16 @@ function getRowLine(row: ReviewRow): RowLine | null {
             return { side: 'after', line: row.lines.start + 1 };
         case 'comment':
             return { side: row.target.side, line: row.target.line };
+        case 'placeholder': {
+            if (row.part.kind !== 'line') {
+                return null;
+            }
+
+            const after = getPlaceholderLineNumber(row.part.line, 'after');
+            return after === null
+                ? { side: 'before', line: getPlaceholderLineNumber(row.part.line, 'before') ?? 1 }
+                : { side: 'after', line: after };
+        }
         default:
             return null;
     }
@@ -1092,6 +1303,8 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
             return getLineNumber(row.line, side);
         case 'gap':
             return side === 'after' ? row.firstLine : row.firstOlderLine;
+        case 'placeholder':
+            return row.part.kind === 'line' ? getPlaceholderLineNumber(row.part.line, side) : null;
         default:
             return null;
     }
@@ -1099,6 +1312,17 @@ function getRowFirstLine(row: ReviewRow, side: RowLine['side']) {
 
 function getLineNumber(line: DiffSplitRow | DiffUnifiedRow, side: RowLine['side']): number | null {
     if (line.layout === 'split') {
+        return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
+    }
+
+    return side === 'after' ? line.newLine : line.oldLine;
+}
+
+function getPlaceholderLineNumber(
+    line: PlaceholderSplitLine | PlaceholderUnifiedLine,
+    side: RowLine['side'],
+): number | null {
+    if (line.kind === 'split') {
         return (side === 'after' ? line.right?.line : line.left?.line) ?? null;
     }
 

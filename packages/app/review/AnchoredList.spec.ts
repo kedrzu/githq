@@ -5,7 +5,7 @@ import { nextTick } from 'vue';
 
 import * as stories from './AnchoredList.stories.jsx';
 
-const { Default, PinnedHeaders, TwoHundredThousandRows, Wrapping } = composeStories(stories);
+const { Default, PinnedHeaders, PinnedHeadersWithRoom, TwoHundredThousandRows, Wrapping } = composeStories(stories);
 
 const ESTIMATE = 24;
 /** What the browser's own rounding of the scroll position to its pixels may leave: our sums keep the fractions. */
@@ -178,6 +178,33 @@ test('the pinned header is the one of the section you are inside, pushed away by
     await frames(3);
     expect(topOf('row-300')).toBe(listTop);
     expect(list.querySelector('[tid="row-200"]')).toBeNull();
+});
+
+test('a header keeping room over itself pushes the pinned one that much earlier, the room showing all through, and the pinned one knows', async () => {
+    await PinnedHeadersWithRoom.run();
+    await clickButton('Jump');
+    await frames(3);
+    const list = scroller();
+    const listTop = list.getBoundingClientRect().top;
+    const pinned = () => list.querySelector('[tid="row-200"]');
+
+    while (list.querySelector('[tid="row-300"]') === null) {
+        list.scrollTop += 300;
+        await frames(2);
+    }
+
+    // The next header 40 below the top: the room of 10 is still under the pinned one, which is not pushed.
+    list.scrollTop += topOf('row-300') - listTop - 40;
+    await frames(3);
+    expect(topOf('row-200')).toBe(listTop);
+    expect(pinned()?.getAttribute('data-pushed')).toBe('false');
+
+    // 20 below the top: pushed up by 20, its bottom 10 above the next header.
+    list.scrollTop += 20;
+    await frames(3);
+    expectWithin(topOf('row-200'), listTop - 20, ONE_PIXEL);
+    expectWithin(bottomOf('row-200'), lastTopOf('row-300') - 10, ONE_PIXEL);
+    expect(pinned()?.getAttribute('data-pushed')).toBe('true');
 });
 
 test('the keys scroll the focused list natively, and the anchor follows: the first row still in view', async () => {

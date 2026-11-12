@@ -171,7 +171,7 @@ test('a jump lands the file exactly at the top and it stays there as files arriv
     await expect(review.fileRow('file35.ts')).toHaveAttribute('aria-current', 'true');
 });
 
-test('a file arriving under a reader deep in its placeholder shows from its start, and stays the file the list is at', async ({
+test("a file arriving under a reader inside its patch's placeholder keeps the line read where it was, and stays the file the list is at (D45)", async ({
     page,
     github,
 }) => {
@@ -187,12 +187,17 @@ test('a file arriving under a reader deep in its placeholder shows from its star
     await page.goto(REVIEW_ADDRESS);
     await expect(review.fileRow('rewritten.ts')).toBeVisible();
     await review.diff.hover();
-    await page.mouse.wheel(0, 3000);
-    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(3000);
+    await page.mouse.wheel(0, 1000);
+    await expect.poll(() => review.diff.evaluate(diff => diff.scrollTop)).toBe(1000);
+    // Line 60 of both sides, its numbers from the patch.
+    const placeholderLine = review.diff.getByText('60', { exact: true }).first();
+    await expect(placeholderLine).toBeInViewport();
+    const before = await placeholderLine.boundingBox();
 
     release();
-    await expect(review.code('const new0 = 1;')).toHaveCount(1);
-    await expect.poll(() => review.headerOffset('src/rewritten.ts')).toBe(0);
+    const arrived = review.code('const new59 = 1;');
+    await expect(arrived).toHaveCount(1);
+    await expect.poll(async () => (await arrived.boundingBox())?.y).toBe(before?.y);
     await expect(review.fileRow('rewritten.ts')).toHaveAttribute('aria-current', 'true');
 });
 
@@ -209,6 +214,26 @@ test('the list keeps the current file in view as ] walks past what fits', async 
 
     await expect(review.currentFileRow).toContainText('file39.ts');
     await expect(review.currentFileRow).toBeInViewport();
+});
+
+test('scrolling makes the file at the reading line current, the last one at the end and the first at the top (D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, { repository: 'acme/web', number: 15, files: manyFiles() });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.currentFileRow).toContainText('file00.ts');
+
+    // Rows measured on the way change the height to scroll: again until the end stays the end.
+    await expect(async () => {
+        await review.diff.evaluate(diff => diff.scrollTo(0, diff.scrollHeight));
+        await expect(review.currentFileRow).toContainText('file39.ts', { timeout: 500 });
+    }).toPass();
+
+    await review.diff.evaluate(diff => diff.scrollTo(0, 0));
+    await expect(review.currentFileRow).toContainText('file00.ts');
 });
 
 test('a line being read stays where it is through a layout switch', async ({ page, github }) => {
@@ -335,6 +360,32 @@ test("a file that fails says GitHub's words in place and marks its row, the othe
     await expect(review.diff.getByText("Couldn't fetch this file")).toHaveCount(0);
 });
 
+test("before any blob is known, a binary file says so and a file's placeholder has its patch's numbers and gaps; its blobs only add the sizes and the code (D45)", async ({
+    page,
+    github,
+}) => {
+    const review = new ReviewScreenHarness(page);
+    let release = () => {};
+    await openPullRequest(page, github, answered => {
+        release = answered.holdBlobs([ENGINE, LOGO]);
+    });
+
+    await page.keyboard.press('d');
+    await review.fileRow('engine.ts').click();
+    // The hunk starts 3 lines above the change at line 61, its numbers from its header.
+    await expect(review.placeholderGaps.filter({ hasText: '57 lines above' })).toBeVisible();
+    await expect(review.diff.getByText('58', { exact: true }).first()).toBeVisible();
+    await review.fileRow('logo.png').click();
+    await expect(review.diff.getByText('Binary file, nothing to diff', { exact: true })).toBeVisible();
+
+    release();
+    await expect(review.diff.getByText(/^Binary file, nothing.to.diff.·.\d/u)).toBeVisible();
+    await review.fileRow('engine.ts').click();
+    await expect(review.code('const MAX_BATCH = 50;')).toBeVisible();
+    await expect(review.placeholderGaps).toHaveCount(0);
+    await expect(review.gaps.filter({ hasText: '57 lines above' })).toBeVisible();
+});
+
 test('the allowance running out pauses the missing files, saying when, while a viewed mark goes through; they come by themselves at the reset, without a reload', async ({
     page,
     github,
@@ -403,7 +454,7 @@ test('a push since the last visit names the files that lost their viewed mark, t
     await expect(review.fileRow('README.md')).toContainText('changed since');
 });
 
-test('V collapses the file in place with viewed files shown, nothing moving; a second V opens it, and Space opens a viewed one and collapses it back (D13)', async ({
+test('V collapses the file in place with viewed files shown, nothing moving, and moves on to the next file; V back on it opens it, and Space opens a viewed one and collapses it back (D13, D44)', async ({
     page,
     github,
 }) => {
@@ -423,8 +474,9 @@ test('V collapses the file in place with viewed files shown, nothing moving; a s
     await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'true');
     await expect(review.code('export const client = 2;')).toHaveCount(0);
     await expect(review.fileHeader(CLIENT)).toBeInViewport();
-    await expect(review.currentFileRow).toContainText('client.ts');
+    await expect(review.currentFileRow).toContainText('schema.json');
 
+    await review.fileRow('client.ts').click();
     await page.keyboard.press('v');
     await expect(review.viewedButton(CLIENT)).toHaveAttribute('aria-pressed', 'false');
     await expect(review.code('export const client = 2;')).toBeVisible();
@@ -434,6 +486,142 @@ test('V collapses the file in place with viewed files shown, nothing moving; a s
     await expect(review.code('The web app.')).toBeVisible();
     await page.keyboard.press('Space');
     await expect(review.code('The web app.')).toHaveCount(0);
+});
+
+test('C, V and E act on the short file crossing the reading line, not the one at the top: C opens on its line, nothing moving, E finds no gap in it and V marks it (D32, D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    const changed = Array.from({ length: 40 }, (_, index) => `const top${index} = ${index};`);
+    const kept = Array.from({ length: 30 }, (_, index) => `const kept${index} = ${index};`);
+    const below = Array.from({ length: 80 }, (_, index) => `const below${index} = ${index};`);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            // A gap near its end, on screen above the short file.
+            {
+                path: 'src/a/top.ts',
+                before: `${kept.join('\n')}\nconst end = 1;\n`,
+                after: `${changed.join('\n')}\n${kept.join('\n')}\nconst end = 2;\n`,
+            },
+            { path: 'src/b/short.ts', before: 'export const short = 1;\n', after: 'export const short = 2;\n' },
+            { path: 'src/c/below.ts', before: '', after: `${below.join('\n')}\n` },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    const short = review.code('export const short = 2;');
+    await expect(short).toBeAttached();
+    const gap = review.gap('24 lines');
+    await expect(gap).toBeAttached();
+
+    // The short file's line a third down under the pinned header, where the reading line is.
+    await expect(async () => {
+        const [line, diff] = await Promise.all([short.boundingBox(), review.diff.boundingBox()]);
+        if (!line || !diff) {
+            throw new Error('The short file is not on screen');
+        }
+
+        const reading = 38 + (diff.height - 38) / 3;
+        await review.diff.evaluate((element, by) => element.scrollBy(0, by), line.y + 10 - diff.y - reading);
+        await expect(review.currentFileRow).toContainText('short.ts', { timeout: 500 });
+    }).toPass();
+    // The top of the screen is still the top file, its gap on screen.
+    await expect(gap).toBeInViewport();
+    const before = await short.boundingBox();
+
+    await page.keyboard.press('e');
+    await page.keyboard.press('c');
+
+    const box = review.commentBox('Comment on line 1');
+    await expect(box).toBeVisible();
+    expect(await short.boundingBox()).toEqual(before);
+    const [line, opened, next] = await Promise.all([
+        short.boundingBox(),
+        box.boundingBox(),
+        review.fileHeader('src/c/below.ts').boundingBox(),
+    ]);
+    expect(opened?.y).toBeGreaterThan(line?.y ?? Infinity);
+    expect(opened?.y).toBeLessThan(next?.y ?? 0);
+    // E had no gap of the short file to open; the top file's stayed as it was.
+    await expect(gap).toBeAttached();
+
+    await page.keyboard.press('Escape');
+    await expect(box).toBeHidden();
+    await page.keyboard.press('v');
+    await expect(review.viewedButton('src/b/short.ts')).toHaveAttribute('aria-pressed', 'true');
+    await expect(review.viewedButton('src/a/top.ts')).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('Space twice on the current file collapses it and opens it again, not the next file come up to the reading line (D44)', async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            // Above it, for the diff not to be at its top, where the reading line slides up to the top edge.
+            { path: 'src/0/first.ts', before: '', after: `${numbered('first', 60)}\n` },
+            { path: 'src/a/tall.ts', before: '', after: `${numbered('tall', 120)}\n` },
+            { path: 'src/b/next.ts', before: '', after: `${numbered('next', 120)}\n` },
+        ],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const first0 = 0;')).toBeVisible();
+    // Past the landing's hold, the tall file current by the reading line alone.
+    await review.diff.evaluate(element => element.scrollBy(0, 1600));
+    await expect(review.currentFileRow).toContainText('tall.ts');
+
+    await page.keyboard.press('Space');
+    await expect(review.code('const tall60 = 60;')).toHaveCount(0);
+    await expect(review.code('const next0 = 0;')).toBeInViewport();
+    await expect(review.currentFileRow).toContainText('tall.ts');
+
+    await page.keyboard.press('Space');
+    await expect(review.code('const tall60 = 60;')).toBeAttached();
+    await expect(review.currentFileRow).toContainText('tall.ts');
+});
+
+test("C takes N's thread only in the current file: scrolled up into the file above, the thread still on screen, C opens on that file's line (D44)", async ({
+    page,
+    github,
+}) => {
+    await openPullRequest(page, github);
+    answerReview(github, {
+        repository: 'acme/web',
+        number: 15,
+        files: [
+            { path: 'src/a/above.ts', before: '', after: `${numbered('above', 120)}\n` },
+            { path: 'src/b/threaded.ts', before: '', after: `${numbered('threaded', 120)}\n` },
+        ],
+        threads: [{ id: 'T1', path: 'src/b/threaded.ts', line: 5, comments: ['<p>Look here</p>'] }],
+    });
+    const review = new ReviewScreenHarness(page);
+    await page.goto(REVIEW_ADDRESS);
+    await expect(review.code('const above0 = 0;')).toBeVisible();
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('Look here');
+
+    // Up by more than half a screen, which ends N's hold: the thread a quarter down is still on screen.
+    await review.diff.evaluate(element => element.scrollBy(0, -(element.clientHeight / 2 + 40)));
+    await expect(review.currentFileRow).toContainText('above.ts');
+    await expect(review.thread('Look here')).toBeInViewport();
+
+    await page.keyboard.press('c');
+
+    const box = review.commentBox();
+    await expect(box).toBeVisible();
+    await expect(review.commentBox('Comment on line 5')).toHaveCount(0);
+    const [opened, header] = await Promise.all([
+        box.boundingBox(),
+        review.fileHeader('src/b/threaded.ts').boundingBox(),
+    ]);
+    expect(opened?.y).toBeLessThan(header?.y ?? 0);
 });
 
 test('a pull request with no changes says so', async ({ page, github }) => {
@@ -772,12 +960,14 @@ test('the filter takes a pattern and a regular expression, holds what stays on s
     await expect(review.fileList).toContainText('0 of 42 viewed');
 });
 
-test('Show 20 brings the lines nearest the change below and keeps the line being read; Show all empties the gap', async ({
+test('a gap\'s arrows show 20 lines from their hunk and hold the row on that side; a click on it, E and "Show all hidden lines" open it further', async ({
     page,
     github,
 }) => {
     await openMyWork(page, github, createSampleMyWork().world);
     const body = Array.from({ length: 100 }, (_, index) => `    const kept${index} = ${index};`).join('\n');
+    // A file below, for the diff to have room to scroll by what comes in.
+    const more = Array.from({ length: 60 }, (_, index) => `const more${index} = ${index};`);
     answerReview(github, {
         repository: 'acme/web',
         number: 15,
@@ -787,24 +977,53 @@ test('Show 20 brings the lines nearest the change below and keeps the line being
                 before: `export class SyncEngine {\n    const first = 1;\n${body}\n    const last = 1;\n}\n`,
                 after: `export class SyncEngine {\n    const first = 2;\n${body}\n    const last = 2;\n}\n`,
             },
+            {
+                path: 'src/more.ts',
+                before: `${more.join('\n')}\n`,
+                after: `${more.map(line => `${line} // changed`).join('\n')}\n`,
+            },
         ],
     });
     const review = new ReviewScreenHarness(page);
     await page.goto(REVIEW_ADDRESS);
     await expect(review.code('const last = 2;')).toBeVisible();
-    await expect(review.diff.getByText('export class SyncEngine {').last()).toBeVisible();
+    await expect(review.gap('94 lines')).toContainText('export class SyncEngine {');
+    const y = async (text: string) => (await review.code(text).first().boundingBox())?.y;
 
-    await review.gapButton('Show 20').click();
-    await expect(review.code('const kept96 = 96;').first()).toBeAttached();
+    // Down, below the hunk above: the row over the gap stays.
+    const first = await y('const first = 2;');
+    await review.gapArrow('below').click();
+    // Off the gap, whose count says what the arrow under the pointer does.
+    await page.mouse.move(0, 0);
+    await expect(review.code('const kept22 = 22;').first()).toBeAttached();
+    await expect(review.code('const kept23 = 23;')).toHaveCount(0);
+    await expect(review.gap('74 lines')).toBeAttached();
+    expect(await y('const first = 2;')).toBeCloseTo(first ?? 0, 0);
+
+    // Up, above the hunk below: the row under the gap stays, the lines coming above it.
+    const last = await y('const last = 2;');
+    await review.gapArrow('above').click();
+    await page.mouse.move(0, 0);
     await expect(review.code('const kept77 = 77;').first()).toBeAttached();
     await expect(review.code('const kept76 = 76;')).toHaveCount(0);
-    // The file fits on the screen, so nothing is left below to scroll to: the line read stays in view.
-    await expect(review.code('const last = 2;')).toBeInViewport();
+    await expect(review.gap('54 lines')).toBeAttached();
+    await expect.poll(() => y('const last = 2;')).toBeCloseTo(last ?? 0, 0);
 
+    await page.keyboard.press('e');
+    await expect(review.gap('34 lines')).toBeAttached();
+    await review.gap('34 lines').click({ position: { x: 200, y: 10 } });
+    await page.mouse.move(0, 0);
+    // The lines came above the row under the gap, which stayed: the gap went up, out of the rows drawn.
     await review.diff.evaluate(diff => diff.scrollTo(0, 0));
-    await review.gapButton('Show all').click();
+    await expect(review.gap('14 lines')).toBeAttached();
+    await expect(review.gapArrow('all')).toHaveAccessibleName('Show 14 lines');
+
+    // The command acts on a gap on screen: bring this one into view, wherever the window's height left it.
+    await review.gap('14 lines').evaluate(gap => gap.scrollIntoView({ block: 'center' }));
+    await expect(review.gap('14 lines')).toBeInViewport();
+    await new CommandMenuHarness(page).run('Show all hidden lines');
     await expect(review.code('const kept50 = 50;').first()).toBeAttached();
-    await expect(review.gapButton('Show all')).toHaveCount(0);
+    await expect(review.gaps).toHaveCount(0);
 });
 
 test('⌘B hides the file list and remembers it, the toggle and the view options say so; [ and ] still walk the files', async ({
@@ -908,4 +1127,9 @@ function manyFiles(): SampleReviewFile[] {
             after: `${body}\nif (ready) {\n  const changed${index} = 2;\n}\n`,
         };
     });
+}
+
+/** `count` lines `const <name><n> = <n>;`. */
+function numbered(name: string, count: number) {
+    return Array.from({ length: count }, (_, index) => `const ${name}${index} = ${index};`).join('\n');
 }

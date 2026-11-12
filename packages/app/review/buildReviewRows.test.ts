@@ -1,15 +1,25 @@
 import { expect, test } from 'bun:test';
 
+import { parsePatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import type { PatchLayout } from '@githq/github/utils/parsePatchLayout.js';
+import { assert } from '@nzyme/utils/assert.js';
+
+import { writeSamplePatch } from '@/testing/writeSamplePatch.js';
+
 import {
     buildFileLineRows,
+    buildPlaceholderRows,
     buildReviewRows,
     clampCommentRange,
     estimateReviewRowHeight,
-    findCommentLine,
     findReplacementRow,
     findReviewPositionRow,
+    getCommentLine,
     getDistanceLinesToShow,
+    getGapArrows,
     getGapLinesToShow,
+    getGapSize,
+    getGapStep,
     getReviewCommentKey,
     getReviewHeaderKey,
     getReviewPosition,
@@ -18,6 +28,7 @@ import {
 } from './buildReviewRows.js';
 import type { ReviewFileContent, ReviewPosition, ReviewRow } from './buildReviewRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
+import type { FileDiff } from './diff/computeFileDiff.js';
 import type { ReviewFile } from './ReviewFiles.js';
 import { placeThreads } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
@@ -95,14 +106,14 @@ test("the file's last gap under a thread's code says what is left to the end and
     expect(rowsWithThreads([threadOnLine(41)]).at(-1)).toMatchObject({ kind: 'thread' });
 });
 
-test('a gap counts the lines nothing shows, not those shown for its threads, overlapping ones once; Show all still takes them all', () => {
+test('a gap counts the lines nothing shows, not those shown for its threads, overlapping ones once; all of it still takes them all', () => {
     const rows = rowsWithThreads([threadOnLine(5, { id: 'one' }), threadOnLine(6, { id: 'two' })]);
     const gap = rows.find(row => row.kind === 'gap');
 
     // Lines 1 to 16, of which 3 to 6 show.
     expect(gap).toMatchObject({ hidden: 12, range: { afterStart: 0, afterEnd: 16 } });
     if (gap?.kind === 'gap') {
-        expect(getGapLinesToShow(gap, gap.range.afterEnd - gap.range.afterStart)).toEqual({ start: 0, end: 16 });
+        expect(getGapLinesToShow(gap, { direction: 'up', count: getGapSize(gap) })).toEqual({ start: 0, end: 16 });
     }
 });
 
@@ -274,6 +285,60 @@ test('a placeholder is about as tall as the file, within limits', () => {
     expect(heights).toEqual([60, 800, 40_000]);
 });
 
+/**
+ * Each a file before and after: hunks merged across 6 unchanged lines and kept apart across 7, a change at the first line
+ * and at the last, a single line before the first hunk, runs of deleted and added lines of different lengths, an added and a deleted file.
+ */
+const PATCH_SAMPLES: readonly (readonly [string, string | null, string | null])[] = [
+    ['two hunks and one merged', lines(60), edit(lines(60), { 10: ['ten'], 17: ['seventeen', 'more'], 40: [] })],
+    ['kept apart by one line', lines(30), edit(lines(30), { 5: ['five'], 13: ['thirteen'] })],
+    ['7 lines apart, one line above', lines(20), edit(lines(20), { 5: ['five'], 13: ['thirteen'] })],
+    ['a change at line 2', lines(20), edit(lines(20), { 2: ['two'] })],
+    ['a hunk from line 2', lines(20), edit(lines(20), { 5: ['five'] })],
+    ['the first and the last line', lines(20), edit(lines(20), { 1: ['one', 'one b', 'one c'], 20: ['twenty'] })],
+    ['near the end', lines(20), edit(lines(20), { 18: [] })],
+    ['runs of different lengths', lines(40), edit(lines(40), { 10: [], 11: [], 12: ['x'], 25: ['a', 'b', 'c', 'd'] })],
+    ['added', null, lines(12)],
+    ['deleted', lines(12), null],
+];
+
+test.each(PATCH_SAMPLES)(
+    'a placeholder from the patch draws the rows its diff will, numbered the same, as tall: %s',
+    (_, before, after) => {
+        const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+        const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+        for (const layout of ['split', 'unified'] as const) {
+            const placeholder = buildPlaceholderRows({ file, layout, hideWhitespace: false });
+            const real = buildFileLineRows({ path: A.path, diff, layout });
+
+            expect(placeholder.map(describeRow)).toEqual(real.map(describeRow));
+            expect(sumHeights(placeholder)).toBe(sumHeights(real));
+        }
+    },
+);
+
+test('a placeholder from the patch tints its changed lines, but not with whitespace hidden', () => {
+    const diff = computeFileDiff({ before: lines(20), after: edit(lines(20), { 10: ['ten'] }), ...NO_IGNORE });
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(diff), verdict: null } };
+
+    const tints = (hideWhitespace: boolean) =>
+        buildPlaceholderRows({ file, layout: 'unified', hideWhitespace }).flatMap(row =>
+            row.part.kind === 'line' && row.part.line.kind === 'unified' ? [row.part.line.tint] : [],
+        );
+
+    expect(tints(false)).toEqual([null, null, null, 'deleted', 'added', null, null, null]);
+    expect(tints(true).every(tint => tint === null)).toBe(true);
+});
+
+test('a file with no patch, or no hunks in it, keeps the guess from its line counts', () => {
+    const guessed = (patch: ReviewFile['patch']) =>
+        buildPlaceholderRows({ file: { ...A, patch }, layout: 'split', hideWhitespace: false }).map(row => row.part);
+
+    expect(guessed(undefined)).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: null, verdict: null })).toEqual([{ kind: 'guess' }]);
+    expect(guessed({ layout: { hunks: [] }, verdict: null })).toEqual([{ kind: 'guess' }]);
+});
+
 test('a line held through a layout switch stays on the same line of the newer version', () => {
     const split = buildAll([A], 'split');
     const unified = buildAll([A], 'unified');
@@ -353,7 +418,7 @@ test('a line past what a file now holds lands on the nearest row above it, not a
     });
 });
 
-test('a placeholder held gives way to the top of its file, whatever it arrived as: how far into it the reader was means nothing there', () => {
+test('guessed bars held give way to the top of their file, whatever it arrived as: how far into them the reader was means nothing there', () => {
     const waiting = buildReviewRows({ files: [A, B], getContent: () => ({ kind: 'placeholder' }) });
     const held = waiting.find(row => row.kind === 'placeholder');
     if (!held) {
@@ -546,13 +611,62 @@ test('a file not arrived holds its header at the top; a thread is found by its k
     ).toMatchObject({ row: { key }, offset: 90, landing: 'arrived' });
 });
 
-test('a position inside a placeholder is kept as its file, for how far says nothing of what comes', () => {
+test('a position inside guessed bars is kept as its file, for how far says nothing of what comes', () => {
     const rows = buildReviewRows({ files: [A], getContent: () => ({ kind: 'placeholder' }) });
     const placeholder = rows.find(row => row.kind === 'placeholder');
 
     expect(getReviewPosition(placeholder!, -300)).toEqual({
         place: { kind: 'row', key: getReviewHeaderKey(A.path) },
         offset: 0,
+    });
+});
+
+test("a placeholder's line holds the position as the line it stands for, when the file arrives and across layouts", () => {
+    const file: ReviewFile = { ...A, patch: { layout: toPatchLayout(DIFF), verdict: null } };
+    const waiting = (layout: 'split' | 'unified') =>
+        buildReviewRows({
+            files: [file, B],
+            getContent: () => ({
+                kind: 'placeholder',
+                rows: buildPlaceholderRows({ file, layout, hideWhitespace: false }),
+            }),
+        });
+    const split = waiting('split');
+    const held = split.find(
+        row =>
+            row.kind === 'placeholder' &&
+            row.part.kind === 'line' &&
+            row.part.line.kind === 'split' &&
+            row.part.line.right?.line === 19,
+    );
+    assert(held);
+
+    expect(getReviewPosition(held, -40)).toEqual({
+        place: { kind: 'line', path: A.path, side: 'after', line: 19 },
+        offset: -40,
+    });
+
+    const arrived = buildAll([A, B], 'split');
+    expect(findReplacementRow({ key: held.key, offset: -40, previous: split, next: arrived })).toEqual({
+        row: lineWithAfter(arrived, 19),
+        offset: -40,
+    });
+
+    const unified = waiting('unified');
+    const switched = findReplacementRow({ key: held.key, offset: -40, previous: split, next: unified });
+    expect(switched?.offset).toBe(-40);
+    expect(
+        switched?.row.kind === 'placeholder' && switched.row.part.kind === 'line' && switched.row.part.line,
+    ).toMatchObject({
+        kind: 'unified',
+        newLine: 19,
+    });
+
+    const position = getReviewPosition(held, -40);
+    expect(findReviewPositionRow({ position, rows: unified, order: [A.path, B.path] })).toMatchObject({
+        row: { key: switched?.row.key },
+        offset: -40,
+        landing: 'fileWaiting',
     });
 });
 
@@ -611,6 +725,60 @@ function lineWithAfter(rows: readonly ReviewRow[], line: number): ReviewRow {
     return found;
 }
 
+/** The lines replaced, by their 1-based number in the older version; an empty array deletes the line. */
+function edit(text: string, replaced: Readonly<Record<number, readonly string[]>>) {
+    return text
+        .split('\n')
+        .slice(0, -1)
+        .flatMap((line, index) => replaced[index + 1] ?? [line])
+        .map(line => `${line}\n`)
+        .join('');
+}
+
+/** The layout of the patch git would write of our own diff: GitHub's own may pair or place a change differently (D6), and D7 absorbs it. */
+function toPatchLayout(diff: FileDiff): PatchLayout {
+    const layout = parsePatchLayout(writeSamplePatch(diff).patch ?? '');
+    assert(layout);
+    return layout;
+}
+
+/** A row by what it shows: a line's numbers on each side, or a gap's count, which the patch can't say at the file's end. */
+function describeRow(row: ReviewRow): string {
+    switch (row.kind) {
+        case 'line':
+            return row.line.layout === 'split'
+                ? `${row.line.left?.line ?? '-'}|${row.line.right?.line ?? '-'}`
+                : `${row.line.oldLine ?? '-'}|${row.line.newLine ?? '-'}`;
+        case 'gap':
+            return row.atFileEnd ? 'gap:end' : `gap:${row.hidden}`;
+        case 'placeholder': {
+            const { part } = row;
+            if (part.kind === 'gap') {
+                return part.gap.way === 'down' ? 'gap:end' : `gap:${part.gap.hidden}`;
+            }
+
+            if (part.kind !== 'line') {
+                return part.kind;
+            }
+
+            return part.line.kind === 'split'
+                ? `${part.line.left?.line ?? '-'}|${part.line.right?.line ?? '-'}`
+                : `${part.line.oldLine ?? '-'}|${part.line.newLine ?? '-'}`;
+        }
+        default:
+            return row.kind;
+    }
+}
+
+function sumHeights(rows: readonly ReviewRow[]) {
+    let total = 0;
+    for (const row of rows) {
+        total += estimateReviewRowHeight(row);
+    }
+
+    return total;
+}
+
 function lines(count: number) {
     return Array.from({ length: count }, (_, index) => `line ${index + 1}\n`).join('');
 }
@@ -626,7 +794,7 @@ test('expanded lines keep the keys of the lines shown, and the rest of the gap k
         throw new Error('No gap');
     }
 
-    const shown = getGapLinesToShow(gap, 5);
+    const shown = getGapLinesToShow(gap, { direction: 'up', count: 5 });
     expect(shown).toEqual({ start: gap.range.afterEnd - 5, end: gap.range.afterEnd });
 
     const after = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', expanded: [shown] });
@@ -649,17 +817,71 @@ test('a push having reset what was expanded, only the first gap says so', () => 
     expect(rows.filter(row => row.kind === 'gap').length).toBeGreaterThan(1);
 });
 
-test('a gap at the end of the file shows from its top, none being below it', () => {
-    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
-    const gap = rows.findLast(row => row.kind === 'gap');
-    if (gap?.kind !== 'gap') {
-        throw new Error('No gap');
+test("a push's reset is said by the first gap still hiding lines, past one whose lines all show for a thread; by the first alone when none does (CR62)", () => {
+    const build = (text: string) => {
+        const after = text.replace('line 1\n', 'line one\n').replace('line 10\n', 'line ten\n');
+        const diff = computeFileDiff({ before: text, after, ...NO_IGNORE });
+        const threads = placeThreads({ kind: 'open', diff, expanded: [] }, [threadOnLine(6, { id: 'gapEnd' })]);
+        return buildFileLineRows({ path: A.path, diff, layout: 'split', expansionReset: true, threads }).flatMap(row =>
+            row.kind === 'gap' ? [[row.firstLine, row.hidden, row.expansionReset]] : [],
+        );
+    };
+
+    // Lines 5 and 6 all show for the thread on 6; 14 to 30 stay hidden.
+    expect(build(lines(30))).toEqual([[14, 17, true]]);
+    expect(build(lines(10))).toEqual([[5, 0, true]]);
+});
+
+test('each kind of gap has its arrows: up at the top of a file, down at its end, both between hunks, one for a short gap', () => {
+    const gaps = Object.values(getGaps());
+
+    expect(gaps.map(gap => [gap.hidden, getGapArrows(gap)])).toEqual([
+        [26, 'up'],
+        [33, 'both'],
+        [8, 'all'],
+        [32, 'down'],
+    ]);
+    expect(gaps.map(estimateReviewRowHeight)).toEqual([26, 26, 26, 25]);
+});
+
+test('an arrow shows 20 lines from its side of the gap: down below the hunk above, up above the hunk below', () => {
+    const { top, between, end } = getGaps();
+
+    expect(getGapLinesToShow(between, { direction: 'down', count: 20 })).toEqual({ start: 33, end: 53 });
+    expect(getGapLinesToShow(between, { direction: 'up', count: 20 })).toEqual({ start: 46, end: 66 });
+    expect(getGapLinesToShow(top, { direction: 'up', count: 20 })).toEqual({ start: 6, end: 26 });
+    expect(getGapLinesToShow(end, { direction: 'down', count: 20 })).toEqual({ start: 88, end: 108 });
+    expect(getGapLinesToShow(end, { direction: 'down', count: 1000 })).toEqual({ start: 88, end: 120 });
+});
+
+test("a click on a gap and E go 20 toward the hunk named, a file's top or end its one way, and a short gap opens whole", () => {
+    const { top, between, short, end } = getGaps();
+
+    expect(getGapStep(between, 'down')).toEqual({ direction: 'down', count: 20 });
+    expect(getGapStep(between, 'up')).toEqual({ direction: 'up', count: 20 });
+    expect(getGapStep(top, 'down')).toEqual({ direction: 'up', count: 20 });
+    expect(getGapStep(end, 'up')).toEqual({ direction: 'down', count: 20 });
+    expect(getGapStep(short, 'up')).toEqual({ direction: 'up', count: 8 });
+    expect(getGapStep(short, 'down')).toEqual({ direction: 'down', count: 8 });
+    expect(getGapLinesToShow(short, getGapStep(short, 'down'))).toEqual({ start: 73, end: 81 });
+});
+
+/** A file of 120 lines changed at 30, 70 and 85: a gap at its top, two between hunks, a long and a short one, and one at its end. */
+function getGaps() {
+    const before = lines(120);
+    const after = ['30', '70', '85'].reduce(
+        (text, line) => text.replace(`line ${line}\n`, `line ${line} changed\n`),
+        before,
+    );
+    const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+    const gaps = buildFileLineRows({ path: A.path, diff, layout: 'split' }).filter(row => row.kind === 'gap');
+    const [top, between, short, end] = gaps;
+    if (!top || !between || !short || !end || gaps.length !== 4) {
+        throw new Error('Not the four gaps');
     }
 
-    expect(gap.atFileEnd).toBe(true);
-    expect(getGapLinesToShow(gap, 2)).toEqual({ start: gap.range.afterStart, end: gap.range.afterStart + 2 });
-    expect(getGapLinesToShow(gap, 1000)).toEqual({ start: gap.range.afterStart, end: gap.range.afterEnd });
-});
+    return { top, between, short, end };
+}
 
 test('a file filtered away gives way to the next left in the whole order, one the rows held before not shown (D7)', () => {
     const c = sampleFile('src/c.ts');
@@ -721,14 +943,16 @@ test('a comment box sits under its line and what is under that, on its own half 
     expect(commentRow(unified, 'box19').above).toMatchObject({ kind: 'line', line: { newLine: 19 } });
 });
 
-test('a reply sits right under its thread, on its half; with its thread not shown, first, for its text to stay in sight', () => {
+test("a reply is inside its thread's row, the rows' keys staying as they were; with its thread not shown, first, for its text to stay in sight", () => {
     const thread = threadOnLine(19);
     const threads = placeThreads({ kind: 'open', diff: DIFF, expanded: [] }, [thread]);
     const reply = { ...commentOn(19), id: 'reply', threadId: thread.id };
 
+    const without = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads });
     const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', threads, comments: [reply] });
-    expect(commentRow(rows, 'reply').row).toMatchObject({ inline: 'right' });
-    expect(commentRow(rows, 'reply').above?.kind).toBe('thread');
+    expect(commentRow(rows, 'reply').index).toBe(-1);
+    expect(rows.map(row => row.key)).toEqual(without.map(row => row.key));
+    expect(rows.find(row => row.kind === 'thread')).toMatchObject({ inline: 'right', replies: [reply] });
 
     const alone = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', comments: [reply] });
     expect(alone[0]).toMatchObject({ kind: 'comment', inline: null });
@@ -762,14 +986,15 @@ test('a box gone from the rows it was held at gives way to its line, not to the 
     expect(replacement?.row).toMatchObject({ kind: 'line', line: { right: { line: 21 } } });
 });
 
-test('C takes the first line from the row at the top: past what is not a line, on its newer side unless it has none', () => {
+test("C takes a code row's line on its newer side unless it has none, and nothing from a row that is not code", () => {
     const rows = buildReviewRows({
         files: [A],
-        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) }),
+        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'unified' }) }),
     });
+    const older = rows.map(getCommentLine).filter(line => line?.side === 'before');
 
-    expect(findCommentLine(rows, getReviewHeaderKey(A.path))).toMatchObject({ path: A.path, side: 'after', line: 17 });
-    expect(findCommentLine([], null)).toBeNull();
+    expect(getCommentLine(rows[0]!)).toBeNull();
+    expect(older).toEqual([expect.objectContaining({ path: A.path, line: 20 })]);
 });
 
 test('a range reaches as far as the lines go on together, and stops at what hides lines', () => {

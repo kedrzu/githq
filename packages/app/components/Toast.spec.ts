@@ -7,7 +7,7 @@ import { nextTick } from 'vue';
 import { TOAST_LASTS } from './Toast.vue';
 import * as stories from './Toast.stories.jsx';
 
-const { EditRejected, Lifetimes, Stack } = composeStories(stories);
+const { EditRejected, LeavesEscape, Lifetimes, Stack } = composeStories(stories);
 
 test('Escape dismisses it, and the screen behind never sees that Escape', async () => {
     await EditRejected.run();
@@ -29,6 +29,23 @@ test('Escape typed into a field is the field’s: the toast stays', async () => 
 
     await expect.element(page.getByRole('listitem')).toHaveTextContent('Label “regression” wasn’t added');
     await expect.element(page.getByTestId('dismissed')).toHaveTextContent('Dismissed: 0');
+});
+
+test('one that leaves Escape to the screen stays, the screen sees the key, and its Dismiss shows and names no key', async () => {
+    await LeavesEscape.run();
+    const toast = page.getByRole('listitem');
+    const dismiss = toast.getByRole('button', { name: 'Dismiss', exact: true }).first();
+    await expect.element(dismiss).not.toHaveAttribute('aria-keyshortcuts');
+    expect(toast.element().querySelectorAll('kbd')).toHaveLength(0);
+
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(page.getByTestId('escapes')).toHaveTextContent('Escapes seen behind: 1');
+    await expect.element(toast).toHaveTextContent('Label “regression” wasn’t added');
+    await expect.element(page.getByTestId('dismissed')).toHaveTextContent('Dismissed: 0');
+
+    await userEvent.click(dismiss);
+    await expect.element(page.getByTestId('dismissed')).toHaveTextContent('Dismissed: 1');
 });
 
 test('"Dismiss" dismisses it', async () => {

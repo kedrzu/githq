@@ -5,11 +5,14 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { History } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import type { ItemUser } from '@/store/ItemTypes.js';
+
 import type { ReviewThreadRow } from '../buildReviewRows.js';
-import type { ReviewWriteFailure } from '../writing/ReviewWriting.js';
+import type { ReviewCommentTarget, ReviewWriteFailure } from '../writing/ReviewWriting.js';
 import { parseDiffHunk } from './parseDiffHunk.js';
 import ReviewRowInset from './ReviewRowInset.vue';
 import ReviewThreadBox from './ReviewThreadBox.vue';
+import type { ReviewThreadReplies } from './ReviewThreadBox.vue';
 import ReviewThreadCode from './ReviewThreadCode.vue';
 import * as l from './ReviewThreadRow.loc.js';
 
@@ -18,8 +21,10 @@ const props = defineProps<{
   /** A resolved thread shows whole. */
   open?: boolean;
   focused?: boolean;
-  /** Its reply box is open under it. */
-  replying?: boolean;
+  /** The viewer's replies in it, which the `reply` slot draws. */
+  replies?: ReviewThreadReplies | null;
+  /** Who is signed in: the reply band's avatar. */
+  viewer?: ItemUser | null;
   /** Why resolving it or opening it again didn't go through. */
   resolveFailure?: ReviewWriteFailure | null;
 }>();
@@ -28,6 +33,11 @@ const emit = defineEmits<{
   toggle: [];
   reply: [];
   setResolved: [resolved: boolean];
+}>();
+
+defineSlots<{
+  /** A reply of the viewer's: its box, or the reply on its way. */
+  reply?(props: { target: ReviewCommentTarget }): unknown;
 }>();
 
 const t = useTranslate();
@@ -113,12 +123,20 @@ const codeLabel = computed(() => {
       :outdated-note="outdatedNote"
       :open="open"
       :focused="focused"
-      :replying="replying"
+      :replies="replies"
+      :viewer="viewer"
       :resolve-failure="resolveFailure"
       @toggle="emit('toggle')"
       @reply="emit('reply')"
       @set-resolved="emit('setResolved', $event)"
-    />
+    >
+      <template #reply="{ target }">
+        <slot
+          name="reply"
+          :target="target"
+        />
+      </template>
+    </ReviewThreadBox>
   </ReviewRowInset>
 </template>
 

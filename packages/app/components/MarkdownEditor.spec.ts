@@ -23,7 +23,7 @@ import { TrackingStore } from '@/tracking/TrackingStore.js';
 import MarkdownEditor from './MarkdownEditor.vue';
 import * as stories from './MarkdownEditor.stories.js';
 
-const { Empty, PreviewFailed, Typed } = composeStories(stories);
+const { Empty, Narrow, PreviewFailed, Typed } = composeStories(stories);
 
 test("Preview shows GitHub's rendering without the tools; Write brings back the text as typed", async () => {
     await Empty.run();
@@ -266,6 +266,48 @@ test('the @ tool types the @ starting a word and opens the menu at it', async ()
     await expect.element(text).toHaveFocus();
 });
 
+test('in a narrow head the last groups fold into ⋯, and a tool picked there applies as its button does', async () => {
+    await Narrow.run({ args: { ...Narrow.args, modelValue: '' } });
+
+    await expect.element(page.getByRole('button', { name: 'Bold' })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Bulleted list' })).not.toBeInTheDocument();
+
+    const text = page.getByRole('textbox', { name: 'Comment' });
+    await userEvent.type(text, 'steps');
+    await userEvent.click(page.getByRole('button', { name: 'More formatting' }));
+    await userEvent.click(page.getByRole('menuitem', { name: 'Bulleted list' }));
+
+    await expect.element(text).toHaveValue('- steps');
+    await expect.element(text).toHaveFocus();
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument();
+});
+
+test('⋯ is the toolbar’s last stop for the arrow keys, its menu walked by them too; @ from it opens the suggestions', async () => {
+    await Narrow.run({ args: { ...Narrow.args, modelValue: '' } });
+
+    await userEvent.click(page.getByRole('tab', { name: 'Write' }));
+    await userEvent.tab();
+    await expect.element(page.getByRole('button', { name: 'Suggest a change' })).toHaveFocus();
+    await userEvent.keyboard('{End}');
+    const more = page.getByRole('button', { name: 'More formatting' });
+    await expect.element(more).toHaveFocus();
+
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByRole('menuitem', { name: 'Bulleted list' })).toHaveFocus();
+    await userEvent.keyboard('{End}{ArrowUp}{Enter}');
+
+    const text = page.getByRole('textbox', { name: 'Comment' });
+    await expect.element(text).toHaveValue('@');
+    await expect.element(text).toHaveFocus();
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+});
+
+test('a disabled editor’s ⋯ is disabled', async () => {
+    await Narrow.run({ args: { ...Narrow.args, disabled: true } });
+
+    await expect.element(page.getByRole('button', { name: 'More formatting' })).toBeDisabled();
+});
+
 /**
  * The editor as the item view holds it: its text and repository the opened item's, changed under it when the user
  * moves on; GitHub rendering a text as `repository: text`, a moment later.
@@ -363,6 +405,8 @@ async function mountSuggestingEditor(params: SuggestingEditorParams) {
     app.use(IocPlugin, { container });
     const root = document.createElement('div');
     root.setAttribute('tid', 'suggesting-editor');
+    // As wide as a page's thread: every tool in the head.
+    root.style.width = '680px';
     document.body.append(root);
     app.mount(root);
     onTestFinished(() => {

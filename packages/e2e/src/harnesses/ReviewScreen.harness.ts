@@ -91,6 +91,14 @@ export class ReviewScreenHarness {
         return this.pendingToolbar.getByRole('button', { name: 'Discard review…' });
     }
 
+    /** The toast of a comment box just discarded (D40), in the review's own notifications at the foot of the diff. */
+    get discardedToast(): Locator {
+        return this.page
+            .getByRole('region', { name: /^Messages of this screen/ })
+            .getByRole('listitem')
+            .filter({ hasText: 'discarded' });
+    }
+
     /** The submit dialog (CR75). */
     get submitDialog(): Locator {
         return this.page.getByRole('dialog', { name: /^Submit your review/ });
@@ -251,9 +259,32 @@ export class ReviewScreenHarness {
         return this.fileRow(name).getByRole('img', { name: count === 1 ? '1 open thread' : `${count} open threads` });
     }
 
-    /** A gap's button of that name, in the diff. */
-    gapButton(name: 'Show 20' | 'Show all'): Locator {
-        return this.diff.getByRole('button', { name, exact: true });
+    /**
+     * A gap's arrow in the diff, by what it shows (D42): `above` 20 lines above the hunk below, `below` 20 below the hunk
+     * above, `all` the whole of a short gap.
+     */
+    gapArrow(shows: 'above' | 'below' | 'all'): Locator {
+        const names = {
+            above: /^Show \d+ above line \d+$/u,
+            below: /^Show \d+ below line \d+$/u,
+            all: /^Show \d+ lines?$/u,
+        };
+        return this.diff.getByRole('button', { name: names[shows] });
+    }
+
+    /** Every gap in the diff: a row of hidden lines. */
+    get gaps(): Locator {
+        return this.diff.locator('[tid="review-gap"]');
+    }
+
+    /** Every gap of a file still on its way (D45): its patch's gap rows, which nothing acts on. */
+    get placeholderGaps(): Locator {
+        return this.diff.locator('[tid="review-placeholder-gap"]');
+    }
+
+    /** A gap in the diff by what its count says, "94 lines", which it says while the pointer is not on it. */
+    gap(count: string): Locator {
+        return this.gaps.filter({ has: this.page.getByText(count, { exact: true }) });
     }
 
     /** The first line of code starting with `prefix` wholly below the pinned header, and how high on the page it is. */

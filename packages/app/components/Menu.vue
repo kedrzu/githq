@@ -8,8 +8,13 @@ withDefaults(
     align?: 'center' | 'end' | 'start';
     /** Where it opens; `bottom` when not given. */
     side?: 'bottom' | 'left' | 'right' | 'top';
+    /**
+     * Whether the rest of the page is hidden from assistive technology and the pointer while it is open; `true` when
+     * not given. A menu folded out of a toolbar beside a text being written is not: the text stays as it was.
+     */
+    modal?: boolean;
   }>(),
-  { align: 'start', side: 'bottom' },
+  { align: 'start', side: 'bottom', modal: true },
 );
 
 const emit = defineEmits<{
@@ -28,7 +33,10 @@ const open = defineModel<boolean>('open', { default: false });
 </script>
 
 <template>
-  <DropdownMenuRoot v-model:open="open">
+  <DropdownMenuRoot
+    v-model:open="open"
+    :modal="modal"
+  >
     <DropdownMenuTrigger as-child>
       <slot name="trigger" />
     </DropdownMenuTrigger>

@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with what shows them (D29) and what they are in, the first of a file saying instead that a push reset the context expanded in it (CR62), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), or what the file says in place of a diff (D35): binary with its sizes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -10,31 +10,37 @@ const NO_LINES: CommentedLines = [];
 
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { CircleAlert, FileDiff, LoaderCircle, Pause, Pilcrow, UnfoldVertical } from 'lucide-vue-next';
+import { CircleAlert, FileDiff, FileSymlink, LoaderCircle, Pause, Pilcrow } from 'lucide-vue-next';
 import { computed, shallowRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
+import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type {
-  ReviewCommentRow,
   ReviewDistanceRow as DistanceRow,
   ReviewFileEndRow,
+  ReviewGapDirection,
   ReviewGapRow,
+  ReviewGapStep,
   ReviewAllViewedRow,
   ReviewRow,
   ReviewThreadRow as ReviewThreadRowData,
 } from './buildReviewRows.js';
-import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
+import type { ReviewCommentTarget, ReviewWriteFailure } from './writing/ReviewWriting.js';
 import type { DiffLayout, DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
+import DiffGap from './DiffGap.vue';
+import DiffRowPlaceholder from './DiffRowPlaceholder.vue';
 import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
 import type { ReviewFile, ReviewFileSizes } from './ReviewFiles.js';
+import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
 import ReviewDistanceRow from './threads/ReviewDistanceRow.vue';
+import ReviewRowInset from './threads/ReviewRowInset.vue';
 import ReviewThreadRow from './threads/ReviewThreadRow.vue';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
@@ -53,26 +59,34 @@ const props = withDefaults(
     threadOpen?: boolean;
     /** The thread on this row is the one N and ⇧N are at. */
     threadFocused?: boolean;
-    /** The thread on this row has its reply box open under it. */
-    threadReplying?: boolean;
+    /** The viewer's replies in the thread on this row, which the `comment` slot draws. */
+    threadReplies?: ReviewThreadReplies | null;
+    /** Who is signed in: a reply band's avatar. */
+    viewer?: ItemUser | null;
     /** Why resolving the thread on this row or opening it again didn't go through. */
     threadFailure?: ReviewWriteFailure | null;
     /** The lines of the file a comment is being written on. */
     commented?: CommentedLines;
-    /** The layout being read, which a file still on its way is drawn in. */
+    /** The layout being read, which a file still on its way with no patch is drawn in. */
     layout?: DiffLayout;
+    /** The row is the pinned header, being pushed up by the next file's. */
+    pushed?: boolean;
+    /** The row is of the file V, Space and C act on, whose block is edged in accent (D44). */
+    current?: boolean;
+    /** The hunk a click on a gap's row shows lines toward, the one on the reading line's side (D42). */
+    towardGap?: (gap: ReviewGapRow) => ReviewGapDirection;
   }>(),
-  { commented: () => NO_LINES, layout: 'unified' },
+  { commented: () => NO_LINES, layout: 'unified', towardGap: (): ReviewGapDirection => 'up' },
 );
 
 defineSlots<{
-  /** A comment being written, which the review draws. */
-  comment?(props: { row: ReviewCommentRow }): unknown;
+  /** A comment being written, which the review draws: in a row of its own, or a reply inside its thread (D39). */
+  comment?(props: { target: ReviewCommentTarget; inThread: boolean }): unknown;
 }>();
 
 const emit = defineEmits<{
-  /** Shows that many lines of the gap. */
-  expand: [gap: ReviewGapRow, count: number];
+  /** Shows so many lines of the gap, the way they come (D42). */
+  expand: [gap: ReviewGapRow, step: ReviewGapStep];
   /** "Expand to here" of a thread's mark (D29). */
   expandToThread: [mark: DistanceRow];
   /** "Expand to here" of what is left of a file's last gap (CR11). */
@@ -90,9 +104,6 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-
-/** What "Show 20" shows; with no more than that hidden, "Show all" says the same. */
-const EXPAND_STEP = 20;
 
 /** The file a row links to, on the rows that offer the link. */
 const linkedPath = computed(() => {
@@ -155,16 +166,21 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
       :changed-since="changedSince"
       :threads-under="row.threadsUnder"
       :threads="row.threads"
+      :pushed="pushed"
+      :current="current"
       @toggle-collapsed="emit('toggleCollapsed', row.file.path)"
       @toggle-viewed="emit('toggleViewed', row.file.path)"
     />
     <div
       v-else-if="row.kind === 'end'"
-      :class="row.collapsed ? css.reviewDiffRow_endCollapsed : css.reviewDiffRow_end"
+      :class="[
+        row.collapsed ? css.reviewDiffRow_endCollapsed : css.reviewDiffRow_end,
+        current && css.reviewDiffRow_end_current,
+      ]"
     />
     <div
       v-else
-      :class="css.reviewDiffRow_block"
+      :class="[css.reviewDiffRow_block, current && css.reviewDiffRow_block_current]"
     >
       <template v-if="row.kind === 'line'">
         <DiffRowSplit
@@ -184,22 +200,36 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
       </template>
-      <slot
+      <ReviewRowInset
         v-else-if="row.kind === 'comment'"
-        name="comment"
-        :row="row"
-      />
+        :inline="row.inline"
+      >
+        <slot
+          name="comment"
+          :target="row.target"
+          :in-thread="false"
+        />
+      </ReviewRowInset>
       <ReviewThreadRow
         v-else-if="row.kind === 'thread'"
         :row="row"
         :open="threadOpen"
         :focused="threadFocused"
-        :replying="threadReplying"
+        :replies="threadReplies"
+        :viewer="viewer"
         :resolve-failure="threadFailure"
         @toggle="emit('toggleThread', row.placement.thread.id)"
         @reply="emit('replyInThread', row)"
         @set-resolved="emit('setThreadResolved', row, $event)"
-      />
+      >
+        <template #reply="{ target }">
+          <slot
+            name="comment"
+            :target="target"
+            :in-thread="true"
+          />
+        </template>
+      </ReviewThreadRow>
       <ReviewDistanceRow
         v-else-if="row.kind === 'distance'"
         :row="row"
@@ -215,56 +245,27 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
         :class="css.reviewDiffRow_onlyWhitespace"
       >
         <Pilcrow
-          :class="css.reviewDiffRow_gapIcon"
+          :class="css.reviewDiffRow_onlyWhitespaceIcon"
           aria-hidden="true"
         />
         {{ t(l.onlyWhitespace) }}
         <button
           type="button"
-          :class="css.reviewDiffRow_gapAction"
+          :class="css.reviewDiffRow_onlyWhitespaceAction"
           @click="emit('showWhitespace')"
         >
           {{ t(l.showWhitespace) }}
         </button>
       </div>
-      <div
+      <DiffGap
         v-else-if="row.kind === 'gap'"
-        :class="css.reviewDiffRow_gap"
-        tid="review-gap"
-      >
-        <UnfoldVertical
-          :class="css.reviewDiffRow_gapIcon"
-          aria-hidden="true"
-        />
-        {{
-          row.expansionReset
-            ? t(l.expansionReset)
-            : t(l.hiddenLines, { count: row.hidden, formatted: numbers.format(row.hidden) })
-        }}
-        <button
-          v-if="row.hidden > EXPAND_STEP && !row.expansionReset"
-          type="button"
-          :class="css.reviewDiffRow_gapAction"
-          @click="emit('expand', row, EXPAND_STEP)"
-        >
-          {{ t(l.showSome, { count: EXPAND_STEP }) }}
-        </button>
-        <button
-          type="button"
-          :class="css.reviewDiffRow_gapAction"
-          @click="emit('expand', row, row.range.afterEnd - row.range.afterStart)"
-        >
-          {{ t(l.showAll) }}
-        </button>
-        <span
-          v-if="row.enclosing && !row.expansionReset"
-          :class="css.reviewDiffRow_gapEnclosing"
-          >{{ row.enclosing }}</span
-        >
-      </div>
+        :row="row"
+        :toward="towardGap"
+        @expand="(gap, step) => emit('expand', gap, step)"
+      />
       <template v-else-if="row.kind === 'placeholder'">
         <div
-          v-if="row.first"
+          v-if="row.part.kind === 'fetchingFirst'"
           :class="css.reviewDiffRow_first"
         >
           <LoaderCircle
@@ -274,15 +275,27 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           {{ t(l.fetchingFirst, { path: row.file.path }) }}
         </div>
         <div
+          v-else-if="row.part.kind === 'guess'"
           :class="[css.reviewDiffRow_placeholder, layout === 'split' && css.reviewDiffRow_placeholder_split]"
           :style="getPlaceholderStyle(row.file)"
+        />
+        <DiffRowPlaceholder
+          v-else-if="row.part.kind === 'line'"
+          :line="row.part.line"
+          :largest="row.part.largest"
+        />
+        <DiffGap
+          v-else
+          :row="row.part.gap"
+          :toward="towardGap"
         />
       </template>
       <div
         v-else-if="row.kind === 'notice'"
         :class="css.reviewDiffRow_notice"
       >
-        <FileDiff
+        <component
+          :is="row.notice === 'renamedUnchanged' ? FileSymlink : FileDiff"
           :class="css.reviewDiffRow_noticeIcon"
           aria-hidden="true"
         />
@@ -385,29 +398,35 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   border-left: 1px solid $color-border;
 }
 
+// The block's own bottom edge, then the room before the next file (D41). The rounded corners reach up over the last row,
+// whose background the page's colour covers outside them; nothing of them is drawn above the corners.
 .reviewDiffRow_end {
-  height: 4px;
-  margin-bottom: $spacing-12;
-  border: 1px solid $color-border;
-  border-top: 0;
-  border-radius: 0 0 $radius-lg $radius-lg;
+  position: relative;
+  height: calc(1px + #{$spacing-8});
+
+  &::before {
+    position: absolute;
+    top: -$radius-md;
+    right: 0;
+    left: 0;
+    height: calc(#{$radius-md} + 1px);
+    content: '';
+    border: 1px solid $color-border;
+    border-top: 0;
+    border-radius: 0 0 $radius-md $radius-md;
+    box-shadow: 0 0 0 $radius-md $color-bg;
+    clip-path: inset(0 #{-$radius-md} #{-$radius-md});
+  }
 }
 
+.reviewDiffRow_block_current,
+.reviewDiffRow_end_current::before {
+  border-color: $color-current-edge;
+}
+
+// Under a header alone, which has its own bottom edge: only the room.
 .reviewDiffRow_endCollapsed {
-  height: $spacing-12;
-}
-
-.reviewDiffRow_gap {
-  display: flex;
-  gap: $spacing-10;
-  align-items: center;
-  height: 28px;
-  padding: 0 $spacing-12;
-  font-size: $font-size-2xs;
-  color: $color-fg-dim;
-  background: $color-bg-2;
-  border-top: 1px solid $color-border;
-  border-bottom: 1px solid $color-border;
+  height: $spacing-8;
 }
 
 .reviewDiffRow_onlyWhitespace {
@@ -422,14 +441,14 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   border-bottom: 1px solid $color-border;
 }
 
-.reviewDiffRow_gapIcon {
+.reviewDiffRow_onlyWhitespaceIcon {
   flex: none;
   width: 13px;
   height: 13px;
   color: $color-fg-3;
 }
 
-.reviewDiffRow_gapAction {
+.reviewDiffRow_onlyWhitespaceAction {
   @include focus-ring;
 
   flex: none;
@@ -444,18 +463,6 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
   &:hover {
     color: $color-fg;
   }
-}
-
-.reviewDiffRow_gapEnclosing {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  font-family: $font-family-mono;
-  font-size: 11px;
-  color: $color-fg-dim;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .reviewDiffRow_first {

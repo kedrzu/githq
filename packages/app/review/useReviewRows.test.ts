@@ -114,6 +114,62 @@ test('rows follow the placements: threads under a collapsed header, on their lin
     view.stop();
 });
 
+test('a renamed file with no lines changed is its header alone until its blobs say: the same, "Renamed, no changes"; a binary changed, its note with sizes; text changed, its diff (D45)', async () => {
+    const renamed: ReviewFile = {
+        ...fileRow('b.ts'),
+        changeType: 'RENAMED',
+        previousPath: 'a.ts',
+        additions: 0,
+        deletions: 0,
+        patch: { layout: null, verdict: null },
+    };
+    const view = open([renamed], []);
+    const under = () => view.rows.value.slice(1, -1).map(row => (row.kind === 'notice' ? row.notice : row.kind));
+
+    expect(under()).toEqual([]);
+
+    view.setState('b.ts', { kind: 'unchanged' });
+    await view.settle();
+    expect(under()).toEqual(['renamedUnchanged']);
+
+    view.setState('b.ts', { kind: 'binary', before: 8, after: 3 });
+    await view.settle();
+    expect(view.rows.value[1]).toMatchObject({ kind: 'notice', notice: 'binary', sizes: { before: 8, after: 3 } });
+
+    view.setState('b.ts', { kind: 'ready', before: BEFORE, after: AFTER });
+    await view.settle();
+    expect(under()).toContain('line');
+    view.stop();
+});
+
+test('a file with no lines changed is its header alone before its patch is read, not guessed bars (D45)', () => {
+    const view = open([{ ...fileRow('a.ts'), additions: 0, deletions: 0 }, fileRow('b.ts')], []);
+
+    expect(view.rows.value.map(row => row.kind)).toEqual(['header', 'end', 'header', 'placeholder', 'end']);
+    view.stop();
+});
+
+test("a binary verdict's note stays when the blob read fails, as when it pauses (D45)", async () => {
+    const binary: ReviewFile = {
+        ...fileRow('logo.png'),
+        additions: 0,
+        deletions: 0,
+        patch: { layout: null, verdict: 'binary' },
+    };
+    const view = open([binary, fileRow('a.ts')], []);
+    const under = () => view.rows.value.map(row => (row.kind === 'notice' ? row.notice : row.kind));
+
+    view.setState('logo.png', { kind: 'failed', error: new Error('Refused') });
+    view.setState('a.ts', { kind: 'failed', error: new Error('Refused') });
+    await view.settle();
+    expect(under()).toEqual(['header', 'binary', 'end', 'header', 'failed', 'end']);
+
+    view.setState('logo.png', { kind: 'paused', until: 0 });
+    await view.settle();
+    expect(under().slice(0, 3)).toEqual(['header', 'binary', 'end']);
+    view.stop();
+});
+
 interface OpenOptions {
     readonly listEnd?: ReviewFileListEnd;
     readonly ordered?: readonly ReviewFile[];
@@ -194,6 +250,7 @@ function open(listed: readonly ReviewFile[], threads: readonly ReviewThread[], o
             changedFiles: listed.length,
             progress: { here: 0, total: 0 },
             fetchingFirst: null,
+            patchesProgress: null,
             pausedUntil: null,
             checkedAt: null,
             listFailing: false,

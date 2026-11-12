@@ -3,8 +3,16 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
-import { buildFileLineRows, buildReviewRows } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
+
+import {
+    buildFileLineRows,
+    buildPlaceholderRows,
+    buildReviewRows,
+    getReviewHeaderKey,
+    getReviewRowPath,
+} from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow, ReviewThreadRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
@@ -13,6 +21,8 @@ import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
+import ReviewWrittenComment from './writing/ReviewWrittenComment.vue';
+import type { ReviewCommentStatus, ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -41,6 +51,41 @@ import { replayQueue } from './queue'`,
 const DIFF = computeFileDiff({ before: BEFORE, after: AFTER, ignoreWhitespace: false });
 
 const FILE = file('src/sync/engine.ts', 6, 3);
+/** 120 lines in a class, changed at 30, 70 and 85: a gap at its top, a long and a short one between hunks, one at its end. */
+const GAPS_BEFORE = `export class Outbox {
+${Array.from({ length: 118 }, (_, index) => `    const kept${index + 2} = ${index + 2};`).join('\n')}
+}
+`;
+const GAPS_DIFF = computeFileDiff({
+    before: GAPS_BEFORE,
+    after: [30, 70, 85].reduce((text, line) => text.replace(`kept${line} = ${line};`, `kept${line} = 0;`), GAPS_BEFORE),
+    ignoreWhitespace: false,
+});
+const GAPS_FILE = file('src/sync/outbox.ts', 3, 3);
+/**
+ * The same class's patch, its first change two deleted lines for one added: a gap at its top, a long and a short one
+ * between hunks, and one after the last, whose count the patch doesn't know.
+ */
+const PATCH_FILE = file('src/sync/outbox.ts', 3, 4, {
+    patch: {
+        layout: {
+            hunks: [
+                { beforeStart: 27, afterStart: 27, lines: '   --+   ' },
+                { beforeStart: 67, afterStart: 66, lines: '   -+   ' },
+                { beforeStart: 82, afterStart: 81, lines: '   -+   ' },
+            ],
+        },
+        verdict: null,
+    },
+});
+/** 1,200 lines, changed at 1,100: numbers of four digits. */
+const LONG_BEFORE = Array.from({ length: 1200 }, (_, index) => `const kept${index + 1} = ${index + 1};`).join('\n');
+const LONG_DIFF = computeFileDiff({
+    before: LONG_BEFORE,
+    after: LONG_BEFORE.replace('kept1100 = 1100;', 'kept1100 = 0;'),
+    ignoreWhitespace: false,
+});
+const LONG_FILE = file('src/sync/long.ts', 1, 1);
 const FILES_URL = 'https://github.com/fitloop/webapp/pull/1202/files';
 /** The SHA-256 of `src/sync/engine.ts`, which is GitHub's anchor for it. */
 const ENGINE_SHA256 = '0b9f02836c850d13ddf4864de8031855512dc842b927a8ffcee839ac0fa33825';
@@ -64,7 +109,7 @@ export const Split: Story = { render: () => renderRows(fileRows(FILE, { kind: 'l
 /** CR5: unified. */
 export const Unified: Story = { render: () => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('unified') })) };
 
-/** CR70: lines a comment is being written on are tinted. */
+/** CR70, D43: lines a comment is being written on are tinted, their numbers on that side in accent. */
 export const SplitCommented: Story = {
     args: { commented: [{ side: 'after', start: 3, end: 5 }] },
     render: args => renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }), { commented: args.commented }),
@@ -135,16 +180,163 @@ export const ViewedOpened: Story = {
         ),
 };
 
+/** CR108, D44: the current file, its header tinted with an accent chevron and its block edged in accent, between two others. */
+export const Current: Story = {
+    render: () =>
+        renderRows(
+            [
+                ...fileRows(file('src/sync/queue.ts', 4, 0), { kind: 'collapsed' }),
+                ...fileRows(FILE, { kind: 'lines', rows: lines('split') }),
+                ...fileRows(file('src/sync/outbox.ts', 2, 1), { kind: 'collapsed' }),
+            ],
+            { currentPath: FILE.path },
+        ),
+};
+
+/** Collapsed to its header, the header carries it alone. */
+export const CurrentCollapsed: Story = {
+    render: () => renderRows(fileRows(FILE, { kind: 'collapsed' }), { currentPath: FILE.path }),
+};
+
+/** Viewed, dimmed name and ticked mark under the tint. */
+export const CurrentViewed: Story = {
+    render: () => {
+        const viewed = file('docs/sync.md', 96, 0, { viewed: 'VIEWED' });
+        return renderRows(fileRows(viewed, { kind: 'collapsed' }), { currentPath: viewed.path });
+    },
+};
+
+/** The pinned header pushed up by the next file's (D41): the same tint, its block ending at its rounded bottom. */
+export const CurrentPushed: Story = {
+    render: () =>
+        renderRows(fileRows(FILE, { kind: 'lines', rows: lines('split') }).slice(0, 1), {
+            currentPath: FILE.path,
+            pushed: true,
+        }),
+};
+
+/** A deleted file current: its red count and change on the tint keep AA (D30). */
+export const CurrentDeleted: Story = {
+    render: () => {
+        const deleted = file('src/sync/pending.ts', 0, 18, { changeType: 'DELETED' });
+        return renderRows(fileRows(deleted, { kind: 'collapsed' }), { currentPath: deleted.path });
+    },
+};
+
+/** A file gone from the diff current: its struck name and note on the tint keep AA (D30). */
+export const CurrentGone: Story = {
+    render: () => {
+        const gone = file('src/sync/retry-policy.ts', 0, 0, { gone: { kind: 'notInDiff' }, changeType: 'DELETED' });
+        return renderRows(
+            [
+                {
+                    kind: 'header',
+                    key: getReviewHeaderKey(gone.path),
+                    file: gone,
+                    collapsed: false,
+                    collapseReason: null,
+                    threadsUnder: true,
+                    threads: { open: 1, outdated: 0, lineGone: 0, resolved: 0 },
+                },
+            ],
+            { currentPath: gone.path },
+        );
+    },
+};
+
 /** CR88: files on their way in split, a bar for each line where its code will start (D38): a modified file mirrors its context, an added one is on the right alone, a deleted one on the left alone. */
 export const PlaceholderSplit: Story = { render: () => renderRows(placeholderRows(), { layout: 'split' }) };
 
 /** CR89: the same files unified, the same lines in one column. */
 export const PlaceholderUnified: Story = { render: () => renderRows(placeholderRows(), { layout: 'unified' }) };
 
+/** CR111: a file on its way drawn from its patch, split (D45): its lines' numbers, its changed runs paired as the diff pairs them, tinted, and its gaps, still. */
+export const PatchPlaceholderSplit: Story = {
+    render: () => renderRows(patchPlaceholderRows('split', false), { layout: 'split' }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('26 lines above')).toBeVisible();
+        await expect(canvas.getByText('32 lines')).toBeVisible();
+        await expect(canvas.getByText('8 lines')).toBeVisible();
+    },
+};
+
+/** CR111: the same, unified. */
+export const PatchPlaceholderUnified: Story = {
+    render: () => renderRows(patchPlaceholderRows('unified', false), { layout: 'unified' }),
+};
+
+/** CR113: with whitespace hidden the same layout, every bar grey: which lines stay changed isn't known yet. */
+export const PatchPlaceholderWhitespaceHidden: Story = {
+    render: () => renderRows(patchPlaceholderRows('split', true), { layout: 'split' }),
+};
+
 /** CR61: a jump's target, fetched ahead of the rest. */
 export const FetchingFirst: Story = { render: () => renderRows(fileRows(FILE, { kind: 'placeholder', first: true })) };
 
-/** CR62: a push reset the context expanded in the file: its first gap says so, and offers it all again. */
+/** CR103: the lines left out (D42): ↑ alone at a file's top, ↓ and ↑ between hunks, one ↕ for a short gap, ↓ alone at its end, each with the declaration what follows sits in. */
+export const Gaps: Story = {
+    args: { onExpand: fn() },
+    render: args => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: fileRows(GAPS_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: GAPS_FILE.path, diff: GAPS_DIFF, layout: 'unified' }),
+            }),
+            githubUrl: FILES_URL,
+            onExpand: args.onExpand,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" @expand="onExpand" /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('26 lines above')).toBeVisible();
+        await expect(canvas.getByText('33 lines')).toBeVisible();
+        await expect(canvas.getByText('8 lines')).toBeVisible();
+        await expect(canvas.getByText('32 lines below')).toBeVisible();
+        await expect(canvas.getAllByText('export class Outbox {')).toHaveLength(4);
+    },
+};
+
+/**
+ * `Review / Thread · replying` (D39, CR92): a thread bare, with its reply box open, with a reply on its way, and resolved
+ * bare and with a reply on its way, which stays one line.
+ */
+export const ThreadReplying: Story = {
+    parameters: { rows: threadReplyRows() },
+    render: (_args, { parameters }) => ({
+        components: { ReviewDiffRow, ReviewWrittenComment },
+        setup: () => ({ rows: parameters.rows, githubUrl: FILES_URL, getReplies, getStatus }),
+        template: `<div style="width: 1000px">
+          <ReviewDiffRow
+            v-for="row in rows"
+            :key="row.key"
+            :row="row"
+            :github-url="githubUrl"
+            :thread-replies="getReplies(row)"
+            :viewer="{ login: 'mlaine', avatarUrl: '' }"
+          >
+            <template #comment="{ target, inThread }">
+              <ReviewWrittenComment
+                :target="target"
+                :in-thread="inThread"
+                repository="fitloop/webapp"
+                :item-number="1202"
+                text="Agreed."
+                :status="getStatus(target)"
+                :draft-open="false"
+                :draft-count="0"
+                :draft-first="false"
+                :focused="false"
+                reply-to="sofiab"
+                :author="{ login: 'mlaine', avatarUrl: '' }"
+              />
+            </template>
+          </ReviewDiffRow>
+        </div>`,
+    }),
+};
+
+/** CR62: a push reset the context expanded in the file: its first gap says so, once, its arrows working as ever. */
 export const ExpansionReset: Story = {
     render: () =>
         renderRows(
@@ -152,6 +344,59 @@ export const ExpansionReset: Story = {
                 kind: 'lines',
                 rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }),
             }),
+        ),
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getAllByText(/^Context you expanded here was reset by the push · \d+ lines$/u),
+        ).toHaveLength(1);
+    },
+};
+
+/** D42, `Diff / Gap · reset, nothing hidden`: a gap a push reset whose lines are all shown for threads says only that, with no count, no arrow and no click. */
+export const ExpansionResetNothingHidden: Story = {
+    args: { onExpand: fn() },
+    render: args => ({
+        components: { ReviewDiffRow },
+        setup: () => ({
+            rows: fileRows(FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: FILE.path, diff: DIFF, layout: 'split', expansionReset: true }).map(
+                    row => (row.kind === 'gap' && row.expansionReset ? { ...row, hidden: 0 } : row),
+                ),
+            }),
+            githubUrl: FILES_URL,
+            onExpand: args.onExpand,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" layout="split" @expand="onExpand" /></div>`,
+    }),
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getByText('Context you expanded here was reset by the push', { exact: true }),
+        ).toBeVisible();
+    },
+};
+
+/** D43: a file of four-digit line numbers, split: the number column widens for the comment icon to stay inside it. */
+export const FourDigitsSplit: Story = {
+    render: () =>
+        renderRows(
+            fileRows(LONG_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'split' }),
+            }),
+            { layout: 'split' },
+        ),
+};
+
+/** D43: the same, unified: both number columns widen. */
+export const FourDigitsUnified: Story = {
+    render: () =>
+        renderRows(
+            fileRows(LONG_FILE, {
+                kind: 'lines',
+                rows: buildFileLineRows({ path: LONG_FILE.path, diff: LONG_DIFF, layout: 'unified' }),
+            }),
+            { layout: 'unified' },
         ),
 };
 
@@ -217,7 +462,21 @@ export const BinaryNew: Story = {
         ),
 };
 
-/** CR65: a submodule, which has no size. */
+/** D45: renamed with no lines changed, as its patch says, from the first frame. */
+export const RenamedUnchanged: Story = {
+    render: () =>
+        renderRows(
+            fileRows(file('src/sync/queue.ts', 0, 0, { changeType: 'RENAMED', previousPath: 'src/sync/replay.ts' }), {
+                kind: 'renamedUnchanged',
+            }),
+        ),
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Renamed, no changes')).toBeVisible();
+        await expect(canvas.getByText('Open on GitHub')).toBeVisible();
+    },
+};
+
+/** CR65: a submodule, which has no size; also a binary file its patch says is one, before its blob gives the sizes (D45). */
 export const BinaryNoSize: Story = {
     render: () => renderRows(fileRows(FILE, { kind: 'binary', before: null, after: null })),
 };
@@ -354,19 +613,86 @@ function placeholderRows() {
     ].flatMap(shown => fileRows(shown, { kind: 'placeholder' }));
 }
 
+/** {@link PATCH_FILE} on its way, its header first. */
+function patchPlaceholderRows(layout: DiffLayout, hideWhitespace: boolean) {
+    return fileRows(PATCH_FILE, {
+        kind: 'placeholder',
+        rows: buildPlaceholderRows({ file: PATCH_FILE, layout, hideWhitespace }),
+    });
+}
+
 interface RenderRowsOptions {
     readonly commented?: CommentedLines;
     readonly layout?: DiffLayout;
+    /** The file whose rows are drawn as the current one (D44). */
+    readonly currentPath?: string;
+    /** Every row drawn as a pinned header being pushed up. */
+    readonly pushed?: boolean;
 }
 
-function renderRows(rows: readonly ReviewRow[], { commented, layout }: RenderRowsOptions = {}) {
+function renderRows(rows: readonly ReviewRow[], { commented, layout, currentPath, pushed }: RenderRowsOptions = {}) {
     return {
         components: { ReviewDiffRow },
-        setup: () => ({ rows, githubUrl: FILES_URL, commented, layout }),
-        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" /></div>`,
+        setup: () => ({
+            rows,
+            githubUrl: FILES_URL,
+            commented,
+            layout,
+            pushed,
+            isCurrent,
+        }),
+        template: `<div style="width: 1000px"><ReviewDiffRow v-for="row in rows" :key="row.key" :row="row" :github-url="githubUrl" :commented="commented" :layout="layout" :pushed="pushed" :current="isCurrent(row)" /></div>`,
     };
+
+    function isCurrent(row: ReviewRow) {
+        return getReviewRowPath(row.key) === currentPath;
+    }
 }
 
 function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {
     return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED', ...more };
+}
+
+/** {@link ThreadReplying}'s rows, by key: `bare`, `replying`, `sent`, `resolved`, `resolvedSent`. */
+function threadReplyRows(): ReviewThreadRow[] {
+    const open = createThreadRowSample({ kind: 'onLine', inline: 'right' });
+    const resolved = createThreadRowSample({
+        kind: 'onLine',
+        inline: 'right',
+        thread: sampleThread({ isResolved: true }),
+    });
+    const reply: ReviewCommentTarget = {
+        id: 'reply',
+        path: FILE.path,
+        side: 'after',
+        line: 47,
+        startLine: null,
+        threadId: open.placement.thread.id,
+    };
+    const sent: ReviewCommentTarget = { ...reply, id: 'sent' };
+    return [
+        { ...open, key: 'bare' },
+        { ...open, key: 'replying', replies: [reply] },
+        { ...open, key: 'sent', replies: [sent] },
+        { ...resolved, key: 'resolved' },
+        { ...resolved, key: 'resolvedSent', replies: [sent] },
+    ];
+}
+
+/** As the review splits them: the box, and the replies on their way. */
+function getReplies(row: ReviewRow) {
+    if (row.kind !== 'thread') {
+        return null;
+    }
+
+    return {
+        sent: row.replies.filter(reply => reply.id === 'sent'),
+        box: row.replies.find(reply => reply.id !== 'sent') ?? null,
+    };
+}
+
+function getStatus(target: ReviewCommentTarget): ReviewCommentStatus {
+    return target.id === 'sent'
+        ? { kind: 'sending', way: 'single', body: 'Agreed, migrating it now instead of clearing the store.' }
+        : { kind: 'editing' };
 }

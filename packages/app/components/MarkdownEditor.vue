@@ -1,16 +1,30 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. The footer's left says "Markdown" unless the caller puts something else there (a question). -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown (in a head too narrow for them, their last groups fold into a ⋯ menu listing them by name), a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The keys a caller acts on in the text (`keyshortcuts`) are announced on it. While the caller has it ask (`asking`, D40), its footer asks whether to discard what is written: the caller's question with an amber circle-alert, and Keep (`Escape`, the caller's label) and Discard (`Enter`) in place of the caller's buttons. The cursor goes to the text, where Enter discards rather than starting a line; Enter on a button, a tab or a tool does what that one does; Escape keeps writing, and typing anything takes the question away. -->
+<script lang="ts">
+import type { LucideIcon } from 'lucide-vue-next';
+
+/** A tool of the caller's, first in the head: clicking it is reported (`tool`), and its key is the caller's to handle. */
+export interface MarkdownEditorTool {
+  /** Its name, said and shown in its tooltip. */
+  readonly label: string;
+  readonly icon: LucideIcon;
+  /** Its key in the app's notation, shown in the tooltip and announced. */
+  readonly keys?: string;
+}
+</script>
+
 <script lang="ts" setup>
+import { sumOver } from '@nzyme/utils/array/sumOver.js';
 import { useTextArea } from '@nzyme/vue-forms/components/useTextArea.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import {
   AtSign,
   Bold,
+  CircleAlert,
   Code,
-  FileText,
+  Ellipsis,
   Hash,
   Heading,
   Italic,
@@ -21,17 +35,22 @@ import {
   TextQuote,
 } from 'lucide-vue-next';
 import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoot, ToolbarSeparator } from 'reka-ui';
-import { computed, nextTick, ref, useTemplateRef } from 'vue';
-import type { PropType } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
+import type { ComponentPublicInstance, PropType } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import { RenderMarkdownCommand } from '@/services/RenderMarkdownCommand.js';
 
 import { applyMarkdownTool } from './applyMarkdownTool.js';
+import Button from './Button.vue';
 import type { MarkdownTool } from './applyMarkdownTool.js';
 import * as l from './MarkdownEditor.loc.js';
 import MarkdownSuggestions from './MarkdownSuggestions.vue';
+import Menu from './Menu.vue';
+import MenuItem from './MenuItem.vue';
+import MenuSeparator from './MenuSeparator.vue';
 import type { PersonSuggestion } from './SuggestionTypes.js';
 import Tooltip from './Tooltip.vue';
 import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
@@ -40,12 +59,19 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // `disabled`, `readonly`; the repository the text is written in, `owner/name`, which the preview links `#42` and
 // mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
 // (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
-// suggest.
+// suggest; the caller's tool, first in the head; the keys the caller acts on in the text area, in `aria-keyshortcuts`'
+// notation, announced on it; whether its footer asks to discard what is written (the caller turns it on, Keep or typing
+// turns it off), the question and the label of the button keeping what is written.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
   people: { type: Array as PropType<readonly PersonSuggestion[]>, default: () => [] },
   itemNumber: { type: Number, default: undefined },
+  tool: { type: Object as PropType<MarkdownEditorTool | null>, default: null },
+  keyshortcuts: { type: String, default: undefined },
+  asking: { type: Boolean, default: false },
+  question: { type: String, default: '' },
+  keepLabel: { type: String, default: '' },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -53,15 +79,18 @@ const emit = defineEmits({
   submit: () => true,
   /** `Escape` inside the editor; the caller taking it prevents its default, and the screen leaves the key alone. */
   cancel: (_event: KeyboardEvent) => true,
+  /** The caller's tool was clicked. */
+  tool: () => true,
+  /** Discard, answering the question: what follows is the caller's. */
+  discard: () => true,
+  'update:asking': (_asking: boolean) => true,
 });
 defineSlots<{
-  /** The footer's buttons, at its right. */
+  /** The footer's buttons, at its right, while it does not ask. */
   footer?(): unknown;
-  /** What the footer says at its left; "Markdown" when not given. */
-  status?(): unknown;
 }>();
 
-/** The tool groups of the head, a rule between each. */
+/** The tool groups of the head, a rule between each; the last ones fold into the ⋯ menu when the head is too narrow. */
 const TOOL_GROUPS: readonly (readonly MarkdownTool[])[] = [
   ['heading', 'bold', 'italic', 'code', 'link'],
   ['bulletList', 'numberedList', 'taskList', 'quote'],
@@ -94,6 +123,23 @@ const suggestions = useMarkdownSuggestions({
 });
 
 const headRef = useTemplateRef<HTMLElement>('head');
+const toolsRef = useTemplateRef<HTMLElement>('tools');
+const ownToolRef = useTemplateRef<HTMLElement>('ownTool');
+const moreRef = useTemplateRef<HTMLElement>('more');
+/** How many groups, from the last, are in the ⋯ menu; none until the head is measured, so every width is read once. */
+const folded = ref(0);
+const shownGroups = computed(() => TOOL_GROUPS.slice(0, TOOL_GROUPS.length - folded.value));
+const foldedGroups = computed(() => TOOL_GROUPS.slice(TOOL_GROUPS.length - folded.value));
+/**
+ * The width of each group (with its rule) and of the ⋯ (with its), read while they are drawn: fixed, so a folded one's
+ * is the one it had.
+ */
+const groupWidths: (number | undefined)[] = [];
+const groupElements: (HTMLElement | undefined)[] = [];
+let moreWidth: number | undefined;
+let observer: ResizeObserver | undefined;
+/** The tool picked in the ⋯ menu, applied once the menu has closed and would no longer take the focus back. */
+let pickedTool: MarkdownTool | null = null;
 const footerRef = useTemplateRef<HTMLElement>('footer');
 const tab = ref<'write' | 'preview'>('write');
 /**
@@ -125,21 +171,72 @@ const preview = useDataSource({
 });
 /** The rendering of the text as it is now, in the repository it is written in; `null` while there is none. */
 const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ? preview.value : null));
+/** While it asks, Enter and Escape answer from the text. */
+const textKeys = computed(() => (props.asking ? 'Enter Escape' : props.keyshortcuts));
 
 defineExpose({
   /**
    * Puts the cursor in the text area, on the Write tab, and brings into view the editor's `head` (a long text opened
-   * to edit: its tabs and tools, the caret wherever it is) or its `end` (where the caret is after a quote).
+   * to edit: its tabs and tools, the caret wherever it is) or its `end` (where the caret is after a quote); with
+   * neither, nothing moves.
    */
   focus,
+  /** Where the selection is in the text area; `null` before it is drawn. */
+  getSelection,
+  /** Types `text` over the selection, as `applyTool` does, and puts the caret `caret` characters into it. */
+  insert,
 });
 
-async function focus(reveal: 'head' | 'end') {
+// The tools' room is set by the head, not by the tools, so folding them does not resize what is observed: fitted in
+// the observer's turn, before the frame is painted.
+onMounted(() => {
+  observer = new ResizeObserver(fitTools);
+  if (toolsRef.value) {
+    observer.observe(toolsRef.value);
+  }
+});
+
+onBeforeUnmount(() => observer?.disconnect());
+
+// Once the ⋯ is drawn its width is known, and the tools are fitted again with it; back on Write, with the room the
+// head had meanwhile.
+watch([folded, tab, () => props.tool], fitTools, { flush: 'post' });
+
+// The question is answered from the text: the cursor goes there, and the footer asking it into view.
+watch(
+  () => props.asking,
+  async value => {
+    if (value) {
+      await focus('end');
+    }
+  },
+);
+
+async function focus(reveal?: 'head' | 'end') {
   tab.value = 'write';
   await nextTick();
   // Not scrolled to the caret by the browser: on a long text that takes the head out of view.
   input.value?.focus({ preventScroll: true });
-  await bringIntoView(reveal === 'head' ? headRef.value : footerRef.value);
+  if (reveal) {
+    await bringIntoView(reveal === 'head' ? headRef.value : footerRef.value);
+  }
+}
+
+function getSelection() {
+  const element = input.value;
+  return element ? { start: element.selectionStart, end: element.selectionEnd } : null;
+}
+
+function insert(text: string, caret: number) {
+  const element = input.value;
+  if (!element) {
+    return;
+  }
+
+  const start = element.selectionStart;
+  element.focus({ preventScroll: true });
+  document.execCommand('insertText', false, text);
+  element.setSelectionRange(start + caret, start + caret);
 }
 
 /**
@@ -147,6 +244,10 @@ async function focus(reveal: 'head' | 'end') {
  * buttons follow it into view.
  */
 async function onInput() {
+  // Typing anything takes the question away: the user went back to writing.
+  if (props.asking) {
+    emit('update:asking', false);
+  }
   suggestions.update();
   const element = input.value;
   if (element && element.selectionEnd === element.value.length) {
@@ -169,11 +270,79 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, 'Mod+Enter')) {
+  if (props.asking && event.key === 'Escape') {
+    // Taken here: neither the caller nor the screen leaves on it.
+    event.preventDefault();
+    keepWriting();
+  } else if (props.asking && matchesCommandKey(event, 'Enter') && event.target === input.value) {
+    // In the text, Enter answers the question rather than starting a line; on a button, a tab or a tool it is theirs.
+    event.preventDefault();
+    emit('discard');
+  } else if (matchesCommandKey(event, 'Mod+Enter')) {
     event.preventDefault();
     emit('submit');
   } else if (event.key === 'Escape') {
     emit('cancel', event);
+  }
+}
+
+// Not awaited: a click listener's promise would show the button busy.
+function keepWriting() {
+  emit('update:asking', false);
+  void focus('end');
+}
+
+/** Keeps in the head as many groups as its room holds, in order; the rest fold, from the last, into the ⋯ menu. */
+function fitTools() {
+  const tools = toolsRef.value;
+  if (!tools || tab.value !== 'write') {
+    return;
+  }
+
+  for (const [index, element] of groupElements.entries()) {
+    if (element?.isConnected) {
+      groupWidths[index] = element.offsetWidth;
+    }
+  }
+  if (moreRef.value) {
+    moreWidth = moreRef.value.offsetWidth;
+  }
+  if (groupWidths.length < TOOL_GROUPS.length || groupWidths.includes(undefined)) {
+    return;
+  }
+
+  const room = tools.clientWidth - (ownToolRef.value?.offsetWidth ?? 0);
+  const widths = groupWidths.map(width => width ?? 0);
+  let shown = TOOL_GROUPS.length;
+  if (sumOver(widths, width => width) > room) {
+    shown = 0;
+    for (let count = TOOL_GROUPS.length - 1; count > 0; count--) {
+      if (sumOver(widths.slice(0, count), width => width) + (moreWidth ?? 0) <= room) {
+        shown = count;
+        break;
+      }
+    }
+  }
+
+  folded.value = TOOL_GROUPS.length - shown;
+}
+
+function setGroupElement(index: number, element: Element | ComponentPublicInstance | null) {
+  groupElements[index] = element instanceof HTMLElement ? element : undefined;
+}
+
+function pickTool(tool: MarkdownTool) {
+  pickedTool = tool;
+}
+
+// The menu gives the focus back to the ⋯ as it closes: a tool picked in it takes it to the text instead, as its button
+// would.
+function onMenuClosed(event: Event) {
+  const tool = pickedTool;
+  pickedTool = null;
+  if (tool) {
+    event.preventDefault();
+    applyTool(tool);
   }
 }
 
@@ -235,39 +404,114 @@ interface RenderedPreview {
           {{ t(l.preview) }}
         </TabsTrigger>
       </TabsList>
-      <ToolbarRoot
-        v-if="tab === 'write'"
+      <div
+        ref="tools"
         :class="css.markdownEditor_tools"
-        :aria-label="t(l.formatting)"
       >
-        <template
-          v-for="(group, index) in TOOL_GROUPS"
-          :key="index"
+        <ToolbarRoot
+          v-if="tab === 'write'"
+          :class="css.markdownEditor_toolbar"
+          :aria-label="t(l.formatting)"
         >
-          <ToolbarSeparator
-            v-if="index > 0"
-            :class="css.markdownEditor_rule"
-          />
-          <Tooltip
-            v-for="tool in group"
-            :key="tool"
-            :text="t(l[tool])"
+          <span
+            v-if="tool"
+            ref="ownTool"
+            :class="css.markdownEditor_group"
           >
-            <ToolbarButton
-              :class="css.markdownEditor_tool"
-              :aria-label="t(l[tool])"
-              :disabled="disabled || readonly"
-              @click="applyTool(tool)"
+            <Tooltip
+              :text="tool.label"
+              :kbd="tool.keys"
             >
-              <component
-                :is="TOOL_ICONS[tool]"
-                :class="css.markdownEditor_toolIcon"
-                aria-hidden="true"
-              />
-            </ToolbarButton>
-          </Tooltip>
-        </template>
-      </ToolbarRoot>
+              <ToolbarButton
+                :class="[css.markdownEditor_tool, css.markdownEditor_tool_own]"
+                :aria-label="tool.label"
+                :aria-keyshortcuts="tool.keys && formatAriaKeyShortcuts(tool.keys)"
+                :disabled="disabled || readonly"
+                @click="emit('tool')"
+              >
+                <component
+                  :is="tool.icon"
+                  :class="css.markdownEditor_toolIcon"
+                  aria-hidden="true"
+                />
+              </ToolbarButton>
+            </Tooltip>
+            <ToolbarSeparator :class="css.markdownEditor_rule" />
+          </span>
+          <span
+            v-for="(group, index) in shownGroups"
+            :key="index"
+            :ref="element => setGroupElement(index, element)"
+            :class="css.markdownEditor_group"
+          >
+            <ToolbarSeparator
+              v-if="index > 0"
+              :class="css.markdownEditor_rule"
+            />
+            <Tooltip
+              v-for="formatting in group"
+              :key="formatting"
+              :text="t(l[formatting])"
+            >
+              <ToolbarButton
+                :class="css.markdownEditor_tool"
+                :aria-label="t(l[formatting])"
+                :disabled="disabled || readonly"
+                @click="applyTool(formatting)"
+              >
+                <component
+                  :is="TOOL_ICONS[formatting]"
+                  :class="css.markdownEditor_toolIcon"
+                  aria-hidden="true"
+                />
+              </ToolbarButton>
+            </Tooltip>
+          </span>
+          <span
+            v-if="foldedGroups.length > 0"
+            ref="more"
+            :class="css.markdownEditor_group"
+          >
+            <!-- Kept with nothing before it but the tabs, invisible: the ⋯ is as wide as when it was measured. -->
+            <ToolbarSeparator
+              :class="[css.markdownEditor_rule, shownGroups.length === 0 && !tool && css.markdownEditor_rule_hidden]"
+            />
+            <Menu
+              align="end"
+              :modal="false"
+              @close-auto-focus="onMenuClosed"
+            >
+              <template #trigger>
+                <ToolbarButton
+                  :class="css.markdownEditor_tool"
+                  :aria-label="t(l.more)"
+                  :disabled="disabled || readonly"
+                >
+                  <Ellipsis
+                    :class="css.markdownEditor_toolIcon"
+                    aria-hidden="true"
+                  />
+                </ToolbarButton>
+              </template>
+              <template
+                v-for="(group, index) in foldedGroups"
+                :key="index"
+              >
+                <MenuSeparator v-if="index > 0" />
+                <MenuItem
+                  v-for="formatting in group"
+                  :key="formatting"
+                  :icon="TOOL_ICONS[formatting]"
+                  :disabled="disabled || readonly"
+                  @select="pickTool(formatting)"
+                >
+                  {{ t(l[formatting]) }}
+                </MenuItem>
+              </template>
+            </Menu>
+          </span>
+        </ToolbarRoot>
+      </div>
     </div>
     <TabsContent
       value="write"
@@ -277,6 +521,7 @@ interface RenderedPreview {
       <TextArea
         :class="css.markdownEditor_text"
         v-bind="suggestions.attrs"
+        :aria-keyshortcuts="textKeys"
         @input="onInput"
         @keyup="suggestions.update()"
         @click="suggestions.update()"
@@ -325,15 +570,41 @@ interface RenderedPreview {
       ref="footer"
       :class="css.markdownEditor_footer"
     >
-      <slot name="status">
-        <FileText
-          :class="css.markdownEditor_footerIcon"
+      <template v-if="asking">
+        <CircleAlert
+          :class="css.markdownEditor_questionIcon"
           aria-hidden="true"
         />
-        <span :class="css.markdownEditor_hint">{{ t(l.markdown) }}</span>
-      </slot>
+        <span
+          :class="css.markdownEditor_question"
+          role="status"
+          >{{ question }}</span
+        >
+      </template>
       <div :class="css.markdownEditor_actions">
-        <slot name="footer" />
+        <template v-if="asking">
+          <Button
+            size="compact"
+            kbd="Escape"
+            keyshortcuts="Escape"
+            @click="keepWriting"
+          >
+            {{ keepLabel }}
+          </Button>
+          <Button
+            size="compact"
+            variant="destructive"
+            kbd="Enter"
+            keyshortcuts="Enter"
+            @click="emit('discard')"
+          >
+            {{ t(l.discard) }}
+          </Button>
+        </template>
+        <slot
+          v-else
+          name="footer"
+        />
       </div>
     </div>
   </TabsRoot>
@@ -396,11 +667,20 @@ interface RenderedPreview {
   }
 }
 
+// All the room the tabs leave, whatever the tools need: what is observed to fit them.
 .markdownEditor_tools {
   display: flex;
-  align-items: center;
+  flex: 1 1 0;
+  justify-content: flex-end;
   align-self: stretch;
-  margin-left: auto;
+  min-width: 0;
+}
+
+.markdownEditor_toolbar,
+.markdownEditor_group {
+  display: flex;
+  flex: none;
+  align-items: center;
 }
 
 .markdownEditor_tool {
@@ -423,11 +703,22 @@ interface RenderedPreview {
     background: $color-bg-3;
   }
 
+  // The ⋯ while its menu is open.
+  &[aria-expanded='true'] {
+    color: $color-fg;
+    background: $color-bg-3;
+  }
+
   &:disabled {
     color: $color-fg-3;
     cursor: default;
     background: none;
   }
+}
+
+// The caller's tool stands out a little from the formatting after it.
+.markdownEditor_tool_own {
+  color: $color-fg-2;
 }
 
 .markdownEditor_toolIcon {
@@ -440,6 +731,10 @@ interface RenderedPreview {
   height: 14px;
   margin: 0 $spacing-5;
   background: $color-border-2;
+}
+
+.markdownEditor_rule_hidden {
+  visibility: hidden;
 }
 
 .markdownEditor_body {
@@ -499,16 +794,16 @@ interface RenderedPreview {
   border-top: 1px solid $color-border;
 }
 
-.markdownEditor_footerIcon {
+.markdownEditor_question {
+  font-size: $font-size-xs;
+  color: $color-fg;
+}
+
+.markdownEditor_questionIcon {
   flex: none;
   width: 13px;
   height: 13px;
-  color: $color-fg-3;
-}
-
-.markdownEditor_hint {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
+  color: $color-amber;
 }
 
 .markdownEditor_actions {
