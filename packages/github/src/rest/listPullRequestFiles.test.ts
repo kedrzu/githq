@@ -8,8 +8,10 @@ import type { PullRequestFilesPage } from './listPullRequestFiles.js';
 
 const NEXT_URL = 'https://api.github.com/repositories/1/pulls/7/files?per_page=100&page=2';
 const LAST_URL = 'https://api.github.com/repositories/1/pulls/7/files?per_page=100&page=2';
+const OLD_POINTER = 'a3eadfaf9fff361ddb426fc8e7b0674553cbd06b';
+const NEW_POINTER = '7e8461f875e0be7b57c8a2d2c6afa05ff4cc47ef';
 
-test('reads every page: where renamed and copied files came from, their size and patch layout', async () => {
+test('reads every page: where renamed and copied files came from, their size, patch layout and submodule pointers', async () => {
     const requests: Parameters<Fetch>[] = [];
     const rest = createRest(requests, [
         Response.json(
@@ -29,6 +31,13 @@ test('reads every page: where renamed and copied files came from, their size and
         Response.json([
             { filename: 'copy.ts', previous_filename: 'source.ts', status: 'copied', additions: 0, deletions: 0 },
             { filename: 'gone.ts', status: 'removed', additions: 0, deletions: 2, patch: '@@ -1,2 +0,0 @@\n-a\n-b' },
+            {
+                filename: 'nzyme',
+                status: 'modified',
+                additions: 1,
+                deletions: 1,
+                patch: `@@ -1 +1 @@\n-Subproject commit ${OLD_POINTER}\n+Subproject commit ${NEW_POINTER}`,
+            },
         ]),
     ]);
     const pages: PullRequestFilesPage[] = [];
@@ -44,21 +53,38 @@ test('reads every page: where renamed and copied files came from, their size and
                     additions: 1,
                     deletions: 1,
                     layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '-+' }] },
+                    submodule: null,
                 },
-                { path: 'image.png', previousPath: null, additions: 0, deletions: 0, layout: null },
+                { path: 'image.png', previousPath: null, additions: 0, deletions: 0, layout: null, submodule: null },
             ],
             number: 1,
             pages: 2,
         },
         {
             files: [
-                { path: 'copy.ts', previousPath: 'source.ts', additions: 0, deletions: 0, layout: null },
+                {
+                    path: 'copy.ts',
+                    previousPath: 'source.ts',
+                    additions: 0,
+                    deletions: 0,
+                    layout: null,
+                    submodule: null,
+                },
                 {
                     path: 'gone.ts',
                     previousPath: null,
                     additions: 0,
                     deletions: 2,
                     layout: { hunks: [{ beforeStart: 1, afterStart: 0, lines: '--' }] },
+                    submodule: null,
+                },
+                {
+                    path: 'nzyme',
+                    previousPath: null,
+                    additions: 1,
+                    deletions: 1,
+                    layout: { hunks: [{ beforeStart: 1, afterStart: 1, lines: '-+' }] },
+                    submodule: { before: OLD_POINTER, after: NEW_POINTER },
                 },
             ],
             number: 2,

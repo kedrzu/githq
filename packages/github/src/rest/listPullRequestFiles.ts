@@ -4,6 +4,8 @@ import { GitHubApiError } from '../GitHubApiError.js';
 import { getRepositoryRestPath } from '../utils/getRepositoryRestPath.js';
 import { parsePatchLayout } from '../utils/parsePatchLayout.js';
 import type { PatchLayout } from '../utils/parsePatchLayout.js';
+import { parseSubmodulePatch } from '../utils/parseSubmodulePatch.js';
+import type { SubmodulePointers } from '../utils/parseSubmodulePatch.js';
 import { readLastPageNumber } from '../utils/readLastPageNumber.js';
 import { readNextPageUrl } from '../utils/readNextPageUrl.js';
 import type { GitHubRestRequester } from './createGitHubRestRequester.js';
@@ -20,6 +22,8 @@ export interface PullRequestFile {
      * that could not be read.
      */
     readonly layout: PatchLayout | null;
+    /** The commits a submodule pointed at, when the patch only moves, adds or removes one; `null` for anything else. */
+    readonly submodule: SubmodulePointers | null;
 }
 
 /** A page of a pull request's files, and how far into the list it is. */
@@ -81,6 +85,7 @@ export async function listPullRequestFiles(
                 additions: entry.additions,
                 deletions: entry.deletions,
                 layout: entry.patch === undefined ? null : parsePatchLayout(entry.patch),
+                submodule: entry.patch === undefined ? null : parseSubmodulePatch(entry.patch),
             });
         }
 
