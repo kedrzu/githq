@@ -60,6 +60,7 @@ import type { FileFilterInput } from './utils/createFileFilter.js';
 import { getFailureText } from './utils/getFailureText.js';
 import { getFileName } from './utils/getFileName.js';
 import { parseLinguistGenerated } from './utils/parseLinguistGenerated.js';
+import { toError } from './utils/toError.js';
 import { ReviewWritingFactory } from './writing/ReviewWritingFactory.js';
 import type { ReviewWriting } from './writing/ReviewWriting.js';
 
@@ -2547,8 +2548,4 @@ function readOutcome(
 function readBlobSide(expression: string | null, answers: ReadonlyMap<string, ReviewBlobOidAnswer>): BlobSide | null {
     const answer = expression === null ? null : answers.get(expression);
     return answer?.kind === 'blob' ? { oid: answer.oid, byteSize: answer.byteSize } : null;
-}
-
-function toError(error: unknown) {
-    return error instanceof Error ? error : new Error(String(error));
 }
