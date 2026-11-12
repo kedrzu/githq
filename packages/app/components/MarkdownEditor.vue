@@ -1,16 +1,27 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. The footer's left says "Markdown" unless the caller puts something else there (a question). -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The footer's left is empty unless the caller puts something there (a question). -->
+<script lang="ts">
+import type { LucideIcon } from 'lucide-vue-next';
+
+/** A tool of the caller's, first in the head: clicking it is reported (`tool`), and its key is the caller's to handle. */
+export interface MarkdownEditorTool {
+  /** Its name, said and shown in its tooltip. */
+  readonly label: string;
+  readonly icon: LucideIcon;
+  /** Its key in the app's notation, shown in the tooltip and announced. */
+  readonly keys?: string;
+}
+</script>
+
 <script lang="ts" setup>
 import { useTextArea } from '@nzyme/vue-forms/components/useTextArea.jsx';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useLogger } from '@nzyme/vue-ioc/useLogger.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { useDataSource } from '@nzyme/vue-utils/useDataSource.js';
-import type { LucideIcon } from 'lucide-vue-next';
 import {
   AtSign,
   Bold,
   Code,
-  FileText,
   Hash,
   Heading,
   Italic,
@@ -24,6 +35,7 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger, ToolbarButton, ToolbarRoo
 import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import type { PropType } from 'vue';
 
+import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import { RenderMarkdownCommand } from '@/services/RenderMarkdownCommand.js';
@@ -40,12 +52,13 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // `disabled`, `readonly`; the repository the text is written in, `owner/name`, which the preview links `#42` and
 // mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
 // (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
-// suggest.
+// suggest; the caller's tool, first in the head.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
   people: { type: Array as PropType<readonly PersonSuggestion[]>, default: () => [] },
   itemNumber: { type: Number, default: undefined },
+  tool: { type: Object as PropType<MarkdownEditorTool | null>, default: null },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -53,11 +66,13 @@ const emit = defineEmits({
   submit: () => true,
   /** `Escape` inside the editor; the caller taking it prevents its default, and the screen leaves the key alone. */
   cancel: (_event: KeyboardEvent) => true,
+  /** The caller's tool was clicked. */
+  tool: () => true,
 });
 defineSlots<{
   /** The footer's buttons, at its right. */
   footer?(): unknown;
-  /** What the footer says at its left; "Markdown" when not given. */
+  /** What the footer says at its left (a question); nothing when not given. */
   status?(): unknown;
 }>();
 
@@ -129,17 +144,41 @@ const shownPreview = computed(() => (preview.value && isCurrent(preview.value) ?
 defineExpose({
   /**
    * Puts the cursor in the text area, on the Write tab, and brings into view the editor's `head` (a long text opened
-   * to edit: its tabs and tools, the caret wherever it is) or its `end` (where the caret is after a quote).
+   * to edit: its tabs and tools, the caret wherever it is) or its `end` (where the caret is after a quote); with
+   * neither, nothing moves.
    */
   focus,
+  /** Where the selection is in the text area; `null` before it is drawn. */
+  getSelection,
+  /** Types `text` over the selection, as `applyTool` does, and puts the caret `caret` characters into it. */
+  insert,
 });
 
-async function focus(reveal: 'head' | 'end') {
+async function focus(reveal?: 'head' | 'end') {
   tab.value = 'write';
   await nextTick();
   // Not scrolled to the caret by the browser: on a long text that takes the head out of view.
   input.value?.focus({ preventScroll: true });
-  await bringIntoView(reveal === 'head' ? headRef.value : footerRef.value);
+  if (reveal) {
+    await bringIntoView(reveal === 'head' ? headRef.value : footerRef.value);
+  }
+}
+
+function getSelection() {
+  const element = input.value;
+  return element ? { start: element.selectionStart, end: element.selectionEnd } : null;
+}
+
+function insert(text: string, caret: number) {
+  const element = input.value;
+  if (!element) {
+    return;
+  }
+
+  const start = element.selectionStart;
+  element.focus({ preventScroll: true });
+  document.execCommand('insertText', false, text);
+  element.setSelectionRange(start + caret, start + caret);
 }
 
 /**
@@ -240,6 +279,27 @@ interface RenderedPreview {
         :class="css.markdownEditor_tools"
         :aria-label="t(l.formatting)"
       >
+        <template v-if="tool">
+          <Tooltip
+            :text="tool.label"
+            :kbd="tool.keys"
+          >
+            <ToolbarButton
+              :class="[css.markdownEditor_tool, css.markdownEditor_tool_own]"
+              :aria-label="tool.label"
+              :aria-keyshortcuts="tool.keys && formatAriaKeyShortcuts(tool.keys)"
+              :disabled="disabled || readonly"
+              @click="emit('tool')"
+            >
+              <component
+                :is="tool.icon"
+                :class="css.markdownEditor_toolIcon"
+                aria-hidden="true"
+              />
+            </ToolbarButton>
+          </Tooltip>
+          <ToolbarSeparator :class="css.markdownEditor_rule" />
+        </template>
         <template
           v-for="(group, index) in TOOL_GROUPS"
           :key="index"
@@ -249,18 +309,18 @@ interface RenderedPreview {
             :class="css.markdownEditor_rule"
           />
           <Tooltip
-            v-for="tool in group"
-            :key="tool"
-            :text="t(l[tool])"
+            v-for="formatting in group"
+            :key="formatting"
+            :text="t(l[formatting])"
           >
             <ToolbarButton
               :class="css.markdownEditor_tool"
-              :aria-label="t(l[tool])"
+              :aria-label="t(l[formatting])"
               :disabled="disabled || readonly"
-              @click="applyTool(tool)"
+              @click="applyTool(formatting)"
             >
               <component
-                :is="TOOL_ICONS[tool]"
+                :is="TOOL_ICONS[formatting]"
                 :class="css.markdownEditor_toolIcon"
                 aria-hidden="true"
               />
@@ -325,13 +385,7 @@ interface RenderedPreview {
       ref="footer"
       :class="css.markdownEditor_footer"
     >
-      <slot name="status">
-        <FileText
-          :class="css.markdownEditor_footerIcon"
-          aria-hidden="true"
-        />
-        <span :class="css.markdownEditor_hint">{{ t(l.markdown) }}</span>
-      </slot>
+      <slot name="status" />
       <div :class="css.markdownEditor_actions">
         <slot name="footer" />
       </div>
@@ -430,6 +484,11 @@ interface RenderedPreview {
   }
 }
 
+// The caller's tool stands out a little from the formatting after it.
+.markdownEditor_tool_own {
+  color: $color-fg-2;
+}
+
 .markdownEditor_toolIcon {
   width: 14px;
   height: 14px;
@@ -497,18 +556,6 @@ interface RenderedPreview {
   align-items: center;
   padding: $spacing-8 $spacing-10 $spacing-8 $spacing-12;
   border-top: 1px solid $color-border;
-}
-
-.markdownEditor_footerIcon {
-  flex: none;
-  width: 13px;
-  height: 13px;
-  color: $color-fg-3;
-}
-
-.markdownEditor_hint {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
 }
 
 .markdownEditor_actions {

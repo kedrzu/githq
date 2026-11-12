@@ -50,6 +50,29 @@ test('⌘G puts the block on a line of its own at the cursor, its lines as they 
     await expect.element(field).toHaveValue('Bound it.\n```suggestion\n    const left = max;\n\treturn left;\n```');
 });
 
+test('Suggest a change in the tools puts the block where the cursor was, and the cursor goes back into the text', async () => {
+    await WithSuggestion.run({ args: { ...WithSuggestion.args, text: 'Bound it. Done.' } });
+    const field = page.getByRole('textbox');
+
+    await userEvent.click(field);
+    await userEvent.keyboard('{ArrowLeft}{ArrowLeft}{ArrowLeft}{ArrowLeft}{ArrowLeft}{ArrowLeft}');
+    await userEvent.click(page.getByRole('button', { name: 'Suggest a change' }));
+
+    await expect
+        .element(field)
+        .toHaveValue('Bound it.\n```suggestion\n    const left = max;\n\treturn left;\n```\n Done.');
+    await expect.element(field).toHaveFocus();
+});
+
+test('Cancel leaves the box as Escape does', async () => {
+    const onLeave = vi.fn();
+    await SingleFirst.run({ args: { ...SingleFirst.args, onLeave } });
+
+    await userEvent.click(page.getByRole('button', { name: /^Cancel/ }));
+
+    expect(onLeave).toHaveBeenCalledOnce();
+});
+
 test('with nothing GitHub would take, there is no offer and ⌘G adds nothing', async () => {
     await SingleFirst.run({ args: { ...SingleFirst.args, text: 'Why?' } });
 

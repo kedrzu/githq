@@ -10,6 +10,10 @@ import type { ReviewCommentStatus, ReviewCommentWay } from './ReviewWriting.js';
 
 defineProps<{
   row: ReviewCommentRow;
+  /** `owner/name` of the pull request. */
+  repository: string;
+  /** The pull request's number. */
+  itemNumber: number;
   status: ReviewCommentStatus;
   draftOpen: boolean;
   draftCount: number;
@@ -49,6 +53,8 @@ const text = defineModel<string>('text', { default: '' });
       v-else
       v-model:text="text"
       :target="row.target"
+      :repository="repository"
+      :item-number="itemNumber"
       :draft-open="draftOpen"
       :draft-count="draftCount"
       :draft-first="draftFirst"

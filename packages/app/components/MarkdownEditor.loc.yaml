@@ -26,8 +26,6 @@ mention:
   en: Mention someone
 reference:
   en: Reference an issue or pull request
-markdown:
-  en: Markdown
 previewEmpty:
   en: Nothing to preview.
 previewLoading:

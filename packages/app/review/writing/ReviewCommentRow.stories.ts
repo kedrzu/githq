@@ -17,6 +17,8 @@ const meta = {
     component: ReviewCommentRow,
     args: {
         row: { kind: 'comment', key: 'comment', target: TARGET, inline: 'unified' },
+        repository: 'mlaine/tasklet',
+        itemNumber: 14,
         text: BODY,
         status: { kind: 'editing' },
         draftOpen: false,

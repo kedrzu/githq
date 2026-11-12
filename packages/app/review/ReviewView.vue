@@ -1898,6 +1898,8 @@ function readAgain() {
                   <template #comment="{ row: commentRow }">
                     <ReviewCommentRow
                       :row="commentRow"
+                      :repository="`${reference.owner}/${reference.name}`"
+                      :item-number="reference.number"
                       :text="writing?.getText(commentRow.target.id)"
                       :status="writing?.getStatus(commentRow.target.id) ?? { kind: 'editing' }"
                       :draft-open="writing?.draftOpen ?? false"

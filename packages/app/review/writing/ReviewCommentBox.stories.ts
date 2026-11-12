@@ -9,6 +9,8 @@ const meta = {
     component: ReviewCommentBox,
     args: {
         target: { id: 'box', path: 'src/sync/engine.ts', side: 'after', line: 50, startLine: null, threadId: null },
+        repository: 'mlaine/tasklet',
+        itemNumber: 14,
         text: TEXT,
         draftOpen: false,
         draftCount: 0,

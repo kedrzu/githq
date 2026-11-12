@@ -8,6 +8,8 @@ replyInThread:
   en: Reply in the thread
 placeholder:
   en: Leave a comment
+cancel:
+  en: Cancel
 comment:
   en: Comment
 reply:
