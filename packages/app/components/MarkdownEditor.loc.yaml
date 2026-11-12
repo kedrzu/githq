@@ -34,3 +34,5 @@ previewFailed:
   en: The preview couldn't be loaded. What you wrote is kept.
 discard:
   en: Discard
+more:
+  en: More formatting

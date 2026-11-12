@@ -4,7 +4,7 @@ import type { Fetch } from '@nzyme/types/Fetch.js';
 import { createContainer } from '@nzyme/vue-ioc/createContainer.js';
 import { provideContainer } from '@nzyme/vue-ioc/provideContainer.js';
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { GitPullRequestClosed } from 'lucide-vue-next';
+import { FileDiff, GitPullRequestClosed } from 'lucide-vue-next';
 import { userEvent, within } from 'storybook/test';
 import { ref } from 'vue';
 
@@ -101,8 +101,9 @@ const meta = {
         placeholder: 'Leave a comment…',
         people: PEOPLE,
     },
-    parameters: { github: RENDERING },
-    // A composer's editor, as wide as a page's thread, with its buttons; over a GitHub answering `parameters.github`.
+    parameters: { github: RENDERING, width: 680 },
+    // A composer's editor, as wide as a page's thread (`parameters.width`), with its buttons; over a GitHub answering
+    // `parameters.github`.
     render: ({ modelValue, ...args }, { parameters }) => ({
         components: { Button, MarkdownEditor },
         setup() {
@@ -112,10 +113,11 @@ const meta = {
             setIndexedDbPersistence(container);
             provideContainer(container);
             const text = ref(modelValue ?? '');
-            return { args, text, GitPullRequestClosed };
+            const width = `${String(parameters.width)}px`;
+            return { args, text, width, GitPullRequestClosed };
         },
         template: `
-          <div style="width: 680px; padding: 20px; background: #11161c">
+          <div :style="{ width, padding: '20px', background: '#11161c' }">
             <MarkdownEditor v-bind="args" v-model="text">
               <template #footer>
                 <Button size="compact" :icon="GitPullRequestClosed" kbd="Shift+X">Close pull request</Button>
@@ -179,5 +181,22 @@ export const Referencing: Story = {
         const canvas = within(canvasElement);
         await userEvent.type(canvas.getByRole('textbox', { name: 'Comment' }), 'Fixed in #1');
         await within(document.body).findByRole('option', { name: /#12/u });
+    },
+};
+
+/** `CR117`: a reply in a review's narrow column, with Suggest a change: the lists and @ # folded into ⋯. */
+export const Narrow: Story = {
+    args: { modelValue: TYPED, tool: { label: 'Suggest a change', icon: FileDiff, keys: 'Mod+G' } },
+    parameters: { width: 430 },
+};
+
+/** `CR118`: ⋯ open, pressed, listing the folded tools by name, a separator between their groups. */
+export const NarrowMenuOpen: Story = {
+    args: Narrow.args,
+    parameters: Narrow.parameters,
+    play: async ({ canvasElement }) => {
+        // Found once the head is measured, before its first frame is drawn.
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: 'More formatting' }));
+        await within(document.body).findByRole('menuitem', { name: 'Bulleted list' });
     },
 };

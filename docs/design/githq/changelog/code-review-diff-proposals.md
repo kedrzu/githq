@@ -180,3 +180,20 @@ review's box and the item thread's edits alike, so it shows one icon.
 
 - [x] Review / New comment · asks to discard (`y4kGY9`): the question's icon (`Lu92c/bVk4m`) `circle-help` →
   `circle-alert`, as `Activity / Comment · editing, discard?` (`BVHXx`) has it.
+
+## Round · agent brief, the editor's toolbar at narrow widths (2026-11-12)
+
+Asked (brief `.context/editor-toolbar-brief.md`): the shared Markdown editor's tools run past its edge in a narrow
+place (a reply in a split diff's right column, ~430 px); draw variants. Variant A folded whole tool groups into "⋯";
+Variant B put the tools on a second row. The owner picked A, with no keys in the menu (a settle round, same day).
+
+- [x] Activity / Editor · more tools (`pcGit`) and · open (`KYOL3`), new, in `Components · Activity › Writing`
+  (`WT7lw`) after `Activity / Editor` (`OXAXr`): the "⋯" button at the head's right, closed and pressed.
+- [x] Activity / Editor tools menu · two groups folded (`ujkXe`), new, in `Editor, composer and menus` (`QgFYf`): the
+  folded tools by icon and name, no keys, separators between groups.
+- [x] Activity / Editor tools · review, folded (`niV8c`), Review / New comment · tools folded (`N9dDSZ`), Review /
+  Thread · replying, tools folded (`r4Ect`), new, in `Components · Code review › Thread parts` (`SSotp`), column
+  `Writing · tools folded` (`E3gaOM`).
+- [x] App · Code review (`CEDLB`): new CR117 (a reply in a narrow column, groups folded into ⋯), CR118 (⋯ open), CR119
+  (full width, nothing folds), in a row after CR93/CR97/CR98; the frame grew 727 px and the 25 top-level nodes below
+  it (`BnN7r` with `epLfx`) moved down by the same.
