@@ -312,7 +312,7 @@ issues alike. It replaces `Item / Activity` (`f9GRgL`, deleted) on every screen.
 Made for the code review's comment box (`code-review-diff-proposals.md`), but these components are the thread's too,
 so every composer, reply and editing box and every primary medium button in the item thread changes with them.
 
-- [ ] Activity / Editor (`OXAXr`): the footer's Markdown hint (icon `G7epo`, text `x0YOX`) is hidden. Before: file
+- [x] Activity / Editor (`OXAXr`): the footer's Markdown hint (icon `G7epo`, text `x0YOX`) is hidden. Before: file
   icon + "Markdown" at the left of the footer. After: nothing there, the buttons stay right.
 - [ ] Button / medium · primary (`t0PlX5`): its key (`ZBaFq`) is drawn in the accent's own colours: fill `#0D111729`,
   stroke `#0D111733`, glyph `#0D1117`. Before: the plain grey Kbd (`$bg-3`, `$border-2`, `$fg-2`) on the accent
