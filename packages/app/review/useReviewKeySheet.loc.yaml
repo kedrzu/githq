@@ -13,7 +13,7 @@ fileSteps:
 threads:
   en: Next and previous thread
 lines:
-  en: Line by line
+  en: Scroll by a line
 back:
   en: Back to the pull request
 viewed:
@@ -24,6 +24,8 @@ extend:
   en: Extend the selection
 collapse:
   en: Collapse or expand the file
+showHiddenLines:
+  en: Show {count} more hidden lines
 filter:
   en: Filter by path
 comment:

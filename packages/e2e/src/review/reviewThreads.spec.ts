@@ -275,20 +275,20 @@ test('"Comments in collapsed files" hides them and is remembered; Expand to here
     await expect.poll(() => review.threadOffset('On a hidden line')).toBeCloseTo(offset, 0);
 });
 
-test('Show all over a thread on a hidden line holds the thread where it is, as it lands on its line', async ({
+test('↑ over a thread on a hidden line holds the thread where it is, the lines coming above the hunk below', async ({
     page,
     github,
 }) => {
     const { review } = await openThreads(page, github);
     await goToThread(review, 'On a hidden line');
     // Read from above the gap, which is what would stay put with nothing held.
-    await expect(review.gapButton('Show all').first()).toBeVisible();
+    await expect(review.gapArrow('above').first()).toBeVisible();
     await review.diff.evaluate(diff => diff.scrollBy(0, -200));
     const offset = await review.threadOffset('On a hidden line');
 
-    await review.gapButton('Show all').first().click();
+    await review.gapArrow('above').first().click();
 
-    await expect(review.diff.getByText('67 lines further up')).toHaveCount(0);
+    await expect(review.diff.getByText('47 lines further up')).toBeVisible();
     await expect.poll(() => review.threadOffset('On a hidden line')).toBeCloseTo(offset, 0);
 });
 

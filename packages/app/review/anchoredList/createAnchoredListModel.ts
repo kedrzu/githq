@@ -34,10 +34,12 @@ export interface AnchoredListPinnedRow<T> {
     pushUp: number;
 }
 
-/** How rows the list has not measured yet are sized, and which of them pin. */
+/** How rows the list has not measured yet are sized, which of them pin, and the room a pinned row keeps over itself. */
 export interface AnchoredListModelOptions<T> {
     estimateHeight(row: T): number;
     isPinned(row: T): boolean;
+    /** How far below the one it pushes up a pinned row stays: the push starts that much before it arrives. */
+    readonly pushRoom?: number;
 }
 
 /** The arithmetic of a list that holds a row in place. It knows no DOM: the component feeds it what the browser says. */
@@ -65,6 +67,8 @@ export interface AnchoredListModel<T> {
     placeRows(range: AnchoredListRange): AnchoredListPlacedRow<T>[];
     /** The last pinned row at or above the viewport's top. */
     pinnedAt(scrollTop: number): AnchoredListPinnedRow<T> | null;
+    /** How far down from the viewport's top the pinned row's overlay reaches at that scroll position. */
+    coveredAt(scrollTop: number): number;
     /** The first row that shows at that scroll position: the pinned row's overlay hides what's under it. */
     firstVisibleRow(scrollTop: number): T | null;
 }
@@ -103,6 +107,7 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         rangeBetween,
         placeRows,
         pinnedAt,
+        coveredAt,
         firstVisibleRow,
     };
 
@@ -203,14 +208,18 @@ export function createAnchoredListModel<T extends AnchoredListRow>(
         }
 
         const next = pinnedIndices[position + 1];
-        const room = next === undefined ? Infinity : heights.top(next) - scrollTop;
+        const room = next === undefined ? Infinity : heights.top(next) - (options.pushRoom ?? 0) - scrollTop;
         return { row: rowAt(index), index, pushUp: Math.max(heights.height(index) - room, 0) };
+    }
+
+    function coveredAt(scrollTop: number) {
+        const pinned = pinnedAt(scrollTop);
+        return pinned ? heights.height(pinned.index) - pinned.pushUp : 0;
     }
 
     function firstVisibleRow(scrollTop: number) {
         const pinned = pinnedAt(scrollTop);
-        const covered = pinned ? heights.height(pinned.index) - pinned.pushUp : 0;
-        const index = heights.indexAt(Math.max(scrollTop, 0) + covered);
+        const index = heights.indexAt(Math.max(scrollTop, 0) + coveredAt(scrollTop));
         if (index < 0) {
             return null;
         }

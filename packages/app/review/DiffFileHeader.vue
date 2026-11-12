@@ -28,6 +28,10 @@ const props = defineProps<{
   /** Its threads under it: it closes the block only without them. */
   threadsUnder?: boolean;
   threads?: ThreadCounts | null;
+  /** Pinned and pushed up by the next file's header: it is where its block ends, the top cut off by the screen's edge. */
+  pushed?: boolean;
+  /** The file V, Space and C act on (D44): tinted, its chevron and edge in accent. */
+  current?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -67,7 +71,9 @@ function onClick(event: MouseEvent) {
     :class="[
       css.diffFileHeader,
       collapsed && !threadsUnder && css.diffFileHeader_collapsed,
+      pushed && css.diffFileHeader_pushed,
       file.gone && css.diffFileHeader_gone,
+      current && css.diffFileHeader_current,
     ]"
     @click="onClick"
   >
@@ -78,6 +84,7 @@ function onClick(event: MouseEvent) {
     />
     <IconButton
       v-if="!file.gone"
+      :class="css.diffFileHeader_chevron"
       :icon="collapsed ? ChevronRight : ChevronDown"
       :label="collapsed ? t(l.expand) : t(l.collapse)"
       :kbd="REVIEW_KEYS.collapse"
@@ -163,12 +170,27 @@ function onClick(event: MouseEvent) {
   padding: 0 $spacing-10 0 $spacing-12;
   background: $color-bg-2;
   border: 1px solid $color-border;
-  border-radius: $radius-lg $radius-lg 0 0;
+  border-radius: $radius-md $radius-md 0 0;
   cursor: pointer;
 }
 
 .diffFileHeader_collapsed {
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
+}
+
+.diffFileHeader_pushed {
+  border-radius: 0 0 $radius-md $radius-md;
+}
+
+.diffFileHeader_current {
+  background: $color-current-header;
+  border-color: $color-current-edge;
+}
+
+// Over the button's own colour, hovered too.
+.diffFileHeader_current .diffFileHeader_chevron,
+.diffFileHeader_current .diffFileHeader_chevron:hover {
+  color: $color-accent;
 }
 
 .diffFileHeader_gone {

@@ -5,7 +5,7 @@ import { expect, test } from 'bun:test';
 
 const TEXT = 4.5;
 const GRAPHICS = 3;
-const SURFACES = ['bg', 'bg-item', 'bg-2', 'bg-3', 'sel'];
+const SURFACES = ['bg', 'bg-item', 'bg-2', 'bg-3', 'sel', 'current-header'];
 const GRAPH_SURFACES = ['bg', 'row-stripe', 'sel'];
 /** What the code sits on: every surface, and the lines of a diff over the window. */
 const CODE_SURFACES = [...SURFACES, 'diff-bg-added', 'diff-bg-deleted'];
@@ -79,6 +79,8 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
     'red-quiet': "Primer's #B62324 reads 2.93 on bg",
     'border-danger': "red at 35%, a little weaker than Primer's borderColor-danger-muted (40%)",
     'border-danger-strong': "red at 50%, between Primer's borderColor-danger-muted and borderColor-danger-emphasis",
+    'current-edge': "accent at 60% over the window, opaque so the block's overlapping corners don't show stronger",
+    'current-header': "accent at 6% over bg-2, the current file's header, faint enough for AA on it",
 };
 
 const tokens = readTokens();

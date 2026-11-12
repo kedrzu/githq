@@ -4,6 +4,7 @@ import { onScopeDispose } from 'vue';
 
 import { CommandRegistry } from '@/commands/CommandRegistry.js';
 
+import { GAP_STEP } from './buildReviewRows.js';
 import * as l from './useReviewKeySheet.loc.js';
 
 /** The keys of a review (D32, CR29), the only place they are written: its actions, its comment box and the sheet draw them from here. */
@@ -22,6 +23,7 @@ export const REVIEW_KEYS = {
     selectNext: '}',
     selectPrevious: '{',
     collapse: 'Space',
+    showHiddenLines: 'E',
     filter: '/',
     comment: 'C',
     reply: 'R',
@@ -68,6 +70,7 @@ export function useReviewKeySheet(): void {
                         { keys: [REVIEW_KEYS.select], label: t(l.select) },
                         { keys: [REVIEW_KEYS.selectNext, REVIEW_KEYS.selectPrevious], label: t(l.extend) },
                         { keys: [REVIEW_KEYS.collapse], label: t(l.collapse) },
+                        { keys: [REVIEW_KEYS.showHiddenLines], label: t(l.showHiddenLines, { count: GAP_STEP }) },
                         { keys: [REVIEW_KEYS.filter], label: t(l.filter) },
                     ],
                 },

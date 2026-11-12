@@ -13,7 +13,7 @@ import { openMyWork } from '../myWork/openMyWork.js';
 import { answerSettingsRepository } from '../settings/answerSettingsRepository.js';
 
 import { answerReview } from './answerReview.js';
-import type { AnsweredReview, SampleReviewThread } from './answerReview.js';
+import type { AnsweredReview, SampleReviewFile, SampleReviewThread } from './answerReview.js';
 
 const ADDRESS = '/acme/web/pull/3/files';
 const ENGINE = 'src/engine.ts';
@@ -31,12 +31,23 @@ const DRAFT_TAKEN = 'User can only have one pending review per pull request';
 const FIRST_KEY = 'ControlOrMeta+Enter';
 const SECOND_KEY = 'ControlOrMeta+Shift+Enter';
 const NEW_HEAD = 'head0001';
+/** After the engine: room to scroll a box out of the list. */
+const OTHER: SampleReviewFile = {
+    path: 'src/other.ts',
+    before: BEFORE,
+    after: LINES.map((line, index) => `${line}${index < 100 ? '' : ' // changed'}\n`).join(''),
+};
 
 /** A review of one pull request on a GitHub that takes and refuses writes as the real one does. */
 async function openWriting(
     page: Page,
     github: GitHubMock,
-    options: { readonly draft?: number; readonly threads?: readonly SampleReviewThread[] } = {},
+    options: {
+        readonly draft?: number;
+        readonly threads?: readonly SampleReviewThread[];
+        /** In place of the engine and the file after it; the engine's changed line is still waited for. */
+        readonly files?: readonly SampleReviewFile[];
+    } = {},
 ) {
     const world = new GitHubWorld(SAMPLE_VIEWER.viewer.login);
     const id = world.pullRequest({
@@ -55,15 +66,7 @@ async function openWriting(
         repository: 'acme/web',
         number: 3,
         id,
-        files: [
-            { path: ENGINE, before: BEFORE, after: AFTER },
-            // Room to scroll a box out of the list.
-            {
-                path: 'src/other.ts',
-                before: BEFORE,
-                after: LINES.map((line, index) => `${line}${index < 100 ? '' : ' // changed'}\n`).join(''),
-            },
-        ],
+        files: options.files ?? [{ path: ENGINE, before: BEFORE, after: AFTER }, OTHER],
         threads,
     });
 
@@ -741,6 +744,72 @@ test('Resolve folds the thread where it is, moving nothing above it, and N goes 
     await expect(review.focusedThread).toContainText('Second thread here');
 });
 
+test('a viewed file whose thread was resolved stays while it is at the top of the screen, the reading line past it, and goes when it leaves the top, nothing moving (D7, D44)', async ({
+    page,
+    github,
+}) => {
+    // Tall, for the reading line to pass into the next file well after the hold of N has ended.
+    const tall = `${LINES.map((line, index) => {
+        if (index === 19) {
+            return CHANGED_LINE;
+        }
+
+        return index < 150 ? `${line} // tall` : line;
+    }).join('\n')}\n`;
+    const { review } = await openWriting(page, github, {
+        threads: [OPEN_THREADS[0]!],
+        files: [{ path: ENGINE, before: BEFORE, after: tall }, OTHER],
+    });
+    await review.hideViewedButton.click();
+    // Viewed, it stays for its open thread (D15); opened again to be read.
+    await review.viewedButton(ENGINE).click();
+    await expect(review.viewedButton(ENGINE)).toHaveAttribute('aria-pressed', 'true');
+    await review.topHeader(ENGINE).click();
+    await expect(review.code(CHANGED_LINE)).toBeVisible();
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    await review.thread('First thread here').getByRole('button', { name: 'Resolve' }).click();
+    await expect(review.thread('First thread here').getByRole('button', { name: /Resolved/ })).toBeVisible();
+
+    // Down through the engine, its end just above the reading line: the next file is current, the engine still on top.
+    await expect(async () => {
+        if ((await review.fileHeader(OTHER.path).count()) === 0) {
+            await review.diff.evaluate(element => element.scrollBy(0, 400));
+            throw new Error('The next file is not drawn yet');
+        }
+
+        const [header, diff] = await Promise.all([
+            review.fileHeader(OTHER.path).boundingBox(),
+            review.diff.boundingBox(),
+        ]);
+        if (!header || !diff) {
+            throw new Error('The next file is not on screen');
+        }
+
+        const reading = 38 + (diff.height - 38) / 3;
+        await review.diff.evaluate((element, by) => element.scrollBy(0, by), header.y + 40 - diff.y - reading);
+        await expect(review.currentFileRow).toContainText('other.ts', { timeout: 500 });
+    }).toPass();
+    const next = review.fileHeader(OTHER.path);
+    const before = await next.boundingBox();
+    await expect(review.fileRow('engine.ts')).toBeVisible();
+    await expect(review.code('const unchanged150 = 150; // tall')).toBeInViewport();
+    await page.evaluate(
+        () =>
+            new Promise(resolve => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            }),
+    );
+    expect(await next.boundingBox()).toEqual(before);
+
+    // The engine off the top, it goes, and what is read stays where it is.
+    const reading = review.code('const unchanged110 = 110; // changed');
+    const read = await reading.boundingBox();
+    await review.diff.evaluate(element => element.scrollBy(0, 300));
+    await expect(review.fileRow('engine.ts')).toHaveCount(0);
+    expect(await reading.boundingBox()).toEqual({ ...read!, y: read!.y - 300 });
+});
+
 test('a refused Resolve puts the thread back and says so on it, what is read staying put', async ({ page, github }) => {
     const { review, refused } = await openWriting(page, github, { threads: OPEN_THREADS });
     refused.set('ResolveReviewThread', 'Must have write access');
@@ -838,9 +907,10 @@ test('the keys sheet has every row whatever can run now, and no key of the app i
     await expect(sheet.getByText('New issue')).toBeHidden();
     const moving = sheet.getByRole('region', { name: 'Moving' });
     await expect(moving.getByText('Next and previous file')).toBeVisible();
-    await expect(moving.getByText('Line by line')).toBeVisible();
+    await expect(moving.getByText('Scroll by a line')).toBeVisible();
     await expect(moving.getByText('Back to the pull request')).toBeVisible();
     await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter by path')).toBeVisible();
+    await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Show 20 more hidden lines')).toBeVisible();
     await expect(sheet.getByText('Review, from an opened pull request')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();

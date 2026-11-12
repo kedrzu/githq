@@ -5,11 +5,14 @@ import {
     buildReviewRows,
     clampCommentRange,
     estimateReviewRowHeight,
-    findCommentLine,
     findReplacementRow,
     findReviewPositionRow,
+    getCommentLine,
     getDistanceLinesToShow,
+    getGapArrows,
     getGapLinesToShow,
+    getGapSize,
+    getGapStep,
     getReviewCommentKey,
     getReviewHeaderKey,
     getReviewPosition,
@@ -95,14 +98,14 @@ test("the file's last gap under a thread's code says what is left to the end and
     expect(rowsWithThreads([threadOnLine(41)]).at(-1)).toMatchObject({ kind: 'thread' });
 });
 
-test('a gap counts the lines nothing shows, not those shown for its threads, overlapping ones once; Show all still takes them all', () => {
+test('a gap counts the lines nothing shows, not those shown for its threads, overlapping ones once; all of it still takes them all', () => {
     const rows = rowsWithThreads([threadOnLine(5, { id: 'one' }), threadOnLine(6, { id: 'two' })]);
     const gap = rows.find(row => row.kind === 'gap');
 
     // Lines 1 to 16, of which 3 to 6 show.
     expect(gap).toMatchObject({ hidden: 12, range: { afterStart: 0, afterEnd: 16 } });
     if (gap?.kind === 'gap') {
-        expect(getGapLinesToShow(gap, gap.range.afterEnd - gap.range.afterStart)).toEqual({ start: 0, end: 16 });
+        expect(getGapLinesToShow(gap, { direction: 'up', count: getGapSize(gap) })).toEqual({ start: 0, end: 16 });
     }
 });
 
@@ -626,7 +629,7 @@ test('expanded lines keep the keys of the lines shown, and the rest of the gap k
         throw new Error('No gap');
     }
 
-    const shown = getGapLinesToShow(gap, 5);
+    const shown = getGapLinesToShow(gap, { direction: 'up', count: 5 });
     expect(shown).toEqual({ start: gap.range.afterEnd - 5, end: gap.range.afterEnd });
 
     const after = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split', expanded: [shown] });
@@ -649,17 +652,56 @@ test('a push having reset what was expanded, only the first gap says so', () => 
     expect(rows.filter(row => row.kind === 'gap').length).toBeGreaterThan(1);
 });
 
-test('a gap at the end of the file shows from its top, none being below it', () => {
-    const rows = buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' });
-    const gap = rows.findLast(row => row.kind === 'gap');
-    if (gap?.kind !== 'gap') {
-        throw new Error('No gap');
+test('each kind of gap has its arrows: up at the top of a file, down at its end, both between hunks, one for a short gap', () => {
+    const gaps = Object.values(getGaps());
+
+    expect(gaps.map(gap => [gap.hidden, getGapArrows(gap)])).toEqual([
+        [26, 'up'],
+        [33, 'both'],
+        [8, 'all'],
+        [32, 'down'],
+    ]);
+    expect(gaps.map(estimateReviewRowHeight)).toEqual([26, 26, 26, 25]);
+});
+
+test('an arrow shows 20 lines from its side of the gap: down below the hunk above, up above the hunk below', () => {
+    const { top, between, end } = getGaps();
+
+    expect(getGapLinesToShow(between, { direction: 'down', count: 20 })).toEqual({ start: 33, end: 53 });
+    expect(getGapLinesToShow(between, { direction: 'up', count: 20 })).toEqual({ start: 46, end: 66 });
+    expect(getGapLinesToShow(top, { direction: 'up', count: 20 })).toEqual({ start: 6, end: 26 });
+    expect(getGapLinesToShow(end, { direction: 'down', count: 20 })).toEqual({ start: 88, end: 108 });
+    expect(getGapLinesToShow(end, { direction: 'down', count: 1000 })).toEqual({ start: 88, end: 120 });
+});
+
+test("a click on a gap and E go 20 toward the hunk named, a file's top or end its one way, and a short gap opens whole", () => {
+    const { top, between, short, end } = getGaps();
+
+    expect(getGapStep(between, 'down')).toEqual({ direction: 'down', count: 20 });
+    expect(getGapStep(between, 'up')).toEqual({ direction: 'up', count: 20 });
+    expect(getGapStep(top, 'down')).toEqual({ direction: 'up', count: 20 });
+    expect(getGapStep(end, 'up')).toEqual({ direction: 'down', count: 20 });
+    expect(getGapStep(short, 'up')).toEqual({ direction: 'up', count: 8 });
+    expect(getGapStep(short, 'down')).toEqual({ direction: 'down', count: 8 });
+    expect(getGapLinesToShow(short, getGapStep(short, 'down'))).toEqual({ start: 73, end: 81 });
+});
+
+/** A file of 120 lines changed at 30, 70 and 85: a gap at its top, two between hunks, a long and a short one, and one at its end. */
+function getGaps() {
+    const before = lines(120);
+    const after = ['30', '70', '85'].reduce(
+        (text, line) => text.replace(`line ${line}\n`, `line ${line} changed\n`),
+        before,
+    );
+    const diff = computeFileDiff({ before, after, ...NO_IGNORE });
+    const gaps = buildFileLineRows({ path: A.path, diff, layout: 'split' }).filter(row => row.kind === 'gap');
+    const [top, between, short, end] = gaps;
+    if (!top || !between || !short || !end || gaps.length !== 4) {
+        throw new Error('Not the four gaps');
     }
 
-    expect(gap.atFileEnd).toBe(true);
-    expect(getGapLinesToShow(gap, 2)).toEqual({ start: gap.range.afterStart, end: gap.range.afterStart + 2 });
-    expect(getGapLinesToShow(gap, 1000)).toEqual({ start: gap.range.afterStart, end: gap.range.afterEnd });
-});
+    return { top, between, short, end };
+}
 
 test('a file filtered away gives way to the next left in the whole order, one the rows held before not shown (D7)', () => {
     const c = sampleFile('src/c.ts');
@@ -762,14 +804,15 @@ test('a box gone from the rows it was held at gives way to its line, not to the 
     expect(replacement?.row).toMatchObject({ kind: 'line', line: { right: { line: 21 } } });
 });
 
-test('C takes the first line from the row at the top: past what is not a line, on its newer side unless it has none', () => {
+test("C takes a code row's line on its newer side unless it has none, and nothing from a row that is not code", () => {
     const rows = buildReviewRows({
         files: [A],
-        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'split' }) }),
+        getContent: () => ({ kind: 'lines', rows: buildFileLineRows({ path: A.path, diff: DIFF, layout: 'unified' }) }),
     });
+    const older = rows.map(getCommentLine).filter(line => line?.side === 'before');
 
-    expect(findCommentLine(rows, getReviewHeaderKey(A.path))).toMatchObject({ path: A.path, side: 'after', line: 17 });
-    expect(findCommentLine([], null)).toBeNull();
+    expect(getCommentLine(rows[0]!)).toBeNull();
+    expect(older).toEqual([expect.objectContaining({ path: A.path, line: 20 })]);
 });
 
 test('a range reaches as far as the lines go on together, and stops at what hides lines', () => {

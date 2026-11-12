@@ -1,5 +1,7 @@
 <!-- A line of a diff side by side: the older version on the left, the newer on the right, a side with nothing blank. Long lines wrap, so the row is as tall as its taller side. -->
 <script lang="ts" setup>
+import { computed } from 'vue';
+
 import DiffCode from './DiffCode.vue';
 import DiffLineNumber from './DiffLineNumber.vue';
 import type { DiffCell, DiffLineSide, DiffSplitRow } from './diff/buildDiffRows.js';
@@ -8,11 +10,11 @@ import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { isLineCommented } from './utils/isLineCommented.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
 
-defineProps<{
+const props = defineProps<{
   line: DiffSplitRow;
   diff: FileDiff;
   syntax: FileSyntax | null;
-  /** The lines a comment is being written on: tinted. */
+  /** The lines a comment is being written on: tinted, their numbers in accent. */
   commented: CommentedLines;
 }>();
 
@@ -20,6 +22,9 @@ const emit = defineEmits<{
   /** Something happened to a line's number: a comment starts there (D32). */
   gutter: [event: MouseEvent, side: DiffLineSide, line: number];
 }>();
+
+/** Every row of the file sizes its number columns by the same number, which keeps them aligned. */
+const largest = computed(() => Math.max(props.diff.before.length, props.diff.after.length));
 
 function getText(lines: readonly string[], cell: DiffCell) {
   return lines[cell.line - 1] ?? '';
@@ -39,6 +44,8 @@ function getText(lines: readonly string[], cell: DiffCell) {
         <DiffLineNumber
           :class="css.diffRowSplit_number"
           :line="line.left.line"
+          :largest="largest"
+          :commented="isLineCommented(commented, 'before', line.left.line)"
           @gutter="emit('gutter', $event, 'before', line.left?.line ?? 0)"
         />
         <DiffCode
@@ -59,6 +66,8 @@ function getText(lines: readonly string[], cell: DiffCell) {
         <DiffLineNumber
           :class="css.diffRowSplit_number"
           :line="line.right.line"
+          :largest="largest"
+          :commented="isLineCommented(commented, 'after', line.right.line)"
           @gutter="emit('gutter', $event, 'after', line.right?.line ?? 0)"
         />
         <DiffCode
@@ -110,12 +119,11 @@ function getText(lines: readonly string[], cell: DiffCell) {
 }
 
 .diffRowSplit_cell_commented {
-  background: rgba($color-accent, 0.14);
+  background: rgba($color-accent, 0.18);
 }
 
 .diffRowSplit_number {
   flex: none;
-  width: 36px;
   color: $color-fg-dim;
 }
 </style>

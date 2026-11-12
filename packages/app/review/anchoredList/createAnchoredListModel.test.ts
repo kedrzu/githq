@@ -146,14 +146,29 @@ test('the pinned row is the last at or above the top, and the next one pushes it
     expect(model.pinnedAt(10_000)).toMatchObject({ index: 30, pushUp: 0 });
 });
 
+test('a pinned row keeping room over itself starts the push that much earlier, the room staying between the two', () => {
+    // Pinned: r10 (top 250) and r20 (top 500), rows 25 high, each keeping 8 over itself.
+    const model = createModel(
+        rows(30).map((row, index) => ({ ...row, pinned: index === 10 || index === 20 })),
+        8,
+    );
+
+    expect(model.pinnedAt(467)).toMatchObject({ index: 10, pushUp: 0 });
+    expect(model.pinnedAt(468)).toMatchObject({ index: 10, pushUp: 1 });
+    // r20 is 15 from the top, r10's pin ends 8 above it.
+    expect(model.pinnedAt(485)).toMatchObject({ index: 10, pushUp: 18 });
+    expect(model.pinnedAt(500)).toMatchObject({ index: 20, pushUp: 0 });
+});
+
 function rows(count: number): Row[] {
     return Array.from({ length: count }, (_, index) => ({ key: `r${index}` }));
 }
 
-function createModel(initial: Row[]) {
+function createModel(initial: Row[], pushRoom?: number) {
     const model = createAnchoredListModel<Row>({
         estimateHeight: () => 25,
         isPinned: row => row.pinned ?? false,
+        pushRoom,
     });
     model.setRows(initial);
     return model;

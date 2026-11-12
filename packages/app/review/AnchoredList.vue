@@ -1,14 +1,36 @@
-<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
+<!-- A virtual list that holds what you look at in place (code review's D7): only rows near the screen exist, heights nobody knows until they are drawn are absorbed into the scroll position, and `jumpTo` lands on a row by drawing it first, so the estimates only steer the native scrollbar. `anchor` says where you are, as a row and its distance from the top, for `jumpTo` to come back to; `getShownRows` and `getViewport` what is on screen. Rows that are `isPinned` head what follows them, in an overlay at the top that the next one pushes away, staying its `pushRoom` below it; the slot says when the pinned row is being pushed. Pass `rows` as a new plain array (a `shallowRef`) when they change: rebuilding costs O(n), and the props `estimateHeight` and `isPinned` are read only then. A row keeps its own background under the overlay, and a jump meant to clear a pinned row asks for an offset below it. -->
 <script lang="ts">
 import type { VNodeChild } from 'vue';
+
+import type { AnchoredListRow } from './anchoredList/createAnchoredListModel.js';
 
 /** The slot's props. */
 export interface AnchoredListSlotProps<T> {
   row: T;
+  /** The row is the pinned one, and the next pinned row is pushing it up. */
+  pushed: boolean;
+}
+
+/** What the viewport shows, for the reading line (`getReadingLine`). */
+export interface AnchoredListViewport {
+  readonly height: number;
+  /** How far down from its top the pinned row's overlay reaches. */
+  readonly covered: number;
+  /** How far the list is scrolled from its top. */
+  readonly scrolled: number;
+  /** How much further down the list can scroll. */
+  readonly remaining: number;
+}
+
+/** A row on screen, its edges measured from the viewport's top. */
+export interface AnchoredListShownRow<T> {
+  readonly row: T;
+  readonly top: number;
+  readonly bottom: number;
 }
 
 /** What a template ref to the list gives. */
-export interface AnchoredListExposed {
+export interface AnchoredListExposed<T = AnchoredListRow> {
   /** Lands the row at `offset` from the viewport's top and holds it there; an unknown key leaves the list as it is. */
   jumpTo(key: string, offset?: number): void;
   /**
@@ -20,6 +42,13 @@ export interface AnchoredListExposed {
   scrollBy(distance: number): void;
   /** The distance of a drawn row's top from the viewport's top, for `jumpTo` to hold it there; `null` for one not drawn. */
   getRowOffset(key: string): number | null;
+  /** Reactive: it changes with the scroll and the layout, at most once a frame. */
+  getViewport(): AnchoredListViewport;
+  /**
+   * The rows touching the viewport, those under the pinned row's overlay included, top to bottom. Reactive as
+   * `getViewport` is.
+   */
+  getShownRows(): AnchoredListShownRow<T>[];
   /** Where you are, reactive: it changes at most once a frame, with the scroll event. */
   readonly anchor: AnchoredListAnchor | null;
   /** The key of the first row showing under the pinned one, reactive: `anchor` is usually hidden behind that. */
@@ -37,7 +66,7 @@ const SCROLL_EPSILON = 0.01;
  * a `<slot>` inside `v-for` compiles to dynamic slots, which update the child every time.
  */
 function AnchoredListCell<T>(props: AnchoredListCellProps<T>) {
-  return props.render({ row: props.row });
+  return props.render({ row: props.row, pushed: props.pushed });
 }
 
 interface AnchoredListCellProps<T> extends AnchoredListSlotProps<T> {
@@ -56,7 +85,6 @@ import type {
   AnchoredListPinnedRow,
   AnchoredListPlacedRow,
   AnchoredListRange,
-  AnchoredListRow,
 } from './anchoredList/createAnchoredListModel.js';
 
 const props = withDefaults(
@@ -65,6 +93,8 @@ const props = withDefaults(
     /** A row's height until it has been drawn. */
     estimateHeight: (row: T) => number;
     isPinned?: (row: T) => boolean;
+    /** How far below the one it pushes up a pinned row stays, the background showing between them. */
+    pushRoom?: number;
     /** What the list is, for screen readers. */
     label: string;
   }>(),
@@ -72,8 +102,11 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  /** The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. */
-  userScroll: [];
+  /**
+   * The scroll position moved, and not by anything the list did: it's the user's, by wheel, key or scrollbar. The
+   * distance is how far, down if positive.
+   */
+  userScroll: [distance: number];
   /** A row with the focus inside it left the window, or the list: the list took the focus, for whoever wants it back. */
   rowFocusLost: [key: string];
 }>();
@@ -87,6 +120,9 @@ const spacer = useTemplateRef<HTMLElement>('spacer');
 const model = createAnchoredListModel<T>({
   estimateHeight: row => props.estimateHeight(row),
   isPinned: row => props.isPinned(row),
+  get pushRoom() {
+    return props.pushRoom;
+  },
 });
 model.setRows(props.rows);
 
@@ -95,6 +131,8 @@ const firstVisibleKey = shallowRef<string | null>(null);
 const focusedQuietly = shallowRef(false);
 const placedRows = shallowRef<AnchoredListPlacedRow<T>[]>([]);
 const pinnedRow = shallowRef<AnchoredListPinnedRow<T> | null>(null);
+/** What the viewport showed when the window was last placed: what makes `getViewport` and `getShownRows` reactive. */
+const viewport = shallowRef<AnchoredListViewport>({ height: 0, covered: 0, scrolled: 0, remaining: 0 });
 
 const observer = new ResizeObserver(onResize);
 const measuredKeys = new WeakMap<Element, string>();
@@ -135,7 +173,7 @@ watch(
   },
 );
 
-defineExpose({ jumpTo, focus, scrollBy, getRowOffset, anchor, firstVisibleKey });
+defineExpose({ jumpTo, focus, scrollBy, getRowOffset, getViewport, getShownRows, anchor, firstVisibleKey });
 
 onMounted(() => {
   const element = assertValue(scroller.value);
@@ -165,6 +203,24 @@ function getRowOffset(key: string) {
   return placed ? placed.top - knownScrollTop : null;
 }
 
+function getViewport(): AnchoredListViewport {
+  return viewport.value;
+}
+
+function getShownRows() {
+  const { scrolled, height } = viewport.value;
+  const placed = placedRows.value;
+  const shown: AnchoredListShownRow<T>[] = [];
+  for (const [index, { row, top }] of placed.entries()) {
+    const bottom = (placed[index + 1]?.top ?? model.total) - scrolled;
+    if (bottom > 0 && top - scrolled < height) {
+      shown.push({ row, top: top - scrolled, bottom });
+    }
+  }
+
+  return shown;
+}
+
 function focus() {
   focusedQuietly.value = true;
   // Not there anymore when the whole list goes with the row that had the focus.
@@ -178,11 +234,12 @@ function onScroll() {
     return;
   }
 
+  const distance = scrollTop - knownScrollTop;
   knownScrollTop = scrollTop;
   model.captureAnchor(scrollTop);
   anchor.value = model.anchor;
   showWindow(false);
-  emit('userScroll');
+  emit('userScroll', distance);
 }
 
 /** One observer call is the whole frame's observations of these elements, so it is one layout. */
@@ -263,6 +320,12 @@ function showWindow(layoutChanged: boolean) {
   }
 
   firstVisibleKey.value = model.firstVisibleRow(knownScrollTop)?.key ?? null;
+  viewport.value = {
+    height: viewportHeight,
+    covered: model.coveredAt(knownScrollTop),
+    scrolled: knownScrollTop,
+    remaining: Math.max(model.total - viewportHeight - knownScrollTop, 0),
+  };
 }
 </script>
 
@@ -289,6 +352,7 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="pinnedRow.row"
+          :pushed="pinnedRow.pushUp > 0"
           :render="slots.default"
         />
       </div>
@@ -306,6 +370,7 @@ function showWindow(layoutChanged: boolean) {
       >
         <AnchoredListCell
           :row="placed.row"
+          :pushed="false"
           :render="slots.default"
         />
       </div>
