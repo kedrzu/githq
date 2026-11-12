@@ -28,7 +28,8 @@ test('Enter on the open row expands the item to its page; Escape goes back to th
     await page.keyboard.press('Enter');
     await expect(page).toHaveURL(PAGE);
     await expect(item.backToPanelButton).toBeVisible();
-    await expect.poll(() => getScrollTop(item.content)).toBe(0);
+    // The page of a 1280px window: two columns, the thread's at its top.
+    await expect.poll(() => getScrollTop(item.timeline)).toBe(0);
 
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL(PANEL);

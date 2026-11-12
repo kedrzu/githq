@@ -43,20 +43,24 @@ test("an item's link opens the other item at the top, and Back brings the first 
     await myWork.row(NEXT).click();
     await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/pull/15');
-    const link = item.root.getByRole('button', { name: ISSUE });
-    await scrollDown(item.content);
-    // Out of view at the end of the thread: the click would scroll to it first, after `top` was read.
+    // The page of a 1280px window has two columns: the link (what it closes) in the summary, the thread beside it.
+    const link = item.summary.getByRole('button', { name: ISSUE });
+    await scrollDown(item.summary);
+    const timelineTop = await scrollDown(item.timeline);
+    // Maybe out of view: the click would scroll to it first, after the summary's top was read.
     await link.scrollIntoViewIfNeeded();
-    const top = await getScrollTop(item.content);
-    expect(top).toBeGreaterThan(0);
+    const summaryTop = await getScrollTop(item.summary);
+    expect(summaryTop).toBeGreaterThan(0);
 
     await link.click();
     await expect(item.title).toHaveText(ISSUE);
-    await expect.poll(() => getScrollTop(item.content)).toBe(0);
+    await expect.poll(() => getScrollTop(item.summary)).toBe(0);
+    await expect.poll(() => getScrollTop(item.timeline)).toBe(0);
 
     await page.goBack();
     await expect(item.title).toHaveText(NEXT);
-    await expect.poll(() => getScrollTop(item.content)).toBe(top);
+    await expect.poll(() => getScrollTop(item.summary)).toBe(summaryTop);
+    await expect.poll(() => getScrollTop(item.timeline)).toBe(timelineTop);
 });
 
 test("Back from an item's page, then from the panel it was expanded from, brings the list back where it was", async ({

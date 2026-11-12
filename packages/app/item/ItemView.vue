@@ -1,4 +1,4 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a page gives the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. Its width decides the layout, not the arrangement (CSS only, `@container item`): a summary — the stack, the heading, where a pull request stands (`PullRequestMerge`), its reviews and checks, what it closes, the properties and projects — then the timeline (`ItemThread`). Narrower than 1000px they scroll as one column, the panel as it always was and a page centred at the reading width; from 1000px, a panel dragged wide as much as a page, they stand side by side, each scrolling on its own: the summary pinned at the left (440px), the timeline beside it at most the reading width, the rest of the width left empty. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in one column the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; in two columns there is no bar, the map naming the stack at the top of the summary. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -24,7 +24,6 @@ import {
   Minimize2,
   X,
 } from 'lucide-vue-next';
-import { SplitterGroup, SplitterPanel } from 'reka-ui';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 import CommandMenuSections from '@/commands/CommandMenuSections.vue';
@@ -41,10 +40,8 @@ import Menu from '@/components/Menu.vue';
 import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
 import MenuShortcut from '@/components/MenuShortcut.vue';
-import ResizeHandle from '@/components/ResizeHandle.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
-import { usePanelWidth } from '@/components/usePanelWidth.js';
 import type { FailedComment, FailedTextEdit } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { usePickerOptions } from '@/edits/usePickerOptions.js';
@@ -186,9 +183,9 @@ const stackRowsRef = useTemplateRef<HTMLElement>('stackRows');
 const stackBarRef = useTemplateRef<InstanceType<typeof StackBar>>('stackBar');
 const stackDropRef = useTemplateRef<HTMLElement>('stackDrop');
 const itemMenuOpen = ref(false);
-/** In a panel, the stack's rows at the top of the content are in view (D27): the bar has nothing to drop. */
+/** In one column, the stack's rows at the top of the content are in view (D27): the bar has nothing to drop. */
 const stackRowsInView = ref(true);
-/** In a panel, a copy of the stack's rows dropped from the bar over the content (D27, SP84). */
+/** In one column, a copy of the stack's rows dropped from the bar over the content (D27, SP84). */
 const stackDropped = ref(false);
 
 // D25: every pull request of a stack opens with its rows in view, and the router opens it at the top
@@ -216,17 +213,6 @@ useIntersectionObserver({
   },
 });
 
-const split = computed(() => props.arrangement !== 'panel');
-// The page's side column's width, resized by dragging its edge.
-const sideWidth = usePanelWidth({ key: 'itemSide.page', default: 360, min: 260, max: 560 });
-
-// `[main, side?]`: the main column's in percent, the side's in pixels.
-function onColumnsLayout(sizes: number[]) {
-  const side = sizes[1];
-  if (side !== undefined) {
-    sideWidth.current = side;
-  }
-}
 /**
  * The other arrangement, offered by the header's button and `⇧Enter`: full screen from the panel, back to the panel from
  * the page — but not where the window has no room for the panel.
@@ -742,39 +728,49 @@ interface OtherArrangement {
     </header>
 
     <div :class="css.itemView_body">
-      <StackMap
-        v-if="stack && arrangement === 'page'"
+      <!-- One column only: in two the stack's map heads the summary, which never scrolls away with the thread. -->
+      <StackBar
+        v-if="stack"
+        ref="stackBar"
+        v-model:dropped="stackDropped"
+        :class="css.itemView_stackBar"
         :stack="stack"
         :current-id="item.id"
-        :neighbours="neighbours"
-        arrangement="page"
+        :rows-in-view="stackRowsInView"
         @open="emit('openInPlace', $event)"
       />
-      <SplitterGroup
-        direction="horizontal"
-        :class="css.itemView_columns"
-        @layout="onColumnsLayout"
-      >
-        <SplitterPanel
-          id="item-main"
-          :order="0"
-          :min-size="40"
-          :class="css.itemView_main"
+      <div :class="css.itemView_content">
+        <div
+          v-if="stack && stackDropped"
+          ref="stackDrop"
+          :class="css.itemView_stackDrop"
         >
-          <StackBar
-            v-if="stack && arrangement === 'panel'"
-            ref="stackBar"
-            v-model:dropped="stackDropped"
+          <StackMap
             :stack="stack"
             :current-id="item.id"
-            :rows-in-view="stackRowsInView"
+            :neighbours="neighbours"
+            arrangement="panel"
             @open="emit('openInPlace', $event)"
           />
-          <div :class="css.itemView_content">
+        </div>
+        <div
+          ref="scroll"
+          :class="css.itemView_scroll"
+          :data-route-scroll="`item-main:${arrangement}:${item.id}`"
+          data-suggestions-boundary
+          @scroll.passive="onContentScroll"
+        >
+          <div
+            :class="css.itemView_summary"
+            :data-route-scroll="`item-summary:${arrangement}:${item.id}`"
+          >
+            <!-- One column: the rows the bar names. While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
             <div
-              v-if="stack && arrangement === 'panel' && stackDropped"
-              ref="stackDrop"
-              :class="css.itemView_stackDrop"
+              v-if="stack"
+              ref="stackRows"
+              :class="css.itemView_stackRows"
+              :inert="stackDropped"
+              :aria-hidden="stackDropped ? 'true' : undefined"
             >
               <StackMap
                 :stack="stack"
@@ -784,55 +780,45 @@ interface OtherArrangement {
                 @open="emit('openInPlace', $event)"
               />
             </div>
+            <!-- Two columns: no bar to name the stack, so the map names it itself. -->
             <div
-              ref="scroll"
-              :class="css.itemView_scroll"
-              :data-route-scroll="`item-main:${arrangement}:${item.id}`"
-              data-suggestions-boundary
-              @scroll.passive="onContentScroll"
+              v-if="stack"
+              :class="css.itemView_stackMap"
             >
-              <!-- While the copy is dropped over it, out of reach and out of the accessibility tree: one map at a time. -->
-              <div
-                v-if="stack && arrangement === 'panel'"
-                ref="stackRows"
-                :class="css.itemView_stackRows"
-                :inert="stackDropped"
-                :aria-hidden="stackDropped ? 'true' : undefined"
-              >
-                <StackMap
-                  :stack="stack"
-                  :current-id="item.id"
-                  :neighbours="neighbours"
-                  arrangement="panel"
-                  @open="emit('openInPlace', $event)"
+              <StackMap
+                :stack="stack"
+                :current-id="item.id"
+                :neighbours="neighbours"
+                arrangement="page"
+                @open="emit('openInPlace', $event)"
+              />
+            </div>
+            <div :class="css.itemView_heading">
+              <h1 :class="css.itemView_title">{{ item.title }}</h1>
+              <p :class="css.itemView_state">
+                <StatePill
+                  :icon="state.icon"
+                  :tone="state.tone"
+                  >{{ state.text }}</StatePill
+                >
+                <LabelPill
+                  v-if="issueType"
+                  :name="issueType.name"
+                  :color="getGitHubColor(issueType.color)"
                 />
-              </div>
-              <div :class="css.itemView_heading">
-                <h1 :class="css.itemView_title">{{ item.title }}</h1>
-                <p :class="css.itemView_state">
-                  <StatePill
-                    :icon="state.icon"
-                    :tone="state.tone"
-                    >{{ state.text }}</StatePill
-                  >
-                  <LabelPill
-                    v-if="issueType"
-                    :name="issueType.name"
-                    :color="getGitHubColor(issueType.color)"
-                  />
-                  <Avatar
-                    v-if="opened.author"
-                    :name="opened.author.login"
-                    :src="opened.author.avatarUrl"
-                    size="xs"
-                    decorative
-                  />
-                  <span :class="css.itemView_opened">{{ opened.text }}</span>
-                </p>
-              </div>
+                <Avatar
+                  v-if="opened.author"
+                  :name="opened.author.login"
+                  :src="opened.author.avatarUrl"
+                  size="xs"
+                  decorative
+                />
+                <span :class="css.itemView_opened">{{ opened.text }}</span>
+              </p>
+            </div>
 
+            <template v-if="pr">
               <PullRequestMerge
-                v-if="pr"
                 :pr="pr"
                 :detail="prDetail"
                 :can-merge="permissions ? permissions.mergePanel : null"
@@ -843,131 +829,6 @@ interface OtherArrangement {
                 @merge="emit('merge')"
                 @command="merging?.run(pr.id, $event)"
               />
-
-              <!-- One column: everything in reading order. -->
-              <template v-if="!split">
-                <template v-if="pr">
-                  <PullRequestReviews
-                    v-if="prDetail"
-                    ref="reviews"
-                    :detail="prDetail"
-                    :now="now"
-                    :reviewer-options="reviewerOptions"
-                    @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
-                  />
-                  <PullRequestChecks
-                    v-if="prDetail"
-                    :detail="prDetail"
-                    :now="now"
-                    :required-ids="requiredCheckIds"
-                  />
-                  <LinkedItems
-                    :title="t(l.closes)"
-                    :items="closes ?? []"
-                    :repository="item.repository.nameWithOwner"
-                    @open="emit('open', $event)"
-                  />
-                </template>
-                <ItemProperties
-                  ref="properties"
-                  :item="item"
-                  :detail="issueDetail"
-                  :editing="editing"
-                  @open="emit('open', $event)"
-                  @edit="emit('edit', $event)"
-                />
-                <ItemProjects
-                  ref="projects"
-                  :projects="item.projects"
-                  :detail-projects="detail?.projects"
-                  :now="now"
-                  :editable="editing != null"
-                  :can-add-to-project="permissions?.addToProject"
-                  :viewer-projects="editing?.viewerProjects"
-                  @edit="emit('edit', $event)"
-                  @need-projects="emit('needProjects')"
-                />
-              </template>
-              <template v-else-if="pr">
-                <PullRequestChecks
-                  v-if="prDetail"
-                  :detail="prDetail"
-                  :now="now"
-                  :required-ids="requiredCheckIds"
-                />
-                <LinkedItems
-                  :title="t(l.closes)"
-                  :items="closes ?? []"
-                  :repository="item.repository.nameWithOwner"
-                  @open="emit('open', $event)"
-                />
-              </template>
-
-              <ItemThread
-                ref="thread"
-                :item="item"
-                :detail="detail"
-                :now="now"
-                :load-middle="loadThreadMiddle"
-                :failed="detailFailed"
-                :read-again="readDetailAgain"
-                :linked-anchor="linkedAnchor"
-                :failed-comments="failedComments"
-                :viewer="viewer"
-                :can-retry="editing != null && canComment"
-                :can-quote="canComment"
-                :failed-edits="failedEdits"
-                :people="threadPeople"
-                :review-threads="reviewThreads"
-                :review-threads-loading="reviewThreadsLoading"
-                :review-writing="reviewWriting"
-                :review-draft-first="reviewDraftFirst"
-                :looked-at="lookedAt"
-                :opened-at="openedAt"
-                @retry="emit('retryComment', $event)"
-                @discard="emit('discardComment', $event)"
-                @edit="emit('edit', $event)"
-                @discard-edit="emit('discardEdit', $event)"
-                @quote-reply="quoteReply"
-                @open="emit('open', $event)"
-              >
-                <template #composer>
-                  <ItemThreadComposer
-                    ref="composer"
-                    v-model:text="commentDraft"
-                    :item="item"
-                    :viewer="viewer"
-                    :can-comment="canComment"
-                    :can-close="permissions?.state === true"
-                    :read-only="readOnly"
-                    :people="threadPeople"
-                    @edit="edit"
-                  />
-                </template>
-              </ItemThread>
-            </div>
-          </div>
-        </SplitterPanel>
-
-        <template v-if="split">
-          <ResizeHandle
-            :label="t(l.resizeSide)"
-            @resized="sideWidth.save()"
-          />
-          <SplitterPanel
-            id="item-side"
-            as="aside"
-            :order="1"
-            size-unit="px"
-            :default-size="sideWidth.stored"
-            :min-size="sideWidth.min"
-            :max-size="sideWidth.max"
-            :style="sideWidth.style"
-          >
-            <div
-              :class="css.itemView_side"
-              :data-route-scroll="`item-side:${arrangement}:${item.id}`"
-            >
               <PullRequestReviews
                 v-if="prDetail"
                 ref="reviews"
@@ -976,35 +837,96 @@ interface OtherArrangement {
                 :reviewer-options="reviewerOptions"
                 @request="emit('edit', { kind: 'requestReviewers', logins: $event })"
               />
-              <ItemProperties
-                ref="properties"
-                :item="item"
-                :detail="issueDetail"
-                :editing="editing"
-                @open="emit('open', $event)"
-                @edit="emit('edit', $event)"
-              />
-              <ItemProjects
-                ref="projects"
-                :projects="item.projects"
-                :detail-projects="detail?.projects"
+              <PullRequestChecks
+                v-if="prDetail"
+                :detail="prDetail"
                 :now="now"
-                :editable="editing != null"
-                :can-add-to-project="permissions?.addToProject"
-                :viewer-projects="editing?.viewerProjects"
-                @edit="emit('edit', $event)"
-                @need-projects="emit('needProjects')"
+                :required-ids="requiredCheckIds"
               />
-            </div>
-          </SplitterPanel>
-        </template>
-      </SplitterGroup>
+              <LinkedItems
+                :title="t(l.closes)"
+                :items="closes ?? []"
+                :repository="item.repository.nameWithOwner"
+                @open="emit('open', $event)"
+              />
+            </template>
+            <ItemProperties
+              ref="properties"
+              :item="item"
+              :detail="issueDetail"
+              :editing="editing"
+              @open="emit('open', $event)"
+              @edit="emit('edit', $event)"
+            />
+            <ItemProjects
+              ref="projects"
+              :projects="item.projects"
+              :detail-projects="detail?.projects"
+              :now="now"
+              :editable="editing != null"
+              :can-add-to-project="permissions?.addToProject"
+              :viewer-projects="editing?.viewerProjects"
+              @edit="emit('edit', $event)"
+              @need-projects="emit('needProjects')"
+            />
+          </div>
+
+          <div
+            :class="css.itemView_timeline"
+            :data-route-scroll="`item-timeline:${arrangement}:${item.id}`"
+          >
+            <ItemThread
+              ref="thread"
+              :class="css.itemView_thread"
+              :item="item"
+              :detail="detail"
+              :now="now"
+              :load-middle="loadThreadMiddle"
+              :failed="detailFailed"
+              :read-again="readDetailAgain"
+              :linked-anchor="linkedAnchor"
+              :failed-comments="failedComments"
+              :viewer="viewer"
+              :can-retry="editing != null && canComment"
+              :can-quote="canComment"
+              :failed-edits="failedEdits"
+              :people="threadPeople"
+              :review-threads="reviewThreads"
+              :review-threads-loading="reviewThreadsLoading"
+              :review-writing="reviewWriting"
+              :review-draft-first="reviewDraftFirst"
+              :looked-at="lookedAt"
+              :opened-at="openedAt"
+              @retry="emit('retryComment', $event)"
+              @discard="emit('discardComment', $event)"
+              @edit="emit('edit', $event)"
+              @discard-edit="emit('discardEdit', $event)"
+              @quote-reply="quoteReply"
+              @open="emit('open', $event)"
+            >
+              <template #composer>
+                <ItemThreadComposer
+                  ref="composer"
+                  v-model:text="commentDraft"
+                  :item="item"
+                  :viewer="viewer"
+                  :can-comment="canComment"
+                  :can-close="permissions?.state === true"
+                  :read-only="readOnly"
+                  :people="threadPeople"
+                  @edit="edit"
+                />
+              </template>
+            </ItemThread>
+          </div>
+        </div>
+      </div>
     </div>
   </article>
 </template>
 
 <style lang="scss" module="css">
-// A page's main column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
+// A page in one column keeps its content to the reading width, centred: 40px from the edges, more once it is wider.
 $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 
 .itemView {
@@ -1084,25 +1006,17 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   flex: 1;
 }
 
+// What the item's width decides: one column below `$item-two-columns-width`, two from it — the panel dragged wide
+// as much as a page (`@container item`, below).
 .itemView_body {
   display: flex;
   flex: 1;
-  min-height: 0;
-}
-
-.itemView_columns {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-}
-
-.itemView_main {
-  display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-height: 0;
+  container: item / inline-size;
 }
 
-// The content and, in a panel, what drops over it from the stack bar.
+// The content and, in one column, what drops over it from the stack bar.
 .itemView_content {
   position: relative;
   // The dropped rows slide out from under the bar: what is still above the content is cut off, never over the bar.
@@ -1116,6 +1030,18 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 // The stack's rows, the content's first block (D25): as wide as the panel, the edge under them across it.
 .itemView_stackRows {
   margin: -20px (-$spacing-24) 0;
+  border-bottom: 1px solid $color-border;
+
+  // A page's inset is no fixed width to run past: the rows keep to the column.
+  .itemView_page & {
+    margin: -$spacing-16 0 0;
+  }
+}
+
+// Two columns only: the map heading the summary, the edge under it.
+.itemView_stackMap {
+  display: none;
+  padding-bottom: $spacing-16;
   border-bottom: 1px solid $color-border;
 }
 
@@ -1141,6 +1067,7 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   }
 }
 
+// One column: the summary, then the thread, scrolling together.
 .itemView_scroll {
   display: flex;
   flex: 1;
@@ -1162,6 +1089,64 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
   // Sections keep their height; the column scrolls instead.
   > * {
     flex: none;
+  }
+}
+
+// The stack, the heading, where a pull request stands, its reviews and checks, what it closes, the properties and
+// projects.
+.itemView_summary {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  > * {
+    flex: none;
+  }
+}
+
+// Two columns (F18–F20, F23): the summary pinned at the left, scrolling only when taller than the view, and the thread
+// beside it, scrolling on its own, at most the reading width; what is left of the width stays empty at the right.
+@container item (width >= #{$item-two-columns-width}) {
+  .itemView_stackBar,
+  .itemView_stackDrop,
+  .itemView_stackRows {
+    display: none;
+  }
+
+  .itemView_stackMap {
+    display: block;
+  }
+
+  .itemView_scroll,
+  .itemView_page .itemView_scroll {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: $item-summary-width minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .itemView_summary,
+  .itemView_timeline {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .itemView_summary {
+    padding: 20px 20px 24px;
+    scroll-padding-block: 20px;
+    background: $color-bg;
+    border-right: 1px solid $color-border;
+  }
+
+  .itemView_timeline {
+    padding: 32px 40px;
+    scroll-padding-block: 32px;
+  }
+
+  .itemView_thread {
+    max-width: $item-reading-width;
   }
 }
 
@@ -1187,19 +1172,5 @@ $item-page-inset: max(40px, calc((100% - #{$item-reading-width}) / 2));
 .itemView_opened {
   font-size: $font-size-xs;
   color: $color-fg-dim;
-}
-
-.itemView_side {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  height: 100%;
-  padding: 28px $spacing-24;
-  overflow-y: auto;
-  border-left: 1px solid $color-border;
-
-  > * {
-    flex: none;
-  }
 }
 </style>

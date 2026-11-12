@@ -4,7 +4,8 @@ import { START_LOCATION } from 'vue-router';
 /**
  * The router's scroll for the screens: the shell never scrolls, its screens do inside containers of their own, which
  * the scroll of the window (vue-router's, Nuxt's) never reaches. A container says what it shows in
- * `data-route-scroll` (`item-main:<arrangement>:<id>`): a navigation that changes what it shows opens it at the top, Back and
+ * `data-route-scroll` (`item-main:<arrangement>:<id>`; one container may hold others, which scroll only in another layout
+ * of it): a navigation that changes what it shows opens it at the top, Back and
  * Forward bring back where it was in that entry of the history, and a container still showing the same thing stays
  * where it is — a list under an item opened over it. A fragment (`#issuecomment-1`) names an element inside a container,
  * which the navigation scrolls into sight there once it is on screen, unless Back or Forward return the containers to
@@ -167,11 +168,30 @@ function scrollToAnchor() {
     // Outside every container the element is the window's, which Nuxt's scroll has brought into sight.
     const id = anchor;
     anchor = null;
-    const container = element.closest<HTMLElement>(`[${ATTRIBUTE}]`);
+    const container = findScrollingContainer(element);
     if (container) {
         scrollToElement(container, element);
         holdAnchor(id, container);
     }
+}
+
+/**
+ * The container around the element that scrolls in the layout on screen: one may hold another that scrolls only in
+ * another layout (an opened item's timeline, its own column only when the item is wide, `item/ItemView.vue`). `null`
+ * when it is in none.
+ */
+function findScrollingContainer(element: Element) {
+    let container = element.closest<HTMLElement>(`[${ATTRIBUTE}]`);
+    while (container) {
+        const { overflowY } = getComputedStyle(container);
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+            return container;
+        }
+
+        container = container.parentElement?.closest<HTMLElement>(`[${ATTRIBUTE}]`) ?? null;
+    }
+
+    return null;
 }
 
 /**

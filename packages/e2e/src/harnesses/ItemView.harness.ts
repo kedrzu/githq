@@ -26,9 +26,22 @@ export class ItemViewHarness {
         return this.root.getByText(/^\d+ \/ \d+$/);
     }
 
-    /** The column of its title, description and activity, which scrolls on its own. */
+    /**
+     * Its content: narrower than 1000px the one column that scrolls, the summary and then the thread; from 1000px it
+     * holds the {@link summary} and the {@link timeline} side by side, scrolling each on its own, and does not scroll.
+     */
     get content(): Locator {
         return this.root.locator('[data-route-scroll^="item-main:"]');
+    }
+
+    /** The column of its title, where it stands and its properties; scrolls on its own only from 1000px wide. */
+    get summary(): Locator {
+        return this.root.locator('[data-route-scroll^="item-summary:"]');
+    }
+
+    /** The column of its description and activity; scrolls on its own only from 1000px wide. */
+    get timeline(): Locator {
+        return this.root.locator('[data-route-scroll^="item-timeline:"]');
     }
 
     /** "Previous item" (`K`). */

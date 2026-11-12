@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/vue3';
-import { expect, test } from 'vitest';
+import { expect, onTestFinished, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
@@ -17,8 +17,9 @@ import * as stories from './ItemView.stories.js';
 const {
     ContributorView,
     IssueInPanel,
-    IssueSplit,
-    IssueSplitNoRoomForPanel,
+    IssueOnNarrowPage,
+    IssueOnPage,
+    IssueOnPageNoRoomForPanel,
     LoadingComments,
     PullRequestBeingMerged,
     PullRequestBehind,
@@ -28,6 +29,8 @@ const {
     PullRequestContributorView,
     PullRequestDraft,
     PullRequestFailing,
+    PullRequestFailingPage,
+    PullRequestFailingWidePanel,
     PullRequestMergeabilityUnknown,
     PullRequestAutoMergeOffered,
     PullRequestAutoMergeOn,
@@ -102,8 +105,8 @@ test('first run and loading D7: a row comes whole, so with its detail and its re
 });
 
 test('J/K step through the list, Esc closes, R puts the cursor in the comment box and Esc there leaves it without closing', async () => {
-    await IssueSplit.run();
-    const { onNext, onPrevious, onClose } = IssueSplit.args;
+    await IssueOnPage.run();
+    const { onNext, onPrevious, onClose } = IssueOnPage.args;
 
     await userEvent.keyboard('jk');
     expect(onNext).toHaveBeenCalledTimes(1);
@@ -127,8 +130,8 @@ test('J/K step through the list, Esc closes, R puts the cursor in the comment bo
 
 test("a control Tab reached outside the list holds an opened panel's J/K; one Escape gives them back and does not close it", async () => {
     trackTabFocus();
-    await IssueSplit.run();
-    const { onNext, onClose } = IssueSplit.args;
+    await IssueOnPage.run();
+    const { onNext, onClose } = IssueOnPage.args;
 
     await userEvent.tab();
     expect(document.activeElement?.hasAttribute('data-tab-focus')).toBe(true);
@@ -146,21 +149,21 @@ test("a control Tab reached outside the list holds an opened panel's J/K; one Es
 });
 
 test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {
-    await IssueSplit.run();
+    await IssueOnPage.run();
 
     await userEvent.click(page.getByRole('button', { name: 'Back to the panel' }));
-    expect(IssueSplit.args.onArrange).toHaveBeenLastCalledWith('panel');
+    expect(IssueOnPage.args.onArrange).toHaveBeenLastCalledWith('panel');
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
-    expect(IssueSplit.args.onArrange).toHaveBeenCalledTimes(2);
+    expect(IssueOnPage.args.onArrange).toHaveBeenCalledTimes(2);
 });
 
 test('on a page in a window with no room for the panel, neither its button nor Shift+Enter is offered', async () => {
-    await IssueSplitNoRoomForPanel.run();
+    await IssueOnPageNoRoomForPanel.run();
 
     await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect.element(page.getByRole('button', { name: 'Back to the panel' })).not.toBeInTheDocument();
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
-    expect(IssueSplitNoRoomForPanel.args.onArrange).not.toHaveBeenCalled();
+    expect(IssueOnPageNoRoomForPanel.args.onArrange).not.toHaveBeenCalled();
 });
 
 test('"Open full screen" in the panel and Shift+Enter ask for the page; Shift+Enter in the comment box stays a new line', async () => {
@@ -200,8 +203,8 @@ test('L opens the labels picker; what was toggled is asked for when it closes', 
 });
 
 test("M sets the milestone, S the first project's status", async () => {
-    await IssueSplit.run();
-    const { onEdit } = IssueSplit.args;
+    await IssueOnPage.run();
+    const { onEdit } = IssueOnPage.args;
 
     await userEvent.keyboard('m');
     await userEvent.click(page.getByRole('option', { name: /v4.3/ }));
@@ -218,8 +221,8 @@ test("M sets the milestone, S the first project's status", async () => {
 });
 
 test("a project's number field is edited in its field: Enter sets what was typed, an emptied one clears it", async () => {
-    await IssueSplit.run();
-    const { onEdit } = IssueSplit.args;
+    await IssueOnPage.run();
+    const { onEdit } = IssueOnPage.args;
     const target = { kind: 'projectField', projectItemId: 'PVTI_Platform Q4', fieldId: 'estimate' };
 
     await userEvent.click(page.getByRole('button', { name: 'Estimate: 3' }));
@@ -363,6 +366,78 @@ test('R brings the composer into view leaving the space the end of the scroll le
     expect(scroll.scrollTop).toBeCloseTo(scroll.scrollHeight - scroll.clientHeight, 0);
 });
 
+test.each([
+    ['F18: a page', () => PullRequestFailingPage],
+    ['F20: a panel dragged to 1100px', () => PullRequestFailingWidePanel],
+])(
+    '%s, 1000px wide or more: the summary and the timeline stand side by side, the summary pinned while the timeline scrolls',
+    async (_, story) => {
+        await useShortWideWindow();
+        await story().run();
+        const summary = getScrollContainer('item-summary');
+        const timeline = getScrollContainer('item-timeline');
+        const [left, right] = [summary.getBoundingClientRect(), timeline.getBoundingClientRect()];
+        expect(left.width).toBe(440);
+        expect(right.left).toBe(left.right);
+        expect(right.top).toBe(left.top);
+        // The heading and the merge block in the summary, the thread in the timeline.
+        expect(summary.contains(page.getByRole('heading', { level: 1 }).element())).toBe(true);
+        expect(timeline.contains(page.getByRole('textbox', { name: 'Comment' }).element())).toBe(true);
+
+        const title = page.getByRole('heading', { level: 1 }).element();
+        const titleTop = title.getBoundingClientRect().top;
+        timeline.scrollTop = 400;
+        expect(timeline.scrollTop).toBeGreaterThan(0);
+        expect(getContentScroll().scrollTop).toBe(0);
+        expect(title.getBoundingClientRect().top).toBe(titleTop);
+    },
+);
+
+test('F19: in two columns the timeline stays at the reading width, 40px from the summary, the rest of the width empty', async () => {
+    await StackOfTenOnPage.run();
+    const timeline = getScrollContainer('item-timeline');
+    const thread = timeline.firstElementChild;
+    if (!thread) {
+        throw new Error('The timeline holds no thread.');
+    }
+
+    expect(thread.getBoundingClientRect().width).toBe(920);
+    expect(thread.getBoundingClientRect().left - getScrollContainer('item-summary').getBoundingClientRect().right).toBe(
+        40,
+    );
+});
+
+test.each([
+    ['F21: the panel', () => PullRequestFailing],
+    ['F22: a page of a 900px window', () => IssueOnNarrowPage],
+])(
+    '%s, narrower than 1000px: the summary comes first and the timeline under it, scrolling as one',
+    async (_, story) => {
+        await story().run();
+        const summary = getScrollContainer('item-summary');
+        const timeline = getScrollContainer('item-timeline');
+        expect(timeline.getBoundingClientRect().top).toBeGreaterThan(summary.getBoundingClientRect().bottom);
+        expect(timeline.getBoundingClientRect().left).toBe(summary.getBoundingClientRect().left);
+        const scroll = getContentScroll();
+        expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
+        expect(getComputedStyle(timeline).overflowY).toBe('visible');
+    },
+);
+
+test('in two columns R brings the composer into view in the timeline, which scrolls, not the summary', async () => {
+    await useShortWideWindow();
+    await IssueOnPage.run();
+    const timeline = getScrollContainer('item-timeline');
+    timeline.scrollTop = 0;
+
+    await userEvent.keyboard('r');
+    const box = page.getByRole('textbox', { name: 'Comment' });
+    await expect.element(box).toHaveFocus();
+    expect(timeline.scrollTop).toBeGreaterThan(0);
+    expect(isInView(box.element(), timeline)).toBe(true);
+    expect(getScrollContainer('item-summary').scrollTop).toBe(0);
+});
+
 test('Quote reply of a long comment leaves its HTML comments out and brings the end of the box, where the cursor is, into view', async () => {
     const [first, mine] = D1_ISSUE_DETAIL.comments.nodes;
     const lines = Array.from({ length: 60 }, (_, index) => `Step ${index + 1}.`);
@@ -476,14 +551,25 @@ function isInView(element: Element, scroll: HTMLElement) {
     return box.top >= view.top && box.bottom <= view.bottom;
 }
 
-/** The panel's scrolling content: the column holding the item's heading. */
+/** A window as wide as the widest story and short enough for its timeline to scroll, until the test ends. */
+async function useShortWideWindow() {
+    await page.viewport(1920, 500);
+    onTestFinished(() => page.viewport(414, 896));
+}
+
+/** The content in one column, scrolling as one: summary, then timeline. */
 function getContentScroll() {
-    const scroll = page.getByRole('heading', { level: 1 }).element().parentElement?.parentElement;
-    if (!scroll) {
-        throw new Error('The content has no scrolling column.');
+    return getScrollContainer('item-main');
+}
+
+/** The content's container `kind` (`item-main`, `item-summary`, `item-timeline`), by what it shows. */
+function getScrollContainer(kind: string) {
+    const container = document.querySelector<HTMLElement>(`[data-route-scroll^="${kind}:"]`);
+    if (!container) {
+        throw new Error(`The item has no ${kind} container.`);
     }
 
-    return scroll;
+    return container;
 }
 
 /** The stack bar's toggle, named by the stack. */
@@ -532,7 +618,9 @@ test('D27: a click on the bar drops the rows over the content — one map at a t
     await stackBarToggle().click();
     await expect.element(stackBarToggle()).toHaveAttribute('aria-expanded', 'true');
     // The copy over the content; the one in it inert and out of the accessibility tree.
-    const maps = () => document.querySelectorAll('section[aria-label="The stack"]');
+    // The summary's own map, for two columns, is not drawn in one.
+    const maps = () =>
+        [...document.querySelectorAll('section[aria-label="The stack"]')].filter(map => map.checkVisibility());
     await expect.poll(() => maps().length).toBe(2);
     const region = page.getByRole('region', { name: 'The stack' });
     await expect.element(region).toBeVisible();
@@ -621,9 +709,13 @@ test('a row of the stack map opens its pull request in place of this one', async
     expect(onOpenInPlace).toHaveBeenCalledExactlyOnceWith(SYNC_ENGINE_STACK[2]!.id);
 });
 
-test('the stack map shows only for a pull request in a stack: on a page in its own column', async () => {
+test('the stack map shows only for a pull request in a stack: in two columns at the top of the summary, with no bar', async () => {
     await StackOfTwoOnPage.run();
-    await expect.element(page.getByRole('region', { name: 'The stack' })).toBeVisible();
+    const map = page.getByRole('region', { name: 'The stack' });
+    await expect.element(map).toBeVisible();
+    expect(map.all()).toHaveLength(1);
+    expect(getScrollContainer('item-summary').contains(map.element())).toBe(true);
+    expect(stackBarToggle().query()).toBeNull();
 
     await PullRequestFailing.run();
     expect(page.getByRole('region', { name: 'The stack' }).query()).toBeNull();

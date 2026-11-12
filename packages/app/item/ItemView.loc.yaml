@@ -64,8 +64,6 @@ copyLink:
   en: Copy link
 closeIssueCommand:
   en: Close issue
-resizeSide:
-  en: Resize side column
 itemMenu:
   en: Item actions
 itemMenuLabel:
