@@ -89,7 +89,8 @@ bun run dev     # the app on http://localhost:8787
 ```
 
 Without the OAuth App's client secret, from the secret store or `.env` (template: `.env.example`), the sign-in screen
-of a development build takes a personal token — `gh auth token` works. The rest of the commands, the checks and how we work are in
+of a development build takes a personal token — `gh auth token` works. Working on the design (`githq.pen`) needs
+`bunx pen login` once per machine. The rest of the commands, the checks and how we work are in
 [`AGENTS.md`](AGENTS.md).
 
 ## Security

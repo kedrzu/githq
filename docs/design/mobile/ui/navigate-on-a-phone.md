@@ -1,8 +1,7 @@
 # Getting around githq on a phone
 
 The brief for drawing githq's navigation on a phone. The product, its data and Direction D are in
-[the app's brief](../../githq/ui/README.md); the rules for the design file are in `DESIGN.md` at the repository's
-root. This file adds only what is different on a phone.
+[the app's brief](../../githq/ui/README.md); the rules for the design file are in the `design` skill. This file adds only what is different on a phone.
 
 ## Purpose
 
@@ -108,6 +107,6 @@ Two things any variant has to respect:
 
 ## Where to draw it
 
-A new aspect frame, `App · Mobile`, with letters of its own (read the ones in use first, as `DESIGN.md` says),
+A new aspect frame, `App · Mobile`, with letters of its own (read the ones in use first, as the `design` skill says),
 reusing Direction D's components and making phone variants of them where needed. The owner reviews by scanning the
 amber `Variants · …` frames.

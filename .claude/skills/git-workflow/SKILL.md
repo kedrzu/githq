@@ -37,7 +37,8 @@ Facts this rests on (checked 2026-11-03):
 - PR descriptions, issues and issue comments are in English too (`AGENTS.md`): Polish is only for
   the conversation with the owner.
 - Branch names: `<type>/<slug>`, with an issue `<type>/<N>-<slug>`; types `feat`, `fix`, `chore`,
-  `design`, `docs` (`feat/12-my-work-list`). `design` exists only here: such a branch's PR title is `docs: …`.
+  `design`, `docs` (`feat/12-my-work-list`). `design` is for a branch that only designs; any branch changes `githq.pen`
+  when its work needs it. A `design` branch's PR title is `docs: …`.
 - `nzyme` is a git submodule (`https://github.com/kedrzu/nzyme.git`, no `branch =`); the gitlink is
   the pin.
 
@@ -141,7 +142,8 @@ A conflict is yours to resolve (the `git` plugin's `fix-conflicts` skill). Read 
 and why (`git log` and `git diff` from `git merge-base HEAD origin/main` to each side), then write what
 one author doing both changes would have written — never keep one side blindly. Generated files are
 regenerated, not hand-merged: `bun.lock` with `bun install`, `*.loc.ts` and tsconfigs with
-`bun run codegen`. Bring it
+`bun run codegen`. A `githq.pen` conflict follows the `design` skill: the merge driver leaves a report;
+never take a whole side. Bring it
 to the owner only when the two sides made contradictory product or design decisions. Then the full
 `verify`, and commit the merge.
 
