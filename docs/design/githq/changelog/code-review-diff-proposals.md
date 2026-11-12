@@ -16,7 +16,7 @@ Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISI
 
 ## The comment box (D39, D40)
 
-- [ ] Review / New comment (`SAmev`), in Thread parts › Writing · on the editor (`AeXsY`): replaces Review /
+- [x] Review / New comment (`SAmev`), in Thread parts › Writing · on the editor (`AeXsY`): replaces Review /
   Comment box (`T0DNU`, deleted) and `· code changed` (`Q7LSPI`, deleted). Built on Activity / Editor. Head:
   where it goes. Format toolbar: Suggest a change (icon `file-diff`, ⌘G) first, then a rule, then the editor's
   own buttons. Footer: Cancel Esc, the second key's button, the first key's primary button. States:
@@ -27,7 +27,7 @@ Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISI
   "Reply to …", no excerpt.
 - [ ] Inset under its line on its side, as a thread: CR90 (single line), CR91 (range, draft open, suggestion as
   markdown), CR92 (reply), CR93 (unified: code changed, not sent).
-- [ ] Esc with text asks in place (CR97); after Discard, a toast "Comment on line 51 discarded" with Restore ⌘Z for
+- [x] Esc with text asks in place (CR97); after Discard, a toast "Comment on line 51 discarded" with Restore ⌘Z for
   ten seconds reopens the box with its text (CR98).
 - [x] Existing screens now use the new box: CR70, CR71, CR72, CR73, CR74, CR83, CR87 (labels as before).
 
@@ -81,9 +81,9 @@ Decisions amended: D32, D40, D42, D44, D45 in `docs/design/code-review/DECISIONS
   "Show 20 more hidden lines" (`E0Jd8z`). Caption: C takes the current file's line at the reading line.
 - [x] C acts on the current file's line at the reading line, or on its line nearest to it while the file is held off
   the line (D44, D32), so C, V and Space always hit the same file. Captions of CR70 and CR108 say so.
-- [ ] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
+- [x] CR97 (`H0RGe`) caption: focus stays in the field, so ↵ there means Discard (not a new line), and typing anything
   takes the question away and goes back to writing.
-- [ ] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`GlONd`); before, it showed Esc, which leaves
+- [x] CR98 (`P2dmJj`): the toast's Dismiss is Button / label, no key (`GlONd`); before, it showed Esc, which leaves
   the review. The toast sits above the pending review's toolbar (`H3uqds`, new, as in CR35) at the foot of the diff
   (`UghpC`). Restore ⌘Z works only while no text field has focus. The Toast component itself is unchanged.
 - [x] Placeholders before the patch (D45, CR115 `mZUZV`, new screen, a copy of CR60): the patch is a separate,

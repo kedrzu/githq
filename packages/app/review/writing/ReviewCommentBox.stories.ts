@@ -19,6 +19,7 @@ const meta = {
         focused: false,
         onSend: fn(),
         onLeave: fn(),
+        onDiscard: fn(),
     },
     render: args => ({
         components: { ReviewCommentBox },
@@ -94,3 +95,6 @@ export const NoDraft: Story = { args: { failure: { kind: 'noDraft' } } };
 
 /** GitHub refused with no words of its own: the reason is the app's, and the text stays. */
 export const RefusedWithoutWords: Story = { args: { failure: { kind: 'refused', message: null } } };
+
+/** CR97: Escape on a box with text asks in its footer, the cursor staying in the text. */
+export const AsksToDiscard: Story = { args: { asking: true, focused: true } };

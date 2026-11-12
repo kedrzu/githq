@@ -1,0 +1,12 @@
+onLine:
+  en: Comment on line {line} discarded
+onLines:
+  en: Comment on lines {start}–{end} discarded
+reply:
+  en: Reply discarded
+quoted:
+  en: “{text}”
+restore:
+  en: Restore
+restoreCommand:
+  en: Restore the discarded comment

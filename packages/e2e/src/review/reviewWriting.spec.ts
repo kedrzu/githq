@@ -250,7 +250,7 @@ test('a single comment is one request, shows at once, and what is read keeps its
     expect(await reading.boundingBox()).toEqual(before);
 });
 
-test('C opens the box on the first line in view; empty, Escape closes it; with text it stays, and the keys are the diff again', async ({
+test('C opens the box on the first line in view; empty, Escape closes it and the keys are the diff again', async ({
     page,
     github,
 }) => {
@@ -261,12 +261,114 @@ test('C opens the box on the first line in view; empty, Escape closes it; with t
     await expect(box).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(box).toBeHidden();
-
-    await page.keyboard.press('c');
-    await page.keyboard.type('Hold on');
-    await page.keyboard.press('Escape');
-    await expect(review.commentField()).toHaveValue('Hold on');
     await expect(review.diff).toBeFocused();
+    await expect(review.discardedToast).toBeHidden();
+});
+
+test('Escape on a box with text asks in place: typing goes back to writing, Escape keeps writing, Enter discards', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    const field = review.commentField('Comment on line 20');
+    await page.keyboard.type('Hold on');
+    const question = review.commentBox().getByText('Discard what you wrote?');
+
+    await page.keyboard.press('Escape');
+    await expect(question).toBeVisible();
+    await expect(field).toBeFocused();
+    await page.keyboard.type('!');
+    await expect(question).toBeHidden();
+    await expect(field).toHaveValue('Hold on!');
+
+    await page.keyboard.press('Escape');
+    await expect(question).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(question).toBeHidden();
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue('Hold on!');
+
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.commentBox()).toBeHidden();
+    await expect(review.diff).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`${ADDRESS}$`, 'u'));
+});
+
+test('a discarded comment comes back from its toast, with Restore or ⌘Z outside a field, under its line with its text', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { draft: 2 });
+    const reading = review.code(CHANGED_LINE);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+
+    const toast = review.discardedToast;
+    await expect(toast).toContainText('Comment on line 20 discarded');
+    await expect(toast).toContainText('“Not sure yet”');
+    await expect(toast.getByRole('button', { name: 'Dismiss', exact: true }).first()).not.toHaveAttribute(
+        'aria-keyshortcuts',
+    );
+    // Above the pending review's toolbar, never over it.
+    const toastBox = await toast.boundingBox();
+    const toolbarBox = await review.pendingToolbar.boundingBox();
+    expect(toastBox && toolbarBox && toastBox.y + toastBox.height <= toolbarBox.y).toBe(true);
+
+    const before = await reading.boundingBox();
+    await toast.getByRole('button', { name: /^Restore/ }).click();
+    const field = review.commentField('Comment on line 20');
+    await expect(field).toHaveValue('Not sure yet');
+    await expect(field).toBeFocused();
+    await expect(toast).toBeHidden();
+    expect(await reading.boundingBox()).toEqual(before);
+
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(toast).toBeVisible();
+    await expect(review.diff).toBeFocused();
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(field).toHaveValue('Not sure yet');
+    await expect(field).toBeFocused();
+    await expect(toast).toBeHidden();
+});
+
+test('⌘Z in a text field is the field’s: the discarded comment stays in its toast', async ({ page, github }) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+
+    await page.keyboard.press('/');
+    await page.keyboard.type('eng');
+    await page.keyboard.press('ControlOrMeta+z');
+
+    await expect(review.discardedToast).toBeVisible();
+    await expect(review.commentBox()).toBeHidden();
+});
+
+test('Escape with the toast up leaves the review as it would without it, and the toast goes with the review', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github);
+    await review.lineNumber(20).click();
+    await page.keyboard.type('Not sure yet');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Enter');
+    await expect(review.discardedToast).toBeVisible();
+    // The pointer rests on the line number: its tooltip would take the Escape, as any open layer does.
+    await page.mouse.move(0, 0);
+
+    await page.keyboard.press('Escape');
+
+    await expect(page).toHaveURL(/\/acme\/web\/pull\/3$/u);
+    await expect(review.discardedToast).toBeHidden();
 });
 
 test('the second key starts a draft: the toolbar comes, and the comment says it is pending', async ({
@@ -581,7 +683,8 @@ async function pushUnderBox(page: Page, review: ReviewScreenHarness, answered: A
     await review.lineNumber(20).click();
     await page.keyboard.type(text);
     await expect(review.commentBox().getByRole('status')).toBeEmpty();
-    await page.keyboard.press('Escape');
+    // Left with its text: Escape in the box would ask to discard it.
+    await review.diff.focus();
     await page.keyboard.press('Escape');
     await expect(review.commentBox()).toBeHidden();
 
@@ -862,7 +965,7 @@ test('⇧↓ out of a box left with text takes the next line into it, and in a b
     await page.keyboard.press('Shift+ArrowDown');
     await expect(review.commentBox('Comment on line 20')).toBeVisible();
 
-    await page.keyboard.press('Escape');
+    await review.diff.focus();
     await page.keyboard.press('Shift+ArrowDown');
     await expect(review.commentBox('Comment on lines 20–21')).toBeVisible();
     await expect(review.commentField('Comment on lines 20–21')).toHaveValue('Half');

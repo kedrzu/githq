@@ -91,6 +91,14 @@ export class ReviewScreenHarness {
         return this.pendingToolbar.getByRole('button', { name: 'Discard review…' });
     }
 
+    /** The toast of a comment box just discarded (D40), in the review's own notifications at the foot of the diff. */
+    get discardedToast(): Locator {
+        return this.page
+            .getByRole('region', { name: /^Messages of this screen/ })
+            .getByRole('listitem')
+            .filter({ hasText: 'discarded' });
+    }
+
     /** The submit dialog (CR75). */
     get submitDialog(): Locator {
         return this.page.getByRole('dialog', { name: /^Submit your review/ });

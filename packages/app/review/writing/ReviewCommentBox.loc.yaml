@@ -31,3 +31,9 @@ submitDraft:
     many: Submit draft ({count} comments)
 codeChanged:
   en: The code changed since you wrote this, so check it's still the line you mean.
+discardQuestion:
+  en: Discard what you wrote?
+keepWriting:
+  en: Keep writing
+discard:
+  en: Discard

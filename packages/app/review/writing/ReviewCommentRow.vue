@@ -30,6 +30,7 @@ const emit = defineEmits<{
   send: [way: ReviewCommentWay];
   extend: [];
   leave: [];
+  discard: [];
   focus: [];
   blur: [];
 }>();
@@ -66,6 +67,7 @@ const text = defineModel<string>('text', { default: '' });
       @send="emit('send', $event)"
       @extend="emit('extend')"
       @leave="emit('leave')"
+      @discard="emit('discard')"
       @focus="emit('focus')"
       @blur="emit('blur')"
     />

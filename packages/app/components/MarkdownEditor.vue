@@ -1,4 +1,4 @@
-<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The footer's left is empty unless the caller puts something there (a question). -->
+<!-- The one Markdown editor (a comment, a reply, a comment edited in place): Write / Preview tabs, formatting tools in the head that wrap or start the selection in Markdown, a text area growing with its text, and a footer with the caller's buttons. Preview shows GitHub's own rendering of the text in the repository's context; what is typed stays the caller's (`v-model`) and in the text area, whatever the preview does. Typing `@` or `#` at a word's start, or their tools, opens suggestions at the caret (`MarkdownSuggestions`): the thread's people, then the repository's, and the repository's issues and pull requests — ↑↓ move, Enter or Tab inserts, Escape closes them alone. `Mod+Enter` and `Escape` inside it are otherwise only reported (`submit`, `cancel`): the caller decides what they do. A caller's own tool (code review's Suggest a change) goes first in the head, a rule after it; it only reports its click, and the caller inserts with `insert` at the selection `getSelection` reads. The footer's left is empty unless the caller puts something there (a question). The keys a caller acts on in the text (`keyshortcuts`) are announced on it. -->
 <script lang="ts">
 import type { LucideIcon } from 'lucide-vue-next';
 
@@ -52,13 +52,15 @@ import { useMarkdownSuggestions } from './useMarkdownSuggestions.js';
 // `disabled`, `readonly`; the repository the text is written in, `owner/name`, which the preview links `#42` and
 // mentions in, and whose people `@` and issues and pull requests `#` suggest; and the people of the thread written in
 // (who opened it, who commented), whom `@` suggests first; the number of the item written on, which `#` does not
-// suggest; the caller's tool, first in the head.
+// suggest; the caller's tool, first in the head; the keys the caller acts on in the text area, in `aria-keyshortcuts`'
+// notation, announced on it.
 const props = defineProps({
   ...useTextArea.props,
   repository: { type: String, required: true },
   people: { type: Array as PropType<readonly PersonSuggestion[]>, default: () => [] },
   itemNumber: { type: Number, default: undefined },
   tool: { type: Object as PropType<MarkdownEditorTool | null>, default: null },
+  keyshortcuts: { type: String, default: undefined },
 });
 const emit = defineEmits({
   ...useTextArea.emits,
@@ -337,6 +339,7 @@ interface RenderedPreview {
       <TextArea
         :class="css.markdownEditor_text"
         v-bind="suggestions.attrs"
+        :aria-keyshortcuts="keyshortcuts"
         @input="onInput"
         @keyup="suggestions.update()"
         @click="suggestions.update()"

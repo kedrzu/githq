@@ -1,8 +1,8 @@
-<!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape or Cancel leaves the box with its text in it, or closes an empty one; every other key typed stays in the field. -->
+<!-- `Review / New comment` (D39): the shared Markdown editor, headed by where it goes, with what is typed, and two buttons carrying their label and key, which is all it says (D33): `⌘↵` and `⌘⇧↵` do what they name, the choice of a single comment or a draft (D17), and with a draft open a comment can only join it, the second key adding it and submitting all of it (D22). They act only from here. Between the head and the editor, an amber line once the code has changed under a comment (D33, CR87), said politely and moving no focus, and what GitHub refused, the text staying. A reply (`Review / Thread · replying`) says who it answers and its buttons are the reply's. `⌘G` or "Suggest a change", first in the editor's tools where GitHub would take one, puts a suggestion block at the cursor, of the commented lines as they are (D18); `⇧↓` in an empty box takes in the next line (CR73), and with text in it selects text as anywhere. Escape or Cancel closes an empty box; on one with text the footer asks instead (D40, `· asks to discard`, CR97): "Discard what you wrote?", Keep writing (Escape) and Discard (Enter). The cursor stays in the text, so Enter there discards rather than starting a line, typing anything takes the question away, and Escape again keeps writing. Every other key typed stays in the field, and the keys it acts on there are announced on it. -->
 <script lang="ts" setup>
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
-import { FileDiff, TriangleAlert } from 'lucide-vue-next';
+import { CircleHelp, FileDiff, TriangleAlert } from 'lucide-vue-next';
 import { computed, onMounted, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
@@ -44,8 +44,10 @@ const emit = defineEmits<{
   send: [way: ReviewCommentWay];
   /** `⇧↓` in an empty box. */
   extend: [];
-  /** Escape or Cancel. */
+  /** Escape or Cancel on an empty box. */
   leave: [];
+  /** Discard, asked on a box with text. */
+  discard: [];
   /** The focus came into the box, from outside it. */
   focus: [];
   /** The focus left the box. */
@@ -54,6 +56,8 @@ const emit = defineEmits<{
 
 /** What is typed. */
 const text = defineModel<string>('text', { default: '' });
+/** Its footer asks whether to discard what is written. */
+const asking = defineModel<boolean>('asking', { default: false });
 
 const t = useTranslate();
 const getFailureText = useCommentFailureText();
@@ -73,6 +77,12 @@ const ways = computed(() => getCommentWays(props.draftOpen, props.draftFirst));
 const first = computed(() => ({ way: ways.value.first, label: getLabel(ways.value.first) }));
 const second = computed(() => ({ way: ways.value.second, label: getLabel(ways.value.second) }));
 const failureText = computed(() => (props.failure ? getFailureText(props.failure) : null));
+/** While it asks, Enter and Escape answer from the text; else the two ways to send go from there. */
+const fieldKeys = computed(() =>
+  asking.value
+    ? 'Enter Escape'
+    : `${formatAriaKeyShortcuts(REVIEW_KEYS.sendFirst)} ${formatAriaKeyShortcuts(REVIEW_KEYS.sendSecond)}`,
+);
 const suggestTool = computed(() =>
   props.suggestion ? { label: t(l.suggest), icon: FileDiff, keys: REVIEW_KEYS.suggest } : null,
 );
@@ -107,7 +117,7 @@ function getLabel(way: ReviewCommentWay) {
 }
 
 function send(way: ReviewCommentWay) {
-  if (hasText.value) {
+  if (hasText.value && !asking.value) {
     emit('send', way);
   }
 }
@@ -127,10 +137,39 @@ function insertSuggestion() {
   editor.value?.insert(`${lead}${block}${trail}`, lead.length + block.lastIndexOf('\n'));
 }
 
+/** Escape and Cancel: an empty box closes, one with text asks; Escape on the question keeps writing. */
+function leave() {
+  if (asking.value) {
+    keepWriting();
+  } else if (hasText.value) {
+    asking.value = true;
+    // From Cancel, the cursor goes back to the text, where the question is answered.
+    void editor.value?.focus();
+  } else {
+    emit('leave');
+  }
+}
+
 // Taken here: the screen does not take Escape as leaving the review.
 function onEscape(event: KeyboardEvent) {
   event.preventDefault();
-  emit('leave');
+  leave();
+}
+
+// Not awaited: a click listener's promise would show the button busy.
+function keepWriting() {
+  asking.value = false;
+  void editor.value?.focus();
+}
+
+function discard() {
+  asking.value = false;
+  emit('discard');
+}
+
+/** Anything typed takes the question away: the user went back to writing. */
+function onInput() {
+  asking.value = false;
 }
 
 // Moving between its text, tools and buttons, the focus stays in the box.
@@ -156,7 +195,11 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
+  // Enter answers the question, rather than starting a line.
+  if (asking.value && event.key === 'Enter' && !event.shiftKey && !event.altKey) {
+    event.preventDefault();
+    discard();
+  } else if (matchesCommandKey(event, REVIEW_KEYS.sendSecond)) {
     event.preventDefault();
     send(second.value.way);
   } else if (matchesCommandKey(event, REVIEW_KEYS.suggest)) {
@@ -175,6 +218,7 @@ function onKeydown(event: KeyboardEvent) {
     role="group"
     :aria-label="where"
     @keydown="onKeydown"
+    @input="onInput"
     @focusin="onFocusIn"
     @focusout="onFocusOut"
   >
@@ -208,16 +252,56 @@ function onKeydown(event: KeyboardEvent) {
       :label="where"
       :placeholder="t(l.placeholder)"
       :tool="suggestTool"
+      :keyshortcuts="fieldKeys"
       @tool="insertSuggestion"
       @submit="send(first.way)"
       @cancel="onEscape"
     >
-      <template #footer>
+      <template
+        v-if="asking"
+        #status
+      >
+        <CircleHelp
+          :class="css.reviewCommentBox_questionIcon"
+          aria-hidden="true"
+        />
+        <span
+          :class="css.reviewCommentBox_question"
+          role="status"
+          >{{ t(l.discardQuestion) }}</span
+        >
+      </template>
+      <template
+        v-if="asking"
+        #footer
+      >
         <Button
           size="compact"
           kbd="Escape"
           keyshortcuts="Escape"
-          @click="emit('leave')"
+          @click="keepWriting"
+        >
+          {{ t(l.keepWriting) }}
+        </Button>
+        <Button
+          size="compact"
+          variant="destructive"
+          kbd="Enter"
+          keyshortcuts="Enter"
+          @click="discard"
+        >
+          {{ t(l.discard) }}
+        </Button>
+      </template>
+      <template
+        v-else
+        #footer
+      >
+        <Button
+          size="compact"
+          kbd="Escape"
+          keyshortcuts="Escape"
+          @click="leave"
         >
           {{ t(l.cancel) }}
         </Button>
@@ -277,6 +361,18 @@ function onKeydown(event: KeyboardEvent) {
   align-self: center;
   width: 13px;
   height: 13px;
+}
+
+.reviewCommentBox_question {
+  font-size: $font-size-xs;
+  color: $color-fg;
+}
+
+.reviewCommentBox_questionIcon {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: $color-amber;
 }
 
 // Twice the class: the editor's own border comes from a stylesheet that may load after this one. In the accent while

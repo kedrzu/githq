@@ -18,15 +18,16 @@ test('⌘↵ and ⌘⇧↵ do what the buttons say, and with a draft open neithe
     await expect.element(page.getByRole('button', { name: 'Submit draft (4 comments)' })).toBeVisible();
 });
 
-test('single keys stay in the field, and Escape only says so', async () => {
+test('single keys stay in the field, and Escape on an empty box only says so', async () => {
     const onLeave = vi.fn();
     await SingleFirst.run({ args: { ...SingleFirst.args, onLeave, text: '' } });
 
     await userEvent.click(page.getByRole('textbox'));
-    await userEvent.keyboard('jnvJ{Escape}');
-
-    await expect.element(page.getByRole('textbox')).toHaveValue('jnvJ');
+    await userEvent.keyboard('{Escape}');
     expect(onLeave).toHaveBeenCalledOnce();
+
+    await userEvent.keyboard('jnvJ');
+    await expect.element(page.getByRole('textbox')).toHaveValue('jnvJ');
 });
 
 test('nothing typed sends nothing', async () => {
@@ -64,13 +65,57 @@ test('Suggest a change in the tools puts the block where the cursor was, and the
     await expect.element(field).toHaveFocus();
 });
 
-test('Cancel leaves the box as Escape does', async () => {
+test('Cancel closes an empty box as Escape does', async () => {
     const onLeave = vi.fn();
-    await SingleFirst.run({ args: { ...SingleFirst.args, onLeave } });
+    await Empty.run({ args: { ...Empty.args, onLeave } });
 
     await userEvent.click(page.getByRole('button', { name: /^Cancel/ }));
 
     expect(onLeave).toHaveBeenCalledOnce();
+});
+
+test('Escape on a box with text asks in its footer; Enter in the text discards, not a new line', async () => {
+    const onLeave = vi.fn();
+    const onDiscard = vi.fn();
+    await SingleFirst.run({ args: { ...SingleFirst.args, onLeave, onDiscard } });
+    const field = page.getByRole('textbox');
+
+    await userEvent.click(field);
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(page.getByRole('status').filter({ hasText: 'Discard what you wrote?' })).toBeVisible();
+    await expect.element(field).toHaveFocus();
+    await expect.element(field).toHaveAttribute('aria-keyshortcuts', 'Enter Escape');
+    await userEvent.keyboard('{Enter}');
+
+    expect(onDiscard).toHaveBeenCalledOnce();
+    expect(onLeave).not.toHaveBeenCalled();
+    await expect.element(field).toHaveValue(SingleFirst.args.text ?? '');
+});
+
+test('typing takes the question away, Escape on it keeps writing, and Cancel asks as Escape does', async () => {
+    const onDiscard = vi.fn();
+    const onSend = vi.fn();
+    await SingleFirst.run({ args: { ...SingleFirst.args, onDiscard, onSend } });
+    const field = page.getByRole('textbox');
+    const question = page.getByText('Discard what you wrote?');
+
+    await userEvent.click(field);
+    await userEvent.keyboard('{Escape}');
+    await userEvent.keyboard('x');
+    await expect.element(question).not.toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}{Escape}');
+    await expect.element(question).not.toBeInTheDocument();
+    await expect.element(field).toHaveFocus();
+
+    await userEvent.click(page.getByRole('button', { name: /^Cancel/ }));
+    await expect.element(question).toBeVisible();
+    await expect.element(field).toHaveFocus();
+    await userEvent.click(page.getByRole('button', { name: /^Keep writing/ }));
+    await expect.element(question).not.toBeInTheDocument();
+    expect(onDiscard).not.toHaveBeenCalled();
+    expect(onSend).not.toHaveBeenCalled();
 });
 
 test('with nothing GitHub would take, there is no offer and ⌘G adds nothing', async () => {
