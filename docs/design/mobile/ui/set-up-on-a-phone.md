@@ -5,7 +5,7 @@ The brief for the phone's first sign-in and its Settings. The product, its data 
 [the desktop's first sign-in brief](../../githq/ui/first-sign-in.md), drawn as G1–G17 in `githq.pen`, and
 [the first-run design](../../first-run-and-loading/README.md) removed its download screen; the desktop's Settings
 screens are in `githq.pen` too. Read those: this file only says what is different on a phone. The rules for the design
-file are in `DESIGN.md` at the repository's root.
+file are in the `design` skill.
 
 ## Purpose
 
@@ -78,7 +78,7 @@ other repository", "stop tracking that one", "sign out".
 
 ## Questions this design should settle
 
-Draw each as variants side by side, Variant A the one you recommend, as `DESIGN.md` says, and propose others where you
+Draw each as variants side by side, Variant A the one you recommend, as the `design` skill says, and propose others where you
 see them.
 
 - **How Settings' sections are reached.** A list of sections first, each opening its own screen, against the first

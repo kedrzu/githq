@@ -3,7 +3,7 @@
 The brief for the first screens of githq on a phone, drawn on top of the navigation already settled there. The product,
 its data and Direction D are in [the app's brief](../../githq/ui/README.md); what My work holds and what can be done to
 an item, on the computer, is in [the desktop's version of this path](../../githq/ui/my-work.md) — read it, this file
-only says what is different on a phone. The rules for the design file are in `DESIGN.md` at the repository's root.
+only says what is different on a phone. The rules for the design file are in the `design` skill.
 
 ## Purpose
 
@@ -77,7 +77,7 @@ things."
 
 ## Questions this design should settle
 
-Draw each as variants side by side, Variant A the one you recommend, as `DESIGN.md` says. Propose others if you see
+Draw each as variants side by side, Variant A the one you recommend, as the `design` skill says. Propose others if you see
 them.
 
 - **How a property is changed.** Tapping the property on the item opens the command menu straight at its picker (one
