@@ -20,6 +20,44 @@ export interface SampleReviewFile {
     readonly binary?: boolean;
     /** Its size in bytes, when it is to look larger than it is. */
     readonly byteSize?: number;
+    /** A submodule pointer change (a gitlink), which has no blobs: its {@link before} and {@link after} are `null`. */
+    readonly submodule?: SampleReviewSubmodule;
+}
+
+/** A submodule's pointer moved forward, and what its repository answers of the two commits. */
+export interface SampleReviewSubmodule {
+    /** The commit it pointed at, 40 hex digits. */
+    readonly before: string;
+    /** The commit it points at now, 40 hex digits. */
+    readonly after: string;
+    /** `owner/name`, as the head's `.gitmodules` declares it. */
+    readonly repository: string;
+    /** The commits brought in, oldest first; `null` for a repository GitHub answers 404 for. */
+    readonly commits: readonly SampleSubmoduleCommit[] | null;
+    /** The files changed between the two commits. */
+    readonly files?: readonly SampleSubmoduleFile[];
+    /** The open pull requests of its repository holding {@link after}. */
+    readonly pullRequests?: readonly SampleSubmodulePullRequest[];
+}
+
+/** A commit a submodule's pointer change brings in. */
+export interface SampleSubmoduleCommit {
+    readonly oid: string;
+    readonly subject: string;
+    readonly author: string;
+}
+
+/** A file changed between a submodule's two commits. */
+export interface SampleSubmoduleFile {
+    readonly path: string;
+    readonly additions: number;
+    readonly deletions: number;
+}
+
+/** An open pull request of a submodule's repository. */
+export interface SampleSubmodulePullRequest {
+    readonly number: number;
+    readonly title: string;
 }
 
 /** A review thread as {@link answerReview} answers it; left out, what most threads are. */
@@ -92,7 +130,9 @@ const MERGE_BASE_OID = 'fork0000';
 /**
  * Answers what a review reads, as GitHub does: the list (`PullRequestReviewFiles`), its review threads, the merge base (the compare request),
  * where renamed files came from, and the blobs (`ReviewBlobOids`, `ReviewBlobTexts`), an oid being made of its commit and
- * path. A file's failure is on its text alone, the query's other objects answered.
+ * path. A file's failure is on its text alone, the query's other objects answered. Of its submodules, the head's
+ * `.gitmodules` (`CommitSubmodules`), the comparison of the two pointers and the pull requests holding the new one
+ * (`CommitPullRequests`), in the submodule's repository.
  */
 export function answerReview(github: GitHubMock, params: AnswerReviewParams): AnsweredReview {
     const failures = new Map<string, string>();
@@ -133,8 +173,8 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
                         nodes: params.files.map(file => ({
                             path: file.path,
                             changeType: file.changeType ?? 'MODIFIED',
-                            additions: file.additions ?? countLines(file.after),
-                            deletions: countLines(file.before),
+                            additions: file.submodule ? 1 : (file.additions ?? countLines(file.after)),
+                            deletions: file.submodule ? 1 : countLines(file.before),
                             viewerViewedState: file.viewed ?? 'UNVIEWED',
                         })),
                     },
@@ -164,13 +204,10 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             filename: file.path,
             previous_filename: file.previousPath,
             status: toRestStatus(file.changeType ?? 'MODIFIED'),
-            ...(file.binary
-                ? { additions: 0, deletions: 0 }
-                : writeSamplePatch(
-                      computeFileDiff({ before: file.before, after: file.after, ignoreWhitespace: false }),
-                  )),
+            ...toRestPatch(file),
         })),
     }));
+    answerSubmodules(github, params.files);
     github.graphqlDocument('ReviewBlobOids', async ({ variables }) => {
         const holding = blobsHeld;
         const asksHeld = Object.values(variables).some(
@@ -302,6 +339,96 @@ export function answerReview(github: GitHubMock, params: AnswerReviewParams): An
             json: { merge_base_commit: { sha: MERGE_BASE_OID } },
         }));
     }
+}
+
+/** What the submodules of the review's files answer: one `.gitmodules` for all, and each one's own repository. */
+function answerSubmodules(github: GitHubMock, files: readonly SampleReviewFile[]) {
+    const submodules = files.flatMap(file => (file.submodule ? [{ path: file.path, ...file.submodule }] : []));
+    if (submodules.length === 0) {
+        return;
+    }
+
+    github.graphql('CommitSubmodules', {
+        repository: {
+            object: {
+                submodules: {
+                    nodes: submodules.map(({ path, repository }) => ({
+                        path,
+                        gitUrl: `https://github.com/${repository}.git`,
+                    })),
+                },
+            },
+        },
+    });
+    github.graphql('CommitPullRequests', ({ variables }) => {
+        const submodule = submodules.find(
+            ({ repository, after }) =>
+                repository === `${String(variables.owner)}/${String(variables.name)}` && after === variables.oid,
+        );
+        if (!submodule || submodule.commits === null) {
+            return { repository: null };
+        }
+
+        return {
+            repository: {
+                object: {
+                    associatedPullRequests: {
+                        nodes: (submodule.pullRequests ?? []).map(({ number, title }) => ({
+                            number,
+                            state: 'OPEN' as const,
+                            title,
+                            url: `https://github.com/${submodule.repository}/pull/${number}`,
+                            isDraft: false,
+                        })),
+                    },
+                },
+            },
+        };
+    });
+    for (const { repository, before, after, commits, files: changed } of submodules) {
+        github.rest('GET', `/repos/${repository}/compare/${before}...${after}`, () =>
+            commits === null
+                ? { status: 404, json: { message: 'Not Found' } }
+                : {
+                      status: 200,
+                      json: {
+                          status: 'ahead',
+                          ahead_by: commits.length,
+                          behind_by: 0,
+                          total_commits: commits.length,
+                          commits: commits.map(({ oid, subject, author }) => ({
+                              sha: oid,
+                              commit: { message: `${subject}\n\nIts body.`, author: { name: author } },
+                              author: { login: author },
+                          })),
+                          files: (changed ?? []).map(({ path, additions, deletions }) => ({
+                              filename: path,
+                              status: 'modified',
+                              additions,
+                              deletions,
+                          })),
+                      },
+                  },
+        );
+    }
+}
+
+/** A file's entry of `…/pulls/{n}/files` past its name and status: its line counts and patch. */
+function toRestPatch(file: SampleReviewFile) {
+    if (file.submodule) {
+        const { before, after } = file.submodule;
+        return {
+            additions: 1,
+            deletions: 1,
+            patch: `@@ -1 +1 @@\n-Subproject commit ${before}\n+Subproject commit ${after}`,
+        };
+    }
+
+    if (file.binary) {
+        return { additions: 0, deletions: 0 };
+    }
+
+    return writeSamplePatch(computeFileDiff({ before: file.before, after: file.after, ignoreWhitespace: false }));
 }
 
 function toThreadNode(thread: SampleReviewThread) {
