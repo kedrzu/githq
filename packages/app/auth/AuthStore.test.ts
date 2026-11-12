@@ -17,6 +17,7 @@ import { waitUntil } from '@nzyme/utils/waitUntil.js';
 
 import type { BrowserShape, BrowserStorage } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import { GitHubRateLimitStore } from '@/services/GitHubRateLimitStore.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 
@@ -161,6 +162,32 @@ test('a rejected token leaves a record of the sign-out that GitHub’s security 
         githubMessage: 'Bad credentials',
     });
     expect(stored).not.toContain('gho_revoked');
+});
+
+test('a 401 that GitHub takes back on a later check keeps the session', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES, rejectFirst: 2 });
+    const { auth, browser, waits } = setup(github, { [TOKEN_KEY]: 'gho_ok', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+
+    await auth.refreshViewer();
+
+    expect(github.tokensSeen).toEqual(['gho_ok', 'gho_ok', 'gho_ok']);
+    expect(waits.length).toBe(2);
+    expect(auth.signedIn).toBe(true);
+    expect(auth.failure).toBeNull();
+    expect(browser.local.get(TOKEN_KEY)).toBe('gho_ok');
+    expect(browser.local.has(TOKEN_REJECTIONS_KEY)).toBe(false);
+});
+
+test('a token is checked three times before a sign-out, once for all the refreshes asked for meanwhile', async () => {
+    const github = fakeGitHub({ scopes: ALL_SCOPES, rejectToken: true });
+    const { auth, waits } = setup(github, { [TOKEN_KEY]: 'gho_revoked', [VIEWER_KEY]: JSON.stringify(VIEWER) });
+
+    // Each sync loop that gets a 401 asks for a refresh.
+    await Promise.all([auth.refreshViewer(), auth.refreshViewer(), auth.refreshViewer()]);
+
+    expect(github.tokensSeen).toEqual(['gho_revoked', 'gho_revoked', 'gho_revoked']);
+    expect(waits).toEqual([3_000, 15_000]);
+    expect(auth.failure).toBe('tokenRejected');
 });
 
 test('a stored token keeps the session when GitHub cannot be reached', async () => {
@@ -314,6 +341,8 @@ interface FakeGitHubOptions {
     scopes: string[];
     /** GitHub answers every GraphQL call with 401. */
     rejectToken?: boolean;
+    /** GitHub answers this many GraphQL calls with 401, then accepts the token. */
+    rejectFirst?: number;
     /** The token exchange's answer breaks off after its status, while its body arrives. */
     exchangeCutOff?: boolean;
     /** GraphQL calls fail at the network. */
@@ -374,7 +403,7 @@ function fakeGitHub(options: FakeGitHubOptions) {
                 'x-ratelimit-remaining': '4812',
                 'x-ratelimit-reset': '1800000000',
             };
-            return options.rejectToken
+            return options.rejectToken || tokensSeen.length <= (options.rejectFirst ?? 0)
                 ? Response.json({ message: 'Bad credentials' }, { status: 401, headers })
                 : Response.json({ data: { viewer: options.viewers?.[token] ?? VIEWER } }, { headers });
         }
@@ -420,8 +449,18 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         ...createTestTabs().open(),
     };
 
+    // Every wait for a further check ends at once, and is counted.
+    const waits: number[] = [];
     const { container } = createTestContainer();
     container.set(Browser, browser);
+    container.set(Clock, {
+        now: () => Date.now(),
+        schedule: (callback, delayMs) => {
+            waits.push(delayMs);
+            const timer = setTimeout(callback, 0);
+            return () => clearTimeout(timer);
+        },
+    });
     const auth = container.resolve(AuthStore);
 
     /** Another tab writes `changes` (`null` removes a key), and this tab gets a `storage` event for each. */
@@ -441,7 +480,7 @@ function setup(github: ReturnType<typeof fakeGitHub>, stored: Record<string, str
         }
     }
 
-    return { auth, container, browser: { local, session, navigatedTo, cookies, fromAnotherTab } };
+    return { auth, container, waits, browser: { local, session, navigatedTo, cookies, fromAnotherTab } };
 }
 
 function mapStorage(map: Map<string, string>): BrowserStorage {

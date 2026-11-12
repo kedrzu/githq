@@ -10,6 +10,7 @@ import { AuthStore } from '@/auth/AuthStore.js';
 import { TokenVault } from '@/auth/TokenVault.js';
 import type { BrowserShape, BrowserStorage } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
+import { Clock } from '@/services/Clock.js';
 import { createTestTabs } from '@/testing/createTestTabs.js';
 
 import { createDesktopTokenVault } from './DesktopTokenVault.js';
@@ -118,6 +119,14 @@ function setup(options: SetupOptions) {
 
     const { container } = createTestContainer();
     container.set(Browser, browser);
+    // A 401 is checked again after a wait; here every wait ends at once.
+    container.set(Clock, {
+        now: () => Date.now(),
+        schedule: callback => {
+            const timer = setTimeout(callback, 0);
+            return () => clearTimeout(timer);
+        },
+    });
     const vault = createDesktopTokenVault({
         bridge: native.bridge,
         stored: options.stored,
