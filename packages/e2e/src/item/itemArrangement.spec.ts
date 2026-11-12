@@ -1,7 +1,10 @@
 import { expect, test } from '../fixtures.js';
+import { CommitGraphHarness } from '../harnesses/CommitGraph.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
+import { openTrackedWork } from '../tracking/openTrackedWork.js';
+import { createSampleTrackedWork, SAMPLE_REPOSITORY } from '../tracking/sampleTrackedWork.js';
 import { getScrollTop } from '../utils/getScrollTop.js';
 import { scrollDown } from '../utils/scrollDown.js';
 
@@ -91,4 +94,45 @@ test('a page opened by its address: "Back to the panel" puts the item in the pan
     await page.keyboard.press('Escape');
     await expect(page).toHaveURL('/');
     await expect(item.root).toBeHidden();
+});
+
+test("Shift+Enter over a screen with no list: a commit's pull request goes from the panel to its page and back over the commit graph", async ({
+    page,
+    github,
+}) => {
+    const sample = createSampleTrackedWork();
+    sample.world.history(SAMPLE_REPOSITORY, {
+        commits: [
+            {
+                oid: 'c1',
+                headline: 'fix: export the CSV header',
+                author: 'monalisa',
+                minutesAgo: 60,
+                pullRequest: { number: 4, state: 'MERGED', title: 'Fix the crash on start' },
+            },
+        ],
+        branches: { main: 'c1' },
+    });
+    await openTrackedWork(page, github, sample.world);
+    await page.goto(`/${SAMPLE_REPOSITORY}/commits`);
+    const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
+    const item = new ItemViewHarness(page);
+    await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+
+    // The commit's pull request, in the panel over the graph.
+    await page.keyboard.press('Shift+Enter');
+    await expect(item.title).toHaveText('Fix the crash on start');
+    await expect(item.fullScreenButton).toBeVisible();
+    const panel = `/${SAMPLE_REPOSITORY}/commits?pane=issue&issue=octocat%7Capp%7C4`;
+    await expect(page).toHaveURL(panel);
+
+    await page.keyboard.press('Shift+Enter');
+    await expect(page).toHaveURL(`/${SAMPLE_REPOSITORY}/pull/4`);
+    await expect(item.backToPanelButton).toBeVisible();
+
+    await page.keyboard.press('Shift+Enter');
+    await expect(page).toHaveURL(panel);
+    await expect(item.title).toHaveText('Fix the crash on start');
+    await expect(item.fullScreenButton).toBeVisible();
+    await expect(graph.root).toBeVisible();
 });
