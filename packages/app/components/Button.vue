@@ -76,8 +76,9 @@ const variant = computed(() => props.variant ?? 'secondary');
 const kbdTone = computed(() => {
   switch (variant.value) {
     case 'primary':
-    case 'light':
       return 'onFill';
+    case 'light':
+      return 'onLight';
     case 'destructive':
       return 'onDanger';
     default:
