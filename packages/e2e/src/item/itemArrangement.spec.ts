@@ -136,6 +136,8 @@ test("Shift+Enter over a screen with no list: a commit's pull request goes from 
     const graph = new CommitGraphHarness(page, SAMPLE_REPOSITORY);
     const item = new ItemViewHarness(page);
     await expect(graph.cursorRow).toContainText('fix: export the CSV header');
+    // Shift+Enter opens the pull request the details show, read after the commit: until then it has nothing to open.
+    await expect(graph.details.getByRole('button', { name: /Fix the crash on start/ })).toBeVisible();
 
     // The commit's pull request, in the panel over the graph.
     await page.keyboard.press('Shift+Enter');
