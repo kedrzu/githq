@@ -103,7 +103,7 @@ test('an address naming a comment folded away in the thread unfolds it, shows it
     expect(await getIds(item.comments)).toEqual(anchors);
 });
 
-test('a link to a comment opens the item over the list with the comment in view and marked, until the address no longer names it', async ({
+test('a link to a comment opens the item over the list with the comment in view and marked, the scroll padding above it, until the address no longer names it', async ({
     page,
     github,
 }) => {
@@ -117,6 +117,8 @@ test('a link to a comment opens the item over the list with the comment in view 
     await expect(item.title).toHaveText(LINKED);
     await expect(item.linkedComment).toHaveId(folded);
     await expect(item.linkedComment).toBeInViewport();
+    // Not flush against the edge: the room the content keeps at its ends.
+    await expect.poll(() => getRoomAbove(item.linkedComment)).toBe(20);
 
     // The same item, at an address without the fragment.
     await myWork.row(LINKED).click();
@@ -277,4 +279,12 @@ function getIds(elements: Locator) {
 
 function getScrollTop(container: Locator) {
     return container.evaluate(element => element.scrollTop);
+}
+
+/** How far below the top of its scrolling container the element is. */
+function getRoomAbove(element: Locator) {
+    return element.evaluate(node => {
+        const container = node.closest('[data-route-scroll]');
+        return container ? Math.round(node.getBoundingClientRect().top - container.getBoundingClientRect().top) : null;
+    });
 }

@@ -62,8 +62,6 @@ export function onRoutePageShown() {
 }
 
 const ATTRIBUTE = 'data-route-scroll';
-/** The space left above the element a fragment names: room for the outline of the mark around it. */
-const ANCHOR_MARGIN = 12;
 /** How long the element a fragment names is held with nothing above it moving, nor anything busy, before it is let go. */
 const HOLD_SETTLED_MS = 500;
 /** How long it is held at most, whatever is still coming. */
@@ -227,8 +225,15 @@ function holdAnchor(id: string, container: HTMLElement) {
     }
 }
 
+/**
+ * Leaves above the element what CSS asks of a scroll into view: the container's `scroll-padding-top` and the element's
+ * own `scroll-margin-top`, as `scrollIntoView` would.
+ */
 function scrollToElement(container: HTMLElement, element: Element) {
-    container.scrollTop += element.getBoundingClientRect().top - container.getBoundingClientRect().top - ANCHOR_MARGIN;
+    const room =
+        (Number.parseFloat(getComputedStyle(container).scrollPaddingTop) || 0) +
+        (Number.parseFloat(getComputedStyle(element).scrollMarginTop) || 0);
+    container.scrollTop += element.getBoundingClientRect().top - container.getBoundingClientRect().top - room;
 }
 
 function scrollTo(element: HTMLElement, position: RouteScrollPosition | undefined) {
