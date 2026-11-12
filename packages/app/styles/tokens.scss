@@ -15,7 +15,7 @@ $color-bg: #0d1117;
 // The sidebar, the status bar, boxes on the landing page.
 // Primer's bgColor-muted.
 $color-bg-2: #151b23;
-// An opened item, in a panel, a modal or a page: set apart from the list's window, a step below the sidebar.
+// An opened item, in a panel or a page: set apart from the list's window, a step below the sidebar.
 // Exception: between Primer's bgColor-default and bgColor-muted.
 $color-bg-item: #11161c;
 // A hovered or current row in the sidebar, keyboard hints.
@@ -205,10 +205,8 @@ $status-bar-height: 26px;
 $list-header-height: 48px;
 // An item opened in the panel beside a list.
 $item-panel-width: 560px;
-// The most an opened item's main column holds on a page of its own; it stays centred in the rest.
-$item-reading-width: 760px;
-// The same in a modal, which is narrower and keeps its column a shorter line.
-$item-modal-reading-width: 700px;
+// The most an opened item's thread holds: its timeline column in two columns, the one column of a page (centred there).
+$item-reading-width: 920px;
 // The review's list of files, beside its diff (code review's D24).
 // The bar a stack's rows leave pinned at the top of the review's left column once it scrolls (code review's D25).
 $review-stack-strip-height: 32px;

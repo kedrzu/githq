@@ -1,4 +1,4 @@
-<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here — in the panel beside it, or in a modal, as this browser remembers (`ItemNavigation`), the shell under it inert — so any list can open one; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
+<!-- The layout of the app's screens (`meta.layout: 'shell'`): `AppShell` with the signed-in user, GitHub's allowance, how fresh the screen is — on Settings' screens where the settings are saved too (githq D26), a review its own, a repository's commit graph on its Commits section, a tracked repository's or project's own poll (a saved view GitHub answers says so; its Workflows section how far the first read of its runs is, and a run's page too unless its log's state has more to say), the workflows' poll on the broken workflows, else my work's — and its counts for the sidebar (a group's once it is in, the total once all are: first run and loading D14), the download of everything tracked for the status bar's left segment (D4), the open items of each tracked repository and project once they are in, the entry "Draft reviews", the entry "Broken workflows" and each repository's marker of its workflows, and the sidebar's collapsed state, which is remembered in this browser — a route with `meta.railForced` shows the rail without touching it —, and whether syncing the settings stopped (the avatar's dot, the toast telling why once), the toast of an untrack that can still be undone and the toast of viewed marks GitHub didn't take (above the route, so moving between screens keeps it), and the toasts of failed edits and of merges the user moved on from (merging D15), and of a run's failed jobs that did not re-run (actions W4l), in the desktop app the toast saying the app updated (desktop releases D7), in the web builds the screen saying a link was handed to the desktop app (`desktopLinks/`), and in the status bar a merge GitHub has not said the end of, in grey, until the next refresh settles it (PM36), and on `<html>` whether the short animations play (`data-motion`, the `motion` mixin). An item the address opens over the screen (`?pane=issue&issue=owner|name|12`, GitHub's project pane) shows here, in the panel beside it — so any list can open one — and the shell tells whether the window has room for the panel (`ItemNavigation.panelFits`), where an item opens otherwise on its page; a tracked project or repository in the sidebar has its context menu; the command menu (⌘K) and the keyboard help (`?`) open over any screen; an item's own page is a screen of its own, and the screen's segment of the status bar then tells how fresh the item is. -->
 <script lang="ts" setup>
 import { getSettingsNameWithOwner } from '@githq/github/settings/getSettingsNameWithOwner.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
@@ -295,8 +295,8 @@ const shownFreshness = computed((): Freshness => {
 });
 
 const opened = computed(() => getOpenedItemRoute(route));
-/** How the item opened over the screen's list shows; `null` with none, or on the item's own page. */
-const overList = computed(() => (opened.value && !opened.value.onPage ? navigation.listArrangement : null));
+/** The item opened over the screen, in the panel beside it; `null` with none, or on the item's own page. */
+const overScreen = computed(() => (opened.value && !opened.value.onPage ? opened.value : null));
 const openedId = computed(() => (opened.value ? (resolver.peek(opened.value.reference) ?? null) : null));
 const lastFailure = computed(() => queue.failures.at(-1) ?? null);
 
@@ -388,7 +388,7 @@ function showLastFailure() {
     v-if="auth.viewer"
     v-model:collapsed="collapsed"
     :rail-forced="route.meta.railForced === true"
-    :inert="overList === 'modal'"
+    :panel-fits="navigation.panelFits"
     :viewer="auth.viewer"
     :rate-limit="rateLimits.get('graphql')"
     :notice="sync.notice"
@@ -406,14 +406,15 @@ function showLastFailure() {
     @sign-out="auth.signOut()"
     @search="registry.openMenu()"
     @show-failure="showLastFailure"
+    @update:panel-fits="navigation.setPanelFits"
   >
     <slot />
     <template
-      v-if="opened && overList === 'panel'"
+      v-if="overScreen"
       #panel
     >
       <OpenedItem
-        :reference="opened.reference"
+        :reference="overScreen.reference"
         arrangement="panel"
       />
     </template>
@@ -428,11 +429,6 @@ function showLastFailure() {
       />
     </template>
   </AppShell>
-  <OpenedItem
-    v-if="auth.viewer && opened && overList === 'modal'"
-    :reference="opened.reference"
-    arrangement="modal"
-  />
   <Toaster v-if="auth.viewer">
     <CloseToasts />
     <EditToasts />

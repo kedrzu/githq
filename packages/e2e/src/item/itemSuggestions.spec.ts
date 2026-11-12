@@ -1,16 +1,15 @@
 import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from '../fixtures.js';
-import type { ItemArrangementName } from '../harnesses/ItemView.harness.js';
 import { ItemViewHarness } from '../harnesses/ItemView.harness.js';
 import { openMyWork } from '../myWork/openMyWork.js';
 import { createSampleMyWork } from '../myWork/sampleMyWork.js';
 
 const ISSUE = 'Sign-in loops after the token expires';
 
-for (const arrangement of ['Panel', 'Modal'] as const) {
+for (const arrangement of ['panel', 'page'] as const) {
     for (const trigger of ['@', '#'] as const) {
-        test(`in the ${arrangement.toLowerCase()} the ${trigger} menu opens under the caret, within the item's content`, async ({
+        test(`in the ${arrangement} the ${trigger} menu opens under the caret, within the item's content`, async ({
             page,
             github,
         }) => {
@@ -46,12 +45,14 @@ for (const arrangement of ['Panel', 'Modal'] as const) {
     }
 }
 
-async function openItem(page: Page, github: Parameters<typeof openMyWork>[1], arrangement: ItemArrangementName) {
+async function openItem(page: Page, github: Parameters<typeof openMyWork>[1], arrangement: 'page' | 'panel') {
     const { myWork } = await openMyWork(page, github, createSampleMyWork().world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    if (arrangement !== 'Panel') {
-        await item.arrangement(arrangement).click();
+    if (arrangement === 'page') {
+        await item.fullScreenButton.click();
+        // The panel's comment box goes as the page comes: typing waits for the page's.
+        await expect(page).toHaveURL('/acme/web/issues/12');
     }
 
     await expect(item.commentBox).toBeVisible();

@@ -6,7 +6,7 @@ import { SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
 import * as stories from './StackMap.stories.js';
 
-const { ModalPartlyRead, ModalTen, PanelBeingMerged, PanelLastOpen, PanelReviewRequested, PanelTen, PanelTwo } =
+const { PageTen, PagePartlyRead, PanelBeingMerged, PanelLastOpen, PanelReviewRequested, PanelTen, PanelTwo } =
     composeStories(stories);
 
 /** The rows' buttons, top to bottom, by their accessible names. */
@@ -53,8 +53,8 @@ test('D25: a stack of ten in a panel shows every row, none folded, K and J right
     expect(row.textContent.trim().endsWith('Waiting for review')).toBe(true);
 });
 
-test('SP34: in a modal the stack of ten shows whole, merged ones included, without state in words', async () => {
-    await ModalTen.run();
+test('SP36: on a page the stack of ten shows whole, merged ones included, without state in words', async () => {
+    await PageTen.run();
 
     expect(getRowNames().map(name => name.slice(0, 3))).toEqual(SYNC_ENGINE_STACK.map(pr => `#${pr.number}`));
     expect(document.body.textContent).not.toContain('earlier');
@@ -80,7 +80,7 @@ test('a stack with one open pull request left reads "Ready"', async () => {
 });
 
 test('while the copy is incomplete a merged row shows the merged icon, an open one the pale one', async () => {
-    await ModalPartlyRead.run();
+    await PagePartlyRead.run();
 
     await expect.element(page.getByText('Still reading this stack')).toBeVisible();
     const merged = page.getByRole('button', { name: /#80/u }).element();

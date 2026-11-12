@@ -1,4 +1,4 @@
-<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D25, SP30, SP33–SP36), read from the local copy: its pull requests first to last — merged ones too, none folded — each with its number and title, `K`/`J` right after the titles of the rows those keys open, its state at the far end, this one highlighted; then a line saying what stops the stack — being merged, every one going says so and the line that stacks take longer, none merged until GitHub confirms (SP7). A click on a row opens that pull request in this one's place. In a panel it is the rows alone, each saying its state in words: the stack bar above the content (`StackBar`) names the stack, and the panel shows the map at the top of its content, or dropped over it from the bar (D27). In a modal and on a page it carries the stack's name and this one's place, the icons carrying each state. No merge here: `⇧M` merges. -->
+<!-- The map of a stack beside an opened pull request of it (stacked PRs D9, D25, SP30, SP35–SP36), read from the local copy: its pull requests first to last — merged ones too, none folded — each with its number and title, `K`/`J` right after the titles of the rows those keys open, its state at the far end, this one highlighted; then a line saying what stops the stack — being merged, every one going says so and the line that stacks take longer, none merged until GitHub confirms (SP7). A click on a row opens that pull request in this one's place. With `arrangement` `panel` it is the rows alone, each saying its state in words: the item in one column, whose stack bar above the content (`StackBar`) names the stack, shows the map at the top of its content, or dropped over it from the bar (D27). With `page` it carries the stack's name and this one's place, the icons carrying each state: the head of the item's summary in two columns, where there is no bar. No merge here: `⇧M` merges. -->
 <script lang="ts">
 /** The items `K` and `J` open from the opened one, by id; `null` at either end of the list or outside one. */
 export interface StackNeighbours {
@@ -155,7 +155,7 @@ function openRow(row: StackMapRow) {
 
 <template>
   <section
-    :class="[css.stackMap, css[`stackMap_${arrangement}`]]"
+    :class="[css.stackMap, arrangement === 'panel' && css.stackMap_panel]"
     :aria-label="t(l.label)"
   >
     <!-- D25: in a panel the stack bar above names the stack and shows the places. -->
@@ -231,22 +231,6 @@ function openRow(row: StackMapRow) {
 .stackMap_panel {
   flex: none;
   padding: $spacing-10 $spacing-16;
-}
-
-// At the top of the side column, apart from the reviews under it.
-.stackMap_modal {
-  padding-bottom: $spacing-16;
-  border-bottom: 1px solid $color-border;
-}
-
-// A column of its own on the left, as tall as the page: the stack's contents.
-.stackMap_page {
-  flex: none;
-  width: 300px;
-  height: 100%;
-  padding: 28px $spacing-16;
-  overflow-y: auto;
-  border-right: 1px solid $color-border;
 }
 
 .stackMap_head {

@@ -105,7 +105,7 @@ const props = withDefaults(
     viewerLogin: string;
     /** Epoch ms the rows' ages are counted to. */
     now: number;
-    /** The item opened over the list (panel or modal). */
+    /** The item opened over the list, in the panel. */
     openedId?: string | null;
     /** The user has an edit of the item on its way (`ListView`). */
     isEdited?: (id: string) => boolean;
@@ -138,6 +138,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
+  /** Enter on the opened item's row: it expands to its page. */
+  expand: [id: string];
   listed: [listed: ListedItems];
   /** An item dropped into another group: set its value. */
   move: [move: ListMove];
@@ -584,6 +586,7 @@ function getSectionCount(value: RepositorySection) {
             :get-url="item => item.url"
             :can-move="canMove"
             @open="emit('open', $event)"
+            @expand="emit('expand', $event)"
             @listed="emit('listed', $event)"
             @move="emit('move', $event)"
             @some-collapsed="someCollapsed = $event"

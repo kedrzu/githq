@@ -48,8 +48,8 @@ brief: `docs/design/githq/ui/README.md`.
 ## Direction and brand
 
 - **Direction D** is settled: one app with three independent switches — the sidebar expanded or collapsed to a rail;
-  every list as List or Board with the same toolbar; an item in a panel, a modal or a full page, all three showing the
-  same item view. Build on it and keep its components and feel. The rejected Directions A–C are in git history.
+  every list as List or Board with the same toolbar; an item in a panel or full screen, both showing the same
+  item view, in two columns once it is 1000 px wide (D9). Build on it and keep its components and feel. The rejected Directions A–C are in git history.
 - **The logo is settled.** The brandbook is the frame `Logo — git/hq` (`S5J7kt`): the wordmark `git/hq` and the
   sygnet `/hq`, in Geist 700, black or white only, with violet (`$accent`) on the slash alone. One of them in a given
   place, never both side by side, placed through `Brand / Wordmark` and `Brand / Sygnet`. Don't change it.

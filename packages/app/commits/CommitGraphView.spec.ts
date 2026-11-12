@@ -8,6 +8,8 @@ import { createMemoryHistory, createRouter, RouterView, useRoute } from 'vue-rou
 
 import { VIEWER_KEY } from '@/auth/AuthStore.js';
 import { TOKEN_KEY } from '@/auth/TokenVault.js';
+import { CommandRegistry } from '@/commands/CommandRegistry.js';
+import { ItemNavigation } from '@/item/ItemNavigation.js';
 import { Browser } from '@/services/Browser.js';
 import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { createCommitGraphTest } from '@/testing/createCommitGraphTest.js';
@@ -754,7 +756,7 @@ test("D16: the arrow keys on the details' left edge resize them a tenth of the r
     await expect.poll(() => preferences.getPanelWidth('commitDetails').value).toBe(460);
     expect(view.scroller().getBoundingClientRect().width).toBe(240);
     expect(preferences.getPanelWidth('repositoryColumn').value).toBe(300);
-    expect(preferences.getPanelWidth('modal').value).toBeNull();
+    expect(preferences.getPanelWidth('itemPanel').value).toBeNull();
 
     await userEvent.keyboard('{ArrowLeft}');
     expect(detailsWidth()).toBe(460);
@@ -1307,7 +1309,34 @@ test("D16, CH29: Shift+Enter opens the pull request in place of the details, the
     expect(cursor()?.textContent).toContain('feat: preview a class');
 });
 
-test("a fork's commit opens its upstream's pull request, by its address, in the arrangement items open in", async () => {
+test("with the commit's pull request open, Shift+Enter is the item's (it expands the item to full screen), never the details' again", async () => {
+    await page.viewport(1400, 800);
+    onTestFinished(() => page.viewport(414, 896));
+    const view = await mount(sampleWebappHistory());
+    await expect.poll(() => cursor()?.textContent).toContain('Merge pull request #1226');
+    await userEvent.keyboard('kk');
+    await expect.element(details().getByRole('button', { name: /Pull request 1231/ })).toBeVisible();
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    await expect
+        .poll(() => view.router.currentRoute.value.query)
+        .toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
+
+    // The opened item's arrangement command (`ItemView`), as the panel registers it.
+    const expand = vi.fn();
+    const unregister = view.container.resolve(CommandRegistry).register({
+        commands: [
+            { id: 'item.arrange.page', title: 'Open full screen', section: 'item', key: 'Shift+Enter', run: expand },
+        ],
+        subject: null,
+    });
+    onTestFinished(unregister);
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(expand).toHaveBeenCalledTimes(1);
+    expect(view.router.currentRoute.value.query).toMatchObject({ pane: 'issue', issue: 'acme|web|1231' });
+    await expect.element(details()).not.toBeInTheDocument();
+});
+
+test("a fork's commit opens its upstream's pull request, by its address: in the panel, or on its page when the window has no room for the panel", async () => {
     await page.viewport(1400, 800);
     onTestFinished(() => page.viewport(414, 896));
     const pullRequest = {
@@ -1331,7 +1360,7 @@ test("a fork's commit opens its upstream's pull request, by its address, in the 
 
     await view.router.push({ query: {} });
     await expect.element(details()).toBeVisible();
-    view.container.resolve(LocalPreferences).itemArrangement.value = 'page';
+    view.container.resolve(ItemNavigation).setPanelFits(false);
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
     await expect.poll(() => view.router.currentRoute.value.path).toBe('/upstream/web/pull/1203');
 });

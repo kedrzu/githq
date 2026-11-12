@@ -1,4 +1,5 @@
 import { assertValue } from '@nzyme/utils/assert.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
@@ -21,6 +22,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_CONTRIBUTOR_EDITING, SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
+import { ItemNavigation } from './ItemNavigation.js';
 import ItemView from './ItemView.vue';
 
 const meta = {
@@ -44,12 +46,9 @@ const meta = {
         onOpenInPlace: fn(),
         onMerge: fn(),
     },
-    // As tall as the window, and as wide as the arrangement: the panel's 560px, or the window.
-    render: args => ({
-        components: { ItemView },
-        setup: () => ({ args }),
-        template: `<div :style="{ height: '100vh', width: args.arrangement === 'panel' ? '560px' : '100%' }"><ItemView v-bind="args" /></div>`,
-    }),
+    // As tall as the window, and as wide as the arrangement: the panel's 560px (one column), or a 1440px window's page
+    // (two columns, F18).
+    render: (args, context) => renderAt(args.arrangement === 'panel' ? 560 : 1440)(args, context),
 } satisfies Meta<typeof ItemView>;
 
 export default meta;
@@ -59,8 +58,25 @@ type Story = StoryObj<typeof meta>;
 /** D1: an issue in the panel — properties with their keys, two projects with every field, the body, the latest comments. */
 export const IssueInPanel: Story = {};
 
-/** D2/D3: the same issue with a column at the side, as a modal and a page show it. */
-export const IssueSplit: Story = { args: { arrangement: 'page' } };
+/** F23: the same issue on a page of a 1440px window — the summary pinned at the left, the timeline beside it. */
+export const IssueOnPage: Story = { args: { arrangement: 'page' } };
+
+/** F22: on the page of a 900px window, too narrow for two columns — one column, centred. */
+export const IssueOnNarrowPage: Story = { ...IssueOnPage, render: renderAt(900) };
+
+/** On a page in a window with no room for the panel: no "Back to the panel". */
+export const IssueOnPageNoRoomForPanel: Story = {
+    ...IssueOnPage,
+    decorators: [
+        story =>
+            defineComponent({
+                setup() {
+                    useService(ItemNavigation).setPanelFits(false);
+                    return () => h(story());
+                },
+            }),
+    ],
+};
 
 /** F1: a pull request that can't merge yet — two checks failing, changes requested; the issue it closes. */
 export const PullRequestFailing: Story = {
@@ -79,10 +95,13 @@ export const PullRequestFailing: Story = {
     },
 };
 
-/** F2: the same pull request on a page of its own: reviews at the top of the side column. */
+/** F18: the same pull request on a page of its own: its summary, merge to projects, beside the timeline. */
 export const PullRequestFailingPage: Story = {
     args: { ...PullRequestFailing.args, arrangement: 'page' },
 };
+
+/** F20: the panel dragged to 1100px — two columns, as a page: the width decides, not the arrangement. */
+export const PullRequestFailingWidePanel: Story = { ...PullRequestFailing, render: renderAt(1100) };
 
 /** F3: approved and ready — "Merge…" is the one prominent action. */
 export const PullRequestReady: Story = {
@@ -408,14 +427,20 @@ export const StackOfTenInPanel: Story = {
     args: { ...openedInStack(SYNC_ENGINE_STACK, 5), position: { index: 13, count: 31 } },
 };
 
-/** SP33: the stack of two at the top of the modal's side column. */
-export const StackOfTwoInModal: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'modal' } };
-
-/** SP34: the stack of ten in the modal, whole. */
-export const StackOfTenInModal: Story = { args: { ...StackOfTenInPanel.args, arrangement: 'modal' } };
-
-/** SP35: the stack of two on a page — a column of its own on the left. */
+/** SP35: the stack of two on a page — the map, naming the stack, at the top of the summary; no bar. */
 export const StackOfTwoOnPage: Story = { args: { ...StackOfTwoInPanel.args, arrangement: 'page' } };
 
-/** SP36: the stack of ten on a page, whole in the left column; the main column gives up its width. */
-export const StackOfTenOnPage: Story = { args: { ...StackOfTenInPanel.args, arrangement: 'page' } };
+/** F19: the stack of ten on the page of a 1920px window — the whole map in the summary, the timeline at its cap. */
+export const StackOfTenOnPage: Story = {
+    args: { ...StackOfTenInPanel.args, arrangement: 'page' },
+    render: renderAt(1920),
+};
+
+/** The view as tall as the window and `width` wide. */
+function renderAt(width: number): NonNullable<Meta<typeof ItemView>['render']> {
+    return args => ({
+        components: { ItemView },
+        setup: () => ({ args, width: `${width}px` }),
+        template: `<div :style="{ height: '100vh', width }"><ItemView v-bind="args" /></div>`,
+    });
+}

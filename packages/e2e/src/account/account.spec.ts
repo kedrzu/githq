@@ -13,8 +13,8 @@ import { answerTrackingCandidates } from '../tracking/answerTracking.js';
 
 const LOGIN = SAMPLE_VIEWER.viewer.login;
 
-/** What is kept of the browser's own, whoever signs in: the sidebar folded, how an item opens. */
-const PER_DEVICE_KEYS = ['githq.sidebarCollapsed', 'githq.itemArrangement'];
+/** What is kept of the browser's own, whoever signs in: the sidebar folded. */
+const PER_DEVICE_KEYS = ['githq.sidebarCollapsed'];
 
 test('the Account section shows an organisation hiding its private data, and remembers that approval was requested', async ({
     page,

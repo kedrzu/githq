@@ -1,7 +1,6 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in a dialog for `modal`, which takes focus itself and is widened by dragging its edges, its width remembered in this browser — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to another arrangement (remembered in this browser as the one to open in next), and closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel or modal moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the list, replaces the address — between the panel and the modal it stays, for the address does not say which; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
@@ -13,9 +12,7 @@ import type { RouteLocationNormalized, RouteLocationRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
 import Button from '@/components/Button.vue';
-import Dialog from '@/components/Dialog.vue';
 import EmptyState from '@/components/EmptyState.vue';
-import { usePanelWidth } from '@/components/usePanelWidth.js';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
@@ -29,13 +26,14 @@ import { ItemLookedStore } from '@/store/ItemLookedStore.js';
 import type { ItemOpening } from '@/store/ItemLookedStore.js';
 import { TrackingStore } from '@/tracking/TrackingStore.js';
 import type { Item } from '@/store/ItemTypes.js';
-import { isEditableTarget } from '@/utils/isEditableTarget.js';
 
 import type { ItemEditing } from './ItemEditing.js';
 import { ItemLinkContext } from './ItemLinkContext.js';
 import { ItemNavigation } from './ItemNavigation.js';
 import {
   formatItemReference,
+  getExpandedFrom,
+  getExpandedLocation,
   getItemPagePath,
   getItemReference,
   getOpenedItemQuery,
@@ -76,11 +74,10 @@ provideContext(ItemLinkContext, { open: openLinked });
 
 const opened = useOpenedItem({ reference: () => props.reference });
 // In the panel the list's cursor moves with `K`/`J`, and what they reach is the cursor's neighbours. The page has no list,
-// the last one's cursor stale, and the modal leaves the keys to the opened item: both walk the steps — but for an item
-// that left the list under the modal, which has no step: the cursor's neighbours then are the way back in.
+// the last one's cursor stale: it walks the steps.
 const walk = useItemWalk({
   id: () => opened.id,
-  followsCursor: listed => props.arrangement === 'panel' || (props.arrangement === 'modal' && !listed),
+  followsCursor: () => props.arrangement === 'panel',
 });
 const stack = useItemStack(() => opened.item);
 // When the user last looked at it before opening it (F5), and when they opened it: read from this device as it opens —
@@ -107,8 +104,6 @@ const newestAt = computed(() =>
 );
 const visible = ref(document.visibilityState === 'visible');
 const viewRef = useTemplateRef<InstanceType<typeof ItemView>>('view');
-// The modal's width, resized by dragging its left or right edge.
-const modalWidth = usePanelWidth({ key: 'itemModal', default: 1440, min: 720 });
 const now = useNow(TICK_MS);
 // Which checks are required only the merge options say (merging D13): read for an open pull request with checks
 // failing or running — what the standing then weighs, as the merge panel does — and again when the row's counts move.
@@ -252,6 +247,19 @@ watch(
   },
 );
 
+// In the panel, a window narrowed until the panel no longer fits beside the screen moves the item to its page, in place
+// of the address — but not while an edit in its thread is open, which the move would lose: it moves once the last one
+// closes. Widening never brings it back. The guard below lets the move through: the item stays.
+watch(
+  () => props.arrangement === 'panel' && !navigation.panelFits && !(viewRef.value?.hasOpenEditor ?? false),
+  move => {
+    if (move) {
+      moveTo(locate(props.reference, 'page', opened.item?.kind), 'replace');
+    }
+  },
+  { immediate: true },
+);
+
 // Back and Forward move through the history before the guard below runs, and the router moves back when it stops them:
 // how far they went, for Discard to go there again.
 let poppedBy: number | null = null;
@@ -319,17 +327,8 @@ function moveOnFrom(id: string, merged: readonly string[]) {
     return;
   }
 
-  switch (props.arrangement) {
-    case 'panel':
-      navigation.requestMoveOn(merged);
-      break;
-    case 'modal':
-      step(walk.neighbours.next === null ? -1 : 1);
-      break;
-    case 'page':
-      break;
-    default:
-      assertNever(props.arrangement);
+  if (props.arrangement === 'panel') {
+    navigation.requestMoveOn(merged);
   }
 }
 
@@ -350,12 +349,49 @@ function openInPlace(id: string) {
   }
 }
 
+/**
+ * Full screen adds the page to the history, marked as expanded from the panel, so Back returns to the panel where it
+ * was. Back to the panel goes back to it when the page carries the mark, else replaces the page with the panel over
+ * the last list.
+ */
 function arrange(arrangement: ItemArrangement) {
-  navigation.setArrangement(arrangement);
-  // Between the panel and the modal the address stays: the shell shows the remembered one.
-  if (arrangement === 'page' || props.arrangement === 'page') {
-    moveTo(locate(props.reference, arrangement, opened.item?.kind), 'replace');
+  if (arrangement === props.arrangement) {
+    return;
   }
+
+  if (arrangement === 'page') {
+    moveTo(getExpandedLocation(props.reference, opened.item?.kind), 'push');
+  } else if (expandedFrom() === null) {
+    moveTo(locate(props.reference, 'panel', opened.item?.kind), 'replace');
+  } else {
+    backToPanel();
+  }
+}
+
+/**
+ * Back to the panel the page was expanded from, scrolled where it was; when the page has since moved on to another item
+ * (`K`/`J`, a stack's row), the panel then shows that one in place of the one expanded.
+ */
+function backToPanel() {
+  const shown = formatItemReference(props.reference).toLowerCase();
+  if (expandedFrom()?.toLowerCase() !== shown) {
+    const { reference } = props;
+    // The page is gone once Back lands, and this instance with it: the router finishes the step.
+    const removeAfterEach = router.afterEach((to, _from, failure) => {
+      removeAfterEach();
+      const next = getOpenedItemRoute(to);
+      if (!failure && next && !next.onPage) {
+        void router.replace({ path: to.path, query: getOpenedItemQuery(to.query, reference) });
+      }
+    });
+  }
+
+  router.back();
+}
+
+/** What the page on screen was expanded from the panel for (`getExpandedLocation`); `null` off a page or unmarked. */
+function expandedFrom() {
+  return props.arrangement === 'page' ? getExpandedFrom(router.options.history.state) : null;
 }
 
 function open(reference: ItemReference) {
@@ -381,7 +417,13 @@ function openReview() {
   moveTo(getReviewPath(props.reference), 'push');
 }
 
+/** Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list. */
 function close() {
+  if (expandedFrom() !== null && navigation.panelFits) {
+    backToPanel();
+    return;
+  }
+
   moveTo(
     props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
     'push',
@@ -420,32 +462,6 @@ function retryComment(id: number) {
   void editor.retryComment(id);
 }
 
-/**
- * Opened, the modal takes focus itself rather than its first button (the item menu's), which would show a focus ring
- * no one asked for; the window's title is read out, and Tab goes on into it.
- */
-function focusModal(event: Event) {
-  event.preventDefault();
-  (event.target as HTMLElement).focus();
-}
-
-/**
- * Escape in a field leaves it and the modal stays, as the panel and the page do (the item view's Escape): an editor
- * opened in place takes the key itself (it closes, or asks), the comment box loses the cursor. The modal hears the key before the item view,
- * which then leaves it alone; a second Escape closes the item.
- */
-function onModalEscape(event: KeyboardEvent) {
-  const { target } = event;
-  if (event.defaultPrevented) {
-    return;
-  }
-
-  if (target instanceof HTMLElement && isEditableTarget(target)) {
-    event.preventDefault();
-    target.blur();
-  }
-}
-
 function loadViewerProjects() {
   void repositories.ensureViewerProjects();
 }
@@ -468,81 +484,8 @@ interface LookedRead extends ItemOpening {
 </script>
 
 <template>
-  <Dialog
-    v-if="arrangement === 'modal'"
-    v-model:width="modalWidth.current"
-    :open="true"
-    :title="opened.item?.title ?? referenceText"
-    :min-width="modalWidth.min"
-    :resize-label="t(l.resizeModal)"
-    bare
-    @update:open="close"
-    @open-auto-focus="focusModal"
-    @escape-key-down="onModalEscape"
-    @resized="modalWidth.save()"
-  >
-    <ItemView
-      v-if="opened.item"
-      ref="view"
-      v-model:comment-draft="commentDraft"
-      :item="opened.item"
-      :detail="opened.detail"
-      arrangement="modal"
-      :position="walk.position"
-      :closes="closes"
-      :now="now"
-      :load-thread-middle="opened.loadThreadMiddle"
-      :detail-failed="opened.detailFailed"
-      :read-detail-again="opened.readDetailAgain"
-      :linked-anchor="linkedAnchor"
-      :editing="editing"
-      :stack="stack"
-      :neighbours="walk.neighbours"
-      :merge-checks="mergeOptions.options?.checks ?? null"
-      :viewer-can-enable-auto-merge="mergeOptions.options?.viewerCanEnableAutoMerge ?? null"
-      :failed-comments="failedComments"
-      :failed-edits="failedEdits"
-      :review-threads="opened.reviewThreads"
-      :review-threads-loading="opened.reviewThreadsLoading"
-      :review-writing="opened.reviewWriting"
-      :review-draft-first="tracking.reviewCommentChoice === 'draft'"
-      :looked-at="opening?.lookedAt ?? null"
-      :opened-at="opening?.openedAt ?? null"
-      @edit="edit"
-      @retry-comment="retryComment"
-      @discard-comment="drafts.discardFailed($event)"
-      @discard-edit="discardEdit"
-      @merge="merge"
-      @need-projects="loadViewerProjects"
-      @close="close"
-      @previous="step(-1)"
-      @next="step(1)"
-      @arrange="arrange"
-      @open="open"
-      @open-in-place="openInPlace"
-      @review="openReview"
-    />
-    <EmptyState
-      v-else
-      :icon="SearchX"
-      :title="waitingTitle"
-      :detail="opened.missing ? t(l.missingDetail, { reference: referenceText }) : undefined"
-    >
-      <template
-        v-if="opened.failed"
-        #action
-      >
-        <Button
-          size="sm"
-          @click="opened.tryAgain()"
-        >
-          {{ t(l.tryAgain) }}
-        </Button>
-      </template>
-    </EmptyState>
-  </Dialog>
   <ItemView
-    v-else-if="opened.item"
+    v-if="opened.item"
     ref="view"
     v-model:comment-draft="commentDraft"
     :item="opened.item"

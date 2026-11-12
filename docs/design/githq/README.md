@@ -52,7 +52,7 @@ the first version keeps it simple: the failed edit is undone with an error, and 
 wins.
 
 The screens follow one chosen design direction: a sidebar that can collapse to a narrow rail, every list
-viewable as a list or a board, and any item opening in a side panel, a modal or a full page. In "my work", a
+viewable as a list or a board, and any item opening in a side panel or a full page. In "my work", a
 pull request that closes one of your assigned issues sits under that issue rather than next to it, so the
 same piece of work never appears twice.
 [The brief for the screen designs](ui/README.md).

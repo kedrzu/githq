@@ -4,13 +4,10 @@ import { storageRef } from '@nzyme/vue-utils/reactivity/storageRef.js';
 import type { StorageRef } from '@nzyme/vue-utils/reactivity/storageRef.js';
 import { effectScope } from 'vue';
 
-import { ITEM_ARRANGEMENTS } from '@/item/itemRoutes.js';
-import type { ItemArrangement } from '@/item/itemRoutes.js';
 import type { DiffLayout } from '@/review/diff/buildDiffRows.js';
 
 import { Browser } from './Browser.js';
 
-const ITEM_ARRANGEMENT_KEY = 'githq.itemArrangement';
 const SIDEBAR_COLLAPSED_KEY = 'githq.sidebarCollapsed';
 const OPEN_LINKS_IN_DESKTOP_KEY = 'githq.openLinksInDesktop';
 const LOG_WRAP_KEY = 'githq.logWrap';
@@ -25,12 +22,12 @@ const REVIEW_THREADS_IN_COLLAPSED_KEY = 'githq.reviewThreadsInCollapsed';
 
 /**
  * What this browser remembers of how the app is arranged, for every user of it and never sent to GitHub: the
- * arrangement items open in, whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, whether githq links open in the desktop app, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
+ * whether the sidebar is collapsed, the widths the user dragged the panels to, in pixels or as a share of what holds them, whether githq links open in the desktop app, how job logs show, how a code review shows a diff, whether its file list and its conversation show and whether collapsed files show their threads (D4, D5, D13, D26: none of it per pull request). The one
  * place that reads and writes those keys of `localStorage`; each is a ref saved as it changes, holding its default
  * while nothing valid is kept, and reloaded when another tab of the app changes it.
  *
- * The values are kept as plain strings (`panel`, `true`, `412`), as githq always kept them, so an arrangement chosen
- * before stays chosen.
+ * The values are kept as plain strings (`true`, `412`, `split`), as githq always kept them, so a choice made before
+ * stays made.
  */
 export type LocalPreferences = Resolved<typeof LocalPreferences>;
 export const LocalPreferences = defineService({
@@ -41,13 +38,6 @@ export const LocalPreferences = defineService({
     setup({ browser }) {
         const storage = browser.localStorage;
 
-        const itemArrangement = storageRef<ItemArrangement>({
-            key: ITEM_ARRANGEMENT_KEY,
-            storage,
-            default: () => 'panel',
-            serialize: value => value,
-            deserialize: raw => ITEM_ARRANGEMENTS.find(candidate => candidate === raw) ?? 'panel',
-        });
         const flags = new Map<string, StorageRef<boolean>>();
         const sidebarCollapsed = getFlag(SIDEBAR_COLLAPSED_KEY);
         const openLinksInDesktop = getFlag(OPEN_LINKS_IN_DESKTOP_KEY);
@@ -72,14 +62,10 @@ export const LocalPreferences = defineService({
         });
         const panelSizes = new Map<string, StorageRef<number | null>>();
         // A panel's ref is made when first asked for, often in a component's setup: its own scope keeps it saving after
-        // that component is gone (the item panel, once the item moves to the modal).
+        // that component is gone (the item panel, once the item moves to its page).
         const panelSizesScope = effectScope(true);
 
         browser.onLocalStorageChange(key => {
-            if (key === null || key === ITEM_ARRANGEMENT_KEY) {
-                itemArrangement.reload();
-            }
-
             for (const [flagKey, flag] of flags) {
                 if (key === null || key === flagKey) {
                     flag.reload();
@@ -102,8 +88,6 @@ export const LocalPreferences = defineService({
         });
 
         return {
-            /** The arrangement an item opens in — the one used last (D9). */
-            itemArrangement,
             /** Whether the sidebar is collapsed to its icons. */
             sidebarCollapsed,
             /** Whether this browser opens githq links in the desktop app (web only): off until the user opts in. */

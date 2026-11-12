@@ -106,23 +106,6 @@ test('D29: ⌘Z brings the panel and the highlight back to the undone pull reque
     await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
 });
 
-test('D29: in a modal, ⌘Z opens the undone pull request in the one open', async ({ page, github }) => {
-    const work = createWork();
-    const { myWork } = await openMyWork(page, github, work.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row(FIRST).click();
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
-    await page.keyboard.press('Shift+X');
-    await expect(item.title).toHaveText(SECOND);
-
-    await page.keyboard.press('ControlOrMeta+z');
-
-    await expect(item.modal).toBeVisible();
-    await expect(item.title).toHaveText(FIRST);
-    await expect.poll(() => work.world.stateOf(work.first).state).toBe('OPEN');
-});
-
 test('D29: an Undo GitHub refuses: the row leaves again, the panel stays on it with no row highlighted, and J goes on', async ({
     page,
     github,
@@ -155,7 +138,7 @@ test('D29: on its page, Undo shows the undone pull request when the user walked 
     const { myWork, shell } = await openMyWork(page, github, work.world);
     const item = new ItemViewHarness(page);
     await myWork.row(FIRST).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/pull/15');
 
     await page.keyboard.press('Shift+X');
@@ -176,14 +159,13 @@ test('D29: on its page, Undo shows the undone pull request when the user walked 
     await expect(item.title).toHaveText(FIRST);
 });
 
-test('PM32a: a merge sent from a modal moves on at once', async ({ page, github }) => {
+test('PM32a: a merge sent from the panel moves on at once', async ({ page, github }) => {
     const sample = createSampleMergeableWork();
     const { myWork } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     const panel = new MergePanelHarness(page);
     await myWork.row(FIRST_TITLE).click();
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
+    await expect(item.title).toHaveText(FIRST_TITLE);
     await item.mergeButton.click();
     await expect(panel.line('Commit')).toContainText(PROPOSED_TITLE);
 
@@ -210,25 +192,4 @@ test('a merge sent from its page stays there', async ({ page, github }) => {
     await expect.poll(() => sample.world.stateOf(sample.first).merged).toBe(true);
     await expect(page).toHaveURL('/acme/web/pull/15');
     await expect(item.title).toHaveText(FIRST_TITLE);
-});
-
-test('in a modal, a pull request leaving through a sync stays open, and J opens its former neighbour', async ({
-    page,
-    github,
-}) => {
-    await page.clock.install();
-    const work = createWork();
-    const { myWork } = await openMyWork(page, github, work.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row(SECOND).click();
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
-
-    work.world.leave(work.second, 'authored');
-    await page.clock.fastForward('00:30');
-    await expect(item.position).toHaveCount(0);
-    await expect(item.title).toHaveText(SECOND);
-
-    await page.keyboard.press('j');
-    await expect(item.title).toHaveText(THIRD);
 });

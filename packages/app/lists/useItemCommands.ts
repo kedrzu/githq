@@ -17,6 +17,7 @@ import {
     SquareKanban,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 import { AuthStore } from '@/auth/AuthStore.js';
@@ -26,7 +27,14 @@ import { EDIT_KEYS, useEditCommands } from '@/commands/useEditCommands.js';
 import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
-import { formatShortReference, getItemPagePath, getItemReference } from '@/item/itemRoutes.js';
+import {
+    formatItemReference,
+    formatShortReference,
+    getExpandedLocation,
+    getItemPagePath,
+    getItemReference,
+    getOpenedItemRoute,
+} from '@/item/itemRoutes.js';
 import { MergeContext } from '@/merge/MergeContext.js';
 import { RepositoryStore } from '@/repos/RepositoryStore.js';
 import { Browser } from '@/services/Browser.js';
@@ -34,6 +42,7 @@ import { Clock } from '@/services/Clock.js';
 import type { ItemDetailProject } from '@/store/ItemDetailTypes.js';
 import { ItemDetailStore } from '@/store/ItemDetailStore.js';
 import { isPendingItem } from '@/store/isPendingItem.js';
+import type { Item } from '@/store/ItemTypes.js';
 
 import * as l from './useItemCommands.loc.js';
 
@@ -159,7 +168,7 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
                 title: t(l.openPage),
                 section: own,
                 icon: Maximize2,
-                run: () => void router.push(getItemPagePath(getItemReference(item), item.kind)),
+                run: () => void router.push(getPageLocation(item)),
             },
         );
         if (editor.getPermissions(item).comment) {
@@ -292,6 +301,17 @@ export function useItemCommands({ ids, section, open, merge }: ItemCommandsParam
                 detail: project.owner,
                 pick: () => edit({ kind: 'addToProject', project }),
             }));
+    }
+
+    /** Its page; the one open in the panel expanded from it, as the header's "Open full screen" does, so Escape comes back. */
+    function getPageLocation(item: Item): RouteLocationRaw {
+        const reference = getItemReference(item);
+        const opened = getOpenedItemRoute(router.currentRoute.value);
+        const inPanel =
+            opened !== null &&
+            !opened.onPage &&
+            formatItemReference(opened.reference) === formatItemReference(reference);
+        return inPanel ? getExpandedLocation(reference, item.kind) : getItemPagePath(reference, item.kind);
     }
 
     function edit(request: EditRequest) {

@@ -8,11 +8,11 @@ Keys with <kbd>⌘</kbd> use <kbd>Ctrl</kbd> on Windows and Linux.
 ## A pull request's page
 
 Open a pull request from any list with <kbd>Enter</kbd>, or by its address, `/owner/name/pull/123`. It shows in a panel
-beside the list, in a modal over it, or on a full page, whichever you used last. See
+beside the list; <kbd>Enter</kbd> again or <kbd>Shift</kbd> <kbd>Enter</kbd> opens it full screen. See
 [Open an item](./my-work.md#open-an-item).
 
 The header holds the way through the list you came from (<kbd>K</kbd> and <kbd>J</kbd>, with your place, such as
-`3 / 13`), the switch between panel, modal and full page, **Open on GitHub** (<kbd>O</kbd>) and **Close**
+`3 / 13`), the button that opens it full screen or brings it back to the panel (<kbd>Shift</kbd> <kbd>Enter</kbd>), **Open on GitHub** (<kbd>O</kbd>) and **Close**
 (<kbd>Esc</kbd>). The pull request's reference, such as `acme/portal #1187`, opens the item menu: every action you may
 take on it, each with its key. <kbd>⌘</kbd> <kbd>.</kbd> opens the same menu.
 

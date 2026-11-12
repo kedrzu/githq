@@ -1,4 +1,4 @@
-<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
+<!-- The signed-in app's frame (D1 screen of Direction D): the sidebar (expanded or the rail, toggled also with `[`; a screen that forces the rail leaves what the user keeps as it is), the screen in the middle, an opened item's panel at the right — the expanded sidebar and the panel resized by dragging their edge — the panel as wide as the window allows, leaving the screen its minimum, and whether the window holds the panel at all, at its minimum beside the screen at its own (`panelFits`) — their widths remembered in this browser — and the status bar along the bottom with a segment under each — the allowance under the sidebar — or how far the download of everything tracked is —, how fresh the list is under the screen, how fresh the item is under its panel. In the macOS desktop app the rail is wider, to hold the window controls over the sidebar, except in full screen, where macOS hides them. -->
 <script lang="ts" setup>
 import type { GitHubRateLimit } from '@githq/github/GitHubRateLimit.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -38,7 +38,7 @@ const props = defineProps<{
   download?: OverallDownload | null;
   /** How fresh the screen's list is, for its segment. */
   freshness: Freshness;
-  /** How fresh an item opened over the screen is (in the panel or a modal), for a segment of its own. */
+  /** How fresh an item opened over the screen is (in the panel), for a segment of its own. */
   itemFreshness?: Freshness | null;
   /** The user's edits on their way or failed, said in the screen's segment instead of its freshness. */
   edits?: SegmentEdits | null;
@@ -79,6 +79,11 @@ defineSlots<{
 const collapsed = defineModel<boolean>('collapsed', { default: false });
 /** Whether the rail shows: what the user keeps, unless the screen asks for it. */
 const rail = computed(() => props.railForced || collapsed.value);
+/**
+ * Whether the window holds the item panel at its minimum beside the screen at its own, next to the sidebar as the user
+ * keeps it: written by the shell as the window changes, read by whoever opens items.
+ */
+const panelFits = defineModel<boolean>('panelFits', { default: true });
 
 const windowControls = useService(WindowControls);
 /** `$sidebar-rail-width`, or room for macOS's window controls over it; the user does not resize the rail. */
@@ -96,13 +101,19 @@ const itemPanel = useTemplateRef<InstanceType<typeof SplitterPanel>>('itemPanel'
 /** The panels' width together, in pixels: the window's, as the screen's minimum is in percent of it. */
 const surfacesWidth = ref(window.innerWidth);
 const screenMinSize = computed(() => Math.min(100, (SCREEN_MIN_WIDTH / surfacesWidth.value) * 100));
+// The room the window leaves the screen and the panel, from the sidebar's width the user chose, not the one it has while
+// dragged: the panels would be laid out anew.
+const besideSidebar = computed(() => surfacesWidth.value - (rail.value ? sidebarRailWidth.value : sidebarWidth.stored));
 // The panel stops where the screen would get narrower than its minimum, so dragging it never squeezes the sidebar.
-// From the sidebar's width the user chose, not the one it has while dragged: the panels would be laid out anew.
-const panelMaxWidth = computed(() =>
-  Math.max(
-    panelWidth.min,
-    surfacesWidth.value - (rail.value ? sidebarRailWidth.value : sidebarWidth.stored) - SCREEN_MIN_WIDTH,
-  ),
+const panelMaxWidth = computed(() => Math.max(panelWidth.min, besideSidebar.value - SCREEN_MIN_WIDTH));
+
+// Whether the panel fits at all: at its minimum, beside the screen at its own.
+watch(
+  () => besideSidebar.value >= SCREEN_MIN_WIDTH + panelWidth.min,
+  fits => {
+    panelFits.value = fits;
+  },
+  { immediate: true },
 );
 
 let observer: ResizeObserver | undefined;

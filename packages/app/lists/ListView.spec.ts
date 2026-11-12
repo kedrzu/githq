@@ -16,7 +16,6 @@ import { ItemEditor } from '@/edits/ItemEditor.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { BrowserShape } from '@/services/Browser.js';
 import { Browser } from '@/services/Browser.js';
-import { LocalPreferences } from '@/services/LocalPreferences.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
 import { matchText } from '@/testing/matchText.js';
@@ -109,6 +108,27 @@ test('board: Enter or a click opens the card; while one is open, moving the sele
     await userEvent.click(page.getByText('c2'));
     expect(view.opened).toEqual(['a1', 'b1', 'c2']);
     await expect.poll(selectedCard).toBe('c2');
+});
+
+test("Enter on the opened item's row expands it, on another row opens that one; Shift+Enter is never the list's Enter", async () => {
+    const view = mount(BOARD, 'board');
+
+    await userEvent.keyboard('j{Shift>}{Enter}{/Shift}');
+    expect(view.opened).toEqual([]);
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['a1']);
+
+    view.openedId.value = 'a1';
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(view.expanded).toEqual([]);
+    await userEvent.keyboard('{Enter}');
+    expect(view.expanded).toEqual(['a1']);
+    expect(view.opened).toEqual(['a1']);
+
+    // The selection moving with the panel open opens the next in its place, never expanding it.
+    await userEvent.keyboard('{ArrowRight}');
+    expect(view.opened).toEqual(['a1', 'b1']);
+    expect(view.expanded).toEqual(['a1']);
 });
 
 test('the selection follows its item into another column, and to the neighbour when its item leaves', async () => {
@@ -526,30 +546,25 @@ test('keys pressed before the opened item catches up lose no step and never move
     await expect.poll(selectedCard).toBe('p1');
 });
 
-test('in a modal the list leaves j/k and the arrows alone, and the selection follows the opened item', async () => {
-    const container = createListContainer();
-    container.resolve(LocalPreferences).itemArrangement.value = 'modal';
-    const view = mount(STACKED, 'list', { container, followOpened: true });
+test("with an item open beside it j/k, the arrows and Enter stay the list's: each step opens its item in the opened one's place", async () => {
+    const view = mount([['todo', ['a1', 'a2', 'a3']]], 'list', { followOpened: true });
     await userEvent.keyboard('j{Enter}');
+    await expect.poll(() => view.opened).toEqual(['a1']);
 
-    const seen: boolean[] = [];
-    const listener = (event: KeyboardEvent) => seen.push(event.defaultPrevented);
-    window.addEventListener('keydown', listener);
-    onTestFinished(() => window.removeEventListener('keydown', listener));
-    await userEvent.keyboard('jk{ArrowDown}{ArrowUp}{ArrowLeft}{ArrowRight}');
-    expect(seen).toEqual([false, false, false, false, false, false]);
-    expect(view.opened).toEqual(['a1']);
-    expect(selectedCard()).toBe('a1');
-
-    view.openedId.value = 'a2';
-    view.selectedId.value = 'a2';
+    await userEvent.keyboard('j');
     await expect.poll(selectedCard).toBe('a2');
-
-    // Closed, the keys are the list's again.
-    view.openedId.value = null;
-    await nextTick();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect.poll(selectedCard).toBe('a3');
     await userEvent.keyboard('k');
-    await expect.poll(selectedCard).toBe('stack S_1');
+    await expect.poll(selectedCard).toBe('a2');
+    expect(view.opened).toEqual(['a1', 'a2', 'a3', 'a2']);
+
+    // Enter opens the row the cursor is on, whatever is open.
+    view.openedId.value = 'a3';
+    view.selectedId.value = 'a3';
+    await expect.poll(selectedCard).toBe('a3');
+    await userEvent.keyboard('k{Enter}');
+    expect(view.opened.at(-1)).toBe('a2');
 });
 
 test('board: an item opened from outside selects its collapsed card; once expanded, the pull request inside it', async () => {
@@ -1815,6 +1830,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     const checkedIds = ref<readonly string[]>([]);
     const openedId = ref<string | null>(null);
     const opened: string[] = [];
+    const expandedIds: string[] = [];
     const moves: ListMove[] = [];
     const listed: ListedItems[] = [];
 
@@ -1838,7 +1854,18 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     let mounted = true;
     onTestFinished(unmount);
 
-    return { columns, selectedId, checkedIds, openedId, opened, moves, listed, unmount, container };
+    return {
+        columns,
+        selectedId,
+        checkedIds,
+        openedId,
+        opened,
+        expanded: expandedIds,
+        moves,
+        listed,
+        unmount,
+        container,
+    };
 
     function renderList() {
         return h(
@@ -1864,6 +1891,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                         openedId.value = id;
                     }
                 },
+                onExpand: (id: string) => expandedIds.push(id),
                 onMove: (move: ListMove) => moves.push(move),
                 onListed: (items: ListedItems) => listed.push(items),
             },

@@ -12,7 +12,7 @@ import { ItemStore } from './ItemStore.js';
 export interface ItemLookedStoreShape {
     /**
      * The user opens `id`: when they last looked at it, and when they opened it. Held while it stays open — opened
-     * again in another arrangement (panel, modal, page), it gets the same, though its thread was marked seen since —
+     * again in the other arrangement (panel, page), it gets the same, though its thread was marked seen since —
      * until another item opens, it is left ({@link leave}) or another account signs in.
      */
     open(id: string): Promise<ItemOpening>;

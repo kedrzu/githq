@@ -1,14 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** An arrangement of the item view's switch, by its label. */
-export type ItemArrangementName = 'Panel' | 'Modal' | 'Full page';
-
 /** An item's own property with a picker, by its label. */
 export type ItemPropertyName = 'Assignees' | 'Labels' | 'Milestone';
 
 /**
- * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel, the modal or on its
- * own page): its header with the item menu, the way through the list and the arrangement switch; the map of
+ * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel or on its own page): its header with the item menu, the way through the list and the button to the other arrangement; the map of
  * the stack a pull request is in; its properties, projects and reviewers; its comments and the comment box.
  */
 export class ItemViewHarness {
@@ -30,9 +26,22 @@ export class ItemViewHarness {
         return this.root.getByText(/^\d+ \/ \d+$/);
     }
 
-    /** The column of its title, description and activity, which scrolls on its own. */
+    /**
+     * Its content: narrower than 1000px the one column that scrolls, the summary and then the thread; from 1000px it
+     * holds the {@link summary} and the {@link timeline} side by side, scrolling each on its own, and does not scroll.
+     */
     get content(): Locator {
         return this.root.locator('[data-route-scroll^="item-main:"]');
+    }
+
+    /** The column of its title, where it stands and its properties; scrolls on its own only from 1000px wide. */
+    get summary(): Locator {
+        return this.root.locator('[data-route-scroll^="item-summary:"]');
+    }
+
+    /** The column of its description and activity; scrolls on its own only from 1000px wide. */
+    get timeline(): Locator {
+        return this.root.locator('[data-route-scroll^="item-timeline:"]');
     }
 
     /** "Previous item" (`K`). */
@@ -43,16 +52,6 @@ export class ItemViewHarness {
     /** "Next item" (`J`). */
     get nextButton(): Locator {
         return this.root.getByRole('button', { name: 'Next item' });
-    }
-
-    /** The modal the item is opened in, named after it. */
-    get modal(): Locator {
-        return this.page.getByRole('dialog').filter({ has: this.root });
-    }
-
-    /** The handles on the modal's left and right edges, dragged to resize it. */
-    get modalHandles(): Locator {
-        return this.modal.getByRole('separator', { name: 'Resize window' });
     }
 
     /** The item's reference in its header, opening the item menu (M1–M2, `⌘.`). */
@@ -104,9 +103,14 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name, exact: true });
     }
 
-    /** The switch's button moving the item to `name`. */
-    arrangement(name: ItemArrangementName): Locator {
-        return this.root.getByRole('group', { name: 'Arrangement' }).getByRole('button', { name, exact: true });
+    /** "Open full screen" (`⇧Enter`), in the panel. */
+    get fullScreenButton(): Locator {
+        return this.root.getByRole('button', { name: 'Open full screen', exact: true });
+    }
+
+    /** "Back to the panel" (`⇧Enter`), on the item's page. */
+    get backToPanelButton(): Locator {
+        return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
     }
 
     /** The value of a property the user may change — a button opening its picker, named "Labels: bug". */

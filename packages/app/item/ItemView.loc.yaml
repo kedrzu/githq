@@ -4,14 +4,10 @@ previous:
   en: Previous item
 next:
   en: Next item
-arrangement:
-  en: Arrangement
-panel:
-  en: Panel
-modal:
-  en: Modal
-page:
-  en: Full page
+openFullScreen:
+  en: Open full screen
+backToPanel:
+  en: Back to the panel
 openOnGitHub:
   en: Open on GitHub
 close:
@@ -66,16 +62,8 @@ openFiles:
   en: Open changed files on GitHub
 copyLink:
   en: Copy link
-openAsPanel:
-  en: Open in the side panel
-openAsModal:
-  en: Open as a modal
-openAsPage:
-  en: Open as full page
 closeIssueCommand:
   en: Close issue
-resizeSide:
-  en: Resize side column
 itemMenu:
   en: Item actions
 itemMenuLabel:
@@ -84,3 +72,5 @@ copyReference:
   en: Copy reference
 copyBranch:
   en: Copy branch name
+resizeSummary:
+  en: Resize the summary

@@ -81,7 +81,7 @@ test('⇧X closes an issue as completed; the composer, reopening it, closes it a
     await myWork.row(ISSUE).click();
     await expect(item.statePill('Open')).toBeVisible();
     // On its page it stays in view: a panel moves on with the list once it leaves.
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/issues/12');
 
     await page.keyboard.press('Shift+X');
@@ -111,7 +111,7 @@ test('"Close with comment" posts the comment, then closes the issue, in that ord
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(item.root).toContainText('No description provided.');
 
     await page.keyboard.press('r');
@@ -133,7 +133,7 @@ test('"Close as not planned" from the close menu, with a comment typed, posts it
     const { myWork } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(item.root).toContainText('No description provided.');
 
     await page.keyboard.press('r');
@@ -157,7 +157,7 @@ test('⇧X with a comment typed and the box left posts the comment, then closes 
     const { myWork, shell } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(item.root).toContainText('No description provided.');
 
     await page.keyboard.press('r');
@@ -181,7 +181,7 @@ test('the item menu\'s "Close as not planned", with a comment typed, posts it, t
     const { myWork } = await openMyWork(page, github, sample.world);
     const item = new ItemViewHarness(page);
     await myWork.row(ISSUE).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(item.root).toContainText('No description provided.');
 
     await page.keyboard.press('r');
@@ -271,28 +271,6 @@ test('the item menu (⌘.) marks a draft pull request ready for review', async (
     await expectConfirmed(shell);
     await expect(item.statePill('Open')).toBeVisible();
     await expect(myWork.row('Cache response headers').getByRole('img', { name: 'Open pull request' })).toBeVisible();
-});
-
-test('the item menu works in the modal: its reference opens it over the dialog and its entries can be picked', async ({
-    page,
-    github,
-}) => {
-    const sample = createSampleEditableWork();
-    const { myWork, shell } = await openMyWork(page, github, sample.world);
-    const item = new ItemViewHarness(page);
-    await myWork.row('Cache response headers').click();
-    await item.arrangement('Modal').click();
-    await expect(item.modal).toBeVisible();
-
-    await item.menuButton.click();
-    await page.getByRole('menuitem', { name: 'Ready for review' }).click();
-
-    await expect.poll(() => sample.world.stateOf(sample.draft).isDraft).toBe(false);
-    await expect(item.statePill('Open')).toBeVisible();
-    // The status bar is under the modal, out of reach until it closes.
-    await page.keyboard.press('Escape');
-    await expect(item.modal).toBeHidden();
-    await expectConfirmed(shell);
 });
 
 /** GitHub took the close: nothing is on its way, nothing failed, and the only toast is the one offering Undo. */

@@ -6,9 +6,9 @@ import { useOpenItemReference } from './useOpenItemReference.js';
 import type { OpenItemOptions } from './useOpenItemReference.js';
 
 /**
- * Opening an item as lists and the command menu do: where the one opened is shown — its own page, or over the
- * screen's list — else where the arrangement remembered in this browser says (`ItemNavigation`). Over a list it
- * shows in the panel or the modal the browser remembers, which the address does not say. An issue being created has no number to open it by yet: it is not opened.
+ * Opening an item as lists and the command menu do: where the one opened is shown — its own page, or the panel beside
+ * the screen — else in the panel when the window has room for it, on its page when it hasn't
+ * (`useOpenItemReference`). An issue being created has no number to open it by yet: it is not opened.
  */
 export function useOpenItem() {
     const openItemReference = useOpenItemReference();

@@ -464,6 +464,7 @@ function getMoveRequest(from: string, to: string): EditRequest | null {
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
+    @expand="list.expand"
     @listed="list.setListed"
     @move="move"
     @read-more="readMore"
