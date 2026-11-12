@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { fn } from 'storybook/test';
+import { fn, userEvent } from 'storybook/test';
 
 import ReviewCommentBox from './ReviewCommentBox.vue';
 
@@ -97,4 +97,10 @@ export const NoDraft: Story = { args: { failure: { kind: 'noDraft' } } };
 export const RefusedWithoutWords: Story = { args: { failure: { kind: 'refused', message: null } } };
 
 /** CR97: Escape on a box with text asks in its footer, the cursor staying in the text. */
-export const AsksToDiscard: Story = { args: { asking: true, focused: true } };
+export const AsksToDiscard: Story = {
+    args: { focused: true },
+    play: async ({ canvas }) => {
+        await userEvent.click(canvas.getByRole('textbox'));
+        await userEvent.keyboard('{Escape}');
+    },
+};

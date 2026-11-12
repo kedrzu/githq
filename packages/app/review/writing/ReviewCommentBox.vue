@@ -3,7 +3,7 @@
 import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { CircleHelp, FileDiff, TriangleAlert } from 'lucide-vue-next';
-import { computed, onMounted, useTemplateRef, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 import { formatAriaKeyShortcuts } from '@/commands/formatAriaKeyShortcuts.js';
 import { matchesCommandKey } from '@/commands/matchesCommandKey.js';
@@ -56,12 +56,12 @@ const emit = defineEmits<{
 
 /** What is typed. */
 const text = defineModel<string>('text', { default: '' });
-/** Its footer asks whether to discard what is written. */
-const asking = defineModel<boolean>('asking', { default: false });
 
 const t = useTranslate();
 const getFailureText = useCommentFailureText();
 const editor = useTemplateRef<InstanceType<typeof MarkdownEditor>>('editor');
+/** Its footer asks whether to discard what is written. */
+const asking = ref(false);
 
 const isReply = computed(() => props.target.threadId !== null);
 const where = computed(() => {
