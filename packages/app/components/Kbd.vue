@@ -138,7 +138,7 @@ const parts = computed(() => {
 
 .kbd_onFill {
   color: $color-on-light;
-  background: rgba($color-on-light, 0.1);
+  background: rgba($color-on-light, 0.16);
   border-color: rgba($color-on-light, 0.2);
 }
 </style>

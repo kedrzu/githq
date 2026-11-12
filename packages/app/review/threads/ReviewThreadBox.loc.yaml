@@ -17,5 +17,7 @@ addToDraft:
   en: Add to your draft…
 resolve:
   en: Resolve
+resolveThread:
+  en: Resolve thread
 unresolve:
   en: Unresolve

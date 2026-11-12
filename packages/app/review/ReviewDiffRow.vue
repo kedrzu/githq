@@ -1,4 +1,4 @@
-<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
+<!-- One row of the review's diff, of whichever kind: a file's header, a line split or unified, a thread, with the viewer's replies inside it, and the mark above code shown for one, a comment being written, a line's number starting one, the lines left out with the arrows that show them (D42, `DiffGap`), a quiet bar for each line of a file on its way, where its code will start in the layout being read and as long as the line might be (D38; one fetched ahead of the rest says so), guessed from its line counts or, once its patch is in, in the patch's lines and gaps with their numbers (D45, `DiffRowPlaceholder`), or what the file says in place of a diff (D35): binary with its sizes, renamed with no changes, too large with its size or empty, each with a link to the file on github.com, failed with GitHub's words and Try again, which touches no other file, waiting for GitHub's allowance with when it comes. Rows of a file are drawn as one block with an edge along both sides. -->
 <script lang="ts">
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 
@@ -14,12 +14,12 @@ import { CircleAlert, FileDiff, FileSymlink, LoaderCircle, Pause, Pilcrow } from
 import { computed, shallowRef, watch } from 'vue';
 
 import Button from '@/components/Button.vue';
+import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatBytes } from '@/utils/formatBytes.js';
 import { formatTime } from '@/utils/formatTime.js';
 
 import { getPlaceholderHeight, LINE_HEIGHT } from './buildReviewRows.js';
 import type {
-  ReviewCommentRow,
   ReviewDistanceRow as DistanceRow,
   ReviewFileEndRow,
   ReviewGapDirection,
@@ -29,7 +29,7 @@ import type {
   ReviewRow,
   ReviewThreadRow as ReviewThreadRowData,
 } from './buildReviewRows.js';
-import type { ReviewWriteFailure } from './writing/ReviewWriting.js';
+import type { ReviewCommentTarget, ReviewWriteFailure } from './writing/ReviewWriting.js';
 import type { DiffLayout, DiffLineSide } from './diff/buildDiffRows.js';
 import DiffFileHeader from './DiffFileHeader.vue';
 import DiffGap from './DiffGap.vue';
@@ -38,7 +38,9 @@ import DiffRowSplit from './DiffRowSplit.vue';
 import DiffRowUnified from './DiffRowUnified.vue';
 import * as l from './ReviewDiffRow.loc.js';
 import type { ReviewFile, ReviewFileSizes } from './ReviewFiles.js';
+import type { ReviewThreadReplies } from './threads/ReviewThreadBox.vue';
 import ReviewDistanceRow from './threads/ReviewDistanceRow.vue';
+import ReviewRowInset from './threads/ReviewRowInset.vue';
 import ReviewThreadRow from './threads/ReviewThreadRow.vue';
 import { formatFileSizes } from './utils/formatFileSizes.js';
 import { getFailureText } from './utils/getFailureText.js';
@@ -57,8 +59,10 @@ const props = withDefaults(
     threadOpen?: boolean;
     /** The thread on this row is the one N and ⇧N are at. */
     threadFocused?: boolean;
-    /** The thread on this row has its reply box open under it. */
-    threadReplying?: boolean;
+    /** The viewer's replies in the thread on this row, which the `comment` slot draws. */
+    threadReplies?: ReviewThreadReplies | null;
+    /** Who is signed in: a reply band's avatar. */
+    viewer?: ItemUser | null;
     /** Why resolving the thread on this row or opening it again didn't go through. */
     threadFailure?: ReviewWriteFailure | null;
     /** The lines of the file a comment is being written on. */
@@ -76,8 +80,8 @@ const props = withDefaults(
 );
 
 defineSlots<{
-  /** A comment being written, which the review draws. */
-  comment?(props: { row: ReviewCommentRow }): unknown;
+  /** A comment being written, which the review draws: in a row of its own, or a reply inside its thread (D39). */
+  comment?(props: { target: ReviewCommentTarget; inThread: boolean }): unknown;
 }>();
 
 const emit = defineEmits<{
@@ -196,22 +200,36 @@ function getBinaryText(sizes: ReviewFileSizes, changeType: string) {
           @gutter="(event, side, line) => emit('gutter', event, side, line)"
         />
       </template>
-      <slot
+      <ReviewRowInset
         v-else-if="row.kind === 'comment'"
-        name="comment"
-        :row="row"
-      />
+        :inline="row.inline"
+      >
+        <slot
+          name="comment"
+          :target="row.target"
+          :in-thread="false"
+        />
+      </ReviewRowInset>
       <ReviewThreadRow
         v-else-if="row.kind === 'thread'"
         :row="row"
         :open="threadOpen"
         :focused="threadFocused"
-        :replying="threadReplying"
+        :replies="threadReplies"
+        :viewer="viewer"
         :resolve-failure="threadFailure"
         @toggle="emit('toggleThread', row.placement.thread.id)"
         @reply="emit('replyInThread', row)"
         @set-resolved="emit('setThreadResolved', row, $event)"
-      />
+      >
+        <template #reply="{ target }">
+          <slot
+            name="comment"
+            :target="target"
+            :in-thread="true"
+          />
+        </template>
+      </ReviewThreadRow>
       <ReviewDistanceRow
         v-else-if="row.kind === 'distance'"
         :row="row"

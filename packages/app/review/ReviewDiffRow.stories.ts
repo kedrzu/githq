@@ -3,6 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, waitFor } from 'storybook/test';
 import { shallowRef } from 'vue';
 
+import { createThreadRowSample, sampleThread } from '@/testing/sampleThreads.js';
+
 import {
     buildFileLineRows,
     buildPlaceholderRows,
@@ -10,7 +12,7 @@ import {
     getReviewHeaderKey,
     getReviewRowPath,
 } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow, ReviewRowComment, ReviewThreadRow } from './buildReviewRows.js';
 import type { DiffLayout } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import DiffCode from './DiffCode.vue';
@@ -19,6 +21,8 @@ import type { ReviewFile, ReviewFileCollapseReason } from './ReviewFiles.js';
 import type { FileSyntax } from './syntax/createFileSyntax.js';
 import { loadGrammar, tokenizeLines } from './syntax/tokenizeLines.js';
 import type { CommentedLines } from './utils/isLineCommented.js';
+import ReviewWrittenComment from './writing/ReviewWrittenComment.vue';
+import type { ReviewCommentStatus } from './writing/ReviewWriting.js';
 
 const BEFORE = `import { db } from '../db/client'
 import { PendingStore } from './pending'
@@ -291,6 +295,45 @@ export const Gaps: Story = {
         await expect(canvas.getByText('32 lines below')).toBeVisible();
         await expect(canvas.getAllByText('export class Outbox {')).toHaveLength(4);
     },
+};
+
+/**
+ * `Review / Thread · replying` (D39, CR92): a thread bare, with its reply box open, with a reply on its way, and resolved
+ * bare and with a reply on its way, which stays one line.
+ */
+export const ThreadReplying: Story = {
+    parameters: { rows: threadReplyRows() },
+    render: (_args, { parameters }) => ({
+        components: { ReviewDiffRow, ReviewWrittenComment },
+        setup: () => ({ rows: parameters.rows, githubUrl: FILES_URL, getReplies, getStatus }),
+        template: `<div style="width: 1000px">
+          <ReviewDiffRow
+            v-for="row in rows"
+            :key="row.key"
+            :row="row"
+            :github-url="githubUrl"
+            :thread-replies="getReplies(row)"
+            :viewer="{ login: 'mlaine', avatarUrl: '' }"
+          >
+            <template #comment="{ target, inThread }">
+              <ReviewWrittenComment
+                :target="target"
+                :in-thread="inThread"
+                repository="fitloop/webapp"
+                :item-number="1202"
+                text="Agreed."
+                :status="getStatus(target)"
+                :draft-open="false"
+                :draft-count="0"
+                :draft-first="false"
+                :focused="false"
+                reply-to="sofiab"
+                :author="{ login: 'mlaine', avatarUrl: '' }"
+              />
+            </template>
+          </ReviewDiffRow>
+        </div>`,
+    }),
 };
 
 /** CR62: a push reset the context expanded in the file: its first gap says so, once, its arrows working as ever. */
@@ -608,4 +651,48 @@ function renderRows(rows: readonly ReviewRow[], { commented, layout, currentPath
 
 function file(path: string, additions: number, deletions: number, more: Partial<ReviewFile> = {}): ReviewFile {
     return { path, previousPath: null, changeType: 'MODIFIED', additions, deletions, viewed: 'UNVIEWED', ...more };
+}
+
+/** {@link ThreadReplying}'s rows, by key: `bare`, `replying`, `sent`, `resolved`, `resolvedSent`. */
+function threadReplyRows(): ReviewThreadRow[] {
+    const open = createThreadRowSample({ kind: 'onLine', inline: 'right' });
+    const resolved = createThreadRowSample({
+        kind: 'onLine',
+        inline: 'right',
+        thread: sampleThread({ isResolved: true }),
+    });
+    const reply: ReviewRowComment = {
+        id: 'reply',
+        path: FILE.path,
+        side: 'after',
+        line: 47,
+        startLine: null,
+        threadId: open.placement.thread.id,
+    };
+    const sent: ReviewRowComment = { ...reply, id: 'sent', onItsWay: true };
+    return [
+        { ...open, key: 'bare' },
+        { ...open, key: 'replying', replies: [reply] },
+        { ...open, key: 'sent', replies: [sent] },
+        { ...resolved, key: 'resolved' },
+        { ...resolved, key: 'resolvedSent', replies: [sent] },
+    ];
+}
+
+/** As the review splits them: the box, and the replies on their way. */
+function getReplies(row: ReviewRow) {
+    if (row.kind !== 'thread') {
+        return null;
+    }
+
+    return {
+        sent: row.replies.filter(reply => reply.onItsWay),
+        box: row.replies.find(reply => !reply.onItsWay) ?? null,
+    };
+}
+
+function getStatus(target: ReviewRowComment): ReviewCommentStatus {
+    return target.onItsWay
+        ? { kind: 'sending', way: 'single', body: 'Agreed, migrating it now instead of clearing the store.' }
+        : { kind: 'editing' };
 }

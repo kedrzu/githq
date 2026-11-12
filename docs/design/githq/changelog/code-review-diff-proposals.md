@@ -8,10 +8,10 @@ Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISI
 - [x] Activity / Editor (`OXAXr`): the footer's Markdown hint (icon `G7epo`, text `x0YOX`) is hidden. Before: file
   icon + "Markdown" at the left of the footer. After: nothing there, the buttons stay right. Every composer,
   reply box and editing box changes.
-- [ ] Button / medium · primary (`t0PlX5`): its key (`ZBaFq`) is drawn in the accent's own colours: fill
+- [x] Button / medium · primary (`t0PlX5`): its key (`ZBaFq`) is drawn in the accent's own colours: fill
   `#0D111729`, stroke `#0D111733`, glyph `#0D1117`. Before: the plain grey Kbd (`$bg-3`, `$border-2`,
   `$fg-2`) on the accent button. Every primary medium button changes.
-- [ ] Diff / File header (`pAbDY`): the Viewed toggle (`KQcKb`) padding 3 × 8 → 5 × 8 (4 px taller). Every file
+- [x] Diff / File header (`pAbDY`): the Viewed toggle (`KQcKb`) padding 3 × 8 → 5 × 8 (4 px taller). Every file
   header changes (collapsed and viewed too).
 
 ## The comment box (D39, D40)
@@ -23,9 +23,9 @@ Settled by the owner on 2026-11-10: D39–D45 in `docs/design/code-review/DECISI
   `· draft open` (`c0AL2N`), `· code changed` (`QNL7n`), `· not sent` (`p3KpyQ`, red "Not sent: {reason}."
   line, text kept), `· asks to discard` (`y4kGY9`, footer: "Discard what you wrote?", Keep writing Esc,
   Discard ↵).
-- [ ] Review / Thread · replying (`eS728`): Activity / Code thread · replying with the review box, headed
+- [x] Review / Thread · replying (`eS728`): Activity / Code thread · replying with the review box, headed
   "Reply to …", no excerpt.
-- [ ] Inset under its line on its side, as a thread: CR90 (single line), CR91 (range, draft open, suggestion as
+- [x] Inset under its line on its side, as a thread: CR90 (single line), CR91 (range, draft open, suggestion as
   markdown), CR92 (reply), CR93 (unified: code changed, not sent).
 - [x] Esc with text asks in place (CR97); after Discard, a toast "Comment on line 51 discarded" with Restore ⌘Z for
   ten seconds reopens the box with its text (CR98).
@@ -155,3 +155,20 @@ Decisions amended: D42, D45.
 - [x] A gap never hides a single line; the CR62 notice goes on the first gap that still hides lines (D42).
 - [x] D45: placeholder rows hold the position as lines; 0/0 files only a header before the patch; a binary verdict's
   note survives a failed blob; a renamed 0/0 file is "Renamed, no changes" only with the same blobs.
+
+## While building M4 (2026-11-12)
+
+Decision followed: D39 ("a reply is the same box inside the thread").
+
+- [x] Review / Thread · replying (`eS728`), CR92: the reply is no longer a row of its own under the thread but inside
+  the thread's row, which keeps its key, so opening or closing it moves nothing above it (D7). While replying, the card
+  takes `$bg`, the band (`$bg-2`, avatar, the box) follows the comments, and Resolve thread has its own band under it.
+  Built with Review / Thread's (`ce2EO`) body, padding 12 × 14 and 12 between comments, not Activity / Code thread's
+  12 and 10 that the drawing inherits, so the comments stay exactly where they were when R opens the box (D7). The
+  drawing is unchanged: matching it would override the layout of an instance.
+- [x] A reply on its way shows as the thread's last comment ("Sending…" or Pending), not drawn in the file: as the item
+  thread's code thread does (F10); Reply… is back under it. A resolved thread folded stays one line until opened.
+- [x] Button / medium · primary's key: the code's `onFill` key is shared by the light button, which takes the same
+  16% fill.
+- [x] Diff / File header's Viewed toggle: 4 px taller inside the header's fixed 38 px, so the header and the pinned
+  header's push keep their heights.

@@ -283,6 +283,12 @@ function onClick(event: MouseEvent) {
   flex: none;
 }
 
+// Twice the class: the button's own padding comes from a stylesheet that may load after this one. 4 px taller than a
+// small button, still inside the header's 38 px.
+.diffFileHeader_viewed.diffFileHeader_viewed {
+  padding-block: $spacing-5;
+}
+
 .diffFileHeader_viewed_on {
   color: $color-fg;
   background: color-mix(in srgb, #{$color-accent} 12%, transparent);

@@ -763,6 +763,29 @@ test('R on the thread N is at opens its reply box; with no draft the reply goes 
     await expect(review.pendingToolbar).toBeHidden();
 });
 
+test('a reply box opens inside its thread and closes again, the thread and what is above it staying put (D7, D39)', async ({
+    page,
+    github,
+}) => {
+    const { review } = await openWriting(page, github, { threads: OPEN_THREADS });
+
+    await page.keyboard.press('n');
+    await expect(review.focusedThread).toContainText('First thread here');
+    const at = await review.threadOffset('First thread here');
+    await page.keyboard.press('r');
+
+    const field = review.commentField('Reply to sofiab');
+    await expect(field).toBeFocused();
+    await expect(review.thread('First thread here').getByRole('group', { name: 'Reply to sofiab' })).toBeVisible();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Resolve thread' })).toBeVisible();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+
+    await page.keyboard.press('Escape');
+    await expect(review.commentBox('Reply to sofiab')).toBeHidden();
+    await expect(review.thread('First thread here').getByRole('button', { name: 'Reply…' })).toBeVisible();
+    expect(await review.threadOffset('First thread here')).toBe(at);
+});
+
 test('a reply with a draft open joins it, and its button, its comment and the toolbar all say so', async ({
     page,
     github,

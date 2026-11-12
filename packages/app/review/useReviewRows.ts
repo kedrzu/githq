@@ -6,7 +6,7 @@ import type { MaybeRefOrGetter, ShallowRef } from 'vue';
 import { Clock } from '@/services/Clock.js';
 
 import { buildFileLineRows, buildPlaceholderRows, buildReviewRows } from './buildReviewRows.js';
-import type { ReviewFileContent, ReviewRow } from './buildReviewRows.js';
+import type { ReviewFileContent, ReviewRow, ReviewRowComment } from './buildReviewRows.js';
 import type { DiffLayout, DiffLineRange } from './diff/buildDiffRows.js';
 import { computeFileDiff } from './diff/computeFileDiff.js';
 import type { FileDiff } from './diff/computeFileDiff.js';
@@ -16,7 +16,6 @@ import type { FileVersions } from './syntax/createFileSyntax.js';
 import { groupThreadsByFile, listGoneEntries, placeThreads } from './threads/placeThreads.js';
 import type { ThreadFileView, ThreadPlacement } from './threads/placeThreads.js';
 import type { ReviewThread } from './threads/ReviewThread.js';
-import type { ReviewCommentTarget } from './writing/ReviewWriting.js';
 
 /** Options of {@link useReviewRows}. */
 export interface UseReviewRowsOptions {
@@ -29,8 +28,11 @@ export interface UseReviewRowsOptions {
     currentPath: MaybeRefOrGetter<string | null>;
     /** Whether a collapsed file shows its threads under its header (D13). */
     threadsInCollapsed: MaybeRefOrGetter<boolean>;
-    /** The comment boxes open: rows are built of where they sit, never of what is typed in them. */
-    commentTargets: MaybeRefOrGetter<readonly ReviewCommentTarget[]>;
+    /**
+     * The comment boxes open and the replies on their way: rows are built of where they sit and whether a reply is still a
+     * box, never of what is typed in them.
+     */
+    commentTargets: MaybeRefOrGetter<readonly ReviewRowComment[]>;
 }
 
 /** Where the review threads show, as a new object whenever that changes. */
@@ -58,7 +60,7 @@ interface BuiltLines {
     readonly expanded: readonly DiffLineRange[];
     readonly expansionReset: boolean;
     readonly threads: readonly ThreadPlacement[] | undefined;
-    readonly comments: readonly ReviewCommentTarget[] | undefined;
+    readonly comments: readonly ReviewRowComment[] | undefined;
     readonly content: LinesContent;
 }
 
@@ -122,8 +124,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     let builtPlacements = threadPlacements.value;
     let builtThreadsInCollapsed = toValue(options.threadsInCollapsed);
     let threadsByFile = new Map<string, readonly ReviewThread[]>();
-    let builtTargets: readonly ReviewCommentTarget[] = [];
-    let commentsByFile: ReadonlyMap<string, readonly ReviewCommentTarget[]> = new Map();
+    let builtTargets: readonly ReviewRowComment[] = [];
+    let commentsByFile: ReadonlyMap<string, readonly ReviewRowComment[]> = new Map();
 
     watch(
         [
@@ -333,8 +335,8 @@ export function useReviewRows(options: UseReviewRowsOptions): ReviewRows {
     }
 
     /** The same array for a file whose boxes stayed the same: its rows are kept by that. */
-    function groupComments(targets: readonly ReviewCommentTarget[]) {
-        const grouped = new Map<string, readonly ReviewCommentTarget[]>();
+    function groupComments(targets: readonly ReviewRowComment[]) {
+        const grouped = new Map<string, readonly ReviewRowComment[]>();
         for (const [path, inFile] of groupByToMap(targets, target => target.path)) {
             const held = commentsByFile.get(path);
             const same = held?.length === inFile.length && inFile.every((target, i) => target === held[i]);

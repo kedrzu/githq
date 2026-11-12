@@ -3,7 +3,7 @@ import { expect, test } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import { estimateReviewRowHeight, LINE_HEIGHT } from './buildReviewRows.js';
-import type { ReviewGapRow } from './buildReviewRows.js';
+import type { ReviewGapRow, ReviewRow } from './buildReviewRows.js';
 import * as stories from './ReviewDiffRow.stories.js';
 
 const {
@@ -19,6 +19,7 @@ const {
     Split,
     SplitColoured,
     SplitCommented,
+    ThreadReplying,
     Unified,
     UnifiedColoured,
     UnifiedCommented,
@@ -56,6 +57,23 @@ test("a gap is drawn as tall as estimated: two arrows between hunks, one at a fi
     await ExpansionResetNothingHidden.run();
     // No arrow at all.
     expect(gaps()[0]).toBe(estimateReviewRowHeight(gapRow({ hidden: 0, afterStart: 10, afterEnd: 40 })));
+});
+
+test('a thread is drawn as tall as estimated, relative to it bare: its reply box open, a reply on its way, resolved with one', async () => {
+    await ThreadReplying.run();
+    await expect.element(page.getByRole('group', { name: 'Reply to sofiab' })).toBeVisible();
+    const rows: ReviewRow[] = ThreadReplying.parameters.rows;
+    const drawn = [...document.querySelectorAll('[role="group"][aria-label^="Thread by"]')].map(
+        thread => thread.closest('[class*="reviewDiffRow"]')!.getBoundingClientRect().height,
+    );
+    const estimated = rows.map(estimateReviewRowHeight);
+    const relative = (heights: number[]) => heights.map(height => height - heights[0]!);
+
+    expect(drawn).toHaveLength(5);
+    // The bare one's comments are estimated, not measured; what each state adds to them is exact.
+    expect(relative(drawn.slice(0, 3))).toEqual(relative(estimated.slice(0, 3)));
+    // Resolved, a reply on its way or not, it is one line.
+    expect(drawn.slice(3)).toEqual(estimated.slice(3));
 });
 
 test("a placeholder from the patch is drawn as tall as estimated, which is the diff's: its lines a line each, its gaps a gap's height", async () => {

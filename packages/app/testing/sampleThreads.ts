@@ -84,6 +84,7 @@ export function createThreadRowSample(sample: ThreadRowSample): ReviewThreadRow 
         key: `thread ${thread.id}`,
         inline: sample.kind === 'onLine' ? sample.inline : null,
         placement: createPlacement(sample, thread),
+        replies: [],
     };
 }
 

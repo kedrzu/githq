@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import ReviewCommentRow from './ReviewCommentRow.vue';
+import ReviewWrittenComment from './ReviewWrittenComment.vue';
 
 const AUTHOR = { login: 'mlaine', avatarUrl: '' };
 const BODY = 'What happens when the same workout is edited twice offline?\nLooks like we push both edits.';
@@ -14,9 +14,9 @@ const TARGET = {
 } as const;
 
 const meta = {
-    component: ReviewCommentRow,
+    component: ReviewWrittenComment,
     args: {
-        row: { kind: 'comment', key: 'comment', target: TARGET, inline: 'unified' },
+        target: TARGET,
         repository: 'mlaine/tasklet',
         itemNumber: 14,
         text: BODY,
@@ -27,26 +27,26 @@ const meta = {
         focused: false,
         author: AUTHOR,
     },
-} satisfies Meta<typeof ReviewCommentRow>;
+    render: args => ({
+        components: { ReviewWrittenComment },
+        setup: () => ({ args }),
+        template: `<div style="width: 640px"><ReviewWrittenComment v-bind="args" /></div>`,
+    }),
+} satisfies Meta<typeof ReviewWrittenComment>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** Being written, in its place. */
+/** Being written. */
 export const Editing: Story = {};
 
-/** On the right half in split. */
-export const OnRightHalf: Story = {
-    args: { row: { kind: 'comment', key: 'comment', target: TARGET, inline: 'right' } },
+/** A reply, in its thread's band: says who it answers. */
+export const Reply: Story = {
+    args: { target: { ...TARGET, threadId: 'T1' }, inThread: true, replyTo: 'sofiab', text: '' },
 };
 
-/** Its line isn't shown: the file's width, at its top. */
-export const LineNotShown: Story = {
-    args: { row: { kind: 'comment', key: 'comment', target: TARGET, inline: null } },
-};
-
-/** Sent as a single comment: shown at once, on its way. */
+/** Sent as a single comment: shown at once, on its way, framed on its own. */
 export const Sending: Story = { args: { status: { kind: 'sending', way: 'single', body: BODY } } };
 
 /** `Review / Comment · pending`: gone into the draft. */
@@ -54,6 +54,15 @@ export const IntoDraft: Story = { args: { status: { kind: 'sending', way: 'joinD
 
 /** GitHub has it, and the threads aren't read yet. */
 export const Sent: Story = { args: { status: { kind: 'sent', way: 'single', body: BODY } } };
+
+/** A reply sent: one of its thread's comments, with no frame of its own. */
+export const SentInThread: Story = {
+    args: {
+        target: { ...TARGET, threadId: 'T1' },
+        inThread: true,
+        status: { kind: 'sent', way: 'single', body: BODY },
+    },
+};
 
 /** Refused: back to the box with GitHub's words. */
 export const Failed: Story = {
