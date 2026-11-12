@@ -39,8 +39,8 @@ test('it waits while the threads are read, or for the list of files to bring the
 
 test('it gives up on a thread there is not, or that no file will show', () => {
     expect(findLinkedThread({ ...READY, anchor: 'discussion_r9' })).toEqual({ kind: 'missing' });
-    expect(findLinkedThread({ ...READY, threads: [], threadsState: { kind: 'failed', error: new Error('no') } })).toEqual(
-        { kind: 'missing' },
-    );
+    expect(
+        findLinkedThread({ ...READY, threads: [], threadsState: { kind: 'failed', error: new Error('no') } }),
+    ).toEqual({ kind: 'missing' });
     expect(findLinkedThread({ ...READY, placements: new Map(), listEnd: 'uncertain' })).toEqual({ kind: 'missing' });
 });
