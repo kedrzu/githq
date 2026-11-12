@@ -51,6 +51,12 @@ export type ReviewSentStatus =
     /** GitHub took it: it shows like this until the threads read again have it. */
     | { readonly kind: 'sent'; readonly way: ReviewCommentWay; readonly body: string };
 
+/** A box discarded with its text (D40): what Restore brings back while the toast saying so shows. */
+export interface ReviewDiscardedComment {
+    readonly target: ReviewCommentTarget;
+    readonly text: string;
+}
+
 /** What the submit dialog holds (D33). */
 export interface ReviewSubmissionChoice {
     readonly event: PullRequestReviewEvent;
@@ -110,6 +116,14 @@ export interface ReviewWriting {
     hasCodeChanged(id: string): boolean;
     /** Closes a box, its text gone with it. */
     close(id: string): void;
+    /** The box last discarded, until it is restored or forgotten; in memory only, so a reload has none. */
+    readonly discarded: ReviewDiscardedComment | null;
+    /** Closes a box, remembering it with its text as {@link discarded} in place of the one before (D40). */
+    discardBox(id: string): void;
+    /** Opens the box last discarded again where it was, with its text and lines; `null` with none. */
+    restoreDiscarded(): ReviewCommentTarget | null;
+    /** Its toast went: it can no longer be restored. */
+    forgetDiscarded(): void;
     getText(id: string): string;
     /** Kept on disk at once: what is typed survives a reload. */
     setText(id: string, text: string): void;
