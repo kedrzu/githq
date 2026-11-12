@@ -1,7 +1,6 @@
-<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the arrangement switch, GitHub (`O`) and close (`Esc`); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a page gives the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
+<!-- An opened issue or pull request (D9): the same view in a panel beside the screen or a page of its own. The header names the item and holds the way through the list (`K`/`J`, "3 / 13"), the other arrangement — "Open full screen" in the panel, "Back to the panel" on a page, not offered there when the window has no room for the panel (`ItemNavigation.panelFits`); also `⇧Enter`, never from a text field — GitHub (`O`) and close (`Esc`, which the owner may take as a step back to the panel); its reference (`skyline-labs/portal #1187 ▾`) opens the item menu (M1–M2, also `⌘.`): every action the user may take on the item, grouped as a list's context menu groups them, each with its key. A panel stacks everything in one column; a page gives the properties, projects and reviewers a column at the side. A pull request leads with where it stands (`PullRequestMerge`), its reviews and checks. A pull request in a stack shows the stack's map (`StackMap`, stacked PRs D25, D27): in a panel the stack bar (`StackBar`) is pinned above the content and the map's rows are the content's first block, scrolling away under the bar like the rest — nothing above the content ever changes height; once they are out of view a click on the bar drops a copy of them over the content, sliding out of the bar (D38), closed by Escape, a click outside, any scroll of the content, opening a pull request or the rows coming back into view; every pull request of the stack opens at the top, its rows in view; a column of its own on a page's left, the main column giving up its width. The thread ends in the composer (`ItemThreadComposer`), scrolling with the rest — nothing is pinned to the bottom: `R` brings it into view and puts the cursor in it (⌘↵ posts); for a pull request `D` opens its review and `⇧O` its changed files on GitHub. With `editing`, what the user may change is changed here (M3): `A`, `L`, `M` open the pickers of assignees, labels and milestone, `S`, `P`, `I` those of the first project's status, priority and iteration, `⇧R` asks for reviews, `⇧M` opens the merge panel for a pull request the user may merge (merging D9), `T` the issue type's, and `⇧X` closes or reopens it as the composer's button does — an issue as completed, not planned being in the button's menu and the item menu. What the user may not change is shown but not offered (K1b). -->
 <script lang="ts" setup>
 import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -22,7 +21,7 @@ import {
   SquareKanban,
   RotateCcw,
   Maximize2,
-  PanelRight,
+  Minimize2,
   X,
 } from 'lucide-vue-next';
 import { SplitterGroup, SplitterPanel } from 'reka-ui';
@@ -43,8 +42,6 @@ import MenuLabel from '@/components/MenuLabel.vue';
 import MenuSeparator from '@/components/MenuSeparator.vue';
 import MenuShortcut from '@/components/MenuShortcut.vue';
 import ResizeHandle from '@/components/ResizeHandle.vue';
-import SegmentedTabs from '@/components/SegmentedTabs.vue';
-import type { SegmentedTabsOption } from '@/components/SegmentedTabs.vue';
 import StatePill from '@/components/StatePill.vue';
 import type { StatePillTone } from '@/components/StatePill.vue';
 import { usePanelWidth } from '@/components/usePanelWidth.js';
@@ -72,9 +69,10 @@ import { parseRepositoryName } from '@/utils/parseRepositoryName.js';
 
 import { getItemMenuSections } from './getItemMenuSections.js';
 import type { ItemEditing } from './ItemEditing.js';
+import { ItemNavigation } from './ItemNavigation.js';
 import ItemProjects from './ItemProjects.vue';
 import ItemProperties from './ItemProperties.vue';
-import { formatShortReference, ITEM_ARRANGEMENTS } from './itemRoutes.js';
+import { formatShortReference } from './itemRoutes.js';
 import type { ItemArrangement, ItemReference } from './itemRoutes.js';
 import * as l from './ItemView.loc.js';
 import ItemWalkStepper from './ItemWalkStepper.vue';
@@ -147,6 +145,7 @@ const emit = defineEmits<{
   close: [];
   previous: [];
   next: [];
+  /** "Open full screen" or "Back to the panel" (`⇧Enter`): the other arrangement is wanted. */
   arrange: [arrangement: ItemArrangement];
   /** A linked item was picked. */
   open: [reference: ItemReference];
@@ -168,15 +167,11 @@ const emit = defineEmits<{
   merge: [];
 }>();
 
-const ARRANGEMENT_ICONS: Readonly<Record<ItemArrangement, LucideIcon>> = {
-  panel: PanelRight,
-  page: Maximize2,
-};
-
 /** What is typed into the comment box and not posted yet. */
 const commentDraft = defineModel<string>('commentDraft', { default: '' });
 const t = useTranslate();
 const browser = useService(Browser);
+const navigation = useService(ItemNavigation);
 /** Merging, where the screen offers it: how the session's last merge of a pull request ended (PM38). */
 const merging = injectContext(MergeContext, { optional: true });
 const pickerOptions = usePickerOptions();
@@ -232,13 +227,16 @@ function onColumnsLayout(sizes: number[]) {
     sideWidth.current = side;
   }
 }
-const arrangementOptions = computed((): SegmentedTabsOption<ItemArrangement>[] => [
-  { value: 'panel', label: t(l.panel), icon: ARRANGEMENT_ICONS.panel, iconOnly: true },
-  { value: 'page', label: t(l.page), icon: ARRANGEMENT_ICONS.page, iconOnly: true },
-]);
-const arrangementModel = computed({
-  get: () => props.arrangement,
-  set: (value: ItemArrangement) => emit('arrange', value),
+/**
+ * The other arrangement, offered by the header's button and `⇧Enter`: full screen from the panel, back to the panel from
+ * the page — but not where the window has no room for the panel.
+ */
+const otherArrangement = computed((): OtherArrangement | null => {
+  if (props.arrangement === 'panel') {
+    return { arrangement: 'page', title: t(l.openFullScreen), icon: Maximize2 };
+  }
+
+  return navigation.panelFits ? { arrangement: 'panel', title: t(l.backToPanel), icon: Minimize2 } : null;
 });
 
 const pr = computed(() => (props.item.kind === 'pullRequest' ? props.item : null));
@@ -346,7 +344,13 @@ const opened = computed(() => {
 });
 
 /** The keys of the item's own actions; its edits' are `EDIT_KEYS`. */
-const ITEM_KEYS = { openOnGitHub: 'O', openFiles: 'Shift+O', review: 'D', itemMenu: 'Mod+.' } as const;
+const ITEM_KEYS = {
+  openOnGitHub: 'O',
+  openFiles: 'Shift+O',
+  review: 'D',
+  itemMenu: 'Mod+.',
+  arrange: 'Shift+Enter',
+} as const;
 
 /**
  * The item menu's groups (M1–M2): the item's actions as a list's context menu lays them out — but GitHub, which has
@@ -614,26 +618,21 @@ function getItemCommands(): Command[] {
       when: () => pr.value !== null,
       run: () => void navigator.clipboard.writeText(pr.value?.headRefName ?? ''),
     },
-    ...ITEM_ARRANGEMENTS.filter(arrangement => arrangement !== props.arrangement).map((arrangement): Command => ({
-      id: `item.arrange.${arrangement}`,
-      title: getArrangementTitle(arrangement),
-      section: 'item',
-      icon: ARRANGEMENT_ICONS[arrangement],
-      run: () => emit('arrange', arrangement),
-    })),
   );
-  return commands;
-}
 
-function getArrangementTitle(arrangement: ItemArrangement) {
-  switch (arrangement) {
-    case 'panel':
-      return t(l.openAsPanel);
-    case 'page':
-      return t(l.openAsPage);
-    default:
-      return assertNever(arrangement);
+  const other = otherArrangement.value;
+  if (other) {
+    commands.push({
+      id: `item.arrange.${other.arrangement}`,
+      title: other.title,
+      section: 'item',
+      key: ITEM_KEYS.arrange,
+      icon: other.icon,
+      run: () => emit('arrange', other.arrangement),
+    });
   }
+
+  return commands;
 }
 
 function getStateTitle() {
@@ -655,6 +654,13 @@ function getProjectOptions(): CommandOption[] {
       detail: project.owner,
       pick: () => emit('edit', { kind: 'addToProject', project }),
     }));
+}
+
+/** The arrangement the header's button and `⇧Enter` move the item to. */
+interface OtherArrangement {
+  readonly arrangement: ItemArrangement;
+  readonly title: string;
+  readonly icon: LucideIcon;
 }
 </script>
 
@@ -709,11 +715,13 @@ function getProjectOptions(): CommandOption[] {
         @previous="emit('previous')"
         @next="emit('next')"
       />
-      <SegmentedTabs
-        v-model="arrangementModel"
-        variant="boxed"
-        :label="t(l.arrangement)"
-        :options="arrangementOptions"
+      <IconButton
+        v-if="otherArrangement"
+        :icon="otherArrangement.icon"
+        :label="otherArrangement.title"
+        :kbd="ITEM_KEYS.arrange"
+        :keyshortcuts="ITEM_KEYS.arrange"
+        @click="emit('arrange', otherArrangement.arrangement)"
       />
       <IconButton
         :icon="Github"
@@ -779,7 +787,7 @@ function getProjectOptions(): CommandOption[] {
             <div
               ref="scroll"
               :class="css.itemView_scroll"
-              :data-route-scroll="`item-main:${item.id}`"
+              :data-route-scroll="`item-main:${arrangement}:${item.id}`"
               data-suggestions-boundary
               @scroll.passive="onContentScroll"
             >
@@ -958,7 +966,7 @@ function getProjectOptions(): CommandOption[] {
           >
             <div
               :class="css.itemView_side"
-              :data-route-scroll="`item-side:${item.id}`"
+              :data-route-scroll="`item-side:${arrangement}:${item.id}`"
             >
               <PullRequestReviews
                 v-if="prDetail"

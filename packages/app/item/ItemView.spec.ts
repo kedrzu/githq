@@ -18,6 +18,7 @@ const {
     ContributorView,
     IssueInPanel,
     IssueSplit,
+    IssueSplitNoRoomForPanel,
     LoadingComments,
     PullRequestBeingMerged,
     PullRequestBehind,
@@ -144,11 +145,36 @@ test("a control Tab reached outside the list holds an opened panel's J/K; one Es
     expect(onClose).toHaveBeenCalledTimes(1);
 });
 
-test('the arrangement switch asks for another arrangement', async () => {
+test('"Back to the panel" on a page and Shift+Enter ask for the panel', async () => {
     await IssueSplit.run();
 
-    await userEvent.click(page.getByRole('group', { name: 'Arrangement' }).getByRole('button', { name: 'Panel' }));
-    expect(IssueSplit.args.onArrange).toHaveBeenCalledWith('panel');
+    await userEvent.click(page.getByRole('button', { name: 'Back to the panel' }));
+    expect(IssueSplit.args.onArrange).toHaveBeenLastCalledWith('panel');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(IssueSplit.args.onArrange).toHaveBeenCalledTimes(2);
+});
+
+test('on a page in a window with no room for the panel, neither its button nor Shift+Enter is offered', async () => {
+    await IssueSplitNoRoomForPanel.run();
+
+    await expect.element(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Back to the panel' })).not.toBeInTheDocument();
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(IssueSplitNoRoomForPanel.args.onArrange).not.toHaveBeenCalled();
+});
+
+test('"Open full screen" in the panel and Shift+Enter ask for the page; Shift+Enter in the comment box stays a new line', async () => {
+    await IssueInPanel.run();
+
+    await userEvent.click(page.getByRole('button', { name: 'Open full screen' }));
+    expect(IssueInPanel.args.onArrange).toHaveBeenLastCalledWith('page');
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(IssueInPanel.args.onArrange).toHaveBeenCalledTimes(2);
+
+    await userEvent.keyboard('r');
+    await userEvent.keyboard('one{Shift>}{Enter}{/Shift}two');
+    expect(IssueInPanel.args.onArrange).toHaveBeenCalledTimes(2);
+    await expect.element(page.getByRole('textbox', { name: 'Comment' })).toHaveValue('one\ntwo');
 });
 
 test('opened before its detail arrives: the row shows at once and the thread says it is loading', async () => {

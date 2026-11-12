@@ -134,6 +134,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
+  /** Enter on the opened item's row: it expands to its page. */
+  expand: [id: string];
   listed: [listed: ListedItems];
   /** An item dropped into another column or group: set its field. */
   move: [move: ListMove];
@@ -582,6 +584,7 @@ function hasItemView(entry: ProjectEntry) {
         :can-move="canMove"
         :can-open-over="hasItemView"
         @open="emit('open', $event)"
+        @expand="emit('expand', $event)"
         @listed="emit('listed', $event)"
         @move="emit('move', $event)"
       >

@@ -1,4 +1,4 @@
-import type { LocationQuery, RouteLocation } from 'vue-router';
+import type { HistoryState, LocationQuery, RouteLocation, RouteLocationRaw } from 'vue-router';
 
 import { isPendingItem } from '@/store/isPendingItem.js';
 import type { Item } from '@/store/ItemTypes.js';
@@ -10,9 +10,6 @@ import type { RepositoryName } from '@/utils/parseRepositoryName.js';
  * same item view in both.
  */
 export type ItemArrangement = 'page' | 'panel';
-
-/** The arrangements, in the order the item view's switch shows them. */
-export const ITEM_ARRANGEMENTS: readonly ItemArrangement[] = ['panel', 'page'];
 
 /** An issue or pull request as an address names it: its repository and number. */
 export interface ItemReference extends RepositoryName {
@@ -55,6 +52,11 @@ const ISSUE_PARAM = 'issue';
 const ITEM_ID_PARAM = 'itemId';
 /** What separates the owner, the name and the number in {@link ISSUE_PARAM}. */
 const ISSUE_SEPARATOR = '|';
+/**
+ * The mark an item's page carries in the history when it was expanded from the panel: the expanded item's reference, as
+ * `formatItemReference` writes it. Kept through a replace of the address and a reload.
+ */
+const EXPANDED_FROM_STATE = 'expandedFrom';
 
 /**
  * The item a route opens, or `null`: the item's own page (`/owner/name/issues/12`), or a list with one opened over
@@ -102,6 +104,26 @@ export function getOpenedItemQuery(query: LocationQuery, item: ItemReference | n
  */
 export function getItemPagePath(reference: ItemReference, kind: Item['kind'] = 'issue') {
     return `/${reference.owner}/${reference.name}/${kind === 'issue' ? 'issues' : 'pull'}/${reference.number}`;
+}
+
+/**
+ * An item's page expanded from the panel: pushed, with the mark ({@link getExpandedFrom}) that Back to the panel reads.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getExpandedLocation(reference: ItemReference, kind?: Item['kind']): RouteLocationRaw {
+    return { path: getItemPagePath(reference, kind), state: { [EXPANDED_FROM_STATE]: formatItemReference(reference) } };
+}
+
+/**
+ * The reference, as `formatItemReference` writes it, of the item a page in the history was expanded from the panel
+ * for ({@link getExpandedLocation}); `null` for a page opened any other way.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getExpandedFrom(state: HistoryState): string | null {
+    const mark = state[EXPANDED_FROM_STATE];
+    return typeof mark === 'string' ? mark : null;
 }
 
 /**

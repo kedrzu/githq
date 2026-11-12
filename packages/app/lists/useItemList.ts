@@ -8,7 +8,7 @@ import { useEditTexts } from '@/edits/useEditTexts.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
 import type { ItemReturnRequest } from '@/item/ItemNavigation.js';
 import { ItemResolver } from '@/item/ItemResolver.js';
-import { getOpenedItemQuery, getOpenedItemRoute } from '@/item/itemRoutes.js';
+import { getExpandedLocation, getOpenedItemQuery, getOpenedItemRoute } from '@/item/itemRoutes.js';
 import { useOpenItem } from '@/item/useOpenItem.js';
 import { useNow } from '@/services/useNow.js';
 import { ItemOverlay } from '@/store/ItemOverlay.js';
@@ -33,15 +33,18 @@ export interface ItemListViewModel {
     readonly now: number;
     /** The user has an edit of the item on its way (`EditQueue`). */
     isEdited(id: string): boolean;
-    /** Opens the item in the arrangement used last, or in place of the one open. */
+    /** Opens the item in the panel when it fits, else on its page, or in place of the one open. */
     open(id: string): void;
+    /** Expands the item open in the panel to its page, Back to the panel returning (Enter on its row again). */
+    expand(id: string): void;
     /** The items the list shows, and what an opened item steps through. */
     setListed(listed: ListedItems): void;
 }
 
 /**
- * What every list page does with items (my work, a repository, a project): an item opens in the arrangement
- * used last (`ItemNavigation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
+ * What every list page does with items (my work, a repository, a project): an item opens in the panel when
+ * it fits, else on its page (`useOpenItem`), and Enter on the opened one's row again expands it to its page, marked in the
+ * history for Back to the panel (`getExpandedLocation`); one opened over the list (`?pane=issue&issue=…`) is the selected row, and the
  * selection moving opens the next item in its place; coming back from an item's page, the item is selected. A toast's
  * request to select the items that failed (K2) selects those the list shows, and an Undo of a close (D29) brings the
  * selection, and an item open, back to the undone item the list shows.
@@ -162,7 +165,17 @@ export function useItemList(): ItemListViewModel {
         },
     );
 
-    return reactive<ItemListViewModel>({ selectedId, checkedIds, openedId, undone, now, isEdited, open, setListed });
+    return reactive<ItemListViewModel>({
+        selectedId,
+        checkedIds,
+        openedId,
+        undone,
+        now,
+        isEdited,
+        open,
+        expand,
+        setListed,
+    });
 
     function followConfirmed(id: string) {
         return overlay.getConfirmedId(id) ?? id;
@@ -178,6 +191,13 @@ export function useItemList(): ItemListViewModel {
             // Asked for even when it is the opened one, as a step back to it overtakes a step still on its way. Moving
             // from one opened item to the next replaces it; opening the first adds to the history.
             openItem(item, { replaceOpened: true });
+        }
+    }
+
+    function expand(id: string) {
+        const reference = opened.value?.reference;
+        if (reference && id === openedId.value) {
+            void router.push(getExpandedLocation(reference, items.get(id)?.kind));
         }
     }
 

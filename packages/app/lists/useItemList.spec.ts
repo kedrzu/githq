@@ -9,6 +9,7 @@ import { createMemoryHistory, createRouter } from 'vue-router';
 
 import { APP_LANGUAGE } from '@/i18n/AppLanguageContext.js';
 import { ItemNavigation } from '@/item/ItemNavigation.js';
+import { getExpandedFrom } from '@/item/itemRoutes.js';
 import { Browser } from '@/services/Browser.js';
 import { ItemStore } from '@/store/ItemStore.js';
 import { createSignedInBrowser } from '@/testing/createSignedInBrowser.js';
@@ -30,6 +31,21 @@ test('a step back to the opened item overtakes a step still on its way: the addr
     });
 
     expect(router.currentRoute.value.fullPath).toBe(opened);
+});
+
+test('expanding the opened item adds its page to the history, marked as expanded from the panel; another item does not expand', async () => {
+    const { list, router } = await mountList('/?pane=issue&issue=acme%7Cweb%7C2');
+    await vi.waitFor(() => expect(list.openedId).toBe('p2'));
+
+    list.expand('p1');
+    await nextTick();
+    expect(router.currentRoute.value.path).toBe('/');
+
+    list.expand('p2');
+    await vi.waitFor(() => expect(router.currentRoute.value.path).toBe('/acme/web/pull/2'));
+    expect(getExpandedFrom(router.options.history.state)).toBe('acme/web/2');
+    router.back();
+    await vi.waitFor(() => expect(router.currentRoute.value.query.issue).toBe('acme|web|2'));
 });
 
 test('K2: a toast’s request selects the failed pull requests of a collapsed stack, which are no steps, and only those listed', async () => {
@@ -140,7 +156,7 @@ async function mountList(path: string) {
 
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: [{ path: '/', component: { render: () => null } }],
+        routes: [{ path: '/:path(.*)*', component: { render: () => null } }],
     });
     await router.push(path);
 

@@ -138,7 +138,7 @@ test('D29: on its page, Undo shows the undone pull request when the user walked 
     const { myWork, shell } = await openMyWork(page, github, work.world);
     const item = new ItemViewHarness(page);
     await myWork.row(FIRST).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/pull/15');
 
     await page.keyboard.press('Shift+X');

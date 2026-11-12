@@ -110,6 +110,27 @@ test('board: Enter or a click opens the card; while one is open, moving the sele
     await expect.poll(selectedCard).toBe('c2');
 });
 
+test("Enter on the opened item's row expands it, on another row opens that one; Shift+Enter is never the list's Enter", async () => {
+    const view = mount(BOARD, 'board');
+
+    await userEvent.keyboard('j{Shift>}{Enter}{/Shift}');
+    expect(view.opened).toEqual([]);
+    await userEvent.keyboard('{Enter}');
+    expect(view.opened).toEqual(['a1']);
+
+    view.openedId.value = 'a1';
+    await userEvent.keyboard('{Shift>}{Enter}{/Shift}');
+    expect(view.expanded).toEqual([]);
+    await userEvent.keyboard('{Enter}');
+    expect(view.expanded).toEqual(['a1']);
+    expect(view.opened).toEqual(['a1']);
+
+    // The selection moving with the panel open opens the next in its place, never expanding it.
+    await userEvent.keyboard('{ArrowRight}');
+    expect(view.opened).toEqual(['a1', 'b1']);
+    expect(view.expanded).toEqual(['a1']);
+});
+
 test('the selection follows its item into another column, and to the neighbour when its item leaves', async () => {
     const view = mount(BOARD, 'board');
     await userEvent.keyboard('jj');
@@ -1809,6 +1830,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     const checkedIds = ref<readonly string[]>([]);
     const openedId = ref<string | null>(null);
     const opened: string[] = [];
+    const expandedIds: string[] = [];
     const moves: ListMove[] = [];
     const listed: ListedItems[] = [];
 
@@ -1832,7 +1854,18 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
     let mounted = true;
     onTestFinished(unmount);
 
-    return { columns, selectedId, checkedIds, openedId, opened, moves, listed, unmount, container };
+    return {
+        columns,
+        selectedId,
+        checkedIds,
+        openedId,
+        opened,
+        expanded: expandedIds,
+        moves,
+        listed,
+        unmount,
+        container,
+    };
 
     function renderList() {
         return h(
@@ -1858,6 +1891,7 @@ function mount(initial: Columns, layout: ListLayout, options: MountOptions = {})
                         openedId.value = id;
                     }
                 },
+                onExpand: (id: string) => expandedIds.push(id),
                 onMove: (move: ListMove) => moves.push(move),
                 onListed: (items: ListedItems) => listed.push(items),
             },

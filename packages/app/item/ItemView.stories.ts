@@ -1,4 +1,5 @@
 import { assertValue } from '@nzyme/utils/assert.js';
+import { useService } from '@nzyme/vue-ioc/useService.js';
 import { provideContext } from '@nzyme/vue-utils/context.js';
 import type { Decorator, Meta, StoryObj } from '@storybook/vue3-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
@@ -21,6 +22,7 @@ import { SAMPLE_NOW } from '@/testing/sampleMyWork.js';
 import { SAMPLE_CONTRIBUTOR_EDITING, SAMPLE_MAINTAINER_EDITING } from '@/testing/sampleRepositories.js';
 import { GLYPHS_STACK, sampleStackDescription, SYNC_ENGINE_STACK } from '@/testing/sampleStacks.js';
 
+import { ItemNavigation } from './ItemNavigation.js';
 import ItemView from './ItemView.vue';
 
 const meta = {
@@ -61,6 +63,20 @@ export const IssueInPanel: Story = {};
 
 /** D3: the same issue with a column at the side, as a page shows it. */
 export const IssueSplit: Story = { args: { arrangement: 'page' } };
+
+/** On a page in a window with no room for the panel: no "Back to the panel". */
+export const IssueSplitNoRoomForPanel: Story = {
+    ...IssueSplit,
+    decorators: [
+        story =>
+            defineComponent({
+                setup() {
+                    useService(ItemNavigation).setPanelFits(false);
+                    return () => h(story());
+                },
+            }),
+    ],
+};
 
 /** F1: a pull request that can't merge yet — two checks failing, changes requested; the issue it closes. */
 export const PullRequestFailing: Story = {

@@ -702,11 +702,11 @@ test('the line stays while the item moves between the panel and its page: it goe
     await myWork.row(ISSUE).click();
     await expect(item.newSince).toHaveText('1 new since you looked');
 
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL(/\/issues\/\d+$/u);
     await expect(item.newSince).toHaveText('1 new since you looked');
     await expect(item.entryAfter(item.newSince)).toContainText('Still happens on mobile.');
-    await item.arrangement('Panel').click();
+    await item.backToPanelButton.click();
     await expect(page).toHaveURL(/pane=issue/u);
     await expect(item.newSince).toHaveText('1 new since you looked');
 

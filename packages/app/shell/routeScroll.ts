@@ -4,7 +4,7 @@ import { START_LOCATION } from 'vue-router';
 /**
  * The router's scroll for the screens: the shell never scrolls, its screens do inside containers of their own, which
  * the scroll of the window (vue-router's, Nuxt's) never reaches. A container says what it shows in
- * `data-route-scroll` (`item-main:<id>`): a navigation that changes what it shows opens it at the top, Back and
+ * `data-route-scroll` (`item-main:<arrangement>:<id>`): a navigation that changes what it shows opens it at the top, Back and
  * Forward bring back where it was in that entry of the history, and a container still showing the same thing stays
  * where it is — a list under an item opened over it. A fragment (`#issuecomment-1`) names an element inside a container,
  * which the navigation scrolls into sight there once it is on screen, unless Back or Forward return the containers to

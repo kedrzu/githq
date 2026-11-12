@@ -99,7 +99,7 @@ test('narrowed until the panel no longer fits, the item in it moves to its page 
     await expect(myWork.selectedRow).toContainText(ISSUE);
 });
 
-test("switched to a page of its own, the item is at GitHub's address of it: a reload opens it again, Back returns to the list with it selected", async ({
+test("expanded to a page of its own, the item is at GitHub's address of it: a reload opens it again, Back returns to the panel over the list, the item selected", async ({
     page,
     github,
 }) => {
@@ -107,7 +107,7 @@ test("switched to a page of its own, the item is at GitHub's address of it: a re
     const item = new ItemViewHarness(page);
 
     await myWork.row(ISSUE).click();
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/issues/12');
     await expect(item.title).toHaveText(ISSUE);
     await expect(myWork.groups).toHaveCount(0);
@@ -116,8 +116,8 @@ test("switched to a page of its own, the item is at GitHub's address of it: a re
     await expect(item.title).toHaveText(ISSUE);
 
     await page.goBack();
-    await expect(page).toHaveURL('/');
-    await expect(item.root).toBeHidden();
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Cweb%7C12');
+    await expect(item.title).toHaveText(ISSUE);
     await expect(myWork.selectedRow).toContainText(ISSUE);
 });
 
@@ -159,15 +159,16 @@ test('J and K step through the list the item was opened from, beside it and on i
     await expect(item.position).toHaveText('1 / 8');
     await expect(item.previousButton).toBeDisabled();
 
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/api/pull/52');
     await page.keyboard.press('j');
     await expect(page).toHaveURL('/acme/api/pull/48');
     await expect(item.title).toHaveText('Cache search results');
     await expect(item.position).toHaveText('2 / 8');
 
-    // Back from the page is the list, with the item stepped to selected.
-    await page.goBack();
-    await expect(page).toHaveURL('/');
+    // Escape from the page is Back to the panel it was expanded from, showing the item stepped to, selected.
+    await page.keyboard.press('Escape');
+    await expect(page).toHaveURL('/?pane=issue&issue=acme%7Capi%7C48');
+    await expect(item.title).toHaveText('Cache search results');
     await expect(myWork.selectedRow).toContainText('Cache search results');
 });

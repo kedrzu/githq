@@ -98,6 +98,7 @@ const waitingCount = computed(() => {
     @update:options="view.set($event)"
     @reset="view.reset()"
     @open="list.open"
+    @expand="list.expand"
     @listed="list.setListed"
     @show-all="router.push(HOME_PATH)"
   >

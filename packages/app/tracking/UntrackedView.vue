@@ -49,6 +49,8 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   open: [id: string];
+  /** Enter on the opened item's row: it expands to its page. */
+  expand: [id: string];
   listed: [listed: ListedItems];
 }>();
 
@@ -111,6 +113,7 @@ const groups = computed((): ListGroup<Item>[] => [
         :is-edited="isEdited"
         :get-url="item => item.url"
         @open="emit('open', $event)"
+        @expand="emit('expand', $event)"
         @listed="emit('listed', $event)"
       >
         <template #row="{ entry, parent, checked, halfChecked, stack, stackMarker, expanded, toggleStack }">

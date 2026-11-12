@@ -1,13 +1,10 @@
 import type { Locator, Page } from '@playwright/test';
 
-/** An arrangement of the item view's switch, by its label. */
-export type ItemArrangementName = 'Panel' | 'Full page';
-
 /** An item's own property with a picker, by its label. */
 export type ItemPropertyName = 'Assignees' | 'Labels' | 'Milestone';
 
 /**
- * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel or on its own page): its header with the item menu, the way through the list and the arrangement switch; the map of
+ * Playwright harness for an opened item (`ItemView.vue`, the one on screen — in the panel or on its own page): its header with the item menu, the way through the list and the button to the other arrangement; the map of
  * the stack a pull request is in; its properties, projects and reviewers; its comments and the comment box.
  */
 export class ItemViewHarness {
@@ -93,9 +90,14 @@ export class ItemViewHarness {
         return this.root.getByRole('button', { name, exact: true });
     }
 
-    /** The switch's button moving the item to `name`. */
-    arrangement(name: ItemArrangementName): Locator {
-        return this.root.getByRole('group', { name: 'Arrangement' }).getByRole('button', { name, exact: true });
+    /** "Open full screen" (`⇧Enter`), in the panel. */
+    get fullScreenButton(): Locator {
+        return this.root.getByRole('button', { name: 'Open full screen', exact: true });
+    }
+
+    /** "Back to the panel" (`⇧Enter`), on the item's page. */
+    get backToPanelButton(): Locator {
+        return this.root.getByRole('button', { name: 'Back to the panel', exact: true });
     }
 
     /** The value of a property the user may change — a button opening its picker, named "Labels: bug". */

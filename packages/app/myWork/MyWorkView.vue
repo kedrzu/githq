@@ -100,6 +100,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   /** Enter or a click on a row, or the selection moved while an item is open. */
   open: [id: string];
+  /** Enter on the opened item's row: it expands to its page. */
+  expand: [id: string];
   /** The items the list shows, top to bottom — what an opened item steps through. */
   listed: [listed: ListedItems];
   /** The view options back to their defaults. */
@@ -372,6 +374,7 @@ function toListItem(item: Item, nested: readonly Item[]): ListRow<Item> {
       :is-edited="isEdited"
       :get-url="item => item.url"
       @open="emit('open', $event)"
+      @expand="emit('expand', $event)"
       @listed="emit('listed', $event)"
     >
       <template

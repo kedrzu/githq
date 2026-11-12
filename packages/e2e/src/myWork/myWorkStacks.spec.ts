@@ -168,7 +168,7 @@ test('on its own page J and K walk the items of the list, the position counting 
     await expect(myWork.selectedRow).toContainText('Read the stack of each pull request');
     await page.keyboard.press('Enter');
     await expect(item.title).toHaveText('Fold a stack into one entry');
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/pull/102');
     await expect(item.position).toHaveText('2 / 2');
     // The entry is collapsed: its other pull requests are no steps, so the map hints neither key on them.
@@ -204,7 +204,7 @@ test('on its own page, the entry expanded, the stack map hints K and J on the ne
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
     await expect(item.title).toHaveText('Fold a stack into one entry');
-    await item.arrangement('Full page').click();
+    await item.fullScreenButton.click();
     await expect(page).toHaveURL('/acme/web/pull/102');
 
     await expect(row('#101')).toHaveAttribute('aria-keyshortcuts', 'K');

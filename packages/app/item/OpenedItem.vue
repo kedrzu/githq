@@ -1,4 +1,4 @@
-<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — the switch moves it to the other arrangement; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item, or between the page and the panel, replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
+<!-- The item an address opens, in its arrangement (D9): found and kept current (`useOpenedItem`), shown in the item view — in the panel beside the screen or on its page — and moved through. `K`/`J` step through the list it was opened from — and a row of a pull request's stack map opens one in its place, as they do, the stack read from the local copy — "Open full screen" (`⇧Enter`) expands it from the panel to its page, added to the history and marked as expanded from the panel (`getExpandedLocation`, kept through a reload); on a page so marked "Back to the panel", `⇧Enter` and Escape go Back to the panel, scrolled where it was — showing the item on screen in place of the one expanded when `K`/`J` moved on — while on a page opened any other way "Back to the panel" replaces it with the panel over the last list and Escape closes it, as Escape does wherever the panel doesn't fit; in the panel, a window narrowed until the panel no longer fits beside the screen (`ItemNavigation.panelFits`) moves it to its page — once no edit in its thread is open, which the move would lose — and widening never brings it back; closing goes back to the list, where it stays selected. "Merge…" opens the merge panel for it (merging D7), and once the merge is sent the panel moves on, as a list does (PM32a); an Undo of a close shows the undone item on the item's page; a pull request with checks failing or running has its merge options read, for which of them are required (D13): its tags, and the standing's verdict, the same as the panel's. Moving to another item replaces the address; opening a linked item — from the item's links, or a link to one in its body or comments (`ItemLinkContext`) — or closing adds one, so Back returns. The comment the address's fragment names is handed to the view, whose thread shows and marks it. When the user last looked at the item, and when they opened it, are handed to the view too, for its thread's "N new since you looked" — held while it stays open, in another arrangement too, until another item opens or it is closed; while the tab shows it, the newest of its thread is kept as seen (`ItemLookedStore`). On its page, the address settles on the item's kind once it is known (`/issues/15` of a pull request becomes `/pull/15`, as GitHub redirects). Leaving the item while an edit in its thread has changes asks first, and the item stays; Discard then goes on where the user was going. -->
 <script lang="ts" setup>
 import { mapNotNull } from '@nzyme/utils/array/mapNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
@@ -32,6 +32,8 @@ import { ItemLinkContext } from './ItemLinkContext.js';
 import { ItemNavigation } from './ItemNavigation.js';
 import {
   formatItemReference,
+  getExpandedFrom,
+  getExpandedLocation,
   getItemPagePath,
   getItemReference,
   getOpenedItemQuery,
@@ -347,10 +349,49 @@ function openInPlace(id: string) {
   }
 }
 
+/**
+ * Full screen adds the page to the history, marked as expanded from the panel, so Back returns to the panel where it
+ * was. Back to the panel goes back to it when the page carries the mark, else replaces the page with the panel over
+ * the last list.
+ */
 function arrange(arrangement: ItemArrangement) {
-  if (arrangement !== props.arrangement) {
-    moveTo(locate(props.reference, arrangement, opened.item?.kind), 'replace');
+  if (arrangement === props.arrangement) {
+    return;
   }
+
+  if (arrangement === 'page') {
+    moveTo(getExpandedLocation(props.reference, opened.item?.kind), 'push');
+  } else if (expandedFrom() === null) {
+    moveTo(locate(props.reference, 'panel', opened.item?.kind), 'replace');
+  } else {
+    backToPanel();
+  }
+}
+
+/**
+ * Back to the panel the page was expanded from, scrolled where it was; when the page has since moved on to another item
+ * (`K`/`J`, a stack's row), the panel then shows that one in place of the one expanded.
+ */
+function backToPanel() {
+  const shown = formatItemReference(props.reference).toLowerCase();
+  if (expandedFrom()?.toLowerCase() !== shown) {
+    const { reference } = props;
+    // The page is gone once Back lands, and this instance with it: the router finishes the step.
+    const removeAfterEach = router.afterEach((to, _from, failure) => {
+      removeAfterEach();
+      const next = getOpenedItemRoute(to);
+      if (!failure && next && !next.onPage) {
+        void router.replace({ path: to.path, query: getOpenedItemQuery(to.query, reference) });
+      }
+    });
+  }
+
+  router.back();
+}
+
+/** What the page on screen was expanded from the panel for (`getExpandedLocation`); `null` off a page or unmarked. */
+function expandedFrom() {
+  return props.arrangement === 'page' ? getExpandedFrom(router.options.history.state) : null;
 }
 
 function open(reference: ItemReference) {
@@ -376,7 +417,13 @@ function openReview() {
   moveTo(getReviewPath(props.reference), 'push');
 }
 
+/** Escape and the close button: a page expanded from the panel goes back to it while the panel fits; else to the list. */
 function close() {
+  if (expandedFrom() !== null && navigation.panelFits) {
+    backToPanel();
+    return;
+  }
+
   moveTo(
     props.arrangement === 'page' ? listPath() : { path: route.path, query: getOpenedItemQuery(route.query, null) },
     'push',

@@ -583,6 +583,7 @@ function setRowField(fieldId: string | null) {
     @update:row-field-id="setRowField"
     @reset="options.reset()"
     @open="open"
+    @expand="list.expand"
     @listed="list.setListed"
     @move="move"
     @add-draft="addDraft"
@@ -636,6 +637,7 @@ function setRowField(fieldId: string | null) {
     :is-edited="list.isEdited"
     :undone="list.undone"
     @open="list.open"
+    @expand="list.expand"
     @listed="list.setListed"
   >
     <template #others>
