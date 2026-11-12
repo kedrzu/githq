@@ -1,9 +1,11 @@
-<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it, and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
+<!-- A comment on the code posted on its own, without a review (`Activity / Code comment`, F5, F12): the writer's avatar in the gutter, "dkim commented on src/store/schema.ts 2d" level with it — the file a link to the thread in the pull request's review, underlined under the pointer — and the thread under it (`ItemThreadCodeThread`) — resolved, folded to its row with the first line of its first comment (`ItemThreadResolvedRow`) until opened, or while the address names one of its comments, Hide folding it again. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 
 import Avatar from '@/components/Avatar.vue';
+import { getReviewCommentPath } from '@/item/itemRoutes.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
 import { formatAge } from '@/utils/formatAge.js';
 
@@ -44,6 +46,8 @@ const t = useTranslate();
 const opened = ref<boolean | null>(null);
 
 const first = computed(() => props.entry.thread.comments[0] ?? null);
+/** The thread in the review; none for one GitHub has no anchor for yet. */
+const reviewPath = computed(() => (first.value ? getReviewCommentPath(first.value.url) : null));
 const login = computed(() => first.value?.author?.login ?? t(l.ghost));
 const folded = computed(
   () =>
@@ -84,7 +88,12 @@ function toggle(open: boolean) {
       <p :class="css.itemThreadCodeComment_head">
         <span :class="css.itemThreadCodeComment_author">{{ login }}</span>
         <span :class="css.itemThreadCodeComment_what">{{ t(l.commentedOn) }}</span>
-        <span :class="css.itemThreadCodeComment_path">{{ entry.thread.path }}</span>
+        <component
+          :is="reviewPath ? RouterLink : 'span'"
+          :to="reviewPath ?? undefined"
+          :class="[css.itemThreadCodeComment_path, reviewPath && css.itemThreadCodeComment_path_link]"
+          >{{ entry.thread.path }}</component
+        >
         <time
           :class="css.itemThreadCodeComment_when"
           :datetime="first?.createdAt"
@@ -157,6 +166,16 @@ function toggle(open: boolean) {
   font-size: $font-size-xs;
   color: $color-fg-2;
   text-overflow: ellipsis;
+}
+
+.itemThreadCodeComment_path_link {
+  @include focus-ring;
+
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .itemThreadCodeComment_when {

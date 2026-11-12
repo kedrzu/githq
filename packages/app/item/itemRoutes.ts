@@ -115,6 +115,19 @@ export function getReviewPath(reference: ItemReference) {
 }
 
 /**
+ * The address of a comment on the code in its pull request's review, from the comment's github.com `url`
+ * (`…/pull/15#discussion_r7`): the review's path with the same fragment, which lands on the comment's thread. `null`
+ * for a url that names no such comment, as one on its way to GitHub.
+ *
+ * @__NO_SIDE_EFFECTS__
+ */
+export function getReviewCommentPath(url: string) {
+    const [, item, anchor] = /^([^#]+)#(discussion_[\w-]+)$/u.exec(url) ?? [];
+    const reference = item && parseItemUrl(item);
+    return reference ? `${getReviewPath(reference)}#${anchor}` : null;
+}
+
+/**
  * The pull request a review's address names, or `null` for a number no pull request can have.
  *
  * @__NO_SIDE_EFFECTS__
