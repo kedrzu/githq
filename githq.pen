@@ -4295,6 +4295,7 @@
                       "strokeWidth": {
                         "bottom": 1
                       },
+                      "strokeAlignment": "inner",
                       "gap": 10,
                       "padding": [
                         0,
@@ -5754,6 +5755,7 @@
                       "strokeWidth": {
                         "right": 1
                       },
+                      "strokeAlignment": "inner",
                       "layout": "vertical",
                       "gap": 20,
                       "padding": [
@@ -36031,8 +36033,8 @@
     {
       "type": "frame",
       "id": "XN8vf",
-      "x": 18800,
-      "y": 9463,
+      "x": 18977,
+      "y": 4651,
       "name": "App · Pull request",
       "fill": "#08090B",
       "layout": "vertical",
@@ -48531,7 +48533,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Expanded from the panel (⇧↵, ↵ on the open row, or the header's button); ⇧↵, the button or Esc goes back to it. When the item view is at least 1000 px wide it splits in two. Left, the summary column, 440 px on its own $bg with a border: title, state, where the pull request stands, reviews, checks, what it closes, properties, projects. It stays put while the timeline scrolls, and scrolls on its own only when it's taller than the window (here Projects runs off the bottom). Right, the timeline: description, the whole thread and the composer, 40 px in from the summary, capped at 920 px. Here it has 684 px and is scrolled past the description, a review cut by the header. 440 px is the narrowest width that holds the merge standing's three buttons and every check row on one line, once the buttons drop their key hints (⇧M, O and D stay in the tooltips and the command menu) and the reviews line drops '1 approval · dkim' (Reviews says it right below).",
+                      "content": "Expanded from the panel (⇧↵, ↵ on the open row, or the header's button); ⇧↵, the button or Esc goes back to it. When the item view is at least 1000 px wide it splits in two. Left, the summary column, 440 px by default, on its own $bg with a 1 px $border on its right: title, state, where the pull request stands, reviews, checks, what it closes, properties, projects. Its right edge is dragged, as the review's file list: from 360 to 560 px, kept on this device; the handle shows only on hover. It stays put while the timeline scrolls, and scrolls on its own only when it's taller than the window (here Projects runs off the bottom). Right, the timeline: description, the whole thread and the composer, 40 px in from the summary, capped at 920 px. Here it has 684 px and is scrolled past the description, a review cut by the header. 440 px is the narrowest width that holds the merge standing's three buttons and every check row on one line, once the buttons drop their key hints (⇧M, O and D stay in the tooltips and the command menu) and the reviews line drops '1 approval · dkim' (Reviews says it right below).",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,

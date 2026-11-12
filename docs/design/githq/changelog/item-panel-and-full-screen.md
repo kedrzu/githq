@@ -193,3 +193,26 @@ Built in PR #265 from rounds 1 and 2: every entry above is ticked. D9 in `docs/d
 panel and full screen, the room rule and the two columns. In the code the merge block hides its key hints and the
 conditions' note below 480 px of its own width (the summary's 400 px of content), and the context menu's command reads
 "Open full screen", as E1 and L1 draw it. No change to the file.
+
+## Round 4 · agent brief
+
+Asked (`.context/item-layout-brief-3.md`): on the two-column screens the item header's bottom line and the summary
+column's divider don't match each other or the other panel borders; make each one 1 px `$border` line, as the panel's
+left border (F21) and the review's file list divider (CR). The summary column is resizable, as the review's file list.
+
+Found: the colours were right (`$border` everywhere, no opacity, no `$border-2`). Every stroke in the file is centred
+on its frame's edge, so the header's bottom line ran 47.5–48.5 px and the summary's `$bg` fill, starting at 48, painted
+over its lower half: over the summary, and over any card the header cuts in the timeline, it showed as half a line
+blended into `$bg`, while over the timeline's empty padding it showed whole. The panel's left border and the review's
+divider look right only because nothing paints over them. Drawn inside, the lines sit within their own frames, as the
+app's CSS borders do, and nothing can cover them.
+
+- [ ] Item / Toolbar (`I6JTP`): stroke alignment centre → inner; its bottom line is now the header's last pixel row
+  (47–48), one full 1 px line over both columns. `Item / Toolbar · full screen` (`ZzpBW`), `Item view / split`
+  (`a80hmX`) and every item header follow.
+- [ ] Item / Summary · pull request (`NjMaL`): stroke alignment centre → inner; its right line is the column's last
+  pixel column (439–440). `Item / Summary · issue` (`RtacV`) and every summary follow. Checked at 4× where the lines
+  meet: F18 (`lsBpS`), F2 (`dfRzu`), F20 (`uAkdB`, and its corner with the panel's left border), F23 (`zesTQ`), SP35
+  (`i3LZ1T`), D3 (`SUsSL`).
+- [ ] F18 caption (`NyyOn`): the summary is "440 px by default" with "a 1 px $border on its right", and its right edge
+  is dragged as the review's file list, 360–560 px, kept on this device, the handle shown only on hover.
