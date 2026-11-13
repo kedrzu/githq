@@ -295319,7 +295319,7 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
-                          "gap": 12,
+                          "gap": 24,
                           "padding": [
                             0,
                             10,
@@ -295357,7 +295357,7 @@
                               "ref": "eQbHY",
                               "name": "Comment button",
                               "layoutPosition": "absolute",
-                              "x": 2,
+                              "x": 40,
                               "y": 2,
                               "enabled": false
                             }
@@ -295378,7 +295378,7 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
-                          "gap": 12,
+                          "gap": 24,
                           "padding": [
                             0,
                             10,
@@ -295416,7 +295416,7 @@
                               "ref": "eQbHY",
                               "name": "Comment button",
                               "layoutPosition": "absolute",
-                              "x": 2,
+                              "x": 40,
                               "y": 2,
                               "enabled": false
                             }
@@ -295555,6 +295555,13 @@
                           "fontWeight": "normal"
                         },
                         {
+                          "type": "frame",
+                          "id": "Qref2",
+                          "name": "Gutter",
+                          "width": 24,
+                          "height": "fill_container"
+                        },
+                        {
                           "type": "text",
                           "id": "n249J",
                           "name": "Sign",
@@ -295583,7 +295590,7 @@
                           "ref": "eQbHY",
                           "name": "Comment button",
                           "layoutPosition": "absolute",
-                          "x": 2,
+                          "x": 84,
                           "y": 2,
                           "enabled": false
                         }
@@ -296045,7 +296052,7 @@
                           "type": "frame",
                           "id": "TE4Cj",
                           "name": "Sign",
-                          "width": 28,
+                          "width": 52,
                           "height": 1
                         },
                         {
@@ -296074,7 +296081,7 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
-                          "gap": 12,
+                          "gap": 24,
                           "padding": [
                             0,
                             10,
@@ -296121,7 +296128,7 @@
                           "clip": true,
                           "width": "fill_container",
                           "height": "fill_container",
-                          "gap": 12,
+                          "gap": 24,
                           "padding": [
                             0,
                             10,
@@ -296750,11 +296757,11 @@
                       "gap": 6,
                       "children": [
                         {
-                          "id": "rP87V",
+                          "id": "vvC0W",
                           "type": "ref",
                           "reusable": true,
                           "ref": "qKwyX",
-                          "name": "Diff / Row · split, cursor before",
+                          "name": "Diff / Row · split · cursor",
                           "width": "fill_container",
                           "descendants": {
                             "TBDRE": {
@@ -296762,17 +296769,7 @@
                             },
                             "c4bef6": {
                               "enabled": true
-                            }
-                          }
-                        },
-                        {
-                          "id": "vvC0W",
-                          "type": "ref",
-                          "reusable": true,
-                          "ref": "qKwyX",
-                          "name": "Diff / Row · split, cursor after",
-                          "width": "fill_container",
-                          "descendants": {
+                            },
                             "bwyif": {
                               "fill": "#7B87F71A"
                             },
@@ -296782,11 +296779,11 @@
                           }
                         },
                         {
-                          "id": "khluf",
+                          "id": "spHea",
                           "type": "ref",
                           "reusable": true,
                           "ref": "SZHhU",
-                          "name": "Diff / Row · split, changed, cursor before",
+                          "name": "Diff / Row · split, changed · cursor",
                           "width": "fill_container",
                           "descendants": {
                             "TBDRE": {
@@ -296797,17 +296794,7 @@
                             },
                             "c4bef6": {
                               "enabled": true
-                            }
-                          }
-                        },
-                        {
-                          "id": "spHea",
-                          "type": "ref",
-                          "reusable": true,
-                          "ref": "SZHhU",
-                          "name": "Diff / Row · split, changed, cursor after",
-                          "width": "fill_container",
-                          "descendants": {
+                            },
                             "bwyif": {
                               "fill": [
                                 "#2EA04326",
@@ -296824,9 +296811,18 @@
                           "type": "ref",
                           "reusable": true,
                           "ref": "V6xqDv",
-                          "name": "Diff / Row · split, added, cursor",
+                          "name": "Diff / Row · split, added · cursor",
                           "width": "fill_container",
                           "descendants": {
+                            "TBDRE": {
+                              "fill": [
+                                "#FFFFFF05",
+                                "#7B87F71A"
+                              ]
+                            },
+                            "c4bef6": {
+                              "enabled": true
+                            },
                             "bwyif": {
                               "fill": [
                                 "#2EA04326",
@@ -296843,7 +296839,7 @@
                           "type": "ref",
                           "reusable": true,
                           "ref": "Oyfbc",
-                          "name": "Diff / Row · split, deleted, cursor",
+                          "name": "Diff / Row · split, deleted · cursor",
                           "width": "fill_container",
                           "descendants": {
                             "TBDRE": {
@@ -296853,6 +296849,15 @@
                               ]
                             },
                             "c4bef6": {
+                              "enabled": true
+                            },
+                            "bwyif": {
+                              "fill": [
+                                "#FFFFFF05",
+                                "#7B87F71A"
+                              ]
+                            },
+                            "GsVhv": {
                               "enabled": true
                             }
                           }
@@ -315691,7 +315696,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "? lists them. Nothing new for J and K; [ ] for files and N ⇧N for threads; x { } select as in the brief; V ticks; ↓ ↑ move the line cursor stop by stop and ← → switch its side in split, PageDown PageUp a screen at a time (CR120–CR126); E shows 20 more hidden lines of the gap nearest the cursor each time it's pressed, the whole gap from the command menu (D42; ⇧E stays Re-run failed checks); C comments on the cursor's line (CR120), and R replies to the focused thread. The two columns take VS Code's ⌘B and ⌥⌘B.",
+                      "content": "? lists them. Nothing new for J and K; [ ] for files and N ⇧N for threads; x { } select as in the brief; V ticks; ↓ ↑ move the line cursor stop by stop, a whole row in split, PageDown PageUp a screen at a time (CR120–CR126); E shows 20 more hidden lines of the gap nearest the cursor each time it's pressed, the whole gap from the command menu (D42; ⇧E stays Re-run failed checks); C comments on the cursor's line (CR120), and R replies to the focused thread. The two columns take VS Code's ⌘B and ⌥⌘B.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -317111,57 +317116,6 @@
                                       "name": "Label",
                                       "fill": "$fg-2",
                                       "content": "Move the cursor",
-                                      "fontFamily": "$font",
-                                      "fontSize": 12,
-                                      "fontWeight": "normal"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "yYOBE",
-                                  "name": "Switch side",
-                                  "width": "fill_container",
-                                  "gap": 10,
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "FLtpm",
-                                      "name": "Keys",
-                                      "width": 78,
-                                      "gap": 3,
-                                      "children": [
-                                        {
-                                          "id": "SyDt3",
-                                          "type": "ref",
-                                          "ref": "w9kS9",
-                                          "name": "Kbd ←",
-                                          "descendants": {
-                                            "luKkY": {
-                                              "content": "←"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "id": "FpwND",
-                                          "type": "ref",
-                                          "ref": "w9kS9",
-                                          "name": "Kbd →",
-                                          "descendants": {
-                                            "luKkY": {
-                                              "content": "→"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "x18BM",
-                                      "name": "Label",
-                                      "fill": "$fg-2",
-                                      "content": "Switch side",
                                       "fontFamily": "$font",
                                       "fontSize": 12,
                                       "fontWeight": "normal"
@@ -353859,7 +353813,7 @@
               "fill": "$fg-2",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Exactly one stop is focused at a time — a file's header, a diff line (in split, one side of it), a thread or a gap — shared by the mouse and the keys: hovering a stop focuses it, ↓ ↑ move stop by stop, ← → switch the side, the screen keeps the cursor a third from its edges. The cursor's file is the current file (D44). The focused line shows a comment button before its number; its tooltip is the only place its key shows.",
+              "content": "Exactly one stop is focused at a time — a file's header, a diff row (in split, both halves of it), a thread or a gap — shared by the mouse and the keys: hovering a stop focuses it, ↓ ↑ move stop by stop, the screen keeps the cursor a third from its edges. The cursor's file is the current file (D44). The focused row shows a comment button between the number and the code, on both halves in split, each commenting on its half's line (an empty half on the row's line); C takes the newer line, or the older on a row with only an older line. The button's tooltip is the only place its key shows.",
               "lineHeight": 1.5,
               "fontFamily": "$font",
               "fontSize": 14,
@@ -353906,7 +353860,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The pointer over the right side of an added line, line 51, puts the cursor there: that side's cell takes the cursor's tint over its green, and the comment button stands before the number. Hovering anywhere in a file makes it current (D44), so V, Space and C act on what is under the pointer. A click on the button comments on the line (CR90); a drag along the numbers or ⇧click still makes a range (CR73). The code stays selectable as text.",
+                      "content": "The pointer over the right half of an added line, line 51, puts the cursor on the row: both halves take the cursor's tint over their own fill, and each half shows a comment button between its number and the code, as on github.com: the right one after 51, the left one on the empty half at the same place, both commenting on line 51. The gutter is there on every row, so the code never shifts. Hovering anywhere in a file makes it current (D44), so V, Space and C act on what is under the pointer. A click on a button comments on its line (CR90); a drag along the numbers or ⇧click still makes a range (CR73). The code stays selectable as text.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -354636,7 +354590,7 @@
             {
               "type": "frame",
               "id": "NaaUz",
-              "name": "Slot · CR121 · Cursor on the older side, by the keys",
+              "name": "Slot · CR121 · Cursor on a deleted line alone, by the keys",
               "width": 1440,
               "layout": "vertical",
               "gap": 12,
@@ -354654,7 +354608,7 @@
                       "id": "dfgqi",
                       "name": "Caption title",
                       "fill": "$fg",
-                      "content": "CR121 · Cursor on the older side, by the keys",
+                      "content": "CR121 · Cursor on a deleted line alone, by the keys",
                       "fontFamily": "$font",
                       "fontSize": 15,
                       "fontWeight": "500"
@@ -354666,7 +354620,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "No pointer: ↓ ↑ moved the cursor stop by stop and ← put it on the left side of a context line, line 46 of the older file. That side alone takes the tint and the comment button; the right side of the same line is another stop, one → away. The screen keeps the cursor a third from its edges, so the diff scrolls under it. C comments here, on the older side.",
+                      "content": "No pointer: ↓ ↑ moved the cursor stop by stop onto a line the change deleted outright, line 50 of the older file, with nothing beside it on the right. The whole row takes the tint, both halves, as every row does, and both show the comment button between number and code: the left one after the older 50, the right one on the empty half where a newer number's button would stand; both comment on the older line 50. The screen keeps the cursor a third from its edges, so the diff scrolls under it. C comments here, on the older line 50.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -354677,7 +354631,7 @@
                 {
                   "type": "frame",
                   "id": "iwRlZ",
-                  "name": "CR121 · Cursor on the older side, by the keys",
+                  "name": "CR121 · Cursor on a deleted line alone, by the keys",
                   "clip": true,
                   "width": 1440,
                   "height": 900,
@@ -354761,7 +354715,12 @@
                                       "ref": "SgpvP",
                                       "name": "File list",
                                       "height": "fill_container",
-                                      "width": "fill_container"
+                                      "width": "fill_container",
+                                      "descendants": {
+                                        "emCdU/LBgg9/AyEQi": {
+                                          "content": "−19"
+                                        }
+                                      }
                                     }
                                   ]
                                 },
@@ -354802,6 +354761,9 @@
                                             },
                                             "FPmJu": {
                                               "content": "1 open · 1 outdated · 1 resolved"
+                                            },
+                                            "yHDS8": {
+                                              "content": "−19"
                                             }
                                           }
                                         },
@@ -355004,10 +354966,10 @@
                                           }
                                         },
                                         {
-                                          "id": "mIlUt",
+                                          "id": "ahEUH",
                                           "type": "ref",
-                                          "ref": "rP87V",
-                                          "name": "Line 49 · cursor",
+                                          "ref": "qKwyX",
+                                          "name": "Line 49",
                                           "width": "fill_container",
                                           "descendants": {
                                             "r847H": {
@@ -355103,6 +355065,21 @@
                                           }
                                         },
                                         {
+                                          "id": "v6Mvo",
+                                          "type": "ref",
+                                          "ref": "PFRP7",
+                                          "name": "Deleted 50 · cursor",
+                                          "width": "fill_container",
+                                          "descendants": {
+                                            "r847H": {
+                                              "content": "50"
+                                            },
+                                            "G99RqR": {
+                                              "content": "      this.emit('idle')"
+                                            }
+                                          }
+                                        },
+                                        {
                                           "id": "RzaOw",
                                           "type": "ref",
                                           "ref": "qKwyX",
@@ -355110,7 +355087,7 @@
                                           "width": "fill_container",
                                           "descendants": {
                                             "r847H": {
-                                              "content": "50"
+                                              "content": "51"
                                             },
                                             "G99RqR": {
                                               "content": "    }"
@@ -355131,7 +355108,7 @@
                                           "width": "fill_container",
                                           "descendants": {
                                             "r847H": {
-                                              "content": "51"
+                                              "content": "52"
                                             },
                                             "G99RqR": {
                                               "content": "  }"
@@ -355403,7 +355380,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "As CR120, the pointer on the comment button: it lightens, and the app's tooltip opens under it, \"Comment on line 51\" with the key C. The key shows nowhere else in the diff, to keep it calm; the tooltip goes when the pointer leaves the button, the cursor stays on the line.",
+                      "content": "As CR120, the pointer on the right half's comment button: it lightens, and the app's tooltip opens under it, \"Comment on line 51\" with the key C, naming the line this button comments on. The key shows nowhere else in the diff, to keep it calm; the tooltip goes when the pointer leaves the button, the cursor stays on the line.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -355801,7 +355778,7 @@
                                               "ref": "dHp6a",
                                               "name": "Comment button",
                                               "layoutPosition": "absolute",
-                                              "x": 2,
+                                              "x": 40,
                                               "y": 2
                                             }
                                           }
@@ -356116,8 +356093,8 @@
                       "type": "icon",
                       "id": "uSfL7",
                       "layoutPosition": "absolute",
-                      "x": 906,
-                      "y": 347,
+                      "x": 943,
+                      "y": 345,
                       "name": "Pointer",
                       "width": 18,
                       "height": 18,
@@ -356141,7 +356118,7 @@
                       "ref": "TO1uL",
                       "name": "Tooltip",
                       "layoutPosition": "absolute",
-                      "x": 832,
+                      "x": 870,
                       "y": 362
                     }
                   ]
@@ -356189,7 +356166,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "In unified a line is one stop, the whole row: the cursor on a deleted line, line 44 of the older file, tints the row over its red and puts the comment button before its number, in the margin of the old number's cell. ← → do nothing here. C comments on the older side's line 44.",
+                      "content": "In unified a row is one line: the cursor on a deleted line, line 44 of the older file, tints the row over its red and puts one comment button after the two number columns, before the sign and the code; the gutter is there on every row, so the code never shifts. The line has no newer number, so C and the button comment on the older line 44.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
@@ -357768,7 +357745,7 @@
                       "fill": "$fg-2",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "The cursor on a collapsed file's header between two open files: queue.ts is the current file, its header lit and its edge in accent, so V, Space and C act on it; engine.test.ts below crosses the reading line but is no longer current, its header plain. Space here expands queue.ts; ↓ goes on to engine.test.ts's header.",
+                      "content": "The cursor on a collapsed file's header between two open files: queue.ts is the current file, its header lit and its edge in accent, so V, Space and C act on it; engine.test.ts below is no longer current, its header plain. Space here expands queue.ts; ↓ goes on to engine.test.ts's header.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font",
                       "fontSize": 13,
