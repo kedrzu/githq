@@ -83,3 +83,50 @@ Elsewhere:
 
 - [ ] Every top-level frame from `App · Command menu` (`D27jC`) down: moved 8961 px down, keeping 1200 px under
       `App · Code review`.
+
+## Round 2 · agent brief
+
+Asked: the owner picked Variant A with B's lists and C's total diff: A's pull request card as it is, B's two bordered
+panels for the commits and the files, and the submodule's total diff in A's quiet line, which loses the path and its
+icon (the file header above names the submodule). Settle the variants. Changed: A's block now uses B's panels; B and C
+are deleted with every component only they used; CR127–CR129 left the `Variants` frame and lost `Variant A ·`; the
+frames below `App · Code review` moved up by the height freed.
+
+Components, in `Components · Code review` (`crvke`) → `Submodule parts` (`QyRE7`):
+
+- [ ] Block (`A8DBA`): renamed from `Variant A · PR card`; now holds the two panels, moved in from B's frame.
+- [ ] Submodule / PR card (`jW49B`), Submodule / PR card · none (`cVDhC`): renamed from `Submodule A / …`, unchanged.
+- [ ] Submodule / Pointers line (`hpMBi`): renamed from `Submodule A / Identity`; the folder icon (`jw1Wo`) and the
+      path `nzyme` (`Ts3zT`) deleted; after the relation a new `·` (`N6e2E9`) and `Total diff` (`FfUFF`), an instance
+      of `PR size` (`BVme8`): `+1,268 −402`. Reads `a1c9e2f → d4f7b21 · 38 commits ahead · +1,268 −402`, then Open
+      comparison on GitHub at the end.
+- [ ] Submodule / Commits panel (`yyn4j`), Submodule / Files panel (`X2gdqH`): renamed from `Submodule B / …`,
+      unchanged.
+- [ ] Submodule / Block · wide (`ZBbVO`): renamed from `Submodule A / …`; `Lists` (`V2GUL`) gap 32 → 16, its two plain
+      lists replaced by `Commits` (`dZTiN`, an instance of the commits panel) and `Files` (`yGoxs`, the files panel),
+      side by side.
+- [ ] Submodule / Block · narrow (`pJoWz`): renamed from `Submodule A / …`; `Lists` (`g5OzXn`) gap 20 → 16, the lists
+      replaced by `Commits` (`uqM4v`) and `Files` (`IgXd0`), stacked.
+- [ ] Deleted: `Submodule A / Commits` (`xlRPp`), `Submodule A / Files` (`zGJAV`); B's `Submodule B / PR header`
+      (`t8OOh`), `· none` (`igdgu`), `Subtitle` (`JSOqZ`), `Block · wide` (`SF2tW`), `Block · narrow` (`ltN5M`) and
+      their frame `Variant B · PR as the header` (`s6Dm64`); all of C, `Variant C · Summary strip` (`dOabE`): rows,
+      row lists, PR line and `· none`, stats, stat cells, tables, blocks.
+
+Screens, in `App · Code review` (`CEDLB`), group `Submodules`:
+
+- [ ] Group header note (`dhnKK`): describes the settled block, no longer "three variants to pick from".
+- [ ] Variants · Submodule block (`J8dWW`): deleted with its amber, with CR130–CR135 (rows `IBPMk`, `YRhcM`).
+- [ ] Row of screens (`jwKxw`): renamed from `Row · Variant A`, moved out of the `Variants` frame to where it stood.
+- [ ] `CR127 · The pull request as a card — wide` (`h8v8z`, screen `AgupS`): `Variant A ·` dropped; caption rewritten
+      for the settled block. Shows the panels side by side.
+- [ ] `CR128 · The pull request as a card — narrow` (`fNMWk`, screen `G2JtY`): `Variant A ·` dropped; caption says the
+      panels stack.
+- [ ] `CR129 · A small bump, no pull request — wide` (`lP42v`, screen `FNbo5`): `Variant A ·` dropped; caption
+      rewritten; its block (`QzyRB`, replacing `ec1Lq`) re-keys the small bump onto the panels: `3 ahead`,
+      `4 changed`, both feet hidden, total diff `+44 −6`.
+- [ ] CR136 (`mlSdU`): unchanged.
+
+Elsewhere:
+
+- [ ] Every top-level frame from `App · Command menu` (`D27jC`) down: moved 3256 px up, keeping 1200 px under
+      `App · Code review`.
