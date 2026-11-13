@@ -17,10 +17,15 @@ export function withSubmoduleHistory(state: ReviewSubmoduleState): Decorator {
         defineComponent({
             setup() {
                 const held = shallowRef(state);
+                const expanded = shallowRef<ReadonlySet<string>>(new Set());
                 const container = createContainer({ parent: useContainer() });
                 container.set(ReviewSubmodules, {
                     load: () => {},
                     peek: () => held.value,
+                    isExpanded: (change, list) => expanded.value.has(`${change.path}:${list}`),
+                    expand: (change, list) => {
+                        expanded.value = new Set(expanded.value).add(`${change.path}:${list}`);
+                    },
                     retry: () => {
                         if (held.value.kind === 'failed') {
                             held.value = { kind: 'loading' };

@@ -264,6 +264,21 @@ test('another user signing in forgets what was read, and an answer for the one b
     expect(submodules.peek(BUMP)).toEqual({ kind: 'waiting' });
 });
 
+test('an expanded list is remembered for its change only, and forgotten when another user signs in', () => {
+    const { session, submodules } = setup(createGitHub());
+    const other: ReviewSubmoduleChange = { ...BUMP, path: 'skills' };
+
+    submodules.expand(BUMP, 'commits');
+
+    expect(submodules.isExpanded(BUMP, 'commits')).toBe(true);
+    expect(submodules.isExpanded(BUMP, 'files')).toBe(false);
+    expect(submodules.isExpanded(other, 'commits')).toBe(false);
+
+    session.signInFromAnotherTab(uniqueLogin());
+
+    expect(submodules.isExpanded(BUMP, 'commits')).toBe(false);
+});
+
 interface TestComparison {
     readonly status: 'ahead' | 'behind' | 'diverged' | 'identical';
     readonly aheadBy?: number;

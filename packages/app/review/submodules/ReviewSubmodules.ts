@@ -120,11 +120,15 @@ interface SubmodulesSession {
     refusedUntil: number;
 }
 
+/** One of the two long lists of a submodule block, each cut short until expanded. */
+export type ReviewSubmoduleList = 'commits' | 'files';
+
 /**
  * The history between a review's submodule pointers: the commits and files between them and the pull requests in the
  * submodule's repository carrying the new one. Read only when asked ({@link load}), so a collapsed entry costs nothing:
  * the URLs the head commit declares, shared by all its submodules, then one comparison (two for a rollback, which GitHub
- * compares only the other way round) and one query for the pull requests. Held in memory for the signed-in user only.
+ * compares only the other way round) and one query for the pull requests. Also remembers which lists of a change were
+ * expanded, as the block showing them is unmounted when scrolled away. Held in memory for the signed-in user only.
  */
 export type ReviewSubmodules = Resolved<typeof ReviewSubmodules>;
 export const ReviewSubmodules = defineService({
@@ -137,11 +141,12 @@ export const ReviewSubmodules = defineService({
     },
     setup({ accounts, rateLimits, clock, logger }) {
         const statesRef = shallowRef<ReadonlyMap<string, ReviewSubmoduleState>>(new Map());
+        const expandedRef = shallowRef<ReadonlySet<string>>(new Set());
         let session: SubmodulesSession | null = null;
 
         accounts.onChange(follow);
 
-        return { load, peek, retry };
+        return { load, peek, retry, isExpanded, expand };
 
         /** Reads the change's history, unless it is read or on its way already. Nothing while signed out. */
         function load(change: ReviewSubmoduleChange) {
@@ -162,12 +167,23 @@ export const ReviewSubmodules = defineService({
             }
         }
 
+        /** Whether the change's list was expanded, since the user signed in. Reactive. */
+        function isExpanded(change: ReviewSubmoduleChange, list: ReviewSubmoduleList) {
+            return expandedRef.value.has(getListKey(change, list));
+        }
+
+        /** Keeps the change's list expanded: there is no collapsing. */
+        function expand(change: ReviewSubmoduleChange, list: ReviewSubmoduleList) {
+            expandedRef.value = new Set(expandedRef.value).add(getListKey(change, list));
+        }
+
         function follow(account: Account | null) {
             for (const cancel of session?.resumes ?? []) {
                 cancel();
             }
 
             statesRef.value = new Map();
+            expandedRef.value = new Set();
             session = account && { account, declared: new Map(), resumes: new Set(), refusedUntil: 0 };
         }
 
@@ -386,4 +402,9 @@ function isNotFound(error: unknown) {
 
 function getKey({ nameWithOwner, path, before, after }: ReviewSubmoduleChange) {
     return JSON.stringify([nameWithOwner, path, before, after]);
+}
+
+/** The key is JSON, which never ends in a bare list name after a tab. */
+function getListKey(change: ReviewSubmoduleChange, list: ReviewSubmoduleList) {
+    return `${getKey(change)}\t${list}`;
 }
