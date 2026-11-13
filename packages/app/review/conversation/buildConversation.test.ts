@@ -31,14 +31,18 @@ test('a reply, a review with no text, verdict or thread of its own, is left out;
     expect(entries.map(entry => entry.id)).toEqual(['text', 'verdict', 'threads']);
 });
 
-test('a comment on its way to GitHub is not on the pull request yet', () => {
+test('the user’s comments on their way come after everything GitHub told, then those GitHub did not take', () => {
     const entries = buildConversation({
-        comments: [{ ...comment('C_1', '2026-10-30T10:00:00Z'), pendingBody: 'typed' }],
-        summaries: [],
+        comments: [
+            { ...comment('C_1', '2026-10-30T10:00:00Z'), pendingBody: 'typed' },
+            comment('C_2', '2026-10-30T11:00:00Z'),
+        ],
+        summaries: [review('R_1', '2026-10-30T12:00:00Z')],
         threads: NO_THREADS,
+        failedComments: [{ id: 7, itemId: 'PR_1', body: 'refused', reason: { kind: 'offline' }, retrying: false }],
     });
 
-    expect(entries).toEqual([]);
+    expect(entries.map(entry => entry.id)).toEqual(['C_2', 'R_1', 'C_1', 'failed:7']);
 });
 
 function comment(id: string, createdAt: string): ItemComment {
@@ -56,5 +60,14 @@ function comment(id: string, createdAt: string): ItemComment {
 }
 
 function review(id: string, submittedAt: string, overrides: Partial<ItemReviewSummary> = {}): ItemReviewSummary {
-    return { id, url: '', author: null, state: 'APPROVED', bodyHtml: '<p>text</p>', submittedAt, ...overrides };
+    return {
+        id,
+        url: '',
+        author: null,
+        state: 'APPROVED',
+        body: 'text',
+        bodyHtml: '<p>text</p>',
+        submittedAt,
+        ...overrides,
+    };
 }

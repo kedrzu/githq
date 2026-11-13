@@ -1,4 +1,4 @@
-import { OAUTH_REVOKE_PATH } from '@githq/github/oauth.js';
+import { OAUTH_REFRESH_PATH, OAUTH_REVOKE_PATH } from '@githq/github/oauth.js';
 
 import { test as base } from '../fixtures.js';
 import { E2E_DESKTOP_BASE_URL } from '../localApp.js';
@@ -10,9 +10,10 @@ export interface DesktopFixtures {
     native: FakeNativeBridge;
     /**
      * The requests the app made to a githq server — githq.dev, or `/api/*` of the app's own origin — which the desktop
-     * app never needs: it talks to GitHub alone. Any fails the test when it ends; githq.dev is never reached. The one
-     * exception is the revocation of the token on signing out, which a build that is not production's asks of its own
-     * origin and the GitHub mock answers (`GitHubMock.revokedTokens`).
+     * app never needs: it talks to GitHub alone. Any fails the test when it ends; githq.dev is never reached. The
+     * exceptions are what only the client secret can do — the revocation of the token on signing out and the renewal of
+     * an expiring one — which a build that is not production's asks of its own origin and the GitHub mock answers
+     * (`GitHubMock.revokedTokens`, `GitHubMock.refreshedTokens`).
      */
     githqRequests: readonly string[];
 }
@@ -36,7 +37,8 @@ export const test = base.extend<DesktopFixtures>({
                 const ownApi =
                     url.origin === E2E_DESKTOP_BASE_URL &&
                     url.pathname.startsWith('/api/') &&
-                    url.pathname !== OAUTH_REVOKE_PATH;
+                    url.pathname !== OAUTH_REVOKE_PATH &&
+                    url.pathname !== OAUTH_REFRESH_PATH;
                 if (isGitHqDev(url) || ownApi) {
                     requests.push(`${request.method()} ${url.href}`);
                 }

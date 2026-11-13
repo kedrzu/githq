@@ -93,3 +93,11 @@ the cursor keeps its commented tint alone (both stacked would put the accent num
 unchanged: the drawn colours are the ones on screen.
 
 - [x] Code only: `DiffRowSplit` / `DiffRowUnified` cursor tint under the row fill; the commented tint wins over it.
+
+## Round 5 · merge of `main`
+
+Forced by: `main` added the group "The conversation as cards" (`TT4mn`) to `CEDLB` and moved the 25 frames below it by
+2270 px, while this branch had moved them by 2164 px (25 `y` conflicts). `CEDLB`'s auto layout keeps both groups apart,
+"Line cursor" (`dXShs`) last; the frames below moved as rows so they keep 1200 px under `CEDLB`'s new bottom (59350).
+
+- [x] 25 top-level frames below `CEDLB` (`D27jC` … `I5wWZ`): `y` +2310 from this branch's values, rows kept whole.

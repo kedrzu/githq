@@ -351,6 +351,8 @@ export interface ItemReviewSummary {
     /** `null` for a deleted account. */
     readonly author: ItemUser | null;
     readonly state: Exclude<PullRequestReviewState, 'PENDING'>;
+    /** The Markdown, which Quote reply quotes; empty for a review with no text. */
+    readonly body: string;
     /** GitHub's own rendering, sanitized by GitHub; empty for a review with no text. */
     readonly bodyHtml: string;
     readonly submittedAt: string;

@@ -1,9 +1,12 @@
 <!-- A submitted review on an item's thread (`Activity / Review`, F14): the reviewer's avatar in the gutter and a card whose head says the verdict in its colour — approved in green, requested changes in red, reviewed dim — when, and "2 threads · 1 resolved"; then the summary, each thread it started still open (`ItemThreadCodeThread`) and those resolved, each folded to its row (`ItemThreadResolvedRow`) — saying its first line after the file where another has the same file — until opened, Hide folding it again — with nothing written and no threads, the head alone. A dismissed review says what it was ("requested changes · dismissed") and folds to its head: "Show review" opens it, "Hide review" folds it again. While the address names the review (`pullrequestreview-<id>`), its card's border is in the accent; while it names a comment of one of its threads (`discussion_r<id>`), the review and that thread show opened. -->
 <script lang="ts" setup>
-import { assertNever } from '@nzyme/utils/assertNever.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { computed, ref } from 'vue';
 
+import CommentCard from '@/comments/CommentCard.vue';
+import CommentMenu from '@/comments/CommentMenu.vue';
+import CommentVerdict from '@/comments/CommentVerdict.vue';
+import type { CommentActions } from '@/comments/useCommentActions.js';
 import Button from '@/components/Button.vue';
 import type { ReviewThread } from '@/review/threads/ReviewThread.js';
 import type { ItemUser } from '@/store/ItemTypes.js';
@@ -14,7 +17,6 @@ import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import { getUrlAnchor } from './getUrlAnchor.js';
 import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadReview.loc.js';
-import ItemThreadCard from './ItemThreadCard.vue';
 import ItemThreadCodeThread from './ItemThreadCodeThread.vue';
 import ItemThreadResolvedRow from './ItemThreadResolvedRow.vue';
 
@@ -28,6 +30,10 @@ const props = defineProps<{
   replies?: CodeThreadReplies | null;
   /** The anchor the address's fragment names: the review itself, or a comment of one of its threads. */
   linkedAnchor?: string;
+  /** What the thread does with its cards: the review's Quote reply and Copy link. */
+  actions?: CommentActions | null;
+  /** The composer takes a comment: Quote reply is offered. */
+  canQuote?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -52,21 +58,6 @@ const dismissed = computed(() => props.entry.review.state === 'DISMISSED');
 const linked = computed(
   () => props.linkedAnchor !== undefined && getUrlAnchor(props.entry.review.url) === props.linkedAnchor,
 );
-const verdict = computed(() => {
-  const { review, dismissedFrom } = props.entry;
-  switch (review.state) {
-    case 'APPROVED':
-      return { text: t(l.approved), tone: 'approved' };
-    case 'CHANGES_REQUESTED':
-      return { text: t(l.changesRequested), tone: 'changesRequested' };
-    case 'COMMENTED':
-      return { text: t(l.commented), tone: null };
-    case 'DISMISSED':
-      return { text: getDismissedText(dismissedFrom), tone: null };
-    default:
-      return assertNever(review.state);
-  }
-});
 const counts = computed(() => {
   const { threads, resolved } = props.entry;
   const total = threads.length + resolved.length;
@@ -106,17 +97,6 @@ const bodyShown = computed(() => {
   );
 });
 
-function getDismissedText(before: ThreadReview['dismissedFrom']) {
-  switch (before) {
-    case 'APPROVED':
-      return t(l.approvedDismissed);
-    case 'CHANGES_REQUESTED':
-      return t(l.changesRequestedDismissed);
-    default:
-      return t(l.dismissed);
-  }
-}
-
 function isOpened(thread: ReviewThread) {
   return (
     opened.value.get(thread.id) ?? (props.replies?.get(thread.id) != null || holdsAnchor(thread, props.linkedAnchor))
@@ -141,18 +121,23 @@ function toggle(threadId: string, open: boolean) {
 </script>
 
 <template>
-  <ItemThreadCard
+  <CommentCard
     :author="entry.review.author"
     :created-at="entry.review.submittedAt"
     :now="now"
     :linked="linked"
+    @menu-close="actions?.onMenuClose($event)"
   >
     <template #verdict>
-      <span :class="[css.itemThreadReview_verdict, verdict.tone && css[`itemThreadReview_verdict_${verdict.tone}`]]">{{
-        verdict.text
-      }}</span>
+      <CommentVerdict
+        :state="entry.review.state"
+        :dismissed-from="entry.dismissedFrom"
+      />
     </template>
-    <template #aside>
+    <template
+      v-if="dismissed || counts !== null"
+      #tail
+    >
       <Button
         v-if="dismissed"
         variant="link"
@@ -212,23 +197,21 @@ function toggle(threadId: string, open: boolean) {
         </template>
       </div>
     </template>
-  </ItemThreadCard>
+    <template
+      v-if="actions"
+      #menu
+    >
+      <CommentMenu
+        :can-edit="false"
+        :can-quote="(canQuote ?? false) && entry.review.body !== ''"
+        @quote-reply="actions.quote(entry.review.body)"
+        @copy-link="actions.copyLink(entry.review.url)"
+      />
+    </template>
+  </CommentCard>
 </template>
 
 <style lang="scss" module="css">
-.itemThreadReview_verdict {
-  font-size: $font-size-xs;
-  color: $color-fg-dim;
-}
-
-.itemThreadReview_verdict_approved {
-  color: $color-green;
-}
-
-.itemThreadReview_verdict_changesRequested {
-  color: $color-red;
-}
-
 .itemThreadReview_counts {
   font-size: $font-size-xs;
   color: $color-fg-dim;

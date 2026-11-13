@@ -3,7 +3,12 @@ import type { Page } from '@playwright/test';
 
 import type { GitHubMock } from '../github/GitHubMock.js';
 import type { GitHubWorld } from '../github/GitHubWorld.js';
-import { SAMPLE_TOKEN, SAMPLE_VIEWER } from '../github/sampleViewer.js';
+import {
+    SAMPLE_REFRESH_TOKEN,
+    SAMPLE_TOKEN,
+    SAMPLE_TOKEN_LIFETIME_SECONDS,
+    SAMPLE_VIEWER,
+} from '../github/sampleViewer.js';
 import { AppShellHarness } from '../harnesses/AppShell.harness.js';
 import { DesktopSignInScreenHarness } from '../harnesses/DesktopSignInScreen.harness.js';
 import { FirstSignInHarness } from '../harnesses/FirstSignIn.harness.js';
@@ -23,7 +28,8 @@ export interface SignInOnDesktopParams {
 }
 
 /**
- * Signs in to the desktop app as {@link SAMPLE_VIEWER} with a device code, the native side approving it at once, goes
+ * Signs in to the desktop app as {@link SAMPLE_VIEWER} with a device code, the native side approving it at once with an
+ * expiring token and its refresh token, as GitHub issues them, goes
  * through the first sign-in's choice — with nothing to track, unless told to — and waits for the shell — and, given a
  * `world`, for "my work" to arrive.
  */
@@ -44,7 +50,10 @@ export async function signInOnDesktop({
     const signIn = new DesktopSignInScreenHarness(page);
     await signIn.signInButton.click();
     await expect(signIn.deviceCode).toHaveText(native.deviceCode.userCode);
-    native.approveDeviceSignIn(SAMPLE_TOKEN);
+    native.approveDeviceSignIn(SAMPLE_TOKEN, {
+        refreshToken: SAMPLE_REFRESH_TOKEN,
+        expiresIn: SAMPLE_TOKEN_LIFETIME_SECONDS,
+    });
     const firstSignIn = new FirstSignInHarness(page);
     if (track) {
         await firstSignIn.trackAndOpenMyWork();

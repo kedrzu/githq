@@ -270,6 +270,11 @@ export class ReviewScreenHarness {
         return this.page.getByRole('separator', { name: 'Resize the file list' });
     }
 
+    /** The conversation's left edge, which resizes it. */
+    get conversationEdge(): Locator {
+        return this.page.getByRole('separator', { name: 'Resize the conversation' });
+    }
+
     /** How far the left column's edge is from the window's. */
     async fileListEdgeX(): Promise<number> {
         const box = await this.fileListEdge.boundingBox();

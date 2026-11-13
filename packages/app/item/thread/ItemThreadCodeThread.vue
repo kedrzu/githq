@@ -4,11 +4,12 @@ import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ChevronDown, CircleCheck, RotateCcw } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import CommentEditor from '@/comments/CommentEditor.vue';
 import Avatar from '@/components/Avatar.vue';
 import Button from '@/components/Button.vue';
 import type { ReviewThread, ReviewThreadComment as ReviewThreadCommentData } from '@/review/threads/ReviewThread.js';
-import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import ReviewThreadComment from '@/review/threads/ReviewThreadComment.vue';
+import { REVIEW_KEYS } from '@/review/useReviewKeySheet.js';
 import ReviewFailureNote from '@/review/writing/ReviewFailureNote.vue';
 import ReviewSentComment from '@/review/writing/ReviewSentComment.vue';
 import { useCommentFailureText } from '@/review/writing/useCommentFailureText.js';
@@ -20,7 +21,6 @@ import type { CodeThreadReplies } from './CodeThreadReplies.js';
 import { getUrlAnchor } from './getUrlAnchor.js';
 import { holdsAnchor } from './holdsAnchor.js';
 import * as l from './ItemThreadCodeThread.loc.js';
-import ItemThreadEditor from './ItemThreadEditor.vue';
 import ItemThreadExcerpt from './ItemThreadExcerpt.vue';
 
 const props = defineProps<{
@@ -174,7 +174,7 @@ function onFocusOut(event: FocusEvent) {
         v-if="box && replies"
         :class="css.itemThreadCodeThread_replyBox"
       >
-        <ItemThreadEditor
+        <CommentEditor
           :text="box.text"
           kind="reply"
           :save-label="replies.saveLabel"

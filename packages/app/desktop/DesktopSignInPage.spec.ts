@@ -1,3 +1,4 @@
+import type { OAuthCredentials } from '@githq/github/oauth.js';
 import { LanguageContext } from '@nzyme/i18n/LanguageContext.js';
 import { createPromise } from '@nzyme/utils/createPromise.js';
 import type { PromiseWrapper } from '@nzyme/utils/createPromise.js';
@@ -28,7 +29,7 @@ test('leaving the page abandons the attempt: a token approved afterwards is not 
     await expect.element(page.getByText(CODE.userCode)).toBeVisible();
 
     leave();
-    finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,project,read:org' });
+    finishes[0]?.resolve({ token: 'gho_octocat', scope: 'repo,project,read:org', refreshToken: null, expiresIn: null });
     await new Promise(resolve => {
         setTimeout(resolve, 20);
     });
@@ -58,7 +59,7 @@ function mount() {
     const finishes: PromiseWrapper<DeviceGrant>[] = [];
     const opened: string[] = [];
     const stored = new Map<string, string>();
-    let token: string | null = null;
+    let credentials: OAuthCredentials | null = null;
 
     const container = createContainer();
     const browser: BrowserShape = {
@@ -79,12 +80,12 @@ function mount() {
     };
     const vault: TokenVaultShape = {
         persistent: true,
-        read: () => token,
+        read: () => credentials,
         write: value => {
-            token = value;
+            credentials = value;
         },
         remove: () => {
-            token = null;
+            credentials = null;
         },
         onChange: () => {},
     };

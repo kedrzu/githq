@@ -1,8 +1,8 @@
-<!-- A comment of a review thread or of the conversation beside the diff (`Review / Comment`): its head, saying when it is still in the reader's draft (`Review / Comment · pending`), and its body as GitHub rendered and sanitized it. -->
+<!-- A comment of a review thread as a reply (`CommentReply`, `Review / Comment`): its head, saying when it is still in the reader's draft (`Review / Comment · pending`), and its body as GitHub rendered and sanitized it. -->
 <script lang="ts" setup>
+import CommentReply from '@/comments/CommentReply.vue';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 
-import ReviewCommentFrame from './ReviewCommentFrame.vue';
 import ReviewPendingPill from './ReviewPendingPill.vue';
 import type { ReviewThreadComment } from './ReviewThread.js';
 
@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template>
-  <ReviewCommentFrame
+  <CommentReply
     :author="comment.author"
     :url="comment.url"
     :created-at="comment.createdAt"
@@ -24,5 +24,5 @@ defineProps<{
       <ReviewPendingPill />
     </template>
     <GitHubHtml :html="comment.bodyHTML" />
-  </ReviewCommentFrame>
+  </CommentReply>
 </template>

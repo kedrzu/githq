@@ -1,5 +1,6 @@
-// The contract between the app and the Worker for GitHub's OAuth web flow (D1): the Worker's endpoints, the
-// callback route, what `state` may be and the scopes asked for. Both sides import it from here, so the two
+// The contract between the app and the Worker for GitHub's OAuth web flow (D1) and the refresh of its expiring
+// tokens: the Worker's endpoints, the callback route, what `state` may be, the scopes asked for and the credentials
+// the app keeps. Both sides import it from here, so the two
 // halves of the flow cannot drift apart. The flow itself is described in `packages/worker/src/githubOAuth.ts`.
 
 import oauthClientIds from './oauthClientIds.json' with { type: 'json' };
@@ -19,10 +20,19 @@ export const OAUTH_AUTHORIZE_PATH = '/api/auth/authorize';
 export const OAUTH_TOKEN_PATH = '/api/auth/token';
 
 /**
+ * The Worker's endpoint that trades a refresh token for a new access token and a new refresh token, which needs the
+ * client secret: `POST` JSON `{ refreshToken }`, answering an {@link OAuthTokenExchangeResult}. GitHub's OAuth App
+ * tokens expire after 8 hours; once refreshed, the old access and refresh tokens stop working. A refresh token GitHub
+ * no longer accepts answers `400` with `error: 'bad_refresh_token'`: the user has to sign in again. Answers CORS like
+ * {@link OAUTH_REVOKE_PATH}, for the desktop app's webview: it can only refresh a refresh token the caller holds.
+ */
+export const OAUTH_REFRESH_PATH = '/api/auth/refresh';
+
+/**
  * The Worker's endpoint that revokes a token at GitHub, which only the client secret can: `POST` JSON `{ token }`, `204`
  * whether GitHub still knew the token or not. The app calls it on signing out, so tokens do not pile up past GitHub's
- * ten per user and OAuth App, past which every new sign-in revokes another device's. The only auth endpoint that
- * answers CORS, for the desktop app's webview: it can only revoke a token the caller already holds.
+ * ten per user and OAuth App, past which every new sign-in revokes another device's. It answers CORS, like
+ * {@link OAUTH_REFRESH_PATH}, for the desktop app's webview: it can only revoke a token the caller already holds.
  */
 export const OAUTH_REVOKE_PATH = '/api/auth/revoke';
 
@@ -58,11 +68,26 @@ export const SIGNED_IN_HINT_COOKIE = {
 /** The scopes githq asks GitHub for (D3): `repo` for issues, `project` for Projects v2, `read:org` for the user's organisations. */
 export const OAUTH_SCOPES = ['repo', 'project', 'read:org'] as const;
 
-/** What `POST` {@link OAUTH_TOKEN_PATH} answers on success. */
+/** What `POST` {@link OAUTH_TOKEN_PATH} and `POST` {@link OAUTH_REFRESH_PATH} answer on success. */
 export interface OAuthTokenExchangeResult {
     accessToken: string;
+    /** The token that gets a new access token once this one expires; `null` when GitHub sent none (a token that never expires). */
+    refreshToken: string | null;
+    /** Seconds until the access token expires, as GitHub sends it; `null` when it never expires. */
+    expiresIn: number | null;
     /** The scopes GitHub actually granted, which the user may have narrowed on the consent screen. */
     scopes: string[];
+}
+
+/**
+ * What the app keeps to call GitHub: the access token and what it takes to renew it. A pasted development token has
+ * neither a refresh token nor an expiry, and is never refreshed.
+ */
+export interface OAuthCredentials {
+    accessToken: string;
+    refreshToken: string | null;
+    /** When the access token expires, in epoch milliseconds; `null` when it never does. */
+    expiresAt: number | null;
 }
 
 /** What every Worker auth endpoint answers on failure: a code (GitHub's own, when it is GitHub's error) and why. */

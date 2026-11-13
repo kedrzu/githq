@@ -1186,7 +1186,7 @@ async function setupWithoutEngine(world: TrackingWorld) {
         throw new Error('Not signed in');
     }
 
-    const rest = session.container.resolve(GitHubRestFactory)(() => account.token);
+    const rest = session.container.resolve(GitHubRestFactory)(account.getToken);
     await items.ready();
     await workflows.ready();
 
