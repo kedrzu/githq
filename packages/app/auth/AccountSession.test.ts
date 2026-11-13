@@ -6,7 +6,7 @@ import { createTestSession } from '@/testing/createTestSession.js';
 import { AccountSession } from './AccountSession.js';
 import type { Account } from './AccountSession.js';
 
-test('another sign-in is another account: the one before is no longer current, and only a change is told', () => {
+test('another sign-in is another account: the one before is no longer current, and only a change is told', async () => {
     const session = createTestSession({ login: 'octocat', answer: () => undefined });
     const accounts = session.container.resolve(AccountSession);
     const seen: (Account | null)[] = [];
@@ -14,7 +14,7 @@ test('another sign-in is another account: the one before is no longer current, a
 
     const first = accounts.current;
     expect(first?.login).toBe('octocat');
-    expect(first?.token).toBe('gho_octocat');
+    expect(await first?.getToken()).toBe('gho_octocat');
 
     session.signInFromAnotherTab('hubot');
     const second = accounts.current;

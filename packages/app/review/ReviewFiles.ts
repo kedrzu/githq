@@ -528,8 +528,8 @@ export const ReviewFiles = defineService({
 
             session = account && {
                 account,
-                requester: createRequester(() => account.token),
-                rest: createRest(() => account.token),
+                requester: createRequester(account.getToken),
+                rest: createRest(account.getToken),
                 models: new Map(),
                 mergeBases: new Map(),
                 refusedUntil: 0,

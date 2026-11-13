@@ -49,7 +49,6 @@ export interface EditOutcome {
 /** The signed-in user an action's edits were built for: their ids are read with this user's token. */
 export interface EditAccount {
     readonly login: string;
-    readonly token: string;
 }
 
 /** What {@link EditQueue} `submit` sends. */
@@ -144,12 +143,7 @@ export const EditQueue = defineService({
          */
         async function submit({ edits, account, itemCount }: EditSubmission): Promise<EditOutcome> {
             const current = session;
-            if (
-                !current ||
-                current.account.login !== account.login ||
-                current.account.token !== account.token ||
-                edits.length === 0
-            ) {
+            if (!current || current.account.login !== account.login || edits.length === 0) {
                 return { failed: [] };
             }
 

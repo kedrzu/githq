@@ -163,6 +163,7 @@ export const AuthStore = defineService({
             },
             /** Resolves once the stored session is known to belong to a user (or is gone). */
             ready: () => ready,
+            getFreshToken,
             startSignIn,
             completeSignIn,
             signInWithToken,
@@ -170,6 +171,15 @@ export const AuthStore = defineService({
             dismissFailure,
             refreshViewer,
         };
+
+        /**
+         * The token to send a request with now. Rejects signed out: an account's requests ask only while it is signed
+         * in (`AccountSession`).
+         */
+        function getFreshToken(): Promise<string> {
+            const token = tokenRef.value;
+            return token === null ? Promise.reject(new Error('Signed out')) : Promise.resolve(token);
+        }
 
         /**
          * Leaves for GitHub's consent screen through the Worker. A fresh random `state` is kept in this tab's
