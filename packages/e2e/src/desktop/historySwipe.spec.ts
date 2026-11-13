@@ -76,14 +76,18 @@ async function swipe(page: Page, native: FakeNativeBridge, x: number, y = 0) {
     await native.sendScrollPhase('ended');
 }
 
-/** Scrolls by `x` and `y` and waits for the page to see it: the browser dispatches a wheel event after `wheel` resolves. */
+/**
+ * Scrolls by `x` and `y` and waits for the page to see it: the browser dispatches a wheel event after `wheel` resolves.
+ * The listener is in place before the scroll: the page's script and the input are not ordered, so a scroll sent
+ * alongside an `evaluate` that adds it can pass first and leave the wait hanging.
+ */
 async function wheel(page: Page, x: number, y = 0) {
-    const seen = page.evaluate(
-        () =>
-            new Promise<void>(resolve => {
-                window.addEventListener('wheel', () => resolve(), { once: true });
-            }),
-    );
+    // Wrapped in an object, so that the handle comes back without waiting for the promise.
+    const listener = await page.evaluateHandle(() => ({
+        seen: new Promise<void>(resolve => {
+            window.addEventListener('wheel', () => resolve(), { once: true });
+        }),
+    }));
     await page.mouse.wheel(x, y);
-    await seen;
+    await listener.evaluate(({ seen }) => seen);
 }
