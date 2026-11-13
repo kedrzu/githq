@@ -24,6 +24,7 @@ import { GitHubSdkFactory } from '@/services/GitHubSdkFactory.js';
 
 import { safeNextPath } from './routeAccess.js';
 import { TokenVault } from './TokenVault.js';
+import { readOAuthTokenAnswer } from './utils/readOAuthTokenAnswer.js';
 
 /** The signed-in GitHub user, as the shell shows them. */
 export interface Viewer {
@@ -542,17 +543,14 @@ export const AuthStore = defineService({
 
             const body: unknown = parseJson(text);
             const errorCode = isPlainObject(body) && typeof body.error === 'string' ? body.error : null;
-            if (response.ok && isPlainObject(body) && typeof body.accessToken === 'string' && body.accessToken !== '') {
+            const answer = response.ok ? readOAuthTokenAnswer(body) : null;
+            if (answer) {
                 // A late answer never brings back a session signed out or replaced meanwhile.
                 if (!isCurrentToken(token)) {
                     return;
                 }
 
-                const renewed = receiveCredentials({
-                    accessToken: body.accessToken,
-                    refreshToken: typeof body.refreshToken === 'string' ? body.refreshToken : null,
-                    expiresIn: typeof body.expiresIn === 'number' ? body.expiresIn : null,
-                });
+                const renewed = receiveCredentials(answer);
                 vault.write(renewed);
                 credentialsRef.value = renewed;
                 logger.info('Renewed the token');
@@ -710,24 +708,13 @@ export const AuthStore = defineService({
             }
 
             const body: unknown = parseJson(text);
-            if (
-                !response.ok ||
-                !isPlainObject(body) ||
-                typeof body.accessToken !== 'string' ||
-                !Array.isArray(body.scopes)
-            ) {
+            const answer = response.ok ? readOAuthTokenAnswer(body) : null;
+            if (!answer) {
                 const error = isPlainObject(body) && typeof body.error === 'string' ? body.error : undefined;
                 logger.warn('The token exchange failed', { status: response.status, error });
-                return null;
             }
 
-            const scopes = body.scopes.filter(scope => typeof scope === 'string');
-            return {
-                accessToken: body.accessToken,
-                refreshToken: typeof body.refreshToken === 'string' ? body.refreshToken : null,
-                expiresIn: typeof body.expiresIn === 'number' ? body.expiresIn : null,
-                scopes,
-            };
+            return answer;
         }
 
         function fail(failure: SignInFailure): SignInResult {
