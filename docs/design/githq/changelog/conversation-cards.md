@@ -29,52 +29,52 @@ Decisions taken in this round:
 
 Components (`Components · Activity`, `X7uA3I`, in `App · Pull request`):
 
-- [ ] Components · Activity (`X7uA3I`): new row `Narrow cards` (`wuC1d`) with a note on the narrow rule and the
+- [x] Components · Activity (`X7uA3I`): new row `Narrow cards` (`wuC1d`) with a note on the narrow rule and the
       components below.
-- [ ] Activity / Threads link (`Ul90Y`): new component, the thread count line with its ↘ jump (from the
+- [x] Activity / Threads link (`Ul90Y`): new component, the thread count line with its ↘ jump (from the
       `Review / Summary` line).
-- [ ] Activity / Comment (`WHy4W`): hidden 20 px `Avatar` (`AMSoi`) added first in the head; the wide card is
+- [x] Activity / Comment (`WHy4W`): hidden 20 px `Avatar` (`AMSoi`) added first in the head; the wide card is
       unchanged.
-- [ ] Activity / Review (`b1us0`): hidden `More` ⋯ (`e9fnT9`) added at the end of the head, hidden `Threads link`
+- [x] Activity / Review (`b1us0`): hidden `More` ⋯ (`e9fnT9`) added at the end of the head, hidden `Threads link`
       (`bOJMx`) added in the body after the summary; the wide card is unchanged.
-- [ ] Item / Body (`bJhAe`): hidden 20 px `Avatar` (`r10C3a`) added first in the head, hidden `Show more`
+- [x] Item / Body (`bJhAe`): hidden 20 px `Avatar` (`r10C3a`) added first in the head, hidden `Show more`
       ("Show description", `ZyhJ7`) added at the end of the content; the wide card is unchanged.
-- [ ] Activity / Comment · narrow (`k6csA`): new, instance of `Activity / Comment`.
-- [ ] Activity / Comment · narrow, sending (`x9F0Cq`): new, instance of `Activity / Comment · sending`.
-- [ ] Activity / Comment · narrow, failed (`ufFmh`): new, instance of `Activity / Comment · failed`; the reason wraps
+- [x] Activity / Comment · narrow (`k6csA`): new, instance of `Activity / Comment`.
+- [x] Activity / Comment · narrow, sending (`x9F0Cq`): new, instance of `Activity / Comment · sending`.
+- [x] Activity / Comment · narrow, failed (`ufFmh`): new, instance of `Activity / Comment · failed`; the reason wraps
       to two lines, Discard and Retry keep their size.
-- [ ] Activity / Editor tools · folded (`xvz0F`): new, instance of `Activity / Editor tools · review, folded` without
+- [x] Activity / Editor tools · folded (`xvz0F`): new, instance of `Activity / Editor tools · review, folded` without
       Suggest a change.
-- [ ] Activity / Comment · narrow, editing (`DFWqj`): new, instance of `Activity / Comment · editing` without the
+- [x] Activity / Comment · narrow, editing (`DFWqj`): new, instance of `Activity / Comment · editing` without the
       gutter, its formatting tools folded into ⋯.
-- [ ] Item / Body · narrow (`DSsUo`): new, instance of `Item / Body`, the Author chip kept.
-- [ ] Item / Body · narrow, folded (`a7snnS`): new, five lines and Show description.
+- [x] Item / Body · narrow (`DSsUo`): new, instance of `Item / Body`, the Author chip kept.
+- [x] Item / Body · narrow, folded (`a7snnS`): new, five lines and Show description.
 - [ ] Activity / Review · narrow (`WUD8Y`): new, changes requested, with a code thread at 280 px (excerpt, flat
       replies, Reply…, Resolve); its resolved-threads row hides the path and avatars to fit.
-- [ ] Activity / Review · narrow, approved (`Hs0KC`), · narrow, commented (`aolHQ`), · narrow, dismissed (`BA1U1`):
+- [x] Activity / Review · narrow, approved (`Hs0KC`), · narrow, commented (`aolHQ`), · narrow, dismissed (`BA1U1`):
       new, instances of the wide variants; dismissed puts Show review in the body line.
 
 Code review (`App · Code review`, `CEDLB`):
 
-- [ ] Review / Conversation (`sf3K6`): the flat description, `Review / Summary` and `Review / Comment` rows → narrow
+- [x] Review / Conversation (`sf3K6`): the flat description, `Review / Summary` and `Review / Comment` rows → narrow
       cards (folded description, sofiab's changes-requested review with "2 threads in files ↘", dkim's approval,
       claude[bot]'s and sofiab's comments, a comment of the viewer's own); the separator rule and the spacer removed;
       `Items` fills the column and clips, so the composer stays at the foot; gap 18 → 6 between cards (each card adds
       its own 6 px), padding 14 → 8/14/14/14; hidden `Resize edge` (`t4cZR`), a 2 px accent line on the inner edge.
       Every screen with the conversation on (CR2, CR5, CR82 and the rest) now shows the cards.
-- [ ] `Review / Summary` (`jHkgH`) is no longer used by the sidebar; left in place.
-- [ ] New group header `The conversation as cards` (`TT4mn`) and two rows of screens (`DbUdM`, `rlXs1`).
-- [ ] New `CR120 · The conversation at 340 px, as cards` (`S8Ol7`), a laptop screen.
-- [ ] New `CR121 · Dragged to 560 px: the cards widen` (`A4kcAD`): the edge lit, the wide cards, the threads jump kept.
-- [ ] New `CR122 · ⋯ on your comment: the same menu` (`vVNwm`).
-- [ ] New `CR123 · Editing your comment in place` (`F3O3m5`).
-- [ ] New `CR124 · Your comment sending, and one refused` (`YQPcq`).
-- [ ] New `CR125 · A very long login on a review` (`EgvuT`).
-- [ ] New `CR126 · Question · The ⋯ of a review card` (`ERZS9`), amber: should the wide review card get the ⋯ too?
+- [x] `Review / Summary` (`jHkgH`) is no longer used by the sidebar; left in place.
+- [x] New group header `The conversation as cards` (`TT4mn`) and two rows of screens (`DbUdM`, `rlXs1`).
+- [x] New `CR120 · The conversation at 340 px, as cards` (`S8Ol7`), a laptop screen.
+- [x] New `CR121 · Dragged to 560 px: the cards widen` (`A4kcAD`): the edge lit, the wide cards, the threads jump kept.
+- [x] New `CR122 · ⋯ on your comment: the same menu` (`vVNwm`).
+- [x] New `CR123 · Editing your comment in place` (`F3O3m5`).
+- [x] New `CR124 · Your comment sending, and one refused` (`YQPcq`).
+- [x] New `CR125 · A very long login on a review` (`EgvuT`).
+- [x] New `CR126 · Question · The ⋯ of a review card` (`ERZS9`), amber: should the wide review card get the ⋯ too?
 
 Canvas:
 
-- [ ] The 25 top-level frames from `App · Command menu` down (y ≥ 56076) moved 2270 px down, keeping 1200 px below
+- [x] The 25 top-level frames from `App · Command menu` down (y ≥ 56076) moved 2270 px down, keeping 1200 px below
       the taller `App · Code review`.
 
 ## Round 2 · owner's answers
@@ -84,6 +84,18 @@ link). Checked the owner's note on panel separators: every separator of the code
 none doubled (a 4× export shows the file list's and the conversation's lines identical); the difference seen in the
 app comes from zoom antialiasing. In code, the conversation's own `border-left` goes once `ColumnSplit` draws the line.
 
-- [ ] Activity / Review (`b1us0`): `More` ⋯ (`e9fnT9`) shown on every review card, wide too; hidden on
+- [x] Activity / Review (`b1us0`): `More` ⋯ (`e9fnT9`) shown on every review card, wide too; hidden on
       `Activity / Review · pending` (`PwdqU`), a draft not on GitHub yet.
-- [ ] CR126 (`ERZS9`, `QNbcB`): settled — `Question ·` and the amber dropped, the caption says the rule.
+- [x] CR126 (`ERZS9`, `QNbcB`): settled — `Question ·` and the amber dropped, the caption says the rule.
+
+## Round 3 · implementation
+
+Built in `packages/app/comments/` (`CommentCard`, `CommentEntry`, `CommentFailedCard`, `CommentVerdict`,
+`useCommentActions`), code review's `ReviewConversation` and `ReviewSummary`, and the conversation's `ColumnSplit` in
+`ReviewView`. The narrow layout is a container query on the card itself, under `$comment-card-narrow` (480 px); the
+Author chip gives way under `$comment-card-tight` (300 px). The editor's tools already fold into ⋯ in a narrow head
+(`MarkdownEditor`).
+
+Left unticked: `Activity / Review · narrow` (`WUD8Y`)'s resolved-threads row hiding its path and avatars. The row is
+unchanged; it needs a review card under 480 px on the pull request's thread, which no screen has yet.
+
