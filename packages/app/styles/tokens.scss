@@ -280,7 +280,7 @@ $commit-row-narrow-width: 640px;
 // The item's thread (`item/thread/`)
 // ---------------------------------------------------------------------------------------------------
 
-// The column of avatars on the left of the thread's cards and of the composer (`ItemThreadCard`,
+// The column of avatars on the left of the thread's cards and of the composer (`CommentCard`,
 // `ItemThreadComposer`): as wide as a large avatar, this far from the card beside it.
 $item-thread-gutter-width: 28px;
 $item-thread-gutter-gap: $spacing-12;
@@ -558,8 +558,8 @@ $row-surface-inset: $spacing-2 $spacing-8;
     container-type: inline-size;
 }
 
-// A card of the item's thread with its avatar in the thread's gutter (`ItemThreadCard`, `ItemThreadComposer`,
-// `ItemThreadEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
+// A card of the item's thread with its avatar in the thread's gutter (`CommentCard`, `ItemThreadComposer`,
+// `CommentEditor`): the row, and the gutter, the avatar centred in the given height, level with the card's head.
 @mixin item-thread-row {
     display: flex;
     gap: $item-thread-gutter-gap;
