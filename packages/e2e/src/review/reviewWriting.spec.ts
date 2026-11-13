@@ -250,19 +250,26 @@ test('a single comment is one request, shows at once, and what is read keeps its
     expect(await reading.boundingBox()).toEqual(before);
 });
 
-test('C opens the box on the first line in view; empty, Escape closes it and the keys are the diff again', async ({
+test("C opens the box on the cursor's line, and on a header does nothing; empty, Escape closes it and the keys are the diff again, the cursor on its line (D44)", async ({
     page,
     github,
 }) => {
     const { review } = await openWriting(page, github);
-
+    await review.fileRow('engine.ts').click();
+    await expect(review.cursorRow.getByRole('heading', { name: ENGINE, exact: true })).toBeVisible();
     await page.keyboard.press('c');
-    const box = review.commentBox();
+    await expect(review.commentBox()).toHaveCount(0);
+
+    await review.pointAt(review.code(CHANGED_LINE));
+    const line = await review.cursorKey();
+    await page.keyboard.press('c');
+    const box = review.commentBox('Comment on line 20');
     await expect(box).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(box).toBeHidden();
     await expect(review.diff).toBeFocused();
     await expect(review.discardedToast).toBeHidden();
+    expect(await review.cursorKey()).toBe(line);
 });
 
 test('Escape on a box with text asks in place: typing goes back to writing, Escape keeps writing, Enter discards', async ({
@@ -917,11 +924,11 @@ test('Resolve folds the thread where it is, moving nothing above it, and N goes 
     await expect(review.focusedThread).toContainText('Second thread here');
 });
 
-test('a viewed file whose thread was resolved stays while it is at the top of the screen, the reading line past it, and goes when it leaves the top, nothing moving (D7, D44)', async ({
+test('a viewed file whose thread was resolved stays while it is at the top of the screen, the cursor gone on past it, and goes when it leaves the top, nothing moving (D7, D44)', async ({
     page,
     github,
 }) => {
-    // Tall, for the reading line to pass into the next file well after the hold of N has ended.
+    // Tall, for the next file to come a third down the screen well after the hold of N has ended.
     const tall = `${LINES.map((line, index) => {
         if (index === 19) {
             return CHANGED_LINE;
@@ -944,7 +951,8 @@ test('a viewed file whose thread was resolved stays while it is at the top of th
     await review.thread('First thread here').getByRole('button', { name: 'Resolve' }).click();
     await expect(review.thread('First thread here').getByRole('button', { name: /Resolved/ })).toBeVisible();
 
-    // Down through the engine, its end just above the reading line: the next file is current, the engine still on top.
+    // Down through the engine, the next file's header a third down the screen; the pointer on it, it is current, the
+    // engine still on top.
     await expect(async () => {
         if ((await review.fileHeader(OTHER.path).count()) === 0) {
             await review.diff.evaluate(element => element.scrollBy(0, 400));
@@ -959,10 +967,13 @@ test('a viewed file whose thread was resolved stays while it is at the top of th
             throw new Error('The next file is not on screen');
         }
 
-        const reading = 38 + (diff.height - 38) / 3;
-        await review.diff.evaluate((element, by) => element.scrollBy(0, by), header.y + 40 - diff.y - reading);
-        await expect(review.currentFileRow).toContainText('other.ts', { timeout: 500 });
+        const third = 38 + (diff.height - 38) / 3;
+        const by = header.y + 40 - diff.y - third;
+        await review.diff.evaluate((element, distance) => element.scrollBy(0, distance), by);
+        expect(Math.abs(by)).toBeLessThan(2);
     }).toPass();
+    await review.pointAt(review.fileHeader(OTHER.path));
+    await expect(review.currentFileRow).toContainText('other.ts');
     const next = review.fileHeader(OTHER.path);
     const before = await next.boundingBox();
     await expect(review.fileRow('engine.ts')).toBeVisible();
@@ -1080,7 +1091,7 @@ test('the keys sheet has every row whatever can run now, and no key of the app i
     await expect(sheet.getByText('New issue')).toBeHidden();
     const moving = sheet.getByRole('region', { name: 'Moving' });
     await expect(moving.getByText('Next and previous file')).toBeVisible();
-    await expect(moving.getByText('Scroll by a line')).toBeVisible();
+    await expect(moving.getByText('Move the cursor', { exact: true })).toBeVisible();
     await expect(moving.getByText('Back to the pull request')).toBeVisible();
     await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Filter by path')).toBeVisible();
     await expect(sheet.getByRole('region', { name: 'Files' }).getByText('Show 20 more hidden lines')).toBeVisible();
@@ -1186,23 +1197,12 @@ test('O opens the files on GitHub', async ({ page, github }) => {
     expect((await popup).url()).toBe('https://github.com/acme/web/pull/3/files');
 });
 
-test('↓ and ↑ scroll by a line', async ({ page, github }) => {
-    const { review } = await openWriting(page, github);
-    const scrollTop = () => review.diff.evaluate(element => element.scrollTop);
-    const start = await scrollTop();
-
-    await page.keyboard.press('ArrowDown');
-    await expect.poll(scrollTop).toBe(start + 20);
-    await page.keyboard.press('ArrowUp');
-    await expect.poll(scrollTop).toBe(start);
-});
-
-test('the palette offers what a review has keys for: back, GitHub and a line', async ({ page, github }) => {
+test('the palette offers what a review has keys for: back, GitHub and the cursor', async ({ page, github }) => {
     await openWriting(page, github);
     const menu = new CommandMenuHarness(page);
 
     await menu.open();
-    for (const title of ['Back to the pull request', 'Open on GitHub', 'Scroll down a line', 'Scroll up a line']) {
+    for (const title of ['Back to the pull request', 'Open on GitHub', 'Move the cursor down', 'Move the cursor up']) {
         await menu.field.fill(title);
         await expect(menu.option(new RegExp(title, 'u')).first()).toBeVisible();
     }

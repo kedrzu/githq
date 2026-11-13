@@ -572,9 +572,8 @@ which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `
 filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
 submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
 
-There is no line cursor: ↓ ↑ scroll the diff by a line, and C takes the current file's line at the reading line
-(D44), so C, V and Space always act on the same file; E opens the hidden lines nearest it (D42). (owner,
-2026-11-10; CR29)
+A line cursor (D44) is what the keys act on: ↓ ↑ move it a stop, PageDown PageUp move it a screen, and holding ↓ ↑ speeds it up; C comments on its line, R replies to the thread it is on, E opens the gap it
+is on or the current file's gap nearest it (D42), and V, Space, x act on its file. (owner, 2026-11-13; CR29, CR120)
 
 A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
 
@@ -722,7 +721,7 @@ the nearest hunk, the one on the reading line's side (D44): the hunk above for a
 below for one above it; a gap of 20 or fewer opens whole. The row carries the enclosing declaration only when it is a
 real one (a class, function or method signature), never a comment opener or a brace, and no hunk header: our hunks
 are not git's (D6), so its numbers would not match github.com's. The gap at the top of a file has only ↑, the one at
-its end only ↓. From the keyboard, E expands the gap nearest the reading line, 20 toward its hunk each time it is pressed, and
+its end only ↓. From the keyboard, E expands the gap the line cursor is on, or else the current file's gap nearest the cursor (D44), 20 toward its hunk each time it is pressed, and
 "Show all hidden lines" in the command menu opens all of it; ⇧E stays Re-run failed checks, a pull request's key
 that the review keeps. Hover lights the arrow under the pointer, or on the rest of the row the arrow a click takes; Tab focus outlines it
 in accent. A push that changes the file resets what was expanded in it (D14), and its gaps say so once (CR62).**
@@ -753,41 +752,69 @@ shows such a line too. The push-reset notice (CR62) goes on the file's first gap
 
 ## D43
 
-**On hover a line's number turns accent and underlined, with a small comment icon in the margin before it: click the
-number to comment, drag along the numbers or ⇧click for a range (D32). No tint, and the code stays selectable as text.
-The same on context, added and deleted lines, in split and unified; during a drag the range is tinted and the number
-under the pointer marked.** (2026-11-10, owner's pick of the agent's second variant; CR106)
+**Hovering a line moves the line cursor there (D44): the row, both halves in split, takes the cursor's tint, and a
+comment button shows between the number and the code, as on github.com: a small square filled with the accent with a
+`+` (`Diff / Comment button`), on both halves of a split row, so the nearer one is a short reach. Each comments on its
+half's line, or on an empty half on the row's line, the one C takes: the newer (RIGHT), or the older (LEFT) on a row
+with only an older line. The room for it is there on every row, so the code never shifts. a press and drag along the numbers or a
+⇧click make a range (D32). Its tooltip, only while the pointer is on it, says "Comment on line 51" with the key C,
+which shows nowhere else. The button shows on the cursor's line however the cursor got there, by the pointer or the
+keys. The code stays selectable as text; during a drag the range is tinted on its side and the number under the
+pointer marked.** (2026-11-13, owner; CR120, CR121, CR122; replaces CR106)
 
-The number column is as wide as the file's longest number needs with the icon before it, so a number of four digits
-or more keeps the icon inside its cell rather than over the block's edge or the other number. (owner, 2026-11-11,
+The number column is as wide as the file's longest number needs, and the gutter after it as wide as the button needs. (owner, 2026-11-11,
 building M1)
 
 **Rejected.**
 
-- A + button between the number and the code, with a row tint (CR105, agent's recommendation).
-- A tint and a "C comment" hint at the line's end (CR107) — clicking code to select it and to comment collide.
+- The number turning accent and underlined, a small comment icon in its margin, no tint (CR106, D43 until 2026-11-13)
+  — too faint to find, and it said nothing about which line C takes. (owner, 2026-11-13)
+- The button before the number, on the side C takes only (CR120–CR123 as drawn in rounds 1–2) — the owner wants it
+  where github.com has it, and on both halves to be nearer the pointer. (owner, 2026-11-13)
+- A tint and a "C comment" hint at the line's end (CR107) — clicking code to select it and to comment collide; the
+  key now lives in the button's tooltip.
 
 ## D44
 
-**The current file — the one V, Space and C act on — shows in the diff: its header faintly tinted with an accent
-chevron, and its block's edge in accent; pinned or in place, expanded, collapsed or viewed alike. It is the file whose
-block crosses a reading line a third down under the pinned header, sliding down near the end of the diff; a click in
-a file, `[` `]`, the file list or V moving on holds it until it leaves the screen or the reader scrolls a fair
-distance. The reading line is never drawn. C comments on the current file's line at the reading line, or on its line
-nearest to it while the file is held off the line, so C, V and Space always act on the same file (D32).**
-(2026-11-10, owner's pick of the agent's first variant; C by the owner the same day; CR108)
+**The diff has a line cursor, as an editor has, shared by the pointer and the keys; the file it is in is the current
+file, the one V, Space and C act on. Exactly one stop holds it: a file's header, a row of code (in split both halves
+at once), a thread or a gap. Moving the pointer over a stop moves the cursor there, so hovering a file makes it current; ↓ ↑ move it
+a stop, PageDown PageUp a screen. While the keys move it, the diff scrolls only when it
+comes nearer than a third of the screen to the top (under the pinned header) or the bottom, and then just enough to
+keep it there; near the diff's ends it reaches the edge. The cursor's line is tinted and carries the comment button
+(D43); a thread under it has its focused look; the current file shows as before: its header faintly tinted with an
+accent chevron, and its block's edge in accent; pinned or in place, expanded, collapsed or viewed alike.**
+(2026-11-13, owner: "a focused line we move with the arrows, the screen scrolling once it reaches a third"; CR120–CR126;
+replaces the reading line of 2026-11-10)
 
-How it behaves, settled while building M2 (owner, 2026-11-11): the reading line slides at both ends of the diff, up to
-the top edge while the diff is scrolled less than the line's own depth and down to the bottom edge over the last screen,
-so the first and the last files can be current too; the 8 px between two files belongs to the file below. Space, N and
-⇧N, and the review's landing hold a file as a click does. V moves on to the next file whether viewed files are hidden or
-shown. C takes N's thread only when that thread is in the current file. A file that leaves the diff (viewed and hidden,
-or a resolved thread's file) goes when it leaves the top of the screen, not when the reading line passes it (D7). The
-current header's tint is accent at 6% (`#7B87F70F`), so every text on it keeps AA (D30); its edge, opaque, is accent at
-60% over the window.
+How it behaves (owner, 2026-11-13): only real pointer movement moves the cursor, never rows scrolling under a still
+pointer, nor a drag along the numbers; leaving the diff keeps it. A wheel or trackpad scroll leaves it on its stop
+while that stop is on screen and, once it would leave, brings it to the nearest stop at that edge, so the keys always
+act on something in view (as Vim). A single ↓ moves one stop; held, the key's repeat moves one stop at a time for
+about 0.4 s, then a stop more every 0.25 s, up to six a repeat, until it is let go. Stops are headers, lines, threads
+and gaps; a collapsed file is its header and the threads under it; placeholders and notes belong to their header; a
+submodule's block, distance marks and the all-viewed block are passed over. C takes the row's newer line, or its older one on a row with only that (a
+deleted line alone, unified's deleted line); threads stay under the half they belong to (D24). Hovering the pinned
+header's overlay leaves the cursor where it is: the real header is far above, and the next ↓ would go back up there.
+When its stop goes (viewed and hidden, collapsed, filtered away, rebuilt by a push), the cursor goes to the nearest
+stop left, its file's header first; a gap it opens keeps it while lines stay hidden there. `[` `]`, the file list and V
+moving on put it on the file's header, N ⇧N and a link to a comment on the thread, opening the review on the first stop
+under the pinned header, without scrolling. Escape never clears it. A file that leaves the diff (viewed and hidden, or
+a resolved thread's file) goes when it leaves the top of the screen (D7). The current header's tint is accent at 6%
+(`#7B87F70F`), so every text on it keeps AA (D30); its edge, opaque, is accent at 60% over the window.
 
 **Rejected.**
 
+- No line cursor: an invisible reading line a third down decides the current file and C's line, ↓ ↑ scroll by a line
+  (D44 and D32 from 2026-11-10 to 2026-11-13, CR108) — the reader could not see what C would take, nor walk to a
+  thread with the keys, and the pointer chose nothing. (owner, 2026-11-13)
+- The cursor staying off screen under a wheel scroll, the next key scrolling back to it (as VS Code) — the keys would
+  act on a line out of sight. (owner, 2026-11-13)
+- One half of a split row as the cursor, ← → switching halves (CR120–CR123 as first drawn) — the owner wants the
+  row as one; which side a comment takes is the row's, not the cursor's. (owner, 2026-11-13)
+- Every thread under the right half, as the owner first remembered github.com — github.com keeps a LEFT comment under
+  the old half, and so does D24. (owner, 2026-11-13)
+- Only the key's own repeat, no speeding up (as VS Code and JetBrains) — too slow through long files. (owner, 2026-11-13)
 - A 2 px marker in the diff's left margin (CR109).
 - Every other file dimmed (CR110) — the dim flickers from file to file while scrolling.
 

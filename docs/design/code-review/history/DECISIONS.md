@@ -3,6 +3,69 @@
 Decisions that held once, in full, under their original IDs. Never edited after they are written, apart from adding
 the next retired form.
 
+## D32
+
+Retired 2026-11-13, replaced by the current [D32](../DECISIONS.md#d32): its "no line cursor" paragraph: ↓ ↑ now move a line cursor (D44).
+
+**Keys of the review: D opens it from an opened pull request (the merge section's "Review files" moves from ⇧O,
+which opened github.com, to D); `[` `]` files, N ⇧N threads, V viewed, x `{` `}` select, Space collapses a file, /
+filters, C comments on the line under the cursor, R replies to the focused thread, ⌘G inserts a suggestion, ⇧S
+submits, ? lists them all.** (2026-11-02, agent, CR1, CR29; owner confirmed 2026-11-03)
+
+There is no line cursor: ↓ ↑ scroll the diff by a line, and C takes the current file's line at the reading line
+(D44), so C, V and Space always act on the same file; E opens the hidden lines nearest it (D42). (owner,
+2026-11-10; CR29)
+
+A range has three ways, all ending in the same selection (CR73, CR83): press a line number and drag along the numbers, as on github.com; ⇧click a second number; or ⇧↓. It stays on one side of the diff and stops at a gap. (owner, 2026-11-04: drag stays though no frame drew it, and the design follows)
+
+⇧↓ is CR73's: from the diff it takes the next line into the last box written in; in a box only while the box is empty, for with text in it it is the text's own selection. ⇧S on the list of draft reviews opens the selected one's review at its submit dialog (CR34). (agent, 2026-11-04)
+
+**Why.** D and ⇧S are unused in item views; N ⇧N already mean next and previous match in a workflow log.
+
+## D43
+
+Retired 2026-11-13, replaced by the current [D43](../DECISIONS.md#d43): hover no longer lights the number alone: it moves the line cursor, whose line shows a comment button.
+
+**On hover a line's number turns accent and underlined, with a small comment icon in the margin before it: click the
+number to comment, drag along the numbers or ⇧click for a range (D32). No tint, and the code stays selectable as text.
+The same on context, added and deleted lines, in split and unified; during a drag the range is tinted and the number
+under the pointer marked.** (2026-11-10, owner's pick of the agent's second variant; CR106)
+
+The number column is as wide as the file's longest number needs with the icon before it, so a number of four digits
+or more keeps the icon inside its cell rather than over the block's edge or the other number. (owner, 2026-11-11,
+building M1)
+
+**Rejected.**
+
+- A + button between the number and the code, with a row tint (CR105, agent's recommendation).
+- A tint and a "C comment" hint at the line's end (CR107) — clicking code to select it and to comment collide.
+
+## D44
+
+Retired 2026-11-13, replaced by the current [D44](../DECISIONS.md#d44): the current file is the line cursor's file, not the file at a reading line.
+
+**The current file — the one V, Space and C act on — shows in the diff: its header faintly tinted with an accent
+chevron, and its block's edge in accent; pinned or in place, expanded, collapsed or viewed alike. It is the file whose
+block crosses a reading line a third down under the pinned header, sliding down near the end of the diff; a click in
+a file, `[` `]`, the file list or V moving on holds it until it leaves the screen or the reader scrolls a fair
+distance. The reading line is never drawn. C comments on the current file's line at the reading line, or on its line
+nearest to it while the file is held off the line, so C, V and Space always act on the same file (D32).**
+(2026-11-10, owner's pick of the agent's first variant; C by the owner the same day; CR108)
+
+How it behaves, settled while building M2 (owner, 2026-11-11): the reading line slides at both ends of the diff, up to
+the top edge while the diff is scrolled less than the line's own depth and down to the bottom edge over the last screen,
+so the first and the last files can be current too; the 8 px between two files belongs to the file below. Space, N and
+⇧N, and the review's landing hold a file as a click does. V moves on to the next file whether viewed files are hidden or
+shown. C takes N's thread only when that thread is in the current file. A file that leaves the diff (viewed and hidden,
+or a resolved thread's file) goes when it leaves the top of the screen, not when the reading line passes it (D7). The
+current header's tint is accent at 6% (`#7B87F70F`), so every text on it keeps AA (D30); its edge, opaque, is accent at
+60% over the window.
+
+**Rejected.**
+
+- A 2 px marker in the diff's left margin (CR109).
+- Every other file dimmed (CR110) — the dim flickers from file to file while scrolling.
+
 ## D17
 
 Retired 2026-11-02, replaced by the current [D17](../DECISIONS.md#d17): a single comment cannot be posted

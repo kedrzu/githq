@@ -206,6 +206,8 @@ range with a suggestion CR73, reply and resolve CR74, submitting CR75, submittin
 
 Refined 2026-11-10 (D39–D45): the comment box on the shared editor CR90, a range with a draft open CR91, a reply CR92, unified after a push and refused CR93; Esc asking CR97 and a toast giving a discarded comment back CR98; 8 px between files CR99; hidden lines with gutter arrows CR103; the number as the hover affordance CR106; the current file lit CR108; placeholders from the patch CR111, a guessed height reserved with grey bars CR113, a first open before the patches arrive CR115, and a too-large file's bars turning into its note CR116.
 
+The line cursor (2026-11-13, D43, D44): the pointer on a line CR120, the keys on the older side CR121, the comment button's tooltip CR122, unified CR123, a thread CR124, a collapsed file's header CR125, a gap CR126; the number's hover CR106 replaced.
+
 Found while building: a collapsed stack holding your draft CR78, syntax colours CR79, GitHub not showing the pull request CR80, a file GitHub hasn't listed CR81, older reviews CR82.
 
 Still open, not settled by the screens:

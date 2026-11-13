@@ -103,9 +103,13 @@ extendComment:
 backToPullRequest:
   en: Back to the pull request
 lineDown:
-  en: Scroll down a line
+  en: Move the cursor down
 lineUp:
-  en: Scroll up a line
+  en: Move the cursor up
+pageDown:
+  en: Move the cursor down a screen
+pageUp:
+  en: Move the cursor up a screen
 showHiddenLines:
   en: Show {count} more hidden lines
 showAllHiddenLines:
