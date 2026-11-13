@@ -1,11 +1,13 @@
-<!-- A review in the pull request's conversation (`Review / Summary`): who, the verdict, how long ago with a link to it on GitHub, its text as GitHub rendered and sanitized it, and what it started in the files, a click landing on the first of them. Threads that show nowhere, resolved on a file gone from the diff, are said without the click. -->
+<!-- A review in the pull request's conversation (`Activity / Review`, as cards CR120): the same card as on the pull request's thread (`CommentCard`) — who, the verdict (`CommentVerdict`), how long ago, its ⋯ with Quote reply and Copy link — its text as GitHub rendered and sanitized it, and under it what it started in the files, at either width, a click landing on the first of them (`Activity / Threads link`). Threads that show nowhere, resolved on a file gone from the diff, are said without the click. -->
 <script lang="ts" setup>
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { ArrowDownRight, MessageSquare } from 'lucide-vue-next';
 import { computed } from 'vue';
 
-import CommentReply from '@/comments/CommentReply.vue';
-import { getReviewVerdict } from '@/item/getReviewVerdict.js';
+import CommentCard from '@/comments/CommentCard.vue';
+import CommentMenu from '@/comments/CommentMenu.vue';
+import CommentVerdict from '@/comments/CommentVerdict.vue';
+import type { CommentActions } from '@/comments/useCommentActions.js';
 import GitHubHtml from '@/item/GitHubHtml.vue';
 import type { ItemReviewSummary } from '@/store/ItemDetailTypes.js';
 
@@ -15,6 +17,12 @@ import * as l from './ReviewSummary.loc.js';
 const props = defineProps<{
   review: ItemReviewSummary;
   threads: ReviewOwnThreads | null;
+  /** Epoch ms the age is counted to. */
+  now: number;
+  /** What the conversation does with its cards: Quote reply and Copy link. */
+  actions: CommentActions;
+  /** The composer takes a comment: Quote reply is offered. */
+  canQuote?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -22,7 +30,6 @@ const emit = defineEmits<{
 }>();
 
 const t = useTranslate();
-const verdict = computed(() => getReviewVerdict(props.review.state));
 const threadsLabel = computed(() => {
   const { threads } = props;
   return threads && t(threads.resolved ? l.threadsInFilesResolved : l.threadsInFiles, { count: threads.ids.size });
@@ -30,80 +37,68 @@ const threadsLabel = computed(() => {
 </script>
 
 <template>
-  <CommentReply
+  <CommentCard
     :author="review.author"
-    :url="review.url"
     :created-at="review.submittedAt"
-    spaced
+    :now="now"
+    @menu-close="actions.onMenuClose"
   >
     <template #verdict>
-      <span :class="[css.reviewSummary_verdict, css[`reviewSummary_verdict_${verdict.tone}`]]">
-        <component
-          :is="verdict.icon"
-          :class="css.reviewSummary_icon"
+      <CommentVerdict :state="review.state" />
+    </template>
+    <template
+      v-if="review.bodyHtml !== '' || threads"
+      #default
+    >
+      <GitHubHtml
+        v-if="review.bodyHtml !== ''"
+        :class="css.reviewSummary_text"
+        :html="review.bodyHtml"
+      />
+      <button
+        v-if="threads && threads.paths.length > 0"
+        type="button"
+        :class="css.reviewSummary_threads"
+        @click="emit('jumpToThreads')"
+      >
+        <MessageSquare
+          :class="css.reviewSummary_threadsIcon"
           aria-hidden="true"
         />
-        {{ t(verdict.label) }}
+        {{ threadsLabel }}
+        <ArrowDownRight
+          :class="css.reviewSummary_threadsIcon"
+          aria-hidden="true"
+        />
+      </button>
+      <span
+        v-else-if="threads"
+        :class="css.reviewSummary_threadsNowhere"
+      >
+        <MessageSquare
+          :class="css.reviewSummary_threadsIcon"
+          aria-hidden="true"
+        />
+        {{ threadsLabel }}
       </span>
     </template>
-    <GitHubHtml
-      v-if="review.bodyHtml !== ''"
-      :html="review.bodyHtml"
-    />
-    <button
-      v-if="threads && threads.paths.length > 0"
-      type="button"
-      :class="css.reviewSummary_threads"
-      @click="emit('jumpToThreads')"
-    >
-      <MessageSquare
-        :class="css.reviewSummary_threadsIcon"
-        aria-hidden="true"
+    <template #menu>
+      <CommentMenu
+        :can-edit="false"
+        :can-quote="(canQuote ?? false) && review.body !== ''"
+        @quote-reply="actions.quote(review.body)"
+        @copy-link="actions.copyLink(review.url)"
       />
-      {{ threadsLabel }}
-      <ArrowDownRight
-        :class="css.reviewSummary_threadsIcon"
-        aria-hidden="true"
-      />
-    </button>
-    <span
-      v-else-if="threads"
-      :class="css.reviewSummary_threadsNowhere"
-    >
-      <MessageSquare
-        :class="css.reviewSummary_threadsIcon"
-        aria-hidden="true"
-      />
-      {{ threadsLabel }}
-    </span>
-  </CommentReply>
+    </template>
+  </CommentCard>
 </template>
 
 <style lang="scss" module="css">
-.reviewSummary_verdict {
-  display: inline-flex;
-  flex: 1;
-  gap: $spacing-4;
-  align-items: center;
-  font-size: $font-size-xs;
-}
-
-.reviewSummary_verdict_approved {
-  color: $color-green;
-}
-
-.reviewSummary_verdict_changes {
-  color: $color-red;
-}
-
-.reviewSummary_verdict_quiet {
-  color: $color-fg-dim;
-}
-
-.reviewSummary_icon {
-  flex: none;
-  width: 12px;
-  height: 12px;
+// GitHub's rendering, at the thread's reading size, as every card's.
+.reviewSummary_text {
+  --github-html-font-size: #{$font-size-reading};
+  --github-html-line-height: #{$line-height-reading};
+  --github-html-color: #{$color-fg};
 }
 
 .reviewSummary_threads,
@@ -112,7 +107,7 @@ const threadsLabel = computed(() => {
   gap: 5px;
   align-items: center;
   align-self: flex-start;
-  padding: $spacing-2 0 0;
+  padding: 0;
   font-size: $font-size-xs;
 }
 

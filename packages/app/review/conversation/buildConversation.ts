@@ -1,22 +1,18 @@
+import type { FailedComment } from '@/edits/CommentDrafts.js';
 import type { ItemComment, ItemReviewSummary } from '@/store/ItemDetailTypes.js';
-
-import type { ReviewThreadComment } from '../threads/ReviewThread.js';
 
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
 
 /** One entry of a pull request's conversation. */
 export type ConversationEntry =
-    | {
-          readonly kind: 'comment';
-          readonly id: string;
-          readonly comment: Pick<ReviewThreadComment, 'author' | 'bodyHTML' | 'createdAt' | 'state' | 'url'>;
-      }
+    | { readonly kind: 'comment'; readonly id: string; readonly comment: ItemComment }
     | {
           readonly kind: 'summary';
           readonly id: string;
           readonly review: ItemReviewSummary;
           readonly threads: ReviewOwnThreads | null;
-      };
+      }
+    | { readonly kind: 'failedComment'; readonly id: string; readonly failed: FailedComment };
 
 /** The parameters of {@link buildConversation}. */
 export interface BuildConversationParams {
@@ -24,28 +20,31 @@ export interface BuildConversationParams {
     readonly summaries: readonly ItemReviewSummary[];
     /** What each review started, by its id. */
     readonly threads: ReadonlyMap<string, ReviewOwnThreads>;
+    /** The user's comments GitHub did not take, in the order they were written. */
+    readonly failedComments?: readonly FailedComment[];
 }
 
 /**
- * Comments and review summaries in one time order, newest last. A review saying nothing is left out: GitHub makes one of
- * every reply to a thread, `COMMENTED` with no text, and it has its place in the diff. A comment on its way to GitHub
- * isn't on the pull request yet, and shows once it is.
+ * Comments and review summaries in one time order, newest last, as an item's thread orders them (`buildThread`): the
+ * user's comments on their way after everything GitHub told, then those GitHub did not take. A review saying nothing is
+ * left out: GitHub makes one of every reply to a thread, `COMMENTED` with no text, and it has its place in the diff.
  *
  * @__NO_SIDE_EFFECTS__
  */
-export function buildConversation({ comments, summaries, threads }: BuildConversationParams): ConversationEntry[] {
+export function buildConversation({
+    comments,
+    summaries,
+    threads,
+    failedComments = [],
+}: BuildConversationParams): ConversationEntry[] {
     const timed: { readonly at: number; readonly entry: ConversationEntry }[] = [];
-    for (const { id, author, url, createdAt, bodyHtml, pendingBody } of comments) {
-        if (pendingBody === undefined) {
-            timed.push({
-                at: Date.parse(createdAt),
-                // A comment on the pull request itself is in no draft.
-                entry: {
-                    kind: 'comment',
-                    id,
-                    comment: { author, url, createdAt, bodyHTML: bodyHtml, state: 'SUBMITTED' },
-                },
-            });
+    const pending: ConversationEntry[] = [];
+    for (const comment of comments) {
+        const entry = { kind: 'comment', id: comment.id, comment } as const;
+        if (comment.pendingBody === undefined) {
+            timed.push({ at: Date.parse(comment.createdAt), entry });
+        } else {
+            pending.push(entry);
         }
     }
 
@@ -59,5 +58,9 @@ export function buildConversation({ comments, summaries, threads }: BuildConvers
         }
     }
 
-    return timed.toSorted((a, b) => a.at - b.at).map(({ entry }) => entry);
+    return [
+        ...timed.toSorted((a, b) => a.at - b.at).map(({ entry }) => entry),
+        ...pending,
+        ...failedComments.map((failed): ConversationEntry => ({ kind: 'failedComment', id: `failed:${failed.id}`, failed })),
+    ];
 }

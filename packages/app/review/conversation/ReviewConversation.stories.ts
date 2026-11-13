@@ -7,6 +7,9 @@ import { F1_PULL_REQUEST, F1_PULL_REQUEST_DETAIL } from '@/testing/sampleItemDet
 import type { ReviewOwnThreads } from './getReviewOwnThreads.js';
 import ReviewConversation from './ReviewConversation.vue';
 
+/** A login as long as GitHub takes. */
+const LONG_LOGIN = 'a-very-long-github-login-name-here';
+
 const LONG_TEXT =
     '<p>Edits made offline go into an outbox table and are replayed in order when the connection returns.</p>';
 
@@ -118,9 +121,10 @@ export const FoldedDescription: Story = {
     play: async ({ canvas, canvasElement }) => {
         const unfold = await canvas.findByRole('button', { name: 'Show the whole description' });
         const fold = canvasElement.querySelector('[class*="reviewConversation_fold"]');
-        await expect(fold?.clientHeight).toBe(100);
+        // Five lines at the reading size, 13.5 px × 1.6.
+        await expect(fold?.clientHeight).toBe(108);
         await userEvent.click(unfold);
-        await waitFor(() => expect(fold?.clientHeight).toBeGreaterThan(100));
+        await waitFor(() => expect(fold?.clientHeight).toBeGreaterThan(108));
         await expect(canvas.queryByRole('button', { name: 'Show the whole description' })).toBeNull();
     },
 };
@@ -196,6 +200,71 @@ export const Verdicts: Story = {
                 summary('PRR_4', 'DISMISSED', ''),
             ],
         },
+    },
+};
+
+/**
+ * CR120: the description, the user's own comment, another's and reviews as the pull request's cards, at 340 px, a very
+ * long login among them; the user's comment offers Edit and Delete…, every card Quote reply and Copy link.
+ */
+export const Cards: Story = {
+    args: {
+        detail: {
+            ...quietDetail(),
+            bodyHtml: '<p>Second of four in the offline sync stack.</p>',
+            body: 'Second of four in the offline sync stack.',
+            comments: {
+                totalCount: 2,
+                first: [],
+                olderCursor: null,
+                nodes: [
+                    {
+                        ...commentsOf(1, null).nodes[0]!,
+                        id: 'C_THEIRS',
+                        author: { login: LONG_LOGIN, avatarUrl: '' },
+                        body: 'Same on mobile.',
+                        bodyHtml: '<p>Same on mobile.</p>',
+                    },
+                    {
+                        ...commentsOf(1, null).nodes[0]!,
+                        id: 'C_MINE',
+                        author: { login: 'mlaine', avatarUrl: '' },
+                        body: 'Thanks, looks right.',
+                        bodyHtml: '<p>Thanks, looks right.</p>',
+                        viewerCanUpdate: true,
+                        viewerCanDelete: true,
+                        createdAt: '2026-10-30T13:00:00Z',
+                    },
+                ],
+            },
+            reviewSummaries: [
+                {
+                    ...summary('PRR_1', 'CHANGES_REQUESTED', '<p>Two things in the queue.</p>'),
+                    author: { login: LONG_LOGIN, avatarUrl: '' },
+                    body: 'Two things in the queue.',
+                },
+            ],
+        },
+        reviewThreads: new Map<string, ReviewOwnThreads>([
+            ['PRR_1', { ids: new Set(['T_1', 'T_2']), resolved: false, paths: ['src/sync/queue.ts'] }],
+        ]),
+        onEdit: fn(),
+    },
+};
+
+/** One GitHub did not take: why, Discard and Retry, as on the pull request's thread. */
+export const NotSent: Story = {
+    args: {
+        detail: quietDetail(),
+        viewer: { login: 'mlaine', avatarUrl: '' },
+        failedComments: [{ id: 1, itemId: F1_PULL_REQUEST.id, body: 'Thanks both.', reason: { kind: 'offline' }, retrying: false }],
+        onRetry: fn(),
+        onDiscard: fn(),
+    },
+    play: async ({ args, canvas }) => {
+        await expect(canvas.getByText('Not sent')).toBeVisible();
+        await userEvent.click(canvas.getByRole('button', { name: 'Retry' }));
+        await expect(args.onRetry).toHaveBeenCalledWith(1);
     },
 };
 

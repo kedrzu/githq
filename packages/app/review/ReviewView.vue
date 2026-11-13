@@ -7,6 +7,7 @@ const numbers = new Intl.NumberFormat(APP_LANGUAGE);
 
 <script lang="ts" setup>
 import type { SubmodulePointers } from '@githq/github/utils/parseSubmodulePatch.js';
+import { filterNotNull } from '@nzyme/utils/array/filterNotNull.js';
 import { useTranslate } from '@nzyme/vue-i18n/useTranslate.js';
 import { useService } from '@nzyme/vue-ioc/useService.js';
 import { injectContext } from '@nzyme/vue-utils/context.js';
@@ -58,6 +59,7 @@ import EmptyState from '@/components/EmptyState.vue';
 import Kbd from '@/components/Kbd.vue';
 import Toaster from '@/components/Toaster.vue';
 import { CommentDrafts } from '@/edits/CommentDrafts.js';
+import type { EditRequest } from '@/edits/EditTypes.js';
 import { ItemEditor } from '@/edits/ItemEditor.js';
 import {
   formatItemReference,
@@ -478,6 +480,13 @@ const commentDraft = computed({
     }
   },
 });
+/** The user's comments on the pull request GitHub did not take, and their edits of its comments and description. */
+const failedComments = computed(() => (opened.id === null ? [] : commentDrafts.getFailed(opened.id)));
+const failedEdits = computed(() => (opened.id === null ? [] : commentDrafts.getFailedEdits(opened.id)));
+/** Who opened the pull request and who commented on it: whom `@` suggests first in the conversation's editors. */
+const conversationPeople = computed(() =>
+  filterNotNull([opened.item?.author ?? null, ...(detail.value?.comments.nodes ?? []).map(comment => comment.author)]),
+);
 const lostViewed = computed(() => files.value?.lostViewed ?? NO_FILES);
 /** By file, while there is a box to suggest in: what each has its lines in. */
 const diffsByPath = computed(() => {
@@ -1912,8 +1921,19 @@ function onCommentBlur(id: string) {
 
 /** On the pull request itself, as on an opened item: it goes out at once (D17), kept in its composer if GitHub refuses. */
 function commentOnPullRequest(body: string) {
+  editPullRequest({ kind: 'comment', body });
+}
+
+/** A comment or the description edited, or a comment deleted, from the conversation. */
+function editPullRequest(request: EditRequest) {
   if (opened.id !== null) {
-    void editor.edit([opened.id], { kind: 'comment', body });
+    void editor.edit([opened.id], request);
+  }
+}
+
+function discardFailedEdit(commentId: string | null) {
+  if (opened.id !== null) {
+    commentDrafts.discardFailedEdit(opened.id, commentId);
   }
 }
 
@@ -2284,7 +2304,15 @@ function readAgain() {
             :load-older-reviews="opened.loadAllReviews"
             :draft-open="writing?.draftOpen ?? false"
             :comment-disabled="opened.item ? !editor.getPermissions(opened.item).comment : true"
+            :viewer="auth.viewer"
+            :failed-comments="failedComments"
+            :failed-edits="failedEdits"
+            :people="conversationPeople"
             @comment="commentOnPullRequest"
+            @edit="editPullRequest"
+            @discard-edit="discardFailedEdit"
+            @retry="editor.retryComment($event)"
+            @discard="commentDrafts.discardFailed($event)"
             @close="conversationShown = false"
             @jump-to-threads="jumpToReviewThreads"
           />
